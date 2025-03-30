@@ -1,0 +1,49 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+edition = "2024"
+homepage = "https://github.com/AlexAegis/bevy_envelope_action"
+repository = "https://github.com/AlexAegis/bevy_envelope_action"
+documentation = "https://github.com/AlexAegis/bevy_envelope_action"
+authors = ["alexaegis"]
+license-file = "/license"
+# Crates in this repository are private, for now
+publish = false
+
+[workspace.lints.clippy]
+type_complexity = "allow"
+
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+incremental = true
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.test]
+incremental = true
+
+[workspace.dependencies]
+bevy = { version = "0.15", default-features = false, features = [
+    "multi_threaded",
+    "bevy_core_pipeline",
+    "bevy_asset",
+    "bevy_winit",
+    "bevy_window",
+    "bevy_render",
+    "png",
+    "x11",
+    "bevy_gilrs",
+    "bevy_scene",
+    "animation",
+    "file_watcher",
+    "bevy_gltf",
+] }
+bevy-inspector-egui = { version = "0.30.0", default-features = false }
+bevy_egui = { version = "0.33.0", features = ["immutable_ctx"] }
+bevy_kit_action = { path = "crates/bevy_kit_action" }
+derive-where = { version = "1.2.7" }

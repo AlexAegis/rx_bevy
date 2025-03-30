@@ -1,0 +1,17 @@
+# https://rust-lang.github.io/mdBook/format/configuration/general.html
+
+[book]
+title = "Bevy Kit"
+authors = ["AlexAegis"]
+description = "Documentation."
+src = "docs"
+
+[build]
+build-dir = "target/book"
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[output.html]
+additional-js = ["docs/assets/mermaid.min.js", "docs/mermaid-init.js"]
+git-repository-url = "https://github.com/AlexAegis/bevy_kit"

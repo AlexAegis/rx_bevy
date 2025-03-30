@@ -1,0 +1,256 @@
+# Documentation: https://github.com/sagiegurari/cargo-make
+env_files = [".env"]
+
+## Project dependencies
+
+[tasks.install-pnpm]
+condition = { fail_message = "npm is not installed, skipping" }
+condition_script = ["""
+command -v npm > /dev/null
+"""]
+description = "Installs pnpm"
+workspace = false
+private = true
+command = "npm"
+args = ["install", "-g", "pnpm"]
+
+[tasks.self-update-pnpm]
+condition = { fail_message = "node is not installed, skipping" }
+condition_script = ["""
+command -v pnpm > /dev/null
+"""]
+description = "Updates pnpm"
+workspace = false
+private = true
+command = "pnpm"
+args = ["self-update"]
+
+[tasks.install-node-project]
+condition = { fail_message = "pnpm is not installed, skipping" }
+condition_script = ["""
+command -v pnpm > /dev/null
+"""]
+dependencies = ["install-pnpm", "self-update-pnpm"]
+description = "Installs node project using pnpm"
+workspace = false
+private = true
+command = "pnpm"
+args = ["install"]
+
+[tasks.install-rls]
+description = "Install rustup component rls"
+workspace = false
+private = true
+install_crate = { rustup_component_name = "rls" }
+
+[tasks.install-clippy]
+description = "Install rustup component clippy"
+workspace = false
+private = true
+install_crate = { rustup_component_name = "clippy" }
+
+[tasks.install-rustfmt]
+description = "Install rustup component rustfmt"
+workspace = false
+private = true
+install_crate = { rustup_component_name = "rustfmt" }
+
+[tasks.install-mdbook]
+description = "Install crate mdbook for building the documentation"
+workspace = false
+private = true
+dependencies = ["install-mdbook-mermaid"]
+install_crate = "mdbook"
+
+[tasks.install-mdbook-mermaid]
+description = "Install crate mdbook-mermaid for mermaid support"
+workspace = false
+private = true
+install_crate = "mdbook-mermaid"
+
+[tasks.install-trunk]
+condition = { env = { "CARGO_REQUIRE_WEB_SUPPORT" = "true" } }
+description = "Install crate trunk for WASM support"
+workspace = false
+private = true
+install_crate = "trunk"
+
+[tasks.install-cargo-expand]
+description = "Install crate cargo-expand for expanding and inspecting proc macros"
+workspace = false
+private = true
+install_crate = "cargo-expand"
+
+[tasks.install-target-wasm]
+condition = { env = { "CARGO_REQUIRE_WEB_SUPPORT" = "true" } }
+description = "Adds the wasm32 target"
+workspace = false
+private = true
+command = "rustup"
+args = ["target", "add", "wasm32-unknown-unknown"]
+
+[tasks.install-web-support]
+condition = { env = { "CARGO_REQUIRE_WEB_SUPPORT" = "true" } }
+description = "Installs everything to be able to build for the web"
+workspace = false
+dependencies = ["install-target-wasm", "install-trunk"]
+
+[tasks.enable-git-hooks]
+description = "Enable git hooks by setting the hooksPath to scripts/hooks"
+workspace = false
+command = "git"
+args = ["config", "core.hooksPath", "scripts/hooks"]
+
+[tasks.install-git-lfs]
+condition = { env = { "CARGO_REQUIRE_GIT_LFS" = "true" } }
+description = "Makes sure the git lfs hooks are enabled in the repository"
+private = false
+workspace = false
+command = "git"
+dependencies = ["enable-git-hooks"]
+args = ["lfs", "install", "--force"]
+
+## Tasks
+
+[tasks.book-build]
+description = '''Builds the book for the workspace. \
+!!! This task is NOT used in CI to avoid having to compile mdbook and cargo-make !!!'''
+workspace = false
+dependencies = ["install-mdbook"]
+command = "mdbook"
+args = ["build"]
+
+[tasks.book-serve]
+description = "Serves the book for editing"
+workspace = false
+dependencies = ["install-mdbook"]
+command = "mdbook"
+args = ["serve"]
+
+[tasks.lint-clippy]
+description = "Lints the entire workspace"
+workspace = false
+dependencies = ["install-clippy"]
+command = "cargo"
+args = [
+    "clippy",
+    "--workspace",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings",
+]
+
+[tasks.lint-format]
+description = "Format checks the entire workspace"
+workspace = false
+dependencies = ["install-rustfmt"]
+command = "cargo"
+args = ["fmt", "--all", "--", "--check"]
+
+[tasks.lint-md]
+condition = { fail_message = "Node is not installed, skipping" }
+condition_script = ["""
+command -v node > /dev/null
+"""]
+description = "Run remark.js to lint markdown files"
+workspace = false
+dependencies = ["install-node-project"]
+command = "pnpm"
+args = ["run", "lint:md"]
+
+[tasks.format]
+description = "Formats the entire workspace"
+workspace = false
+dependencies = ["install-rustfmt"]
+command = "cargo"
+args = ["fmt", "--all", "--", "--emit=files"]
+
+[tasks.each-format]
+description = "Formats each project"
+dependencies = ["install-rustfmt"]
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+[tasks.clean]
+description = "Cleans the workspace"
+workspace = false
+command = "cargo"
+args = ["clean"]
+
+[tasks.build]
+description = "Builds the entire workspace"
+workspace = false
+category = "Build"
+command = "cargo"
+args = ["build", "--workspace", "--all-targets", "--all-features"]
+
+[tasks.each-build]
+description = "Build individual projects"
+category = "Build"
+command = "cargo"
+args = ["build", "--all-targets", "--all-features"]
+
+[tasks.test]
+description = "Tests the entire workspace"
+workspace = false
+command = "cargo"
+args = ["test", "--workspace", "--all-features"]
+
+[tasks.each-test]
+description = "Tests individual projects"
+command = "cargo"
+args = ["test", "--all-features"]
+
+## Miscellaneous
+
+[tasks.print-env]
+description = "Print the environment"
+workspace = false
+command = "env"
+
+## Scripts
+
+[tasks.script-link-assets]
+description = "Run script link_assets.sh"
+workspace = false
+script = { file = "scripts/link_assets.sh" }
+
+## Flows
+
+[tasks.setup]
+description = "Prepares the workspace for development"
+workspace = false
+dependencies = [
+    "install-rls",
+    "install-git-lfs",
+    "install-clippy",
+    "install-rustfmt",
+    "install-mdbook",
+    "install-cargo-expand",
+    "install-web-support",
+    "script-link-assets",
+    "install-node-project",
+]
+
+[tasks.lint]
+description = "Run clippy and format checking in parallel"
+workspace = false
+run_task = { name = ["lint-format", "lint-clippy", "lint-md"], parallel = true }
+
+[tasks.all]
+description = "Run every task"
+workspace = false
+dependencies = ["setup", "format", "build", "lint", "book-build", "test"]
+
+## Git hooks
+
+[tasks.pre-commit]
+description = "Definition of the pre-commit git hook."
+workspace = false
+dependencies = ["lint-format", "lint"]
+
+[tasks.pre-push]
+workspace = false
+dependencies = ["test"]

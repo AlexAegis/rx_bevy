@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "rust-lang.rust-analyzer",
+    "fill-labs.dependi",
+    "tamasfe.even-better-toml",
+    "editorconfig.editorconfig",
+    "mhutchie.git-graph",
+    "ritwickdey.LiveServer",
+    "cloudedcat.vscode-model-viewer",
+    "unifiedjs.vscode-remark"
+  ]
+}

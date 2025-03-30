@@ -1,0 +1,6 @@
+# managed-by-autotool
+
+core.autocrlf=false
+* text=auto eol=lf
+*.blend filter=lfs diff=lfs merge=lfs
+*.glb filter=lfs diff=lfs merge=lfs

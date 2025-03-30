@@ -1,0 +1,155 @@
+name: cicd
+
+on:
+  push:
+    branches: "**"
+  pull_request:
+    branches: "**"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - name: cache
+        uses: Swatinem/rust-cache@v2
+      - name: install cargo-make
+        run: cargo install cargo-make
+      - name: install alsa and udev (linux)
+        if: runner.os == 'linux'
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - name: test
+        run: cargo make test
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: setup node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - name: cache
+        uses: Swatinem/rust-cache@v2
+      - name: install cargo-make
+        run: cargo install cargo-make
+      - name: install alsa and udev (linux)
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - name: check format and clippy
+        run: cargo make lint
+  check-pages:
+    runs-on: ubuntu-latest
+    outputs:
+      pages_enabled: ${{ steps.check_pages.outputs.is_enabled }}
+    steps:
+      - name: check if github pages is enabled
+        id: check_pages
+        uses: AlexAegis/check-github-pages@v1
+  mdbook:
+    runs-on: ubuntu-latest
+    needs: [test, lint, check-pages]
+    if: |
+      needs.check-pages.outputs.pages_enabled == 'true'
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - name: cache
+        uses: Swatinem/rust-cache@v2
+      - name: install cargo-make
+        run: cargo install cargo-make
+      - name: build book
+        run: cargo make book-build
+      - name: setup pages
+        uses: actions/configure-pages@v4
+        if: |
+          github.ref_name == github.event.repository.default_branch &&
+          github.event_name != 'pull_request'
+      - name: upload artifact
+        uses: actions/upload-pages-artifact@v3
+        if: |
+          github.ref_name == github.event.repository.default_branch && 
+          github.event_name != 'pull_request'
+        with:
+          path: "target/book"
+  deploy-github-pages:
+    name: deploy github pages
+    if: |
+      github.ref_name == github.event.repository.default_branch && 
+      github.event_name != 'pull_request' &&
+      needs.check-pages.outputs.pages_enabled == 'true'
+    runs-on: ubuntu-latest
+    needs: [mdbook, check-pages]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: deploy to github pages
+        uses: actions/deploy-pages@v4
+        id: deployment
+  release:
+    if: |
+      github.ref_name == github.event.repository.default_branch &&
+      github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: true
+          lfs: true
+      - name: checkout lfs
+        run: git lfs pull
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - name: cache
+        uses: Swatinem/rust-cache@v2
+      - name: install cargo-make
+        run: cargo install cargo-make
+      - name: install alsa and udev (linux)
+        if: runner.os == 'linux'
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - uses: katyo/publish-crates@v2
+        with:
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          ignore-unpublished-changes: true

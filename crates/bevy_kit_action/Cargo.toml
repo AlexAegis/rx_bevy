@@ -1,0 +1,31 @@
+[package]
+name = "bevy_kit_action"
+version = "0.1.0"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev", "keyboard", "mouse", "gamepad", "reflect"]
+dev = ["bevy/dynamic_linking", "inspector", "debug_ui"]
+inspector = ["dep:bevy-inspector-egui", "dep:bevy_egui"]
+example = ["dev", "inspector", "bevy/bevy_window", "bevy/tonemapping_luts"]
+keyboard = []
+mouse = []
+gamepad = ["bevy/bevy_gilrs"]
+debug_ui = ["dep:bevy_egui"]
+reflect = []
+
+[dependencies]
+bevy = { workspace = true, default-features = false }
+bevy-inspector-egui = { workspace = true, optional = true }
+bevy_egui = { workspace = true, optional = true }
+derive-where = { workspace = true }
