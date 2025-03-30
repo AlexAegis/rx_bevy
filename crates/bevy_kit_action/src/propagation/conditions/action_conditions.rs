@@ -1,4 +1,4 @@
-enum ActionConditionResult {
+pub enum ActionConditionResult {
 	/// The action can by emitted
 	Enabled,
 	/// The action can't be emitted and it won't be forwarded

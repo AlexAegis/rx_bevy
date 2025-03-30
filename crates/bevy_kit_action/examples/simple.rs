@@ -2,11 +2,10 @@ use bevy::prelude::*;
 use bevy_kit_action::{
 	ActionContext, ActionKey, ActionMapPlugin, ActionPlugin, ActionStart, KeyboardInputActionData,
 };
-use bevy_kit_examples_common_3d::ExamplePlugin;
 
 fn main() -> AppExit {
 	App::new()
-		.add_plugins(ExamplePlugin)
+		.add_plugins(DefaultPlugins)
 		.add_plugins(ActionPlugin)
 		.add_plugins(ActionMapPlugin::<KeyCode, TestAction>::default())
 		.add_systems(Startup, setup)
@@ -38,7 +37,7 @@ fn setup(mut commands: Commands) {
 	commands.insert_resource(ExampleEntities { child, parent });
 }
 
-#[derive(Event, Debug, Eq, PartialEq, Hash, Default, Reflect)]
+#[derive(Event, Clone, Copy, Debug, Eq, PartialEq, Hash, Default, Reflect)]
 struct TestAction;
 
 /// NewTypes for action data conversion

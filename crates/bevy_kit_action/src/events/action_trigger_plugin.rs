@@ -3,7 +3,10 @@ use std::marker::PhantomData;
 use bevy::{input::InputSystem, prelude::*};
 use derive_where::derive_where;
 
-use crate::{ActionContext, ActionEnd, ActionEnvelopeState, ActionKey, ActionOnGoing, ActionStart, ActionSystem, ActionSystemFor};
+use crate::{
+	ActionContext, ActionEnd, ActionEnvelopeState, ActionKey, ActionOnGoing, ActionStart,
+	ActionSystem, ActionSystemFor,
+};
 
 /// Emit events
 #[derive_where(Default)]
@@ -23,8 +26,9 @@ where
 		// Clear actions before bevy would emit the current ones for this frame
 		app.configure_sets(
 			PreUpdate,
-			ActionSystemFor::<Action>::Trigger.after(ActionSystem::Mapped)
-                .before(ActionSystem::Triggered)
+			ActionSystemFor::<Action>::Trigger
+				.after(ActionSystem::Mapped)
+				.before(ActionSystem::Triggered),
 		);
 
 		app.add_systems(
@@ -44,13 +48,13 @@ fn trigger_actions<Action, Data>(
 	for (target_entity, action_context) in action_context_query.iter() {
 		// TODO: Add an ActionTriggerTarget component to be able to trigger other entities too, just like action source, if it's not present, then trigger self
 		for (action, action_state) in action_context.actions.iter() {
-            match action_state.phase {
-                ActionEnvelopeState::Attack => ActionOnGoing { action },
-                ActionEnvelopeState::Active => ActionOnGoing{ action },
-                ActionEnvelopeState::Release => ActionEnd { action },
-            }
+			// match action_state.phase {
+			//     ActionEnvelopeState::Attack => ActionOnGoing { action },
+			//     ActionEnvelopeState::Active => ActionOnGoing{ action },
+			//     ActionEnvelopeState::Release => ActionEnd { action },
+			// }
 
-			commands.trigger_targets(, target_entity);
+			// commands.trigger_targets(, target_entity);
 		}
 	}
 }

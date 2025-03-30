@@ -3,18 +3,18 @@ use std::marker::PhantomData;
 use bevy::{input::InputSystem, prelude::*};
 use derive_where::derive_where;
 
-use crate::{ActionContext, ActionKey, ActionSystem, ActionSystemFor};
+use crate::{ActionContext, ActionKey, ActionSystem};
 
 /// To set up system ordering
 #[derive_where(Default)]
-pub struct ActionStatePlugin<Action, Data = <Action as ActionKey>::ActionData>
+pub struct ActionResetPlugin<Action, Data = <Action as ActionKey>::ActionData>
 where
 	Action: ActionKey<ActionData = Data>,
 {
 	_phantom_data_action: PhantomData<Action>,
 }
 
-impl<Action, Data> Plugin for ActionStatePlugin<Action, Data>
+impl<Action, Data> Plugin for ActionResetPlugin<Action, Data>
 where
 	Action: ActionKey<ActionData = Data>,
 	Data: 'static,

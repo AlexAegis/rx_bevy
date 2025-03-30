@@ -4,9 +4,11 @@ use bevy::prelude::*;
 use derive_where::derive_where;
 
 use crate::{
-	ActionContext, ActionEnvelopePhaseTransition, ActionEnvelopeState, ActionKey, ActionMap,
-	ActionSource, ActionState, ActionSystem, ActionSystemFor,
+	ActionContext, ActionEnvelopePhaseTransition, ActionEnvelopeState, ActionKey, ActionSource,
+	ActionState, ActionSystem, ActionSystemFor,
 };
+
+use super::ActionMap;
 
 /// TODO: Maybe there could be a mutually exclusive way of setting up mapping between two actions, one is this HashMap based, and the other is just From<> impl based and would be faster and simpler but not configurable at runtime. Or it could be the default value for action pairs where it's implemented
 /// Contains and executes activation between action contexts

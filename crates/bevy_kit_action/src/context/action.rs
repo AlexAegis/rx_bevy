@@ -28,7 +28,7 @@ pub trait ActionKey: Copy + Eq + Hash + Debug + ActionKeyBound {
 	type ActionData: Default + Debug + ActionKeyBound;
 }
 
-/// TODO: Unsure if needed
+/// TODO: Unsure if needed, probably for the envelopes/thresholds/deadzone
 pub(crate) enum ActionDimension {
 	Digital,
 	Analog2d,
