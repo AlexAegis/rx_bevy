@@ -60,3 +60,33 @@ pub enum ActionEnvelopePhaseTransition {
 	/// [ActionEnvelopeState::Release] -> [ActionEnvelopeState::None]
 	End,
 }
+
+/// TODO: Maybe this whole envelop thing could be a condition or at least an optional things called actuation. then ADSR wouldn't be a prominent thing after all, just a feature. But then actions would need sockets? as subtypes and matching sockets could only be mapped together, or if one implements a Trait to convert. After all, the input really is just a boolean, lasting for a time (plus gamepad stuff and mouse, envelopes should be on top of them, optionally)
+fn determine_phase_transition(
+	previous_frame: &ActionEnvelopeState,
+	current_frame: &ActionEnvelopeState,
+) -> ActionEnvelopePhaseTransition {
+	match (previous_frame, current_frame) {
+		(ActionEnvelopeState::None, ActionEnvelopeState::Attack) => {
+			ActionEnvelopePhaseTransition::Start
+		}
+		(ActionEnvelopeState::None, ActionEnvelopeState::Decay) => {
+			// When there is no attackTime
+			ActionEnvelopePhaseTransition::Fire
+		}
+
+		(ActionEnvelopeState::Attack, ActionEnvelopeState::Decay) => {
+			ActionEnvelopePhaseTransition::Fire
+		}
+		(ActionEnvelopeState::Decay, ActionEnvelopeState::Sustain) => {
+			ActionEnvelopePhaseTransition::Sustain
+		}
+		(ActionEnvelopeState::Sustain, ActionEnvelopeState::Release) => {
+			ActionEnvelopePhaseTransition::Release
+		}
+		(ActionEnvelopeState::Release, ActionEnvelopeState::None) => {
+			ActionEnvelopePhaseTransition::End
+		}
+		_ => ActionEnvelopePhaseTransition::None,
+	}
+}

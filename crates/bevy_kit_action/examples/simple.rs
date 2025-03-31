@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_kit_action::{
-	Action, ActionContext, ActionMapPlugin, ActionPlugin, ActionStart, KeyboardInputSignal,
-};
+use bevy_kit_action::{Action, ActionContext, ActionMapPlugin, ActionPlugin, ActionStart};
 
 fn main() -> AppExit {
 	App::new()
@@ -58,7 +56,7 @@ enum ExampleDiscreteMoveAction {
 
 impl Action for ExampleDiscreteMoveAction {
 	// const DIMENSION: ActionDimension = ActionDimension::;
-	type Signal = ExampleFireSignal;
+	type Signal = bool;
 }
 
 #[derive(Event, Clone, Copy, Debug, Eq, PartialEq, Hash, Reflect)]
@@ -70,13 +68,7 @@ struct ExampleFireSignal(u8);
 
 impl Action for ExampleFireAction {
 	// const DIMENSION: ActionDimension = ActionDimension::;
-	type Signal = ExampleFireSignal;
-}
-
-impl From<KeyboardInputSignal> for ExampleFireSignal {
-	fn from(value: KeyboardInputSignal) -> Self {
-		Self(if *value { 1 } else { 0 })
-	}
+	type Signal = bool;
 }
 
 fn handle_discrete_move_action(

@@ -1,14 +1,16 @@
 //! The big idea: Sockets and Signals
 
-pub trait InputSocket {
+use crate::Action;
+
+pub trait InputSocket<A: Action> {
 	type Data;
 
 	// TODO: Error handling?
-	fn write(&mut self, value: Self::Data);
+	fn write(&mut self, action: &A, value: &Self::Data);
 }
 
-pub trait OutputSocket {
+pub trait OutputSocket<A: Action> {
 	type Data;
 
-	fn read(&self) -> Self::Data;
+	fn read(&self, action: &A) -> Option<Self::Data>;
 }

@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use bevy::math::{Vec2, Vec3};
+
 /// The signals dimensionality is the what controls activations between actions
 /// TODO: Signals can be downcast by omitting dimensions
 /// TODO: Signals can be upcast by splatting one dimension
@@ -19,5 +21,26 @@ pub enum SignalDimension {
 /// [SignalDimension::TWO] -> `Vec2`; 2d input like a gamepad joystick
 /// [SignalDimension::THREE] -> `Vec3`; 3d input like a gyroscope
 pub trait Signal: Send + Sync + Debug {
+	/// TODO: Dimensionality is still not used
 	const DIMENSION: SignalDimension;
+}
+
+/// Digital input like a keypress
+impl Signal for bool {
+	const DIMENSION: SignalDimension = SignalDimension::ZERO;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for f32 {
+	const DIMENSION: SignalDimension = SignalDimension::ONE;
+}
+
+/// 2d input like a gamepad joystick
+impl Signal for Vec2 {
+	const DIMENSION: SignalDimension = SignalDimension::TWO;
+}
+
+/// 3d input like a gyroscope
+impl Signal for Vec3 {
+	const DIMENSION: SignalDimension = SignalDimension::THREE;
 }

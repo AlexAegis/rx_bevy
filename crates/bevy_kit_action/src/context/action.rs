@@ -1,4 +1,4 @@
-use crate::{InputSocket, OutputSocket, Signal};
+use crate::Signal;
 use std::{fmt::Debug, hash::Hash};
 
 #[cfg(feature = "reflect")]
@@ -24,19 +24,8 @@ impl<T: GetTypeRegistration + Typed> ActionBound for T {}
 /// - Send + Sync
 /// - GetTypeRegistration + Typed: Only if the "reflect" feature is enabled
 /// - 'static
-///
+/// TODO: An action is a signal, that is the data payload that can fit into a socket
 pub trait Action: Copy + Eq + Hash + Debug + ActionBound {
+	// What is passed into a compatible socket
 	type Signal: Signal;
-	// TODO Does it actually need a separate input and output socket if there's only one signal?
-	/// How to get activated
-	type InputSocket: InputSocket;
-	/// What is outputted
-	type OutputSocket: OutputSocket;
 }
-
-/*
-pub trait Action: Copy + Eq + Hash + Debug + ActionBound {
-	type Signal: Default + Debug + ActionBound;
-}
-
-*/

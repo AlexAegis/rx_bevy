@@ -1,5 +1,7 @@
 # bevy_kit_action
 
+TODO: Rename to bevy_socketed_actions? Or bevy_action_socket? bevy_sock?
+
 An input mapper solution
 
 ## Features

@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_kit_action::{Action, ActionContext, ActionPlugin, ActionStart, BooleanSocket};
+use bevy_kit_action::{
+	Action, ActionContext, ActionMap, ActionPlugin, ActionSocket, ActionStart, KeyboardInputSocket,
+};
 
 /// No mapping, just directly interacting with keyboard actions
 /// TODO: what about socketed keycode actions
@@ -25,8 +27,20 @@ fn setup(mut commands: Commands) {
 	));
 
 	let target = {
-		let mut entity = commands.spawn((Name::new("target"), ActionContext::<KeyCode>::default()));
+		let mut action_map = ActionMap::<KeyCode, ExampleDiscreteMoveAction>::default();
+		action_map.insert(ExampleDiscreteMoveAction::Up, KeyCode::ArrowUp);
+		action_map.insert(ExampleDiscreteMoveAction::Right, KeyCode::ArrowRight);
+		action_map.insert(ExampleDiscreteMoveAction::Down, KeyCode::ArrowDown);
+		action_map.insert(ExampleDiscreteMoveAction::Left, KeyCode::ArrowLeft);
+
+		let mut entity = commands.spawn((
+			Name::new("target"),
+			KeyboardInputSocket::default(),
+			action_map,
+			ActionSocket::<ExampleDiscreteMoveAction, bool>::default(),
+		));
 		entity.observe(handle_discrete_move_action);
+
 		entity.id()
 	};
 
@@ -46,8 +60,6 @@ enum ExampleDiscreteMoveAction {
 impl Action for ExampleDiscreteMoveAction {
 	// const DIMENSION: ActionDimension = ActionDimension::;
 	type Signal = bool;
-	type InputSocket = BooleanSocket;
-	type OutputSocket = BooleanSocket;
 }
 
 fn handle_discrete_move_action(

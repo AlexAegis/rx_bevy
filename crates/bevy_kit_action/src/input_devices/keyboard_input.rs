@@ -1,12 +1,18 @@
+use std::marker::PhantomData;
+
 use bevy::{
-	input::{ButtonState, InputSystem, keyboard::KeyboardInput},
+	input::{
+		ButtonState, InputSystem,
+		keyboard::{Key, KeyboardInput},
+	},
 	prelude::*,
 	time::Stopwatch,
+	utils::HashSet,
 };
 
 use crate::{
-	Action, ActionContext, ActionEnvelopeState, ActionState, ActionSystem, AdsrSocket,
-	BooleanSocket, Signal, SignalDimension,
+	Action, ActionContext, ActionEnvelopeState, ActionSocket, ActionState, ActionSystem,
+	AdsrSocket, InputSocket, OutputSocket, Signal, SignalDimension,
 };
 
 pub struct KeyboardInputActionPlugin;
@@ -16,7 +22,7 @@ impl Plugin for KeyboardInputActionPlugin {
 		app.add_systems(Startup, setup_keyboard_sink);
 		app.add_systems(
 			PreUpdate,
-			keyboard_to_direct_input_action
+			forward_keyboard_to_socket
 				.run_if(on_event::<KeyboardInput>)
 				.in_set(ActionSystem::Input)
 				.after(InputSystem),
@@ -29,73 +35,74 @@ impl Plugin for KeyboardInputActionPlugin {
 pub struct KeyboardActionSink;
 
 fn setup_keyboard_sink(mut commands: Commands) {
-	commands.spawn((
-		KeyboardActionSink,
-		ActionContext::<KeyboardPressAction>::default(),
-	));
+	commands.spawn((KeyboardActionSink, KeyboardInputSocket::default()));
 }
 
-fn keyboard_to_direct_input_action(
+fn forward_keyboard_to_socket(
 	mut keyboard_input_event_reader: EventReader<KeyboardInput>,
-	mut keyboard_sink_query: Query<
-		&mut ActionContext<KeyboardPressAction>,
-		With<KeyboardActionSink>,
-	>,
+	mut keyboard_socket_query: Query<(
+		&mut KeyboardInputSocket,
+		Option<&KeyboardInputSocketOptions>,
+	)>,
 	#[cfg(feature = "dev")] frame_count: Res<bevy::core::FrameCount>,
 ) {
-	let Ok(mut keyboard_sink_action_context) = keyboard_sink_query.get_single_mut() else {
-		error!("Keyboard sink isn't spawned!");
-		return;
-	};
-
 	for keyboard_event in keyboard_input_event_reader.read() {
-		if keyboard_event.repeat {
-			// TODO: enable processing repeat events based on some config per key, should it be ignored, or should it re-trigger the action
-			continue;
-		}
-
 		#[cfg(feature = "dev")]
 		trace!("keyboard event {:?} {:?}", &keyboard_event, frame_count);
 
-		let action_state = keyboard_sink_action_context
-			.actions
-			.entry(keyboard_event.key_code)
-			.or_insert_with(|| ActionState::<KeyboardPressAction>::new(keyboard_event.key_code));
-
-		// A direct activation of the action
-		match keyboard_event.state {
-			ButtonState::Pressed => {
-				action_state.elapsed = Stopwatch::new();
-				action_state.phase = ActionEnvelopeState::Attack;
-			}
-			ButtonState::Released => {
-				action_state.elapsed.pause();
-				action_state.phase = ActionEnvelopeState::Release;
-			}
+		let value = match keyboard_event.state {
+			ButtonState::Pressed => true,
+			ButtonState::Released => false,
 		};
+
+		for (mut keyboard_socket, keyboard_socket_options) in keyboard_socket_query.iter_mut() {
+			if !keyboard_socket_options
+				.map(|p| p.allow_repeat)
+				.unwrap_or_default()
+				&& keyboard_event.repeat
+			{
+				continue;
+			}
+
+			keyboard_socket.write(&keyboard_event.key_code, &value);
+		}
 	}
 }
 
+#[derive(Component, Default, Debug)]
+pub struct KeyboardInputSocketOptions {
+	allow_repeat: bool,
+}
+
 impl Signal for KeyCode {
-	const DIMENSION: SignalDimension = SignalDimension::ONE;
+	const DIMENSION: SignalDimension = SignalDimension::ZERO;
 }
 
-#[derive(Reflect, Debug, Hash, PartialEq, Eq, Clone, Copy)]
-struct KeyboardPressAction;
-
-impl Action for KeyboardPressAction {
-	type Signal = KeyCode;
-	type InputSocket = BooleanSocket;
-	type OutputSocket = BooleanSocket;
+impl Action for KeyCode {
+	type Signal = Self;
 }
 
-#[derive(Reflect, Debug, Hash, PartialEq, Eq, Clone, Copy)]
-struct KeyboardAdsrAction;
-
-impl Action for KeyboardAdsrAction {
-	type Signal = KeyCode;
-	type InputSocket = BooleanSocket;
-	type OutputSocket = AdsrSocket;
-	// TODO: Expand on this idea, is this the same thing as Signal or not? data is not needed for now so lets just rename or reuse that
-	// type Socket = ActionSocketBoolean;
+pub type KeyboardInputSocket = ActionSocket<KeyCode, bool>;
+/*
+#[derive(Component, Debug)]
+struct KeyCodeSocket<K> {
+	is_pressed: bool,
+	_phantom_data_key: PhantomData<K>,
 }
+
+impl<K> OutputSocket<K> for KeyCodeSocket<K> {
+	type Data = bool;
+	fn read(&self) -> Self::Data {
+		self.is_pressed
+	}
+}
+
+/// TODO: Maybe this implementation shouldn't exist
+impl<K> InputSocket<K> for KeyCodeSocket<K> {
+	type Data = bool;
+
+	fn write(&mut self, value: &Self::Data) {
+		self.is_pressed = *value;
+	}
+}
+*/

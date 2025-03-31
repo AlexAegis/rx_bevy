@@ -1,63 +1,63 @@
-use super::{InputSocket, OutputSocket};
+use super::{InputSocket, OutputSocket, action_socket::SocketDataContainer};
 use std::time::Duration;
 
 use bevy::prelude::*;
 
 // TODO: Maybe the socket could hold the envelope settings? Maybe not.
+#[derive(Default)]
 pub struct AdsrSocket {
+	active: bool,
 	/// How far into the envelope are we in time
 	/// TODO: Maybe this too should be optional, or with a separate active flag
 	t: f32,
 	envelope: AdsrEnvelope,
 }
 
-impl OutputSocket for AdsrSocket {
-	type Data = f32;
-
-	fn read(&self) -> Self::Data {
-		// TODO: Actually get the value from the envelope
-		self.t
-	}
-}
-
 /// An Adsr socket can be fed with duration
-// TODO: How to know if it's active? Option?
-impl InputSocket for AdsrSocket {
-	type Data = Option<Duration>;
+impl SocketDataContainer for AdsrSocket {
+	type Input = Option<Duration>;
+	type Output = Option<f32>;
 
-	fn write(&mut self, value: Self::Data) {
+	fn write(&mut self, value: &Self::Input) {
 		if let Some(duration) = value {
+			self.active = true;
 			self.t += duration.as_secs_f32();
 		} else {
+			self.active = false;
 			self.t = 0.0;
 		}
+	}
+
+	fn read(&self) -> Self::Output {
+		// TODO: Actually implement envelope resolution
+		if self.active { Some(1.0) } else { None }
 	}
 }
 
 #[derive(Debug, Clone, Copy, Default, Reflect)]
 pub struct AdsrEnvelope {
-	attack_time: Duration,
+	pub attack_time: Duration,
 	/// How does the attack duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
 	#[reflect(ignore)]
-	attack_fn: Option<fn(f32) -> f32>,
-	decay_time: Duration,
+	pub attack_fn: Option<fn(f32) -> f32>,
+	pub decay_time: Duration,
 	/// How does the decay duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
 	#[reflect(ignore)]
-	decay_fn: Option<fn(f32) -> f32>,
+	pub decay_fn: Option<fn(f32) -> f32>,
 	/// What value should be reached by decay. Should be between 0.0 and 1.0,
 	/// TODO: If there is any behavior regarding values outside of this range, mention it here
-	sustain_volume: f32,
+	pub sustain_volume: f32,
 	/// How long after release the action still be alive
-	release_time: Duration,
+	pub release_time: Duration,
 	/// How does the release duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
 	#[reflect(ignore)]
-	release_fn: Option<fn(f32) -> f32>,
+	pub release_fn: Option<fn(f32) -> f32>,
 }
 
 #[derive(Debug, Clone, Copy, Default, Reflect)]
