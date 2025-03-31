@@ -4,46 +4,46 @@ use bevy::{input::InputSystem, prelude::*};
 use derive_where::derive_where;
 
 use crate::{
-	ActionContext, ActionEnd, ActionEnvelopeState, ActionKey, ActionOnGoing, ActionStart,
+	Action, ActionContext, ActionEnd, ActionEnvelopeState, ActionOnGoing, ActionStart,
 	ActionSystem, ActionSystemFor,
 };
 
 /// Emit events
 #[derive_where(Default)]
-pub struct ActionTriggerPlugin<Action, Data = <Action as ActionKey>::ActionData>
+pub struct ActionTriggerPlugin<A, S = <A as Action>::Signal>
 where
-	Action: ActionKey<ActionData = Data>,
+	A: Action<Signal = S>,
 {
-	_phantom_data_action: PhantomData<Action>,
+	_phantom_data_action: PhantomData<A>,
 }
 
-impl<Action, Data> Plugin for ActionTriggerPlugin<Action, Data>
+impl<A, S> Plugin for ActionTriggerPlugin<A, S>
 where
-	Action: ActionKey<ActionData = Data>,
-	Data: 'static,
+	A: Action<Signal = S>,
+	S: 'static,
 {
 	fn build(&self, app: &mut App) {
 		// Clear actions before bevy would emit the current ones for this frame
 		app.configure_sets(
 			PreUpdate,
-			ActionSystemFor::<Action>::Trigger
+			ActionSystemFor::<A>::Trigger
 				.after(ActionSystem::Mapped)
 				.before(ActionSystem::Triggered),
 		);
 
 		app.add_systems(
 			PreUpdate,
-			trigger_actions::<Action, Data>.in_set(ActionSystemFor::<Action>::Trigger),
+			trigger_actions::<A, S>.in_set(ActionSystemFor::<A>::Trigger),
 		);
 	}
 }
 
-fn trigger_actions<Action, Data>(
+fn trigger_actions<A, S>(
 	mut commands: Commands,
-	action_context_query: Query<(Entity, &ActionContext<Action>)>,
+	action_context_query: Query<(Entity, &ActionContext<A>)>,
 ) where
-	Action: ActionKey<ActionData = Data>,
-	Data: 'static,
+	A: Action<Signal = S>,
+	S: 'static,
 {
 	for (target_entity, action_context) in action_context_query.iter() {
 		// TODO: Add an ActionTriggerTarget component to be able to trigger other entities too, just like action source, if it's not present, then trigger self

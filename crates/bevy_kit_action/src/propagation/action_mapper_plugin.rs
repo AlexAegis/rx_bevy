@@ -4,8 +4,8 @@ use bevy::prelude::*;
 use derive_where::derive_where;
 
 use crate::{
-	ActionContext, ActionEnvelopePhaseTransition, ActionEnvelopeState, ActionKey, ActionSource,
-	ActionState, ActionSystem, ActionSystemFor,
+	Action, ActionContext, ActionEnvelopePhaseTransition, ActionEnvelopeState, ActionSource,
+	ActionState, ActionSystem, ActionSystemFor, Signal,
 };
 
 use super::ActionMap;
@@ -16,24 +16,24 @@ use super::ActionMap;
 pub struct ActionMapPlugin<
 	FromAction,
 	ToAction,
-	FromData = <FromAction as ActionKey>::ActionData,
-	ToData = <ToAction as ActionKey>::ActionData,
+	FromData = <FromAction as Action>::Signal,
+	ToData = <ToAction as Action>::Signal,
 > where
-	FromAction: ActionKey<ActionData = FromData>,
-	ToAction: ActionKey<ActionData = ToData>,
-	ToData: From<FromAction::ActionData>,
+	FromAction: Action<Signal = FromData>,
+	ToAction: Action<Signal = ToData>,
+	ToData: From<FromAction::Signal>,
 {
 	_phantom_data_from_action: PhantomData<FromAction>,
 	_phantom_data_to_action: PhantomData<ToAction>,
 }
 
-impl<FromAction, ToAction, FromData, ToData> Plugin
-	for ActionMapPlugin<FromAction, ToAction, FromData, ToData>
+impl<FromAction, ToAction, FromSignal, ToSignal> Plugin
+	for ActionMapPlugin<FromAction, ToAction, FromSignal, ToSignal>
 where
-	FromAction: ActionKey<ActionData = FromData>,
-	ToAction: ActionKey<ActionData = ToData>,
-	FromData: 'static,
-	ToData: 'static + From<FromAction::ActionData>,
+	FromAction: Action<Signal = FromSignal>,
+	ToAction: Action<Signal = ToSignal>,
+	FromSignal: Signal + 'static,
+	ToSignal: Signal + 'static + From<FromAction::Signal>,
 {
 	fn build(&self, app: &mut App) {
 		app.configure_sets(
@@ -55,30 +55,36 @@ where
 		// it maps from is either created by a device, or manually entered
 		app.add_systems(
 			PreUpdate,
-			map_actions::<FromAction, ToAction, FromData, ToData>
+			map_actions::<FromAction, ToAction, FromSignal, ToSignal>
 				.in_set(ActionSystemFor::<ToAction>::Map),
 		);
 	}
 }
 
-fn map_actions<FromAction, ToAction, FromData, ToData>(
+fn map_actions<FromAction, ToAction, FromSignal, ToSignal>(
 	mut to_action_context_query: Query<(
 		&mut ActionContext<ToAction>,
-		&ActionMap<FromAction, ToAction, FromData, ToData>,
+		&ActionMap<FromAction, ToAction, FromSignal, ToSignal>,
 		&ActionSource<FromAction>,
 	)>,
 	from_action_context_query: Query<&ActionContext<FromAction>>,
 ) where
-	FromAction: ActionKey<ActionData = FromData>,
-	ToAction: ActionKey<ActionData = ToData>,
-	FromData: 'static,
-	ToData: 'static + From<FromAction::ActionData>,
+	FromAction: Action<Signal = FromSignal>,
+	ToAction: Action<Signal = ToSignal>,
+	FromSignal: Signal + 'static,
+	ToSignal: Signal + 'static + From<FromAction::Signal>,
 {
 	for (mut to_action_context, action_map, action_source) in to_action_context_query.iter_mut() {
 		// TODO: If FromAction is keyboard, automatically use that.
 		for from_action_context in from_action_context_query.iter_many(action_source.sources.iter())
 		{
-			let to_actions: Vec<ToAction> = to_action_context.actions.keys().copied().collect();
+			let a = to_action_context.actions.keys().map(|a| a);
+			let to_actions: Vec<ToSignal> = to_action_context
+				.actions
+				.keys()
+				.map(|a| a)
+				.copied()
+				.collect();
 			let last_frame_actions = to_action_context.last_frame_actions.clone(); // Clone to avoid borrowing issues
 
 			for to_action in to_actions {
@@ -100,14 +106,14 @@ fn map_actions<FromAction, ToAction, FromData, ToData>(
 
 impl<ToAction> ActionState<ToAction>
 where
-	ToAction: ActionKey,
+	ToAction: Action,
 {
 	fn apply<FromAction>(
 		&mut self,
 		other: &ActionState<FromAction>,
 		previous: Option<&ActionState<ToAction>>,
 	) where
-		FromAction: ActionKey,
+		FromAction: Action,
 	{
 		// TODO: If into is implemented, otherwise use a mapper function, OR forget this
 		// self.action = other.action.into();
@@ -115,10 +121,11 @@ where
 		// TODO: Not sure if this makes sense, maybe based on some action kind? Like ActionKind::Instant, Hold or whatever
 		//self.elapsed = other.elapsed.clone();
 		//self.phase = other.phase.clone();
-		self.active = other.active; // TODO: Only activate the to action, if a treshhold has been reached.
+		self.active = other.active; // TODO: Only activate the to action, if a treshold has been reached.
 	}
 }
 
+/// TODO: Maybe this whole envelop thing could be a condition or at least an optional things called actuation. then ADSR wouldn't be a prominent thing after all, just a feature. But then actions would need sockets? as subtypes and matching sockets could only be mapped together, or if one implements a Trait to convert. After all, the input really is just a boolean, lasting for a time (plus gamepad stuff and mouse, envelopes should be on top of them, optionally)
 fn determine_phase_transition(
 	previous_frame: &ActionEnvelopeState,
 	current_frame: &ActionEnvelopeState,

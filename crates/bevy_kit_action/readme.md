@@ -42,7 +42,7 @@ Schedule:
 ## TODO
 
 - Accumulator, what if multiple actions map to the same target action? By default I can just overwrite it with the latest, but an accumulator could combine them
-- Modifiers based off the ADSR value, it modifies ActionData
+- Modifiers based off the ADSR value, it modifies Signal
 - Conditions, when can an action trigger based on? idk, but it should return an enum,
 - Put keyboards and inputs behind features
 - Action mappings should be From<Action> impl based, but maybe a registry based one would be nice too

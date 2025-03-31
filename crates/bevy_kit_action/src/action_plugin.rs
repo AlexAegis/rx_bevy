@@ -1,6 +1,6 @@
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::{ActionKey, KeyboardInputActionPlugin};
+use crate::{Action, KeyboardInputActionPlugin};
 
 pub struct ActionPlugin;
 

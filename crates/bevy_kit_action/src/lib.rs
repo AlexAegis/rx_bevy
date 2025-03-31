@@ -4,6 +4,7 @@ mod context;
 mod events;
 mod input_devices;
 mod propagation;
+mod sockets;
 
 pub use action_plugin::*;
 pub use action_system_set::*;
@@ -11,3 +12,4 @@ pub use context::*;
 pub use events::*;
 pub use input_devices::*;
 pub use propagation::*;
+pub use sockets::*;

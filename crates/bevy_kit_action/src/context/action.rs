@@ -1,36 +1,42 @@
+use crate::{InputSocket, OutputSocket, Signal};
 use std::{fmt::Debug, hash::Hash};
-
-/// - GetTypeRegistration + Typed: Only if the "reflect" feature is enabled
 
 #[cfg(feature = "reflect")]
 use bevy::reflect::{GetTypeRegistration, Typed};
+
 #[cfg(not(feature = "reflect"))]
-pub trait ActionKeyBound: Send + Sync + 'static {}
+pub trait ActionBound: Send + Sync + 'static {}
 #[cfg(not(feature = "reflect"))]
-impl<T: Send + Sync + 'static> ActionKeyBound for T {}
+impl<T: Send + Sync + 'static> ActionBound for T {}
 /// GetTypeRegistration + Typed implies Send + Sync and 'static anyway
 #[cfg(feature = "reflect")]
-pub trait ActionKeyBound: GetTypeRegistration + Typed {}
+pub trait ActionBound: GetTypeRegistration + Typed {}
 #[cfg(feature = "reflect")]
-impl<T: GetTypeRegistration + Typed> ActionKeyBound for T {}
+impl<T: GetTypeRegistration + Typed> ActionBound for T {}
 
 /// The reason Actions are (usually) just unit structs, is that they are used as identifiers,
-/// if you want to store data along with an action, use the associated ActionData type
+/// if you want to store data along with an action, use the associated Signal type
 ///
 /// Required supertraits and their reasons:
 /// - Debug: For debugging
 /// - Eq + Hash: Used as a key in HashMaps
 /// - Copy: Mapping involves cloning the keys to use in two iterators
 /// - Send + Sync
+/// - GetTypeRegistration + Typed: Only if the "reflect" feature is enabled
 /// - 'static
 ///
-pub trait ActionKey: Copy + Eq + Hash + Debug + ActionKeyBound {
-	type ActionData: Default + Debug + ActionKeyBound;
+pub trait Action: Copy + Eq + Hash + Debug + ActionBound {
+	type Signal: Signal;
+	// TODO Does it actually need a separate input and output socket if there's only one signal?
+	/// How to get activated
+	type InputSocket: InputSocket;
+	/// What is outputted
+	type OutputSocket: OutputSocket;
 }
 
-/// TODO: Unsure if needed, probably for the envelopes/thresholds/deadzone
-pub(crate) enum ActionDimension {
-	Digital,
-	Analog2d,
-	Analog3d,
+/*
+pub trait Action: Copy + Eq + Hash + Debug + ActionBound {
+	type Signal: Default + Debug + ActionBound;
 }
+
+*/

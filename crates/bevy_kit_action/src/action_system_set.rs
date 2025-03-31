@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use super::ActionKey;
+use super::Action;
 use bevy::ecs::schedule::SystemSet;
 use derive_where::derive_where;
 
@@ -43,15 +43,15 @@ use derive_where::derive_where;
 /// 10. `ActionSystem::Triggered`: Nothing is executed here, it's for ordering
 #[derive(SystemSet, Hash, Debug, Clone, Eq, PartialEq)]
 pub enum ActionSystem {
-	/// This stage every ActionContext resets and all [ActionState][crate::ActionState]s
+	/// In this stage every ActionContext resets and all [ActionState][crate::ActionState]s
 	/// are moved to the previous frames [ActionState][crate::ActionState]
-	/// This is independent for each [ActionKey][crate::ActionKey] so this stage
+	/// This is independent for each [Action][crate::Action] so this stage
 	/// isn't generic.
 	Reset,
 	/// At this stage, all the inputs from actual input devices are collected,
 	/// but no mapping occurs.
 	/// If you want to programmatically fire Actions, this is where you should do it.
-	/// As this stage only operates on a select few known [ActionKey][crate::ActionKey]s
+	/// As this stage only operates on a select few known [Action][crate::Action]s
 	/// such as [KeyCode][bevy::prelude::KeyCode] and they are not supposed to
 	/// have mappings between each other, this stage is not generic.
 	Input,
@@ -67,7 +67,7 @@ pub enum ActionSystem {
 
 #[derive(SystemSet, Hash, Debug)]
 #[derive_where(Clone, Eq, PartialEq)]
-pub enum ActionSystemFor<A: ActionKey> {
+pub enum ActionSystemFor<A: Action> {
 	/// This is the stage where action `A` gets mapped from all its mappings
 	Map,
 	/// Notify entity observers about events

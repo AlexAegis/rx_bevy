@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
 
-use crate::{ActionEnvelopePhaseTransition, ActionEnvelopeState, ActionKey};
+use crate::{Action, ActionEnvelopePhaseTransition, ActionEnvelopeState};
 use bevy::{prelude::*, time::Stopwatch};
 
 #[derive(Component, Clone, Debug, Reflect)]
-pub struct ActionState<A: ActionKey> {
+pub struct ActionState<A: Action> {
 	pub action: A,
 	/// Is activation being supplied (A button being held)
 	pub active: bool,
@@ -16,7 +16,7 @@ pub struct ActionState<A: ActionKey> {
 	_p: PhantomData<A>,
 }
 
-impl<A: ActionKey> ActionState<A> {
+impl<A: Action> ActionState<A> {
 	pub fn new(action: A) -> Self {
 		Self {
 			_p: PhantomData,

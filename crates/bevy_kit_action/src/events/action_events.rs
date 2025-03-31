@@ -1,18 +1,18 @@
 use bevy::prelude::*;
 
-use crate::ActionKey;
+use crate::Action;
 
 #[derive(Event, Debug)]
-pub struct ActionStart<A: ActionKey> {
+pub struct ActionStart<A: Action> {
 	pub action: A,
 }
 
 #[derive(Event, Debug)]
-pub struct ActionOnGoing<A: ActionKey> {
+pub struct ActionOnGoing<A: Action> {
 	pub action: A,
 }
 
 #[derive(Event, Debug)]
-pub struct ActionEnd<A: ActionKey> {
+pub struct ActionEnd<A: Action> {
 	pub action: A,
 }

@@ -1,23 +1,21 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_kit_action::{
-	Action, ActionContext, ActionMapPlugin, ActionPlugin, ActionStart, KeyboardInputSignal,
-};
+use bevy_kit_action::{Action, ActionContext, ActionPlugin, ActionStart, BooleanSocket};
 
+/// No mapping, just directly interacting with keyboard actions
+/// TODO: what about socketed keycode actions
 fn main() -> AppExit {
 	App::new()
 		.add_plugins((DefaultPlugins, WorldInspectorPlugin::new()))
 		.add_plugins(ActionPlugin)
-		.add_plugins(ActionMapPlugin::<KeyCode, ExampleFireAction>::default())
 		.add_systems(Startup, setup)
-		.add_systems(Update, trigger_actions)
+		.add_systems(Update, trigger_action_manually)
 		.run()
 }
 
 #[derive(Resource)]
 struct ExampleEntities {
-	parent: Entity,
-	child: Entity,
+	target: Entity,
 }
 
 fn setup(mut commands: Commands) {
@@ -26,24 +24,13 @@ fn setup(mut commands: Commands) {
 		Transform::from_xyz(4., 4., 10.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
-	let child = {
-		let mut child = commands.spawn((
-			Name::new("child"),
-			ActionContext::<ExampleFireAction>::default(),
-		));
-		child.observe(handle_fire_action);
-		child.id()
+	let target = {
+		let mut entity = commands.spawn((Name::new("target"), ActionContext::<KeyCode>::default()));
+		entity.observe(handle_discrete_move_action);
+		entity.id()
 	};
 
-	let parent = {
-		let mut parent = commands.spawn(Name::new("parent"));
-		parent.observe(handle_fire_action);
-		parent.observe(handle_discrete_move_action);
-		parent.add_child(child);
-		parent.id()
-	};
-
-	commands.insert_resource(ExampleEntities { child, parent });
+	commands.insert_resource(ExampleEntities { target });
 }
 
 /// Every time this action is fired, it moves the target's translate a unit
@@ -58,25 +45,9 @@ enum ExampleDiscreteMoveAction {
 
 impl Action for ExampleDiscreteMoveAction {
 	// const DIMENSION: ActionDimension = ActionDimension::;
-	type Signal = ExampleFireSignal;
-}
-
-#[derive(Event, Clone, Copy, Debug, Eq, PartialEq, Hash, Reflect)]
-struct ExampleFireAction;
-
-/// NewTypes for action data conversion
-#[derive(Debug, Default, Reflect)]
-struct ExampleFireSignal(u8);
-
-impl Action for ExampleFireAction {
-	// const DIMENSION: ActionDimension = ActionDimension::;
-	type Signal = ExampleFireSignal;
-}
-
-impl From<KeyboardInputSignal> for ExampleFireSignal {
-	fn from(value: KeyboardInputSignal) -> Self {
-		Self(if *value { 1 } else { 0 })
-	}
+	type Signal = bool;
+	type InputSocket = BooleanSocket;
+	type OutputSocket = BooleanSocket;
 }
 
 fn handle_discrete_move_action(
@@ -102,23 +73,14 @@ fn handle_discrete_move_action(
 	}
 }
 
-fn handle_fire_action(trigger: Trigger<ActionStart<ExampleFireAction>>, name_query: Query<&Name>) {
-	println!(
-		"test_event triggered {:?} on {:?} name: {}",
-		trigger.event(),
-		trigger.entity(),
-		name_query.get(trigger.entity()).unwrap_or(&Name::default())
-	);
-}
-
-fn trigger_actions(
+fn trigger_action_manually(
 	keyboard_input: Res<ButtonInput<KeyCode>>,
 	mut commands: Commands,
 	entities: Res<ExampleEntities>,
 ) {
 	if keyboard_input.just_pressed(KeyCode::Digit1) {
-		commands.trigger_targets(ExampleFireAction, entities.parent);
+		commands.trigger_targets(ExampleDiscreteMoveAction::Left, entities.target);
 	} else if keyboard_input.just_pressed(KeyCode::Digit2) {
-		commands.trigger_targets(ExampleFireAction, entities.child);
+		commands.trigger_targets(ExampleDiscreteMoveAction::Right, entities.target);
 	}
 }

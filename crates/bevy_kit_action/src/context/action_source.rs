@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::ActionKey;
+use crate::Action;
 use bevy::{prelude::*, time::Stopwatch, utils::HashMap};
 use derive_where::derive_where;
 
@@ -9,7 +9,7 @@ use derive_where::derive_where;
 /// still get manually triggered.
 #[derive(Component, Clone, Debug, Reflect)]
 #[derive_where(Default)]
-pub struct ActionSource<A: ActionKey> {
+pub struct ActionSource<A: Action> {
 	_p: PhantomData<A>,
 	pub sources: Vec<Entity>,
 }

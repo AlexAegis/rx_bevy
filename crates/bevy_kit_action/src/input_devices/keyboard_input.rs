@@ -4,7 +4,10 @@ use bevy::{
 	time::Stopwatch,
 };
 
-use crate::{ActionContext, ActionEnvelopeState, ActionKey, ActionState, ActionSystem};
+use crate::{
+	Action, ActionContext, ActionEnvelopeState, ActionState, ActionSystem, AdsrSocket,
+	BooleanSocket, Signal, SignalDimension,
+};
 
 pub struct KeyboardInputActionPlugin;
 
@@ -26,12 +29,18 @@ impl Plugin for KeyboardInputActionPlugin {
 pub struct KeyboardActionSink;
 
 fn setup_keyboard_sink(mut commands: Commands) {
-	commands.spawn((KeyboardActionSink, ActionContext::<KeyCode>::default()));
+	commands.spawn((
+		KeyboardActionSink,
+		ActionContext::<KeyboardPressAction>::default(),
+	));
 }
 
 fn keyboard_to_direct_input_action(
 	mut keyboard_input_event_reader: EventReader<KeyboardInput>,
-	mut keyboard_sink_query: Query<&mut ActionContext<KeyCode>, With<KeyboardActionSink>>,
+	mut keyboard_sink_query: Query<
+		&mut ActionContext<KeyboardPressAction>,
+		With<KeyboardActionSink>,
+	>,
 	#[cfg(feature = "dev")] frame_count: Res<bevy::core::FrameCount>,
 ) {
 	let Ok(mut keyboard_sink_action_context) = keyboard_sink_query.get_single_mut() else {
@@ -51,8 +60,9 @@ fn keyboard_to_direct_input_action(
 		let action_state = keyboard_sink_action_context
 			.actions
 			.entry(keyboard_event.key_code)
-			.or_insert_with(|| ActionState::<KeyCode>::new(keyboard_event.key_code));
+			.or_insert_with(|| ActionState::<KeyboardPressAction>::new(keyboard_event.key_code));
 
+		// A direct activation of the action
 		match keyboard_event.state {
 			ButtonState::Pressed => {
 				action_state.elapsed = Stopwatch::new();
@@ -66,11 +76,26 @@ fn keyboard_to_direct_input_action(
 	}
 }
 
-#[derive(Default, Debug, Deref, Reflect)]
-pub struct KeyboardInputActionData {
-	active: bool,
+impl Signal for KeyCode {
+	const DIMENSION: SignalDimension = SignalDimension::ONE;
 }
 
-impl ActionKey for KeyCode {
-	type ActionData = KeyboardInputActionData;
+#[derive(Reflect, Debug, Hash, PartialEq, Eq, Clone, Copy)]
+struct KeyboardPressAction;
+
+impl Action for KeyboardPressAction {
+	type Signal = KeyCode;
+	type InputSocket = BooleanSocket;
+	type OutputSocket = BooleanSocket;
+}
+
+#[derive(Reflect, Debug, Hash, PartialEq, Eq, Clone, Copy)]
+struct KeyboardAdsrAction;
+
+impl Action for KeyboardAdsrAction {
+	type Signal = KeyCode;
+	type InputSocket = BooleanSocket;
+	type OutputSocket = AdsrSocket;
+	// TODO: Expand on this idea, is this the same thing as Signal or not? data is not needed for now so lets just rename or reuse that
+	// type Socket = ActionSocketBoolean;
 }
