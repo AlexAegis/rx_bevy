@@ -1,12 +1,9 @@
 use std::marker::PhantomData;
 
-use bevy::{input::InputSystem, prelude::*};
+use bevy::prelude::*;
 use derive_where::derive_where;
 
-use crate::{
-	Action, ActionContext, ActionEnd, ActionEnvelopeState, ActionOnGoing, ActionStart,
-	ActionSystem, ActionSystemFor,
-};
+use crate::{Action, ActionContext, ActionSystem, ActionSystemFor};
 
 /// Emit events
 #[derive_where(Default)]

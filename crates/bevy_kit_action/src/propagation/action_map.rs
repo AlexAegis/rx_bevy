@@ -15,7 +15,7 @@ where
 	ToAction: Action,
 {
 	#[deref]
-	pub action_map: HashMap<ToAction, FromAction>,
+	pub action_map: HashMap<FromAction, ToAction>,
 	_phantom_data_from_action: PhantomData<FromAction>,
 	_phantom_data_to_action: PhantomData<ToAction>,
 }

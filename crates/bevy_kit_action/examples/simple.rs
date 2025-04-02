@@ -1,12 +1,14 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_kit_action::{Action, ActionContext, ActionMapPlugin, ActionPlugin, ActionStart};
+use bevy_kit_action::{
+	Action, ActionContext, ActionMapPlugin, ActionPlugin, ActionStart, FromConverter,
+};
 
 fn main() -> AppExit {
 	App::new()
 		.add_plugins((DefaultPlugins, WorldInspectorPlugin::new()))
 		.add_plugins(ActionPlugin)
-		.add_plugins(ActionMapPlugin::<KeyCode, ExampleFireAction>::default())
+		.add_plugins(ActionMapPlugin::<KeyCode, ExampleFireAction, FromConverter>::default())
 		.add_systems(Startup, setup)
 		.add_systems(Update, trigger_actions)
 		.run()

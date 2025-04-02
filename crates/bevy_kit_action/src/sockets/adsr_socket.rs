@@ -1,24 +1,25 @@
-use super::{InputSocket, OutputSocket, action_socket::SocketDataContainer};
 use std::time::Duration;
 
 use bevy::prelude::*;
 
+use super::SignalTerminal;
+
 // TODO: Maybe the socket could hold the envelope settings? Maybe not.
 #[derive(Default)]
-pub struct AdsrSocket {
+pub struct AdsrSignalTransformer {
 	active: bool,
 	/// How far into the envelope are we in time
 	/// TODO: Maybe this too should be optional, or with a separate active flag
 	t: f32,
-	envelope: AdsrEnvelope,
+	_envelope: AdsrEnvelope,
 }
 
 /// An Adsr socket can be fed with duration
-impl SocketDataContainer for AdsrSocket {
+impl SignalTerminal for AdsrSignalTransformer {
 	type Input = Option<Duration>;
 	type Output = Option<f32>;
 
-	fn write(&mut self, value: &Self::Input) {
+	fn write(&mut self, value: Self::Input) {
 		if let Some(duration) = value {
 			self.active = true;
 			self.t += duration.as_secs_f32();
@@ -28,9 +29,9 @@ impl SocketDataContainer for AdsrSocket {
 		}
 	}
 
-	fn read(&self) -> Self::Output {
+	fn read(&self) -> &Self::Output {
 		// TODO: Actually implement envelope resolution
-		if self.active { Some(1.0) } else { None }
+		if self.active { &Some(1.0) } else { &None }
 	}
 }
 

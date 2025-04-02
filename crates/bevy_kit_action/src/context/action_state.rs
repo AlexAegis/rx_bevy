@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{Action, ActionEnvelopePhaseTransition, ActionEnvelopeState};
+use crate::{Action, ActionEnvelopePhaseTransition};
 use bevy::{prelude::*, time::Stopwatch};
 
 /// TODO: REmove in favor of sockets

@@ -1,10 +1,37 @@
 # bevy_kit_action
 
-TODO: Rename to bevy_socketed_actions? Or bevy_action_socket? bevy_sock?
+TODO: Rename to bevy_socketed_actions? Or bevy_action_socket? bevy_sock? signals?
 
 An input mapper solution
 
-## Features
+## Concepts
+
+- Signal
+  - Type: Anything
+  - Data that is being routed around and read, changes of the signal can
+    trigger events
+  - Analogy: Electricity in a wire
+- Action (Wire)
+  - Type: Struct/Enum
+  - An Action is a type that carries a signal as its value to distinguish between
+    different signals.
+- Socket
+  - TODO: A type that defines the shape a signal
+- ??? Container
+  - Type: Component
+  - Holds a signals value, can be used to query it.
+- ??? Converter
+  - An input and output socket pair where the data
+    type differs, and conversion happens
+  - Example: a `bool` is converted into an `f32` of `0.0` and `1.0`
+- ??? Mapper
+  - Maybe this is the same as a converter
+- ??? Writing into an Action
+  - Actions induce signal changes
+  - Analogy: Flipping a light switch, which has a wire connected to it, and by
+    flipping the switch, you increase the voltage in the wire.
+
+## Cargo Features
 
 TODO: Review and describe the remaining features
 

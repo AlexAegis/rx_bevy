@@ -1,19 +1,9 @@
-use std::marker::PhantomData;
-
 use bevy::{
-	input::{
-		ButtonState, InputSystem,
-		keyboard::{Key, KeyboardInput},
-	},
+	input::{ButtonState, InputSystem, keyboard::KeyboardInput},
 	prelude::*,
-	time::Stopwatch,
-	utils::HashSet,
 };
 
-use crate::{
-	Action, ActionContext, ActionEnvelopeState, ActionSocket, ActionState, ActionSystem,
-	AdsrSocket, InputSocket, OutputSocket, Signal, SignalDimension,
-};
+use crate::{Action, ActionSocket, ActionSystem, SocketInput};
 
 pub struct KeyboardInputActionPlugin;
 
@@ -64,7 +54,7 @@ fn forward_keyboard_to_socket(
 				continue;
 			}
 
-			keyboard_socket.write(&keyboard_event.key_code, &value);
+			keyboard_socket.write(&keyboard_event.key_code, value);
 		}
 	}
 }
@@ -74,15 +64,11 @@ pub struct KeyboardInputSocketOptions {
 	allow_repeat: bool,
 }
 
-impl Signal for KeyCode {
-	const DIMENSION: SignalDimension = SignalDimension::ZERO;
-}
-
 impl Action for KeyCode {
-	type Signal = Self;
+	type Signal = bool;
 }
 
-pub type KeyboardInputSocket = ActionSocket<KeyCode, bool>;
+pub type KeyboardInputSocket = ActionSocket<KeyCode>;
 /*
 #[derive(Component, Debug)]
 struct KeyCodeSocket<K> {

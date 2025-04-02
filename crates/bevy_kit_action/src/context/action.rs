@@ -14,6 +14,7 @@ pub trait ActionBound: GetTypeRegistration + Typed {}
 #[cfg(feature = "reflect")]
 impl<T: GetTypeRegistration + Typed> ActionBound for T {}
 
+// TODO: Maybe rename Actions to Channel, or Wire or something
 /// The reason Actions are (usually) just unit structs, is that they are used as identifiers,
 /// if you want to store data along with an action, use the associated Signal type
 ///
@@ -24,7 +25,6 @@ impl<T: GetTypeRegistration + Typed> ActionBound for T {}
 /// - Send + Sync
 /// - GetTypeRegistration + Typed: Only if the "reflect" feature is enabled
 /// - 'static
-/// TODO: An action is a signal, that is the data payload that can fit into a socket
 pub trait Action: Copy + Eq + Hash + Debug + ActionBound {
 	// What is passed into a compatible socket
 	type Signal: Signal;
