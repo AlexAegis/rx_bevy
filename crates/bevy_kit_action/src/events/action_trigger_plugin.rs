@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::prelude::*;
 use derive_where::derive_where;
 
-use crate::{Action, ActionContext, ActionSystem, ActionSystemFor};
+use crate::{Action, ActionSocket, ActionSystem, ActionSystemFor, Signal};
 
 /// Emit events
 #[derive_where(Default)]
@@ -17,7 +17,7 @@ where
 impl<A, S> Plugin for ActionTriggerPlugin<A, S>
 where
 	A: Action<Signal = S>,
-	S: 'static,
+	S: Signal + 'static,
 {
 	fn build(&self, app: &mut App) {
 		// Clear actions before bevy would emit the current ones for this frame
@@ -35,16 +35,22 @@ where
 	}
 }
 
-fn trigger_actions<A, S>(
-	mut commands: Commands,
-	action_context_query: Query<(Entity, &ActionContext<A>)>,
-) where
+fn trigger_actions<A, S>(mut commands: Commands, action_socket_query: Query<&mut ActionSocket<A>>)
+where
 	A: Action<Signal = S>,
-	S: 'static,
+	S: Signal + 'static,
 {
-	for (target_entity, action_context) in action_context_query.iter() {
+	for action_socket in action_socket_query.iter() {
 		// TODO: Add an ActionTriggerTarget component to be able to trigger other entities too, just like action source, if it's not present, then trigger self
-		for (action, action_state) in action_context.actions.iter() {
+		for (action, action_state) in action_socket.iter_signals() {
+			// TODO: impl apply
+			// TODO: FROM HERE !!!!! BufferedTransformerStage
+			// TODO: FROM HERE !!!!! BufferedTransformerStage
+			// TODO: FROM HERE !!!!! BufferedTransformerStage
+			// TODO: FROM HERE !!!!!
+			// TODO: FROM HERE !!!!!
+			// TODO: FROM HERE !!!!!
+			//	action_state.apply()
 			// match action_state.phase {
 			//     ActionEnvelopeState::Attack => ActionOnGoing { action },
 			//     ActionEnvelopeState::Active => ActionOnGoing{ action },

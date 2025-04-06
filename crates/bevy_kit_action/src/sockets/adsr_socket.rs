@@ -2,10 +2,10 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use super::SignalTerminal;
+use super::{AdsrEnvelopePhaseTransition, SignalTerminalInput, SignalTerminalOutput};
 
 // TODO: Maybe the socket could hold the envelope settings? Maybe not.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct AdsrSignalTransformer {
 	active: bool,
 	/// How far into the envelope are we in time
@@ -14,12 +14,13 @@ pub struct AdsrSignalTransformer {
 	_envelope: AdsrEnvelope,
 }
 
-/// An Adsr socket can be fed with duration
-impl SignalTerminal for AdsrSignalTransformer {
-	type Input = Option<Duration>;
-	type Output = Option<f32>;
+// pub type AdsSignalTransformerStage = BufferedTransformerStage<bool, f32, AdsrSignalTransformer>;
 
-	fn write(&mut self, value: Self::Input) {
+/// An Adsr socket can be fed with duration
+impl SignalTerminalInput for AdsrSignalTransformer {
+	type Signal = Option<Duration>;
+
+	fn write(&mut self, value: Self::Signal) {
 		if let Some(duration) = value {
 			self.active = true;
 			self.t += duration.as_secs_f32();
@@ -28,10 +29,27 @@ impl SignalTerminal for AdsrSignalTransformer {
 			self.t = 0.0;
 		}
 	}
+}
 
-	fn read(&self) -> &Self::Output {
-		// TODO: Actually implement envelope resolution
-		if self.active { &Some(1.0) } else { &None }
+#[derive(Debug)]
+pub struct AdsrOutputSignal {
+	phase_transition: Option<AdsrEnvelopePhaseTransition>,
+	value: f32,
+}
+
+impl SignalTerminalOutput for AdsrSignalTransformer {
+	type Signal = Option<AdsrOutputSignal>;
+
+	fn read(&self) -> &Self::Signal {
+		// TODO: Actually implement envelope resolution, maybe resolve on write
+		if self.active {
+			&Some(AdsrOutputSignal {
+				phase_transition: None,
+				value: 0.0,
+			})
+		} else {
+			&None
+		}
 	}
 }
 

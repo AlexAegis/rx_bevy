@@ -1,8 +1,8 @@
-use bevy::prelude::*;
+use bevy::{app::ctrlc::Signal, prelude::*, utils::hashbrown::HashMap};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
 	Action, ActionMapPlugin, ActionPlugin, ActionSocket, IdentityConverter, KeyboardInputSocket,
-	SocketChannelMap,
+	SocketChannelMap, SocketConnector,
 };
 
 /// Simple mapping example
@@ -29,20 +29,24 @@ fn setup(
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
-	let mut action_map = SocketChannelMap::<KeyCode, ExampleDiscreteMoveAction>::default();
+	// let mut action_map = SocketChannelMap::<KeyCode, ExampleDiscreteMoveAction>::default();
+	let mut action_map = HashMap::<KeyCode, ExampleDiscreteMoveAction>::default();
 	action_map.insert(KeyCode::KeyW, ExampleDiscreteMoveAction::Up);
 	action_map.insert(KeyCode::KeyA, ExampleDiscreteMoveAction::Left);
 	action_map.insert(KeyCode::KeyS, ExampleDiscreteMoveAction::Down);
 	action_map.insert(KeyCode::KeyD, ExampleDiscreteMoveAction::Right);
 
+	let socket_connector = SocketConnector::<KeyCode, ExampleDiscreteMoveAction>::default();
+
 	commands.spawn((
 		Name::new("target"),
 		Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
-		KeyboardInputSocket::default(),
-		action_map, // ? how do we know what data to read, and to write
+		ActionSocket::<KeyCode>::default(),
+		socket_connector,
 		ActionSocket::<ExampleDiscreteMoveAction>::default(),
-	));
+		// BufferedTransformerStage::<bool, f32, AdsrSignalTransformer>::default(),
+	)); // .observe(|t: Trigger<Write, ActionSocket::<ExampleDiscreteMoveAction>>|);
 }
 
 /// Every time this action is fired, it moves the target's translate a unit

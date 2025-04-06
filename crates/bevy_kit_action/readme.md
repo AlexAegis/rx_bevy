@@ -11,11 +11,13 @@ An input mapper solution
   - Data that is being routed around and read, changes of the signal can
     trigger events
   - Analogy: Electricity in a wire
-- Action (Wire)
+- Action/Channel (Wire)
   - Type: Struct/Enum
   - An Action is a type that carries a signal as its value to distinguish between
     different signals.
 - Socket
+  - Holds data for a channel
+  - Holds connections with other sockets
   - TODO: A type that defines the shape a signal
 - ??? Container
   - Type: Component

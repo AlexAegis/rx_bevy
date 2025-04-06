@@ -8,12 +8,16 @@ use bevy::prelude::*;
 /// TODO: maybe not true: Signals must have a default state, this is their natural state in a "wire"
 /// when nothing is acting upon them.
 /// Signals have to be Copy to copy them fast between terminals
+/// Signals must have Defaults, if your signal doesn't, wrap them in an Option.
+/// Just like how the buttons on your keyboard don't lose their state when you're
+/// not pressing them (they are `false`), and how the electricity in your cable
+/// doesn't cease to exist, only drop to `0` volt.
 ///
 /// [SignalDimension::ZERO] -> `bool`; digital input like a keypress
 /// [SignalDimension::ONE] -> `f32`; linear input like a gamepad trigger
 /// [SignalDimension::TWO] -> `Vec2`; 2d input like a gamepad joystick
 /// [SignalDimension::THREE] -> `Vec3`; 3d input like a gyroscope
-pub trait Signal: Copy + Send + Sync + Debug {}
+pub trait Signal: Default + Copy + Send + Sync + Debug {}
 
 /// Digital input like a keypress
 impl Signal for bool {}
@@ -26,6 +30,8 @@ impl Signal for Vec2 {}
 
 /// 3d input like a gyroscope
 impl Signal for Vec3 {}
+
+/*
 
 pub trait SignalConverter<FromSignal, ToSignal>:
 	Send + Sync + Component + Resource + FromWorld
@@ -57,3 +63,5 @@ where
 		*from_signal
 	}
 }
+
+*/

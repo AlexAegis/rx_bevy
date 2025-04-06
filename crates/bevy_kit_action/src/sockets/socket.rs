@@ -6,12 +6,23 @@ use crate::Action;
 /// what action wrote it and would read it from it
 ///
 /// Default is required so data can be always written into it.
-pub trait SignalTerminal: Default {
+pub trait SignalTerminal:
+	SignalTerminalInput<Signal = Self::Input> + SignalTerminalOutput<Signal = Self::Output>
+{
 	type Input;
 	type Output;
+}
 
-	fn write(&mut self, value: Self::Input);
-	fn read(&self) -> &Self::Output;
+pub trait SignalTerminalInput: Default + std::fmt::Debug {
+	type Signal;
+
+	fn write(&mut self, value: Self::Signal);
+}
+
+pub trait SignalTerminalOutput: Default + std::fmt::Debug {
+	type Signal;
+
+	fn read(&self) -> &Self::Signal;
 }
 
 /*
@@ -21,14 +32,14 @@ pub trait SignalContainer: SignalTransformer<Input = Data, Output = Data> {
 
 /// An input for an action that will then write it into a container
 pub trait SocketInput<A: Action> {
-	type Input;
+	type Signal;
 
 	// TODO: Error handling?
-	fn write(&mut self, action: &A, value: Self::Input);
+	fn write(&mut self, action: &A, value: Self::Signal);
 }
 
 pub trait SocketOutput<A: Action> {
-	type Output;
+	type Signal;
 
-	fn read(&self, action: &A) -> Option<&Self::Output>;
+	fn read(&self, action: &A) -> Option<&Self::Signal>;
 }

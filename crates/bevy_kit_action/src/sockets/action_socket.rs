@@ -1,150 +1,76 @@
-use bevy::{ecs::component::Component, utils::HashMap};
+use std::marker::PhantomData;
+
+use bevy::{
+	ecs::{component::Component, entity::Entity},
+	render::render_resource::Buffer,
+	utils::HashMap,
+};
 use derive_where::derive_where;
 
-use crate::Action;
+use crate::{Action, IdentitySignalTransformer, SignalBuffer, SignalContainer, SignalTransformer};
 
-use super::{Signal, SignalTerminal, SocketInput, SocketOutput};
+use super::{Signal, SocketInput, SocketOutput};
 
+#[derive(Debug, Default)]
+pub enum SocketConnection {
+	#[default]
+	This,
+	Entity(Entity),
+}
+
+// TODO: Is it possible to "auto-register" plugins using hooks? As you need systems to make each action-buffer-transformer config work
+/// It's a connector, whatever is plugged into the outside with
 #[derive(Component, Debug)]
 #[derive_where(Default)]
-pub struct ActionSocket<A: Action> {
-	state: HashMap<A, SignalContainer<A::Signal>>,
+pub struct ActionSocket<
+	A: Action,
+	Buffer: SignalBuffer<A::Signal>, // Automatically determine based on the transformer // = SignalContainer<<A as Action>::Signal>
+> {
+	pub(crate) state: HashMap<A, Buffer>,
 }
-
-impl<A: Action> ActionSocket<A> {
-	pub fn iter(&self) -> impl Iterator<Item = (&A, &<A as Action>::Signal)> {
-		self.state.iter().filter_map(|(action, container)| {
-			container.read().as_ref().map(|signal| (action, signal))
-		})
-	}
-}
-
-impl<A: Action> SocketInput<A> for ActionSocket<A> {
-	type Input = A::Signal;
-
-	fn write(&mut self, action: &A, value: Self::Input) {
-		self.state.entry(*action).or_default().write(Some(value));
-	}
-}
-
-impl<A: Action> SocketOutput<A> for ActionSocket<A> {
-	type Output = A::Signal;
-
-	fn read(&self, action: &A) -> Option<&Self::Output> {
-		self.state
-			.get(action)
-			.and_then(|container| container.read().as_ref())
-	}
-}
-
+/*
+/// TODO: Does this have to exist in this shape? transformer stages should be chainable, maybe an aggregation is needed
 #[derive(Debug)]
 #[derive_where(Default)]
-pub struct SignalContainer<T> {
-	pub state: Option<T>,
+pub struct SignalSocketConfiguration<
+	I: Signal,
+	O: Signal,
+	InputBuffer: SignalBuffer<I>, // TODO: Make a stage type, one buffer+ one transformer
+	Transformer: SignalTransformer<InputSignal = I, OutputSignal = O, Buffer = InputBuffer>,
+	OutputBuffer: SignalBuffer<O>,
+> {
+	input_buffer: InputBuffer,
+	transformer: Transformer,
+	output_buffer: OutputBuffer,
+	_phantom_data: PhantomData<O>,
 }
-
-impl<S> SignalTerminal for SignalContainer<S>
-where
-	S: Signal,
-{
-	type Input = Option<S>;
-	type Output = Option<S>;
-
-	fn read(&self) -> &Self::Output {
-		&self.state
-	}
-
-	fn write(&mut self, value: Self::Input) {
-		self.state = value;
-	}
-}
-
-/*
-impl<T> SignalTerminal for T
-where
-	T: Signal + Default,
-{
-	type Input = Self;
-	type Output = Self;
-
-	fn read<'a>(&'a self) -> &'a Self::Output {
-		&self
-	}
-
-	fn write(&mut self, value: &Self::Input) {
-		*self = *value;
-	}
-}
-
-impl<T> SignalTerminal for Option<T>
-where
-	T: Signal,
-{
-	type Input = Self;
-	type Output = Self;
-
-	fn read<'a>(&'a self) -> &'a Self::Output {
-		&self
-	}
-
-	fn write(&mut self, value: &Self::Input) {
-		*self = *value;
-	}
-}*//*
-
-/// TODO: Not sure if this is actually helping anything, it just ignores action
-impl<A, T: SignalTerminal<Output = A::Signal>> SocketOutput<A> for T
-where
-	A: Action,
-{
-	type Output = A::Signal;
-
-	fn read(&self, _action: &A) -> Option<&Self::Output> {
-		Some(self.read())
-	}
-}
-
-impl<A, T: SignalTerminal<Input = A::Signal>> SocketInput<A> for T
-where
-	A: Action,
-{
-	type Input = A::Signal;
-
-	fn write(&mut self, _action: &A, value: &Self::Input) {
-		self.write(value);
-	}
-}*/
-
-/*
-// TODO: Could the HashMap<A, SocketState> pattern be extracted for simpler socket implementations?
-/// Simple on/off socket
-#[derive(Default, Debug)]
-pub struct BooleanDataContainer {
-	pub state: bool,
-}
-
-impl SignalTerminal for BooleanDataContainer {
-	type Input = bool;
-	type Output = bool;
-
-	fn read(&self) -> Self::Input {
+*/
+impl<A: Action, Buffer: SignalBuffer<A::Signal>> ActionSocket<A, Buffer> {
+	pub fn iter_signals(&self) -> impl Iterator<Item = (&A, &A::Signal)> {
 		self.state
+			.iter()
+			.map(|(action, container)| (action, container.read()))
 	}
 
-	fn write(&mut self, value: &Self::Input) {
-		self.state = *value;
+	pub fn iter_buffers(&self) -> impl Iterator<Item = (&A, &Buffer)> {
+		self.state.iter()
 	}
-}*/
-/*
-impl SignalTerminal for bool {
-	type Input = bool;
-	type Output = bool;
+}
 
-	fn read(&self) -> &Self::Input {
-		self
-	}
+impl<A: Action, Buffer: SignalBuffer<A::Signal>> SocketInput<A> for ActionSocket<A, Buffer> {
+	type Signal = A::Signal;
 
-	fn write(&mut self, value: &Self::Input) {
-		*self = *value;
+	fn write(&mut self, action: &A, value: Self::Signal) {
+		self.state.entry(*action).or_default().push(value);
 	}
-}*/
+}
+
+impl<A: Action, Buffer: SignalBuffer<A::Signal>> SocketOutput<A> for ActionSocket<A, Buffer> {
+	type Signal = A::Signal;
+
+	fn read(&self, action: &A) -> Option<&Self::Signal> {
+		self.state
+			.get(action)
+			.map(|configuration| configuration.read())
+	}
+}

@@ -36,7 +36,7 @@ pub enum ActionEnvelopeState {
 /// other transitions are only present for a single frame, and can be used
 /// in the same fashion as `just_pressed`
 #[derive(Clone, Debug, Default, Reflect)]
-pub enum ActionEnvelopePhaseTransition {
+pub enum AdsrEnvelopePhaseTransition {
 	/// Used between any other transition, mostly when no transition happens
 	#[default]
 	None,
@@ -65,28 +65,28 @@ pub enum ActionEnvelopePhaseTransition {
 fn determine_phase_transition(
 	previous_frame: &ActionEnvelopeState,
 	current_frame: &ActionEnvelopeState,
-) -> ActionEnvelopePhaseTransition {
+) -> AdsrEnvelopePhaseTransition {
 	match (previous_frame, current_frame) {
 		(ActionEnvelopeState::None, ActionEnvelopeState::Attack) => {
-			ActionEnvelopePhaseTransition::Start
+			AdsrEnvelopePhaseTransition::Start
 		}
 		(ActionEnvelopeState::None, ActionEnvelopeState::Decay) => {
 			// When there is no attackTime
-			ActionEnvelopePhaseTransition::Fire
+			AdsrEnvelopePhaseTransition::Fire
 		}
 
 		(ActionEnvelopeState::Attack, ActionEnvelopeState::Decay) => {
-			ActionEnvelopePhaseTransition::Fire
+			AdsrEnvelopePhaseTransition::Fire
 		}
 		(ActionEnvelopeState::Decay, ActionEnvelopeState::Sustain) => {
-			ActionEnvelopePhaseTransition::Sustain
+			AdsrEnvelopePhaseTransition::Sustain
 		}
 		(ActionEnvelopeState::Sustain, ActionEnvelopeState::Release) => {
-			ActionEnvelopePhaseTransition::Release
+			AdsrEnvelopePhaseTransition::Release
 		}
 		(ActionEnvelopeState::Release, ActionEnvelopeState::None) => {
-			ActionEnvelopePhaseTransition::End
+			AdsrEnvelopePhaseTransition::End
 		}
-		_ => ActionEnvelopePhaseTransition::None,
+		_ => AdsrEnvelopePhaseTransition::None,
 	}
 }
