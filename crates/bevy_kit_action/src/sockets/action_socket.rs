@@ -1,15 +1,12 @@
-use std::marker::PhantomData;
-
 use bevy::{
 	ecs::{component::Component, entity::Entity},
-	render::render_resource::Buffer,
 	utils::HashMap,
 };
 use derive_where::derive_where;
 
-use crate::{Action, IdentitySignalTransformer, SignalBuffer, SignalContainer, SignalTransformer};
+use crate::{Action, SignalBuffer, SignalContainer};
 
-use super::{Signal, SocketInput, SocketOutput};
+use super::{SocketInput, SocketOutput};
 
 #[derive(Debug, Default)]
 pub enum SocketConnection {
@@ -22,11 +19,8 @@ pub enum SocketConnection {
 /// It's a connector, whatever is plugged into the outside with
 #[derive(Component, Debug)]
 #[derive_where(Default)]
-pub struct ActionSocket<
-	A: Action,
-	Buffer: SignalBuffer<A::Signal>, // Automatically determine based on the transformer // = SignalContainer<<A as Action>::Signal>
-> {
-	pub(crate) state: HashMap<A, Buffer>,
+pub struct ActionSocket<A: Action> {
+	pub(crate) state: HashMap<A, SignalContainer<<A as Action>::Signal>>,
 }
 /*
 /// TODO: Does this have to exist in this shape? transformer stages should be chainable, maybe an aggregation is needed
@@ -45,19 +39,15 @@ pub struct SignalSocketConfiguration<
 	_phantom_data: PhantomData<O>,
 }
 */
-impl<A: Action, Buffer: SignalBuffer<A::Signal>> ActionSocket<A, Buffer> {
+impl<A: Action> ActionSocket<A> {
 	pub fn iter_signals(&self) -> impl Iterator<Item = (&A, &A::Signal)> {
 		self.state
 			.iter()
-			.map(|(action, container)| (action, container.read()))
-	}
-
-	pub fn iter_buffers(&self) -> impl Iterator<Item = (&A, &Buffer)> {
-		self.state.iter()
+			.map(|(action, container)| (action, container.get_state()))
 	}
 }
 
-impl<A: Action, Buffer: SignalBuffer<A::Signal>> SocketInput<A> for ActionSocket<A, Buffer> {
+impl<A: Action> SocketInput<A> for ActionSocket<A> {
 	type Signal = A::Signal;
 
 	fn write(&mut self, action: &A, value: Self::Signal) {
@@ -65,12 +55,12 @@ impl<A: Action, Buffer: SignalBuffer<A::Signal>> SocketInput<A> for ActionSocket
 	}
 }
 
-impl<A: Action, Buffer: SignalBuffer<A::Signal>> SocketOutput<A> for ActionSocket<A, Buffer> {
+impl<A: Action> SocketOutput<A> for ActionSocket<A> {
 	type Signal = A::Signal;
 
 	fn read(&self, action: &A) -> Option<&Self::Signal> {
 		self.state
 			.get(action)
-			.map(|configuration| configuration.read())
+			.map(|configuration| configuration.get_state())
 	}
 }

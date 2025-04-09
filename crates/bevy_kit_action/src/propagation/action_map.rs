@@ -1,7 +1,7 @@
 use bevy::{prelude::*, utils::HashMap};
 use derive_where::derive_where;
 
-use crate::{Action, IdentitySignalTransformer, Signal, SignalTransformer};
+use crate::{Action, SignalFromTransformer, SignalTransformer};
 
 /// Describes what actions are getting activated by what other actions.
 /// If the FromAction is a KeyCode, you can think of this as your key-bindings.
@@ -22,7 +22,7 @@ where
 pub struct SocketConnector<
 	FromAction,
 	ToAction,
-	SigT, //  = IdentitySignalTransformer<<ToAction as Action>::Signal>,
+	SigT = SignalFromTransformer<<FromAction as Action>::Signal, <ToAction as Action>::Signal>,
 > where
 	FromAction: Action,
 	ToAction: Action,

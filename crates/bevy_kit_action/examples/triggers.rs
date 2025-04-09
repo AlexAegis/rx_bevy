@@ -1,8 +1,8 @@
-use bevy::{app::ctrlc::Signal, prelude::*, utils::hashbrown::HashMap};
+use bevy::{, prelude::*, utils::hashbrown::HashMap};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionMapPlugin, ActionPlugin, ActionSocket, IdentityConverter, KeyboardInputSocket,
-	SocketChannelMap, SocketConnector,
+	Action, ActionPlugin, ActionSocket, 
+	 SignalContainer,  SocketConnector, SocketMapPlugin,
 };
 
 /// Simple mapping example
@@ -12,7 +12,13 @@ fn main() -> AppExit {
 		.add_plugins((DefaultPlugins, WorldInspectorPlugin::new()))
 		.add_plugins((
 			ActionPlugin,
-			ActionMapPlugin::<KeyCode, ExampleDiscreteMoveAction, IdentityConverter>::default(),
+			SocketMapPlugin::<
+				KeyCode,
+				ExampleDiscreteMoveAction,
+				IdentityConverter,
+				SignalContainer<bool>,
+				SignalContainer<bool>,
+			>::default(),
 		))
 		.add_systems(Startup, setup)
 		.add_systems(Update, directly_handle_discrete_move_action)

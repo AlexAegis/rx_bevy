@@ -15,9 +15,7 @@ impl<S: Signal> SignalBuffer<S> for SignalContainer<S> {
 	fn push(&mut self, value: S) {
 		self.signal = value;
 	}
-	fn read(&self) -> &Self::BufferOutput {
-		&self.signal
-	}
+
 	fn get_state(&self) -> &Self::BufferOutput {
 		&self.signal
 	}

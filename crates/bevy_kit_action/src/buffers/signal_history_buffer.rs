@@ -8,7 +8,6 @@ pub trait SignalBuffer<S: Signal>: Default {
 	type BufferOutput;
 
 	fn push(&mut self, value: S);
-	fn read(&self) -> &S;
 	fn get_state(&self) -> &Self::BufferOutput;
 }
 
@@ -26,9 +25,15 @@ impl<S: Signal> SignalBuffer<S> for LastFrameBuffer<S> {
 		self.current_signal = value;
 	}
 
-	fn read(&self) -> &S {
-		&self.current_signal
+	fn get_state(&self) -> &Self::BufferOutput {
+		&self
 	}
+}
+
+impl<S: Signal> SignalBuffer<S> for () {
+	type BufferOutput = ();
+
+	fn push(&mut self, _value: S) {}
 
 	fn get_state(&self) -> &Self::BufferOutput {
 		&self
@@ -61,10 +66,6 @@ impl<const L: usize, S: Signal> SignalBuffer<S> for FrameHistoryBuffer<L, S> {
 		}
 
 		self.history[self.cursor] = value;
-	}
-
-	fn read(&self) -> &S {
-		&self.history[self.cursor]
 	}
 
 	fn get_state(&self) -> &Self::BufferOutput {

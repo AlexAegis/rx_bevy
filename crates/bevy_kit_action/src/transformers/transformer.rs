@@ -22,15 +22,20 @@ impl<InputSignal: Signal + 'static, OutputSignal: Signal + 'static> Plugin
 fn apply_signal_transformations() {}
 
 pub trait SignalTransformer: Default {
-	type BufferState;
+	type Buffer: SignalBuffer<Self::InputSignal>;
 	type InputSignal: Signal;
 	type OutputSignal: Signal;
 
-	fn transform(
-		&mut self,
-		buffer: &Self::BufferState,
-		signal: &Self::InputSignal,
-	) -> Self::OutputSignal;
+	fn transform(&self, signal: &Self::InputSignal, buffer: &Self::Buffer) -> Self::OutputSignal;
+
+	fn transform_signal(&self, signal: &Self::InputSignal) -> Self::OutputSignal {
+		self.transform(signal, self.get_buffer())
+	}
+
+	fn write_buffer(&mut self, signal: &Self::InputSignal);
+
+	fn get_buffer(&self) -> &Self::Buffer;
+	//fn read(&self) -> Self::OutputSignal;
 }
 
 #[derive(Resource)]
@@ -40,16 +45,18 @@ pub struct IdentitySignalTransformer<S: Signal> {
 }
 
 impl<S: Signal> SignalTransformer for IdentitySignalTransformer<S> {
-	type BufferState = Self::InputSignal;
+	type Buffer = ();
 	type InputSignal = S;
 	type OutputSignal = Self::InputSignal;
 
-	fn transform(
-		&mut self,
-		_buffer: &Self::BufferState,
-		signal: &Self::InputSignal,
-	) -> Self::OutputSignal {
+	fn transform(&self, signal: &Self::InputSignal, _buffer: &Self::Buffer) -> Self::OutputSignal {
 		*signal
+	}
+
+	fn write_buffer(&mut self, _signal: &Self::InputSignal) {}
+
+	fn get_buffer(&self) -> &Self::Buffer {
+		&()
 	}
 }
 
@@ -63,38 +70,45 @@ pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<Fro
 impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> SignalTransformer
 	for SignalFromTransformer<FromSignal, ToSignal>
 {
-	type BufferState = FromSignal;
+	type Buffer = ();
 	type InputSignal = FromSignal;
 	type OutputSignal = ToSignal;
 
-	fn transform(
-		&mut self,
-		_buffer: &Self::BufferState,
-		signal: &Self::InputSignal,
-	) -> Self::OutputSignal {
+	fn transform(&self, signal: &Self::InputSignal, _buffer: &Self::Buffer) -> Self::OutputSignal {
 		ToSignal::from(*signal)
+	}
+
+	fn write_buffer(&mut self, _signal: &Self::InputSignal) {}
+
+	fn get_buffer(&self) -> &Self::Buffer {
+		&()
 	}
 }
 
 #[derive_where(Default)]
 pub struct ChangeTrackingTransformer<S: Signal> {
+	buffer: LastFrameBuffer<S>,
 	_phantom_data_signal: PhantomData<S>,
 }
 
 impl<S: Signal + PartialEq> SignalTransformer for ChangeTrackingTransformer<S> {
-	type BufferState = LastFrameBuffer<Self::InputSignal>;
+	type Buffer = LastFrameBuffer<S>;
 	type InputSignal = S;
 	type OutputSignal = bool;
 
-	fn transform(
-		&mut self,
-		buffer: &Self::BufferState,
-		_signal: &Self::InputSignal,
-	) -> Self::OutputSignal {
+	fn transform(&self, _signal: &Self::InputSignal, buffer: &Self::Buffer) -> Self::OutputSignal {
 		let state = buffer.get_state();
 		state
 			.last_frame_data
 			.is_some_and(|last_frame_signal| last_frame_signal == state.current_signal)
+	}
+
+	fn write_buffer(&mut self, signal: &Self::InputSignal) {
+		self.buffer.push(*signal);
+	}
+
+	fn get_buffer(&self) -> &Self::Buffer {
+		&self.buffer
 	}
 }
 

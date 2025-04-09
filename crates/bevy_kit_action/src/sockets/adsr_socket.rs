@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use super::{AdsrEnvelopePhaseTransition, SignalTerminalInput, SignalTerminalOutput};
 
 // TODO: Maybe the socket could hold the envelope settings? Maybe not.
+
 #[derive(Default, Debug)]
 pub struct AdsrSignalTransformer {
 	active: bool,

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionMapPlugin, ActionPlugin, ActionSocket, IdentityConverter, KeyboardInputSocket,
+	Action, SocketMapPlugin, ActionPlugin, ActionSocket, IdentityConverter, KeyboardInputSocket,
 	SocketChannelMap,
 };
 
@@ -12,7 +12,7 @@ fn main() -> AppExit {
 		.add_plugins((DefaultPlugins, WorldInspectorPlugin::new()))
 		.add_plugins((
 			ActionPlugin,
-			ActionMapPlugin::<KeyCode, ExampleDiscreteMoveAction, IdentityConverter>::default(),
+			SocketMapPlugin::<KeyCode, ExampleDiscreteMoveAction, IdentityConverter>::default(),
 		))
 		.add_systems(Startup, setup)
 		.add_systems(Update, directly_handle_discrete_move_action)
