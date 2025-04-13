@@ -19,6 +19,13 @@ impl Plugin for KeyboardInputActionSocketPlugin {
 				.in_set(ActionSystem::InputSocketWrite)
 				.after(InputSystem),
 		);
+
+		// app.add_systems(
+		// 	PreUpdate,
+		// 	forward_keyboard_res_to_socket
+		// 		.in_set(ActionSystem::InputSocketWrite)
+		// 		.after(InputSystem),
+		// );
 	}
 }
 
@@ -27,7 +34,7 @@ impl Plugin for KeyboardInputActionSocketPlugin {
 pub struct KeyboardActionSink;
 
 fn setup_keyboard_sink(mut commands: Commands) {
-	commands.spawn((KeyboardActionSink, KeyboardInputSocket::default()));
+	commands.spawn((KeyboardActionSink, KeyboardInputSocket::new_latching()));
 }
 
 fn forward_keyboard_to_socket(
@@ -61,6 +68,31 @@ fn forward_keyboard_to_socket(
 	}
 }
 
+fn forward_keyboard_res_to_socket(
+	keyboard_input_event_reader: Res<ButtonInput<KeyCode>>,
+	mut keyboard_socket_query: Query<(
+		&mut KeyboardInputSocket,
+		Option<&KeyboardInputSocketOptions>,
+	)>,
+	#[cfg(feature = "dev")] frame_count: Res<bevy::core::FrameCount>,
+) {
+	for keyboard_event in keyboard_input_event_reader.get_pressed() {
+		#[cfg(feature = "dev")]
+		trace!("keyboard event {:?} {:?}", &keyboard_event, frame_count);
+
+		for (mut keyboard_socket, keyboard_socket_options) in keyboard_socket_query.iter_mut() {
+			if !keyboard_socket_options
+				.map(|p| p.allow_repeat)
+				.unwrap_or_default()
+			{
+				continue;
+			}
+
+			keyboard_socket.write(&keyboard_event, true);
+		}
+	}
+}
+
 #[derive(Component, Default, Debug)]
 pub struct KeyboardInputSocketOptions {
 	allow_repeat: bool,
@@ -71,26 +103,3 @@ impl Action for KeyCode {
 }
 
 pub type KeyboardInputSocket = ActionSocket<KeyCode>;
-/*
-#[derive(Component, Debug)]
-struct KeyCodeSocket<K> {
-	is_pressed: bool,
-	_phantom_data_key: PhantomData<K>,
-}
-
-impl<K> OutputSocket<K> for KeyCodeSocket<K> {
-	type Data = bool;
-	fn read(&self) -> Self::Data {
-		self.is_pressed
-	}
-}
-
-/// TODO: Maybe this implementation shouldn't exist
-impl<K> InputSocket<K> for KeyCodeSocket<K> {
-	type Data = bool;
-
-	fn write(&mut self, value: &Self::Data) {
-		self.is_pressed = *value;
-	}
-}
-*/

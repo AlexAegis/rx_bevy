@@ -32,28 +32,27 @@ pub struct SocketConnectorDefaultTransformer<
 	phantom_data_to_action: PhantomData<ToAction>,
 }
 
-#[derive(Component)]
+#[cfg(feature = "inspector")]
+use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
+
+#[derive(Component, Reflect)]
 #[derive_where(Default)]
-pub struct SocketConnector<
-	C,
-	FromAction,
-	ToAction,
-	Transformer = SignalFromTransformer<
-		<FromAction as Action>::Signal,
-		<ToAction as Action>::Signal,
-	>,
-> where
+#[cfg_attr(feature = "inspector", derive(InspectorOptions))]
+#[cfg_attr(feature = "inspector", reflect(Component, InspectorOptions))]
+pub struct SocketConnector<C, FromAction, ToAction, Transformer>
+where
 	FromAction: Action,
 	ToAction: Action,
 	Transformer:
 		SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
 	C: Clock,
 {
+	#[reflect(ignore)]
 	pub default_transformer_constructor: Option<fn() -> Transformer>,
-	/// TODO: Maybe join it into one MappingConfig<Transformer::Config>
 	pub(crate) signal_transformer_state: HashMap<ToAction, Transformer>,
 	pub action_map: HashMap<FromAction, ToAction>,
-	phantom_data_clock: PhantomData<C>, //pub signal_transformer: Transformer,
+	#[reflect(ignore)]
+	phantom_data_clock: PhantomData<C>,
 }
 
 impl<C, FromAction, ToAction, Transformer> SocketConnector<C, FromAction, ToAction, Transformer>

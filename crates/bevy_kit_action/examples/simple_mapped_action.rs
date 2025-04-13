@@ -38,8 +38,12 @@ fn setup(
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
-	let mut socket_connector =
-		SocketConnector::<Virtual, KeyCode, ExampleDiscreteMoveAction>::default();
+	let mut socket_connector = SocketConnector::<
+		Virtual,
+		KeyCode,
+		ExampleDiscreteMoveAction,
+		SignalFromTransformer<bool, bool>,
+	>::default();
 
 	socket_connector
 		.action_map

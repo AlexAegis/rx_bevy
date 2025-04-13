@@ -3,6 +3,9 @@ use derive_where::derive_where;
 
 use crate::{Action, SignalContainer};
 
+#[cfg(feature = "inspector")]
+use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
+
 #[derive(Debug, Default)]
 pub enum SocketConnection {
 	#[default]
@@ -10,13 +13,28 @@ pub enum SocketConnection {
 	Entity(Entity),
 }
 
-#[derive(Component, Deref, DerefMut, Debug)]
+#[derive(Component, Deref, DerefMut, Debug, Reflect)]
+#[cfg_attr(feature = "inspector", derive(InspectorOptions))]
+#[cfg_attr(feature = "inspector", reflect(Component, InspectorOptions))]
 #[derive_where(Default)]
 pub struct ActionSocket<A: Action> {
+	#[deref]
 	state: HashMap<A, SignalContainer<<A as Action>::Signal>>,
+	/// Normally after every frame, signals reset to their default value
+	/// when this option is true, they don't, and a new write is required to
+	/// change their signals.
+	/// This mainly exist for events that toggle signals like keyboard events.
+	pub latching: bool,
 }
 
 impl<A: Action> ActionSocket<A> {
+	pub fn new_latching() -> Self {
+		Self {
+			latching: true,
+			..Default::default()
+		}
+	}
+
 	pub fn iter_signals(&self) -> impl Iterator<Item = (&A, &A::Signal)> {
 		self.state
 			.iter()

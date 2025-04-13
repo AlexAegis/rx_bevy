@@ -14,17 +14,26 @@ pub struct ActionSocketPlugin<A: Action> {
 
 impl<A: Action> Plugin for ActionSocketPlugin<A> {
 	fn build(&self, app: &mut App) {
+		app.register_type::<ActionSocket<A>>();
+
 		app.add_systems(
 			PreUpdate,
-			set_last_frame_data::<A>.in_set(ActionSystem::Reset),
+			set_last_frame_data::<A>
+				.in_set(ActionSystem::Reset)
+				.before(ActionSystem::InputSocketWrite),
 		);
 	}
 }
 
 fn set_last_frame_data<A: Action>(mut action_socket_query: Query<&mut ActionSocket<A>>) {
 	for mut action_socket in action_socket_query.iter_mut() {
+		let is_latching = action_socket.latching;
 		for (_, signal_container) in action_socket.iter_mut() {
-			signal_container.last_frame_signal = std::mem::take(&mut signal_container.signal);
+			if is_latching {
+				signal_container.last_frame_signal = signal_container.signal;
+			} else {
+				signal_container.last_frame_signal = std::mem::take(&mut signal_container.signal);
+			}
 		}
 	}
 }

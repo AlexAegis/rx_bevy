@@ -9,9 +9,7 @@ use super::{
 	determine_phase_transition,
 };
 
-// TODO: Maybe the socket could hold the envelope settings? Maybe not.
-#[derive(Default, Debug, Clone)]
-
+#[derive(Default, Debug, Clone, Reflect)]
 pub struct AdsrSignalBuffer {
 	adsr_envelope_phase: AdsrEnvelopePhase,
 	input_signal: bool,
@@ -52,9 +50,8 @@ impl SignalBuffer for AdsrSignalBuffer {
 	}
 }
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Reflect)]
 pub struct AdsrSignalTransformer {
-	// TODO: Doesn't make any sense here, has to be per action
 	pub(crate) buffer: AdsrSignalBuffer,
 	envelope: AdsrEnvelope,
 }
@@ -70,6 +67,7 @@ impl AdsrSignalTransformer {
 
 // pub type AdsSignalTransformerStage = BufferedTransformerStage<bool, f32, AdsrSignalTransformer>;
 
+/// TODO: maybe join buffers and transformers, it's pretty lame rn, the transformer layer is pretty much empty. Also check TODO below
 /// An Adsr socket can be fed with duration
 impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 	type Buffer = AdsrSignalBuffer;
@@ -77,13 +75,14 @@ impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 	type OutputSignal = AdsrOutputSignal;
 
 	fn read(&self) -> Self::OutputSignal {
+		// TODO: Would make more sense to evaluate on write, but the envelope settings arent available there, hence the idea to join them
 		let (adsr_envelope_phase, value) = self
 			.envelope
 			.evaluate(self.buffer.t, self.buffer.input_signal);
 
 		AdsrOutputSignal {
 			adsr_envelope_phase,
-			phase_transition: None,
+			phase_transition: self.buffer.adsr_phase_transition,
 			value,
 			t: self.buffer.t,
 		}
@@ -98,10 +97,10 @@ impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 	}
 }
 
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Debug, Copy, Clone, Default, Reflect)]
 pub struct AdsrOutputSignal {
 	pub adsr_envelope_phase: AdsrEnvelopePhase,
-	pub phase_transition: Option<AdsrEnvelopePhaseTransition>,
+	pub phase_transition: AdsrEnvelopePhaseTransition,
 	pub t: Duration,
 	pub value: f32,
 }

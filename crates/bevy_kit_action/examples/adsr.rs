@@ -64,7 +64,7 @@ fn setup(
 		Name::new("target"),
 		Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
-		ActionSocket::<KeyCode>::default(),
+		ActionSocket::<KeyCode>::new_latching(), // this wont be here, but read from the keyboards own entity once inter-entity connectors are implemented
 		socket_connector,
 		ActionSocket::<ExampleAdsrMoveAction>::default(),
 	));
@@ -96,7 +96,7 @@ fn handle_adsr_signal_movement(
 				ExampleAdsrMoveAction::Right => Vec3::X,
 			};
 			let can = match signal.phase_transition {
-				Some(AdsrEnvelopePhaseTransition::Fire) => true,
+				AdsrEnvelopePhaseTransition::Fire => true,
 				_ => false,
 			};
 

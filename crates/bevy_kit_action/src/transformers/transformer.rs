@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use bevy::prelude::*;
+use bevy::{
+	prelude::*,
+	reflect::{GetTypeRegistration, Typed},
+};
 use derive_where::derive_where;
 
 use crate::{Clock, LastFrameBuffer, Signal, SignalBuffer, SignalContainer, SimpleSignalBuffer};
@@ -21,7 +24,9 @@ impl<InputSignal: Signal + 'static, OutputSignal: Signal + 'static> Plugin
 
 fn apply_signal_transformations() {}
 
-pub trait SignalTransformer<C: Clock>: Default + Clone {
+pub trait SignalTransformer<C: Clock>:
+	Default + Clone + Reflect + GetTypeRegistration + Typed + FromReflect
+{
 	type Buffer: SignalBuffer<InputSignal = Self::InputSignal, OutputSignal = Self::OutputSignal>;
 	type InputSignal: Signal;
 	type OutputSignal: Signal;
@@ -48,11 +53,12 @@ pub trait SignalTransformer<C: Clock>: Default + Clone {
 	//fn read(&self) -> Self::OutputSignal;
 }
 
-#[derive(Resource, Clone)]
+#[derive(Resource, Clone, Reflect)]
 #[derive_where(Default)]
 pub struct IdentitySignalTransformer<S: Signal> {
 	// TODO: No need for buffering
 	_buffer: SimpleSignalBuffer<S, S>,
+	#[reflect(ignore)]
 	_phantom_data_signal: PhantomData<S>,
 }
 
@@ -74,12 +80,14 @@ impl<S: Signal, C: Clock> SignalTransformer<C> for IdentitySignalTransformer<S> 
 	}
 }
 
-#[derive(Resource, Debug, Clone)]
+#[derive(Resource, Debug, Clone, Reflect)]
 #[derive_where(Default)]
 pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> {
 	// TODO: No need for buffering
 	_buffer: SimpleSignalBuffer<FromSignal, ToSignal>,
+	#[reflect(ignore)]
 	_phantom_data_signal: PhantomData<FromSignal>,
+	#[reflect(ignore)]
 	_phantom_data_to_signal: PhantomData<ToSignal>,
 }
 
@@ -103,10 +111,11 @@ impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>, C: Clock> SignalTr
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Reflect)]
 #[derive_where(Default)]
 pub struct ChangeTrackingTransformer<S: Signal> {
 	buffer: LastFrameBuffer<S, bool>,
+	#[reflect(ignore)]
 	_phantom_data_signal: PhantomData<S>,
 }
 

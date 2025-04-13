@@ -43,6 +43,8 @@ impl AdsrEnvelope {
 			_ => LINEAR,
 		};
 
+		// TODO: Finish signal strength calculation
+
 		(phase, 0.0)
 	}
 

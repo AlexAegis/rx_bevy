@@ -1,6 +1,7 @@
 use crate::Signal;
 use std::{fmt::Debug, hash::Hash};
 
+use bevy::reflect::{FromReflect, Reflect};
 #[cfg(feature = "reflect")]
 use bevy::reflect::{GetTypeRegistration, Typed};
 
@@ -25,7 +26,9 @@ impl<T: GetTypeRegistration + Typed> ActionBound for T {}
 /// - Send + Sync
 /// - GetTypeRegistration + Typed: Only if the "reflect" feature is enabled
 /// - 'static
-pub trait Action: Copy + Eq + Hash + Debug + ActionBound {
+pub trait Action:
+	Copy + Eq + Hash + Debug + ActionBound + Reflect + GetTypeRegistration + Typed + FromReflect
+{
 	// What is passed into a compatible socket
 	type Signal: Signal;
 }

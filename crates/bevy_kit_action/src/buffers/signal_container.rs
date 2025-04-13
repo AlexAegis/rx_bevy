@@ -1,7 +1,9 @@
+use bevy::reflect::Reflect;
+
 use crate::Signal;
 
 /// The most trivial signal buffer, holds a single value
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Reflect)]
 pub struct SignalContainer<S: Signal> {
 	pub signal: S,
 	/// For change detection.

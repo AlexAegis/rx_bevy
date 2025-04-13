@@ -23,11 +23,12 @@ pub trait SignalBuffer: Default + Send + Sync {
 	fn read(&self) -> &Self::BufferOutput;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Reflect)]
 #[derive_where(Default)]
 pub struct SimpleSignalBuffer<InputSignal: Signal, OutputSignal: Signal> {
 	pub signal: InputSignal,
-	phantom_data_output_signal: PhantomData<OutputSignal>,
+	#[reflect(ignore)]
+	_phantom_data_output_signal: PhantomData<OutputSignal>,
 }
 
 impl<InputSignal: Signal, OutputSignal: Signal> SignalBuffer
@@ -74,7 +75,7 @@ impl<InputSignal: Signal, OutputSignal: Signal> SignalBuffer
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Reflect)]
 #[derive_where(Default)]
 pub struct LastFrameBuffer<InputSignal: Signal, OutputSignal: Signal> {
 	pub last_frame_input_signal: Option<InputSignal>,

@@ -1,6 +1,9 @@
 use std::fmt::Debug;
 
-use bevy::prelude::*;
+use bevy::{
+	prelude::*,
+	reflect::{GetTypeRegistration, Typed},
+};
 
 /// A signal is something that can get activated and activate, it's only data
 /// is a single value based on it's dimensionality.
@@ -17,7 +20,10 @@ use bevy::prelude::*;
 /// [SignalDimension::ONE] -> `f32`; linear input like a gamepad trigger
 /// [SignalDimension::TWO] -> `Vec2`; 2d input like a gamepad joystick
 /// [SignalDimension::THREE] -> `Vec3`; 3d input like a gyroscope
-pub trait Signal: Default + Copy + Send + Sync + Debug {}
+pub trait Signal:
+	Default + Copy + Send + Sync + Debug + Reflect + GetTypeRegistration + Typed + FromReflect
+{
+}
 
 /// Digital input like a keypress
 impl Signal for bool {}
