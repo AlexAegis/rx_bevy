@@ -1,9 +1,9 @@
-use bevy::prelude::*;
+use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, SocketMapPlugin, ActionPlugin, ActionSocket, IdentityConverter, KeyboardInputSocket,
-	SocketChannelMap,
+	Action, ActionPlugin, ActionSocket, SignalFromTransformer, SocketConnector, SocketMapPlugin,
 };
+use examples_common::send_event;
 
 /// Simple mapping example
 /// TODO: what about socketed keycode actions
@@ -12,9 +12,18 @@ fn main() -> AppExit {
 		.add_plugins((DefaultPlugins, WorldInspectorPlugin::new()))
 		.add_plugins((
 			ActionPlugin,
-			SocketMapPlugin::<KeyCode, ExampleDiscreteMoveAction, IdentityConverter>::default(),
+			SocketMapPlugin::<
+				Virtual,
+				KeyCode,
+				ExampleDiscreteMoveAction,
+				SignalFromTransformer<bool, bool>,
+			>::default(),
 		))
 		.add_systems(Startup, setup)
+		.add_systems(
+			Update,
+			send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
+		)
 		.add_systems(Update, directly_handle_discrete_move_action)
 		.run()
 }
@@ -29,18 +38,28 @@ fn setup(
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
-	let mut action_map = SocketChannelMap::<KeyCode, ExampleDiscreteMoveAction>::default();
-	action_map.insert(KeyCode::KeyW, ExampleDiscreteMoveAction::Up);
-	action_map.insert(KeyCode::KeyA, ExampleDiscreteMoveAction::Left);
-	action_map.insert(KeyCode::KeyS, ExampleDiscreteMoveAction::Down);
-	action_map.insert(KeyCode::KeyD, ExampleDiscreteMoveAction::Right);
+	let mut socket_connector =
+		SocketConnector::<Virtual, KeyCode, ExampleDiscreteMoveAction>::default();
+
+	socket_connector
+		.action_map
+		.insert(KeyCode::KeyW, ExampleDiscreteMoveAction::Up);
+	socket_connector
+		.action_map
+		.insert(KeyCode::KeyA, ExampleDiscreteMoveAction::Left);
+	socket_connector
+		.action_map
+		.insert(KeyCode::KeyS, ExampleDiscreteMoveAction::Down);
+	socket_connector
+		.action_map
+		.insert(KeyCode::KeyD, ExampleDiscreteMoveAction::Right);
 
 	commands.spawn((
 		Name::new("target"),
 		Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
-		KeyboardInputSocket::default(),
-		action_map, // ? how do we know what data to read, and to write
+		ActionSocket::<KeyCode>::default(),
+		socket_connector,
 		ActionSocket::<ExampleDiscreteMoveAction>::default(),
 	));
 }

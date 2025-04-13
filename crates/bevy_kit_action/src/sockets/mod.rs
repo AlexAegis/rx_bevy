@@ -1,12 +1,16 @@
 mod action_socket;
+mod action_state;
+mod adsr_envelope;
 mod adsr_envelope_state;
-mod adsr_socket;
+mod adsr_signal_transformer;
 mod dynamic_socket;
 mod signal;
-mod socket;
+mod signal_transformer_plugin;
 
 pub use action_socket::*;
+pub use action_state::*;
+pub use adsr_envelope::*;
 pub use adsr_envelope_state::*;
-pub use adsr_socket::*;
+pub use adsr_signal_transformer::*;
 pub use signal::*;
-pub use socket::*;
+pub use signal_transformer_plugin::*;

@@ -47,3 +47,4 @@ bevy-inspector-egui = { version = "0.30.0", default-features = false }
 bevy_egui = { version = "0.33.0", features = ["immutable_ctx"] }
 bevy_kit_action = { path = "crates/bevy_kit_action" }
 derive-where = { version = "1.2.7" }
+examples_common = { path = "crates/examples_common" }

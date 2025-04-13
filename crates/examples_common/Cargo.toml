@@ -1,0 +1,22 @@
+[package]
+name = "examples_common"
+version = "0.1.0"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev"]
+dev = ["bevy/dynamic_linking"]
+
+[dependencies]
+bevy = { workspace = true, default-features = false }
+derive-where = { workspace = true }

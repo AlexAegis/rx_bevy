@@ -3,7 +3,7 @@ use bevy::{
 	prelude::*,
 };
 
-use crate::{Action, ActionSocket, ActionSystem, SignalContainer, SocketInput};
+use crate::{Action, ActionSocket, ActionSystem};
 
 pub struct KeyboardInputActionPlugin;
 

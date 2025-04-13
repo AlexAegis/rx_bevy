@@ -1,17 +1,18 @@
+use bevy::prelude::*;
 use derive_where::derive_where;
 
-use crate::Signal;
+use crate::{Clock, Signal};
 
-///
-/// TODO: Maybe this could be combined with the SignalContainer
-pub trait SignalBuffer<S: Signal>: Default {
+/// Buffers are only written once per frame, but can be read multiple times,
+/// so try to do most work during write
+pub trait SignalBuffer<S: Signal>: Default + Send + Sync {
 	type BufferOutput;
 
-	fn push(&mut self, value: S);
-	fn get_state(&self) -> &Self::BufferOutput;
+	fn write<C: Clock>(&mut self, value: S, time: &Res<Time<C>>);
+	fn read(&self) -> &Self::BufferOutput;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[derive_where(Default)]
 pub struct LastFrameBuffer<S: Signal> {
 	pub last_frame_data: Option<S>,
@@ -20,12 +21,12 @@ pub struct LastFrameBuffer<S: Signal> {
 
 impl<S: Signal> SignalBuffer<S> for LastFrameBuffer<S> {
 	type BufferOutput = Self;
-	fn push(&mut self, value: S) {
+	fn write<C: Clock>(&mut self, value: S, _time: &Res<Time<C>>) {
 		self.last_frame_data = Some(self.current_signal);
 		self.current_signal = value;
 	}
 
-	fn get_state(&self) -> &Self::BufferOutput {
+	fn read(&self) -> &Self::BufferOutput {
 		&self
 	}
 }
@@ -33,9 +34,9 @@ impl<S: Signal> SignalBuffer<S> for LastFrameBuffer<S> {
 impl<S: Signal> SignalBuffer<S> for () {
 	type BufferOutput = ();
 
-	fn push(&mut self, _value: S) {}
+	fn write<C: Clock>(&mut self, _value: S, _time: &Res<Time<C>>) {}
 
-	fn get_state(&self) -> &Self::BufferOutput {
+	fn read(&self) -> &Self::BufferOutput {
 		&self
 	}
 }
@@ -59,7 +60,7 @@ impl<const L: usize, S: Signal> SignalBuffer<S> for FrameHistoryBuffer<L, S> {
 	// TODO: Change the return type to an array or something that makes sense when reading it, or maybe just forget the cursor business and rotate on write
 	type BufferOutput = [S; L];
 
-	fn push(&mut self, value: S) {
+	fn write<C: Clock>(&mut self, value: S, _time: &Res<Time<C>>) {
 		self.cursor += 1;
 		if self.cursor == L - 1 {
 			self.cursor = 0;
@@ -68,7 +69,7 @@ impl<const L: usize, S: Signal> SignalBuffer<S> for FrameHistoryBuffer<L, S> {
 		self.history[self.cursor] = value;
 	}
 
-	fn get_state(&self) -> &Self::BufferOutput {
+	fn read(&self) -> &Self::BufferOutput {
 		&self.history // TODO: Not rotated, maybe could be ignored if it rotates on write
 	}
 }

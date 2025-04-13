@@ -1,58 +1,7 @@
+use bevy::prelude::*;
 use std::time::Duration;
 
-use bevy::prelude::*;
-
-use super::{AdsrEnvelopePhaseTransition, SignalTerminalInput, SignalTerminalOutput};
-
-// TODO: Maybe the socket could hold the envelope settings? Maybe not.
-
-#[derive(Default, Debug)]
-pub struct AdsrSignalTransformer {
-	active: bool,
-	/// How far into the envelope are we in time
-	/// TODO: Maybe this too should be optional, or with a separate active flag
-	t: f32,
-	_envelope: AdsrEnvelope,
-}
-
-// pub type AdsSignalTransformerStage = BufferedTransformerStage<bool, f32, AdsrSignalTransformer>;
-
-/// An Adsr socket can be fed with duration
-impl SignalTerminalInput for AdsrSignalTransformer {
-	type Signal = Option<Duration>;
-
-	fn write(&mut self, value: Self::Signal) {
-		if let Some(duration) = value {
-			self.active = true;
-			self.t += duration.as_secs_f32();
-		} else {
-			self.active = false;
-			self.t = 0.0;
-		}
-	}
-}
-
-#[derive(Debug)]
-pub struct AdsrOutputSignal {
-	phase_transition: Option<AdsrEnvelopePhaseTransition>,
-	value: f32,
-}
-
-impl SignalTerminalOutput for AdsrSignalTransformer {
-	type Signal = Option<AdsrOutputSignal>;
-
-	fn read(&self) -> &Self::Signal {
-		// TODO: Actually implement envelope resolution, maybe resolve on write
-		if self.active {
-			&Some(AdsrOutputSignal {
-				phase_transition: None,
-				value: 0.0,
-			})
-		} else {
-			&None
-		}
-	}
-}
+use super::AdsrEnvelopePhase;
 
 #[derive(Debug, Clone, Copy, Default, Reflect)]
 pub struct AdsrEnvelope {
@@ -71,6 +20,7 @@ pub struct AdsrEnvelope {
 	/// What value should be reached by decay. Should be between 0.0 and 1.0,
 	/// TODO: If there is any behavior regarding values outside of this range, mention it here
 	pub sustain_volume: f32,
+
 	/// How long after release the action still be alive
 	pub release_time: Duration,
 	/// How does the release duration shape the envelope
@@ -80,8 +30,41 @@ pub struct AdsrEnvelope {
 	pub release_fn: Option<fn(f32) -> f32>,
 }
 
+const LINEAR: fn(f32) -> f32 = |v: f32| v;
+
+impl AdsrEnvelope {
+	pub fn evaluate(&self, t: Duration, active: bool) -> (AdsrEnvelopePhase, f32) {
+		let phase = self.determine_current_phase(t, active);
+
+		let envelope_fn = match phase {
+			AdsrEnvelopePhase::Attack => self.attack_fn.unwrap_or(LINEAR),
+			AdsrEnvelopePhase::Decay => self.decay_fn.unwrap_or(LINEAR),
+			AdsrEnvelopePhase::Release => self.release_fn.unwrap_or(LINEAR),
+			_ => LINEAR,
+		};
+
+		(phase, 0.0)
+	}
+
+	fn determine_current_phase(&self, t: Duration, active: bool) -> AdsrEnvelopePhase {
+		if active {
+			if t < self.attack_time {
+				AdsrEnvelopePhase::Attack
+			} else if t < self.attack_time + self.decay_time {
+				AdsrEnvelopePhase::Decay
+			} else {
+				AdsrEnvelopePhase::Sustain
+			}
+		} else if self.attack_time + self.decay_time < t {
+			AdsrEnvelopePhase::Release
+		} else {
+			AdsrEnvelopePhase::None
+		}
+	}
+}
+
 #[derive(Debug, Clone, Copy, Default, Reflect)]
-pub struct ActionActivationPreferences {
+pub struct ActionActuationPreferences {
 	trigger_rule: ActionTriggerRule,
 	release_rule: ActionReleaseRule,
 }
@@ -142,26 +125,21 @@ pub enum ActionReleaseRule {
 	Treshold(f32),
 }
 
-// TODO: Maybe not needed to have a `once`, normal ADSR envelope only rise on
-// attack, and only fall after that. So unlike a regular function, there's no
-// risk of  crossing a treshold more than once. But, if we allow that a mapping
-// also have an easing function, then it's possible (for example with bounce)
-// Then this becomes necessary
-// pub struct TresholdActivationRule {
-// 	/// The treshold that has to be crossed by the envelope
-// 	treshold: f32,
-// 	/// Depending on the ADSR envelope, a treshold can be cros
-// 	once: bool,
-//  /// TODO: Maybe certain actions could explicitly ignore any smoothed values and read the raw envelope
-//  from_unmapped: bool,
-// }
-//
-// impl Default for TresholdActivationRule {
-// 	fn default() -> Self {
-// 		Self {
-// 			once: true,
-// 			treshold: 0.0,
-//			from_unmapped: false,
-// 		}
-// 	}
-// }
+/// Unlike a true ADSR envelope, which is monotonically increasing during the
+/// attack phase and monotonically decreasing afterwards, custom envelope
+/// functions could violate this property (e.g., a BounceIn-BounceOut function).
+pub struct TresholdActivationRule {
+	/// The treshold that has to be crossed by the envelope
+	treshold: f32,
+	/// Depending on the ADSR envelope, a treshold can be cros
+	once: bool,
+}
+
+impl Default for TresholdActivationRule {
+	fn default() -> Self {
+		Self {
+			once: true,
+			treshold: 0.0,
+		}
+	}
+}
