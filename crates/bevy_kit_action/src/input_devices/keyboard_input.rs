@@ -3,18 +3,20 @@ use bevy::{
 	prelude::*,
 };
 
-use crate::{Action, ActionSocket, ActionSystem};
+use crate::{Action, ActionSocket, ActionSocketPlugin, ActionSystem};
 
-pub struct KeyboardInputActionPlugin;
+pub struct KeyboardInputActionSocketPlugin;
 
-impl Plugin for KeyboardInputActionPlugin {
+impl Plugin for KeyboardInputActionSocketPlugin {
 	fn build(&self, app: &mut App) {
+		app.add_plugins(ActionSocketPlugin::<KeyCode>::default());
+
 		app.add_systems(Startup, setup_keyboard_sink);
 		app.add_systems(
 			PreUpdate,
 			forward_keyboard_to_socket
 				.run_if(on_event::<KeyboardInput>)
-				.in_set(ActionSystem::Input)
+				.in_set(ActionSystem::InputSocketWrite)
 				.after(InputSystem),
 		);
 	}

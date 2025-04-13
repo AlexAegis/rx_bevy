@@ -51,7 +51,7 @@ pub struct SocketConnector<
 {
 	pub default_transformer_constructor: Option<fn() -> Transformer>,
 	/// TODO: Maybe join it into one MappingConfig<Transformer::Config>
-	pub(crate) signal_transformer_state: HashMap<FromAction, Transformer>,
+	pub(crate) signal_transformer_state: HashMap<ToAction, Transformer>,
 	pub action_map: HashMap<FromAction, ToAction>,
 	phantom_data_clock: PhantomData<C>, //pub signal_transformer: Transformer,
 }

@@ -54,7 +54,7 @@ pub enum ActionSystem {
 	/// As this stage only operates on a select few known [Action][crate::Action]s
 	/// such as [KeyCode][bevy::prelude::KeyCode] and they are not supposed to
 	/// have mappings between each other, this stage is not generic.
-	Input,
+	InputSocketWrite,
 	/// This empty set is used to ensure systems that has to be run after
 	/// mapping are definitely happen after everything has been mapped
 	Mapped,
@@ -69,7 +69,8 @@ pub enum ActionSystem {
 #[derive_where(Clone, Eq, PartialEq)]
 pub enum ActionSystemFor<A: Action> {
 	/// This is the stage where action `A` gets mapped from all its mappings
-	Map,
+	SocketWriteByConnector,
+	SocketReadByConnector,
 	/// Notify entity observers about events
 	Trigger,
 	/// Not used, it's only here to capture the generic `A`

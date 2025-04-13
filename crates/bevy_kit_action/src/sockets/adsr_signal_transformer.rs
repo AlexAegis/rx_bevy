@@ -1,8 +1,8 @@
-use std::{marker::PhantomData, time::Duration};
+use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::{Clock, LastFrameBuffer, SignalBuffer, SignalTransformer};
+use crate::{Clock, SignalBuffer, SignalTransformer};
 
 use super::{
 	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, Signal,
@@ -12,32 +12,39 @@ use super::{
 // TODO: Maybe the socket could hold the envelope settings? Maybe not.
 #[derive(Default, Debug, Clone)]
 
-pub struct AdsrSignalInputBuffer {
-	last_frame_input_signal: bool,
-	last_frame_adsr_envelope_phase: AdsrEnvelopePhase,
+pub struct AdsrSignalBuffer {
 	adsr_envelope_phase: AdsrEnvelopePhase,
 	input_signal: bool,
 	activation_time: Duration,
 	adsr_phase_transition: AdsrEnvelopePhaseTransition,
+	t: Duration,
 }
 
-impl SignalBuffer<bool> for AdsrSignalInputBuffer {
+impl SignalBuffer for AdsrSignalBuffer {
 	type BufferOutput = Self;
+	type InputSignal = bool;
+	type OutputSignal = AdsrOutputSignal;
 
 	// TODO: Somehow this has to receive last frame output signal!!
-	fn write<C: Clock>(&mut self, value: bool, time: &Res<Time<C>>) {
-		self.last_frame_input_signal = self.input_signal;
-		self.last_frame_adsr_envelope_phase = self.adsr_envelope_phase;
+	fn write<C: Clock>(
+		&mut self,
+		value: bool,
+		time: &Res<Time<C>>,
+		last_frame_input_signal: &Self::InputSignal,
+		last_frame_output_signal: &Self::OutputSignal,
+	) {
 		self.input_signal = value;
 
-		if !self.last_frame_input_signal && self.input_signal {
+		if !last_frame_input_signal && self.input_signal {
 			self.activation_time = time.elapsed();
 		}
 
 		self.adsr_phase_transition = determine_phase_transition(
-			&self.last_frame_adsr_envelope_phase,
+			&last_frame_output_signal.adsr_envelope_phase,
 			&self.adsr_envelope_phase,
 		);
+
+		self.t = self.activation_time.abs_diff(time.elapsed());
 	}
 
 	fn read(&self) -> &Self::BufferOutput {
@@ -48,14 +55,14 @@ impl SignalBuffer<bool> for AdsrSignalInputBuffer {
 #[derive(Default, Debug, Clone)]
 pub struct AdsrSignalTransformer {
 	// TODO: Doesn't make any sense here, has to be per action
-	pub(crate) buffer: AdsrSignalInputBuffer,
+	pub(crate) buffer: AdsrSignalBuffer,
 	envelope: AdsrEnvelope,
 }
 
 impl AdsrSignalTransformer {
 	pub fn new(envelope: AdsrEnvelope) -> Self {
 		Self {
-			buffer: AdsrSignalInputBuffer::default(),
+			buffer: AdsrSignalBuffer::default(),
 			envelope,
 		}
 	}
@@ -65,37 +72,35 @@ impl AdsrSignalTransformer {
 
 /// An Adsr socket can be fed with duration
 impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
-	type InputBuffer = AdsrSignalInputBuffer;
+	type Buffer = AdsrSignalBuffer;
 	type InputSignal = bool;
 	type OutputSignal = AdsrOutputSignal;
 
-	fn transform(
-		&self,
-		input_signal: &Self::InputSignal,
-		input_buffer: &Self::InputBuffer,
-		time: &Res<Time<C>>,
-	) -> Self::OutputSignal {
-		let t = input_buffer.activation_time.abs_diff(time.elapsed());
+	fn read(&self) -> Self::OutputSignal {
+		let (adsr_envelope_phase, value) = self
+			.envelope
+			.evaluate(self.buffer.t, self.buffer.input_signal);
 
-		let (envelope_phase, volume) = self.envelope.evaluate(t, input_buffer.input_signal);
 		AdsrOutputSignal {
+			adsr_envelope_phase,
 			phase_transition: None,
-			value: volume,
-			t,
+			value,
+			t: self.buffer.t,
 		}
 	}
 
-	fn get_buffer(&self) -> &Self::InputBuffer {
+	fn get_buffer(&self) -> &Self::Buffer {
 		&self.buffer
 	}
 
-	fn get_buffer_mut(&mut self) -> &mut Self::InputBuffer {
+	fn get_buffer_mut(&mut self) -> &mut Self::Buffer {
 		&mut self.buffer
 	}
 }
 
 #[derive(Debug, Copy, Clone, Default)]
 pub struct AdsrOutputSignal {
+	pub adsr_envelope_phase: AdsrEnvelopePhase,
 	pub phase_transition: Option<AdsrEnvelopePhaseTransition>,
 	pub t: Duration,
 	pub value: f32,

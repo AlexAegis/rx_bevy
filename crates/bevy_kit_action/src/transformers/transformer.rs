@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::prelude::*;
 use derive_where::derive_where;
 
-use crate::{Clock, LastFrameBuffer, Signal, SignalBuffer};
+use crate::{Clock, LastFrameBuffer, Signal, SignalBuffer, SignalContainer, SimpleSignalBuffer};
 
 #[derive_where(Default)]
 pub struct SignalTransformerPlugin<InputSignal: Signal, OutputSignal: Signal> {
@@ -22,60 +22,54 @@ impl<InputSignal: Signal + 'static, OutputSignal: Signal + 'static> Plugin
 fn apply_signal_transformations() {}
 
 pub trait SignalTransformer<C: Clock>: Default + Clone {
-	type InputBuffer: SignalBuffer<Self::InputSignal>;
+	type Buffer: SignalBuffer<InputSignal = Self::InputSignal, OutputSignal = Self::OutputSignal>;
 	type InputSignal: Signal;
 	type OutputSignal: Signal;
 
-	fn transform(
-		&self,
-		input_signal: &Self::InputSignal,
-		input_buffer: &Self::InputBuffer,
-		time: &Res<Time<C>>,
-	) -> Self::OutputSignal;
+	fn read(&self) -> Self::OutputSignal;
 
-	fn transform_signal(
-		&self,
+	fn write_buffer(
+		&mut self,
 		signal: &Self::InputSignal,
 		time: &Res<Time<C>>,
-	) -> Self::OutputSignal {
-		self.transform(signal, self.get_buffer(), time)
+		last_frame_input_signal: &Self::InputSignal,
+		last_frame_output_signal: &Self::OutputSignal,
+	) {
+		self.get_buffer_mut().write(
+			*signal,
+			time,
+			last_frame_input_signal,
+			last_frame_output_signal,
+		);
 	}
 
-	fn write_buffer(&mut self, signal: &Self::InputSignal, time: &Res<Time<C>>) {
-		self.get_buffer_mut().write(*signal, time);
-	}
-
-	fn get_buffer(&self) -> &Self::InputBuffer;
-	fn get_buffer_mut(&mut self) -> &mut Self::InputBuffer;
+	fn get_buffer(&self) -> &Self::Buffer;
+	fn get_buffer_mut(&mut self) -> &mut Self::Buffer;
 	//fn read(&self) -> Self::OutputSignal;
 }
 
 #[derive(Resource, Clone)]
 #[derive_where(Default)]
 pub struct IdentitySignalTransformer<S: Signal> {
-	_buffer: (),
+	// TODO: No need for buffering
+	_buffer: SimpleSignalBuffer<S, S>,
 	_phantom_data_signal: PhantomData<S>,
 }
 
 impl<S: Signal, C: Clock> SignalTransformer<C> for IdentitySignalTransformer<S> {
-	type InputBuffer = ();
+	type Buffer = SimpleSignalBuffer<S, S>;
 	type InputSignal = S;
 	type OutputSignal = Self::InputSignal;
 
-	fn transform(
-		&self,
-		signal: &Self::InputSignal,
-		_buffer: &Self::InputBuffer,
-		_time: &Res<Time<C>>,
-	) -> Self::OutputSignal {
-		*signal
+	fn read(&self) -> Self::OutputSignal {
+		self._buffer.signal
 	}
 
-	fn get_buffer(&self) -> &Self::InputBuffer {
+	fn get_buffer(&self) -> &Self::Buffer {
 		&self._buffer
 	}
 
-	fn get_buffer_mut(&mut self) -> &mut Self::InputBuffer {
+	fn get_buffer_mut(&mut self) -> &mut Self::Buffer {
 		&mut self._buffer
 	}
 }
@@ -83,7 +77,8 @@ impl<S: Signal, C: Clock> SignalTransformer<C> for IdentitySignalTransformer<S> 
 #[derive(Resource, Debug, Clone)]
 #[derive_where(Default)]
 pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> {
-	_buffer: (),
+	// TODO: No need for buffering
+	_buffer: SimpleSignalBuffer<FromSignal, ToSignal>,
 	_phantom_data_signal: PhantomData<FromSignal>,
 	_phantom_data_to_signal: PhantomData<ToSignal>,
 }
@@ -91,24 +86,19 @@ pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<Fro
 impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>, C: Clock> SignalTransformer<C>
 	for SignalFromTransformer<FromSignal, ToSignal>
 {
-	type InputBuffer = ();
+	type Buffer = SimpleSignalBuffer<FromSignal, ToSignal>;
 	type InputSignal = FromSignal;
 	type OutputSignal = ToSignal;
 
-	fn transform(
-		&self,
-		signal: &Self::InputSignal,
-		_buffer: &Self::InputBuffer,
-		_time: &Res<Time<C>>,
-	) -> Self::OutputSignal {
-		ToSignal::from(*signal)
+	fn read(&self) -> Self::OutputSignal {
+		ToSignal::from(self._buffer.signal)
 	}
 
-	fn get_buffer(&self) -> &Self::InputBuffer {
+	fn get_buffer(&self) -> &Self::Buffer {
 		&self._buffer
 	}
 
-	fn get_buffer_mut(&mut self) -> &mut Self::InputBuffer {
+	fn get_buffer_mut(&mut self) -> &mut Self::Buffer {
 		&mut self._buffer
 	}
 }
@@ -116,32 +106,27 @@ impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>, C: Clock> SignalTr
 #[derive(Clone)]
 #[derive_where(Default)]
 pub struct ChangeTrackingTransformer<S: Signal> {
-	buffer: LastFrameBuffer<S>,
+	buffer: LastFrameBuffer<S, bool>,
 	_phantom_data_signal: PhantomData<S>,
 }
 
 impl<S: Signal + PartialEq, C: Clock> SignalTransformer<C> for ChangeTrackingTransformer<S> {
-	type InputBuffer = LastFrameBuffer<S>;
+	type Buffer = LastFrameBuffer<S, bool>;
 	type InputSignal = S;
 	type OutputSignal = bool;
 
-	fn transform(
-		&self,
-		_signal: &Self::InputSignal,
-		buffer: &Self::InputBuffer,
-		_time: &Res<Time<C>>,
-	) -> Self::OutputSignal {
-		let state = buffer.read();
+	fn read(&self) -> Self::OutputSignal {
+		let state = self.buffer.read();
 		state
-			.last_frame_data
+			.last_frame_input_signal
 			.is_some_and(|last_frame_signal| last_frame_signal == state.current_signal)
 	}
 
-	fn get_buffer(&self) -> &Self::InputBuffer {
+	fn get_buffer(&self) -> &Self::Buffer {
 		&self.buffer
 	}
 
-	fn get_buffer_mut(&mut self) -> &mut Self::InputBuffer {
+	fn get_buffer_mut(&mut self) -> &mut Self::Buffer {
 		&mut self.buffer
 	}
 }

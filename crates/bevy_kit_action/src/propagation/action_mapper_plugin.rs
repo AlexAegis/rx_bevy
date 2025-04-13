@@ -4,8 +4,8 @@ use bevy::prelude::*;
 use derive_where::derive_where;
 
 use crate::{
-	Action, ActionSocket, ActionSystem, ActionSystemFor, Clock, SignalFromTransformer,
-	SignalTransformer,
+	Action, ActionSocket, ActionSocketPlugin, ActionSystem, ActionSystemFor, Clock,
+	SignalFromTransformer, SignalTransformer,
 };
 
 use super::SocketConnector;
@@ -32,7 +32,6 @@ pub struct SocketMapPlugin<
 	_phantom_data_to_action: PhantomData<ToAction>,
 	_phantom_data_transformer: PhantomData<Transformer>,
 	_phantom_data_clock: PhantomData<C>,
-	default_transformer: Transformer,
 }
 
 impl<C, FromAction, ToAction, Transformer> Plugin
@@ -44,15 +43,48 @@ where
 		+ 'static
 		+ Send
 		+ Sync,
-	Transformer::InputBuffer: 'static + Send + Sync,
+	Transformer::Buffer: 'static + Send + Sync,
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
+		// ActionSystem::InputSocketWrite
+		// ActionSystemFor::<FromAction>::SocketWriteByConnector
+		// ActionSystemFor::<FromAction>::SocketReadByConnector
+		// ActionSystemFor::<ToAction>::SocketWriteByConnector
+		// ActionSystemFor::<ToAction>::SocketReadByConnector
+		// ActionSystem::Mapped
+
+		if !app.is_plugin_added::<ActionSocketPlugin<ToAction>>() {
+			app.add_plugins(ActionSocketPlugin::<ToAction>::default());
+		}
+
 		app.configure_sets(
 			PreUpdate,
-			ActionSystemFor::<ToAction>::Map
-				.after(ActionSystemFor::<FromAction>::Map)
-				.after(ActionSystem::Input)
+			ActionSystemFor::<FromAction>::SocketWriteByConnector
+				.after(ActionSystem::InputSocketWrite)
+				.before(ActionSystem::Mapped),
+		);
+
+		app.configure_sets(
+			PreUpdate,
+			ActionSystemFor::<ToAction>::SocketReadByConnector
+				.after(ActionSystem::InputSocketWrite)
+				.before(ActionSystem::Mapped),
+		);
+
+		app.configure_sets(
+			PreUpdate,
+			ActionSystemFor::<FromAction>::SocketReadByConnector
+				.before(ActionSystemFor::<ToAction>::SocketWriteByConnector)
+				.after(ActionSystem::InputSocketWrite)
+				.before(ActionSystem::Mapped),
+		);
+
+		app.configure_sets(
+			PreUpdate,
+			ActionSystemFor::<ToAction>::SocketWriteByConnector
+				.after(ActionSystemFor::<FromAction>::SocketReadByConnector)
+				.after(ActionSystem::InputSocketWrite)
 				.before(ActionSystem::Mapped),
 		);
 
@@ -60,7 +92,6 @@ where
 		// app.init_resource::<Transformer>();
 
 		// Actions are triggered backwards compared to mapping
-		// TODO: Does it matter? Which is better? This is kinda like bubbling. Should it be a crate feature?
 		app.configure_sets(
 			PreUpdate,
 			ActionSystemFor::<ToAction>::Trigger.before(ActionSystemFor::<FromAction>::Trigger),
@@ -70,13 +101,19 @@ where
 		// it maps from is either created by a device, or manually entered
 		app.add_systems(
 			PreUpdate,
-			map_actions::<FromAction, ToAction, Transformer, C>
-				.in_set(ActionSystemFor::<ToAction>::Map),
+			from_socket_to_connector::<FromAction, ToAction, Transformer, C>
+				.in_set(ActionSystemFor::<FromAction>::SocketReadByConnector),
+		);
+
+		app.add_systems(
+			PreUpdate,
+			from_connector_to_socket::<FromAction, ToAction, Transformer, C>
+				.in_set(ActionSystemFor::<ToAction>::SocketWriteByConnector),
 		);
 	}
 }
 
-fn map_actions<FromAction, ToAction, Transformer, C>(
+fn from_socket_to_connector<FromAction, ToAction, Transformer, C>(
 	mut action_socket_query: Query<(
 		&mut SocketConnector<C, FromAction, ToAction, Transformer>,
 		&ActionSocket<FromAction>, // This shouldn't care about how it's stored as long as its mappable data
@@ -91,25 +128,54 @@ fn map_actions<FromAction, ToAction, Transformer, C>(
 		+ 'static
 		+ Send
 		+ Sync,
-	Transformer::InputBuffer: 'static + Send + Sync,
+	Transformer::Buffer: 'static + Send + Sync,
 	C: Clock,
 {
 	for (mut socket_connector, from_socket, mut to_socket) in action_socket_query.iter_mut() {
-		for (from_action, from_action_signal) in from_socket.iter_signals() {
+		for (from_action, from_action_signal_container) in from_socket.iter() {
 			let to_action = socket_connector.action_map.get(from_action).copied();
 
-			let transformer_constructor = socket_connector
-				.default_transformer_constructor
-				.unwrap_or(Transformer::default);
-
-			let transformer = socket_connector
-				.signal_transformer_state
-				.entry(*from_action)
-				.or_insert_with(transformer_constructor);
 			if let Some(to_action) = to_action {
-				let converted_signal = transformer.transform_signal(from_action_signal, &time);
-				to_socket.write(&to_action, converted_signal);
+				let transformer_constructor = socket_connector
+					.default_transformer_constructor
+					.unwrap_or(Transformer::default);
+
+				let transformer = socket_connector
+					.signal_transformer_state
+					.entry(to_action)
+					.or_insert_with(transformer_constructor);
+
+				transformer.write_buffer(
+					&from_action_signal_container.signal,
+					&time,
+					&from_action_signal_container.last_frame_signal,
+					to_socket.read_last_frame_signal_or_default(&to_action),
+				);
 			}
+		}
+	}
+}
+
+fn from_connector_to_socket<FromAction, ToAction, Transformer, C>(
+	mut action_socket_query: Query<(
+		&mut SocketConnector<C, FromAction, ToAction, Transformer>,
+		&mut ActionSocket<ToAction>, // This shouldn't care about how it's stored as long as its mappable data
+		                             // Option<&Transformer>,
+	)>,
+	time: Res<Time<C>>,
+) where
+	FromAction: Action,
+	ToAction: Action,
+	Transformer: SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>
+		+ 'static
+		+ Send
+		+ Sync,
+	Transformer::Buffer: 'static + Send + Sync,
+	C: Clock,
+{
+	for (mut socket_connector, mut to_socket) in action_socket_query.iter_mut() {
+		for (to_action, transformer) in socket_connector.signal_transformer_state.iter() {
+			to_socket.write(to_action, transformer.read());
 		}
 	}
 }

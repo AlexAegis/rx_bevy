@@ -1,4 +1,5 @@
 mod action_socket;
+mod action_socket_plugin;
 mod action_state;
 mod adsr_envelope;
 mod adsr_envelope_state;
@@ -8,6 +9,7 @@ mod signal;
 mod signal_transformer_plugin;
 
 pub use action_socket::*;
+pub use action_socket_plugin::*;
 pub use action_state::*;
 pub use adsr_envelope::*;
 pub use adsr_envelope_state::*;

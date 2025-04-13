@@ -1,7 +1,4 @@
-use bevy::{
-	ecs::{component::Component, entity::Entity},
-	utils::HashMap,
-};
+use bevy::{prelude::*, utils::HashMap};
 use derive_where::derive_where;
 
 use crate::{Action, SignalContainer};
@@ -13,10 +10,10 @@ pub enum SocketConnection {
 	Entity(Entity),
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Deref, DerefMut, Debug)]
 #[derive_where(Default)]
 pub struct ActionSocket<A: Action> {
-	pub(crate) state: HashMap<A, SignalContainer<<A as Action>::Signal>>,
+	state: HashMap<A, SignalContainer<<A as Action>::Signal>>,
 }
 
 impl<A: Action> ActionSocket<A> {
@@ -34,5 +31,21 @@ impl<A: Action> ActionSocket<A> {
 		self.state
 			.get(action)
 			.map(|configuration| &configuration.signal)
+	}
+
+	pub fn read_last_frame_signal(&self, action: &A) -> Option<&A::Signal> {
+		self.state
+			.get(action)
+			.map(|configuration| &configuration.last_frame_signal)
+	}
+
+	pub fn read_or_default(&mut self, action: &A) -> &A::Signal {
+		let entry = self.state.entry(*action).or_default();
+		&entry.signal
+	}
+
+	pub fn read_last_frame_signal_or_default(&mut self, action: &A) -> &A::Signal {
+		let entry = self.state.entry(*action).or_default();
+		&entry.last_frame_signal
 	}
 }

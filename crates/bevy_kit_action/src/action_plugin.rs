@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
-use crate::KeyboardInputActionPlugin;
+use crate::KeyboardInputActionSocketPlugin;
 
 pub struct ActionPlugin;
 
 impl Plugin for ActionPlugin {
 	fn build(&self, app: &mut App) {
-		app.add_plugins(KeyboardInputActionPlugin);
+		app.add_plugins(KeyboardInputActionSocketPlugin);
 	}
 }
