@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{Clock, SignalBuffer, SignalTransformer};
 
@@ -13,9 +13,10 @@ use super::{
 pub struct AdsrSignalBuffer {
 	adsr_envelope_phase: AdsrEnvelopePhase,
 	input_signal: bool,
-	activation_time: Duration,
+	activation_time_absolute: Option<Duration>,
+	deactivation_time_relative: Option<Duration>,
 	adsr_phase_transition: AdsrEnvelopePhaseTransition,
-	t: Duration,
+	t_relative: Stopwatch,
 }
 
 impl SignalBuffer for AdsrSignalBuffer {
@@ -34,7 +35,10 @@ impl SignalBuffer for AdsrSignalBuffer {
 		self.input_signal = value;
 
 		if !last_frame_input_signal && self.input_signal {
-			self.activation_time = time.elapsed();
+			self.activation_time_absolute = Some(time.elapsed());
+			self.deactivation_time_relative = None;
+		} else if *last_frame_input_signal && !self.input_signal {
+			self.deactivation_time_relative = Some(self.t_relative.elapsed());
 		}
 
 		self.adsr_phase_transition = determine_phase_transition(
@@ -42,7 +46,11 @@ impl SignalBuffer for AdsrSignalBuffer {
 			&self.adsr_envelope_phase,
 		);
 
-		self.t = self.activation_time.abs_diff(time.elapsed());
+		if self.activation_time_absolute.is_some() {
+			self.t_relative.tick(time.delta());
+		} else {
+			self.t_relative.reset();
+		}
 	}
 
 	fn read(&self) -> &Self::BufferOutput {
@@ -75,16 +83,22 @@ impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 	type OutputSignal = AdsrOutputSignal;
 
 	fn read(&self) -> Self::OutputSignal {
+		let (value, adsr_envelope_phase) = if self.buffer.activation_time_absolute.is_some() {
+			self.envelope.evaluate(
+				self.buffer.t_relative.elapsed(),
+				self.buffer.deactivation_time_relative,
+			)
+		} else {
+			(0.0, AdsrEnvelopePhase::None)
+		};
+
 		// TODO: Would make more sense to evaluate on write, but the envelope settings arent available there, hence the idea to join them
-		let (adsr_envelope_phase, value) = self
-			.envelope
-			.evaluate(self.buffer.t, self.buffer.input_signal);
 
 		AdsrOutputSignal {
 			adsr_envelope_phase,
 			phase_transition: self.buffer.adsr_phase_transition,
 			value,
-			t: self.buffer.t,
+			t: self.buffer.t_relative.elapsed(),
 		}
 	}
 

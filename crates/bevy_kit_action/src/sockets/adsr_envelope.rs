@@ -10,13 +10,13 @@ pub struct AdsrEnvelope {
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
 	#[reflect(ignore)]
-	pub attack_fn: Option<fn(f32) -> f32>,
+	pub attack_easing: Option<EaseFunction>,
 	pub decay_time: Duration,
 	/// How does the decay duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
 	#[reflect(ignore)]
-	pub decay_fn: Option<fn(f32) -> f32>,
+	pub decay_easing: Option<EaseFunction>,
 	/// What value should be reached by decay. Should be between 0.0 and 1.0,
 	/// TODO: If there is any behavior regarding values outside of this range, mention it here
 	pub sustain_volume: f32,
@@ -27,40 +27,97 @@ pub struct AdsrEnvelope {
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
 	#[reflect(ignore)]
-	pub release_fn: Option<fn(f32) -> f32>,
+	pub release_easing: Option<EaseFunction>,
 }
 
-const LINEAR: fn(f32) -> f32 = |v: f32| v;
-
 impl AdsrEnvelope {
-	pub fn evaluate(&self, t: Duration, active: bool) -> (AdsrEnvelopePhase, f32) {
-		let phase = self.determine_current_phase(t, active);
+	pub fn evaluate(
+		&self,
+		t: Duration,
+		deactivation_time: Option<Duration>,
+	) -> (f32, AdsrEnvelopePhase) {
+		let (phase, start_time, end_time) =
+			self.determine_current_phase_and_start_time(t, deactivation_time);
 
-		let envelope_fn = match phase {
-			AdsrEnvelopePhase::Attack => self.attack_fn.unwrap_or(LINEAR),
-			AdsrEnvelopePhase::Decay => self.decay_fn.unwrap_or(LINEAR),
-			AdsrEnvelopePhase::Release => self.release_fn.unwrap_or(LINEAR),
-			_ => LINEAR,
+		let sustain = self.sustain_volume.clamp(0.0, 1.0);
+
+		let value = match phase {
+			AdsrEnvelopePhase::Attack => {
+				let curve =
+					EasingCurve::new(0.0, 1.0, self.attack_easing.unwrap_or(EaseFunction::Linear));
+				let pos = ((t - start_time).as_secs_f32()
+					/ (end_time - start_time).as_secs_f32().max(f32::EPSILON))
+				.clamp(0.0, 1.0);
+				curve.sample_clamped(pos)
+			}
+			AdsrEnvelopePhase::Decay => {
+				let curve = EasingCurve::new(
+					1.0,
+					sustain,
+					self.decay_easing.unwrap_or(EaseFunction::Linear),
+				);
+				let pos = ((t - start_time).as_secs_f32()
+					/ (end_time - start_time).as_secs_f32().max(f32::EPSILON))
+				.clamp(0.0, 1.0);
+				curve.sample_clamped(pos)
+			}
+			AdsrEnvelopePhase::Sustain => sustain,
+			AdsrEnvelopePhase::Release => {
+				let curve = EasingCurve::new(
+					sustain,
+					0.0,
+					self.release_easing.unwrap_or(EaseFunction::Linear),
+				);
+				let pos = ((t - start_time).as_secs_f32()
+					/ (end_time - start_time).as_secs_f32().max(f32::EPSILON))
+				.clamp(0.0, 1.0);
+				curve.sample_clamped(pos)
+			}
+			_ => 0.0,
 		};
 
-		// TODO: Finish signal strength calculation
-
-		(phase, 0.0)
+		(value.clamp(0.0, 1.0), phase)
 	}
 
-	fn determine_current_phase(&self, t: Duration, active: bool) -> AdsrEnvelopePhase {
-		if active {
-			if t < self.attack_time {
-				AdsrEnvelopePhase::Attack
-			} else if t < self.attack_time + self.decay_time {
-				AdsrEnvelopePhase::Decay
+	fn determine_current_phase_and_start_time(
+		&self,
+		t: Duration,
+		deactivation_time: Option<Duration>,
+	) -> (AdsrEnvelopePhase, Duration, Duration) {
+		if let Some(deactivation_time) = deactivation_time {
+			if deactivation_time < t {
+				(
+					AdsrEnvelopePhase::Release,
+					deactivation_time,
+					deactivation_time + self.release_time,
+				)
 			} else {
-				AdsrEnvelopePhase::Sustain
+				(
+					AdsrEnvelopePhase::None,
+					Duration::from_millis(0),
+					Duration::from_millis(0),
+				)
 			}
-		} else if self.attack_time + self.decay_time < t {
-			AdsrEnvelopePhase::Release
 		} else {
-			AdsrEnvelopePhase::None
+			if t < self.attack_time {
+				(
+					AdsrEnvelopePhase::Attack,
+					Duration::from_millis(0),
+					self.attack_time,
+				)
+			} else if t < self.attack_time + self.decay_time {
+				(
+					AdsrEnvelopePhase::Decay,
+					self.attack_time,
+					self.attack_time + self.decay_time,
+				)
+			} else {
+				(
+					AdsrEnvelopePhase::Sustain,
+					self.attack_time + self.decay_time,
+					self.attack_time + self.decay_time, // This should really be the current time, but since the sustain level is a fixed value, there's nothing to interpolate
+				)
+			}
 		}
 	}
 }
@@ -96,14 +153,14 @@ pub enum ActionTriggerRule {
 	/// action won't be triggered with this rule.
 	OnDecay,
 	/// Start activating this action when the previous actions ADSR value has
-	/// reached this treshold.
+	/// reached this Threshold.
 	///
 	/// For example if you take a typical linear ADSR envelope that attacks
 	/// from 0.0 to 1.0. Setting this to 0.0 is equivalent of
 	/// [ActionGateOpenRule::Immediate] and setting it to 1.0 is equivalent of
 	/// [ActionGateOpenRule::OnFire]
 	/// TODO: Maybe for joysticks this would act as the deadzone! But for that it has to be a Vec2/3 that would require this to have a dimensionality
-	Treshold(f32),
+	Threshold(f32),
 }
 
 /// Describes at what stage the source action must be at for this action to
@@ -123,25 +180,25 @@ pub enum ActionReleaseRule {
 	/// Stop activating this action on the next frame it was activated
 	OneShot,
 	/// Stop activating this action when the previous actions ADSR value has
-	/// dipped below this treshold.
-	Treshold(f32),
+	/// dipped below this Threshold.
+	Threshold(f32),
 }
 
 /// Unlike a true ADSR envelope, which is monotonically increasing during the
 /// attack phase and monotonically decreasing afterwards, custom envelope
 /// functions could violate this property (e.g., a BounceIn-BounceOut function).
-pub struct TresholdActivationRule {
-	/// The treshold that has to be crossed by the envelope
-	treshold: f32,
-	/// Depending on the ADSR envelope, a treshold can be cros
+pub struct ThresholdActivationRule {
+	/// The Threshold that has to be crossed by the envelope
+	Threshold: f32,
+	/// Depending on the ADSR envelope, a Threshold can be cros
 	once: bool,
 }
 
-impl Default for TresholdActivationRule {
+impl Default for ThresholdActivationRule {
 	fn default() -> Self {
 		Self {
 			once: true,
-			treshold: 0.0,
+			Threshold: 0.0,
 		}
 	}
 }
