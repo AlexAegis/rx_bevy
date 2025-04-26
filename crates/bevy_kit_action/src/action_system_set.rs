@@ -17,26 +17,26 @@ use derive_where::derive_where;
 /// ## System order:
 ///
 /// 1. `ActionSystem::Reset`: Move all [ActionState][crate::ActionState]s to
-/// 	the previous frames [ActionState][crate::ActionState]
+///    the previous frames [ActionState][crate::ActionState]
 /// 2. `InputSystem`: Bevy's InputSystem is ran, collecting keyboard, gamepad,
-/// 	input
+///    input
 /// 2. `ActionSystem::Input`: Collect device inputs into its own
-/// 	[ActionState][crate::ActionState]
+///    [ActionState][crate::ActionState]
 /// 3. `ActionSystemFor::<A>::Map`: The mapper systems run for each registered
-/// 	FromAction pairs with it. So this set will execute both `K => A` and
-/// 	`G => A` mappings in this example.
+///    FromAction pairs with it. So this set will execute both `K => A` and
+///    `G => A` mappings in this example.
 ///
-/// 	- TODO: Decide if the following steps are in their own system set, or
-/// 	  just part of the mapping:
-/// 	- The mapper system checks for conditions if it's supposed to be
-/// 	  forwarding actions
-/// 	- ActionPhaseChanges are determined based on the previous frame's data
+///     - TODO: Decide if the following steps are in their own system set, or
+///       just part of the mapping:
+///     - The mapper system checks for conditions if it's supposed to be
+///       forwarding actions
+///     - ActionPhaseChanges are determined based on the previous frame's data
 /// 4. `ActionSystemFor::<B>::Map`: If multiple levels are defined (A => B => C)
-/// 	they are running one after another. Since B is mapped after A, it will
-///		mapped after it too so there's something to map from.
+///    they are running one after another. Since B is mapped after A, it will
+///    mapped after it too so there's something to map from.
 /// 5. `ActionSystem::Mapped`: Nothing is executed here, it's for ordering
 /// 6. `ActionSystemFor::<K>::Trigger` and : Events for K are triggered for entities
-/// 	that listen for it
+///    that listen for it
 /// 7. `ActionSystemFor::<G>::Trigger`
 /// 8. `ActionSystemFor::<A>::Trigger`
 /// 9. `ActionSystemFor::<B>::Trigger`

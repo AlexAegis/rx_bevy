@@ -168,7 +168,7 @@ fn from_connector_to_socket<FromAction, ToAction, Transformer, C>(
 		&mut ActionSocket<ToAction>, // This shouldn't care about how it's stored as long as its mappable data
 		                             // Option<&Transformer>,
 	)>,
-	time: Res<Time<C>>,
+	_time: Res<Time<C>>,
 ) where
 	FromAction: Action,
 	ToAction: Action,
@@ -179,7 +179,7 @@ fn from_connector_to_socket<FromAction, ToAction, Transformer, C>(
 	Transformer::Buffer: 'static + Send + Sync,
 	C: Clock,
 {
-	for (mut socket_connector, mut to_socket) in action_socket_query.iter_mut() {
+	for (socket_connector, mut to_socket) in action_socket_query.iter_mut() {
 		for (to_action, transformer) in socket_connector.signal_transformer_state.iter() {
 			to_socket.write(to_action, transformer.read());
 		}

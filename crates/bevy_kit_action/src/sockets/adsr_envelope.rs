@@ -99,26 +99,24 @@ impl AdsrEnvelope {
 					Duration::from_millis(0),
 				)
 			}
+		} else if t < self.attack_time {
+			(
+				AdsrEnvelopePhase::Attack,
+				Duration::from_millis(0),
+				self.attack_time,
+			)
+		} else if t < self.attack_time + self.decay_time {
+			(
+				AdsrEnvelopePhase::Decay,
+				self.attack_time,
+				self.attack_time + self.decay_time,
+			)
 		} else {
-			if t < self.attack_time {
-				(
-					AdsrEnvelopePhase::Attack,
-					Duration::from_millis(0),
-					self.attack_time,
-				)
-			} else if t < self.attack_time + self.decay_time {
-				(
-					AdsrEnvelopePhase::Decay,
-					self.attack_time,
-					self.attack_time + self.decay_time,
-				)
-			} else {
-				(
-					AdsrEnvelopePhase::Sustain,
-					self.attack_time + self.decay_time,
-					self.attack_time + self.decay_time, // This should really be the current time, but since the sustain level is a fixed value, there's nothing to interpolate
-				)
-			}
+			(
+				AdsrEnvelopePhase::Sustain,
+				self.attack_time + self.decay_time,
+				self.attack_time + self.decay_time, // This should really be the current time, but since the sustain level is a fixed value, there's nothing to interpolate
+			)
 		}
 	}
 }

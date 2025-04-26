@@ -65,6 +65,12 @@ Schedule:
 3. repeat two in order to map all layers in a single frame
 4. trigger observers
 
+Debugging:
+
+1. Wireframe between action sockets, a connector is drawn, for each configured
+   action and its target if there's a mapping, it's color brightness can be
+   interpolated with its signal.
+
 ## Questions
 
 - Who to trigger

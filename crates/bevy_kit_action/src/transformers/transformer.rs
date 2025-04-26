@@ -6,7 +6,7 @@ use bevy::{
 };
 use derive_where::derive_where;
 
-use crate::{Clock, LastFrameBuffer, Signal, SignalBuffer, SignalContainer, SimpleSignalBuffer};
+use crate::{Clock, LastFrameBuffer, Signal, SignalBuffer, SimpleSignalBuffer};
 
 #[derive_where(Default)]
 pub struct SignalTransformerPlugin<InputSignal: Signal, OutputSignal: Signal> {

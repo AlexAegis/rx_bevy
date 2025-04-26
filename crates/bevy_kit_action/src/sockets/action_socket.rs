@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 
 use crate::{Action, SignalContainer};

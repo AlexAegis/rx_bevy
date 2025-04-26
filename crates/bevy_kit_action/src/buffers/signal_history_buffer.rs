@@ -13,7 +13,7 @@ pub trait SignalBuffer: Default + Send + Sync {
 	type InputSignal: Signal;
 	type OutputSignal: Signal;
 
-	/// TODO: benchmark, measure if it makes a difference when input/outputsignal is a ref vs copied, signals should be small, a Vec3 at most
+	/// TODO: benchmark, measure if it makes a difference when input/output signal is a ref vs copied, signals should be small, a Vec3 at most
 	fn write<C: Clock>(
 		&mut self,
 		input_signal: Self::InputSignal,
@@ -50,7 +50,7 @@ impl<InputSignal: Signal, OutputSignal: Signal> SignalBuffer
 	}
 
 	fn read(&self) -> &Self::BufferOutput {
-		&self
+		self
 	}
 }
 
@@ -72,7 +72,7 @@ impl<InputSignal: Signal, OutputSignal: Signal> SignalBuffer
 	}
 
 	fn read(&self) -> &Self::BufferOutput {
-		&self
+		self
 	}
 }
 

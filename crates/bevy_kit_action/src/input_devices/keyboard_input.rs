@@ -1,5 +1,6 @@
 use bevy::{
 	input::{ButtonState, InputSystem, keyboard::KeyboardInput},
+	log::trace,
 	prelude::*,
 };
 
@@ -30,7 +31,7 @@ impl Plugin for KeyboardInputActionSocketPlugin {
 }
 
 #[derive(Component, Default, Clone, Debug, Reflect)]
-#[require(Name(|| Name::new("KeyboardActionSink")))]
+#[require(Name::new("KeyboardActionSink"))]
 pub struct KeyboardActionSink;
 
 fn setup_keyboard_sink(mut commands: Commands) {
@@ -43,7 +44,7 @@ fn forward_keyboard_to_socket(
 		&mut KeyboardInputSocket,
 		Option<&KeyboardInputSocketOptions>,
 	)>,
-	#[cfg(feature = "dev")] frame_count: Res<bevy::core::FrameCount>,
+	#[cfg(feature = "dev")] frame_count: Res<bevy::diagnostic::FrameCount>,
 ) {
 	for keyboard_event in keyboard_input_event_reader.read() {
 		#[cfg(feature = "dev")]
@@ -64,31 +65,6 @@ fn forward_keyboard_to_socket(
 			}
 
 			keyboard_socket.write(&keyboard_event.key_code, value);
-		}
-	}
-}
-
-fn forward_keyboard_res_to_socket(
-	keyboard_input_event_reader: Res<ButtonInput<KeyCode>>,
-	mut keyboard_socket_query: Query<(
-		&mut KeyboardInputSocket,
-		Option<&KeyboardInputSocketOptions>,
-	)>,
-	#[cfg(feature = "dev")] frame_count: Res<bevy::core::FrameCount>,
-) {
-	for keyboard_event in keyboard_input_event_reader.get_pressed() {
-		#[cfg(feature = "dev")]
-		trace!("keyboard event {:?} {:?}", &keyboard_event, frame_count);
-
-		for (mut keyboard_socket, keyboard_socket_options) in keyboard_socket_query.iter_mut() {
-			if !keyboard_socket_options
-				.map(|p| p.allow_repeat)
-				.unwrap_or_default()
-			{
-				continue;
-			}
-
-			keyboard_socket.write(&keyboard_event, true);
 		}
 	}
 }

@@ -35,7 +35,7 @@ where
 	}
 }
 
-fn trigger_actions<A, S>(mut commands: Commands, action_socket_query: Query<&mut ActionSocket<A>>)
+fn trigger_actions<A, S>(commands: Commands, action_socket_query: Query<&mut ActionSocket<A>>)
 where
 	A: Action<Signal = S>,
 	S: Signal + 'static,

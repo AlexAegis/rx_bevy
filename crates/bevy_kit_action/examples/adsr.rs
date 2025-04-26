@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
+use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
 	Action, ActionPlugin, ActionSocket, AdsrEnvelope, AdsrEnvelopePhaseTransition,
@@ -12,7 +13,7 @@ use examples_common::send_event;
 /// TODO: what about socketed keycode actions
 fn main() -> AppExit {
 	App::new()
-		.add_plugins((DefaultPlugins, WorldInspectorPlugin::new()))
+		.add_plugins((DefaultPlugins,EguiPlugin { enable_multipass_for_primary_context: true }, WorldInspectorPlugin::new()))
 		.add_plugins((
 			ActionPlugin,
 			SocketMapPlugin::<Virtual, KeyCode, ExampleAdsrMoveAction, AdsrSignalTransformer>::default(),

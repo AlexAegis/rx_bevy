@@ -54,7 +54,7 @@ impl SignalBuffer for AdsrSignalBuffer {
 	}
 
 	fn read(&self) -> &Self::BufferOutput {
-		&self
+		self
 	}
 }
 

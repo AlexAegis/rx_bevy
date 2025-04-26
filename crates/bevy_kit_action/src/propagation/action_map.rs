@@ -1,10 +1,6 @@
-use std::{
-	cell::RefCell,
-	marker::PhantomData,
-	sync::{Arc, RwLock},
-};
+use std::marker::PhantomData;
 
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 
 use crate::{Action, Clock, SignalFromTransformer, SignalTransformer};
