@@ -3,9 +3,8 @@ use std::time::Duration;
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionPlugin, ActionSocket, ActionSocketPlugin, AdsrEnvelope,
-	AdsrEnvelopePhaseTransition, AdsrOutputSignal, AdsrSignalTransformer, SocketConnector,
-	SocketMapPlugin,
+	Action, ActionPlugin, ActionSocket, AdsrEnvelope, AdsrEnvelopePhaseTransition,
+	AdsrOutputSignal, AdsrSignalTransformer, SocketConnector, SocketMapPlugin,
 };
 use examples_common::send_event;
 

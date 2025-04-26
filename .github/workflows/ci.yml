@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: "**"
 
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  CI: 1
+  RUST_BACKTRACE: short
+  RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2024-compatibility"
+  RUSTUP_MAX_RETRIES: 10
+
 permissions:
   contents: read
   pages: write
@@ -38,8 +46,10 @@ jobs:
       - name: install alsa and udev (linux)
         if: runner.os == 'linux'
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - name: test (build)
+        run: cargo make test-ci-build
       - name: test
-        run: cargo make test
+        run: cargo make test-ci-run
   lint:
     runs-on: ubuntu-latest
     steps:

@@ -186,6 +186,13 @@ category = "Build"
 command = "cargo"
 args = ["build", "--workspace", "--all-targets", "--all-features"]
 
+[tasks.build-benchmark]
+description = "Builds the entire workspace with timings enabled"
+workspace = false
+category = "Build"
+command = "cargo"
+args = ["build", "--workspace", "--all-targets", "--all-features", "--timings"]
+
 [tasks.each-build]
 description = "Build individual projects"
 category = "Build"
@@ -202,6 +209,26 @@ args = ["test", "--workspace", "--all-features"]
 description = "Tests individual projects"
 command = "cargo"
 args = ["test", "--all-features"]
+
+[tasks.test-ci-build]
+description = "Builds the tests for ci"
+workspace = false
+command = "cargo"
+args = ["test", "--no-run", "--locked", "--workspace", "--all-features"]
+
+[tasks.test-ci-run]
+description = "Tests the entire workspace"
+workspace = false
+command = "cargo"
+args = [
+    "test",
+    "--no-run",
+    "--workspace",
+    "--all-features",
+    "--",
+    "--nocapture",
+    "--quiet",
+]
 
 ## Miscellaneous
 

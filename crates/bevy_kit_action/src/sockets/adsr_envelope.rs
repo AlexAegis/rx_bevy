@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use super::AdsrEnvelopePhase;
 
+// TODO: Maybe this could actually be a DAHDSR (delay, attack, hold, decay, sustain, release) envelope. (But keep the name Adsr, it's more known)
 #[derive(Debug, Clone, Copy, Default, Reflect)]
 pub struct AdsrEnvelope {
 	pub attack_time: Duration,
@@ -189,16 +190,16 @@ pub enum ActionReleaseRule {
 /// functions could violate this property (e.g., a BounceIn-BounceOut function).
 pub struct ThresholdActivationRule {
 	/// The Threshold that has to be crossed by the envelope
-	Threshold: f32,
+	pub threshold: f32,
 	/// Depending on the ADSR envelope, a Threshold can be cros
-	once: bool,
+	pub once: bool,
 }
 
 impl Default for ThresholdActivationRule {
 	fn default() -> Self {
 		Self {
 			once: true,
-			Threshold: 0.0,
+			threshold: 0.0,
 		}
 	}
 }

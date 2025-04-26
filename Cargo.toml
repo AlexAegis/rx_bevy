@@ -15,10 +15,11 @@ publish = false
 [workspace.lints.clippy]
 type_complexity = "allow"
 
-# Enable a small amount of optimization in debug mode
+# Enable a small amount of optimization and disable debug info for faster builds
 [profile.dev]
 opt-level = 1
 incremental = true
+debug = 0
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]
@@ -26,6 +27,10 @@ opt-level = 3
 
 [profile.test]
 incremental = true
+
+[profile.release]
+incremental = true
+debug = 0
 
 [workspace.dependencies]
 bevy = { version = "0.15", default-features = false, features = [
