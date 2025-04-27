@@ -87,7 +87,7 @@ pub struct LastFrameBuffer<InputSignal: Signal, OutputSignal: Signal> {
 // TODO: Maybe this could be a more generalized case of SignalLastFrameBuffer
 pub struct FrameHistoryBuffer<const L: usize, InputSignal: Signal, OutputSignal: Signal> {
 	input_history: [InputSignal; L],
-	output_history: [OutputSignal; L],
+	_output_history: [OutputSignal; L],
 	cursor: usize,
 }
 
@@ -97,7 +97,7 @@ impl<const L: usize, InputSignal: Signal, OutputSignal: Signal> Default
 	fn default() -> Self {
 		Self {
 			input_history: std::array::from_fn(|_| InputSignal::default()),
-			output_history: std::array::from_fn(|_| OutputSignal::default()),
+			_output_history: std::array::from_fn(|_| OutputSignal::default()),
 			cursor: 0,
 		}
 	}

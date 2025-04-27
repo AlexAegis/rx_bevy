@@ -35,14 +35,14 @@ where
 	}
 }
 
-fn trigger_actions<A, S>(commands: Commands, action_socket_query: Query<&mut ActionSocket<A>>)
+fn trigger_actions<A, S>(_commands: Commands, action_socket_query: Query<&mut ActionSocket<A>>)
 where
 	A: Action<Signal = S>,
 	S: Signal + 'static,
 {
 	for action_socket in action_socket_query.iter() {
 		// TODO: Add an ActionTriggerTarget component to be able to trigger other entities too, just like action source, if it's not present, then trigger self
-		for (action, action_state) in action_socket.iter_signals() {
+		for (_action, _action_state) in action_socket.iter_signals() {
 			// TODO: impl apply
 			// TODO: FROM HERE !!!!! BufferedTransformerStage
 			// TODO: FROM HERE !!!!! BufferedTransformerStage

@@ -95,10 +95,7 @@ fn handle_adsr_signal_movement(
 				ExampleAdsrMoveAction::Left => -Vec3::X,
 				ExampleAdsrMoveAction::Right => Vec3::X,
 			};
-			let can = match signal.phase_transition {
-				AdsrEnvelopePhaseTransition::Fire => true,
-				_ => false,
-			};
+			let can = matches!(signal.phase_transition, AdsrEnvelopePhaseTransition::Fire);
 
 			if can {
 				transform.translation += direction * 0.05; // TODO: account for signal strength, and not on fire

@@ -92,7 +92,7 @@ impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 			(0.0, AdsrEnvelopePhase::None)
 		};
 
-		// TODO: Would make more sense to evaluate on write, but the envelope settings arent available there, hence the idea to join them
+		// TODO: Would make more sense to evaluate on write, but the envelope settings aren't available there, hence the idea to join them
 
 		AdsrOutputSignal {
 			adsr_envelope_phase,
