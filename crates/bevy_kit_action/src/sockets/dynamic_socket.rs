@@ -1,8 +1,6 @@
 use derive_where::derive_where;
 
-use crate::SignalContainer;
-
-use super::Signal;
+use crate::{Signal, SignalContainer};
 
 /// TODO: Maybe this could aggregate multiple actions into a multiplexed signal containing said type data
 #[derive_where(Default)]

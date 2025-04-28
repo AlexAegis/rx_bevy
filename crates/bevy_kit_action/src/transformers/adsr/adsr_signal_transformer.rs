@@ -2,11 +2,10 @@ use std::time::Duration;
 
 use bevy::{prelude::*, time::Stopwatch};
 
-use crate::{Clock, SignalTransformer};
+use crate::{Clock, Signal, SignalTransformer};
 
 use super::{
-	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, Signal,
-	determine_phase_transition,
+	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, determine_phase_transition,
 };
 
 #[derive(Default, Debug, Clone, Reflect)]

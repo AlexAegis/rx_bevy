@@ -20,13 +20,6 @@ impl Plugin for KeyboardInputActionSocketPlugin {
 				.in_set(ActionSystem::InputSocketWrite)
 				.after(InputSystem),
 		);
-
-		// app.add_systems(
-		// 	PreUpdate,
-		// 	forward_keyboard_res_to_socket
-		// 		.in_set(ActionSystem::InputSocketWrite)
-		// 		.after(InputSystem),
-		// );
 	}
 }
 
