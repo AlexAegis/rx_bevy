@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::{prelude::*, time::Stopwatch};
 
-use crate::{Clock, SignalBuffer, SignalTransformer};
+use crate::{Clock, SignalTransformer};
 
 use super::{
 	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, Signal,
@@ -10,34 +10,62 @@ use super::{
 };
 
 #[derive(Default, Debug, Clone, Reflect)]
-pub struct AdsrSignalBuffer {
+pub struct AdsrSignalTransformer {
 	adsr_envelope_phase: AdsrEnvelopePhase,
 	input_signal: bool,
 	activation_time_absolute: Option<Duration>,
 	deactivation_time_relative: Option<Duration>,
 	adsr_phase_transition: AdsrEnvelopePhaseTransition,
 	t_relative: Stopwatch,
+	pub envelope: AdsrEnvelope,
 }
 
-impl SignalBuffer for AdsrSignalBuffer {
-	type BufferOutput = Self;
+impl AdsrSignalTransformer {
+	pub fn new(envelope: AdsrEnvelope) -> Self {
+		Self {
+			envelope,
+			..Default::default()
+		}
+	}
+}
+
+// pub type AdsSignalTransformerStage = BufferedTransformerStage<bool, f32, AdsrSignalTransformer>;
+
+/// TODO: maybe join buffers and transformers, it's pretty lame rn, the transformer layer is pretty much empty. Also check TODO below
+/// An Adsr socket can be fed with duration
+impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 	type InputSignal = bool;
 	type OutputSignal = AdsrOutputSignal;
 
-	// TODO: Somehow this has to receive last frame output signal!!
-	fn write<C: Clock>(
+	fn read(&self) -> Self::OutputSignal {
+		let (value, adsr_envelope_phase) = if self.activation_time_absolute.is_some() {
+			self.envelope
+				.evaluate(self.t_relative.elapsed(), self.deactivation_time_relative)
+		} else {
+			(0.0, AdsrEnvelopePhase::None)
+		};
+
+		// TODO: Would make more sense to evaluate on write, but the envelope settings aren't available there, hence the idea to join them
+
+		AdsrOutputSignal {
+			adsr_envelope_phase,
+			phase_transition: self.adsr_phase_transition,
+			value,
+			t: self.t_relative.elapsed(),
+		}
+	}
+
+	fn write(
 		&mut self,
-		value: bool,
+		signal: &Self::InputSignal,
 		time: &Res<Time<C>>,
 		last_frame_input_signal: &Self::InputSignal,
 		last_frame_output_signal: &Self::OutputSignal,
 	) {
-		self.input_signal = value;
-
-		if !last_frame_input_signal && self.input_signal {
+		if !last_frame_input_signal && *signal {
 			self.activation_time_absolute = Some(time.elapsed());
 			self.deactivation_time_relative = None;
-		} else if *last_frame_input_signal && !self.input_signal {
+		} else if *last_frame_input_signal && !signal {
 			self.deactivation_time_relative = Some(self.t_relative.elapsed());
 		}
 
@@ -51,63 +79,6 @@ impl SignalBuffer for AdsrSignalBuffer {
 		} else {
 			self.t_relative.reset();
 		}
-	}
-
-	fn read(&self) -> &Self::BufferOutput {
-		self
-	}
-}
-
-#[derive(Default, Debug, Clone, Reflect)]
-pub struct AdsrSignalTransformer {
-	pub(crate) buffer: AdsrSignalBuffer,
-	envelope: AdsrEnvelope,
-}
-
-impl AdsrSignalTransformer {
-	pub fn new(envelope: AdsrEnvelope) -> Self {
-		Self {
-			buffer: AdsrSignalBuffer::default(),
-			envelope,
-		}
-	}
-}
-
-// pub type AdsSignalTransformerStage = BufferedTransformerStage<bool, f32, AdsrSignalTransformer>;
-
-/// TODO: maybe join buffers and transformers, it's pretty lame rn, the transformer layer is pretty much empty. Also check TODO below
-/// An Adsr socket can be fed with duration
-impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
-	type Buffer = AdsrSignalBuffer;
-	type InputSignal = bool;
-	type OutputSignal = AdsrOutputSignal;
-
-	fn read(&self) -> Self::OutputSignal {
-		let (value, adsr_envelope_phase) = if self.buffer.activation_time_absolute.is_some() {
-			self.envelope.evaluate(
-				self.buffer.t_relative.elapsed(),
-				self.buffer.deactivation_time_relative,
-			)
-		} else {
-			(0.0, AdsrEnvelopePhase::None)
-		};
-
-		// TODO: Would make more sense to evaluate on write, but the envelope settings aren't available there, hence the idea to join them
-
-		AdsrOutputSignal {
-			adsr_envelope_phase,
-			phase_transition: self.buffer.adsr_phase_transition,
-			value,
-			t: self.buffer.t_relative.elapsed(),
-		}
-	}
-
-	fn get_buffer(&self) -> &Self::Buffer {
-		&self.buffer
-	}
-
-	fn get_buffer_mut(&mut self) -> &mut Self::Buffer {
-		&mut self.buffer
 	}
 }
 

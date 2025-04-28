@@ -6,7 +6,7 @@ use bevy::{
 };
 use derive_where::derive_where;
 
-use crate::{Clock, LastFrameBuffer, Signal, SignalBuffer, SimpleSignalBuffer};
+use crate::{Clock, Signal};
 
 #[derive_where(Default)]
 pub struct SignalTransformerPlugin<InputSignal: Signal, OutputSignal: Signal> {
@@ -27,64 +27,51 @@ fn apply_signal_transformations() {}
 pub trait SignalTransformer<C: Clock>:
 	Default + Clone + Reflect + GetTypeRegistration + Typed + FromReflect
 {
-	type Buffer: SignalBuffer<InputSignal = Self::InputSignal, OutputSignal = Self::OutputSignal>;
 	type InputSignal: Signal;
 	type OutputSignal: Signal;
 
 	fn read(&self) -> Self::OutputSignal;
 
-	fn write_buffer(
+	fn write(
 		&mut self,
 		signal: &Self::InputSignal,
 		time: &Res<Time<C>>,
 		last_frame_input_signal: &Self::InputSignal,
 		last_frame_output_signal: &Self::OutputSignal,
-	) {
-		self.get_buffer_mut().write(
-			*signal,
-			time,
-			last_frame_input_signal,
-			last_frame_output_signal,
-		);
-	}
-
-	fn get_buffer(&self) -> &Self::Buffer;
-	fn get_buffer_mut(&mut self) -> &mut Self::Buffer;
-	//fn read(&self) -> Self::OutputSignal;
+	);
 }
 
 #[derive(Resource, Clone, Reflect)]
 #[derive_where(Default)]
 pub struct IdentitySignalTransformer<S: Signal> {
-	// TODO: No need for buffering
-	_buffer: SimpleSignalBuffer<S, S>,
+	buffer: S,
 	#[reflect(ignore)]
 	_phantom_data_signal: PhantomData<S>,
 }
 
 impl<S: Signal, C: Clock> SignalTransformer<C> for IdentitySignalTransformer<S> {
-	type Buffer = SimpleSignalBuffer<S, S>;
 	type InputSignal = S;
 	type OutputSignal = Self::InputSignal;
 
 	fn read(&self) -> Self::OutputSignal {
-		self._buffer.signal
+		self.buffer
 	}
 
-	fn get_buffer(&self) -> &Self::Buffer {
-		&self._buffer
-	}
-
-	fn get_buffer_mut(&mut self) -> &mut Self::Buffer {
-		&mut self._buffer
+	fn write(
+		&mut self,
+		signal: &Self::InputSignal,
+		_time: &Res<Time<C>>,
+		_last_frame_input_signal: &Self::InputSignal,
+		_last_frame_output_signal: &Self::OutputSignal,
+	) {
+		self.buffer = *signal;
 	}
 }
 
 #[derive(Resource, Debug, Clone, Reflect)]
 #[derive_where(Default)]
 pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> {
-	// TODO: No need for buffering
-	_buffer: SimpleSignalBuffer<FromSignal, ToSignal>,
+	buffer: ToSignal,
 	#[reflect(ignore)]
 	_phantom_data_signal: PhantomData<FromSignal>,
 	#[reflect(ignore)]
@@ -94,49 +81,48 @@ pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<Fro
 impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>, C: Clock> SignalTransformer<C>
 	for SignalFromTransformer<FromSignal, ToSignal>
 {
-	type Buffer = SimpleSignalBuffer<FromSignal, ToSignal>;
 	type InputSignal = FromSignal;
 	type OutputSignal = ToSignal;
 
 	fn read(&self) -> Self::OutputSignal {
-		ToSignal::from(self._buffer.signal)
+		self.buffer
 	}
 
-	fn get_buffer(&self) -> &Self::Buffer {
-		&self._buffer
-	}
-
-	fn get_buffer_mut(&mut self) -> &mut Self::Buffer {
-		&mut self._buffer
+	fn write(
+		&mut self,
+		signal: &Self::InputSignal,
+		_time: &Res<Time<C>>,
+		_last_frame_input_signal: &Self::InputSignal,
+		_last_frame_output_signal: &Self::OutputSignal,
+	) {
+		self.buffer = ToSignal::from(*signal)
 	}
 }
 
 #[derive(Clone, Reflect)]
 #[derive_where(Default)]
 pub struct ChangeTrackingTransformer<S: Signal> {
-	buffer: LastFrameBuffer<S, bool>,
+	buffer: bool,
 	#[reflect(ignore)]
 	_phantom_data_signal: PhantomData<S>,
 }
 
 impl<S: Signal + PartialEq, C: Clock> SignalTransformer<C> for ChangeTrackingTransformer<S> {
-	type Buffer = LastFrameBuffer<S, bool>;
 	type InputSignal = S;
 	type OutputSignal = bool;
 
 	fn read(&self) -> Self::OutputSignal {
-		let state = self.buffer.read();
-		state
-			.last_frame_input_signal
-			.is_some_and(|last_frame_signal| last_frame_signal == state.current_signal)
+		self.buffer
 	}
 
-	fn get_buffer(&self) -> &Self::Buffer {
-		&self.buffer
-	}
-
-	fn get_buffer_mut(&mut self) -> &mut Self::Buffer {
-		&mut self.buffer
+	fn write(
+		&mut self,
+		signal: &Self::InputSignal,
+		_time: &Res<Time<C>>,
+		last_frame_input_signal: &Self::InputSignal,
+		_last_frame_output_signal: &Self::OutputSignal,
+	) {
+		self.buffer = signal == last_frame_input_signal;
 	}
 }
 

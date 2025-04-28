@@ -33,7 +33,6 @@ where
 		+ 'static
 		+ Send
 		+ Sync,
-	Transformer::Buffer: 'static + Send + Sync,
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
@@ -60,7 +59,6 @@ fn draw_connector_gizmo<C, FromAction, ToAction, Transformer>(
 		+ 'static
 		+ Send
 		+ Sync,
-	Transformer::Buffer: 'static + Send + Sync,
 	C: Clock,
 {
 	for (_entity, _connector, _name) in query.iter() {

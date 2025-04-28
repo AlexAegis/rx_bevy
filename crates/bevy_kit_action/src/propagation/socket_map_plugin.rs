@@ -42,7 +42,6 @@ where
 		+ 'static
 		+ Send
 		+ Sync,
-	Transformer::Buffer: 'static + Send + Sync,
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
@@ -129,7 +128,6 @@ fn from_socket_to_connector<FromAction, ToAction, Transformer, C>(
 		+ 'static
 		+ Send
 		+ Sync,
-	Transformer::Buffer: 'static + Send + Sync,
 	C: Clock,
 {
 	for (mut socket_connector, from_socket, mut to_socket) in action_socket_query.iter_mut() {
@@ -146,7 +144,7 @@ fn from_socket_to_connector<FromAction, ToAction, Transformer, C>(
 					.entry(to_action)
 					.or_insert_with(transformer_constructor);
 
-				transformer.write_buffer(
+				transformer.write(
 					&from_action_signal_container.signal,
 					&time,
 					&from_action_signal_container.last_frame_signal,
@@ -171,7 +169,6 @@ fn from_connector_to_socket<FromAction, ToAction, Transformer, C>(
 		+ 'static
 		+ Send
 		+ Sync,
-	Transformer::Buffer: 'static + Send + Sync,
 	C: Clock,
 {
 	for (socket_connector, mut to_socket) in action_socket_query.iter_mut() {
