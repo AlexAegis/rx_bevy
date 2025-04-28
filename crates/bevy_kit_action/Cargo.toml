@@ -15,7 +15,7 @@ workspace = true
 
 [features]
 default = ["dev", "keyboard", "mouse", "gamepad", "reflect"]
-dev = ["bevy/dynamic_linking", "inspector", "debug_ui"]
+dev = ["bevy/dynamic_linking", "inspector", "debug_ui", "debug_gizmos"]
 inspector = [
     "dep:bevy-inspector-egui",
     "dep:bevy_egui",
@@ -23,6 +23,8 @@ inspector = [
 ]
 example = [
     "dev",
+    "debug_ui",
+    "debug_gizmos",
     "inspector",
     "bevy/bevy_scene",
     "bevy/bevy_core_pipeline",
@@ -38,6 +40,7 @@ example = [
 keyboard = []
 mouse = []
 gamepad = ["bevy/bevy_gilrs"]
+debug_gizmos = ["bevy/bevy_gizmos"]
 debug_ui = ["dep:bevy_egui"]
 reflect = []
 

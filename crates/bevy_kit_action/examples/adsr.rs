@@ -13,7 +13,7 @@ use examples_common::send_event;
 /// TODO: what about socketed keycode actions
 fn main() -> AppExit {
 	App::new()
-		.add_plugins((DefaultPlugins,EguiPlugin { enable_multipass_for_primary_context: true }, WorldInspectorPlugin::new()))
+		.add_plugins((DefaultPlugins,  EguiPlugin { enable_multipass_for_primary_context: true }, WorldInspectorPlugin::new()))
 		.add_plugins((
 			ActionPlugin,
 			SocketMapPlugin::<Virtual, KeyCode, ExampleAdsrMoveAction, AdsrSignalTransformer>::default(),

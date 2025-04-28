@@ -16,6 +16,9 @@ impl<A: Action> Plugin for ActionSocketPlugin<A> {
 	fn build(&self, app: &mut App) {
 		app.register_type::<ActionSocket<A>>();
 
+		#[cfg(feature = "debug_ui")]
+		app.add_plugins(crate::ActionSignalDebugUiPlugin::<A>::default());
+
 		app.add_systems(
 			PreUpdate,
 			set_last_frame_data::<A>

@@ -12,7 +12,6 @@ use super::SocketConnector;
 
 /// TODO: Maybe there could be a mutually exclusive way of setting up mapping between two actions, one is this HashMap based, and the other is just From<> impl based and would be faster and simpler but not configurable at runtime. Or it could be the default value for action pairs where it's implemented
 /// Contains and executes activation between action contexts
-#[derive(Reflect)]
 #[derive_where(Default)]
 pub struct SocketMapPlugin<
 	C: Clock,
@@ -28,13 +27,9 @@ pub struct SocketMapPlugin<
 	Transformer:
 		SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
 {
-	#[reflect(ignore)]
 	_phantom_data_from_action: PhantomData<FromAction>,
-	#[reflect(ignore)]
 	_phantom_data_to_action: PhantomData<ToAction>,
-	#[reflect(ignore)]
 	_phantom_data_transformer: PhantomData<Transformer>,
-	#[reflect(ignore)]
 	_phantom_data_clock: PhantomData<C>,
 }
 

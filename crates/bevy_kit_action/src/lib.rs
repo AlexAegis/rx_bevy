@@ -4,6 +4,7 @@ mod buffers;
 mod clock;
 mod context;
 mod events;
+mod helpers;
 mod input_devices;
 mod propagation;
 mod sockets;
@@ -15,7 +16,14 @@ pub use buffers::*;
 pub use clock::*;
 pub use context::*;
 pub use events::*;
+pub use helpers::*;
 pub use input_devices::*;
 pub use propagation::*;
 pub use sockets::*;
 pub use transformers::*;
+
+#[cfg(any(feature = "debug_ui", feature = "debug_gizmos"))]
+mod debug;
+
+#[cfg(any(feature = "debug_ui", feature = "debug_gizmos"))]
+pub use debug::*;
