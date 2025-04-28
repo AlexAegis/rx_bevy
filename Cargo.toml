@@ -54,3 +54,4 @@ bevy_egui = { version = "0.34.1", features = ["immutable_ctx"] }
 bevy_kit_action = { path = "crates/bevy_kit_action" }
 derive-where = { version = "1.2.7" }
 examples_common = { path = "crates/examples_common" }
+bitflags = { version = "2.9.0" }

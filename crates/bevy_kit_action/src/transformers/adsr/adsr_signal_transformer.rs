@@ -11,11 +11,11 @@ use super::{
 #[derive(Default, Debug, Clone, Reflect)]
 pub struct AdsrSignalTransformer {
 	adsr_envelope_phase: AdsrEnvelopePhase,
-	input_signal: bool,
 	activation_time_absolute: Option<Duration>,
 	deactivation_time_relative: Option<Duration>,
 	adsr_phase_transition: AdsrEnvelopePhaseTransition,
 	t_relative: Stopwatch,
+	output_signal: AdsrOutputSignal,
 	pub envelope: AdsrEnvelope,
 }
 
@@ -25,6 +25,13 @@ impl AdsrSignalTransformer {
 			envelope,
 			..Default::default()
 		}
+	}
+
+	pub fn reset(&mut self) {
+		self.t_relative.reset();
+		self.deactivation_time_relative = None;
+		self.adsr_envelope_phase = AdsrEnvelopePhase::None;
+		self.activation_time_absolute = None;
 	}
 }
 
@@ -37,21 +44,7 @@ impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 	type OutputSignal = AdsrOutputSignal;
 
 	fn read(&self) -> Self::OutputSignal {
-		let (value, adsr_envelope_phase) = if self.activation_time_absolute.is_some() {
-			self.envelope
-				.evaluate(self.t_relative.elapsed(), self.deactivation_time_relative)
-		} else {
-			(0.0, AdsrEnvelopePhase::None)
-		};
-
-		// TODO: Would make more sense to evaluate on write, but the envelope settings aren't available there, hence the idea to join them
-
-		AdsrOutputSignal {
-			adsr_envelope_phase,
-			phase_transition: self.adsr_phase_transition,
-			value,
-			t: self.t_relative.elapsed(),
-		}
+		self.output_signal
 	}
 
 	fn write(
@@ -62,22 +55,50 @@ impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 		last_frame_output_signal: &Self::OutputSignal,
 	) {
 		if !last_frame_input_signal && *signal {
+			self.reset();
 			self.activation_time_absolute = Some(time.elapsed());
-			self.deactivation_time_relative = None;
 		} else if *last_frame_input_signal && !signal {
 			self.deactivation_time_relative = Some(self.t_relative.elapsed());
 		}
 
-		self.adsr_phase_transition = determine_phase_transition(
-			&last_frame_output_signal.adsr_envelope_phase,
-			&self.adsr_envelope_phase,
+		if self.adsr_envelope_phase != AdsrEnvelopePhase::None {
+			self.t_relative.tick(time.delta());
+		}
+
+		let (value, adsr_envelope_phase) = self.envelope.evaluate(
+			*signal,
+			self.t_relative.elapsed(),
+			self.deactivation_time_relative,
 		);
 
-		if self.activation_time_absolute.is_some() {
-			self.t_relative.tick(time.delta());
-		} else {
-			self.t_relative.reset();
+		self.adsr_envelope_phase = adsr_envelope_phase;
+		self.adsr_phase_transition = determine_phase_transition(
+			// &self.t_relative,
+			// &self.envelope,
+			last_frame_output_signal.adsr_envelope_phase,
+			self.adsr_envelope_phase,
+		);
+
+		if self
+			.adsr_phase_transition
+			.contains(AdsrEnvelopePhaseTransition::Stop)
+		{
+			self.reset();
 		}
+
+		if !self.adsr_phase_transition.is_empty() {
+			println!(
+				"adsr_phase_transition {:?}",
+				self.adsr_phase_transition.iter_names().collect::<Vec<_>>()
+			);
+		}
+
+		self.output_signal = AdsrOutputSignal {
+			adsr_envelope_phase,
+			phase_transition: self.adsr_phase_transition,
+			value,
+			t: self.t_relative.elapsed(),
+		};
 	}
 }
 

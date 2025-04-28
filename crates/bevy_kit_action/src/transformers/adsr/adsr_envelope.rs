@@ -34,11 +34,12 @@ pub struct AdsrEnvelope {
 impl AdsrEnvelope {
 	pub fn evaluate(
 		&self,
+		is_getting_activated: bool,
 		t: Duration,
 		deactivation_time: Option<Duration>,
 	) -> (f32, AdsrEnvelopePhase) {
 		let (phase, start_time, end_time) =
-			self.determine_current_phase_and_start_time(t, deactivation_time);
+			self.determine_current_phase_and_start_time(is_getting_activated, t, deactivation_time);
 
 		let sustain = self.sustain_volume.clamp(0.0, 1.0);
 
@@ -82,41 +83,52 @@ impl AdsrEnvelope {
 
 	fn determine_current_phase_and_start_time(
 		&self,
+		is_getting_activated: bool,
 		t: Duration,
 		deactivation_time: Option<Duration>,
 	) -> (AdsrEnvelopePhase, Duration, Duration) {
-		if let Some(deactivation_time) = deactivation_time {
-			if deactivation_time < t {
-				(
-					AdsrEnvelopePhase::Release,
-					deactivation_time,
-					deactivation_time + self.release_time,
-				)
-			} else {
-				(
-					AdsrEnvelopePhase::None,
-					Duration::from_millis(0),
-					Duration::from_millis(0),
-				)
-			}
-		} else if t < self.attack_time {
-			(
-				AdsrEnvelopePhase::Attack,
+		match (is_getting_activated, deactivation_time) {
+			(false, None) => (
+				AdsrEnvelopePhase::None,
 				Duration::from_millis(0),
-				self.attack_time,
-			)
-		} else if t < self.attack_time + self.decay_time {
-			(
-				AdsrEnvelopePhase::Decay,
-				self.attack_time,
-				self.attack_time + self.decay_time,
-			)
-		} else {
-			(
-				AdsrEnvelopePhase::Sustain,
-				self.attack_time + self.decay_time,
-				self.attack_time + self.decay_time, // This should really be the current time, but since the sustain level is a fixed value, there's nothing to interpolate
-			)
+				Duration::from_millis(0),
+			),
+			(true, None) => {
+				if t < self.attack_time {
+					(
+						AdsrEnvelopePhase::Attack,
+						Duration::from_millis(0),
+						self.attack_time,
+					)
+				} else if t < self.attack_time + self.decay_time {
+					(
+						AdsrEnvelopePhase::Decay,
+						self.attack_time,
+						self.attack_time + self.decay_time,
+					)
+				} else {
+					(
+						AdsrEnvelopePhase::Sustain,
+						self.attack_time + self.decay_time,
+						self.attack_time + self.decay_time, // This should really be the current time, but since the sustain level is a fixed value, there's nothing to interpolate
+					)
+				}
+			}
+			(_, Some(deactivation_time)) => {
+				if t < (deactivation_time + self.release_time) {
+					(
+						AdsrEnvelopePhase::Release,
+						deactivation_time,
+						deactivation_time + self.release_time,
+					)
+				} else {
+					(
+						AdsrEnvelopePhase::None,
+						Duration::from_millis(0),
+						Duration::from_millis(0),
+					)
+				}
+			}
 		}
 	}
 }
@@ -189,7 +201,9 @@ pub enum ActionReleaseRule {
 pub struct ThresholdActivationRule {
 	/// The Threshold that has to be crossed by the envelope
 	pub threshold: f32,
-	/// Depending on the ADSR envelope, a Threshold can be cros
+	/// Depending on the ADSR envelopes easing function, a threshold could be
+	/// crossed multiple times, this option ensures only the first one
+	/// triggers an activation, per input activation
 	pub once: bool,
 }
 

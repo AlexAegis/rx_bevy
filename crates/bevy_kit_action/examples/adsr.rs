@@ -42,6 +42,7 @@ fn setup(
 			|| {
 				AdsrSignalTransformer::new(AdsrEnvelope {
 					attack_time: Duration::from_millis(100),
+					decay_time: Duration::from_millis(500),
 					release_time: Duration::from_millis(1000),
 					..Default::default()
 				})

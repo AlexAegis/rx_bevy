@@ -912,6 +912,7 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_egui",
+ "bitflags 2.9.0",
  "derive-where",
  "examples_common",
 ]
