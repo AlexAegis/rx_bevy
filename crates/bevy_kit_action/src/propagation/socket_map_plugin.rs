@@ -5,15 +5,14 @@ use derive_where::derive_where;
 
 use crate::{
 	Action, ActionSocket, ActionSocketPlugin, ActionSystem, ActionSystemFor, Clock,
-	SignalTransformer,
+	KeyboardInputSocket, SignalTransformer,
 };
 
-use super::SocketConnector;
+use super::{SocketConnector, SocketConnectorSource, SocketConnectorTarget};
 
-/// TODO: Maybe there could be a mutually exclusive way of setting up mapping between two actions, one is this HashMap based, and the other is just From<> impl based and would be faster and simpler but not configurable at runtime. Or it could be the default value for action pairs where it's implemented
-/// Contains and executes activation between action contexts
+/// Copies and transforms signals between sockets
 #[derive_where(Default)]
-pub struct SocketMapPlugin<
+pub struct SocketConnectorPlugin<
 	C: Clock,
 	FromAction,
 	ToAction,
@@ -34,7 +33,7 @@ pub struct SocketMapPlugin<
 }
 
 impl<C, FromAction, ToAction, Transformer> Plugin
-	for SocketMapPlugin<C, FromAction, ToAction, Transformer>
+	for SocketConnectorPlugin<C, FromAction, ToAction, Transformer>
 where
 	FromAction: Action,
 	ToAction: Action,
@@ -114,12 +113,16 @@ where
 }
 
 fn from_socket_to_connector<FromAction, ToAction, Transformer, C>(
+	from_action_socket_query: Query<&ActionSocket<FromAction>>,
+	mut to_action_socket_query: Query<&mut ActionSocket<ToAction>>,
 	mut action_socket_query: Query<(
+		Entity,
 		&mut SocketConnector<C, FromAction, ToAction, Transformer>,
-		&ActionSocket<FromAction>, // This shouldn't care about how it's stored as long as its mappable data
-		&mut ActionSocket<ToAction>, // This shouldn't care about how it's stored as long as its mappable data
-		                             // Option<&Transformer>,
+		Option<&SocketConnectorSource<FromAction>>,
+		Option<&SocketConnectorTarget<ToAction>>,
 	)>,
+	// TODO: Should not be treated specially, as a global registered/root actionSocket of A
+	keyboard_socket_query: Query<Entity, With<KeyboardInputSocket>>,
 	time: Res<Time<C>>,
 ) where
 	FromAction: Action,
@@ -130,8 +133,47 @@ fn from_socket_to_connector<FromAction, ToAction, Transformer, C>(
 		+ Sync,
 	C: Clock,
 {
-	for (mut socket_connector, from_socket, mut to_socket) in action_socket_query.iter_mut() {
-		for (from_action, from_action_signal_container) in from_socket.iter() {
+	// TODO: This should be automatically found by the connector
+	let keyboard_entity_opt = keyboard_socket_query.single().ok();
+
+	for (connector_entity, mut socket_connector, connector_source_opt, connector_target_opt) in
+		action_socket_query.iter_mut()
+	{
+		let from_action_socket = connector_source_opt
+			.and_then(|source| from_action_socket_query.get(source.entity()).ok())
+			.or_else(|| from_action_socket_query.get(connector_entity).ok())
+			.or_else(|| {
+				// TODO: Impl a more generic way of collecting default source entities, a resource and a hashmap sounds okay, but what about gamepads, they must be per player
+				keyboard_entity_opt
+					.and_then(|keyboard_entity| from_action_socket_query.get(keyboard_entity).ok())
+			});
+
+		// This looks ugly but otherwise you'd get borrow problems
+		let to_action_socket = {
+			let exists_on_connector_target = connector_target_opt
+				.map(|target| to_action_socket_query.contains(target.entity()))
+				.unwrap_or(false);
+
+			let entity = if exists_on_connector_target {
+				connector_target_opt.unwrap().entity()
+			} else {
+				connector_entity
+			};
+
+			to_action_socket_query.get_mut(entity).ok()
+		};
+
+		let Some(from_action_socket) = from_action_socket else {
+			error!("detached connector, missing source socket!");
+			continue;
+		};
+
+		let Some(mut to_action_socket) = to_action_socket else {
+			error!("detached connector, missing target socket!");
+			continue;
+		};
+
+		for (from_action, from_action_signal_container) in from_action_socket.iter_containers() {
 			let to_action = socket_connector.action_map.get(from_action).copied();
 
 			if let Some(to_action) = to_action {
@@ -148,7 +190,7 @@ fn from_socket_to_connector<FromAction, ToAction, Transformer, C>(
 					&from_action_signal_container.signal,
 					&time,
 					&from_action_signal_container.last_frame_signal,
-					to_socket.read_last_frame_signal_or_default(&to_action),
+					to_action_socket.read_last_frame_signal_or_default(&to_action),
 				);
 			}
 		}

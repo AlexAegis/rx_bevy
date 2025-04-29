@@ -2,7 +2,8 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionPlugin, ActionSocket, SignalFromTransformer, SocketConnector, SocketMapPlugin,
+	Action, ActionPlugin, ActionSocket, SignalFromTransformer, SocketConnector,
+	SocketConnectorPlugin,
 };
 use examples_common::send_event;
 
@@ -19,7 +20,7 @@ fn main() -> AppExit {
 		))
 		.add_plugins((
 			ActionPlugin,
-			SocketMapPlugin::<
+			SocketConnectorPlugin::<
 				Virtual,
 				KeyCode,
 				ExampleDiscreteMoveAction,

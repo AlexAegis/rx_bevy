@@ -1,23 +1,20 @@
 use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 
-use crate::{Action, SignalContainer};
+use crate::{Action, SignalContainer, SocketConnectorTarget};
 
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 
-#[derive(Debug, Default)]
-pub enum SocketConnection {
-	#[default]
-	This,
-	Entity(Entity),
-}
-
+// TODO: This needs a way to define how writes accumulate if multiple connectors write into it
 #[derive(Component, Deref, DerefMut, Debug, Reflect)]
+#[relationship_target(relationship = SocketConnectorTarget::<A>)]
 #[cfg_attr(feature = "inspector", derive(InspectorOptions))]
 #[cfg_attr(feature = "inspector", reflect(Component, InspectorOptions))]
 #[derive_where(Default)]
 pub struct ActionSocket<A: Action> {
+	#[relationship]
+	sources: Vec<Entity>,
 	#[deref]
 	state: HashMap<A, SignalContainer<<A as Action>::Signal>>,
 	/// Normally after every frame, signals reset to their default value
@@ -33,6 +30,12 @@ impl<A: Action> ActionSocket<A> {
 			latching: true,
 			..Default::default()
 		}
+	}
+
+	pub fn iter_containers(
+		&self,
+	) -> impl Iterator<Item = (&A, &SignalContainer<<A as Action>::Signal>)> {
+		self.state.iter()
 	}
 
 	pub fn iter_signals(&self) -> impl Iterator<Item = (&A, &A::Signal)> {

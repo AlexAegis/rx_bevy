@@ -5,7 +5,7 @@ use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
 	Action, ActionPlugin, ActionSocket, AdsrEnvelope, AdsrEnvelopePhaseTransition,
-	AdsrOutputSignal, AdsrSignalTransformer, SocketConnector, SocketMapPlugin,
+	AdsrOutputSignal, AdsrSignalTransformer, SocketConnector, SocketConnectorPlugin,
 };
 use examples_common::send_event;
 
@@ -13,11 +13,24 @@ use examples_common::send_event;
 /// TODO: what about socketed keycode actions
 fn main() -> AppExit {
 	App::new()
-		.add_plugins((DefaultPlugins,  EguiPlugin { enable_multipass_for_primary_context: true }, WorldInspectorPlugin::new()))
 		.add_plugins((
-			ActionPlugin,
-			SocketMapPlugin::<Virtual, KeyCode, ExampleAdsrMoveAction, AdsrSignalTransformer>::default(),
+			DefaultPlugins,
+			EguiPlugin {
+				enable_multipass_for_primary_context: true,
+			},
+			WorldInspectorPlugin::new(),
 		))
+		.add_plugins(
+			(
+				ActionPlugin,
+				SocketConnectorPlugin::<
+					Virtual,
+					KeyCode,
+					ExampleAdsrMoveAction,
+					AdsrSignalTransformer,
+				>::default(),
+			),
+		)
 		.add_systems(Startup, setup)
 		.add_systems(
 			Update,
@@ -65,7 +78,6 @@ fn setup(
 		Name::new("target"),
 		Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
-		ActionSocket::<KeyCode>::new_latching(), // this wont be here, but read from the keyboards own entity once inter-entity connectors are implemented
 		socket_connector,
 		ActionSocket::<ExampleAdsrMoveAction>::default(),
 	));

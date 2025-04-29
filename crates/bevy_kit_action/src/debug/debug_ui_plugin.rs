@@ -36,8 +36,8 @@ fn draw_socket_data<A: Action>(
 					"Socket (Entity: {})",
 					Into::<EntityAndName>::into((entity, name))
 				));
-				for (action, signal) in socket.iter() {
-					ui.label(format!("\t{:?}:\t\t{:?}", action, signal.signal));
+				for (action, signal) in socket.iter_signals() {
+					ui.label(format!("\t{:?}:\t\t{:?}", action, signal));
 				}
 			});
 		}
