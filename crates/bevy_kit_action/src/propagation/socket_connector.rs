@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 
-use crate::{Action, ActionSocket, Clock, SignalTransformer};
+use crate::{Action, Clock, SignalTransformer, SocketConnections};
 
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
@@ -29,7 +29,7 @@ impl<A: Action> SocketConnectorSource<A> {
 /// Optional component, when present next to a Connector with the same
 /// ToAction type, will use the targeted entity to find the socket
 #[derive(Component, Debug, Deref, DerefMut, Reflect)]
-#[relationship(relationship_target = ActionSocket<A>)]
+#[relationship(relationship_target = SocketConnections<A>)]
 pub struct SocketConnectorTarget<A: Action> {
 	#[deref]
 	#[relationship]

@@ -164,12 +164,12 @@ fn from_socket_to_connector<FromAction, ToAction, Transformer, C>(
 		};
 
 		let Some(from_action_socket) = from_action_socket else {
-			error!("detached connector, missing source socket!");
+			// trace!("detached connector, missing source socket!");
 			continue;
 		};
 
 		let Some(mut to_action_socket) = to_action_socket else {
-			error!("detached connector, missing target socket!");
+			// trace!("detached connector, missing target socket!");
 			continue;
 		};
 
@@ -198,10 +198,11 @@ fn from_socket_to_connector<FromAction, ToAction, Transformer, C>(
 }
 
 fn from_connector_to_socket<FromAction, ToAction, Transformer, C>(
-	mut action_socket_query: Query<(
-		&mut SocketConnector<C, FromAction, ToAction, Transformer>,
-		&mut ActionSocket<ToAction>, // This shouldn't care about how it's stored as long as its mappable data
-		                             // Option<&Transformer>,
+	mut to_action_socket_query: Query<&mut ActionSocket<ToAction>>,
+	action_socket_query: Query<(
+		Entity,
+		&SocketConnector<C, FromAction, ToAction, Transformer>,
+		Option<&SocketConnectorTarget<ToAction>>,
 	)>,
 	_time: Res<Time<C>>,
 ) where
@@ -213,9 +214,26 @@ fn from_connector_to_socket<FromAction, ToAction, Transformer, C>(
 		+ Sync,
 	C: Clock,
 {
-	for (socket_connector, mut to_socket) in action_socket_query.iter_mut() {
-		for (to_action, transformer) in socket_connector.signal_transformer_state.iter() {
-			to_socket.write(to_action, transformer.read());
+	for (connector_entity, socket_connector, connector_target_opt) in action_socket_query.iter() {
+		// This looks ugly but otherwise you'd get borrow problems
+		let to_action_socket = {
+			let exists_on_connector_target = connector_target_opt
+				.map(|target| to_action_socket_query.contains(target.entity()))
+				.unwrap_or(false);
+
+			let entity = if exists_on_connector_target {
+				connector_target_opt.unwrap().entity()
+			} else {
+				connector_entity
+			};
+
+			to_action_socket_query.get_mut(entity).ok()
+		};
+
+		if let Some(mut to_socket) = to_action_socket {
+			for (to_action, transformer) in socket_connector.signal_transformer_state.iter() {
+				to_socket.write(to_action, transformer.read());
+			}
 		}
 	}
 }

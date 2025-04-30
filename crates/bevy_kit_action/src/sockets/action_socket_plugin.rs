@@ -5,7 +5,7 @@ use derive_where::derive_where;
 
 use crate::{Action, ActionSystem};
 
-use super::ActionSocket;
+use super::{ActionSocket, SocketConnections};
 
 #[derive_where(Default)]
 pub struct ActionSocketPlugin<A: Action> {
@@ -15,6 +15,8 @@ pub struct ActionSocketPlugin<A: Action> {
 impl<A: Action> Plugin for ActionSocketPlugin<A> {
 	fn build(&self, app: &mut App) {
 		app.register_type::<ActionSocket<A>>();
+		// Maybe not here
+		app.register_type::<SocketConnections<A>>();
 
 		#[cfg(feature = "debug_ui")]
 		app.add_plugins(crate::ActionSignalDebugUiPlugin::<A>::default());
