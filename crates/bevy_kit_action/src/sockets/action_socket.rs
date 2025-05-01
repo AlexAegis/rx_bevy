@@ -1,7 +1,7 @@
 use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 
-use crate::{Action, Signal, SignalAggregator, SignalContainer};
+use crate::{Action, Signal, SignalAggregator, SignalState};
 
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
@@ -12,7 +12,7 @@ use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 #[derive_where(Default)]
 pub struct ActionSocket<A: Action> {
 	#[deref]
-	state: HashMap<A, SignalContainer<<A as Action>::Signal>>,
+	state: HashMap<A, SignalState<<A as Action>::Signal>>,
 	/// Normally after every frame, signals reset to their default value
 	/// when this option is true, they don't, and a new write is required to
 	/// change their signals.
@@ -44,8 +44,14 @@ impl<A: Action> ActionSocket<A> {
 
 	pub fn iter_containers(
 		&self,
-	) -> impl Iterator<Item = (&A, &SignalContainer<<A as Action>::Signal>)> {
+	) -> impl Iterator<Item = (&A, &SignalState<<A as Action>::Signal>)> {
 		self.state.iter()
+	}
+
+	pub fn iter_containers_mut(
+		&mut self,
+	) -> impl Iterator<Item = (&A, &mut SignalState<<A as Action>::Signal>)> {
+		self.state.iter_mut()
 	}
 
 	pub fn iter_signals(&self) -> impl Iterator<Item = (&A, &A::Signal)> {
@@ -60,26 +66,24 @@ impl<A: Action> ActionSocket<A> {
 		value: A::Signal,
 		accumulation_behavior: Option<&SocketAccumulationBehavior<A>>,
 	) {
-		let signal_container = self.state.entry(*action).or_default();
+		let signal_state = self.state.entry(*action).or_default();
 
-		if let (Some(accumulation_behavior), true) =
-			(accumulation_behavior, signal_container.written)
-		{
+		if let (Some(accumulation_behavior), true) = (accumulation_behavior, signal_state.written) {
 			match accumulation_behavior {
 				SocketAccumulationBehavior::Overwrite => {
-					signal_container.signal = value;
+					signal_state.signal = value;
 				}
 				SocketAccumulationBehavior::Ignore => {}
 				SocketAccumulationBehavior::Builtin(behavior) => {
-					signal_container.signal = behavior.combine(signal_container.signal, value);
+					signal_state.signal = behavior.combine(signal_state.signal, value);
 				}
 			}
-		} else if signal_container.written {
+		} else if signal_state.written {
 			let default_accumulator = <A::Signal as Signal>::Accumulator::default();
-			signal_container.signal = default_accumulator.combine(signal_container.signal, value);
+			signal_state.signal = default_accumulator.combine(signal_state.signal, value);
 		} else {
-			signal_container.signal = value;
-			signal_container.written = true;
+			signal_state.signal = value;
+			signal_state.written = true;
 		}
 	}
 

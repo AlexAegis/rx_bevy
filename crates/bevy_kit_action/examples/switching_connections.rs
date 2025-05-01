@@ -2,8 +2,8 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionPlugin, ActionSocket, IdentitySignalTransformer, SocketConnector,
-	SocketConnectorPlugin, SocketConnectorTarget,
+	Action, ActionApp, ActionEvent, ActionPlugin, ActionSocket, IdentitySignalTransformer,
+	SignalEventBool, SocketConnector, SocketConnectorPlugin, SocketConnectorTarget,
 };
 use examples_common::send_event;
 
@@ -18,6 +18,7 @@ fn main() -> AppExit {
 			WorldInspectorPlugin::new(),
 		))
 		.register_type::<ExampleTargets>()
+		.register_action::<ExampleDiscreteMoveAction>()
 		.add_plugins((
 			ActionPlugin,
 			SocketConnectorPlugin::<
@@ -32,14 +33,7 @@ fn main() -> AppExit {
 			Update,
 			send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 		)
-		.add_systems(
-			Update,
-			(
-				swap_target,
-				gizmo_to_target,
-				directly_handle_discrete_move_action,
-			),
-		)
+		.add_systems(Update, (swap_target, gizmo_to_target))
 		.run()
 }
 
@@ -120,6 +114,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 			ActionSocket::<ExampleDiscreteMoveAction>::default(),
 		))
+		.observe(move_action_observer)
 		.id();
 
 	commands.insert_resource(ExampleTargets {
@@ -129,6 +124,42 @@ fn setup(
 	});
 }
 
+fn move_action_observer(
+	trigger: Trigger<ActionEvent<ExampleDiscreteMoveAction>>,
+	mut transform_query: Query<&mut Transform>,
+) {
+	println!("target 3 event! {:?}", trigger);
+	if matches!(trigger.event().event, SignalEventBool::Activated) {
+		let direction = match trigger.event().action {
+			ExampleDiscreteMoveAction::Up => -Vec3::Z,
+			ExampleDiscreteMoveAction::Down => Vec3::Z,
+			ExampleDiscreteMoveAction::Left => -Vec3::X,
+			ExampleDiscreteMoveAction::Right => Vec3::X,
+		};
+
+		if let Ok(mut transform) = transform_query.get_mut(trigger.target()) {
+			transform.translation += direction * 0.05;
+		}
+	}
+}
+
+/*
+fn directly_handle_discrete_move_action(
+	mut action_socket_query: Query<(&mut Transform, &ActionSocket<ExampleDiscreteMoveAction>)>,
+) {
+	for (mut transform, action_socket) in action_socket_query.iter_mut() {
+		for (action, _state) in action_socket.iter_signals().filter(|(_, state)| **state) {
+			let direction = match action {
+				ExampleDiscreteMoveAction::Up => -Vec3::Z,
+				ExampleDiscreteMoveAction::Down => Vec3::Z,
+				ExampleDiscreteMoveAction::Left => -Vec3::X,
+				ExampleDiscreteMoveAction::Right => Vec3::X,
+			};
+			transform.translation += direction * 0.05;
+		}
+	}
+}
+*/
 fn gizmo_to_target(
 	mut gizmos: Gizmos,
 	player_query: Query<(Entity, &SocketConnectorTarget<ExampleDiscreteMoveAction>), With<Player>>,
@@ -190,20 +221,4 @@ enum ExampleDiscreteMoveAction {
 
 impl Action for ExampleDiscreteMoveAction {
 	type Signal = bool;
-}
-
-fn directly_handle_discrete_move_action(
-	mut action_socket_query: Query<(&mut Transform, &ActionSocket<ExampleDiscreteMoveAction>)>,
-) {
-	for (mut transform, action_socket) in action_socket_query.iter_mut() {
-		for (action, _state) in action_socket.iter_signals().filter(|(_, state)| **state) {
-			let direction = match action {
-				ExampleDiscreteMoveAction::Up => -Vec3::Z,
-				ExampleDiscreteMoveAction::Down => Vec3::Z,
-				ExampleDiscreteMoveAction::Left => -Vec3::X,
-				ExampleDiscreteMoveAction::Right => Vec3::X,
-			};
-			transform.translation += direction * 0.05;
-		}
-	}
 }

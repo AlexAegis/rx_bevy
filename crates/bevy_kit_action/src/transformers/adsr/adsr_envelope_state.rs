@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use bitflags::bitflags;
+use bitflags::{bitflags, bitflags_match};
+use smallvec::SmallVec;
+
+use super::AdsrSignalEvent;
 
 /// ActionPhase mimics an ADSR envelope, where actions don't necessarily Fire
 /// the moment they start, maybe it needs to be held for a time to do that.
@@ -52,6 +55,24 @@ bitflags! {
 		const Stop = 0b00010000;
 		/// When any ActionEnvelopeState transitions to a lower state that is not ActionEnvelopeState::None
 		const Restart = 0b00100000;
+	}
+}
+
+impl AdsrEnvelopePhaseTransition {
+	pub fn map_to_signal_events(&self) -> SmallVec<[AdsrSignalEvent; 1]> {
+		self.into_iter()
+			.flat_map(|flag| {
+				bitflags_match!(flag, {
+					AdsrEnvelopePhaseTransition::Start => Some(AdsrSignalEvent::Start),
+					AdsrEnvelopePhaseTransition::Fire => Some(AdsrSignalEvent::Fire),
+					AdsrEnvelopePhaseTransition::Sustain => Some(AdsrSignalEvent::Sustain),
+					AdsrEnvelopePhaseTransition::Release => Some(AdsrSignalEvent::Release),
+					AdsrEnvelopePhaseTransition::Stop => Some(AdsrSignalEvent::Stop),
+					AdsrEnvelopePhaseTransition::Restart => Some(AdsrSignalEvent::Restart),
+					_ => None,
+				})
+			})
+			.collect()
 	}
 }
 

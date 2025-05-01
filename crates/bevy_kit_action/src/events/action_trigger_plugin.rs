@@ -3,21 +3,22 @@ use std::marker::PhantomData;
 use bevy::prelude::*;
 use derive_where::derive_where;
 
-use crate::{Action, ActionSocket, ActionSystem, ActionSystemFor, Signal};
+use crate::{Action, ActionSocket, ActionSystem, ActionSystemFor, Signal, SignalEvent};
 
-/// Emit events
+use super::ActionEvent;
+
+/// Emit events defined by the signals of each action
 #[derive_where(Default)]
-pub struct ActionTriggerPlugin<A, S = <A as Action>::Signal>
+pub struct ActionTriggerPlugin<A>
 where
-	A: Action<Signal = S>,
+	A: Action,
 {
 	_phantom_data_action: PhantomData<A>,
 }
 
-impl<A, S> Plugin for ActionTriggerPlugin<A, S>
+impl<A> Plugin for ActionTriggerPlugin<A>
 where
-	A: Action<Signal = S>,
-	S: Signal + 'static,
+	A: Action,
 {
 	fn build(&self, app: &mut App) {
 		// Clear actions before bevy would emit the current ones for this frame
@@ -30,34 +31,31 @@ where
 
 		app.add_systems(
 			PreUpdate,
-			trigger_actions::<A, S>.in_set(ActionSystemFor::<A>::Trigger),
+			trigger_actions::<A>.in_set(ActionSystemFor::<A>::Trigger),
 		);
 	}
 }
 
-fn trigger_actions<A, S>(_commands: Commands, action_socket_query: Query<&mut ActionSocket<A>>)
-where
-	A: Action<Signal = S>,
-	S: Signal + 'static,
+fn trigger_actions<A>(
+	mut commands: Commands,
+	mut action_socket_query: Query<(Entity, &mut ActionSocket<A>)>,
+) where
+	A: Action,
 {
-	for action_socket in action_socket_query.iter() {
-		// TODO: Add an ActionTriggerTarget component to be able to trigger other entities too, just like action source, if it's not present, then trigger self
-		for (_action, _action_state) in action_socket.iter_signals() {
-			// TODO: impl apply
-			// TODO: FROM HERE !!!!! BufferedTransformerStage
-			// TODO: FROM HERE !!!!! BufferedTransformerStage
-			// TODO: FROM HERE !!!!! BufferedTransformerStage
-			// TODO: FROM HERE !!!!!
-			// TODO: FROM HERE !!!!!
-			// TODO: FROM HERE !!!!!
-			//	action_state.apply()
-			// match action_state.phase {
-			//     ActionEnvelopeState::Attack => ActionOnGoing { action },
-			//     ActionEnvelopeState::Active => ActionOnGoing{ action },
-			//     ActionEnvelopeState::Release => ActionEnd { action },
-			// }
-
-			// commands.trigger_targets(, target_entity);
+	for (entity, mut action_socket) in action_socket_query.iter_mut() {
+		for (action, signal_state) in action_socket.iter_containers_mut() {
+			for event in <<A::Signal as Signal>::Event as SignalEvent<A::Signal>>::from_signal_state(
+				signal_state,
+			) {
+				commands.trigger_targets(
+					ActionEvent {
+						action: *action,
+						signal: signal_state.signal,
+						event,
+					},
+					entity,
+				);
+			}
 		}
 	}
 }

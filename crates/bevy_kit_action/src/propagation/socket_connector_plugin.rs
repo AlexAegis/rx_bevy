@@ -177,7 +177,7 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 			continue;
 		};
 
-		for (from_action, from_action_signal_container) in from_action_socket.iter_containers() {
+		for (from_action, from_action_signal_state) in from_action_socket.iter_containers() {
 			let to_action = socket_connector.action_map.get(from_action).copied();
 
 			if let Some(to_action) = to_action {
@@ -191,10 +191,10 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 					.or_insert_with(transformer_constructor);
 
 				let value = transformer.transform(
-					&from_action_signal_container.signal,
+					&from_action_signal_state.signal,
 					SignalTransformContext::<'_, C, FromAction::Signal, ToAction::Signal> {
 						time: &time,
-						last_frame_input_signal: &from_action_signal_container.last_frame_signal,
+						last_frame_input_signal: &from_action_signal_state.last_frame_signal,
 						last_frame_output_signal: to_action_socket
 							.read_last_frame_signal_or_default(&to_action),
 					},

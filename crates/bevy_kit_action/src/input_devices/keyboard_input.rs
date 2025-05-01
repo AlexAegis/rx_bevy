@@ -4,13 +4,13 @@ use bevy::{
 	prelude::*,
 };
 
-use crate::{Action, ActionSocket, ActionSocketPlugin, ActionSystem};
+use crate::{Action, ActionApp, ActionSocket, ActionSystem};
 
 pub struct KeyboardInputActionSocketPlugin;
 
 impl Plugin for KeyboardInputActionSocketPlugin {
 	fn build(&self, app: &mut App) {
-		app.add_plugins(ActionSocketPlugin::<KeyCode>::default());
+		app.register_action::<KeyCode>();
 
 		app.add_systems(Startup, setup_keyboard_sink);
 		app.add_systems(

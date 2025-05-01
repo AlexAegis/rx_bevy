@@ -35,13 +35,13 @@ impl<A: Action> Plugin for ActionSocketPlugin<A> {
 fn reset_sockets<A: Action>(mut action_socket_query: Query<&mut ActionSocket<A>>) {
 	for mut action_socket in action_socket_query.iter_mut() {
 		let is_latching = action_socket.latching;
-		for (_, signal_container) in action_socket.iter_mut() {
+		for (_, signal_state) in action_socket.iter_mut() {
 			if is_latching {
-				signal_container.last_frame_signal = signal_container.signal;
+				signal_state.last_frame_signal = signal_state.signal;
 			} else {
-				signal_container.last_frame_signal = std::mem::take(&mut signal_container.signal);
+				signal_state.last_frame_signal = std::mem::take(&mut signal_state.signal);
 			}
-			signal_container.written = false;
+			signal_state.written = false;
 		}
 	}
 }

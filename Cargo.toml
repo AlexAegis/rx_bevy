@@ -55,3 +55,4 @@ bevy_kit_action = { path = "crates/bevy_kit_action" }
 derive-where = { version = "1.2.7" }
 examples_common = { path = "crates/examples_common" }
 bitflags = { version = "2.9.0" }
+smallvec = { version = "1.15.0" }

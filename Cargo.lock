@@ -916,6 +916,7 @@ dependencies = [
  "bitflags 2.9.0",
  "derive-where",
  "examples_common",
+ "smallvec",
 ]
 
 [[package]]

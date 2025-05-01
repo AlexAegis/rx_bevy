@@ -50,6 +50,7 @@ bevy-inspector-egui = { workspace = true, optional = true, features = [] }
 bevy_egui = { workspace = true, optional = true }
 derive-where = { workspace = true }
 bitflags = { workspace = true }
+smallvec = { workspace = true }
 
 [dev-dependencies]
 examples_common = { workspace = true }

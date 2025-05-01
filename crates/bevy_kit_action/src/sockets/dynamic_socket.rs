@@ -1,11 +1,11 @@
 use derive_where::derive_where;
 
-use crate::{Signal, SignalContainer};
+use crate::{Signal, SignalState};
 
 /// TODO: Maybe this could aggregate multiple actions into a multiplexed signal containing said type data
 #[derive_where(Default)]
 pub struct DynamicMuxSocketTerminal<S: Signal> {
-	pub _state: SignalContainer<S>,
+	pub _state: SignalState<S>,
 }
 
 // TODO: Finish, enum types need some more metadata, maybe this should rely on reflection instead.
