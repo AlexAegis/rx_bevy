@@ -17,12 +17,14 @@ pub struct SignalTransformerPlugin<InputSignal: Signal, OutputSignal: Signal> {
 impl<InputSignal: Signal + 'static, OutputSignal: Signal + 'static> Plugin
 	for SignalTransformerPlugin<InputSignal, OutputSignal>
 {
-	fn build(&self, app: &mut App) {
-		app.add_systems(PreUpdate, apply_signal_transformations);
-	}
+	fn build(&self, _app: &mut App) {}
 }
 
-fn apply_signal_transformations() {}
+pub struct SignalTransformContext<'a, C: Clock, InputSignal: Signal, OutputSignal: Signal> {
+	pub time: &'a Res<'a, Time<C>>,
+	pub last_frame_input_signal: &'a InputSignal,
+	pub last_frame_output_signal: &'a OutputSignal,
+}
 
 pub trait SignalTransformer<C: Clock>:
 	Default + Clone + Reflect + GetTypeRegistration + Typed + FromReflect
@@ -30,15 +32,12 @@ pub trait SignalTransformer<C: Clock>:
 	type InputSignal: Signal;
 	type OutputSignal: Signal;
 
-	fn read(&self) -> Self::OutputSignal;
-
-	fn write(
+	/// Its result will be stored in a SocketConnectorTerminal
+	fn transform(
 		&mut self,
 		signal: &Self::InputSignal,
-		time: &Res<Time<C>>,
-		last_frame_input_signal: &Self::InputSignal,
-		last_frame_output_signal: &Self::OutputSignal,
-	);
+		context: SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,
+	) -> Self::OutputSignal;
 }
 
 // TODO: Maybe a Vec of transformers, that is created from a tuple of them? it would need to be typesafe so that input and outputs match along the chain

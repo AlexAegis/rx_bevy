@@ -5,7 +5,7 @@ use derive_where::derive_where;
 
 use crate::{Clock, Signal};
 
-use super::SignalTransformer;
+use super::{SignalTransformContext, SignalTransformer};
 
 #[derive(Resource, Clone, Reflect)]
 #[derive_where(Default)]
@@ -19,17 +19,11 @@ impl<S: Signal, C: Clock> SignalTransformer<C> for IdentitySignalTransformer<S> 
 	type InputSignal = S;
 	type OutputSignal = Self::InputSignal;
 
-	fn read(&self) -> Self::OutputSignal {
-		self.buffer
-	}
-
-	fn write(
+	fn transform(
 		&mut self,
 		signal: &Self::InputSignal,
-		_time: &Res<Time<C>>,
-		_last_frame_input_signal: &Self::InputSignal,
-		_last_frame_output_signal: &Self::OutputSignal,
-	) {
-		self.buffer = *signal;
+		_context: SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,
+	) -> Self::OutputSignal {
+		*signal
 	}
 }

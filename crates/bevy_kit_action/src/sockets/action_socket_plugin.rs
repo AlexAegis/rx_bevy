@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::prelude::*;
 use derive_where::derive_where;
 
-use crate::{Action, ActionSystem};
+use crate::{Action, ActionSystem, ConnectorTerminal};
 
 use super::{ActionSocket, SocketConnections};
 
@@ -23,14 +23,16 @@ impl<A: Action> Plugin for ActionSocketPlugin<A> {
 
 		app.add_systems(
 			PreUpdate,
-			set_last_frame_data::<A>
+			(reset_sockets::<A>, reset_terminals::<A>)
 				.in_set(ActionSystem::Reset)
 				.before(ActionSystem::InputSocketWrite),
 		);
 	}
 }
 
-fn set_last_frame_data<A: Action>(mut action_socket_query: Query<&mut ActionSocket<A>>) {
+/// Sets last frames signal and resets the current signal to it's [Default] if not latching
+/// Also resets the write flag
+fn reset_sockets<A: Action>(mut action_socket_query: Query<&mut ActionSocket<A>>) {
 	for mut action_socket in action_socket_query.iter_mut() {
 		let is_latching = action_socket.latching;
 		for (_, signal_container) in action_socket.iter_mut() {
@@ -39,6 +41,17 @@ fn set_last_frame_data<A: Action>(mut action_socket_query: Query<&mut ActionSock
 			} else {
 				signal_container.last_frame_signal = std::mem::take(&mut signal_container.signal);
 			}
+			signal_container.written = false;
+		}
+	}
+}
+
+fn reset_terminals<A: Action>(mut terminal_query: Query<&mut ConnectorTerminal<A>>) {
+	for mut terminal in terminal_query.iter_mut() {
+		for (_, signal_accumulator) in terminal.iter_mut() {
+			signal_accumulator.signal = <A as Action>::Signal::default();
+			signal_accumulator.written = false;
+			signal_accumulator.all_other_writes_this_frame.clear();
 		}
 	}
 }

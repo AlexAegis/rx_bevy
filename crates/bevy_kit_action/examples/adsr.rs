@@ -4,8 +4,8 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionPlugin, ActionSocket, AdsrEnvelope, AdsrEnvelopePhaseTransition,
-	AdsrOutputSignal, AdsrSignalTransformer, SocketConnector, SocketConnectorPlugin,
+	Action, ActionPlugin, ActionSocket, AdsrEnvelope, AdsrEnvelopePhaseTransition, AdsrSignal,
+	AdsrSignalTransformer, SocketConnector, SocketConnectorPlugin,
 };
 use examples_common::send_event;
 
@@ -94,7 +94,7 @@ enum ExampleAdsrMoveAction {
 }
 
 impl Action for ExampleAdsrMoveAction {
-	type Signal = AdsrOutputSignal;
+	type Signal = AdsrSignal;
 }
 
 fn handle_adsr_signal_movement(

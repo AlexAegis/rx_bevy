@@ -49,15 +49,15 @@ fn forward_keyboard_to_socket(
 		};
 
 		for (mut keyboard_socket, keyboard_socket_options) in keyboard_socket_query.iter_mut() {
-			if !keyboard_socket_options
-				.map(|p| p.allow_repeat)
-				.unwrap_or_default()
-				&& keyboard_event.repeat
+			if keyboard_event.repeat
+				&& !keyboard_socket_options
+					.map(|p| p.allow_repeat)
+					.unwrap_or_default()
 			{
 				continue;
 			}
 
-			keyboard_socket.write(&keyboard_event.key_code, value);
+			keyboard_socket.write(&keyboard_event.key_code, value, None);
 		}
 	}
 }

@@ -8,6 +8,8 @@ use crate::{Action, Clock, SignalTransformer, SocketConnections};
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 
+use super::ConnectorTerminal;
+
 /// Optional component, when present next to a Connector with the same
 /// FromAction type, will use the targeted entity to find the socket
 #[derive(Component, Debug, Deref, DerefMut, Reflect)]
@@ -46,7 +48,8 @@ impl<A: Action> SocketConnectorTarget<A> {
 	}
 }
 
-#[derive(Component, Reflect)]
+#[derive(Component, Debug, Reflect)]
+#[require(ConnectorTerminal<ToAction>)]
 #[derive_where(Default)]
 #[cfg_attr(feature = "inspector", derive(InspectorOptions))]
 #[cfg_attr(feature = "inspector", reflect(Component, InspectorOptions))]

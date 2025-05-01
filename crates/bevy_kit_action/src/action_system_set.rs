@@ -68,9 +68,10 @@ pub enum ActionSystem {
 #[derive(SystemSet, Hash, Debug)]
 #[derive_where(Clone, Eq, PartialEq)]
 pub enum ActionSystemFor<A: Action> {
+	SocketReadByConnectorWriteToTerminal,
 	/// This is the stage where action `A` gets mapped from all its mappings
-	SocketWriteByConnector,
-	SocketReadByConnector,
+	TerminalWriteToSocket,
+
 	/// Notify entity observers about events
 	Trigger,
 	/// Not used, it's only here to capture the generic `A`

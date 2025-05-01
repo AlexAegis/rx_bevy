@@ -12,4 +12,34 @@ pub struct SignalContainer<S: Signal> {
 	/// are read and propagated, so that the state of the whole
 	/// [SignalContainer] is valid throughout the rest of the frame.
 	pub last_frame_signal: S,
+
+	/// Tracks if this signal was written this frame or not. This is used to
+	/// determine if the value should be simple set, or according to the
+	/// accumulation behavior.
+	///
+	/// Resets on Reset
+	pub(crate) written: bool,
+}
+
+/// Holds all the Signals written this frame, then at the Aggregation stage
+/// it will be combined to a single signal that can be emitted
+/// TODO: Actually implement whats above
+#[derive(Debug, Default, Reflect)]
+pub struct SignalAccumulator<S: Signal> {
+	/// Reverts to its [Default] on [ActionSystem::Reset][`crate::ActionSystem::Reset`]
+	/// for non-latching sockets.
+	pub signal: S,
+
+	/// Tracks if this signal was written this frame or not. This is used to
+	/// determine if the value should be simple set, or according to the
+	/// accumulation behavior.
+	///
+	/// Reverts to `false` on [ActionSystem::Reset][`crate::ActionSystem::Reset`]
+	pub(crate) written: bool,
+
+	/// In most use-cases accumulation isn't used, as long as only one write
+	/// happens this frame, this Vec will remain empty
+	///
+	/// Empties on [ActionSystem::Reset][`crate::ActionSystem::Reset`]
+	pub(crate) all_other_writes_this_frame: Vec<S>,
 }

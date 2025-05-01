@@ -10,7 +10,6 @@ use super::SignalTransformer;
 #[derive(Resource, Debug, Clone, Reflect)]
 #[derive_where(Default)]
 pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> {
-	buffer: ToSignal,
 	#[reflect(ignore)]
 	_phantom_data_signal: PhantomData<FromSignal>,
 	#[reflect(ignore)]
@@ -23,17 +22,11 @@ impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>, C: Clock> SignalTr
 	type InputSignal = FromSignal;
 	type OutputSignal = ToSignal;
 
-	fn read(&self) -> Self::OutputSignal {
-		self.buffer
-	}
-
-	fn write(
+	fn transform(
 		&mut self,
 		signal: &Self::InputSignal,
-		_time: &Res<Time<C>>,
-		_last_frame_input_signal: &Self::InputSignal,
-		_last_frame_output_signal: &Self::OutputSignal,
-	) {
-		self.buffer = ToSignal::from(*signal)
+		_context: super::SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,
+	) -> Self::OutputSignal {
+		ToSignal::from(*signal)
 	}
 }

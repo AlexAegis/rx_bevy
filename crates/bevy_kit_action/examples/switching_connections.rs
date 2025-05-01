@@ -2,8 +2,8 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionPlugin, ActionSocket, IdentitySignalTransformer, SignalFromTransformer,
-	SocketConnector, SocketConnectorPlugin, SocketConnectorTarget,
+	Action, ActionPlugin, ActionSocket, IdentitySignalTransformer, SocketConnector,
+	SocketConnectorPlugin, SocketConnectorTarget,
 };
 use examples_common::send_event;
 
