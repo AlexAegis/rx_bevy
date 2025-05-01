@@ -41,7 +41,7 @@ fn reset_sockets<A: Action>(mut action_socket_query: Query<&mut ActionSocket<A>>
 			} else {
 				signal_state.last_frame_signal = std::mem::take(&mut signal_state.signal);
 			}
-			signal_state.written = false;
+			// signal_state.written = false;
 		}
 	}
 }
@@ -50,8 +50,8 @@ fn reset_terminals<A: Action>(mut terminal_query: Query<&mut ConnectorTerminal<A
 	for mut terminal in terminal_query.iter_mut() {
 		for (_, signal_accumulator) in terminal.iter_mut() {
 			signal_accumulator.signal = <A as Action>::Signal::default();
-			signal_accumulator.written = false;
-			signal_accumulator.all_other_writes_this_frame.clear();
+			// signal_accumulator.written = false;
+			// signal_accumulator.all_other_writes_this_frame.clear();
 		}
 	}
 }

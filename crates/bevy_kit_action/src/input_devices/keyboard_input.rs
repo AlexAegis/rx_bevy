@@ -4,7 +4,7 @@ use bevy::{
 	prelude::*,
 };
 
-use crate::{Action, ActionApp, ActionSocket, ActionSystem};
+use crate::{Action, ActionApp, ActionSocket, ActionSystem, SignalWriter};
 
 pub struct KeyboardInputActionSocketPlugin;
 
@@ -57,7 +57,7 @@ fn forward_keyboard_to_socket(
 				continue;
 			}
 
-			keyboard_socket.write(&keyboard_event.key_code, value, None);
+			keyboard_socket.write(&keyboard_event.key_code, value);
 		}
 	}
 }

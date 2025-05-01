@@ -1,4 +1,5 @@
 use std::{
+	cmp::Ordering,
 	fmt::Debug,
 	ops::{Add, Mul},
 };
@@ -13,7 +14,7 @@ use super::Signal;
 pub trait SignalAggregator<S: Signal>:
 	Default + Debug + Reflect + GetTypeRegistration + Typed + FromReflect + Send + Sync + 'static
 {
-	fn combine(&self, accumulator: S, next: S) -> S;
+	fn combine(&self, signals: impl Iterator<Item = S>) -> S;
 }
 
 #[derive(Default, Debug, Reflect)]
@@ -23,35 +24,35 @@ pub struct SignalAccumulatorOverride;
 pub struct SignalAccumulatorKeepOld;
 
 impl<S: Signal> SignalAggregator<S> for SignalAccumulatorOverride {
-	fn combine(&self, _accumulator: S, next: S) -> S {
-		next
+	fn combine(&self, signals: impl Iterator<Item = S>) -> S {
+		signals.last().unwrap_or_default()
 	}
 }
 
 impl<S: Signal> SignalAggregator<S> for SignalAccumulatorKeepOld {
-	fn combine(&self, accumulator: S, _next: S) -> S {
-		accumulator
+	fn combine(&self, mut signals: impl Iterator<Item = S>) -> S {
+		signals.next().unwrap_or_default()
 	}
 }
 
 #[derive(Default, Debug, Reflect)]
-pub enum SignalAccumulatorBool {
+pub enum SignalBooleanAggregator {
 	#[default]
 	Or,
 	And,
 }
 
-impl SignalAggregator<bool> for SignalAccumulatorBool {
-	fn combine(&self, accumulator: bool, next: bool) -> bool {
+impl SignalAggregator<bool> for SignalBooleanAggregator {
+	fn combine(&self, mut signals: impl Iterator<Item = bool>) -> bool {
 		match &self {
-			SignalAccumulatorBool::And => accumulator && next,
-			SignalAccumulatorBool::Or => accumulator || next,
+			SignalBooleanAggregator::And => signals.all(|x| x),
+			SignalBooleanAggregator::Or => signals.any(|x| x),
 		}
 	}
 }
 
 #[derive(Default, Debug, Reflect)]
-pub enum SignalAccumulatorLinear {
+pub enum SignalNumberAggregator {
 	#[default]
 	Max,
 	Min,
@@ -59,34 +60,29 @@ pub enum SignalAccumulatorLinear {
 	Multiply,
 }
 
+/// Acts as a not-so-correct Ordering for partially orderable values like f32 since
+/// NaN and 0 != -0 would break Ord. But as long as we conveniently ignore this
+/// we can get a nice comparator.
+fn partial_ord_compare<T: PartialOrd>(a: &T, b: &T) -> Ordering {
+	PartialOrd::partial_cmp(a, b).unwrap_or(Ordering::Equal)
+}
+
 impl<S: Signal + Add<Output = S> + Mul<Output = S> + PartialOrd> SignalAggregator<S>
-	for SignalAccumulatorLinear
+	for SignalNumberAggregator
 {
-	fn combine(&self, accumulator: S, next: S) -> S {
+	fn combine(&self, signals: impl Iterator<Item = S>) -> S {
 		match &self {
-			SignalAccumulatorLinear::Add => accumulator + next,
-			SignalAccumulatorLinear::Max => {
-				if accumulator > next {
-					accumulator
-				} else {
-					next
-				}
-			}
-			SignalAccumulatorLinear::Min => {
-				if accumulator < next {
-					accumulator
-				} else {
-					next
-				}
-			}
-			SignalAccumulatorLinear::Multiply => accumulator * next,
+			SignalNumberAggregator::Add => signals.fold(S::default(), |a, b| a + b),
+			SignalNumberAggregator::Max => signals.max_by(partial_ord_compare).unwrap_or_default(),
+			SignalNumberAggregator::Min => signals.min_by(partial_ord_compare).unwrap_or_default(),
+			SignalNumberAggregator::Multiply => signals.fold(S::default(), |a, b| a * b),
 		}
 	}
 }
 
 /// TODO: For Vectors, more complex accumulators could be implemented. but for example if an average is needed across all inputs, that cant be done with this style of accumulators
 #[derive(Default, Debug, Reflect)]
-pub enum SignalAccumulatorVec {
+pub enum SignalVec2Aggregator {
 	#[default]
 	Set,
 }

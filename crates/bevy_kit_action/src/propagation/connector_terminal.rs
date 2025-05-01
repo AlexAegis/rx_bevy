@@ -1,7 +1,7 @@
 use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 
-use crate::{Action, Signal, SignalAccumulator, SignalAggregator, SocketAccumulationBehavior};
+use crate::{Action, SignalAccumulator, SignalWriter};
 
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
@@ -24,32 +24,9 @@ pub struct ConnectorTerminal<A: Action> {
 	state: HashMap<A, SignalAccumulator<<A as Action>::Signal>>,
 }
 
-impl<A: Action> ConnectorTerminal<A> {
-	// TODO: This write function is a copy on ActionSocket, so maybe do something about that
-	pub fn write(
-		&mut self,
-		action: &A,
-		value: A::Signal,
-		accumulation_behavior: Option<&SocketAccumulationBehavior<A>>,
-	) {
+impl<A: Action> SignalWriter<A> for ConnectorTerminal<A> {
+	fn write(&mut self, action: &A, value: A::Signal) {
 		let signal_state = self.state.entry(*action).or_default();
-
-		if let (Some(accumulation_behavior), true) = (accumulation_behavior, signal_state.written) {
-			match accumulation_behavior {
-				SocketAccumulationBehavior::Overwrite => {
-					signal_state.signal = value;
-				}
-				SocketAccumulationBehavior::Ignore => {}
-				SocketAccumulationBehavior::Builtin(behavior) => {
-					signal_state.signal = behavior.combine(signal_state.signal, value);
-				}
-			}
-		} else if signal_state.written {
-			let default_accumulator = <A::Signal as Signal>::Accumulator::default();
-			signal_state.signal = default_accumulator.combine(signal_state.signal, value);
-		} else {
-			signal_state.signal = value;
-			signal_state.written = true;
-		}
+		signal_state.signal = value;
 	}
 }

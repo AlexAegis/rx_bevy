@@ -16,7 +16,7 @@ pub struct AdsrSignal {
 }
 
 impl Signal for AdsrSignal {
-	type Accumulator = AdsrSignalAccumulator;
+	type Aggregator = AdsrSignalAccumulator;
 	type Event = AdsrSignalEvent;
 }
 
@@ -24,8 +24,8 @@ impl Signal for AdsrSignal {
 pub struct AdsrSignalAccumulator;
 
 impl SignalAggregator<AdsrSignal> for AdsrSignalAccumulator {
-	fn combine(&self, _accumulator: AdsrSignal, next: AdsrSignal) -> AdsrSignal {
-		next
+	fn combine(&self, mut signals: impl Iterator<Item = AdsrSignal>) -> AdsrSignal {
+		signals.next().unwrap_or_default()
 	}
 }
 

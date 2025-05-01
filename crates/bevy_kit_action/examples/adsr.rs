@@ -4,8 +4,9 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionPlugin, ActionSocket, AdsrEnvelope, AdsrEnvelopePhaseTransition, AdsrSignal,
-	AdsrSignalTransformer, SocketConnector, SocketConnectorPlugin,
+	Action, ActionApp, ActionEvent, ActionPlugin, ActionSocket, AdsrEnvelope,
+	AdsrEnvelopePhaseTransition, AdsrSignal, AdsrSignalTransformer, SocketConnector,
+	SocketConnectorPlugin,
 };
 use examples_common::send_event;
 
@@ -20,6 +21,7 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 		))
+		.register_action::<ExampleAdsrMoveAction>()
 		.add_plugins(
 			(
 				ActionPlugin,
@@ -74,13 +76,20 @@ fn setup(
 		.action_map
 		.insert(KeyCode::KeyD, ExampleAdsrMoveAction::Right);
 
-	commands.spawn((
-		Name::new("target"),
-		Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
-		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
-		socket_connector,
-		ActionSocket::<ExampleAdsrMoveAction>::default(),
-	));
+	commands
+		.spawn((
+			Name::new("target"),
+			Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
+			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
+			socket_connector,
+			ActionSocket::<ExampleAdsrMoveAction>::default(),
+			//	SocketConnectorTarget::new(target)
+		))
+		.observe(observe_adsr_events);
+}
+
+fn observe_adsr_events(trigger: Trigger<ActionEvent<ExampleAdsrMoveAction>>) {
+	println!("trigger.event().event {:?}", trigger.event().event);
 }
 
 /// Every time this action is fired, it moves the target's translate a unit

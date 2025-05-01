@@ -1,11 +1,12 @@
 use std::marker::PhantomData;
 
-use bevy::{ecs::observer::TriggerTargets, prelude::*};
+use bevy::{ecs::observer::TriggerTargets, platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
+use smallvec::SmallVec;
 
 use crate::{
 	Action, ActionSocket, ActionSocketPlugin, ActionSystem, ActionSystemFor, Clock,
-	KeyboardInputSocket, SignalTransformContext, SignalTransformer, SocketAccumulationBehavior,
+	KeyboardInputSocket, SignalTransformContext, SignalTransformer, SignalWriter, SocketAggregator,
 	SocketConnections,
 };
 
@@ -114,7 +115,7 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 		Entity,
 		&mut SocketConnector<C, FromAction, ToAction, Transformer>,
 		&mut ConnectorTerminal<ToAction>,
-		Option<&SocketAccumulationBehavior<ToAction>>,
+		Option<&SocketAggregator<ToAction>>,
 		Option<&SocketConnectorSource<FromAction>>,
 		Option<&SocketConnectorTarget<ToAction>>,
 	)>,
@@ -137,7 +138,7 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 		connector_entity,
 		mut socket_connector,
 		mut connector_terminal,
-		accumulation_behavior,
+		aggregation_behavior,
 		connector_source_opt,
 		connector_target_opt,
 	) in action_socket_query.iter_mut()
@@ -151,7 +152,6 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 					.and_then(|keyboard_entity| from_action_socket_query.get(keyboard_entity).ok())
 			});
 
-		// TODO: Drop support for, auto-self targeting
 		// This looks ugly but otherwise you'd get borrow problems
 		let to_action_socket = {
 			let exists_on_connector_target = connector_target_opt
@@ -177,6 +177,9 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 			continue;
 		};
 
+		// TODO: Aggregating like this seems expensive, maybe it could be just an option on the target socket and skip it when not needed. or not even an option
+		let mut signal_map = HashMap::<ToAction, SmallVec<[ToAction::Signal; 4]>>::new();
+
 		for (from_action, from_action_signal_state) in from_action_socket.iter_containers() {
 			let to_action = socket_connector.action_map.get(from_action).copied();
 
@@ -200,28 +203,54 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 					},
 				);
 
-				connector_terminal.write(&to_action, value, accumulation_behavior);
+				signal_map.entry(to_action).or_default().push(value);
 			}
+		}
+
+		for (action, signals) in signal_map.iter() {
+			connector_terminal.write_many(action, signals.iter().copied(), aggregation_behavior);
 		}
 	}
 }
 
-/// TODO: Figure out if this separate terminal storage is actually beneficial or just overhead, could've kept the transform result in the transformer, and have one less hashmap access. The only "downside" is that this system will have more types, BUT proper aggregation is only possible like this, when it's possible to query all sources that wants to write here, otherwise we're stuck with another Vec buffer and re-aggregate on each write
+/// TODO:  The only "downside" is that this system will have more types, BUT proper aggregation is only possible like this, when it's possible to query all sources that wants to write here, otherwise we're stuck with another Vec buffer and re-aggregate on each write
+///  Aren't [ConnectorTerminal]s just overhead? The result of a transformation
+/// could be kept inside the connector component and read from that, after all
+/// we already have a fully qualified plugin to fully specify the connectors
+/// generics.
+///
 fn from_terminal_to_socket<A>(
 	mut to_action_socket_query: Query<(
-		&SocketConnections<A>,
+		Entity,
+		Option<&SocketConnections<A>>,
 		&mut ActionSocket<A>,
-		Option<&SocketAccumulationBehavior<A>>,
+		Option<&SocketAggregator<A>>,
 	)>,
 	terminal_query: Query<&ConnectorTerminal<A>>,
 ) where
 	A: Action,
 {
-	for (connections, mut to_socket, accumulation_behavior) in to_action_socket_query.iter_mut() {
-		for source_terminal in terminal_query.iter_many(connections.entities()) {
+	for (entity, connections, mut to_socket, accumulation_behavior) in
+		to_action_socket_query.iter_mut()
+	{
+		let sources = Iterator::chain(
+			std::iter::once(entity),
+			connections.map(|c| c.entities()).into_iter().flatten(),
+		);
+
+		let mut signal_map = HashMap::<A, SmallVec<[A::Signal; 4]>>::new();
+
+		for source_terminal in terminal_query.iter_many(sources) {
 			for (to_action, signal_accumulator) in source_terminal.iter() {
-				to_socket.write(to_action, signal_accumulator.signal, accumulation_behavior);
+				signal_map
+					.entry(*to_action)
+					.or_default()
+					.push(signal_accumulator.signal);
 			}
+		}
+
+		for (action, signals) in signal_map.iter() {
+			to_socket.write_many(action, signals.iter().copied(), accumulation_behavior);
 		}
 	}
 }

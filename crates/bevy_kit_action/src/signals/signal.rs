@@ -6,8 +6,8 @@ use bevy::{
 };
 
 use super::{
-	SignalAccumulatorBool, SignalAccumulatorLinear, SignalAccumulatorOverride, SignalAggregator,
-	SignalEvent, SignalEventBool, SignalNoopEvent,
+	SignalAccumulatorOverride, SignalAggregator, SignalBooleanAggregator, SignalEvent,
+	SignalEventBool, SignalNoopEvent, SignalNumberAggregator,
 };
 
 /// # Signal
@@ -32,30 +32,30 @@ use super::{
 pub trait Signal:
 	Default + Copy + Send + Sync + Debug + Reflect + GetTypeRegistration + Typed + FromReflect
 {
-	type Accumulator: SignalAggregator<Self>;
+	type Aggregator: SignalAggregator<Self>;
 	type Event: SignalEvent<Self>;
 }
 
 /// Digital input like a keypress, or anything that's either on or off.
 impl Signal for bool {
-	type Accumulator = SignalAccumulatorBool;
+	type Aggregator = SignalBooleanAggregator;
 	type Event = SignalEventBool;
 }
 
 /// Linear input like a gamepad trigger
 impl Signal for f32 {
-	type Accumulator = SignalAccumulatorLinear;
+	type Aggregator = SignalNumberAggregator;
 	type Event = SignalNoopEvent;
 }
 
 /// 2d input like a gamepad joystick
 impl Signal for Vec2 {
-	type Accumulator = SignalAccumulatorOverride;
+	type Aggregator = SignalAccumulatorOverride;
 	type Event = SignalNoopEvent;
 }
 
 /// 3d input like a gyroscope
 impl Signal for Vec3 {
-	type Accumulator = SignalAccumulatorOverride;
+	type Aggregator = SignalAccumulatorOverride;
 	type Event = SignalNoopEvent;
 }

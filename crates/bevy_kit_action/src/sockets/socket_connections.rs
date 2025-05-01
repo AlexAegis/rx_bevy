@@ -21,7 +21,6 @@ pub struct SocketConnections<A: Action> {
 	#[deref]
 	#[relationship]
 	sources: Vec<Entity>,
-	asd: f32,
 	#[reflect(ignore)]
 	_phantom_data_action: PhantomData<A>,
 }
