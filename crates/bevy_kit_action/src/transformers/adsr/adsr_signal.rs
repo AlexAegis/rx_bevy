@@ -1,9 +1,8 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use smallvec::SmallVec;
 
-use crate::{Signal, SignalAggregator, SignalEvent};
+use crate::{Signal, SignalAggregator, SignalEvent, SignalEventVec};
 
 use super::{AdsrEnvelopePhase, AdsrEnvelopePhaseTransition};
 
@@ -31,12 +30,21 @@ impl SignalAggregator<AdsrSignal> for AdsrSignalAccumulator {
 
 #[derive(Event, Debug)]
 pub enum AdsrSignalEvent {
+	/// Fired immediately upon activation
 	Start,
+	/// Fired when the attack duration had elapsed and the signal reached its peak
 	Fire,
+	/// Fired when the signal had decayed but it's still getting activated
 	Sustain,
+	/// Fired when the signal enters the release phase after sustain, or
+	/// decay if sustain wasn't reached, or attack if decay wasn't reached
 	Release,
+	/// Fired when the signal finished fully, or restarted
 	Stop,
+	/// Fired when the signal was re-triggered before [Release][`AdsrSignalEvent::Release`] could've finished
 	Restart,
+	/// Fired continuously from attack to the end of release every frame
+	Active,
 }
 
 impl SignalEvent<AdsrSignal> for AdsrSignalEvent {
@@ -44,7 +52,13 @@ impl SignalEvent<AdsrSignal> for AdsrSignalEvent {
 
 	/// While we could calculate the phase transition here too, it is already done in the
 	/// Transformer, as it's needed to know when the envelope ended
-	fn from_signal_state(signal_state: &crate::SignalState<AdsrSignal>) -> SmallVec<[Self; 1]> {
-		signal_state.signal.phase_transition.map_to_signal_events()
+	fn from_signal_state(signal_state: &crate::SignalState<AdsrSignal>) -> SignalEventVec<Self> {
+		let mut events = signal_state.signal.phase_transition.map_to_signal_events();
+
+		if signal_state.signal.adsr_envelope_phase != AdsrEnvelopePhase::None {
+			events.push(Self::Active);
+		}
+
+		events
 	}
 }

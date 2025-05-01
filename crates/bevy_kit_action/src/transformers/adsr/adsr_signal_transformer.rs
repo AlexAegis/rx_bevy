@@ -16,6 +16,7 @@ pub struct AdsrSignalTransformer {
 	adsr_envelope_phase: AdsrEnvelopePhase,
 	activation_time_absolute: Option<Duration>,
 	deactivation_time_relative: Option<Duration>,
+	deactivation_value: Option<f32>,
 	adsr_phase_transition: AdsrEnvelopePhaseTransition,
 	t_relative: Stopwatch,
 	output_signal: AdsrSignal,
@@ -35,6 +36,7 @@ impl AdsrSignalTransformer {
 		self.deactivation_time_relative = None;
 		self.adsr_envelope_phase = AdsrEnvelopePhase::None;
 		self.activation_time_absolute = None;
+		self.deactivation_value = None;
 	}
 }
 
@@ -51,6 +53,7 @@ impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 			self.reset();
 			self.activation_time_absolute = Some(context.time.elapsed());
 		} else if *context.last_frame_input_signal && !signal {
+			self.deactivation_value = Some(context.last_frame_output_signal.value);
 			self.deactivation_time_relative = Some(self.t_relative.elapsed());
 		}
 
@@ -61,6 +64,7 @@ impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
 		let (value, adsr_envelope_phase) = self.envelope.evaluate(
 			*signal,
 			self.t_relative.elapsed(),
+			self.deactivation_value,
 			self.deactivation_time_relative,
 		);
 

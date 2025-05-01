@@ -4,14 +4,15 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionApp, ActionEvent, ActionPlugin, ActionSocket, AdsrEnvelope,
-	AdsrEnvelopePhaseTransition, AdsrSignal, AdsrSignalTransformer, SocketConnector,
-	SocketConnectorPlugin,
+	Action, ActionApp, ActionEvent, ActionPlugin, ActionSocket, AdsrEnvelope, AdsrSignal,
+	AdsrSignalTransformer, SocketConnector, SocketConnectorPlugin,
 };
 use examples_common::send_event;
 
 /// Simple mapping example
 /// TODO: what about socketed keycode actions
+///
+/// TODO: Implement action mapping from multiple to one, like WASD to Vec2, maybe a simple additive aggregator would be enough and no new KIND of things would need to be implemented, ofc the Vec2 aggregator needs to be finished
 fn main() -> AppExit {
 	App::new()
 		.add_plugins((
@@ -56,10 +57,13 @@ fn setup(
 		SocketConnector::<Virtual, KeyCode, ExampleAdsrMoveAction, AdsrSignalTransformer>::new(
 			|| {
 				AdsrSignalTransformer::new(AdsrEnvelope {
-					attack_time: Duration::from_millis(100),
-					decay_time: Duration::from_millis(500),
-					release_time: Duration::from_millis(1000),
-					..Default::default()
+					attack_time: Duration::from_millis(400),
+					attack_easing: Some(EaseFunction::CubicOut),
+					decay_time: Duration::from_millis(200),
+					decay_easing: Some(EaseFunction::BackInOut),
+					release_time: Duration::from_millis(800),
+					release_easing: Some(EaseFunction::Linear),
+					sustain_volume: 0.6,
 				})
 			},
 		);
@@ -83,7 +87,6 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
 			socket_connector,
 			ActionSocket::<ExampleAdsrMoveAction>::default(),
-			//	SocketConnectorTarget::new(target)
 		))
 		.observe(observe_adsr_events);
 }
@@ -117,11 +120,8 @@ fn handle_adsr_signal_movement(
 				ExampleAdsrMoveAction::Left => -Vec3::X,
 				ExampleAdsrMoveAction::Right => Vec3::X,
 			};
-			let can = matches!(signal.phase_transition, AdsrEnvelopePhaseTransition::Fire);
 
-			if can {
-				transform.translation += direction * 0.05; // TODO: account for signal strength, and not on fire
-			}
+			transform.translation += direction * 0.05 * signal.value; // TODO: account for signal strength, and not on fire
 		}
 	}
 }

@@ -36,6 +36,7 @@ impl AdsrEnvelope {
 		&self,
 		is_getting_activated: bool,
 		t: Duration,
+		deactivation_value: Option<f32>,
 		deactivation_time: Option<Duration>,
 	) -> (f32, AdsrEnvelopePhase) {
 		let (phase, start_time, end_time) =
@@ -66,7 +67,7 @@ impl AdsrEnvelope {
 			AdsrEnvelopePhase::Sustain => sustain,
 			AdsrEnvelopePhase::Release => {
 				let curve = EasingCurve::new(
-					sustain,
+					deactivation_value.unwrap_or(sustain),
 					0.0,
 					self.release_easing.unwrap_or(EaseFunction::Linear),
 				);

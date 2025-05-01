@@ -59,7 +59,7 @@ bitflags! {
 }
 
 impl AdsrEnvelopePhaseTransition {
-	pub fn map_to_signal_events(&self) -> SmallVec<[AdsrSignalEvent; 1]> {
+	pub fn map_to_signal_events<const N: usize>(&self) -> SmallVec<[AdsrSignalEvent; N]> {
 		self.into_iter()
 			.flat_map(|flag| {
 				bitflags_match!(flag, {
