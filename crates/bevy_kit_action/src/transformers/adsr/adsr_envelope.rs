@@ -3,8 +3,17 @@ use std::time::Duration;
 
 use super::AdsrEnvelopePhase;
 
+// #[cfg(feature = "serialize")]
+// use serde::{Deserialize, Serialize};
+
 // TODO: Maybe this could actually be a DAHDSR (delay, attack, hold, decay, sustain, release) envelope. (But keep the name Adsr, it's more known)
-#[derive(Debug, Clone, Copy, Default, Reflect)]
+#[derive(Debug, Clone, Copy, Default)]
+#[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
+// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+// #[cfg_attr(
+// 	all(feature = "serialize", feature = "reflect"),
+// 	reflect(Serialize, Deserialize)
+// )]
 pub struct AdsrEnvelope {
 	pub attack_time: Duration,
 	/// How does the attack duration shape the envelope

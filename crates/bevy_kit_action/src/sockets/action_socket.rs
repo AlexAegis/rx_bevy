@@ -3,15 +3,31 @@ use derive_where::derive_where;
 
 use crate::{Action, Signal, SignalState};
 
+// #[cfg(feature = "serialize")]
+// use serde::{Deserialize, Serialize};
+
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 
 use super::SignalWriter;
 
-#[derive(Component, Deref, DerefMut, Debug, Reflect)]
-#[cfg_attr(feature = "inspector", derive(InspectorOptions))]
-#[cfg_attr(feature = "inspector", reflect(Component, InspectorOptions))]
+#[derive(Component, Clone, Debug, Deref, DerefMut)]
 #[derive_where(Default)]
+#[cfg_attr(
+	feature = "reflect",
+	derive(Reflect),
+	reflect(Component, Default, Clone, Debug)
+)]
+#[cfg_attr(feature = "inspector", derive(InspectorOptions))]
+#[cfg_attr(
+	all(feature = "inspector", feature = "reflect"),
+	reflect(InspectorOptions)
+)]
+// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+// #[cfg_attr(
+// 	all(feature = "serialize", feature = "reflect"),
+// 	reflect(Serialize, Deserialize)
+// )]
 pub struct ActionSocket<A: Action> {
 	#[deref]
 	state: HashMap<A, SignalState<<A as Action>::Signal>>,

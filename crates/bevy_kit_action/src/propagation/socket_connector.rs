@@ -11,24 +11,6 @@ use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 use super::ConnectorTerminal;
 
 /// Optional component, when present next to a Connector with the same
-/// FromAction type, will use the targeted entity to find the socket
-#[derive(Component, Debug, Deref, DerefMut, Reflect)]
-pub struct SocketConnectorSource<A: Action> {
-	#[deref]
-	source: Entity,
-	_phantom_data_action: PhantomData<A>,
-}
-
-impl<A: Action> SocketConnectorSource<A> {
-	pub fn new(source: Entity) -> Self {
-		Self {
-			source,
-			_phantom_data_action: PhantomData,
-		}
-	}
-}
-
-/// Optional component, when present next to a Connector with the same
 /// ToAction type, will use the targeted entity to find the socket
 #[derive(Component, Debug, Deref, DerefMut, Reflect)]
 #[relationship(relationship_target = SocketConnections<A>)]

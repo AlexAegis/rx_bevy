@@ -6,6 +6,8 @@ use bevy::{
 
 use crate::{Action, ActionApp, ActionSocket, ActionSystem, SignalWriter};
 
+use super::KeyboardActionSink;
+
 pub struct KeyboardInputActionSocketPlugin;
 
 impl Plugin for KeyboardInputActionSocketPlugin {
@@ -22,10 +24,6 @@ impl Plugin for KeyboardInputActionSocketPlugin {
 		);
 	}
 }
-
-#[derive(Component, Default, Clone, Debug, Reflect)]
-#[require(Name::new("KeyboardActionSink"))]
-pub struct KeyboardActionSink;
 
 fn setup_keyboard_sink(mut commands: Commands) {
 	commands.spawn((KeyboardActionSink, KeyboardInputSocket::new_latching()));

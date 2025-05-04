@@ -6,6 +6,8 @@ use derive_where::derive_where;
 
 /// # System ordering
 ///
+/// TODO: DON'T EVEN RUN THE SUB GRAPHS OF THE CONNECTOR-SOCKET GRAPH WHERE NO CHANGE HAS HAPPENED, mapping wise, BUTsill process internal operations (to transform) that can retrigger its traversal through the graph, as an optimiziation to not process large graphs all the time every frame, just when something happens. except the root input node, and maybe an api to mark something as changed, so that it will definitely re-run this frame. transforms set the changed flag if a change in output had occured to allow for releases style signals work.the graph should be able to return if it's all settled.
+/// TODO: THERE SHOULD BE A FLAG IN EACH COMPONENT component (for every entity?) or resource with that generic (whole branch skip.) This changed flag wil lbe toggled in a dedicated systemset, where you have to check for a type if the previous 2 frames were the same, then this frame, skip
 /// TODO: Review after implementation if this still holds
 ///
 /// ## Example mapping:

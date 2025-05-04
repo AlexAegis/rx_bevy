@@ -1,13 +1,19 @@
-use bevy::{
-	prelude::{Deref, DerefMut},
-	reflect::Reflect,
-};
+use bevy::{prelude::*, reflect::Reflect};
 
 use crate::Signal;
 
 use super::SignalEvent;
 
-#[derive(Debug, Default, Reflect, Deref, DerefMut)]
+// #[cfg(feature = "serialize")]
+// use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Default, Clone, Deref, DerefMut)]
+#[cfg_attr(feature = "reflect", derive(Reflect), reflect(Clone, Debug))]
+// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+// #[cfg_attr(
+// 	all(feature = "serialize", feature = "reflect"),
+// 	reflect(Serialize, Deserialize)
+// )]
 pub struct SignalState<S: Signal> {
 	#[deref]
 	pub signal: S,
@@ -22,34 +28,4 @@ pub struct SignalState<S: Signal> {
 	/// When events need some persistent state to be fired, like tracking
 	/// when it was last fired. This field is NOT reset between frames.
 	pub(crate) event_state: <<S as Signal>::Event as SignalEvent<S>>::SignalEventState,
-	// Tracks if this signal was written this frame or not. This is used to
-	// determine if the value should be simple set, or according to the
-	// accumulation behavior.
-	//
-	// Resets on Reset
-	// pub(crate) written: bool,
-}
-
-/// Holds all the Signals written this frame, then at the Aggregation stage
-/// it will be combined to a single signal that can be emitted
-/// TODO: Actually implement whats above
-#[derive(Debug, Default, Reflect)]
-pub struct SignalAccumulator<S: Signal> {
-	/// Reverts to its [Default] on [ActionSystem::Reset][`crate::ActionSystem::Reset`]
-	/// for non-latching sockets.
-	pub signal: S,
-	// Tracks if this signal was written this frame or not. This is used to
-	// determine if the value should be simple set, or according to the
-	// accumulation behavior.
-	//
-	// Reverts to `false` on [ActionSystem::Reset][`crate::ActionSystem::Reset`]
-	// pub(crate) written: bool,
-
-	// In most use-cases accumulation isn't used, as long as only one write
-	// happens this frame, this Vec will remain empty
-	//
-	// Empties on [ActionSystem::Reset][`crate::ActionSystem::Reset`]
-	//
-	// TODO: Remove if still unused
-	// pub(crate) all_other_writes_this_frame: Vec<S>,
 }

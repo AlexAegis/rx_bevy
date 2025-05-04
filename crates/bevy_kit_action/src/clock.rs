@@ -1,11 +1,5 @@
-use bevy::reflect::{FromReflect, GetTypeRegistration, Typed};
+use crate::ReflectBound;
 
-pub trait Clock:
-	Default + Copy + Clone + Send + Sync + Typed + FromReflect + GetTypeRegistration + 'static
-{
-}
+pub trait Clock: Default + Copy + Clone + Send + Sync + ReflectBound + 'static {}
 
-impl<T> Clock for T where
-	T: Default + Copy + Clone + Send + Sync + Typed + FromReflect + GetTypeRegistration + 'static
-{
-}
+impl<T> Clock for T where T: Default + Copy + Clone + Send + Sync + ReflectBound + 'static {}

@@ -9,9 +9,18 @@ use super::{
 	determine_phase_transition,
 };
 
+// #[cfg(feature = "serialize")]
+// use serde::{Deserialize, Serialize};
+
 /// An AdsrSignalTransformer takes in a [bool] input and over time turns it
 /// into an AdsrSignal
-#[derive(Default, Debug, Clone, Reflect)]
+#[derive(Default, Debug, Clone)]
+#[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
+// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+// #[cfg_attr(
+// 	all(feature = "serialize", feature = "reflect"),
+// 	reflect(Serialize, Deserialize)
+// )]
 pub struct AdsrSignalTransformer {
 	adsr_envelope_phase: AdsrEnvelopePhase,
 	activation_time_absolute: Option<Duration>,

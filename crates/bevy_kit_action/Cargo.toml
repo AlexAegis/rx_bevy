@@ -15,12 +15,21 @@ workspace = true
 
 [features]
 default = ["dev", "keyboard", "mouse", "gamepad", "reflect"]
-dev = ["bevy/dynamic_linking", "inspector", "debug_ui", "debug_gizmos"]
+dev = [
+    "bevy/dynamic_linking",
+    "inspector",
+    "debug_ui",
+    "debug_gizmos",
+    "serialize",
+]
 inspector = [
+    "reflect",
     "dep:bevy-inspector-egui",
     "dep:bevy_egui",
     "bevy-inspector-egui/bevy_render",
 ]
+reflect = []
+serialize = ["dep:serde", "bevy/serialize"]
 example = [
     "dev",
     "debug_ui",
@@ -42,7 +51,6 @@ mouse = []
 gamepad = ["bevy/bevy_gilrs"]
 debug_gizmos = ["bevy/bevy_gizmos"]
 debug_ui = ["dep:bevy_egui"]
-reflect = []
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
@@ -51,6 +59,8 @@ bevy_egui = { workspace = true, optional = true }
 derive-where = { workspace = true }
 bitflags = { workspace = true }
 smallvec = { workspace = true }
+serde = { workspace = true, optional = true }
+num-traits = { workspace = true }
 
 [dev-dependencies]
 examples_common = { workspace = true }

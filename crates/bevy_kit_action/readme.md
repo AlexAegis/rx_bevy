@@ -73,12 +73,11 @@ Debugging:
 
 ## Questions
 
-- Who to trigger
 - Where to store and how mappings
 
 ## TODO
 
-- Accumulator, what if multiple actions map to the same target action? By default I can just overwrite it with the latest, but an accumulator could combine them
+- ActionCombiner (Chords?), multiple actions trigger one event, only when all of them are active, or a connector mapping to another action, but multiple source inputs
 - Modifiers based off the ADSR value, it modifies Signal
 - Conditions, when can an action trigger based on? idk, but it should return an enum,
 - Put keyboards and inputs behind features
@@ -88,10 +87,3 @@ Debugging:
     check if it starts any of the chords, in a single frame it should be possible
     to trigger multiple steps in a chord, so order matters: finding started chords could be done
     from the actions side, as that's cheaper, but then the rest of the "did it continue" checks must be done from the chords side and search all incoming actions even if they were "processed already"
-- What can an action do?
-  - Start/Activate
-  - Ongoing/InProgress
-  - End/Deactivate
-- Differences between what I want and bevy_enhanced_input
-  - Mappings between actions and actions to different entities. For example if an rc-car controller can be switched between 2 cars
-- Extract the core of this library about envelopes into it's own crate

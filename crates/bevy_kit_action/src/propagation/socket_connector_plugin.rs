@@ -46,6 +46,7 @@ where
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
+		#[cfg(feature = "reflect")]
 		app.register_type::<SocketConnector<C, FromAction, ToAction, Transformer>>()
 			.register_type::<ConnectorTerminal<ToAction>>();
 
@@ -82,9 +83,6 @@ where
 				.after(ActionSystem::InputSocketWrite)
 				.before(ActionSystem::Mapped),
 		);
-
-		// Make sure there is a resource of the converter to use it as the global fallback option
-		// app.init_resource::<Transformer>();
 
 		// Actions are triggered backwards compared to mapping
 		app.configure_sets(
@@ -245,7 +243,7 @@ fn from_terminal_to_socket<A>(
 				signal_map
 					.entry(*to_action)
 					.or_default()
-					.push(signal_accumulator.signal);
+					.push(*signal_accumulator);
 			}
 		}
 

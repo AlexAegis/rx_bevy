@@ -1,13 +1,12 @@
 use std::fmt::Debug;
 
-use bevy::{
-	prelude::*,
-	reflect::{GetTypeRegistration, Typed},
-};
+use bevy::prelude::*;
+
+use crate::ReflectBound;
 
 use super::{
-	SignalAccumulatorOverride, SignalAggregator, SignalBooleanAggregator, SignalEvent,
-	SignalEventBool, SignalNoopEvent, SignalNumberAggregator,
+	SignalAggregator, SignalAggregatorLast, SignalBooleanAggregator, SignalEvent, SignalEventBool,
+	SignalNoopEvent, SignalNumberAggregator,
 };
 
 /// # Signal
@@ -29,9 +28,7 @@ use super::{
 /// a socket and defines how they are combined. Or you can create an instance
 /// yourself by providing it using the [SocketAccumulationBehavior] component
 /// next to the [Socket] with the same [Action] type.
-pub trait Signal:
-	Default + Copy + Send + Sync + Debug + Reflect + GetTypeRegistration + Typed + FromReflect
-{
+pub trait Signal: Default + Clone + Copy + Send + Sync + Debug + ReflectBound {
 	type Aggregator: SignalAggregator<Self>;
 	type Event: SignalEvent<Self>;
 }
@@ -48,14 +45,92 @@ impl Signal for f32 {
 	type Event = SignalNoopEvent;
 }
 
+/// Linear input like a gamepad trigger
+impl Signal for f64 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for i8 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for i16 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for i32 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for i64 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for i128 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for isize {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for u8 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for u16 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for u32 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for u64 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for u128 {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
+/// Linear input like a gamepad trigger
+impl Signal for usize {
+	type Aggregator = SignalNumberAggregator;
+	type Event = SignalNoopEvent;
+}
+
 /// 2d input like a gamepad joystick
 impl Signal for Vec2 {
-	type Aggregator = SignalAccumulatorOverride;
+	type Aggregator = SignalAggregatorLast;
 	type Event = SignalNoopEvent;
 }
 
 /// 3d input like a gyroscope
 impl Signal for Vec3 {
-	type Aggregator = SignalAccumulatorOverride;
+	type Aggregator = SignalAggregatorLast;
 	type Event = SignalNoopEvent;
 }
