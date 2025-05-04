@@ -43,11 +43,11 @@ where
 		SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
 	C: Clock,
 {
-	#[reflect(ignore)]
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	pub default_transformer_constructor: Option<fn() -> Transformer>,
 	pub(crate) signal_transformer_state: HashMap<ToAction, Transformer>,
 	pub action_map: HashMap<FromAction, ToAction>,
-	#[reflect(ignore)]
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	phantom_data_clock: PhantomData<C>,
 }
 

@@ -3,17 +3,17 @@ use crate::SignalAggregator;
 #[cfg(feature = "reflect")]
 use bevy::prelude::*;
 
-// #[cfg(feature = "serialize")]
-// use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 /// Resolves a single boolean from multiple ones
 #[derive(Default, Clone, Debug)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
-// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-// #[cfg_attr(
-// 	all(feature = "serialize", feature = "reflect"),
-// 	reflect(Serialize, Deserialize)
-// )]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(
+	all(feature = "serialize", feature = "reflect"),
+	reflect(Serialize, Deserialize)
+)]
 pub enum SignalBooleanAggregator {
 	/// `true` when any of the input signals are `true`
 	#[default]

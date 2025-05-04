@@ -9,6 +9,9 @@ use bevy_kit_action::{
 };
 use examples_common::send_event;
 
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
+
 /// Simple mapping example
 /// TODO: what about socketed keycode actions
 ///
@@ -98,6 +101,7 @@ fn observe_adsr_events(trigger: Trigger<ActionEvent<ExampleAdsrMoveAction>>) {
 /// Every time this action is fired, it moves the target's translate a unit
 /// on the XY plane
 #[derive(Event, Clone, Copy, Debug, Eq, PartialEq, Hash, Reflect)]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 enum ExampleAdsrMoveAction {
 	Up,
 	Right,

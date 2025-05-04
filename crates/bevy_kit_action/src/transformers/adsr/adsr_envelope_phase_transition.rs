@@ -4,19 +4,19 @@ use smallvec::SmallVec;
 
 use super::{AdsrEnvelopePhase, AdsrSignalEvent};
 
-// #[cfg(feature = "serialize")]
-// use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 /// Describes what happened between this and the last frame, aside from None
 /// other transitions are only present for a single frame, and can be used
 /// in the same fashion as `just_pressed`
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone, Default))]
-// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-// #[cfg_attr(
-// 	all(feature = "serialize", feature = "reflect"),
-// 	reflect(Serialize, Deserialize)
-// )]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(
+	all(feature = "serialize", feature = "reflect"),
+	reflect(Serialize, Deserialize)
+)]
 pub struct AdsrEnvelopePhaseTransition(u8);
 
 bitflags! {

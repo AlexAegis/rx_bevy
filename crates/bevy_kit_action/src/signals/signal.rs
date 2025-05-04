@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use bevy::prelude::*;
 
-use crate::ReflectBound;
+use crate::{ReflectBound, SerializeBound};
 
 use super::{
 	SignalAggregator, SignalAggregatorLast, SignalBooleanAggregator, SignalEvent, SignalEventBool,
@@ -28,7 +28,9 @@ use super::{
 /// a socket and defines how they are combined. Or you can create an instance
 /// yourself by providing it using the [SocketAccumulationBehavior] component
 /// next to the [Socket] with the same [Action] type.
-pub trait Signal: Default + Clone + Copy + Send + Sync + Debug + ReflectBound {
+pub trait Signal:
+	Default + Clone + Copy + Send + Sync + Debug + ReflectBound + SerializeBound
+{
 	type Aggregator: SignalAggregator<Self>;
 	type Event: SignalEvent<Self>;
 }

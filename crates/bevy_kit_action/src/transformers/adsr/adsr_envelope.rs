@@ -3,29 +3,29 @@ use std::time::Duration;
 
 use super::AdsrEnvelopePhase;
 
-// #[cfg(feature = "serialize")]
-// use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 // TODO: Maybe this could actually be a DAHDSR (delay, attack, hold, decay, sustain, release) envelope. (But keep the name Adsr, it's more known)
 #[derive(Debug, Clone, Copy, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
-// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-// #[cfg_attr(
-// 	all(feature = "serialize", feature = "reflect"),
-// 	reflect(Serialize, Deserialize)
-// )]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(
+	all(feature = "serialize", feature = "reflect"),
+	reflect(Serialize, Deserialize)
+)]
 pub struct AdsrEnvelope {
 	pub attack_time: Duration,
 	/// How does the attack duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
-	#[reflect(ignore)]
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	pub attack_easing: Option<EaseFunction>,
 	pub decay_time: Duration,
 	/// How does the decay duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
-	#[reflect(ignore)]
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	pub decay_easing: Option<EaseFunction>,
 	/// What value should be reached by decay. Should be between 0.0 and 1.0,
 	/// TODO: If there is any behavior regarding values outside of this range, mention it here
@@ -36,7 +36,7 @@ pub struct AdsrEnvelope {
 	/// How does the release duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
-	#[reflect(ignore)]
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	pub release_easing: Option<EaseFunction>,
 }
 

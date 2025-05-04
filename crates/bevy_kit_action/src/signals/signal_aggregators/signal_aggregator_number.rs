@@ -10,16 +10,16 @@ use crate::{Signal, SignalAggregator};
 #[cfg(feature = "reflect")]
 use bevy::prelude::*;
 
-// #[cfg(feature = "serialize")]
-// use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 #[derive(Default, Clone, Debug)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
-// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-// #[cfg_attr(
-// 	all(feature = "serialize", feature = "reflect"),
-// 	reflect(Serialize, Deserialize)
-// )]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(
+	all(feature = "serialize", feature = "reflect"),
+	reflect(Serialize, Deserialize)
+)]
 pub enum SignalNumberAggregator {
 	#[default]
 	Max,
@@ -55,7 +55,7 @@ impl<
 			SignalNumberAggregator::Min => signals.min_by(partial_ord_compare).unwrap_or_default(),
 			SignalNumberAggregator::Multiply => signals.fold(S::one(), |a, b| a * b),
 			SignalNumberAggregator::Average => {
-				let (sum, count) = signals.fold((S::zero(), S::one()), |(sum, count), x| {
+				let (sum, count) = signals.fold((S::zero(), S::zero()), |(sum, count), x| {
 					(sum + x, count + S::one())
 				});
 				if count == S::zero() {

@@ -4,16 +4,16 @@ use crate::{SignalEvent, SignalEventVec};
 
 use super::{AdsrEnvelopePhase, AdsrSignal};
 
-// #[cfg(feature = "serialize")]
-// use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 #[derive(Event, Clone, Debug)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
-// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-// #[cfg_attr(
-// 	all(feature = "serialize", feature = "reflect"),
-// 	reflect(Serialize, Deserialize)
-// )]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(
+	all(feature = "serialize", feature = "reflect"),
+	reflect(Serialize, Deserialize)
+)]
 pub enum AdsrSignalEvent {
 	/// Fired immediately upon activation
 	Start,

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-// #[cfg(feature = "serialize")]
-// use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
@@ -17,11 +17,11 @@ use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 	all(feature = "inspector", feature = "reflect"),
 	reflect(InspectorOptions)
 )]
-// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-// #[cfg_attr(
-// 	all(feature = "serialize", feature = "reflect"),
-// 	reflect(Serialize, Deserialize)
-// )]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(
+	all(feature = "serialize", feature = "reflect"),
+	reflect(Serialize, Deserialize)
+)]
 pub enum SocketTriggerTarget {
 	#[default]
 	This,

@@ -3,8 +3,8 @@ use derive_where::derive_where;
 
 use crate::{Action, Signal, SignalState};
 
-// #[cfg(feature = "serialize")]
-// use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
@@ -23,12 +23,13 @@ use super::SignalWriter;
 	all(feature = "inspector", feature = "reflect"),
 	reflect(InspectorOptions)
 )]
-// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-// #[cfg_attr(
-// 	all(feature = "serialize", feature = "reflect"),
-// 	reflect(Serialize, Deserialize)
-// )]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(
+	all(feature = "serialize", feature = "reflect"),
+	reflect(Serialize, Deserialize)
+)]
 pub struct ActionSocket<A: Action> {
+	#[cfg_attr(feature = "serialize", serde(bound(deserialize = "A: Action")))]
 	#[deref]
 	state: HashMap<A, SignalState<<A as Action>::Signal>>,
 	/// Normally after every frame, signals reset to their default value

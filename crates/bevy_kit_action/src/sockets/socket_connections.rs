@@ -21,6 +21,6 @@ pub struct SocketConnections<A: Action> {
 	#[deref]
 	#[relationship]
 	sources: Vec<Entity>,
-	#[reflect(ignore)]
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data_action: PhantomData<A>,
 }

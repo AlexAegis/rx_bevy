@@ -1,8 +1,8 @@
 #[cfg(feature = "reflect")]
 use bevy::prelude::*;
 
-// #[cfg(feature = "serialize")]
-// use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 /// ActionPhase mimics an ADSR envelope, where actions don't necessarily Fire
 /// the moment they start, maybe it needs to be held for a time to do that.
@@ -10,11 +10,11 @@ use bevy::prelude::*;
 /// the phase is sustained and once it stops it enters the release phase
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Debug)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
-// #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-// #[cfg_attr(
-// 	all(feature = "serialize", feature = "reflect"),
-// 	reflect(Serialize, Deserialize)
-// )]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(
+	all(feature = "serialize", feature = "reflect"),
+	reflect(Serialize, Deserialize)
+)]
 pub enum AdsrEnvelopePhase {
 	/// The default state, nothing is happening here
 	#[default]
