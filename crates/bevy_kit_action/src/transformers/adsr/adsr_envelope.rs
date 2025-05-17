@@ -143,6 +143,7 @@ impl AdsrEnvelope {
 	}
 }
 
+/// TODO: Impl, this is for connecting adsr envelopes back to booleans so it will need something else like a connector thing
 #[derive(Debug, Clone, Copy, Default, Reflect)]
 pub struct ActionActuationPreferences {
 	trigger_rule: ActionTriggerRule,

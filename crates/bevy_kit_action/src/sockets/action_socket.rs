@@ -40,7 +40,7 @@ pub struct ActionSocket<A: Action> {
 }
 
 /// Controls how the socket should behave on subsequent writes, by default
-/// TODO: finish comment
+/// it will use the default aggregator of the signal
 #[derive(Component, Debug, Deref, DerefMut, Reflect)]
 #[cfg_attr(feature = "inspector", derive(InspectorOptions))]
 #[cfg_attr(feature = "inspector", reflect(Component, InspectorOptions))]

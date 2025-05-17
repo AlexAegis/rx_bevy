@@ -24,7 +24,7 @@ bitflags! {
 		/// [ActionEnvelopeState::empty()] -> [ActionEnvelopeState::Attack]
 		/// The action has started getting activated.
 		/// ! Only present if the action has an attackTime other than 0, otherwise
-		/// ! will only observe the Fire transition
+		/// ! will only observe the Fire transition (re-trigger)
 		const Start = 0b00000001;
 		/// [ActionEnvelopeState::Attack] -> [ActionEnvelopeState::Decay]
 		/// The action is now fully activated and `attackTime` has passed.

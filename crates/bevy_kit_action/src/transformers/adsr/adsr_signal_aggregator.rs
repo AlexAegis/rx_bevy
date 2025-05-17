@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 )]
 pub struct AdsrSignalAggregator;
 
+/// TODO: Impl combination, for now it just returns the first signal, new behavior options may be added to AdsrSignalAggregator
 impl SignalAggregator<AdsrSignal> for AdsrSignalAggregator {
 	fn combine(&self, mut signals: impl Iterator<Item = AdsrSignal>) -> AdsrSignal {
 		signals.next().unwrap_or_default()

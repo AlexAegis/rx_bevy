@@ -51,10 +51,10 @@ bevy = { version = "0.16", default-features = false, features = [
 ] }
 bevy-inspector-egui = { version = "0.31.0", default-features = false }
 bevy_egui = { version = "0.34.1", features = ["immutable_ctx"] }
-bevy_kit_action = { path = "crates/bevy_kit_action" }
 derive-where = { version = "1.2.7" }
-examples_common = { path = "crates/examples_common" }
-bitflags = { version = "2.9.0" }
+bitflags = { version = "2.9.1" }
 smallvec = { version = "1.15.0" }
 serde = { version = "1.0.219" }
 num-traits = { version = "0.2.19" }
+bevy_kit_action = { path = "crates/bevy_kit_action" }
+examples_common = { path = "crates/examples_common" }

@@ -4,9 +4,10 @@ use bevy::prelude::*;
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
-/// ActionPhase mimics an ADSR envelope, where actions don't necessarily Fire
-/// the moment they start, maybe it needs to be held for a time to do that.
-/// After firing the action may still getting activated, as long as this happens
+/// AdsrEnvelopePhase mimics an ADSR envelope, where actions don't necessarily
+/// Fire the moment they start, it needs to be activated for an `attackTime`
+/// time to do that.
+/// After firing, it may still getting activated, as long as this happens
 /// the phase is sustained and once it stops it enters the release phase
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Debug)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]

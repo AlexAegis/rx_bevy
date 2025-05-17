@@ -97,6 +97,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 			ActionSocket::<ExampleDiscreteMoveAction>::default(),
 		))
+		.observe(move_action_observer)
 		.id();
 
 	let target_2 = commands
@@ -107,6 +108,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 			ActionSocket::<ExampleDiscreteMoveAction>::default(),
 		))
+		.observe(move_action_observer)
 		.id();
 
 	let target_3 = commands
@@ -146,23 +148,6 @@ fn move_action_observer(
 	}
 }
 
-/*
-fn directly_handle_discrete_move_action(
-	mut action_socket_query: Query<(&mut Transform, &ActionSocket<ExampleDiscreteMoveAction>)>,
-) {
-	for (mut transform, action_socket) in action_socket_query.iter_mut() {
-		for (action, _state) in action_socket.iter_signals().filter(|(_, state)| **state) {
-			let direction = match action {
-				ExampleDiscreteMoveAction::Up => -Vec3::Z,
-				ExampleDiscreteMoveAction::Down => Vec3::Z,
-				ExampleDiscreteMoveAction::Left => -Vec3::X,
-				ExampleDiscreteMoveAction::Right => Vec3::X,
-			};
-			transform.translation += direction * 0.05;
-		}
-	}
-}
-*/
 fn gizmo_to_target(
 	mut gizmos: Gizmos,
 	player_query: Query<(Entity, &SocketConnectorTarget<ExampleDiscreteMoveAction>), With<Player>>,

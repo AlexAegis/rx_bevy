@@ -9,14 +9,14 @@ use super::{ActionEvent, SocketTriggerTarget};
 
 /// Emit events defined by the signals of each action
 #[derive_where(Default)]
-pub struct ActionTriggerPlugin<A>
+pub struct ActionEventTriggerPlugin<A>
 where
 	A: Action,
 {
 	_phantom_data_action: PhantomData<A>,
 }
 
-impl<A> Plugin for ActionTriggerPlugin<A>
+impl<A> Plugin for ActionEventTriggerPlugin<A>
 where
 	A: Action,
 {

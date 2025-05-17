@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{Action, ActionSocketPlugin, ActionTriggerPlugin, KeyboardInputActionSocketPlugin};
+use crate::{
+	Action, ActionEventTriggerPlugin, ActionSocketPlugin, KeyboardInputActionSocketPlugin,
+};
 
 pub struct ActionPlugin;
 
@@ -20,7 +22,7 @@ impl ActionApp for App {
 		self.register_type::<A>();
 
 		self.add_plugins(ActionSocketPlugin::<A>::default());
-		self.add_plugins(ActionTriggerPlugin::<A>::default());
+		self.add_plugins(ActionEventTriggerPlugin::<A>::default());
 
 		self
 	}
