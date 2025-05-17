@@ -57,19 +57,17 @@ fn setup(
 	));
 
 	let mut socket_connector =
-		SocketConnector::<Virtual, KeyCode, ExampleAdsrMoveAction, AdsrSignalTransformer>::new(
-			|| {
-				AdsrSignalTransformer::new(AdsrEnvelope {
-					attack_time: Duration::from_millis(400),
-					attack_easing: Some(EaseFunction::CubicOut),
-					decay_time: Duration::from_millis(200),
-					decay_easing: Some(EaseFunction::BackInOut),
-					release_time: Duration::from_millis(800),
-					release_easing: Some(EaseFunction::Linear),
-					sustain_volume: 0.6,
-				})
-			},
-		);
+		SocketConnector::<KeyCode, ExampleAdsrMoveAction, AdsrSignalTransformer>::new(|| {
+			AdsrSignalTransformer::new(AdsrEnvelope {
+				attack_time: Duration::from_millis(400),
+				attack_easing: Some(EaseFunction::CubicOut),
+				decay_time: Duration::from_millis(200),
+				decay_easing: Some(EaseFunction::BackInOut),
+				release_time: Duration::from_millis(800),
+				release_easing: Some(EaseFunction::Linear),
+				sustain_volume: 0.6,
+			})
+		});
 	socket_connector
 		.action_map
 		.insert(KeyCode::KeyW, ExampleAdsrMoveAction::Up);

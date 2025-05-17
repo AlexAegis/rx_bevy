@@ -23,11 +23,11 @@ pub struct ChangeTrackingTransformer<S: Signal> {
 	_phantom_data_signal: PhantomData<S>,
 }
 
-impl<S: Signal + PartialEq, C: Clock> SignalTransformer<C> for ChangeTrackingTransformer<S> {
+impl<S: Signal + PartialEq> SignalTransformer for ChangeTrackingTransformer<S> {
 	type InputSignal = S;
 	type OutputSignal = bool;
 
-	fn transform(
+	fn transform<C: Clock>(
 		&mut self,
 		signal: &Self::InputSignal,
 		context: super::SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,

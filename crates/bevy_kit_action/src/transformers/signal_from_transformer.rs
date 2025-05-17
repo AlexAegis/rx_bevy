@@ -25,13 +25,13 @@ pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<Fro
 	_phantom_data_to_signal: PhantomData<ToSignal>,
 }
 
-impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>, C: Clock> SignalTransformer<C>
+impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> SignalTransformer
 	for SignalFromTransformer<FromSignal, ToSignal>
 {
 	type InputSignal = FromSignal;
 	type OutputSignal = ToSignal;
 
-	fn transform(
+	fn transform<C: Clock>(
 		&mut self,
 		signal: &Self::InputSignal,
 		_context: super::SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,

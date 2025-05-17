@@ -49,11 +49,11 @@ impl AdsrSignalTransformer {
 	}
 }
 
-impl<C: Clock> SignalTransformer<C> for AdsrSignalTransformer {
+impl SignalTransformer for AdsrSignalTransformer {
 	type InputSignal = bool;
 	type OutputSignal = AdsrSignal;
 
-	fn transform(
+	fn transform<C: Clock>(
 		&mut self,
 		signal: &Self::InputSignal,
 		context: crate::SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,

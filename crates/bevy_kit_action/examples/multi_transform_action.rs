@@ -2,8 +2,8 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
-	Action, ActionPlugin, ActionSocket, SignalFromTransformer, SocketConnector,
-	SocketConnectorPlugin,
+	Action, ActionPlugin, ActionSocket, SignalFromTransformer, SignalTransformerAppExtension,
+	SocketConnector, SocketConnectorPlugin,
 };
 use examples_common::send_event;
 
@@ -20,6 +20,7 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 		))
+		.register_signal_transformer::<SignalFromTransformer<bool, bool>>()
 		.add_plugins((
 			ActionPlugin,
 			SocketConnectorPlugin::<
@@ -49,7 +50,6 @@ fn setup(
 	));
 
 	let mut socket_connector = SocketConnector::<
-		Virtual,
 		KeyCode,
 		ExampleDiscreteMoveAction,
 		SignalFromTransformer<bool, bool>,

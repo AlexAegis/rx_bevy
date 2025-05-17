@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 
-use crate::{Action, Clock, SignalTransformer, SocketConnections};
+use crate::{Action, SignalTransformer, SocketConnections};
 
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
@@ -35,29 +35,25 @@ impl<A: Action> SocketConnectorTarget<A> {
 #[derive_where(Default)]
 #[cfg_attr(feature = "inspector", derive(InspectorOptions))]
 #[cfg_attr(feature = "inspector", reflect(Component, InspectorOptions))]
-pub struct SocketConnector<C, FromAction, ToAction, Transformer>
+pub struct SocketConnector<FromAction, ToAction, Transformer>
 where
 	FromAction: Action,
 	ToAction: Action,
 	Transformer:
-		SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
-	C: Clock,
+		SignalTransformer<InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
 {
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	pub default_transformer_constructor: Option<fn() -> Transformer>,
 	pub(crate) signal_transformer_state: HashMap<ToAction, Transformer>,
 	pub action_map: HashMap<FromAction, ToAction>,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	phantom_data_clock: PhantomData<C>,
 }
 
-impl<C, FromAction, ToAction, Transformer> SocketConnector<C, FromAction, ToAction, Transformer>
+impl<FromAction, ToAction, Transformer> SocketConnector<FromAction, ToAction, Transformer>
 where
 	FromAction: Action,
 	ToAction: Action,
 	Transformer:
-		SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
-	C: Clock,
+		SignalTransformer<InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
 {
 	#[must_use]
 	pub fn new(default_transformer: fn() -> Transformer) -> Self {

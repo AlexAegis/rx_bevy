@@ -61,7 +61,6 @@ fn setup(
 	));
 
 	let mut socket_connector = SocketConnector::<
-		Virtual,
 		KeyCode,
 		ExampleDiscreteMoveAction,
 		IdentitySignalTransformer<bool>,

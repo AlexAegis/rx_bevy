@@ -26,7 +26,7 @@ pub struct SocketConnectorPlugin<
 	FromAction: Action,
 	ToAction: Action,
 	Transformer:
-		SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
+		SignalTransformer<InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
 {
 	_phantom_data_from_action: PhantomData<FromAction>,
 	_phantom_data_to_action: PhantomData<ToAction>,
@@ -39,7 +39,7 @@ impl<C, FromAction, ToAction, Transformer> Plugin
 where
 	FromAction: Action,
 	ToAction: Action,
-	Transformer: SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>
+	Transformer: SignalTransformer<InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>
 		+ 'static
 		+ Send
 		+ Sync,
@@ -47,7 +47,7 @@ where
 {
 	fn build(&self, app: &mut App) {
 		#[cfg(feature = "reflect")]
-		app.register_type::<SocketConnector<C, FromAction, ToAction, Transformer>>()
+		app.register_type::<SocketConnector<FromAction, ToAction, Transformer>>()
 			.register_type::<ConnectorTerminal<ToAction>>();
 
 		if !app.is_plugin_added::<ActionSocketPlugin<ToAction>>() {
@@ -111,7 +111,7 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 	mut to_action_socket_query: Query<&mut ActionSocket<ToAction>>,
 	mut action_socket_query: Query<(
 		Entity,
-		&mut SocketConnector<C, FromAction, ToAction, Transformer>,
+		&mut SocketConnector<FromAction, ToAction, Transformer>,
 		&mut ConnectorTerminal<ToAction>,
 		Option<&SocketAggregator<ToAction>>,
 		Option<&SocketConnectorSource<FromAction>>,
@@ -123,7 +123,7 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 ) where
 	FromAction: Action,
 	ToAction: Action,
-	Transformer: SignalTransformer<C, InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>
+	Transformer: SignalTransformer<InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>
 		+ 'static
 		+ Send
 		+ Sync,

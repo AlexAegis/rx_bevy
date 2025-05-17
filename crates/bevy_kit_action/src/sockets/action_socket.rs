@@ -41,10 +41,18 @@ pub struct ActionSocket<A: Action> {
 
 /// Controls how the socket should behave on subsequent writes, by default
 /// it will use the default aggregator of the signal
-#[derive(Component, Debug, Deref, DerefMut, Reflect)]
-#[cfg_attr(feature = "inspector", derive(InspectorOptions))]
-#[cfg_attr(feature = "inspector", reflect(Component, InspectorOptions))]
+#[derive(Component, Debug, Deref, DerefMut)]
 #[derive_where(Default)]
+#[cfg_attr(
+	feature = "reflect",
+	derive(Reflect),
+	reflect(Component, Default, Debug)
+)]
+#[cfg_attr(feature = "inspector", derive(InspectorOptions))]
+#[cfg_attr(
+	all(feature = "inspector", feature = "reflect"),
+	reflect(InspectorOptions)
+)]
 pub struct SocketAggregator<A: Action>(<<A as Action>::Signal as Signal>::Aggregator);
 
 impl<A: Action> ActionSocket<A> {

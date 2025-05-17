@@ -25,11 +25,11 @@ pub struct IdentitySignalTransformer<S: Signal> {
 	_phantom_data_signal: PhantomData<S>,
 }
 
-impl<S: Signal, C: Clock> SignalTransformer<C> for IdentitySignalTransformer<S> {
+impl<S: Signal> SignalTransformer for IdentitySignalTransformer<S> {
 	type InputSignal = S;
 	type OutputSignal = Self::InputSignal;
 
-	fn transform(
+	fn transform<C: Clock>(
 		&mut self,
 		signal: &Self::InputSignal,
 		_context: SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,
