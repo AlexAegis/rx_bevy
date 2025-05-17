@@ -27,7 +27,7 @@ where
 		app.configure_sets(
 			PreUpdate,
 			ActionSystemFor::<A>::Trigger
-				.after(ActionSystem::Mapped)
+				.after(ActionSystem::PropagationDone)
 				.before(ActionSystem::Triggered),
 		);
 

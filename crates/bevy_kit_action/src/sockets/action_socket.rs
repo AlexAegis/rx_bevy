@@ -1,7 +1,7 @@
 use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 
-use crate::{Action, Signal, SignalState};
+use crate::{Action, Signal, SignalState, SocketActionMap};
 
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
@@ -79,6 +79,26 @@ impl<A: Action> ActionSocket<A> {
 		self.state
 			.iter()
 			.map(|(action, container)| (action, &container.signal))
+	}
+
+	pub fn iter_mappable_containers<'a, ToAction: Action>(
+		&'a self,
+		map: &'a SocketActionMap<A, ToAction>,
+	) -> impl Iterator<Item = (&'a A, &'a ToAction, &'a SignalState<<A as Action>::Signal>)> {
+		self.state.iter().flat_map(|(action, container)| {
+			map.get(action)
+				.map(|to_action| (action, to_action, container))
+		})
+	}
+
+	pub fn iter_mappable_signals<'a, ToAction: Action>(
+		&'a self,
+		map: &'a SocketActionMap<A, ToAction>,
+	) -> impl Iterator<Item = (&'a A, &'a ToAction, &'a A::Signal)> {
+		self.state.iter().flat_map(|(action, container)| {
+			map.get(action)
+				.map(|to_action| (action, to_action, &container.signal))
+		})
 	}
 
 	pub fn read(&self, action: &A) -> Option<&A::Signal> {

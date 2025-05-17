@@ -28,7 +28,7 @@ pub struct AdsrSignalTransformer {
 	deactivation_value: Option<f32>,
 	adsr_phase_transition: AdsrEnvelopePhaseTransition,
 	t_relative: Stopwatch,
-	output_signal: AdsrSignal,
+	last_frame_output_signal: AdsrSignal,
 	pub envelope: AdsrEnvelope,
 }
 
@@ -56,13 +56,13 @@ impl SignalTransformer for AdsrSignalTransformer {
 	fn transform<C: Clock>(
 		&mut self,
 		signal: &Self::InputSignal,
-		context: crate::SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,
+		context: crate::SignalTransformContext<'_, C, Self::InputSignal>,
 	) -> Self::OutputSignal {
 		if !context.last_frame_input_signal && *signal {
 			self.reset();
 			self.activation_time_absolute = Some(context.time.elapsed());
 		} else if *context.last_frame_input_signal && !signal {
-			self.deactivation_value = Some(context.last_frame_output_signal.value);
+			self.deactivation_value = Some(self.last_frame_output_signal.value);
 			self.deactivation_time_relative = Some(self.t_relative.elapsed());
 		}
 
@@ -79,7 +79,7 @@ impl SignalTransformer for AdsrSignalTransformer {
 
 		self.adsr_envelope_phase = adsr_envelope_phase;
 		self.adsr_phase_transition = determine_phase_transition(
-			context.last_frame_output_signal.adsr_envelope_phase,
+			self.last_frame_output_signal.adsr_envelope_phase,
 			self.adsr_envelope_phase,
 		);
 
@@ -97,11 +97,15 @@ impl SignalTransformer for AdsrSignalTransformer {
 			);
 		}
 
-		AdsrSignal {
+		let result = AdsrSignal {
 			adsr_envelope_phase,
 			phase_transition: self.adsr_phase_transition,
 			value,
 			t: self.t_relative.elapsed(),
-		}
+		};
+
+		self.last_frame_output_signal = result;
+
+		result
 	}
 }

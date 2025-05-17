@@ -5,8 +5,9 @@ use bevy::{platform::collections::HashMap, prelude::*};
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 
-use super::{InputOutputSignalKey, SignalTransformer, SignalTransformerPlugin};
+use super::{SignalKeyPair, SignalTransformer, SignalTransformerPlugin};
 
+/// TODO: Maybe this is unnecessary, instances are stored on entities because they are stateful
 #[derive(Resource, Default, Deref, DerefMut)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Resource, Default))]
 #[cfg_attr(feature = "inspector", derive(InspectorOptions))]
@@ -18,7 +19,7 @@ pub struct SignalTransformerRegistry {
 	// erased, later reified
 	#[deref]
 	#[reflect(ignore)]
-	pub(crate) transformers: HashMap<InputOutputSignalKey, Box<dyn Any + Send + Sync + 'static>>,
+	pub(crate) transformers: HashMap<SignalKeyPair, Box<dyn Any + Send + Sync + 'static>>,
 }
 
 impl SignalTransformerRegistry {

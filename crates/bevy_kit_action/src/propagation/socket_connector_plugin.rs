@@ -10,9 +10,11 @@ use crate::{
 	SocketConnections,
 };
 
-use super::{ConnectorTerminal, SocketConnector, SocketConnectorSource, SocketConnectorTarget};
+use super::{ConnectorTerminal, SocketConnector, SocketConnectorSource};
 
 /// Copies and transforms signals between sockets
+/// 1(A) -> 2(B) -> 3(C)
+///     \-> 4(A) -> 5(B)
 #[derive_where(Default)]
 pub struct SocketConnectorPlugin<
 	C: Clock,
@@ -58,14 +60,14 @@ where
 			PreUpdate,
 			ActionSystemFor::<FromAction>::TerminalWriteToSocket
 				.after(ActionSystem::InputSocketWrite)
-				.before(ActionSystem::Mapped),
+				.before(ActionSystem::PropagationDone),
 		);
 
 		app.configure_sets(
 			PreUpdate,
 			ActionSystemFor::<ToAction>::SocketReadByConnectorWriteToTerminal
 				.after(ActionSystem::InputSocketWrite)
-				.before(ActionSystem::Mapped),
+				.before(ActionSystem::PropagationDone),
 		);
 
 		app.configure_sets(
@@ -73,7 +75,7 @@ where
 			ActionSystemFor::<FromAction>::SocketReadByConnectorWriteToTerminal
 				.before(ActionSystemFor::<ToAction>::TerminalWriteToSocket)
 				.after(ActionSystem::InputSocketWrite)
-				.before(ActionSystem::Mapped),
+				.before(ActionSystem::PropagationDone),
 		);
 
 		app.configure_sets(
@@ -81,7 +83,7 @@ where
 			ActionSystemFor::<ToAction>::TerminalWriteToSocket
 				.after(ActionSystemFor::<FromAction>::SocketReadByConnectorWriteToTerminal)
 				.after(ActionSystem::InputSocketWrite)
-				.before(ActionSystem::Mapped),
+				.before(ActionSystem::PropagationDone),
 		);
 
 		// Actions are triggered backwards compared to mapping
@@ -115,7 +117,6 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 		&mut ConnectorTerminal<ToAction>,
 		Option<&SocketAggregator<ToAction>>,
 		Option<&SocketConnectorSource<FromAction>>,
-		Option<&SocketConnectorTarget<ToAction>>,
 	)>,
 	// TODO: Should not be treated specially, as a global registered/root actionSocket of A
 	keyboard_socket_query: Query<Entity, With<KeyboardInputSocket>>,
@@ -138,7 +139,6 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 		mut connector_terminal,
 		aggregation_behavior,
 		connector_source_opt,
-		connector_target_opt,
 	) in action_socket_query.iter_mut()
 	{
 		let from_action_socket = connector_source_opt
@@ -151,19 +151,7 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 			});
 
 		// This looks ugly but otherwise you'd get borrow problems
-		let to_action_socket = {
-			let exists_on_connector_target = connector_target_opt
-				.map(|target| to_action_socket_query.contains(target.entity()))
-				.unwrap_or(false);
-
-			let entity = if exists_on_connector_target {
-				connector_target_opt.unwrap().entity()
-			} else {
-				connector_entity
-			};
-
-			to_action_socket_query.get_mut(entity).ok()
-		};
+		let to_action_socket = { to_action_socket_query.get_mut(connector_entity).ok() };
 
 		let Some(from_action_socket) = from_action_socket else {
 			// trace!("detached connector, missing source socket!");
@@ -193,11 +181,11 @@ fn from_socket_through_connector_to_terminal<FromAction, ToAction, Transformer, 
 
 				let value = transformer.transform(
 					&from_action_signal_state.signal,
-					SignalTransformContext::<'_, C, FromAction::Signal, ToAction::Signal> {
+					SignalTransformContext::<'_, C, FromAction::Signal> {
 						time: &time,
 						last_frame_input_signal: &from_action_signal_state.last_frame_signal,
-						last_frame_output_signal: to_action_socket
-							.read_last_frame_signal_or_default(&to_action),
+						// last_frame_output_signal: to_action_socket
+						// 	.read_last_frame_signal_or_default(&to_action),
 					},
 				);
 
@@ -233,7 +221,10 @@ fn from_terminal_to_socket<A>(
 	{
 		let sources = Iterator::chain(
 			std::iter::once(entity),
-			connections.map(|c| c.entities()).into_iter().flatten(),
+			connections
+				.map(|c| c.get_trigger_targets())
+				.into_iter()
+				.flatten(),
 		);
 
 		let mut signal_map = HashMap::<A, SmallVec<[A::Signal; 4]>>::new();

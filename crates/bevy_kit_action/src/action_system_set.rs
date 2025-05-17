@@ -59,7 +59,7 @@ pub enum ActionSystem {
 	InputSocketWrite,
 	/// This empty set is used to ensure systems that has to be run after
 	/// mapping are definitely happen after everything has been mapped
-	Mapped,
+	PropagationDone,
 	/// This empty set is used to let other systems know that all observers
 	/// have been triggered
 	Triggered,
@@ -70,6 +70,8 @@ pub enum ActionSystem {
 #[derive(SystemSet, Hash, Debug)]
 #[derive_where(Clone, Eq, PartialEq)]
 pub enum ActionSystemFor<A: Action> {
+	Propagate,
+	Map,
 	SocketReadByConnectorWriteToTerminal,
 	/// This is the stage where action `A` gets mapped from all its mappings
 	TerminalWriteToSocket,

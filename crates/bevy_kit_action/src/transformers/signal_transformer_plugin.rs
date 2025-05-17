@@ -17,10 +17,10 @@ impl<InputSignal: Signal + 'static, OutputSignal: Signal + 'static> Plugin
 	fn build(&self, _app: &mut App) {}
 }
 
-pub struct SignalTransformContext<'a, C: Clock, InputSignal: Signal, OutputSignal: Signal> {
+pub struct SignalTransformContext<'a, C: Clock, InputSignal: Signal> {
 	pub time: &'a Res<'a, Time<C>>,
 	pub last_frame_input_signal: &'a InputSignal,
-	pub last_frame_output_signal: &'a OutputSignal,
+	// pub last_frame_output_signal: &'a OutputSignal,
 }
 
 // TODO: Maybe a Vec of transformers, that is created from a tuple of them? it would need to be typesafe so that input and outputs match along the chain

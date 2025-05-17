@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::Action;
+use crate::{Action, SocketConnections};
 use bevy::prelude::*;
 
 #[cfg(feature = "serialize")]
@@ -12,6 +12,7 @@ use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 /// Optional component, when present next to a Connector with the same
 /// FromAction type, will use the targeted entity to find the socket
 #[derive(Component, Debug, Deref, DerefMut)]
+#[relationship(relationship_target = SocketConnections<A>)]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(Component, Debug))]
 #[cfg_attr(feature = "inspector", derive(InspectorOptions))]
 #[cfg_attr(
@@ -25,6 +26,7 @@ use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
 )]
 pub struct SocketConnectorSource<A: Action> {
 	#[deref]
+	#[relationship]
 	source: Entity,
 	_phantom_data_action: PhantomData<A>,
 }

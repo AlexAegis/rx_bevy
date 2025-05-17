@@ -4,6 +4,15 @@ TODO: Rename to bevy_socketed_actions? Or bevy_action_socket? bevy_sock? signals
 
 An input mapper solution
 
+## Areas
+
+- State
+  - Stuff that holds data, like sockets
+- Propagation
+  - Stuff that defines how state moves between sockets
+- Notification
+  - How the fully propagated state is then output for observers
+
 ## Concepts
 
 - Signal
