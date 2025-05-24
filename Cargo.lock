@@ -1070,21 +1070,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_pipes_core"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_egui",
- "bitflags 2.9.1",
- "derive-where",
- "examples_common",
- "num-traits",
- "serde",
- "smallvec",
-]
-
-[[package]]
 name = "bevy_platform"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
