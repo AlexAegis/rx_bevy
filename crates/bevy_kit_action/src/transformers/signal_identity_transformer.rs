@@ -32,7 +32,7 @@ impl<S: Signal> SignalTransformer for IdentitySignalTransformer<S> {
 	fn transform<C: Clock>(
 		&mut self,
 		signal: &Self::InputSignal,
-		_context: SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,
+		_context: SignalTransformContext<'_, C, Self::InputSignal>,
 	) -> Self::OutputSignal {
 		*signal
 	}

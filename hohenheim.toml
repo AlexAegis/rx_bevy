@@ -1,0 +1,61 @@
+[unstable]
+codegen-backend = true
+
+[profile]
+incremental = true
+
+[profile.dev]
+codegen-backend = "cranelift"
+
+# Consider compiling deps with llvm for runtime perf and working `#[should_panic]`
+# If you don't have any tests that `#[should_panic]`, comment this out for *massive* speedups
+# For me, it makes a 16 minute build take 6 minutes.
+[profile.dev.package."*"]
+codegen-backend = "llvm"
+
+# Disable cranelift for release profile
+[profile.release]
+codegen-backend = "llvm"
+
+# cranelift cannot build wasm32-unknown-unknown out of the box
+[profile.web]
+codegen-backend = "llvm"
+
+[build]
+# target-dir = "/home/your_name/.cargo/global-target"
+# ^ Using a global target-dir is a great way to do caching
+# but breaks subsecond when used with mold!
+# Use `ln -s /home/your_name/.cargo/global_target target` instead
+
+[target.wasm32-unknown-unknown]
+# We cannot really change the linker for wasm32-unknown-unknown
+rustflags = [
+  "--cfg",
+  "getrandom_backend=\"wasm_js\"",
+  # Nightly
+  "-Zshare-generics=y",
+  "-Zthreads=0",
+]
+rustdocflags = [
+  "--cfg",
+  "getrandom_backend=\"wasm_js\"",
+  # Nightly
+  "-Zshare-generics=y",
+  "-Zthreads=0",
+]
+
+
+[target.x86_64-unknown-linux-gnu]
+# Not setting linker explicitly to mold because it is already globally symlinked to ld
+rustflags = [
+  # Nightly
+  "-Zshare-generics=y",
+  "-Zthreads=0",
+  # Use our default system linker -> mold
+  "-Zlinker-features=-lld",
+]
+rustdocflags = [
+  # Nightly
+  "-Zshare-generics=y",
+  "-Zthreads=0",
+]

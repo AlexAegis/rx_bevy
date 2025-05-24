@@ -79,15 +79,18 @@ where
 	pub action_map: HashMap<FromAction, ToAction>,
 }
 
-/// Q: Why is this erased? A: This is erased to ensure only one transformer is
-/// in place for an [ActionKeyPair] per entity
+/// Q: Why is this erased?
+/// A: This is erased to ensure only one transformer is in place for
+///    an [ActionKeyPair] per entity
+/// Q: Why are transformers mapped over a Type and not an Instance?
+/// A: Because it doesn't need to, an Action is like a channel, transformation
+///    happens over an entire channel in only one way. Mapping happens within
+///    a channel, between "fibers"
 #[derive(Component, Debug, Default)]
 pub struct ErasedTransformerState {
 	pub transformer_map: HashMap<ActionKeyPair, Box<dyn Any + Send + Sync + 'static>>,
 }
 
-/// Q: Why is this erased? A: This is erased to ensure only one transformer is
-/// in place for an [ActionKeyPair] per entity
 #[derive(Component, Debug, Default)]
 pub struct TransformerOutputCache<S: Signal> {
 	pub transformer_map: HashMap<ActionKeyPair, S>,

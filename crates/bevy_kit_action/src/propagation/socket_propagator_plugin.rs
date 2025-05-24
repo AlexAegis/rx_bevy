@@ -1,9 +1,9 @@
-use std::marker::PhantomData;
+use std::{any::TypeId, marker::PhantomData};
 
 use bevy::prelude::*;
 use derive_where::derive_where;
 
-use crate::{Action, ActionSocket, ActionSystem, ActionSystemFor, SocketConnections};
+use crate::{Action, ActionSocket, ActionSystem, ActionSystemFor, Signal, SocketConnections};
 
 use super::SocketConnectorSource;
 
@@ -44,6 +44,12 @@ pub(crate) struct SignalPropagationEvent<A: Action> {
 	_phantom_data_action: PhantomData<A>,
 }
 
+#[derive(Event)]
+pub(crate) struct ErasedSignalPropagationEvent<S: Signal> {
+	pub(crate) action_type: TypeId,
+	pub(crate) signal: S, // pub(crate) visited: Vec<Entity>,
+}
+
 impl<A: Action> SignalPropagationEvent<A> {
 	fn new(visited_entities: Vec<Entity>) -> Self {
 		Self {
@@ -68,9 +74,22 @@ fn kickstart_propagation<A: Action>(
 	>,
 ) {
 	for (source_entity, source_entities_targets, action_socket) in connections_query.iter() {
+		// commands.trigger_targets(
+		// 	ErasedSignalPropagationEvent {
+		// 		action_type: TypeId::of::<A>(),
+		// 		signal: action_socket.get()
+		// 	},
+		// 	source_entities_targets.get_trigger_targets(),
+		// );
+
 		commands.trigger_targets(
 			SignalPropagationEvent::<A>::new(vec![source_entity]),
 			source_entities_targets.get_trigger_targets(),
 		);
 	}
+
+	println!(
+		"kickstart_propagation finished {:?}",
+		std::any::type_name::<A>()
+	);
 }

@@ -55,6 +55,7 @@
     "chacha",
     "chunkmap",
     "clippy",
+    "codegen",
     "codespan",
     "colorchoice",
     "conceivement",
@@ -62,6 +63,7 @@
     "corasick",
     "coronated",
     "counterable",
+    "cranelift",
     "DAHDSR",
     "deadzone",
     "debouncer",
@@ -238,6 +240,7 @@
     "rstar",
     "runed",
     "rustc",
+    "rustdocflags",
     "RUSTFLAGS",
     "rustix",
     "rustup",
@@ -275,6 +278,7 @@
     "Stoneskin",
     "stormruler",
     "strsim",
+    "subsecond",
     "supertrait",
     "supertraits",
     "Swatinem",
@@ -320,6 +324,9 @@
     "zerocopy",
     "zerofrom",
     "zerovec",
+    "Zlinker",
+    "Zshare",
+    "Zthreads",
     "zweihander"
   ]
 }

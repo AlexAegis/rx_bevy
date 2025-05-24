@@ -15,7 +15,7 @@ use super::{SignalKeyPair, SignalTransformer, SignalTransformerPlugin};
 	all(feature = "inspector", feature = "reflect"),
 	reflect(InspectorOptions)
 )]
-pub struct SignalTransformerRegistry {
+pub(crate) struct SignalTransformerRegistry {
 	// erased, later reified
 	#[deref]
 	#[reflect(ignore)]

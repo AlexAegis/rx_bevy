@@ -30,7 +30,7 @@ impl<S: Signal + PartialEq> SignalTransformer for ChangeTrackingTransformer<S> {
 	fn transform<C: Clock>(
 		&mut self,
 		signal: &Self::InputSignal,
-		context: super::SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,
+		context: super::SignalTransformContext<'_, C, Self::InputSignal>,
 	) -> Self::OutputSignal {
 		signal == context.last_frame_input_signal
 	}

@@ -36,6 +36,15 @@ impl<FromAction: Action, ToAction: Action> Plugin for SocketMapperPlugin<FromAct
 	}
 }
 
+/// TODO: This feels like a bottlenect
+#[derive(Event)]
+struct SocketWriteEvent<A: Action> {
+	action: A,
+	signal: <A as Action>::Signal,
+}
+
+fn propagator() {}
+
 /// This internal event notifies others that this socket is ready to be
 /// mapped from
 #[derive(Event)]
@@ -70,6 +79,12 @@ fn transformless_handler<C: Clock, FromSignal: Signal, ToSignal: Signal + From<F
 				.insert(to_signal);
 		}
 	}
+
+	println!(
+		"transformless_handler finished {:?} {:?}",
+		std::any::type_name::<FromSignal>(),
+		std::any::type_name::<ToSignal>()
+	);
 }
 
 fn transform_handler<C: Clock, T: SignalTransformer>(
@@ -78,7 +93,9 @@ fn transform_handler<C: Clock, T: SignalTransformer>(
 	mut erased_transformer_state_query: Query<(
 		&mut ErasedTransformerState,
 		&mut TransformerOutputCache<T::OutputSignal>,
+		// &mut &SocketConnections<A>, // problem that this is erased
 	)>,
+
 	time: Res<Time<C>>,
 ) {
 	let event = trigger.event();
@@ -103,10 +120,14 @@ fn transform_handler<C: Clock, T: SignalTransformer>(
 				.entry(event.action_key_pair)
 				.insert(to_signal);
 
-			//commands.trigger(Sig);
 			//// TODO:  Continue triggering propagation
 		}
 	};
+
+	println!(
+		"transform_handler finished {:?}",
+		std::any::type_name::<T>()
+	);
 }
 
 // TODO: CONNECT ME INTO A PLUGIN

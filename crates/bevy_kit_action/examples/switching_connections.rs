@@ -3,7 +3,8 @@ use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kit_action::{
 	Action, ActionApp, ActionEvent, ActionPlugin, ActionSocket, IdentitySignalTransformer,
-	SignalEventBool, SocketConnector, SocketConnectorPlugin, SocketConnectorTarget,
+	SignalEventBool, SocketConnections, SocketConnector, SocketConnectorPlugin,
+	SocketConnectorSource,
 };
 use examples_common::send_event;
 
@@ -149,12 +150,12 @@ fn move_action_observer(
 
 fn gizmo_to_target(
 	mut gizmos: Gizmos,
-	player_query: Query<(Entity, &SocketConnectorTarget<ExampleDiscreteMoveAction>), With<Player>>,
+	player_query: Query<(Entity, &SocketConnectorSource<ExampleDiscreteMoveAction>), With<Player>>,
 	transform_query: Query<&GlobalTransform>,
 ) {
-	for (player_entity, connector_target) in player_query.iter() {
+	for (player_entity, connector_source) in player_query.iter() {
 		let from = transform_query.get(player_entity).unwrap();
-		let to = transform_query.get(connector_target.entity()).unwrap();
+		let to = transform_query.get(connector_source.entity()).unwrap();
 
 		gizmos.arrow(
 			from.translation(),
@@ -183,15 +184,15 @@ fn swap_target(
 
 	for player_entity in player_query.iter() {
 		if let Some(target) = target {
-			commands.entity(player_entity).insert(
-				SocketConnectorTarget::<ExampleDiscreteMoveAction>::new(target),
+			commands.entity(target).insert(
+				SocketConnectorSource::<ExampleDiscreteMoveAction>::new(player_entity),
 			);
 		}
 
 		if key_presses.just_pressed(KeyCode::Space) {
 			commands
 				.entity(player_entity)
-				.remove::<SocketConnectorTarget<ExampleDiscreteMoveAction>>();
+				.remove::<SocketConnections<ExampleDiscreteMoveAction>>();
 		}
 	}
 }

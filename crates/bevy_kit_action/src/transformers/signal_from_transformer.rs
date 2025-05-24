@@ -34,7 +34,7 @@ impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> SignalTransformer
 	fn transform<C: Clock>(
 		&mut self,
 		signal: &Self::InputSignal,
-		_context: super::SignalTransformContext<'_, C, Self::InputSignal, Self::OutputSignal>,
+		_context: super::SignalTransformContext<'_, C, Self::InputSignal>,
 	) -> Self::OutputSignal {
 		ToSignal::from(*signal)
 	}
