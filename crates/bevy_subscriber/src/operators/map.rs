@@ -2,16 +2,41 @@ use std::marker::PhantomData;
 
 use crate::{
 	observables::{Observable, ObservableWithOperators},
-	observers::Observer,
+	observers::{Forwarder, Observer},
 };
 
-use super::{OperatorIO, OperatorIntoObserver, OperatorSource, OperatorSubscribe};
+use super::{
+	OperatorIO, OperatorSource, OperatorSubscribe, OperatorWithForwarder, OperatorWithSource,
+};
 
 pub struct MapOperator<Source, In, Out, F> {
 	pub source_observable: Option<Source>,
 	pub transform: F,
 	pub phantom_in: PhantomData<In>,
 	pub phantom_out: PhantomData<Out>,
+}
+
+impl<Source, In, Out, F> OperatorWithForwarder for MapOperator<Source, In, Out, F>
+where
+	F: Fn(In) -> Out,
+{
+	type Fwd = MapForwarder<F, In, Out>;
+
+	fn into_forwarder(self) -> Self::Fwd {
+		MapForwarder {
+			transform: self.transform,
+			_phantom_data_in: PhantomData,
+			_phantom_data_out: PhantomData,
+		}
+	}
+}
+
+impl<Source, In, Out, F> OperatorWithSource for MapOperator<Source, In, Out, F>
+where
+	Source: Observable<Out = Self::In>,
+	F: Fn(In) -> Out,
+{
+	type SourceObservable = Source;
 }
 
 impl<Source, In, Out, F> MapOperator<Source, In, Out, F> {
@@ -39,25 +64,6 @@ impl<Source, In, Out, F> OperatorIO for MapOperator<Source, In, Out, F> {
 	type Out = Out;
 }
 
-impl<Source, Destination, In, Out, F> OperatorIntoObserver<Destination>
-	for MapOperator<Source, In, Out, F>
-where
-	F: Fn(In) -> Out,
-	Source: Observable<MapObserver<Destination, F, In>, Out = In>,
-	Destination: Observer<In = Out>,
-{
-	type SourceObservable = Source;
-	type InternalOperatorObserver = MapObserver<Destination, F, In>;
-
-	fn into_observer(self, destination: Destination) -> Self::InternalOperatorObserver {
-		MapObserver {
-			destination,
-			transform: self.transform,
-			_phantom_data_in: PhantomData,
-		}
-	}
-}
-
 /// TODO: Could be part of the macro with a #[source_observable] field attribute for Optional<Source>'s to specify where it is
 impl<Source, In, Out, F> OperatorSource<Source> for MapOperator<Source, In, Out, F> {
 	fn take_source_observable(&mut self) -> Option<Source> {
@@ -69,44 +75,46 @@ impl<Source, In, Out, F> OperatorSource<Source> for MapOperator<Source, In, Out,
 	}
 }
 
-pub struct MapObserver<Destination, F, In> {
-	destination: Destination,
+pub struct MapForwarder<F, In, Out> {
+	// destination: Destination,
 	transform: F,
 	_phantom_data_in: PhantomData<In>,
+	_phantom_data_out: PhantomData<Out>,
 }
 
-impl<In, Out, F, Destination> Observer for MapObserver<Destination, F, In>
+impl<F, In, Out> Forwarder for MapForwarder<F, In, Out>
 where
 	F: Fn(In) -> Out,
-	Destination: Observer<In = Out>,
 {
 	type In = In;
+	type Out = Out;
 
-	fn on_push(&mut self, value: Self::In) {
+	fn push_forward<Destination: Observer<In = Out>>(
+		&mut self,
+		value: Self::In,
+		destination: &mut Destination,
+	) {
 		let result = (self.transform)(value);
-		self.destination.on_push(result);
+		destination.on_push(result);
 	}
 }
 
 /// TODO: Make generic or macro
-impl<Destination, Source, In, Out, F> Observable<Destination> for MapOperator<Source, In, Out, F>
+impl<Source, In, Out, F> Observable for MapOperator<Source, In, Out, F>
 where
 	F: Fn(In) -> Out,
-	Destination: Observer<In = Out>,
-	Source: Observable<MapObserver<Destination, F, In>, Out = In>,
+	Source: Observable<Out = In>,
 {
 	type Out = Out;
 
-	fn subscribe(self, observer: Destination) {
-		OperatorSubscribe::subscribe(self, observer);
+	fn subscribe<Destination: Observer<In = Out>>(self, observer: Destination) {
+		OperatorSubscribe::operator_subscribe(self, observer);
 	}
 }
 
-impl<Source, In, Out, F, Destination> ObservableWithOperators<Destination, Out>
-	for MapOperator<Source, In, Out, F>
+impl<Source, In, Out, F> ObservableWithOperators<Out> for MapOperator<Source, In, Out, F>
 where
 	F: Fn(In) -> Out,
-	Destination: Observer<In = Out>,
-	Source: Observable<MapObserver<Destination, F, In>, Out = In>,
+	Source: Observable<Out = In>,
 {
 }

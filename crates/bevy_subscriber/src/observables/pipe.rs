@@ -1,8 +1,8 @@
-use std::{marker::PhantomData, process::Output};
+use std::marker::PhantomData;
 
 use crate::{
 	observers::Observer,
-	operators::{MapOperator, OperatorIO, OperatorIntoObserver, OperatorSource, OperatorSubscribe},
+	operators::{MapOperator, OperatorIO, OperatorSource, OperatorSubscribe},
 };
 
 use super::Observable;
@@ -32,30 +32,24 @@ impl<Op, PipeIn, PipeOut> PipeBuilder<Op, PipeIn, PipeOut> {
 	}
 }
 
-impl<Op, PipeIn, PipeOut, Destination> Observable<Destination> for PipeBuilder<Op, PipeIn, PipeOut>
+impl<Op, PipeIn, PipeOut> Observable for PipeBuilder<Op, PipeIn, PipeOut>
 where
-	Destination: Observer<In = PipeOut>,
-	Op: OperatorSubscribe<Destination>,
+	Op: OperatorSubscribe + OperatorIO<Out = PipeOut>,
 {
 	type Out = PipeOut;
 
-	fn subscribe(self, destination: Destination) {
-		self.operator.subscribe(destination);
+	fn subscribe<Destination: Observer<In = Op::Out>>(self, destination: Destination) {
+		self.operator.operator_subscribe(destination);
 	}
 }
 
 /// TODO: Could be part of a possible observable macro
-impl<Op, PipeIn, PipeOut, Destination> ObservableWithOperators<Destination, PipeOut>
-	for PipeBuilder<Op, PipeIn, PipeOut>
-where
-	Destination: Observer<In = PipeOut>,
-	Op: OperatorSubscribe<Destination>,
+impl<Op, PipeIn, PipeOut> ObservableWithOperators<PipeOut> for PipeBuilder<Op, PipeIn, PipeOut> where
+	Op: OperatorSubscribe + OperatorIO<Out = PipeOut>
 {
 }
 
-pub trait ObservableWithOperators<Destination, Out>:
-	Observable<Destination, Out = Out> + Sized
-{
+pub trait ObservableWithOperators<Out>: Observable<Out = Out> + Sized {
 	fn pipe<NextOp>(self, mut operator: NextOp) -> PipeBuilder<NextOp, Out, NextOp::Out>
 	where
 		Self: Sized,

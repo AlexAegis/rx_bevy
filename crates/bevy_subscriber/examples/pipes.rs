@@ -7,8 +7,8 @@ use bevy_subscriber::{
 fn main() {
 	println!("SIGNAL");
 
-	let mut observable = OfObservable::<i32>::new(12);
-	let mut pipe = observable
+	let observable = OfObservable::<i32>::new(12);
+	let pipe = observable
 		.map(|n: i32| -> i32 {
 			return n * 2;
 		})
@@ -24,8 +24,8 @@ fn main() {
 fn pipe_single() {
 	println!("SIGNAL");
 
-	let mut observable = OfObservable::<i32>::new(12);
-	let mut pipe = observable
+	let observable = OfObservable::<i32>::new(12);
+	let pipe = observable
 		.pipe(MapOperator::new(|n: i32| -> i32 {
 			return n * 2;
 		}))

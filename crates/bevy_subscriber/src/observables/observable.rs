@@ -1,5 +1,7 @@
-pub trait Observable<Destination> {
+use crate::observers::Observer;
+
+pub trait Observable {
 	type Out;
 
-	fn subscribe(self, observer: Destination);
+	fn subscribe<Destination: Observer<In = Self::Out>>(self, observer: Destination);
 }
