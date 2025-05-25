@@ -1,26 +1,23 @@
-use std::marker::PhantomData;
-
 use bevy_subscriber::{
 	observables::{Observable, OfObservable},
 	observers::PrintObserver,
-	operators::{MapOperator, OperatorSubscribe},
+	operators::MapOperator,
 };
 
 fn main() {
 	println!("SIGNAL");
 
 	let observable = OfObservable::<i32>::new(12);
-	let mapper = |n: i32| -> String {
+
+	let map = MapOperator::new(observable, |n: i32| -> i32 {
+		return n * 2;
+	});
+
+	let map_2 = MapOperator::new(map, |n: i32| -> String {
 		return n.to_string();
-	};
-	let map = MapOperator {
-		source_observable: Some(observable),
-		transform: mapper,
-		phantom_in: PhantomData,
-		phantom_out: PhantomData,
-	};
+	});
 
 	let observer = PrintObserver::<String>::new("hello".to_string());
 
-	map.internal_subscribe(observer);
+	map_2.internal_subscribe(observer);
 }
