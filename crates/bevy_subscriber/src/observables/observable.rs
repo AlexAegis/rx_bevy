@@ -1,10 +1,5 @@
-use crate::observers::Observer;
-
-pub trait Observable<Destination>
-where
-	Destination: Observer<In = Self::Out>,
-{
+pub trait Observable<Destination> {
 	type Out;
 
-	fn internal_subscribe(self, observer: Destination);
+	fn subscribe(self, observer: Destination);
 }

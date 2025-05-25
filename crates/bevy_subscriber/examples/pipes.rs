@@ -1,5 +1,5 @@
 use bevy_subscriber::{
-	observables::{Observable, OfObservable},
+	observables::{Observable, ObservableWithOperators, OfObservable},
 	observers::PrintObserver,
 	operators::MapOperator,
 };
@@ -7,17 +7,49 @@ use bevy_subscriber::{
 fn main() {
 	println!("SIGNAL");
 
+	let mut observable = OfObservable::<i32>::new(12);
+	let mut pipe = observable
+		.map(|n: i32| -> i32 {
+			return n * 2;
+		})
+		.map(|n: i32| -> String {
+			return n.to_string();
+		});
+
+	let observer = PrintObserver::<String>::new("hello".to_string());
+
+	pipe.subscribe(observer);
+}
+
+fn pipe_single() {
+	println!("SIGNAL");
+
+	let mut observable = OfObservable::<i32>::new(12);
+	let mut pipe = observable
+		.pipe(MapOperator::new(|n: i32| -> i32 {
+			return n * 2;
+		}))
+		.pipe(MapOperator::new(|n: i32| -> String {
+			return n.to_string();
+		}));
+
+	let observer = PrintObserver::<String>::new("hello".to_string());
+
+	pipe.subscribe(observer);
+}
+
+pub fn manual() {
 	let observable = OfObservable::<i32>::new(12);
 
-	let map = MapOperator::new(observable, |n: i32| -> i32 {
+	let map = MapOperator::new_with_source(observable, |n: i32| -> i32 {
 		return n * 2;
 	});
 
-	let map_2 = MapOperator::new(map, |n: i32| -> String {
+	let map_2 = MapOperator::new_with_source(map, |n: i32| -> String {
 		return n.to_string();
 	});
 
 	let observer = PrintObserver::<String>::new("hello".to_string());
 
-	map_2.internal_subscribe(observer);
+	map_2.subscribe(observer);
 }

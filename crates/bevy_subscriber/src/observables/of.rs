@@ -1,31 +1,39 @@
 use crate::observers::Observer;
 
-use super::Observable;
+use super::{Observable, ObservableWithOperators};
 
-pub struct OfObservable<T>
+pub struct OfObservable<Out>
 where
-	T: Clone,
+	Out: Clone,
 {
-	value: T,
+	value: Out,
 }
 
-impl<T> OfObservable<T>
+impl<Out> OfObservable<Out>
 where
-	T: Clone,
+	Out: Clone,
 {
-	pub fn new(value: T) -> Self {
+	pub fn new(value: Out) -> Self {
 		Self { value }
 	}
 }
 
-impl<Destination, T> Observable<Destination> for OfObservable<T>
+impl<Destination, Out> Observable<Destination> for OfObservable<Out>
 where
-	T: Clone,
-	Destination: Observer<In = T>,
+	Out: Clone,
+	Destination: Observer<In = Out>,
 {
-	type Out = T;
+	type Out = Out;
 
-	fn internal_subscribe(self, mut observer: Destination) {
+	fn subscribe(self, mut observer: Destination) {
 		observer.on_push(self.value.clone());
 	}
+}
+
+/// TODO: Could be part of a possible observable macro
+impl<Out, Destination> ObservableWithOperators<Destination, Out> for OfObservable<Out>
+where
+	Destination: Observer<In = Out>,
+	Out: Clone,
+{
 }

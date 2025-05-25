@@ -1,17 +1,21 @@
 use crate::{observables::Observable, observers::Observer};
 
-/// Every Operator is an Observer that can subscribe to an observable, and upon
-/// subscription, returns it's own [OperatorObserver] that you can subscribe to.
-/// Destination is the Observer that will get subscribed to this internal Observable.
-pub trait OperatorData<Destination>
-where
-	Destination: Observer<In = Self::Out>,
-	Self: Sized,
-{
+pub trait OperatorIO {
 	/// Input type of the operator
 	type In;
 	/// Output type of the operator
 	type Out;
+}
+
+/// Every Operator is an Observer that can subscribe to an observable, and upon
+/// subscription, returns it's own [OperatorObserver] that you can subscribe to.
+/// Destination is the Observer that will get subscribed to this internal Observable.
+pub trait OperatorIntoObserver<Destination>
+where
+	Destination: Observer<In = Self::Out>,
+	Self: Sized + OperatorIO,
+{
+	// TODO: Simplify? Maybe these could always just live inside the source/internal fields
 
 	/// The source observable this operators internal observer observes.
 	/// Its output is the operators input
@@ -21,23 +25,26 @@ where
 	type InternalOperatorObserver: Observer<In = Self::In>;
 
 	fn into_observer(self, destination: Destination) -> Self::InternalOperatorObserver;
-	fn take_source_observable(&mut self) -> Option<Self::SourceObservable>;
-	fn replace_source(&mut self, source: Self::SourceObservable) -> Option<Self::SourceObservable>;
+}
+
+pub trait OperatorSource<Source> {
+	fn take_source_observable(&mut self) -> Option<Source>;
+	fn replace_source(&mut self, source: Source) -> Option<Source>;
 }
 
 pub trait OperatorSubscribe<Destination> {
-	fn operator_subscribe(self, observer: Destination);
+	fn subscribe(self, observer: Destination);
 }
 
 impl<T, Destination, Out> OperatorSubscribe<Destination> for T
 where
-	T: OperatorData<Destination, Out = Out>,
+	T: OperatorIntoObserver<Destination, Out = Out> + OperatorSource<T::SourceObservable>,
 	Destination: Observer<In = Out>,
 {
-	fn operator_subscribe(mut self, destination: Destination) {
+	fn subscribe(mut self, destination: Destination) {
 		if let Some(source) = self.take_source_observable() {
 			let operator_internal_observer = Self::into_observer(self, destination);
-			source.internal_subscribe(operator_internal_observer);
+			source.subscribe(operator_internal_observer);
 		}
 	}
 }

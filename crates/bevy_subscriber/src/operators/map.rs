@@ -1,8 +1,11 @@
 use std::marker::PhantomData;
 
-use crate::{observables::Observable, observers::Observer};
+use crate::{
+	observables::{Observable, ObservableWithOperators},
+	observers::Observer,
+};
 
-use super::{OperatorData, OperatorSubscribe};
+use super::{OperatorIO, OperatorIntoObserver, OperatorSource, OperatorSubscribe};
 
 pub struct MapOperator<Source, In, Out, F> {
 	pub source_observable: Option<Source>,
@@ -12,7 +15,16 @@ pub struct MapOperator<Source, In, Out, F> {
 }
 
 impl<Source, In, Out, F> MapOperator<Source, In, Out, F> {
-	pub fn new(source: Source, transform: F) -> Self {
+	pub fn new(transform: F) -> Self {
+		Self {
+			phantom_in: PhantomData,
+			phantom_out: PhantomData,
+			source_observable: None,
+			transform,
+		}
+	}
+
+	pub fn new_with_source(source: Source, transform: F) -> Self {
 		Self {
 			phantom_in: PhantomData,
 			phantom_out: PhantomData,
@@ -22,14 +34,18 @@ impl<Source, In, Out, F> MapOperator<Source, In, Out, F> {
 	}
 }
 
-impl<Source, Destination, In, Out, F> OperatorData<Destination> for MapOperator<Source, In, Out, F>
+impl<Source, In, Out, F> OperatorIO for MapOperator<Source, In, Out, F> {
+	type In = In;
+	type Out = Out;
+}
+
+impl<Source, Destination, In, Out, F> OperatorIntoObserver<Destination>
+	for MapOperator<Source, In, Out, F>
 where
 	F: Fn(In) -> Out,
 	Source: Observable<MapObserver<Destination, F, In>, Out = In>,
 	Destination: Observer<In = Out>,
 {
-	type In = In;
-	type Out = Out;
 	type SourceObservable = Source;
 	type InternalOperatorObserver = MapObserver<Destination, F, In>;
 
@@ -40,12 +56,15 @@ where
 			_phantom_data_in: PhantomData,
 		}
 	}
+}
 
-	fn take_source_observable(&mut self) -> Option<Self::SourceObservable> {
+/// TODO: Could be part of the macro with a #[source_observable] field attribute for Optional<Source>'s to specify where it is
+impl<Source, In, Out, F> OperatorSource<Source> for MapOperator<Source, In, Out, F> {
+	fn take_source_observable(&mut self) -> Option<Source> {
 		std::mem::take(&mut self.source_observable)
 	}
 
-	fn replace_source(&mut self, source: Self::SourceObservable) -> Option<Self::SourceObservable> {
+	fn replace_source(&mut self, source: Source) -> Option<Source> {
 		self.source_observable.replace(source)
 	}
 }
@@ -78,7 +97,16 @@ where
 {
 	type Out = Out;
 
-	fn internal_subscribe(self, observer: Destination) {
-		self.operator_subscribe(observer);
+	fn subscribe(self, observer: Destination) {
+		OperatorSubscribe::subscribe(self, observer);
 	}
+}
+
+impl<Source, In, Out, F, Destination> ObservableWithOperators<Destination, Out>
+	for MapOperator<Source, In, Out, F>
+where
+	F: Fn(In) -> Out,
+	Destination: Observer<In = Out>,
+	Source: Observable<MapObserver<Destination, F, In>, Out = In>,
+{
 }
