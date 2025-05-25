@@ -7,24 +7,28 @@ where
 	T: Debug,
 {
 	_phantom_data: PhantomData<T>,
+	message: String,
 }
 
 impl<T> PrintObserver<T>
 where
 	T: Debug,
 {
-	pub fn new() -> Self {
+	pub fn new(message: String) -> Self {
 		Self {
 			_phantom_data: PhantomData,
+			message,
 		}
 	}
 }
 
-impl<T> Observer<T> for PrintObserver<T>
+impl<T> Observer for PrintObserver<T>
 where
 	T: Debug,
 {
+	type In = T;
+
 	fn on_push(&mut self, value: T) {
-		println!("{:?}", value);
+		println!("{} {:?}", self.message, value);
 	}
 }

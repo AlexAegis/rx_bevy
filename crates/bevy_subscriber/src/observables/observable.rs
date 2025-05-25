@@ -1,9 +1,10 @@
-use crate::observers::{Observer, ObserverContainer};
+use crate::observers::Observer;
 
-pub trait Observable<T> {
-	fn subscribe_container(&mut self, observer: ObserverContainer<T>);
+pub trait Observable<Destination>
+where
+	Destination: Observer<In = Self::Out>,
+{
+	type Out;
 
-	fn subscribe(&mut self, observer: impl Observer<T> + 'static) {
-		self.subscribe_container(ObserverContainer::from_observer(observer));
-	}
+	fn internal_subscribe(self, observer: Destination);
 }

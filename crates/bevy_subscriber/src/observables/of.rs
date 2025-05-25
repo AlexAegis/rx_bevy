@@ -1,4 +1,4 @@
-use crate::observers::{Observer, ObserverContainer};
+use crate::observers::Observer;
 
 use super::Observable;
 
@@ -18,11 +18,14 @@ where
 	}
 }
 
-impl<T> Observable<T> for OfObservable<T>
+impl<Destination, T> Observable<Destination> for OfObservable<T>
 where
 	T: Clone,
+	Destination: Observer<In = T>,
 {
-	fn subscribe_container(&mut self, mut observer: ObserverContainer<T>) {
+	type Out = T;
+
+	fn internal_subscribe(self, mut observer: Destination) {
 		observer.on_push(self.value.clone());
 	}
 }
