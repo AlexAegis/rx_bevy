@@ -9,7 +9,7 @@ use rx_bevy_operator::{
 
 pub struct TapOperator<Source, In, Callback>
 where
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: for<'a> Fn(&'a In),
 {
 	source_observable: Option<Source>,
 	callback: Callback,
@@ -18,7 +18,7 @@ where
 
 impl<Source, In, Callback> TapOperator<Source, In, Callback>
 where
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: for<'a> Fn(&'a In),
 {
 	pub fn new(callback: Callback) -> Self {
 		Self {
@@ -39,14 +39,14 @@ where
 
 impl<Source, In, Callback> Operator<Source> for TapOperator<Source, In, Callback>
 where
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: Clone + for<'a> Fn(&'a In),
 	Source: Observable<Out = Self::In>,
 {
 }
 
 impl<Source, In, Callback> OperatorIO for TapOperator<Source, In, Callback>
 where
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: for<'a> Fn(&'a In),
 {
 	type In = In;
 	type Out = In;
@@ -55,14 +55,14 @@ where
 impl<Source, In, Callback> OperatorWithSource for TapOperator<Source, In, Callback>
 where
 	Source: Observable<Out = Self::In>,
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: for<'a> Fn(&'a In),
 {
 	type SourceObservable = Source;
 }
 
 impl<Source, In, Callback> OperatorSource<Source> for TapOperator<Source, In, Callback>
 where
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: for<'a> Fn(&'a In),
 {
 	fn replace_source(&mut self, source: Source) -> Option<Source> {
 		self.source_observable.replace(source)
@@ -75,7 +75,7 @@ where
 
 pub struct TapOperatorInstance<In, Callback>
 where
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: for<'a> Fn(&'a In),
 {
 	callback: Callback,
 	_phantom_data: PhantomData<In>,
@@ -83,7 +83,7 @@ where
 
 impl<In, Callback> OperatorInstance for TapOperatorInstance<In, Callback>
 where
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: for<'a> Fn(&'a In),
 {
 	type In = In;
 	type Out = In;
@@ -100,7 +100,7 @@ where
 
 impl<Source, In, Callback> OperatorInstanceFactory for TapOperator<Source, In, Callback>
 where
-	Callback: OperatorCallbackRef<In, ()>,
+	Callback: Clone + for<'a> Fn(&'a In),
 {
 	type Instance = TapOperatorInstance<In, Callback>;
 
@@ -114,7 +114,7 @@ where
 
 impl<Source, In, F> Observable for TapOperator<Source, In, F>
 where
-	F: OperatorCallbackRef<In, ()>,
+	F: Clone + for<'a> Fn(&'a In),
 	Source: Observable<Out = In>,
 {
 	type Out = In;
