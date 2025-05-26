@@ -1,26 +1,20 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observable, Observer};
-use rx_bevy_operator::{
-	OperatorCallback, OperatorIO, OperatorInstance, OperatorInstanceFactory, OperatorSource,
-	OperatorSubscribe, OperatorWithSource,
-};
+use rx_bevy_observable::Observer;
+use rx_bevy_operator::{Operator, OperatorCallback, OperatorInstance};
 
-pub struct MapOperator<Source, In, Out, F> {
-	pub source_observable: Option<Source>,
+pub struct MapOperator<In, Out, F> {
 	pub callback: F,
-	pub phantom_in: PhantomData<In>,
-	pub phantom_out: PhantomData<Out>,
+	pub _phantom_data_in: PhantomData<In>,
+	pub _phantom_data_out: PhantomData<Out>,
 }
 
-impl<Source, In, Out, F> OperatorInstanceFactory for MapOperator<Source, In, Out, F>
+impl<In, Out, F> Clone for MapOperator<In, Out, F>
 where
-	F: OperatorCallback<In, Out>,
+	F: Clone,
 {
-	type Instance = MapOperatorInstance<F, Self::In, Self::Out>;
-
-	fn create_operator_instance(&self) -> Self::Instance {
-		MapOperatorInstance {
+	fn clone(&self) -> Self {
+		Self {
 			callback: self.callback.clone(),
 			_phantom_data_in: PhantomData,
 			_phantom_data_out: PhantomData,
@@ -28,57 +22,31 @@ where
 	}
 }
 
-impl<Source, In, Out, F> OperatorWithSource for MapOperator<Source, In, Out, F>
+impl<In, Out, F> Operator for MapOperator<In, Out, F>
 where
-	Source: Observable<Out = Self::In>,
-	F: Fn(In) -> Out,
+	F: OperatorCallback<In, Out>,
 {
-	type SourceObservable = Source;
-}
-
-impl<Source, In, Out, F> MapOperator<Source, In, Out, F> {
-	pub fn new(transform: F) -> Self {
-		Self {
-			phantom_in: PhantomData,
-			phantom_out: PhantomData,
-			source_observable: None,
-			callback: transform,
-		}
-	}
-
-	pub fn new_with_source(source: Source, transform: F) -> Self {
-		Self {
-			phantom_in: PhantomData,
-			phantom_out: PhantomData,
-			source_observable: Some(source),
-			callback: transform,
-		}
-	}
-}
-
-impl<Source, In, Out, F> OperatorIO for MapOperator<Source, In, Out, F> {
 	type In = In;
 	type Out = Out;
-}
 
-/// TODO: Could be part of the macro with a #[source_observable] field attribute for Optional<Source>'s to specify where it is
-impl<Source, In, Out, F> OperatorSource<Source> for MapOperator<Source, In, Out, F> {
-	fn take_source_observable(&mut self) -> Option<Source> {
-		std::mem::take(&mut self.source_observable)
-	}
+	type Instance = Self;
 
-	fn replace_source(&mut self, source: Source) -> Option<Source> {
-		self.source_observable.replace(source)
+	fn create_operator_instance(&self) -> Self::Instance {
+		self.clone()
 	}
 }
 
-pub struct MapOperatorInstance<F, In, Out> {
-	callback: F,
-	_phantom_data_in: PhantomData<In>,
-	_phantom_data_out: PhantomData<Out>,
+impl<In, Out, F> MapOperator<In, Out, F> {
+	pub fn new(transform: F) -> Self {
+		Self {
+			_phantom_data_in: PhantomData,
+			_phantom_data_out: PhantomData,
+			callback: transform,
+		}
+	}
 }
 
-impl<F, In, Out> OperatorInstance for MapOperatorInstance<F, In, Out>
+impl<In, Out, F> OperatorInstance for MapOperator<In, Out, F>
 where
 	F: OperatorCallback<In, Out>,
 {
@@ -92,18 +60,5 @@ where
 	) {
 		let result = (self.callback)(value);
 		destination.on_push(result);
-	}
-}
-
-/// TODO: Make generic or macro
-impl<Source, In, Out, F> Observable for MapOperator<Source, In, Out, F>
-where
-	F: OperatorCallback<In, Out>,
-	Source: Observable<Out = In>,
-{
-	type Out = Out;
-
-	fn subscribe<Destination: Observer<In = Out>>(self, observer: Destination) {
-		OperatorSubscribe::operator_subscribe(self, observer);
 	}
 }

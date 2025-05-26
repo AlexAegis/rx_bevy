@@ -2,59 +2,50 @@ use rx_bevy_observable::{Observable, Observer};
 
 use super::{OperatorInstance, OperatorInstanceForwardObserver};
 
-pub trait Operator<Source>:
-	OperatorIO + OperatorInstanceFactory + OperatorWithSource + OperatorSource<Source>
-{
-}
-
-pub trait OperatorIO {
-	/// Input type of the operator
-	type In;
-	/// Output type of the operator
-	type Out;
-}
+// OperatorIO OperatorInstanceFactory
 
 /// Every Operator is an Observer that can subscribe to an observable, and upon
 /// subscription, returns it's own [OperatorObserver] that you can subscribe to.
 /// Destination is the Observer that will get subscribed to this internal Observable.
-pub trait OperatorInstanceFactory: OperatorIO {
+pub trait Operator {
+	/// Input type of the operator
+	type In;
+	/// Output type of the operator
+	type Out;
+
 	/// The operators internal observer, that observes the source/upstream observable
 	/// Its input is the operators output
 	type Instance: OperatorInstance<In = Self::In, Out = Self::Out>;
 	fn create_operator_instance(&self) -> Self::Instance;
 }
 
-/// OperatorWithSource and OperatorSource<Source> are separate, otherwise the
-/// pipe impl wouldn't work
-pub trait OperatorWithSource: OperatorIO {
-	/// The source observable this operators internal observer observes.
-	/// Its output is the operators input
-	type SourceObservable: Observable<Out = Self::In>;
-}
-
-pub trait OperatorSource<Source> {
-	fn take_source_observable(&mut self) -> Option<Source>;
-	fn replace_source(&mut self, source: Source) -> Option<Source>;
-}
-
-pub trait OperatorSubscribe: OperatorIO {
-	fn operator_subscribe<Destination: Observer<In = Self::Out>>(self, observer: Destination);
+pub trait OperatorSubscribe: Operator {
+	fn operator_subscribe<
+		Source: Observable<Out = Self::In>,
+		Destination: Observer<In = Self::Out>,
+	>(
+		self,
+		source: Source,
+		observer: Destination,
+	);
 }
 
 impl<T> OperatorSubscribe for T
 where
-	T: OperatorInstanceFactory + OperatorWithSource + OperatorSource<T::SourceObservable>,
+	T: Operator,
 {
-	fn operator_subscribe<Destination: Observer<In = Self::Out>>(
-		mut self,
+	fn operator_subscribe<
+		Source: Observable<Out = Self::In>,
+		Destination: Observer<In = Self::Out>,
+	>(
+		self,
+		source: Source,
 		destination: Destination,
 	) {
-		if let Some(source) = self.take_source_observable() {
-			let operator_internal_forwarder = self.create_operator_instance();
-			let forward_observer =
-				OperatorInstanceForwardObserver::new(operator_internal_forwarder, destination);
-			source.subscribe(forward_observer);
-		}
+		let operator_internal_forwarder = self.create_operator_instance();
+		let forward_observer =
+			OperatorInstanceForwardObserver::new(operator_internal_forwarder, destination);
+		source.subscribe(forward_observer);
 	}
 }
 

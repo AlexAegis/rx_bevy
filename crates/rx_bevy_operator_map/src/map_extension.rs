@@ -1,4 +1,5 @@
 use rx_bevy_observable::Observable;
+use rx_bevy_operator::Pipe;
 
 use crate::MapOperator;
 
@@ -6,8 +7,8 @@ pub trait ObservableExtensionMap<Out>: Observable<Out = Out> + Sized {
 	fn map<NextOut, F: Fn(Out) -> NextOut>(
 		self,
 		transform: F,
-	) -> MapOperator<Self, Out, NextOut, F> {
-		MapOperator::new_with_source(self, transform)
+	) -> Pipe<Self, MapOperator<Out, NextOut, F>, Out, NextOut> {
+		Pipe::new(self, MapOperator::new(transform))
 	}
 }
 

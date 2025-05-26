@@ -1,22 +1,30 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_observable::Observer;
 
-use rx_bevy_operator::{
-	Operator, OperatorCallbackRef, OperatorIO, OperatorInstance, OperatorInstanceFactory,
-	OperatorSource, OperatorSubscribe, OperatorWithSource,
-};
+use rx_bevy_operator::{Operator, OperatorInstance};
 
-pub struct TapOperator<Source, In, Callback>
+pub struct TapOperator<In, Callback>
 where
 	Callback: for<'a> Fn(&'a In),
 {
-	source_observable: Option<Source>,
 	callback: Callback,
 	_phantom_data: PhantomData<In>,
 }
 
-impl<Source, In, Callback> TapOperator<Source, In, Callback>
+impl<In, Callback> Clone for TapOperator<In, Callback>
+where
+	Callback: Clone + for<'a> Fn(&'a In),
+{
+	fn clone(&self) -> Self {
+		Self {
+			callback: self.callback.clone(),
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, Callback> TapOperator<In, Callback>
 where
 	Callback: for<'a> Fn(&'a In),
 {
@@ -24,64 +32,25 @@ where
 		Self {
 			_phantom_data: PhantomData,
 			callback,
-			source_observable: None,
-		}
-	}
-
-	pub fn new_with_source(source: Source, callback: Callback) -> Self {
-		Self {
-			_phantom_data: PhantomData,
-			callback,
-			source_observable: Some(source),
 		}
 	}
 }
 
-impl<Source, In, Callback> Operator<Source> for TapOperator<Source, In, Callback>
+impl<In, Callback> Operator for TapOperator<In, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
-	Source: Observable<Out = Self::In>,
-{
-}
-
-impl<Source, In, Callback> OperatorIO for TapOperator<Source, In, Callback>
-where
-	Callback: for<'a> Fn(&'a In),
 {
 	type In = In;
 	type Out = In;
-}
 
-impl<Source, In, Callback> OperatorWithSource for TapOperator<Source, In, Callback>
-where
-	Source: Observable<Out = Self::In>,
-	Callback: for<'a> Fn(&'a In),
-{
-	type SourceObservable = Source;
-}
+	type Instance = Self;
 
-impl<Source, In, Callback> OperatorSource<Source> for TapOperator<Source, In, Callback>
-where
-	Callback: for<'a> Fn(&'a In),
-{
-	fn replace_source(&mut self, source: Source) -> Option<Source> {
-		self.source_observable.replace(source)
-	}
-
-	fn take_source_observable(&mut self) -> Option<Source> {
-		std::mem::take(&mut self.source_observable)
+	fn create_operator_instance(&self) -> Self::Instance {
+		self.clone()
 	}
 }
 
-pub struct TapOperatorInstance<In, Callback>
-where
-	Callback: for<'a> Fn(&'a In),
-{
-	callback: Callback,
-	_phantom_data: PhantomData<In>,
-}
-
-impl<In, Callback> OperatorInstance for TapOperatorInstance<In, Callback>
+impl<In, Callback> OperatorInstance for TapOperator<In, Callback>
 where
 	Callback: for<'a> Fn(&'a In),
 {
@@ -95,31 +64,5 @@ where
 	) {
 		(self.callback)(&value);
 		destination.on_push(value);
-	}
-}
-
-impl<Source, In, Callback> OperatorInstanceFactory for TapOperator<Source, In, Callback>
-where
-	Callback: Clone + for<'a> Fn(&'a In),
-{
-	type Instance = TapOperatorInstance<In, Callback>;
-
-	fn create_operator_instance(&self) -> Self::Instance {
-		Self::Instance {
-			_phantom_data: PhantomData,
-			callback: self.callback.clone(),
-		}
-	}
-}
-
-impl<Source, In, F> Observable for TapOperator<Source, In, F>
-where
-	F: Clone + for<'a> Fn(&'a In),
-	Source: Observable<Out = In>,
-{
-	type Out = In;
-
-	fn subscribe<Destination: Observer<In = In>>(self, observer: Destination) {
-		OperatorSubscribe::operator_subscribe(self, observer);
 	}
 }

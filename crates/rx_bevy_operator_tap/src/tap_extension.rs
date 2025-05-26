@@ -1,14 +1,14 @@
 use rx_bevy_observable::Observable;
-use rx_bevy_operator::OperatorCallbackRef;
+use rx_bevy_operator::Pipe;
 
 use crate::TapOperator;
 
 pub trait ObservableExtensionTap<Out>: Observable<Out = Out> + Sized {
-	fn tap<Callback: OperatorCallbackRef<Out, ()>>(
+	fn tap<Callback: for<'a> Fn(&'a Out)>(
 		self,
 		callback: Callback,
-	) -> TapOperator<Self, Out, Callback> {
-		TapOperator::new_with_source(self, callback)
+	) -> Pipe<Self, TapOperator<Out, Callback>, Out, Out> {
+		Pipe::new(self, TapOperator::new(callback))
 	}
 }
 
