@@ -16,7 +16,10 @@ pub trait Operator {
 	/// The operators internal observer, that observes the source/upstream observable
 	/// Its input is the operators output
 	type Instance: OperatorInstance<In = Self::In, Out = Self::Out>;
+
 	fn create_operator_instance(&self) -> Self::Instance;
+
+	fn operate(&mut self, next: Self::In) -> Self::Out;
 }
 
 pub trait OperatorSubscribe: Operator {

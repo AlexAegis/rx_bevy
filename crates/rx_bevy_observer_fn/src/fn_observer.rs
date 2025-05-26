@@ -11,6 +11,17 @@ where
 	_phantom_data: PhantomData<In>,
 }
 
+impl<In, OnPush> Observer for FnObserver<In, OnPush>
+where
+	OnPush: Fn(In) -> (),
+{
+	type In = In;
+
+	fn on_push(&mut self, value: In) {
+		(self.on_push)(value);
+	}
+}
+
 impl<In, OnPush> FnObserver<In, OnPush>
 where
 	OnPush: Fn(In) -> (),
@@ -20,16 +31,5 @@ where
 			on_push,
 			_phantom_data: PhantomData,
 		}
-	}
-}
-
-impl<In, OnPush> Observer for FnObserver<In, OnPush>
-where
-	OnPush: Fn(In) -> (),
-{
-	type In = In;
-
-	fn on_push(&mut self, value: In) {
-		(self.on_push)(value);
 	}
 }

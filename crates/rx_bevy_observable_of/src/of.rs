@@ -8,6 +8,17 @@ where
 	OfObservable::new(value)
 }
 
+impl<Out> Observable for OfObservable<Out>
+where
+	Out: Clone,
+{
+	type Out = Out;
+
+	fn subscribe<Destination: Observer<In = Out>>(self, mut observer: Destination) {
+		observer.on_push(self.value.clone());
+	}
+}
+
 pub struct OfObservable<Out>
 where
 	Out: Clone,
@@ -24,22 +35,11 @@ where
 	}
 }
 
-impl<Out> Observable for OfObservable<Out>
-where
-	Out: Clone,
-{
-	type Out = Out;
-
-	fn subscribe<Destination: Observer<In = Out>>(self, mut observer: Destination) {
-		observer.on_push(self.value.clone());
-	}
-}
-
 #[cfg(test)]
 mod tests {
 
 	use super::*;
-	use rx_bevy_testing::{FwObserver, MockObserver};
+	use rx_bevy_testing::{MockObserver, SharedForwardObserver};
 
 	#[test]
 	fn should_emit_single_value() {
@@ -47,7 +47,7 @@ mod tests {
 		let observable = OfObservable::new(value);
 		let mock_observer = MockObserver::new_shared();
 
-		let f = FwObserver::new(&mock_observer);
+		let f = SharedForwardObserver::new(&mock_observer);
 
 		observable.subscribe(f);
 

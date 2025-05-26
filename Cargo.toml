@@ -73,3 +73,4 @@ rx_bevy_observer_fn = { path = "crates/rx_bevy_observer_fn" }
 # Operators
 rx_bevy_operator_map = { path = "crates/rx_bevy_operator_map" }
 rx_bevy_operator_tap = { path = "crates/rx_bevy_operator_tap" }
+rx_bevy_operator_pipe = { path = "crates/rx_bevy_operator_pipe" }

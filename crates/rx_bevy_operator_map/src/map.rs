@@ -1,30 +1,16 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::Observer;
-use rx_bevy_operator::{Operator, OperatorCallback, OperatorInstance};
+use rx_bevy_operator::{Operator, OperatorCallback};
 
 pub struct MapOperator<In, Out, F> {
-	pub callback: F,
+	pub mapper: F,
 	pub _phantom_data_in: PhantomData<In>,
 	pub _phantom_data_out: PhantomData<Out>,
 }
 
-impl<In, Out, F> Clone for MapOperator<In, Out, F>
+impl<In, Out, Mapper> Operator for MapOperator<In, Out, Mapper>
 where
-	F: Clone,
-{
-	fn clone(&self) -> Self {
-		Self {
-			callback: self.callback.clone(),
-			_phantom_data_in: PhantomData,
-			_phantom_data_out: PhantomData,
-		}
-	}
-}
-
-impl<In, Out, F> Operator for MapOperator<In, Out, F>
-where
-	F: OperatorCallback<In, Out>,
+	Mapper: OperatorCallback<In, Out>,
 {
 	type In = In;
 	type Out = Out;
@@ -34,6 +20,10 @@ where
 	fn create_operator_instance(&self) -> Self::Instance {
 		self.clone()
 	}
+
+	fn operate(&mut self, next: Self::In) -> Self::Out {
+		(self.mapper)(next)
+	}
 }
 
 impl<In, Out, F> MapOperator<In, Out, F> {
@@ -41,24 +31,20 @@ impl<In, Out, F> MapOperator<In, Out, F> {
 		Self {
 			_phantom_data_in: PhantomData,
 			_phantom_data_out: PhantomData,
-			callback: transform,
+			mapper: transform,
 		}
 	}
 }
 
-impl<In, Out, F> OperatorInstance for MapOperator<In, Out, F>
+impl<In, Out, F> Clone for MapOperator<In, Out, F>
 where
-	F: OperatorCallback<In, Out>,
+	F: Clone,
 {
-	type In = In;
-	type Out = Out;
-
-	fn push_forward<Destination: Observer<In = Out>>(
-		&mut self,
-		value: Self::In,
-		destination: &mut Destination,
-	) {
-		let result = (self.callback)(value);
-		destination.on_push(result);
+	fn clone(&self) -> Self {
+		Self {
+			mapper: self.mapper.clone(),
+			_phantom_data_in: PhantomData,
+			_phantom_data_out: PhantomData,
+		}
 	}
 }

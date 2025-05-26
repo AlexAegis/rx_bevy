@@ -1,5 +1,5 @@
 use rx_bevy_observable::Observable;
-use rx_bevy_operator::Pipe;
+use rx_bevy_operator_pipe::Pipe;
 
 use crate::MapOperator;
 

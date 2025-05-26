@@ -12,6 +12,8 @@ pub use rx_bevy_observer_print::*;
 // Operators
 #[cfg(feature = "operator_map")]
 pub use rx_bevy_operator_map::*;
+#[cfg(feature = "operator_pipe")]
+pub use rx_bevy_operator_pipe::*;
 #[cfg(feature = "operator_tap")]
 pub use rx_bevy_operator_tap::*;
 
@@ -32,6 +34,8 @@ pub mod prelude {
 	// Operators
 	#[cfg(feature = "operator_map")]
 	pub use rx_bevy_operator_map::prelude::*;
+	#[cfg(feature = "operator_pipe")]
+	pub use rx_bevy_operator_pipe::prelude::*;
 	#[cfg(feature = "operator_tap")]
 	pub use rx_bevy_operator_tap::prelude::*;
 }

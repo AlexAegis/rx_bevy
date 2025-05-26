@@ -1,18 +1,38 @@
 use rx_bevy_observable::Observer;
 
+use crate::Operator;
+
 /// The internal implementation detail of an operator, defines how a value
 /// should be pushed into a [Destination]
 ///
 /// Internally, an [OperatorInstance] is the part of a [OperatorInstanceForwardObserver]
+/// TODO: automatically impl
 pub trait OperatorInstance {
 	type In;
 	type Out;
 
 	fn push_forward<Destination: Observer<In = Self::Out>>(
 		&mut self,
-		value: Self::In,
+		next: Self::In,
 		destination: &mut Destination,
 	);
+}
+
+impl<T, In, Out> OperatorInstance for T
+where
+	T: Clone + Operator<In = In, Out = Out, Instance = Self>,
+{
+	type In = In;
+	type Out = Out;
+
+	fn push_forward<Destination: Observer<In = Self::Out>>(
+		&mut self,
+		next: Self::In,
+		destination: &mut Destination,
+	) {
+		let result = self.operate(next);
+		destination.on_push(result);
+	}
 }
 
 /// An observer that contains a concrete [Destination] and an [OperatorInstance]

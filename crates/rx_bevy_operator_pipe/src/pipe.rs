@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
-use crate::{Operator, OperatorInstance, OperatorSubscribe};
-
 use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_operator::{Operator, OperatorSubscribe};
 
 pub struct Pipe<Source, Op, PipeIn, PipeOut> {
 	pub(crate) source_observable: Source,
@@ -26,26 +25,6 @@ where
 	}
 }
 
-impl<Source, Op, PipeIn, PipeOut> OperatorInstance for Pipe<Source, Op, PipeIn, PipeOut>
-where
-	Op: OperatorSubscribe + Operator<In = PipeIn, Out = PipeOut>,
-{
-	type In = PipeIn;
-	type Out = PipeOut;
-
-	fn push_forward<Destination: Observer<In = Self::Out>>(
-		&mut self,
-		value: Self::In,
-		destination: &mut Destination,
-	) {
-		// self.
-		//
-		// self.operator
-		// 	.operator_subscribe(self.source_observable, destination);
-		// destination.on_push(value);
-	}
-}
-
 impl<Source, Op, PipeIn, PipeOut> Operator for Pipe<Source, Op, PipeIn, PipeOut>
 where
 	Op: OperatorSubscribe + Operator<In = PipeIn, Out = PipeOut>,
@@ -59,6 +38,10 @@ where
 
 	fn create_operator_instance(&self) -> Self::Instance {
 		self.clone()
+	}
+
+	fn operate(&mut self, next: Self::In) -> Self::Out {
+		self.operator.operate(next)
 	}
 }
 
@@ -94,15 +77,3 @@ where
 			.operator_subscribe(self.source_observable, destination);
 	}
 }
-
-pub trait ObservableExtensionPipe<Out>: Observable<Out = Out> + Sized {
-	fn pipe<NextOp>(self, operator: NextOp) -> Pipe<Self, NextOp, Out, NextOp::Out>
-	where
-		Self: Sized,
-		NextOp: Operator,
-	{
-		Pipe::new(self, operator)
-	}
-}
-
-impl<T, Out> ObservableExtensionPipe<Out> for T where T: Observable<Out = Out> {}
