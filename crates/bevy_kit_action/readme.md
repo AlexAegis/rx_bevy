@@ -4,6 +4,19 @@ TODO: Rename to bevy_socketed_actions? Or bevy_action_socket? bevy_sock? signals
 
 An input mapper solution
 
+Signals across channels,defined by a pipe.
+A pipe defines a set of channels between two signal-sockets.
+
+It is a very generic library, it could be used to
+map input actions, or to write logic with it, trigger events
+based on signals and tresholds to actuate.
+
+TODO:
+
+- Since the user defined stuff is triggered using an observer, it runs in the same schedule as the library. (this also means a difference between pull events like eventreader and push events like observers, that you can chose when to listen to an event, if events are not per schedule idk)
+  put trigger into the user schedule as the last step of the propagation process
+- Rename connectors to pipes, and allow composable transformations on it.
+
 ## Areas
 
 - State

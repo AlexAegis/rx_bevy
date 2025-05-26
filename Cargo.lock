@@ -1275,21 +1275,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_subscriber"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_egui",
- "bitflags 2.9.1",
- "derive-where",
- "examples_common",
- "num-traits",
- "serde",
- "smallvec",
-]
-
-[[package]]
 name = "bevy_tasks"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4437,6 +4422,104 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3640bec8aad418d7d03c72ea2de10d5c646a598f9883c7babc160d91e3c1b26c"
 dependencies = [
  "twox-hash",
+]
+
+[[package]]
+name = "rx_bevy"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy_observable",
+ "rx_bevy_observable_of",
+ "rx_bevy_observer_fn",
+ "rx_bevy_observer_noop",
+ "rx_bevy_observer_print",
+ "rx_bevy_operator",
+ "rx_bevy_operator_map",
+ "rx_bevy_operator_tap",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observable"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observable_of"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observer_fn"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observer_noop"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observer_print"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_operator"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_operator_map"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_operator",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_operator_tap"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_operator",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_testing"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
 ]
 
 [[package]]

@@ -58,6 +58,18 @@ serde = { version = "1.0.219" }
 num-traits = { version = "0.2.19" }
 petgraph = { version = "0.8.1" }
 bevy_kit_action = { path = "crates/bevy_kit_action" }
-bevy_pipes_core = { path = "crates/bevy_pipes_core" }
-bevy_subscriber = { path = "crates/bevy_subscriber" }
 examples_common = { path = "crates/examples_common" }
+# Core
+rx_bevy = { path = "crates/rx_bevy" }
+rx_bevy_observable = { path = "crates/rx_bevy_observable" }
+rx_bevy_operator = { path = "crates/rx_bevy_operator" }
+rx_bevy_testing = { path = "crates/rx_bevy_testing" }
+# Observables
+rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
+# Observers
+rx_bevy_observer_noop = { path = "crates/rx_bevy_observer_noop" }
+rx_bevy_observer_print = { path = "crates/rx_bevy_observer_print" }
+rx_bevy_observer_fn = { path = "crates/rx_bevy_observer_fn" }
+# Operators
+rx_bevy_operator_map = { path = "crates/rx_bevy_operator_map" }
+rx_bevy_operator_tap = { path = "crates/rx_bevy_operator_tap" }

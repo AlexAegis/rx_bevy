@@ -1,1 +1,0 @@
-# bevy_reactive_pipes/bevy_subscribers
