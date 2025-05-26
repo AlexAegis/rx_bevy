@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-	observables::{Observable, ObservableWithOperators},
+	observables::{Observable, ObservableExtensionPipe},
 	observers::Observer,
 };
 
@@ -21,7 +21,7 @@ impl<Source, In, Out, F> OperatorInstanceFactory for MapOperator<Source, In, Out
 where
 	F: OperatorCallback<In, Out>,
 {
-	type Instance = MapOperatorInstance<F, In, Out>;
+	type Instance = MapOperatorInstance<F, Self::In, Self::Out>;
 
 	fn create_operator_instance(&self) -> Self::Instance {
 		MapOperatorInstance {
@@ -112,9 +112,13 @@ where
 	}
 }
 
-impl<Source, In, Out, F> ObservableWithOperators<Out> for MapOperator<Source, In, Out, F>
-where
-	F: OperatorCallback<In, Out>,
-	Source: Observable<Out = In>,
-{
+pub trait ObservableExtensionMap<Out>: Observable<Out = Out> + Sized {
+	fn map<NextOut, F: Fn(Out) -> NextOut>(
+		self,
+		transform: F,
+	) -> MapOperator<Self, Out, NextOut, F> {
+		MapOperator::new_with_source(self, transform)
+	}
 }
+
+impl<T, Out> ObservableExtensionMap<Out> for T where T: Observable<Out = Out> {}

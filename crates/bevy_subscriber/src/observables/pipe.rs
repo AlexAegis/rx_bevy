@@ -43,13 +43,7 @@ where
 	}
 }
 
-/// TODO: Could be part of a possible observable macro
-impl<Op, PipeIn, PipeOut> ObservableWithOperators<PipeOut> for PipeBuilder<Op, PipeIn, PipeOut> where
-	Op: OperatorSubscribe + OperatorIO<Out = PipeOut>
-{
-}
-
-pub trait ObservableWithOperators<Out>: Observable<Out = Out> + Sized {
+pub trait ObservableExtensionPipe<Out>: Observable<Out = Out> + Sized {
 	fn pipe<NextOp>(self, mut operator: NextOp) -> PipeBuilder<NextOp, Out, NextOp::Out>
 	where
 		Self: Sized,
@@ -58,11 +52,6 @@ pub trait ObservableWithOperators<Out>: Observable<Out = Out> + Sized {
 		operator.replace_source(self);
 		PipeBuilder::new(operator)
 	}
-
-	fn map<NextOut, F: Fn(Out) -> NextOut>(
-		self,
-		transform: F,
-	) -> MapOperator<Self, Out, NextOut, F> {
-		MapOperator::new_with_source(self, transform)
-	}
 }
+
+impl<T, Out> ObservableExtensionPipe<Out> for T where T: Observable<Out = Out> {}

@@ -1,8 +1,4 @@
-use bevy_subscriber::{
-	observables::{Observable, OfObservable},
-	observers::FnObserver,
-	operators::MapOperator,
-};
+use bevy_subscriber::prelude::*;
 
 /// This is NOT how you would normally construct a chain of operators,
 /// but this is what happens under the hood when you pipe operators.

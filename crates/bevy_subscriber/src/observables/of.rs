@@ -1,6 +1,6 @@
 use crate::observers::Observer;
 
-use super::{Observable, ObservableWithOperators};
+use super::{Observable, ObservableExtensionPipe};
 
 /// Observable creator for [OfObservable]
 pub fn of<T>(value: T) -> OfObservable<T>
@@ -36,9 +36,6 @@ where
 		observer.on_push(self.value.clone());
 	}
 }
-
-/// TODO: Could be part of a possible observable macro
-impl<Out> ObservableWithOperators<Out> for OfObservable<Out> where Out: Clone {}
 
 #[cfg(test)]
 mod tests {

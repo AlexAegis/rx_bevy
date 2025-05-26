@@ -1,8 +1,4 @@
-use bevy_subscriber::{
-	observables::{Observable, ObservableWithOperators, OfObservable},
-	observers::FnObserver,
-	operators::MapOperator,
-};
+use bevy_subscriber::prelude::*;
 
 /// Generic operators can be passed into the pipe function
 fn main() {

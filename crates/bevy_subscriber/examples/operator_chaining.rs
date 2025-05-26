@@ -1,7 +1,4 @@
-use bevy_subscriber::{
-	observables::{Observable, ObservableWithOperators, of},
-	observers::PrintObserver,
-};
+use bevy_subscriber::prelude::*;
 
 /// This is how you'd normally use operators that are extending Observable
 /// to provide simple methods to create them

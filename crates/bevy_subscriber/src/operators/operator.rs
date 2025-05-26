@@ -2,6 +2,11 @@ use crate::{observables::Observable, observers::Observer};
 
 use super::{OperatorInstance, OperatorInstanceForwardObserver};
 
+pub trait Operator<Source>:
+	OperatorIO + OperatorInstanceFactory + OperatorWithSource + OperatorSource<Source>
+{
+}
+
 pub trait OperatorIO {
 	/// Input type of the operator
 	type In;
@@ -56,5 +61,15 @@ where
 /// Many operators let the user define a function to be passed, this type ensures
 /// they are clone-able which is required for instancing the operator.
 pub trait OperatorCallback<In, Out>: Clone + Fn(In) -> Out {}
+pub trait OperatorCallbackRef<In, Out>: Clone + for<'a> Fn(&'a In) -> Out {}
 
 impl<T, In, Out> OperatorCallback<In, Out> for T where T: Clone + Fn(In) -> Out {}
+
+pub trait OperatorCallbackOnce<In, Out>: Clone + FnOnce(In) -> Out {}
+
+impl<T, In, Out> OperatorCallbackOnce<In, Out> for T where T: Clone + FnOnce(In) -> Out {}
+
+pub trait OperatorCallbackMut<In, Out>: Clone + FnMut(In) -> Out {}
+pub trait OperatorCallbackRefMuf<In, Out>: Clone + for<'a> FnMut(&'a In) -> Out {}
+
+impl<T, In, Out> OperatorCallbackMut<In, Out> for T where T: Clone + FnMut(In) -> Out {}
