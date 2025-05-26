@@ -1,7 +1,6 @@
-use crate::{
-	observables::Observable,
-	observers::{Forwarder, Observer},
-};
+use crate::{observables::Observable, observers::Observer};
+
+use super::{OperatorInstance, OperatorInstanceForwardObserver};
 
 pub trait OperatorIO {
 	/// Input type of the operator
@@ -13,11 +12,11 @@ pub trait OperatorIO {
 /// Every Operator is an Observer that can subscribe to an observable, and upon
 /// subscription, returns it's own [OperatorObserver] that you can subscribe to.
 /// Destination is the Observer that will get subscribed to this internal Observable.
-pub trait OperatorWithForwarder: OperatorIO {
+pub trait OperatorInstanceFactory: OperatorIO {
 	/// The operators internal observer, that observes the source/upstream observable
 	/// Its input is the operators output
-	type Fwd: Forwarder<In = Self::In, Out = Self::Out>;
-	fn into_forwarder(self) -> Self::Fwd;
+	type Instance: OperatorInstance<In = Self::In, Out = Self::Out>;
+	fn create_operator_instance(&self) -> Self::Instance;
 }
 
 /// OperatorWithSource and OperatorSource<Source> are separate, otherwise the
@@ -39,46 +38,23 @@ pub trait OperatorSubscribe: OperatorIO {
 
 impl<T> OperatorSubscribe for T
 where
-	T: OperatorWithForwarder + OperatorWithSource + OperatorSource<T::SourceObservable>,
+	T: OperatorInstanceFactory + OperatorWithSource + OperatorSource<T::SourceObservable>,
 {
 	fn operator_subscribe<Destination: Observer<In = Self::Out>>(
 		mut self,
 		destination: Destination,
 	) {
 		if let Some(source) = self.take_source_observable() {
-			let operator_internal_forwarder = self.into_forwarder();
-			let forward_observer = ForwardObserver::new(operator_internal_forwarder, destination);
+			let operator_internal_forwarder = self.create_operator_instance();
+			let forward_observer =
+				OperatorInstanceForwardObserver::new(operator_internal_forwarder, destination);
 			source.subscribe(forward_observer);
 		}
 	}
 }
 
-struct ForwardObserver<In, Out, F: Forwarder<In = In>, Destination: Observer<In = Out>> {
-	forwarder: F,
-	destination: Destination,
-}
+/// Many operators let the user define a function to be passed, this type ensures
+/// they are clone-able which is required for instancing the operator.
+pub trait OperatorCallback<In, Out>: Clone + Fn(In) -> Out {}
 
-impl<In, Out, F, Destination> ForwardObserver<In, Out, F, Destination>
-where
-	F: Forwarder<In = In>,
-	Destination: Observer<In = Out>,
-{
-	fn new(forwarder: F, destination: Destination) -> Self {
-		Self {
-			forwarder,
-			destination,
-		}
-	}
-}
-
-impl<In, Out, F, Destination> Observer for ForwardObserver<In, Out, F, Destination>
-where
-	F: Forwarder<In = In, Out = Out>,
-	Destination: Observer<In = Out>,
-{
-	type In = In;
-
-	fn on_push(&mut self, value: Self::In) {
-		self.forwarder.push_forward(value, &mut self.destination);
-	}
-}
+impl<T, In, Out> OperatorCallback<In, Out> for T where T: Clone + Fn(In) -> Out {}

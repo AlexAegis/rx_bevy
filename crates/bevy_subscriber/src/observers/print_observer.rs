@@ -2,19 +2,20 @@ use std::{fmt::Debug, marker::PhantomData};
 
 use super::Observer;
 
+/// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct PrintObserver<T>
 where
 	T: Debug,
 {
 	_phantom_data: PhantomData<T>,
-	message: String,
+	message: &'static str,
 }
 
 impl<T> PrintObserver<T>
 where
 	T: Debug,
 {
-	pub fn new(message: String) -> Self {
+	pub fn new(message: &'static str) -> Self {
 		Self {
 			_phantom_data: PhantomData,
 			message,

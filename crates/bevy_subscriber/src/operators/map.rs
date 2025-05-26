@@ -2,29 +2,30 @@ use std::marker::PhantomData;
 
 use crate::{
 	observables::{Observable, ObservableWithOperators},
-	observers::{Forwarder, Observer},
+	observers::Observer,
 };
 
 use super::{
-	OperatorIO, OperatorSource, OperatorSubscribe, OperatorWithForwarder, OperatorWithSource,
+	OperatorCallback, OperatorIO, OperatorInstance, OperatorInstanceFactory, OperatorSource,
+	OperatorSubscribe, OperatorWithSource,
 };
 
 pub struct MapOperator<Source, In, Out, F> {
 	pub source_observable: Option<Source>,
-	pub transform: F,
+	pub callback: F,
 	pub phantom_in: PhantomData<In>,
 	pub phantom_out: PhantomData<Out>,
 }
 
-impl<Source, In, Out, F> OperatorWithForwarder for MapOperator<Source, In, Out, F>
+impl<Source, In, Out, F> OperatorInstanceFactory for MapOperator<Source, In, Out, F>
 where
-	F: Fn(In) -> Out,
+	F: OperatorCallback<In, Out>,
 {
-	type Fwd = MapForwarder<F, In, Out>;
+	type Instance = MapOperatorInstance<F, In, Out>;
 
-	fn into_forwarder(self) -> Self::Fwd {
-		MapForwarder {
-			transform: self.transform,
+	fn create_operator_instance(&self) -> Self::Instance {
+		MapOperatorInstance {
+			callback: self.callback.clone(),
 			_phantom_data_in: PhantomData,
 			_phantom_data_out: PhantomData,
 		}
@@ -45,7 +46,7 @@ impl<Source, In, Out, F> MapOperator<Source, In, Out, F> {
 			phantom_in: PhantomData,
 			phantom_out: PhantomData,
 			source_observable: None,
-			transform,
+			callback: transform,
 		}
 	}
 
@@ -54,7 +55,7 @@ impl<Source, In, Out, F> MapOperator<Source, In, Out, F> {
 			phantom_in: PhantomData,
 			phantom_out: PhantomData,
 			source_observable: Some(source),
-			transform,
+			callback: transform,
 		}
 	}
 }
@@ -75,16 +76,15 @@ impl<Source, In, Out, F> OperatorSource<Source> for MapOperator<Source, In, Out,
 	}
 }
 
-pub struct MapForwarder<F, In, Out> {
-	// destination: Destination,
-	transform: F,
+pub struct MapOperatorInstance<F, In, Out> {
+	callback: F,
 	_phantom_data_in: PhantomData<In>,
 	_phantom_data_out: PhantomData<Out>,
 }
 
-impl<F, In, Out> Forwarder for MapForwarder<F, In, Out>
+impl<F, In, Out> OperatorInstance for MapOperatorInstance<F, In, Out>
 where
-	F: Fn(In) -> Out,
+	F: OperatorCallback<In, Out>,
 {
 	type In = In;
 	type Out = Out;
@@ -94,7 +94,7 @@ where
 		value: Self::In,
 		destination: &mut Destination,
 	) {
-		let result = (self.transform)(value);
+		let result = (self.callback)(value);
 		destination.on_push(result);
 	}
 }
@@ -102,7 +102,7 @@ where
 /// TODO: Make generic or macro
 impl<Source, In, Out, F> Observable for MapOperator<Source, In, Out, F>
 where
-	F: Fn(In) -> Out,
+	F: OperatorCallback<In, Out>,
 	Source: Observable<Out = In>,
 {
 	type Out = Out;
@@ -114,7 +114,7 @@ where
 
 impl<Source, In, Out, F> ObservableWithOperators<Out> for MapOperator<Source, In, Out, F>
 where
-	F: Fn(In) -> Out,
+	F: OperatorCallback<In, Out>,
 	Source: Observable<Out = In>,
 {
 }
