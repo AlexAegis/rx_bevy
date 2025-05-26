@@ -4434,6 +4434,7 @@ dependencies = [
  "rx_bevy_observer_noop",
  "rx_bevy_observer_print",
  "rx_bevy_operator",
+ "rx_bevy_operator_filter",
  "rx_bevy_operator_map",
  "rx_bevy_operator_pipe",
  "rx_bevy_operator_tap",
@@ -4495,6 +4496,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_operator_filter"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_operator",
+ "rx_bevy_operator_pipe",
+ "rx_bevy_testing",
+]
+
+[[package]]
 name = "rx_bevy_operator_map"
 version = "0.1.0"
 dependencies = [
@@ -4519,6 +4531,18 @@ dependencies = [
 name = "rx_bevy_operator_tap"
 version = "0.1.0"
 dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_operator",
+ "rx_bevy_operator_pipe",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_subject"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
  "rx_bevy",
  "rx_bevy_observable",
  "rx_bevy_operator",

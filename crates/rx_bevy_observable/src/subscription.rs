@@ -1,16 +1,15 @@
-pub struct Subscription {}
+pub trait SubscriptionInstance {}
 
-/// unsubscribe on drop? or drop on unsubscribe? both?
-impl Subscription {
-	fn add<Finalizer: Fn() -> ()>(finalizer: Finalizer) {}
+/// Maybe a subscription would only be a trait and each type would hav
+pub trait Subscription {
+	type Instance: SubscriptionInstance;
 
-	/// This is a mutable reference because [Drop] drops with a mutable reference
-	/// too.
-	pub fn unsubscribe(&mut self) {}
+	fn unsubscribe(&mut self);
 }
-
-impl Drop for Subscription {
+/* TODO: use a concrete genreic wrapper
+impl<T> Drop for Subscription {
 	fn drop(&mut self) {
 		self.unsubscribe();
 	}
 }
+*/

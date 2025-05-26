@@ -20,7 +20,7 @@ pub trait OperatorInstance {
 
 impl<T, In, Out> OperatorInstance for T
 where
-	T: Clone + Operator<In = In, Out = Out, Instance = Self>,
+	T: Operator<In = In, Out = Out, Instance = Self>,
 {
 	type In = In;
 	type Out = Out;

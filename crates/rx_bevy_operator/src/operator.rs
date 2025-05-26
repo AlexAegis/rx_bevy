@@ -19,6 +19,7 @@ pub trait Operator {
 
 	fn create_operator_instance(&self) -> Self::Instance;
 
+	// TODO: Maybe this is a bad idea, sometimes it's not useful
 	fn operate(&mut self, next: Self::In) -> Self::Out;
 }
 
