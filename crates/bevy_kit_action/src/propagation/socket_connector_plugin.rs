@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::{ecs::observer::TriggerTargets, platform::collections::HashMap, prelude::*};
+use bevy::{platform::collections::HashMap, prelude::*};
 use derive_where::derive_where;
 use smallvec::SmallVec;
 

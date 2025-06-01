@@ -50,8 +50,20 @@ impl<T> Subscription for SubjectSubscription<T> {
 	}
 }
 
+/// A Subject is a shared multicast observer, can be used for broadcasting
+/// a clone of it still has the same set of subscribers, and is needed if you
+/// want to make multiple pipes out of the same subject
 pub struct Subject<T> {
 	destinations: Rc<RefCell<MulticastObserver<SubjectConnector<T>>>>,
+}
+
+impl<T> Clone for Subject<T> {
+	/// Cloning a subject keeps all existing destinations
+	fn clone(&self) -> Self {
+		Self {
+			destinations: self.destinations.clone(),
+		}
+	}
 }
 
 impl<T> Subject<T> {

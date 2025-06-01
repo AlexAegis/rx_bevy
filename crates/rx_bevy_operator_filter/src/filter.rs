@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{DynObserverConnector, Observer, ObserverConnector};
+use rx_bevy_observable::{Observer, ObserverConnector};
 use rx_bevy_operator::{ForwardObserver, Operator};
 
 pub struct FilterOperator<T, Filter> {
@@ -31,12 +31,6 @@ where
 {
 	type In = T;
 	type Out = T;
-
-	// fn push_forward(&mut self, next: Self::In, destination: &mut dyn Observer<T>) {
-	// 	if (self.filter)(&next) {
-	// 		destination.on_push(next);
-	// 	}
-	// }
 
 	fn push_forward<Destination: Observer<In = T>>(
 		&mut self,

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{ObserverConnector, DynObserverConnector, Observer};
+use rx_bevy_observable::{Observer, ObserverConnector};
 use rx_bevy_operator::{ForwardObserver, Operator};
 
 #[derive(Debug)]
