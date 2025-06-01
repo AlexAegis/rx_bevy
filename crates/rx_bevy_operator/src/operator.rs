@@ -15,7 +15,7 @@ pub trait Operator {
 
 	type InternalSubscriber: ConnectorObserver<In = Self::In, Out = Self::Out>;
 
-	fn operator_subscribe<Destination: 'static + Observer<Self::Out>>(
+	fn operator_subscribe<Destination: 'static + Observer<In = Self::Out>>(
 		&mut self,
 		destination: Destination,
 	) -> ForwardObserver<Self::InternalSubscriber, Destination>;

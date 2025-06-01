@@ -17,7 +17,7 @@ where
 
 	type InternalSubscriber = Self;
 
-	fn operator_subscribe<Destination: 'static + Observer<Self::Out>>(
+	fn operator_subscribe<Destination: 'static + Observer<In = Self::Out>>(
 		&mut self,
 		destination: Destination,
 	) -> ForwardObserver<Self::InternalSubscriber, Destination> {
@@ -38,7 +38,7 @@ where
 	// 	}
 	// }
 
-	fn push_forward<Destination: Observer<T>>(
+	fn push_forward<Destination: Observer<In = T>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,

@@ -16,7 +16,7 @@ where
 
 	type Subscription = ();
 
-	fn subscribe<Destination: Observer<Out>>(
+	fn subscribe<Destination: Observer<In = Out>>(
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {

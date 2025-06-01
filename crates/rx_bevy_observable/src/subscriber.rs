@@ -6,11 +6,11 @@ pub struct Subscriber<Destination> {
 	pub destination: Option<Destination>,
 }
 
-impl<In, Destination> Observer<In> for Subscriber<Destination>
+impl<In, Destination> Observer for Subscriber<Destination>
 where
-	Destination: Observer<In>,
+	Destination: Observer<In = In>,
 {
-	// type In = Destination::In;
+	type In = Destination::In;
 
 	fn on_push(&mut self, next: In) {
 		if let Some(ref mut observer) = self.destination {

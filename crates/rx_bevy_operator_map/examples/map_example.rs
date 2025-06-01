@@ -8,10 +8,14 @@ use rx_bevy_operator_pipe::prelude::*;
 fn main() {
 	let observable = of(12);
 
-	let map_op = MapOperator::new(|lel: i32| lel + 1);
+	let map_op = MapOperator::new(|next: i32| next * 2);
 
-	let mut piped = observable.pipe(map_op);
+	let piped = observable.pipe(map_op);
+	let mut piped_again = piped
+		.pipe(MapOperator::new(|next: i32| next.to_string()))
+		.pipe(MapOperator::new(|next| format!("{next} is the number")));
 
-	let print_observer = FnObserver::new(|lel: i32| println!("hello {lel}"));
-	piped.subscribe(print_observer);
+	let print_observer = FnObserver::new(|next: String| println!("hello {next}"));
+
+	piped_again.subscribe(print_observer);
 }

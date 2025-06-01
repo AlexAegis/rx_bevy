@@ -11,10 +11,12 @@ where
 	message: &'static str,
 }
 
-impl<T> Observer<T> for PrintObserver<T>
+impl<T> Observer for PrintObserver<T>
 where
 	T: Debug,
 {
+	type In = T;
+
 	fn on_push(&mut self, value: T) {
 		println!("{} {:?}", self.message, value);
 	}

@@ -2,7 +2,7 @@ use rx_bevy_observable::{DynConnectorObserver, Observer};
 
 pub struct MulticastForwardObserver<Instance: DynConnectorObserver> {
 	pub instance: Instance,
-	pub destinations: Vec<Box<dyn Observer<Instance::Out>>>,
+	pub destinations: Vec<Box<dyn Observer<In = Instance::Out>>>,
 }
 
 impl<Instance> MulticastForwardObserver<Instance>
@@ -16,7 +16,7 @@ where
 		}
 	}
 
-	pub fn add_destination<Destination: 'static + Observer<Instance::Out>>(
+	pub fn add_destination<Destination: 'static + Observer<In = Instance::Out>>(
 		&mut self,
 		destination: Destination,
 	) {
@@ -24,11 +24,13 @@ where
 	}
 }
 
-impl<In, Out, F> Observer<In> for MulticastForwardObserver<F>
+impl<In, Out, F> Observer for MulticastForwardObserver<F>
 where
 	F: DynConnectorObserver<In = In, Out = Out>,
 	In: Clone,
 {
+	type In = In;
+
 	fn on_push(&mut self, value: In) {
 		for destination in self.destinations.iter_mut() {
 			self.instance

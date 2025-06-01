@@ -18,7 +18,7 @@ where
 
 	type InternalSubscriber = MapSubscriber<In, Out, Mapper>;
 
-	fn operator_subscribe<Destination: 'static + rx_bevy_observable::Observer<Self::Out>>(
+	fn operator_subscribe<Destination: 'static + Observer<In = Self::Out>>(
 		&mut self,
 		destination: Destination,
 	) -> ForwardObserver<Self::InternalSubscriber, Destination> {
@@ -46,7 +46,7 @@ where
 	type In = In;
 	type Out = Out;
 
-	fn push_forward<Destination: Observer<Out>>(
+	fn push_forward<Destination: Observer<In = Out>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,

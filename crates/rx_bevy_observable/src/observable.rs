@@ -5,7 +5,7 @@ pub trait Observable {
 
 	type Subscription: Subscription;
 
-	fn subscribe<Destination: 'static + Observer<Self::Out>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out>>(
 		&mut self,
 		observer: Destination,
 	) -> Self::Subscription;

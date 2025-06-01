@@ -66,17 +66,15 @@ impl<Source, Op, PipeIn, PipeOut> Pipe<Source, Op, PipeIn, PipeOut> {
 
 impl<Source, Op, PipeIn, PipeOut> Observable for Pipe<Source, Op, PipeIn, PipeOut>
 where
-	Op: Operator<In = PipeIn, Out = PipeOut>,
+	Op: Operator<Out = PipeOut>,
 	Source: Observable<Out = Op::In>,
-	PipeIn: 'static,
-	PipeOut: 'static,
 	<Op as Operator>::InternalSubscriber: 'static,
 {
 	type Out = PipeOut;
 
 	type Subscription = <Source as Observable>::Subscription;
 
-	fn subscribe<Destination: 'static + Observer<PipeOut>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {

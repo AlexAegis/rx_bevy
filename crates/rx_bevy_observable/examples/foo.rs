@@ -16,7 +16,7 @@ where
 
 	type Subscription = Subscriber<DynObserver<T>>;
 
-	fn subscribe<Destination: 'static + Observer<Self::Out>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out>>(
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {

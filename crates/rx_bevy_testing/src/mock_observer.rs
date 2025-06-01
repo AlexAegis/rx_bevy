@@ -7,8 +7,8 @@ pub struct MockObserver<T> {
 	pub values: Vec<T>,
 }
 
-impl<T> Observer<T> for MockObserver<T> {
-	// type In = T;
+impl<T> Observer for MockObserver<T> {
+	type In = T;
 
 	fn on_push(&mut self, value: T) {
 		self.values.push(value);
@@ -40,10 +40,12 @@ impl<Destination> SharedForwardObserver<Destination> {
 	}
 }
 
-impl<T, Destination> Observer<T> for SharedForwardObserver<Destination>
+impl<T, Destination> Observer for SharedForwardObserver<Destination>
 where
-	Destination: Observer<T>,
+	Destination: Observer<In = T>,
 {
+	type In = T;
+
 	fn on_push(&mut self, value: T) {
 		let mut lock = self.destination.write().expect("to be unlocked");
 		lock.on_push(value);

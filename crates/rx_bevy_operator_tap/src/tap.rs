@@ -21,7 +21,7 @@ where
 
 	type InternalSubscriber = Self;
 
-	fn operator_subscribe<Destination: 'static + rx_bevy_observable::Observer<Self::Out>>(
+	fn operator_subscribe<Destination: 'static + Observer<In = Self::Out>>(
 		&mut self,
 		destination: Destination,
 	) -> rx_bevy_operator::ForwardObserver<Self::InternalSubscriber, Destination> {
@@ -36,7 +36,7 @@ where
 	type In = In;
 	type Out = In;
 
-	fn push_forward<Destination: Observer<In>>(
+	fn push_forward<Destination: Observer<In = In>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,

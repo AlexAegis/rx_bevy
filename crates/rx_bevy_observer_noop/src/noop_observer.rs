@@ -7,7 +7,9 @@ pub struct NoopObserver<In> {
 	_phantom_data_in: PhantomData<In>,
 }
 
-impl<In> Observer<In> for NoopObserver<In> {
+impl<In> Observer for NoopObserver<In> {
+	type In = In;
+
 	fn on_push(&mut self, _value: In) {}
 }
 
