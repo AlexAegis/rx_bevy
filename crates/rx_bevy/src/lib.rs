@@ -21,6 +21,8 @@ pub use rx_bevy_operator_tap::*;
 pub use rx_bevy_subject::*;
 #[cfg(feature = "subject_behavior")]
 pub use rx_bevy_subject_behavior::*;
+#[cfg(feature = "subject_replay")]
+pub use rx_bevy_subject_replay::*;
 
 pub mod prelude {
 	pub use rx_bevy_observable::prelude::*;
@@ -49,4 +51,6 @@ pub mod prelude {
 	pub use rx_bevy_subject::prelude::*;
 	#[cfg(feature = "subject_behavior")]
 	pub use rx_bevy_subject_behavior::prelude::*;
+	#[cfg(feature = "subject_replay")]
+	pub use rx_bevy_subject_replay::prelude::*;
 }

@@ -1,6 +1,6 @@
 [package]
-name = "rx_bevy_subject_behavior"
-description = "rx_bevy's BehaviorSubject implementation"
+name = "rx_bevy_subject_replay"
+description = "rx_bevy's ReplaySubject implementation"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -21,6 +21,7 @@ dev = []
 example = ["dev"]
 
 [dependencies]
+ringbuffer = { workspace = true }
 rx_bevy_subject = { workspace = true }
 rx_bevy_observable = { workspace = true }
 rx_bevy_operator = { workspace = true }
