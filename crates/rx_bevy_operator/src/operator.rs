@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_observable::{Observable, Observer, Subscription};
 
 use super::{OperatorInstance, OperatorInstanceForwardObserver};
 
@@ -31,7 +31,9 @@ pub trait OperatorSubscribe: Operator {
 		self,
 		source: Source,
 		observer: Destination,
-	);
+	) -> Subscription<
+		OperatorInstanceForwardObserver<Self::In, Self::Out, Self::Instance, Destination>,
+	>;
 }
 
 impl<T> OperatorSubscribe for T
@@ -43,13 +45,15 @@ where
 		Destination: Observer<In = Self::Out>,
 	>(
 		self,
-		source: Source,
+		mut source: Source,
 		destination: Destination,
-	) {
+	) -> Subscription<
+		OperatorInstanceForwardObserver<Self::In, Self::Out, Self::Instance, Destination>,
+	> {
 		let operator_internal_forwarder = self.create_operator_instance();
 		let forward_observer =
 			OperatorInstanceForwardObserver::new(operator_internal_forwarder, destination);
-		source.subscribe(forward_observer);
+		source.subscribe(forward_observer)
 	}
 }
 

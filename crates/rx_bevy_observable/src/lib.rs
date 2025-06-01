@@ -1,9 +1,11 @@
 mod observable;
 mod observer;
+mod subscriber;
 mod subscription;
 
 pub use observable::*;
 pub use observer::*;
+pub use subscriber::*;
 pub use subscription::*;
 
 pub mod prelude {

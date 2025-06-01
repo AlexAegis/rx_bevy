@@ -1,15 +1,20 @@
-pub trait SubscriptionInstance {}
+use crate::Observer;
 
-/// Maybe a subscription would only be a trait and each type would hav
+///
 pub trait Subscription {
-	type Instance: SubscriptionInstance;
+	// type Destination: Observer;
 
 	fn unsubscribe(&mut self);
+
+	fn is_closed(&self) -> bool;
+
+	// fn with_destination(destination: Self::Destination) -> Self;
 }
-/* TODO: use a concrete genreic wrapper
-impl<T> Drop for Subscription {
-	fn drop(&mut self) {
-		self.unsubscribe();
+
+impl Subscription for () {
+	fn is_closed(&self) -> bool {
+		false
 	}
+
+	fn unsubscribe(&mut self) {}
 }
-*/

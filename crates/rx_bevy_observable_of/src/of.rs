@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_observable::{Observable, Observer, Subscriber, Subscription};
 
 /// Observable creator for [OfObservable]
 pub fn of<T>(value: T) -> OfObservable<T>
@@ -14,7 +14,12 @@ where
 {
 	type Out = Out;
 
-	fn subscribe<Destination: Observer<In = Out>>(self, mut observer: Destination) {
+	type Subscription = ();
+
+	fn subscribe<Destination: Observer<Out>>(
+		&mut self,
+		mut observer: Destination,
+	) -> Self::Subscription {
 		observer.on_push(self.value.clone());
 	}
 }
@@ -44,7 +49,7 @@ mod tests {
 	#[test]
 	fn should_emit_single_value() {
 		let value = 4;
-		let observable = OfObservable::new(value);
+		let mut observable = OfObservable::new(value);
 		let mock_observer = MockObserver::new_shared();
 
 		let f = SharedForwardObserver::new(&mock_observer);

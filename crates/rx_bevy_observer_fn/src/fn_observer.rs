@@ -11,12 +11,10 @@ where
 	_phantom_data: PhantomData<In>,
 }
 
-impl<In, OnPush> Observer for FnObserver<In, OnPush>
+impl<In, OnPush> Observer<In> for FnObserver<In, OnPush>
 where
 	OnPush: Fn(In) -> (),
 {
-	type In = In;
-
 	fn on_push(&mut self, value: In) {
 		(self.on_push)(value);
 	}

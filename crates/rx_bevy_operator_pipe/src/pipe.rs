@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_observable::{Observable, Observer, Subscription};
 use rx_bevy_operator::{Operator, OperatorSubscribe};
 
 pub struct Pipe<Source, Op, PipeIn, PipeOut> {
@@ -72,8 +72,11 @@ where
 {
 	type Out = PipeOut;
 
-	fn subscribe<Destination: Observer<In = PipeOut>>(self, destination: Destination) {
+	fn subscribe<Destination: Observer<In = PipeOut>>(
+		&mut self,
+		destination: Destination,
+	) -> Subscription<Destination> {
 		self.operator
-			.operator_subscribe(self.source_observable, destination);
+			.operator_subscribe(self.source_observable, destination)
 	}
 }

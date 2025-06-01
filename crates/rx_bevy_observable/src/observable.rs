@@ -1,8 +1,12 @@
-use crate::Observer;
+use crate::{Observer, Subscription};
 
 pub trait Observable {
 	type Out;
 
-	/// TODO: This shouldn't be consuming on the outer layer
-	fn subscribe<Destination: Observer<In = Self::Out>>(self, observer: Destination);
+	type Subscription: Subscription;
+
+	fn subscribe<Destination: 'static + Observer<Self::Out>>(
+		&mut self,
+		observer: Destination,
+	) -> Self::Subscription;
 }

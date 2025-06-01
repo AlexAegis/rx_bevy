@@ -23,5 +23,6 @@ example = ["dev"]
 [dependencies]
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+# rx_bevy = { workspace = true }
 rx_bevy_testing = { workspace = true }
+rx_bevy_observer_fn = { workspace = true }
