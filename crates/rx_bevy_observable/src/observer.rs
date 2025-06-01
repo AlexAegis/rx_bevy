@@ -1,8 +1,4 @@
-use crate::Subscription;
-
 pub trait Observer<In> {
-	// type In;
-
 	fn on_push(&mut self, next: In);
 }
 

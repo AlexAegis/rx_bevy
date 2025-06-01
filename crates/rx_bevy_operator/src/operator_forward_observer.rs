@@ -1,15 +1,4 @@
-use rx_bevy_observable::Observer;
-
-pub trait ConnectorObserver {
-	type In;
-	type Out;
-
-	fn push_forward<Destination: Observer<Self::Out>>(
-		&mut self,
-		next: Self::In,
-		destination: &mut Destination,
-	);
-}
+use rx_bevy_observable::{ConnectorObserver, Observer};
 
 /// An observer that contains a concrete [Destination] and an [OperatorInstance]
 /// implementation

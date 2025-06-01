@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::Observer;
-use rx_bevy_operator::{ConnectorObserver, ForwardObserver, Operator};
+use rx_bevy_observable::{ConnectorObserver, DynConnectorObserver, Observer};
+use rx_bevy_operator::{ForwardObserver, Operator};
 
 pub struct FilterOperator<T, Filter> {
 	pub filter: Filter,
@@ -32,7 +32,13 @@ where
 	type In = T;
 	type Out = T;
 
-	fn push_forward<Destination: Observer<Self::Out>>(
+	// fn push_forward(&mut self, next: Self::In, destination: &mut dyn Observer<T>) {
+	// 	if (self.filter)(&next) {
+	// 		destination.on_push(next);
+	// 	}
+	// }
+
+	fn push_forward<Destination: Observer<T>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,

@@ -1,6 +1,6 @@
-use rx_bevy_observable::{Observer, Subscriber, Subscription};
+use rx_bevy_observable::{ConnectorObserver, Observer};
 
-use crate::{ConnectorObserver, ForwardObserver};
+use crate::ForwardObserver;
 
 // OperatorIO OperatorInstanceFactory
 

@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{DynObserver, Observer, Subscriber};
-use rx_bevy_operator::{ConnectorObserver, ForwardObserver, Operator, OperatorCallback};
+use rx_bevy_observable::{ConnectorObserver, DynConnectorObserver, Observer};
+use rx_bevy_operator::{ForwardObserver, Operator, OperatorCallback};
 
 pub struct MapOperator<In, Out, F> {
 	pub mapper: F,
@@ -46,7 +46,7 @@ where
 	type In = In;
 	type Out = Out;
 
-	fn push_forward<Destination: Observer<Self::Out>>(
+	fn push_forward<Destination: Observer<Out>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,

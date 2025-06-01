@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_operator::{ConnectorObserver, ForwardObserver, Operator};
+use rx_bevy_observable::{ConnectorObserver, DynConnectorObserver, Observer};
+use rx_bevy_operator::{ForwardObserver, Operator};
 
 #[derive(Debug)]
 pub struct TapOperator<In, Callback>
@@ -35,7 +36,7 @@ where
 	type In = In;
 	type Out = In;
 
-	fn push_forward<Destination: rx_bevy_observable::Observer<Self::Out>>(
+	fn push_forward<Destination: Observer<In>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,
