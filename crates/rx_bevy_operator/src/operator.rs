@@ -1,6 +1,6 @@
-use rx_bevy_observable::{Observable, Observer, Subscription};
+use rx_bevy_observable::{Observer, Subscriber, Subscription};
 
-use super::{OperatorInstance, OperatorInstanceForwardObserver};
+use crate::{ConnectorObserver, ForwardObserver};
 
 // OperatorIO OperatorInstanceFactory
 
@@ -13,48 +13,12 @@ pub trait Operator {
 	/// Output type of the operator
 	type Out;
 
-	/// The operators internal observer, that observes the source/upstream observable
-	/// Its input is the operators output
-	type Instance: OperatorInstance<In = Self::In, Out = Self::Out>;
+	type InternalSubscriber: ConnectorObserver<In = Self::In, Out = Self::Out>;
 
-	fn create_operator_instance(&self) -> Self::Instance;
-
-	// TODO: Maybe this is a bad idea, sometimes it's not useful
-	fn operate(&mut self, next: Self::In) -> Self::Out;
-}
-
-pub trait OperatorSubscribe: Operator {
-	fn operator_subscribe<
-		Source: Observable<Out = Self::In>,
-		Destination: Observer<In = Self::Out>,
-	>(
-		self,
-		source: Source,
-		observer: Destination,
-	) -> Subscription<
-		OperatorInstanceForwardObserver<Self::In, Self::Out, Self::Instance, Destination>,
-	>;
-}
-
-impl<T> OperatorSubscribe for T
-where
-	T: Operator,
-{
-	fn operator_subscribe<
-		Source: Observable<Out = Self::In>,
-		Destination: Observer<In = Self::Out>,
-	>(
-		self,
-		mut source: Source,
+	fn operator_subscribe<Destination: 'static + Observer<Self::Out>>(
+		&mut self,
 		destination: Destination,
-	) -> Subscription<
-		OperatorInstanceForwardObserver<Self::In, Self::Out, Self::Instance, Destination>,
-	> {
-		let operator_internal_forwarder = self.create_operator_instance();
-		let forward_observer =
-			OperatorInstanceForwardObserver::new(operator_internal_forwarder, destination);
-		source.subscribe(forward_observer)
-	}
+	) -> ForwardObserver<Self::InternalSubscriber, Destination>;
 }
 
 /// Many operators let the user define a function to be passed, this type ensures

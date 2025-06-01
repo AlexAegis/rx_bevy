@@ -3,7 +3,7 @@ use rx_bevy::prelude::*;
 /// Generic operators can be passed into the pipe function
 fn main() {
 	let observable = OfObservable::<i32>::new(12);
-	let pipe = observable
+	let mut pipe = observable
 		.pipe(MapOperator::new(|n: i32| -> i32 {
 			return n * 2;
 		}))

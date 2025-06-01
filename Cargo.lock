@@ -4510,8 +4510,9 @@ dependencies = [
 name = "rx_bevy_operator_map"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_observable_of",
+ "rx_bevy_observer_fn",
  "rx_bevy_operator",
  "rx_bevy_operator_pipe",
  "rx_bevy_testing",
@@ -4523,6 +4524,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_observer_fn",
  "rx_bevy_operator",
  "rx_bevy_testing",
 ]

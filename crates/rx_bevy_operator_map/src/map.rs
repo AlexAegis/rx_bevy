@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_operator::{Operator, OperatorCallback};
+use rx_bevy_observable::{DynObserver, Observer, Subscriber};
+use rx_bevy_operator::{ConnectorObserver, ForwardObserver, Operator, OperatorCallback};
 
 pub struct MapOperator<In, Out, F> {
 	pub mapper: F,
@@ -10,19 +11,48 @@ pub struct MapOperator<In, Out, F> {
 
 impl<In, Out, Mapper> Operator for MapOperator<In, Out, Mapper>
 where
-	Mapper: OperatorCallback<In, Out>,
+	Mapper: OperatorCallback<In, Out> + Clone,
 {
 	type In = In;
 	type Out = Out;
 
-	type Instance = Self;
+	type InternalSubscriber = MapSubscriber<In, Out, Mapper>;
 
-	fn create_operator_instance(&self) -> Self::Instance {
-		self.clone()
+	fn operator_subscribe<Destination: 'static + rx_bevy_observable::Observer<Self::Out>>(
+		&mut self,
+		destination: Destination,
+	) -> ForwardObserver<Self::InternalSubscriber, Destination> {
+		ForwardObserver::new(
+			MapSubscriber {
+				_phantom_data_in: PhantomData,
+				_phantom_data_out: PhantomData,
+				mapper: self.mapper.clone(),
+			},
+			destination,
+		)
 	}
+}
 
-	fn operate(&mut self, next: Self::In) -> Self::Out {
-		(self.mapper)(next)
+pub struct MapSubscriber<In, Out, F> {
+	pub mapper: F,
+	pub _phantom_data_in: PhantomData<In>,
+	pub _phantom_data_out: PhantomData<Out>,
+}
+
+impl<In, Out, F> ConnectorObserver for MapSubscriber<In, Out, F>
+where
+	F: Fn(In) -> Out,
+{
+	type In = In;
+	type Out = Out;
+
+	fn push_forward<Destination: Observer<Self::Out>>(
+		&mut self,
+		next: Self::In,
+		destination: &mut Destination,
+	) {
+		let mapped = (self.mapper)(next);
+		destination.on_push(mapped);
 	}
 }
 

@@ -27,5 +27,7 @@ rx_bevy_operator = { workspace = true }
 rx_bevy_operator_pipe = { workspace = true, optional = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+# rx_bevy = { workspace = true }
 rx_bevy_testing = { workspace = true }
+rx_bevy_observable_of = { workspace = true }
+rx_bevy_observer_fn = { workspace = true }

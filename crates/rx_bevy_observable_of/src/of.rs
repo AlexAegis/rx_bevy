@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, Observer, Subscriber, Subscription};
+use rx_bevy_observable::{Observable, Observer};
 
 /// Observable creator for [OfObservable]
 pub fn of<T>(value: T) -> OfObservable<T>

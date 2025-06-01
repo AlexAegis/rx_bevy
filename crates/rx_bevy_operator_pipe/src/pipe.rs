@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observable, Observer, Subscription};
-use rx_bevy_operator::{Operator, OperatorSubscribe};
+use rx_bevy_observable::{DynObserver, Observable, Observer, Subscriber, Subscription};
+use rx_bevy_operator::Operator;
 
 pub struct Pipe<Source, Op, PipeIn, PipeOut> {
 	pub(crate) source_observable: Source,
@@ -24,26 +24,25 @@ where
 		}
 	}
 }
-
+/*
 impl<Source, Op, PipeIn, PipeOut> Operator for Pipe<Source, Op, PipeIn, PipeOut>
 where
-	Op: OperatorSubscribe + Operator<In = PipeIn, Out = PipeOut>,
+	Op: Operator<In = PipeIn, Out = PipeOut>,
 	Source: Clone,
 	Op: Clone,
 {
 	type In = PipeIn;
 	type Out = PipeOut;
 
-	type Instance = Self;
+	type InternalSubscriber = DynObserver<PipeIn>;
 
-	fn create_operator_instance(&self) -> Self::Instance {
-		self.clone()
+	fn operator_subscribe<Destination: 'static + Observer<Self::Out>>(
+		&mut self,
+		observer: Destination,
+	) -> Self::InternalSubscriber {
+		let a = self.operator.operator_subscribe(observer);
 	}
-
-	fn operate(&mut self, next: Self::In) -> Self::Out {
-		self.operator.operate(next)
-	}
-}
+}*/
 
 impl<Source, Op, PipeIn, PipeOut> Pipe<Source, Op, PipeIn, PipeOut> {
 	pub fn new(source_observable: Source, operator: Op) -> Self {
@@ -67,16 +66,21 @@ impl<Source, Op, PipeIn, PipeOut> Pipe<Source, Op, PipeIn, PipeOut> {
 
 impl<Source, Op, PipeIn, PipeOut> Observable for Pipe<Source, Op, PipeIn, PipeOut>
 where
-	Op: OperatorSubscribe + Operator<In = PipeIn, Out = PipeOut>,
+	Op: Operator<In = PipeIn, Out = PipeOut>,
 	Source: Observable<Out = Op::In>,
+	PipeIn: 'static,
+	PipeOut: 'static,
+	<Op as Operator>::InternalSubscriber: 'static,
 {
 	type Out = PipeOut;
 
-	fn subscribe<Destination: Observer<In = PipeOut>>(
+	type Subscription = <Source as Observable>::Subscription;
+
+	fn subscribe<Destination: 'static + Observer<PipeOut>>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription<Destination> {
-		self.operator
-			.operator_subscribe(self.source_observable, destination)
+	) -> Self::Subscription {
+		let operator_subscriber = self.operator.operator_subscribe(destination);
+		self.source_observable.subscribe(operator_subscriber)
 	}
 }
