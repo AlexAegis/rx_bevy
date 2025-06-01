@@ -1,4 +1,4 @@
-use rx_bevy_observable::{ObserverConnector, Observer};
+use rx_bevy_observable::{Observer, ObserverConnector};
 
 /// An observer that contains a concrete [Destination] and an [OperatorInstance]
 /// implementation

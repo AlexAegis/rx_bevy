@@ -16,7 +16,14 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["dev", "pipe", "all_observables", "all_observers", "all_operators"]
+default = [
+    "dev",
+    "pipe",
+    "all_observables",
+    "all_observers",
+    "all_operators",
+    "all_subjects",
+]
 dev = []
 example = ["dev"]
 pipe = [
@@ -45,6 +52,10 @@ operator_map = ["dep:rx_bevy_operator_map"]
 operator_filter = ["dep:rx_bevy_operator_filter"]
 operator_pipe = ["dep:rx_bevy_operator_pipe"]
 operator_tap = ["dep:rx_bevy_operator_tap"]
+# Subjects
+all_subjects = ["subject", "subject_behavior"]
+subject = ["dep:rx_bevy_subject"]
+subject_behavior = ["dep:rx_bevy_subject_behavior"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
@@ -60,6 +71,9 @@ rx_bevy_operator_map = { workspace = true, optional = true }
 rx_bevy_operator_filter = { workspace = true, optional = true }
 rx_bevy_operator_pipe = { workspace = true, optional = true }
 rx_bevy_operator_tap = { workspace = true, optional = true }
+# Subjects
+rx_bevy_subject = { workspace = true, optional = true }
+rx_bevy_subject_behavior = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_bevy_testing = { workspace = true }

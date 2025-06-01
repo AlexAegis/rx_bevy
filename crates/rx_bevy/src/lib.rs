@@ -16,6 +16,11 @@ pub use rx_bevy_operator_map::*;
 pub use rx_bevy_operator_pipe::*;
 #[cfg(feature = "operator_tap")]
 pub use rx_bevy_operator_tap::*;
+// Subjects
+#[cfg(feature = "subject")]
+pub use rx_bevy_subject::*;
+#[cfg(feature = "subject_behavior")]
+pub use rx_bevy_subject_behavior::*;
 
 pub mod prelude {
 	pub use rx_bevy_observable::prelude::*;
@@ -38,4 +43,10 @@ pub mod prelude {
 	pub use rx_bevy_operator_pipe::prelude::*;
 	#[cfg(feature = "operator_tap")]
 	pub use rx_bevy_operator_tap::prelude::*;
+
+	// Subjects
+	#[cfg(feature = "subject")]
+	pub use rx_bevy_subject::prelude::*;
+	#[cfg(feature = "subject_behavior")]
+	pub use rx_bevy_subject_behavior::prelude::*;
 }
