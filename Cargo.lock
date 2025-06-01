@@ -4541,6 +4541,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_subject"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_operator",
+ "rx_bevy_testing",
+ "slab",
+]
+
+[[package]]
 name = "rx_bevy_testing"
 version = "0.1.0"
 dependencies = [

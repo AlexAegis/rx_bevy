@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{ConnectorObserver, DynConnectorObserver, Observer};
+use rx_bevy_observable::{ObserverConnector, DynObserverConnector, Observer};
 use rx_bevy_operator::{ForwardObserver, Operator};
 
 #[derive(Debug)]
@@ -29,7 +29,7 @@ where
 	}
 }
 
-impl<In, Callback> ConnectorObserver for TapOperator<In, Callback>
+impl<In, Callback> ObserverConnector for TapOperator<In, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {

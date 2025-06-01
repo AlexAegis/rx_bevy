@@ -1,6 +1,6 @@
 use crate::Observer;
 
-pub trait ConnectorObserver {
+pub trait ObserverConnector {
 	type In;
 	type Out;
 
@@ -11,16 +11,16 @@ pub trait ConnectorObserver {
 	);
 }
 
-pub trait DynConnectorObserver {
+pub trait DynObserverConnector {
 	type In;
 	type Out;
 
 	fn push_forward(&mut self, next: Self::In, destination: &mut dyn Observer<In = Self::Out>);
 }
 
-impl<T> ConnectorObserver for T
+impl<T> ObserverConnector for T
 where
-	T: DynConnectorObserver,
+	T: DynObserverConnector,
 {
 	type In = T::In;
 	type Out = T::Out;
@@ -30,6 +30,6 @@ where
 		next: Self::In,
 		destination: &mut Destination,
 	) {
-		DynConnectorObserver::push_forward(self, next, destination);
+		DynObserverConnector::push_forward(self, next, destination);
 	}
 }

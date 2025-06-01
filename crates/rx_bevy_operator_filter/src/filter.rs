@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{ConnectorObserver, DynConnectorObserver, Observer};
+use rx_bevy_observable::{DynObserverConnector, Observer, ObserverConnector};
 use rx_bevy_operator::{ForwardObserver, Operator};
 
 pub struct FilterOperator<T, Filter> {
@@ -25,7 +25,7 @@ where
 	}
 }
 
-impl<T, Filter> ConnectorObserver for FilterOperator<T, Filter>
+impl<T, Filter> ObserverConnector for FilterOperator<T, Filter>
 where
 	Filter: for<'a> Fn(&'a T) -> bool,
 {

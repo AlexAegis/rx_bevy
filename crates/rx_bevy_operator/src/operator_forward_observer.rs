@@ -1,17 +1,17 @@
-use rx_bevy_observable::{ConnectorObserver, Observer};
+use rx_bevy_observable::{ObserverConnector, Observer};
 
 /// An observer that contains a concrete [Destination] and an [OperatorInstance]
 /// implementation
 /// It's used to connect the internal forwarders of operators to an observer
 /// It's mostly only used as an internal detail of operators.
-pub struct ForwardObserver<Instance: ConnectorObserver, Destination: Observer<In = Instance::Out>> {
+pub struct ForwardObserver<Instance: ObserverConnector, Destination: Observer<In = Instance::Out>> {
 	pub instance: Instance,
 	pub destination: Destination,
 }
 
 impl<Instance, Destination> ForwardObserver<Instance, Destination>
 where
-	Instance: ConnectorObserver,
+	Instance: ObserverConnector,
 	Destination: Observer<In = Instance::Out>,
 {
 	pub fn new(instance: Instance, destination: Destination) -> Self {
@@ -24,7 +24,7 @@ where
 
 impl<In, Out, F, Destination> Observer for ForwardObserver<F, Destination>
 where
-	F: ConnectorObserver<In = In, Out = Out>,
+	F: ObserverConnector<In = In, Out = Out>,
 	Destination: Observer<In = Out>,
 {
 	type In = In;

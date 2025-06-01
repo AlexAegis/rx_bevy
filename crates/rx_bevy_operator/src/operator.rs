@@ -1,4 +1,4 @@
-use rx_bevy_observable::{ConnectorObserver, Observer};
+use rx_bevy_observable::{Observer, ObserverConnector};
 
 use crate::ForwardObserver;
 
@@ -13,7 +13,7 @@ pub trait Operator {
 	/// Output type of the operator
 	type Out;
 
-	type InternalSubscriber: ConnectorObserver<In = Self::In, Out = Self::Out>;
+	type InternalSubscriber: ObserverConnector<In = Self::In, Out = Self::Out>;
 
 	fn operator_subscribe<Destination: 'static + Observer<In = Self::Out>>(
 		&mut self,

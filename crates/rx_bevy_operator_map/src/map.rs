@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{ConnectorObserver, DynConnectorObserver, Observer};
+use rx_bevy_observable::{DynObserverConnector, Observer, ObserverConnector};
 use rx_bevy_operator::{ForwardObserver, Operator, OperatorCallback};
 
 pub struct MapOperator<In, Out, F> {
@@ -39,7 +39,7 @@ pub struct MapSubscriber<In, Out, F> {
 	pub _phantom_data_out: PhantomData<Out>,
 }
 
-impl<In, Out, F> ConnectorObserver for MapSubscriber<In, Out, F>
+impl<In, Out, F> ObserverConnector for MapSubscriber<In, Out, F>
 where
 	F: Fn(In) -> Out,
 {
