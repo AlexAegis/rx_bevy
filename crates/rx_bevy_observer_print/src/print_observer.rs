@@ -8,7 +8,7 @@ where
 	T: Debug,
 	Error: Debug,
 {
-	message: &'static str,
+	prefix: &'static str,
 	_phantom_data_in: PhantomData<T>,
 	_phantom_data_error: PhantomData<Error>,
 }
@@ -22,15 +22,15 @@ where
 	type Error = Error;
 
 	fn on_push(&mut self, value: T) {
-		println!("next: {} {:?}", self.message, value);
+		println!("{} - next: {:?}", self.prefix, value);
 	}
 
 	fn on_error(&mut self, error: Self::Error) {
-		println!("error: {} {:?}", self.message, error);
+		println!("{} - error: {:?}", self.prefix, error);
 	}
 
 	fn on_complete(&mut self) {
-		println!("completed: {}", self.message);
+		println!("{} - completed", self.prefix);
 	}
 }
 
@@ -41,7 +41,7 @@ where
 {
 	pub fn new(message: &'static str) -> Self {
 		Self {
-			message,
+			prefix: message,
 			_phantom_data_in: PhantomData,
 			_phantom_data_error: PhantomData,
 		}

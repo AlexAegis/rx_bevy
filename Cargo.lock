@@ -4461,6 +4461,7 @@ dependencies = [
  "rx_bevy_observer_print",
  "rx_bevy_operator",
  "rx_bevy_operator_filter",
+ "rx_bevy_operator_finalize",
  "rx_bevy_operator_map",
  "rx_bevy_operator_pipe",
  "rx_bevy_operator_tap",
@@ -4534,6 +4535,17 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_operator_filter"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_operator",
+ "rx_bevy_operator_pipe",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_operator_finalize"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",

@@ -78,6 +78,7 @@ rx_bevy_operator_map = { path = "crates/rx_bevy_operator_map" }
 rx_bevy_operator_filter = { path = "crates/rx_bevy_operator_filter" }
 rx_bevy_operator_tap = { path = "crates/rx_bevy_operator_tap" }
 rx_bevy_operator_pipe = { path = "crates/rx_bevy_operator_pipe" }
+rx_bevy_operator_finalize = { path = "crates/rx_bevy_operator_finalize" }
 # Subjects
 rx_bevy_subject = { path = "crates/rx_bevy_subject" }
 rx_bevy_subject_behavior = { path = "crates/rx_bevy_subject_behavior" }

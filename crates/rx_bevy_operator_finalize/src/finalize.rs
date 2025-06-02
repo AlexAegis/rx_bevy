@@ -4,25 +4,25 @@ use rx_bevy_observable::{Observer, ObserverConnector};
 use rx_bevy_operator::{ForwardObserver, Operator};
 
 #[derive(Debug)]
-pub struct TapOperator<In, Callback, Error>
+pub struct FinalizeOperator<In, Callback, Error>
 where
-	Callback: for<'a> Fn(&'a In),
+	Callback: FnOnce(),
 {
 	callback: Callback,
 	_phantom_data: PhantomData<In>,
 	_phantom_data_error: PhantomData<Error>,
 }
 
-impl<In, Callback, Error> Operator for TapOperator<In, Callback, Error>
+impl<In, Callback, Error> Operator for FinalizeOperator<In, Callback, Error>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
+	Callback: Clone + FnOnce(),
 {
 	type In = In;
 	type Out = In;
 	type InError = Error;
 	type OutError = Error;
 
-	type InternalSubscriber = Self;
+	type InternalSubscriber = FinalizeOperatorInstance<In, Callback, Error>;
 
 	fn operator_subscribe<
 		Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>,
@@ -30,13 +30,27 @@ where
 		&mut self,
 		destination: Destination,
 	) -> rx_bevy_operator::ForwardObserver<Self::InternalSubscriber, Destination> {
-		ForwardObserver::new(self.clone(), destination)
+		ForwardObserver::new(
+			FinalizeOperatorInstance {
+				_phantom_data: PhantomData,
+				callback: Some(self.callback.clone()),
+			},
+			destination,
+		)
 	}
 }
 
-impl<In, Callback, Error> ObserverConnector for TapOperator<In, Callback, Error>
+pub struct FinalizeOperatorInstance<In, Callback, Error>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
+	Callback: FnOnce(),
+{
+	callback: Option<Callback>,
+	_phantom_data: PhantomData<(In, Error)>,
+}
+
+impl<In, Callback, Error> ObserverConnector for FinalizeOperatorInstance<In, Callback, Error>
+where
+	Callback: FnOnce(),
 {
 	type In = In;
 	type Out = In;
@@ -48,7 +62,6 @@ where
 		next: Self::In,
 		destination: &mut Destination,
 	) {
-		(self.callback)(&next);
 		destination.on_push(next);
 	}
 
@@ -64,13 +77,16 @@ where
 		&mut self,
 		destination: &mut Destination,
 	) {
+		if let Some(on_complete) = self.callback.take() {
+			(on_complete)();
+		}
 		destination.on_complete();
 	}
 }
 
-impl<In, Callback, Error> TapOperator<In, Callback, Error>
+impl<In, Callback, Error> FinalizeOperator<In, Callback, Error>
 where
-	Callback: for<'a> Fn(&'a In),
+	Callback: FnOnce(),
 {
 	pub fn new(callback: Callback) -> Self {
 		Self {
@@ -81,9 +97,9 @@ where
 	}
 }
 
-impl<In, Callback, Error> Clone for TapOperator<In, Callback, Error>
+impl<In, Callback, Error> Clone for FinalizeOperator<In, Callback, Error>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
+	Callback: Clone + FnOnce(),
 {
 	fn clone(&self) -> Self {
 		Self {
