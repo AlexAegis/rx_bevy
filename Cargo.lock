@@ -4464,6 +4464,7 @@ dependencies = [
  "rx_bevy_operator_finalize",
  "rx_bevy_operator_map",
  "rx_bevy_operator_pipe",
+ "rx_bevy_operator_switch_map",
  "rx_bevy_operator_tap",
  "rx_bevy_subject",
  "rx_bevy_subject_behavior",
@@ -4575,6 +4576,18 @@ dependencies = [
  "rx_bevy_observable",
  "rx_bevy_observer_fn",
  "rx_bevy_operator",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_operator_switch_map"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy_observable",
+ "rx_bevy_observable_of",
+ "rx_bevy_observer_fn",
+ "rx_bevy_operator",
+ "rx_bevy_operator_pipe",
  "rx_bevy_testing",
 ]
 

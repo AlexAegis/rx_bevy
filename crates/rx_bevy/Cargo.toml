@@ -31,6 +31,8 @@ pipe = [
     "rx_bevy_operator_tap/pipe",
     "rx_bevy_operator_map/pipe",
     "rx_bevy_operator_filter/pipe",
+    "rx_bevy_operator_finalize/pipe",
+    "rx_bevy_operator_switch_map/pipe",
 ]
 
 # Observables
@@ -49,12 +51,14 @@ all_operators = [
     "operator_map",
     "operator_filter",
     "operator_finalize",
+    "operator_switch_map",
 ]
 operator_pipe = ["dep:rx_bevy_operator_pipe"]
 operator_tap = ["dep:rx_bevy_operator_tap"]
 operator_map = ["dep:rx_bevy_operator_map"]
 operator_filter = ["dep:rx_bevy_operator_filter"]
 operator_finalize = ["dep:rx_bevy_operator_finalize"]
+operator_switch_map = ["dep:rx_bevy_operator_switch_map"]
 # Subjects
 all_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["dep:rx_bevy_subject"]
@@ -77,6 +81,7 @@ rx_bevy_operator_tap = { workspace = true, optional = true }
 rx_bevy_operator_map = { workspace = true, optional = true }
 rx_bevy_operator_filter = { workspace = true, optional = true }
 rx_bevy_operator_finalize = { workspace = true, optional = true }
+rx_bevy_operator_switch_map = { workspace = true, optional = true }
 # Subjects
 rx_bevy_subject = { workspace = true, optional = true }
 rx_bevy_subject_behavior = { workspace = true, optional = true }
