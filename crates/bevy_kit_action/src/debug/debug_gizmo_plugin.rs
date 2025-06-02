@@ -18,9 +18,7 @@ where
 	Transformer:
 		SignalTransformer<InputSignal = FromAction::Signal, OutputSignal = ToAction::Signal>,
 {
-	_phantom_data_from_action: PhantomData<FromAction>,
-	_phantom_data_to_action: PhantomData<ToAction>,
-	_phantom_data_transformer: PhantomData<Transformer>,
+	_phantom_data: PhantomData<(FromAction, ToAction, Transformer)>,
 }
 
 impl<FromAction, ToAction, Transformer> Plugin

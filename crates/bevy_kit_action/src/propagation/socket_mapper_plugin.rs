@@ -1,23 +1,21 @@
-use std::{any::TypeId, marker::PhantomData};
+use std::marker::PhantomData;
 
 use bevy::prelude::*;
 use derive_where::derive_where;
 
 use crate::{
 	Action, ActionKeyPair, ActionSocket, ActionSystem, ActionSystemFor, Clock, Signal,
-	SignalKeyPair, SignalTransformContext, SignalTransformer, SignalTransformerRegistry,
-	SignalWriter, SocketConnections,
+	SignalTransformContext, SignalTransformer,
 };
 
 use super::{
-	ErasedTransformerState, SignalPropagationEvent, SocketActionMap, SocketConnector,
-	SocketConnectorSource, TransformerOutputCache,
+	ErasedTransformerState, SignalPropagationEvent, SocketActionMap, SocketConnectorSource,
+	TransformerOutputCache,
 };
 
 #[derive_where(Default)]
 pub struct SocketMapperPlugin<FromAction: Action, ToAction: Action> {
-	_phantom_data_from_action: PhantomData<FromAction>,
-	_phantom_data_to_action: PhantomData<ToAction>,
+	_phantom_data: PhantomData<(FromAction, ToAction)>,
 }
 
 impl<FromAction: Action, ToAction: Action> Plugin for SocketMapperPlugin<FromAction, ToAction> {

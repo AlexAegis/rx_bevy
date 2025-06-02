@@ -9,15 +9,13 @@ use rx_bevy_observable::{DynObserverConnector, Observable, Observer, Subscriptio
 use crate::MulticastObserver;
 
 pub struct SubjectConnector<T, Error> {
-	phantom_data_in: PhantomData<T>,
-	phantom_data_error: PhantomData<Error>,
+	phantom_data: PhantomData<(T, Error)>,
 }
 
 impl<T, Error> SubjectConnector<T, Error> {
 	pub fn new() -> Self {
 		Self {
-			phantom_data_in: PhantomData,
-			phantom_data_error: PhantomData,
+			phantom_data: PhantomData,
 		}
 	}
 }
@@ -42,14 +40,6 @@ impl<T, Error> DynObserverConnector for SubjectConnector<T, Error> {
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
 	) {
 		destination.on_error(error);
-	}
-
-	/// TODO: Check if subjects propagate completion or not
-	fn complete_forward(
-		&mut self,
-		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
-	) {
-		destination.on_complete();
 	}
 }
 
@@ -80,7 +70,6 @@ impl<T, Error> Subscription for SubjectSubscription<T, Error> {
 /// want to make multiple pipes out of the same subject
 pub struct Subject<T, Error = ()> {
 	destinations: Rc<RefCell<MulticastObserver<SubjectConnector<T, Error>>>>,
-	_phantom_data_error: PhantomData<Error>,
 }
 
 impl<T, Error> Clone for Subject<T, Error> {
@@ -88,7 +77,6 @@ impl<T, Error> Clone for Subject<T, Error> {
 	fn clone(&self) -> Self {
 		Self {
 			destinations: self.destinations.clone(),
-			_phantom_data_error: PhantomData,
 		}
 	}
 }
@@ -99,7 +87,6 @@ impl<T, Error> Subject<T, Error> {
 			destinations: Rc::new(RefCell::new(
 				MulticastObserver::new(SubjectConnector::new()),
 			)),
-			_phantom_data_error: PhantomData,
 		}
 	}
 }

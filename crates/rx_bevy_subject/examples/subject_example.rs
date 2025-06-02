@@ -4,14 +4,19 @@ use rx_bevy_subject::Subject;
 fn main() {
 	let mut subject = Subject::<i32>::new();
 
-	let mut hello_subscription = subject.subscribe(PrintObserver::<i32>::new("hello"));
+	let mut subscription_1 = subject.subscribe(PrintObserver::<i32>::new(
+		"subject_example (subscription 1)",
+	));
 	subject
 		.clone() // Clone since piping needs an owned value, it's still a shared reference over the same set of subscribers
 		.map(|next| next * 2)
-		.subscribe(PrintObserver::<i32>::new("hi double"));
+		.subscribe(PrintObserver::<i32>::new(
+			"subject_example (subscription 2)",
+		));
 
 	subject.on_push(12);
 	subject.on_push(43);
-	hello_subscription.unsubscribe();
+	subscription_1.unsubscribe();
 	subject.on_push(11);
+	subject.on_complete();
 }

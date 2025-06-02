@@ -18,7 +18,7 @@ pub struct SocketConnections<A: Action> {
 	#[relationship]
 	targets: Vec<Entity>,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data_action: PhantomData<A>,
+	_phantom_data: PhantomData<A>,
 }
 
 impl<A: Action> SocketConnections<A> {

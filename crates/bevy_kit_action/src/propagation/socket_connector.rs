@@ -1,10 +1,9 @@
-use std::{any::Any, marker::PhantomData};
+use std::any::Any;
 
 use bevy::{platform::collections::HashMap, prelude::*};
-use bevy_egui::egui::util::id_type_map::TypeId;
 use derive_where::derive_where;
 
-use crate::{Action, ActionKeyPair, Signal, SignalTransformer, SocketConnections};
+use crate::{Action, ActionKeyPair, Signal, SignalTransformer};
 
 #[cfg(feature = "inspector")]
 use bevy_inspector_egui::{InspectorOptions, prelude::ReflectInspectorOptions};
@@ -19,14 +18,14 @@ pub struct SocketConnectorTarget<A: Action> {
 	#[deref]
 	#[relationship]
 	target: Entity,
-	_phantom_data_action: PhantomData<A>,
+	_phantom_data: PhantomData<A>,
 }*/
 /*
 impl<A: Action> SocketConnectorTarget<A> {
 	pub fn new(target: Entity) -> Self {
 		Self {
 			target,
-			_phantom_data_action: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }

@@ -8,7 +8,7 @@ use crate::{Action, ActionSocket, EntityAndName};
 
 #[derive_where(Default)]
 pub struct ActionSignalDebugUiPlugin<A: Action> {
-	_phantom_data_action: PhantomData<A>,
+	_phantom_data: PhantomData<A>,
 }
 
 impl<A: Action> Plugin for ActionSignalDebugUiPlugin<A> {

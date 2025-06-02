@@ -9,7 +9,7 @@ use super::SocketConnectorSource;
 
 #[derive_where(Default)]
 pub struct SocketPropagatorPlugin<A: Action> {
-	_phantom_data_action: PhantomData<A>,
+	_phantom_data: PhantomData<A>,
 }
 
 impl<A: Action> Plugin for SocketPropagatorPlugin<A> {
@@ -41,7 +41,7 @@ pub(crate) struct SignalPropagationEvent<A: Action> {
 	// pub(crate) signal: A::Signal,
 	// pub(crate) from_entity: Entity,
 	pub(crate) visited: Vec<Entity>,
-	_phantom_data_action: PhantomData<A>,
+	_phantom_data: PhantomData<A>,
 }
 
 #[derive(Event)]
@@ -56,7 +56,7 @@ impl<A: Action> SignalPropagationEvent<A> {
 			//signal,
 			// from_entity: entity,
 			visited: visited_entities,
-			_phantom_data_action: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }

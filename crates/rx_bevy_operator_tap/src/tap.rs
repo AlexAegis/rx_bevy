@@ -9,8 +9,7 @@ where
 	Callback: for<'a> Fn(&'a In),
 {
 	callback: Callback,
-	_phantom_data: PhantomData<In>,
-	_phantom_data_error: PhantomData<Error>,
+	_phantom_data: PhantomData<(In, Error)>,
 }
 
 impl<In, Callback, Error> Operator for TapOperator<In, Callback, Error>
@@ -59,13 +58,6 @@ where
 	) {
 		destination.on_error(error);
 	}
-
-	fn complete_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
-		&mut self,
-		destination: &mut Destination,
-	) {
-		destination.on_complete();
-	}
 }
 
 impl<In, Callback, Error> TapOperator<In, Callback, Error>
@@ -76,7 +68,6 @@ where
 		Self {
 			callback,
 			_phantom_data: PhantomData,
-			_phantom_data_error: PhantomData,
 		}
 	}
 }
@@ -89,7 +80,6 @@ where
 		Self {
 			callback: self.callback.clone(),
 			_phantom_data: PhantomData,
-			_phantom_data_error: PhantomData,
 		}
 	}
 }

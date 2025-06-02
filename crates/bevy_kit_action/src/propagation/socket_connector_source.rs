@@ -28,14 +28,14 @@ pub struct SocketConnectorSource<A: Action> {
 	#[deref]
 	#[relationship]
 	source: Entity,
-	_phantom_data_action: PhantomData<A>,
+	_phantom_data: PhantomData<A>,
 }
 
 impl<A: Action> SocketConnectorSource<A> {
 	pub fn new(source: Entity) -> Self {
 		Self {
 			source,
-			_phantom_data_action: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }

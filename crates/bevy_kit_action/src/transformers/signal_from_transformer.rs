@@ -20,9 +20,7 @@ use serde::{Deserialize, Serialize};
 )]
 pub struct SignalFromTransformer<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> {
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data_signal: PhantomData<FromSignal>,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data_to_signal: PhantomData<ToSignal>,
+	_phantom_data: PhantomData<(FromSignal, ToSignal)>,
 }
 
 impl<FromSignal: Signal, ToSignal: Signal + From<FromSignal>> SignalTransformer

@@ -5,8 +5,7 @@ use rx_bevy_operator::{ForwardObserver, Operator};
 
 pub struct FilterOperator<T, Filter, Error> {
 	pub filter: Filter,
-	pub _phantom_data_t: PhantomData<T>,
-	pub _phantom_data_error: PhantomData<Error>,
+	pub _phantom_data: PhantomData<(T, Error)>,
 }
 
 impl<T, Filter, Error> Operator for FilterOperator<T, Filter, Error>
@@ -65,8 +64,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			filter: self.filter.clone(),
-			_phantom_data_t: PhantomData,
-			_phantom_data_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }
@@ -75,8 +73,7 @@ impl<T, F, Error> FilterOperator<T, F, Error> {
 	pub fn new(filter: F) -> Self {
 		Self {
 			filter,
-			_phantom_data_t: PhantomData,
-			_phantom_data_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }

@@ -7,8 +7,7 @@ use crate::{Clock, Signal};
 
 #[derive_where(Default)]
 pub struct SignalTransformerPlugin<InputSignal: Signal, OutputSignal: Signal> {
-	_phantom_data_input_signal: PhantomData<InputSignal>,
-	_phantom_data_output_signal: PhantomData<OutputSignal>,
+	_phantom_data: PhantomData<(InputSignal, OutputSignal)>,
 }
 
 impl<InputSignal: Signal + 'static, OutputSignal: Signal + 'static> Plugin

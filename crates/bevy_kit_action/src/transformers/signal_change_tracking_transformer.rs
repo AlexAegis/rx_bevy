@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 )]
 pub struct ChangeTrackingTransformer<S: Signal> {
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data_signal: PhantomData<S>,
+	_phantom_data: PhantomData<S>,
 }
 
 impl<S: Signal + PartialEq> SignalTransformer for ChangeTrackingTransformer<S> {

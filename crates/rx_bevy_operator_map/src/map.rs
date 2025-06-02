@@ -5,9 +5,7 @@ use rx_bevy_operator::{ForwardObserver, Operator, OperatorCallback};
 
 pub struct MapOperator<In, Out, F, Error> {
 	pub mapper: F,
-	pub _phantom_data_in: PhantomData<In>,
-	pub _phantom_data_out: PhantomData<Out>,
-	pub _phantom_data_error: PhantomData<Error>,
+	pub _phantom_data: PhantomData<(In, Out, Error)>,
 }
 
 impl<In, Out, Mapper, Error> Operator for MapOperator<In, Out, Mapper, Error>
@@ -62,9 +60,7 @@ impl<In, Out, F, Error> MapOperator<In, Out, F, Error> {
 	pub fn new(transform: F) -> Self {
 		Self {
 			mapper: transform,
-			_phantom_data_in: PhantomData,
-			_phantom_data_out: PhantomData,
-			_phantom_data_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }
@@ -76,9 +72,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			mapper: self.mapper.clone(),
-			_phantom_data_in: PhantomData,
-			_phantom_data_out: PhantomData,
-			_phantom_data_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }

@@ -22,7 +22,7 @@ pub struct IdentitySignalTransformer<S: Signal> {
 	#[cfg_attr(feature = "serialize", serde(bound(deserialize = "S: Signal")))]
 	buffer: S,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data_signal: PhantomData<S>,
+	_phantom_data: PhantomData<S>,
 }
 
 impl<S: Signal> SignalTransformer for IdentitySignalTransformer<S> {

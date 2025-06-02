@@ -19,8 +19,7 @@ where
 	on_push: OnPush,
 	on_error: OnError,
 	on_complete: OnComplete,
-	_phantom_data_in: PhantomData<In>,
-	_phantom_data_error: PhantomData<Error>,
+	_phantom_data: PhantomData<(In, Error)>,
 }
 
 impl<In, Error, OnPush, OnError, OnComplete> Observer
@@ -57,8 +56,7 @@ where
 			on_push,
 			on_error,
 			on_complete,
-			_phantom_data_in: PhantomData,
-			_phantom_data_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 
@@ -67,8 +65,7 @@ where
 			on_push: observer_callbacks.on_push,
 			on_error: observer_callbacks.on_error,
 			on_complete: observer_callbacks.on_complete,
-			_phantom_data_in: PhantomData,
-			_phantom_data_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }

@@ -6,10 +6,7 @@ use rx_bevy_operator::Operator;
 pub struct Pipe<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut> {
 	pub(crate) source_observable: Source,
 	pub(crate) operator: Op,
-	_phantom_data_in: PhantomData<PipeIn>,
-	_phantom_data_out: PhantomData<PipeOut>,
-	_phantom_data_in_error: PhantomData<PipeInError>,
-	_phantom_data_out_error: PhantomData<PipeOutError>,
+	_phantom_data: PhantomData<(PipeIn, PipeOut, PipeInError, PipeOutError)>,
 }
 
 impl<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut> Clone
@@ -22,10 +19,7 @@ where
 		Self {
 			operator: self.operator.clone(),
 			source_observable: self.source_observable.clone(),
-			_phantom_data_in: PhantomData,
-			_phantom_data_out: PhantomData,
-			_phantom_data_in_error: PhantomData,
-			_phantom_data_out_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }
@@ -37,10 +31,7 @@ impl<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
 		Self {
 			source_observable,
 			operator,
-			_phantom_data_in: PhantomData,
-			_phantom_data_out: PhantomData,
-			_phantom_data_in_error: PhantomData,
-			_phantom_data_out_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }

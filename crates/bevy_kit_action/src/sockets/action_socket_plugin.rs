@@ -9,7 +9,7 @@ use super::{ActionSocket, SocketConnections};
 
 #[derive_where(Default)]
 pub struct ActionSocketPlugin<A: Action> {
-	_phantom_data_action: PhantomData<A>,
+	_phantom_data: PhantomData<A>,
 }
 
 impl<A: Action> Plugin for ActionSocketPlugin<A> {

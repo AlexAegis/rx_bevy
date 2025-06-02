@@ -47,7 +47,9 @@ pub trait DynObserverConnector {
 	fn complete_forward(
 		&mut self,
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
-	);
+	) {
+		destination.on_complete();
+	}
 }
 
 impl<T> ObserverConnector for T

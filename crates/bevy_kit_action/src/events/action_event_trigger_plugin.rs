@@ -13,7 +13,7 @@ pub struct ActionEventTriggerPlugin<A>
 where
 	A: Action,
 {
-	_phantom_data_action: PhantomData<A>,
+	_phantom_data: PhantomData<A>,
 }
 
 impl<A> Plugin for ActionEventTriggerPlugin<A>

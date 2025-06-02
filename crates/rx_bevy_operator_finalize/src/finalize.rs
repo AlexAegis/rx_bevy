@@ -9,8 +9,7 @@ where
 	Callback: FnOnce(),
 {
 	callback: Callback,
-	_phantom_data: PhantomData<In>,
-	_phantom_data_error: PhantomData<Error>,
+	_phantom_data: PhantomData<(In, Error)>,
 }
 
 impl<In, Callback, Error> Operator for FinalizeOperator<In, Callback, Error>
@@ -92,7 +91,6 @@ where
 		Self {
 			callback,
 			_phantom_data: PhantomData,
-			_phantom_data_error: PhantomData,
 		}
 	}
 }
@@ -105,7 +103,6 @@ where
 		Self {
 			callback: self.callback.clone(),
 			_phantom_data: PhantomData,
-			_phantom_data_error: PhantomData,
 		}
 	}
 }

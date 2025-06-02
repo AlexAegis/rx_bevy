@@ -9,8 +9,7 @@ where
 	Error: Debug,
 {
 	prefix: &'static str,
-	_phantom_data_in: PhantomData<T>,
-	_phantom_data_error: PhantomData<Error>,
+	_phantom_data: PhantomData<(T, Error)>,
 }
 
 impl<T, Error> Observer for PrintObserver<T, Error>
@@ -42,8 +41,7 @@ where
 	pub fn new(message: &'static str) -> Self {
 		Self {
 			prefix: message,
-			_phantom_data_in: PhantomData,
-			_phantom_data_error: PhantomData,
+			_phantom_data: PhantomData,
 		}
 	}
 }
