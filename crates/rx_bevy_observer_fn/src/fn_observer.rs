@@ -3,9 +3,9 @@ use std::marker::PhantomData;
 use rx_bevy_observable::Observer;
 
 pub struct ObserverCallbacks<OnPush, OnError, OnComplete> {
-	on_push: OnPush,
-	on_error: OnError,
-	on_complete: OnComplete,
+	next: OnPush,
+	error: OnError,
+	complete: OnComplete,
 }
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -16,9 +16,9 @@ where
 	OnError: Fn(Error) -> (),
 	OnComplete: Fn() -> (),
 {
-	on_push: OnPush,
-	on_error: OnError,
-	on_complete: OnComplete,
+	next: OnPush,
+	error: OnError,
+	complete: OnComplete,
 	_phantom_data: PhantomData<(In, Error)>,
 }
 
@@ -32,16 +32,16 @@ where
 	type In = In;
 	type Error = Error;
 
-	fn on_push(&mut self, value: In) {
-		(self.on_push)(value);
+	fn next(&mut self, next: In) {
+		(self.next)(next);
 	}
 
-	fn on_error(&mut self, error: Error) {
-		(self.on_error)(error);
+	fn error(&mut self, error: Error) {
+		(self.error)(error);
 	}
 
-	fn on_complete(&mut self) {
-		(self.on_complete)();
+	fn complete(&mut self) {
+		(self.complete)();
 	}
 }
 
@@ -51,20 +51,20 @@ where
 	OnError: Fn(Error) -> (),
 	OnComplete: Fn() -> (),
 {
-	pub fn new(on_push: OnPush, on_error: OnError, on_complete: OnComplete) -> Self {
+	pub fn new(next: OnPush, error: OnError, complete: OnComplete) -> Self {
 		Self {
-			on_push,
-			on_error,
-			on_complete,
+			next,
+			error,
+			complete,
 			_phantom_data: PhantomData,
 		}
 	}
 
 	pub fn new_from(observer_callbacks: ObserverCallbacks<OnPush, OnError, OnComplete>) -> Self {
 		Self {
-			on_push: observer_callbacks.on_push,
-			on_error: observer_callbacks.on_error,
-			on_complete: observer_callbacks.on_complete,
+			next: observer_callbacks.next,
+			error: observer_callbacks.error,
+			complete: observer_callbacks.complete,
 			_phantom_data: PhantomData,
 		}
 	}

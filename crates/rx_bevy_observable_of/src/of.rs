@@ -22,8 +22,8 @@ where
 		mut observer: Destination,
 	) -> Self::Subscription {
 		// TODO: Use an actual Subscriber
-		observer.on_push(self.value.clone());
-		observer.on_complete();
+		observer.next(self.value.clone());
+		observer.complete();
 	}
 }
 

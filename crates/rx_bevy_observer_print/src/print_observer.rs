@@ -20,15 +20,15 @@ where
 	type In = T;
 	type Error = Error;
 
-	fn on_push(&mut self, value: T) {
-		println!("{} - next: {:?}", self.prefix, value);
+	fn next(&mut self, next: T) {
+		println!("{} - next: {:?}", self.prefix, next);
 	}
 
-	fn on_error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::Error) {
 		println!("{} - error: {:?}", self.prefix, error);
 	}
 
-	fn on_complete(&mut self) {
+	fn complete(&mut self) {
 		println!("{} - completed", self.prefix);
 	}
 }

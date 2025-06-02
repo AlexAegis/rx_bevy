@@ -5,7 +5,7 @@ use rx_bevy_operator_map::prelude::*;
 
 /// The map operator is used to transform incoming values into something else
 fn main() {
-	let print_observer = DynFnObserver::new().with_on_push(|next: String| println!("hello {next}"));
+	let print_observer = DynFnObserver::new().with_next(|next: String| println!("hello {next}"));
 
 	of(1)
 		.map(|i| i + 1)

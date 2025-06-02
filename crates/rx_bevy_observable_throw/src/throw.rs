@@ -21,7 +21,7 @@ where
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {
-		observer.on_error(self.error.clone());
+		observer.error(self.error.clone());
 	}
 }
 

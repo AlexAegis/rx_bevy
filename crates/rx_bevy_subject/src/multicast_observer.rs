@@ -38,16 +38,16 @@ where
 	type In = In;
 	type Error = InError;
 
-	fn on_push(&mut self, value: In) {
+	fn next(&mut self, next: In) {
 		if !self.closed {
 			for (_, destination) in self.destination.iter_mut() {
 				self.instance
-					.push_forward(value.clone(), destination.as_mut());
+					.push_forward(next.clone(), destination.as_mut());
 			}
 		}
 	}
 
-	fn on_error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::Error) {
 		if !self.closed {
 			self.closed = true;
 			for (_, destination) in self.destination.iter_mut() {
@@ -57,7 +57,7 @@ where
 		}
 	}
 
-	fn on_complete(&mut self) {
+	fn complete(&mut self) {
 		if !self.closed {
 			self.closed = true;
 			for (_, destination) in self.destination.iter_mut() {

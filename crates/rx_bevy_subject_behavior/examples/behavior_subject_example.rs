@@ -7,14 +7,14 @@ fn main() {
 	// Immediately prints "hello 10"
 	let mut hello_subscription = subject.subscribe(PrintObserver::<i32>::new("hello"));
 
-	subject.on_push(12);
+	subject.next(12);
 
 	subject
 		.clone() // Clone since piping needs an owned value, it's still a shared reference over the same set of subscribers
 		.map(|next| next * 2)
 		.subscribe(PrintObserver::<i32>::new("hi double"));
 
-	subject.on_push(43);
+	subject.next(43);
 	hello_subscription.unsubscribe();
-	subject.on_push(11);
+	subject.next(11);
 }

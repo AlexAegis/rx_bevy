@@ -31,7 +31,7 @@ impl<T, Error> DynObserverConnector for SubjectConnector<T, Error> {
 		next: Self::In,
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
 	) {
-		destination.on_push(next);
+		destination.next(next);
 	}
 
 	fn error_forward(
@@ -39,7 +39,7 @@ impl<T, Error> DynObserverConnector for SubjectConnector<T, Error> {
 		error: Self::InError,
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
 	) {
-		destination.on_error(error);
+		destination.error(error);
 	}
 }
 
@@ -118,16 +118,16 @@ where
 	type In = T;
 	type Error = Error;
 
-	fn on_push(&mut self, next: Self::In) {
-		self.destinations.borrow_mut().on_push(next);
+	fn next(&mut self, next: Self::In) {
+		self.destinations.borrow_mut().next(next);
 	}
 
-	fn on_error(&mut self, error: Self::Error) {
-		self.destinations.borrow_mut().on_error(error);
+	fn error(&mut self, error: Self::Error) {
+		self.destinations.borrow_mut().error(error);
 	}
 
-	fn on_complete(&mut self) {
+	fn complete(&mut self) {
 		// TODO: Check what a subject actually does on complete
-		self.destinations.borrow_mut().on_complete();
+		self.destinations.borrow_mut().complete();
 	}
 }

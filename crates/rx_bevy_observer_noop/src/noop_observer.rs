@@ -11,11 +11,11 @@ impl<In> Observer for NoopObserver<In> {
 	type In = In;
 	type Error = ();
 
-	fn on_push(&mut self, _value: In) {}
+	fn next(&mut self, _next: In) {}
 
-	fn on_error(&mut self, _error: Self::Error) {}
+	fn error(&mut self, _error: Self::Error) {}
 
-	fn on_complete(&mut self) {}
+	fn complete(&mut self) {}
 }
 
 impl<In> NoopObserver<In> {

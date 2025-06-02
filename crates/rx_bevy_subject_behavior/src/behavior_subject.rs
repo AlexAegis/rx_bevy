@@ -41,18 +41,18 @@ where
 	type In = T;
 	type Error = Error;
 
-	fn on_push(&mut self, next: T) {
+	fn next(&mut self, next: T) {
 		let n = next.clone();
 		self.value.replace(next);
-		self.subject.on_push(n);
+		self.subject.next(n);
 	}
 
-	fn on_error(&mut self, error: Self::Error) {
-		self.subject.on_error(error);
+	fn error(&mut self, error: Self::Error) {
+		self.subject.error(error);
 	}
 
-	fn on_complete(&mut self) {
-		self.subject.on_complete();
+	fn complete(&mut self) {
+		self.subject.complete();
 	}
 }
 
@@ -69,7 +69,7 @@ where
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {
-		observer.on_push(self.value.borrow().clone());
+		observer.next(self.value.borrow().clone());
 		self.subject.subscribe(observer)
 	}
 }

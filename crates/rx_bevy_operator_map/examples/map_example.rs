@@ -15,7 +15,7 @@ fn main() {
 		.pipe(MapOperator::new(|next: i32| next.to_string()))
 		.pipe(MapOperator::new(|next| format!("{next} is the number")));
 
-	let print_observer = DynFnObserver::new().with_on_push(|next: String| println!("hello {next}"));
+	let print_observer = DynFnObserver::new().with_next(|next: String| println!("hello {next}"));
 
 	piped_again.subscribe(print_observer);
 }

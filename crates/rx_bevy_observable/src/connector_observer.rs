@@ -22,7 +22,7 @@ pub trait ObserverConnector {
 		&mut self,
 		destination: &mut Destination,
 	) {
-		destination.on_complete();
+		destination.complete();
 	}
 }
 
@@ -48,7 +48,7 @@ pub trait DynObserverConnector {
 		&mut self,
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
 	) {
-		destination.on_complete();
+		destination.complete();
 	}
 }
 

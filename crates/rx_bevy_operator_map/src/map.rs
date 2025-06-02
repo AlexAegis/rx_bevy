@@ -44,7 +44,7 @@ where
 		destination: &mut Destination,
 	) {
 		let mapped = (self.mapper)(next);
-		destination.on_push(mapped);
+		destination.next(mapped);
 	}
 
 	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
@@ -52,7 +52,7 @@ where
 		error: Self::InError,
 		destination: &mut Destination,
 	) {
-		destination.on_error(error);
+		destination.error(error);
 	}
 }
 

@@ -61,7 +61,7 @@ where
 		next: Self::In,
 		destination: &mut Destination,
 	) {
-		destination.on_push(next);
+		destination.next(next);
 	}
 
 	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
@@ -69,17 +69,17 @@ where
 		error: Self::InError,
 		destination: &mut Destination,
 	) {
-		destination.on_error(error);
+		destination.error(error);
 	}
 
 	fn complete_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		destination: &mut Destination,
 	) {
-		if let Some(on_complete) = self.callback.take() {
-			(on_complete)();
+		if let Some(complete) = self.callback.take() {
+			(complete)();
 		}
-		destination.on_complete();
+		destination.complete();
 	}
 }
 

@@ -33,20 +33,20 @@ where
 	type In = In;
 	type Error = InError;
 
-	fn on_push(&mut self, value: In) {
+	fn next(&mut self, next: In) {
 		if !self.closed {
-			self.instance.push_forward(value, &mut self.destination);
+			self.instance.push_forward(next, &mut self.destination);
 		}
 	}
 
-	fn on_error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::Error) {
 		if !self.closed {
 			self.closed = true;
 			self.instance.error_forward(error, &mut self.destination);
 		}
 	}
 
-	fn on_complete(&mut self) {
+	fn complete(&mut self) {
 		if !self.closed {
 			self.closed = true;
 			self.instance.complete_forward(&mut self.destination);

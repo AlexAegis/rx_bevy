@@ -13,15 +13,15 @@ impl<T, Error> Observer for MockObserver<T, Error> {
 	type In = T;
 	type Error = Error;
 
-	fn on_push(&mut self, value: T) {
-		self.values.push(value);
+	fn next(&mut self, next: T) {
+		self.values.push(next);
 	}
 
-	fn on_error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::Error) {
 		self.errors.push(error);
 	}
 
-	fn on_complete(&mut self) {
+	fn complete(&mut self) {
 		self.completed = true;
 	}
 }
@@ -64,26 +64,26 @@ where
 	type In = T;
 	type Error = Error;
 
-	fn on_push(&mut self, value: T) {
+	fn next(&mut self, value: T) {
 		if !self.closed {
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.on_push(value);
+			lock.next(value);
 		}
 	}
 
-	fn on_error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::Error) {
 		if !self.closed {
 			self.closed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.on_error(error);
+			lock.error(error);
 		}
 	}
 
-	fn on_complete(&mut self) {
+	fn complete(&mut self) {
 		if !self.closed {
 			self.closed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.on_complete();
+			lock.complete();
 		}
 	}
 }

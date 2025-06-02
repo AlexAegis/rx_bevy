@@ -44,7 +44,7 @@ where
 		destination: &mut Destination,
 	) {
 		if (self.filter)(&next) {
-			destination.on_push(next);
+			destination.next(next);
 		}
 	}
 
@@ -53,7 +53,7 @@ where
 		error: Self::InError,
 		destination: &mut Destination,
 	) {
-		destination.on_error(error);
+		destination.error(error);
 	}
 }
 

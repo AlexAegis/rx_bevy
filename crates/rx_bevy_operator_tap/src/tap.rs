@@ -48,7 +48,7 @@ where
 		destination: &mut Destination,
 	) {
 		(self.callback)(&next);
-		destination.on_push(next);
+		destination.next(next);
 	}
 
 	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
@@ -56,7 +56,7 @@ where
 		error: Self::InError,
 		destination: &mut Destination,
 	) {
-		destination.on_error(error);
+		destination.error(error);
 	}
 }
 

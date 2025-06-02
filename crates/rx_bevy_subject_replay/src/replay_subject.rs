@@ -33,17 +33,17 @@ where
 	type In = T;
 	type Error = Error;
 
-	fn on_push(&mut self, next: T) {
+	fn next(&mut self, next: T) {
 		self.values.borrow_mut().push(next.clone());
-		self.subject.on_push(next);
+		self.subject.next(next);
 	}
 
-	fn on_error(&mut self, error: Self::Error) {
-		self.subject.on_error(error);
+	fn error(&mut self, error: Self::Error) {
+		self.subject.error(error);
 	}
 
-	fn on_complete(&mut self) {
-		self.subject.on_complete();
+	fn complete(&mut self) {
+		self.subject.complete();
 	}
 }
 
@@ -61,7 +61,7 @@ where
 		mut observer: Destination,
 	) -> Self::Subscription {
 		for value in self.values.borrow().iter() {
-			observer.on_push(value.clone());
+			observer.next(value.clone());
 		}
 
 		self.subject.subscribe(observer)

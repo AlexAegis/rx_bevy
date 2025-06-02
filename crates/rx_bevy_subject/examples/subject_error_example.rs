@@ -10,9 +10,9 @@ fn main() {
 		"1 hello_subscription is_closed {}",
 		hello_subscription.is_closed()
 	);
-	subject.on_push(12);
-	subject.on_error("ERROR".to_string());
-	subject.on_error("SECOND ERROR".to_string()); // Should not be printed
+	subject.next(12);
+	subject.error("ERROR".to_string());
+	subject.error("SECOND ERROR".to_string()); // Should not be printed
 	println!(
 		"2 hello_subscription is_closed {}",
 		hello_subscription.is_closed()

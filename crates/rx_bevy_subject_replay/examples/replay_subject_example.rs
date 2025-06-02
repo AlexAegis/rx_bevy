@@ -7,13 +7,13 @@ fn main() {
 	// Doesn't print out anything on subscribe
 	subject.subscribe(PrintObserver::<i32>::new("hello"));
 
-	subject.on_push(1);
-	subject.on_push(2);
-	subject.on_push(3);
+	subject.next(1);
+	subject.next(2);
+	subject.next(3);
 
 	// Only the last two value is printed out, since our capacity is just 2
 	subject.subscribe(PrintObserver::<i32>::new("hi"));
 
-	subject.on_push(4);
-	subject.on_push(5);
+	subject.next(4);
+	subject.next(5);
 }

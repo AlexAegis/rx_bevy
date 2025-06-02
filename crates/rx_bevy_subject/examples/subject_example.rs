@@ -14,9 +14,9 @@ fn main() {
 			"subject_example (subscription 2)",
 		));
 
-	subject.on_push(12);
-	subject.on_push(43);
+	subject.next(12);
+	subject.next(43);
 	subscription_1.unsubscribe();
-	subject.on_push(11);
-	subject.on_complete();
+	subject.next(11);
+	subject.complete();
 }

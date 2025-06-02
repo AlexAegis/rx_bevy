@@ -11,7 +11,7 @@ fn main() {
 			return n.to_string();
 		}));
 
-	let observer = DynFnObserver::new().with_on_push(|next| println!("{next}"));
+	let observer = DynFnObserver::new().with_next(|next| println!("{next}"));
 
 	pipe.subscribe(observer);
 }
