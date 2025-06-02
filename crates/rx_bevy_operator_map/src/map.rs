@@ -3,22 +3,27 @@ use std::marker::PhantomData;
 use rx_bevy_observable::{Observer, ObserverConnector};
 use rx_bevy_operator::{ForwardObserver, Operator, OperatorCallback};
 
-pub struct MapOperator<In, Out, F> {
+pub struct MapOperator<In, Out, F, Error> {
 	pub mapper: F,
 	pub _phantom_data_in: PhantomData<In>,
 	pub _phantom_data_out: PhantomData<Out>,
+	pub _phantom_data_error: PhantomData<Error>,
 }
 
-impl<In, Out, Mapper> Operator for MapOperator<In, Out, Mapper>
+impl<In, Out, Mapper, Error> Operator for MapOperator<In, Out, Mapper, Error>
 where
 	Mapper: OperatorCallback<In, Out> + Clone,
 {
 	type In = In;
 	type Out = Out;
+	type InError = Error;
+	type OutError = Error;
 
 	type InternalSubscriber = Self;
 
-	fn operator_subscribe<Destination: 'static + Observer<In = Self::Out>>(
+	fn operator_subscribe<
+		Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> ForwardObserver<Self::InternalSubscriber, Destination> {
@@ -26,12 +31,14 @@ where
 	}
 }
 
-impl<In, Out, F> ObserverConnector for MapOperator<In, Out, F>
+impl<In, Out, F, Error> ObserverConnector for MapOperator<In, Out, F, Error>
 where
 	F: Fn(In) -> Out,
 {
 	type In = In;
 	type Out = Out;
+	type InError = Error;
+	type OutError = Error;
 
 	fn push_forward<Destination: Observer<In = Out>>(
 		&mut self,
@@ -41,19 +48,28 @@ where
 		let mapped = (self.mapper)(next);
 		destination.on_push(mapped);
 	}
+
+	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+		&mut self,
+		error: Self::InError,
+		destination: &mut Destination,
+	) {
+		destination.on_error(error);
+	}
 }
 
-impl<In, Out, F> MapOperator<In, Out, F> {
+impl<In, Out, F, Error> MapOperator<In, Out, F, Error> {
 	pub fn new(transform: F) -> Self {
 		Self {
+			mapper: transform,
 			_phantom_data_in: PhantomData,
 			_phantom_data_out: PhantomData,
-			mapper: transform,
+			_phantom_data_error: PhantomData,
 		}
 	}
 }
 
-impl<In, Out, F> Clone for MapOperator<In, Out, F>
+impl<In, Out, F, Error> Clone for MapOperator<In, Out, F, Error>
 where
 	F: Clone,
 {
@@ -62,6 +78,7 @@ where
 			mapper: self.mapper.clone(),
 			_phantom_data_in: PhantomData,
 			_phantom_data_out: PhantomData,
+			_phantom_data_error: PhantomData,
 		}
 	}
 }

@@ -28,14 +28,15 @@ dev = []
 example = ["dev"]
 pipe = [
     "operator_pipe",
+    "rx_bevy_operator_tap/pipe",
     "rx_bevy_operator_map/pipe",
     "rx_bevy_operator_filter/pipe",
-    "rx_bevy_operator_tap/pipe",
 ]
 
 # Observables
-all_observables = ["observable_of"]
+all_observables = ["observable_of", "observable_throw"]
 observable_of = ["dep:rx_bevy_observable_of"]
+observable_throw = ["dep:rx_bevy_observable_throw"]
 # Observers
 all_observers = ["observer_noop", "observer_print", "observer_fn"]
 observer_fn = ["dep:rx_bevy_observer_fn"]
@@ -43,15 +44,15 @@ observer_noop = ["dep:rx_bevy_observer_noop"]
 observer_print = ["dep:rx_bevy_observer_print"]
 # Operators
 all_operators = [
-    "operator_map",
-    "operator_filter",
     "operator_pipe",
     "operator_tap",
+    "operator_map",
+    "operator_filter",
 ]
-operator_map = ["dep:rx_bevy_operator_map"]
-operator_filter = ["dep:rx_bevy_operator_filter"]
 operator_pipe = ["dep:rx_bevy_operator_pipe"]
 operator_tap = ["dep:rx_bevy_operator_tap"]
+operator_map = ["dep:rx_bevy_operator_map"]
+operator_filter = ["dep:rx_bevy_operator_filter"]
 # Subjects
 all_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["dep:rx_bevy_subject"]
@@ -63,15 +64,16 @@ rx_bevy_observable = { workspace = true }
 rx_bevy_operator = { workspace = true }
 # Observables
 rx_bevy_observable_of = { workspace = true, optional = true }
+rx_bevy_observable_throw = { workspace = true, optional = true }
 # Observers
 rx_bevy_observer_noop = { workspace = true, optional = true }
 rx_bevy_observer_print = { workspace = true, optional = true }
 rx_bevy_observer_fn = { workspace = true, optional = true }
 # Operators
-rx_bevy_operator_map = { workspace = true, optional = true }
-rx_bevy_operator_filter = { workspace = true, optional = true }
 rx_bevy_operator_pipe = { workspace = true, optional = true }
 rx_bevy_operator_tap = { workspace = true, optional = true }
+rx_bevy_operator_map = { workspace = true, optional = true }
+rx_bevy_operator_filter = { workspace = true, optional = true }
 # Subjects
 rx_bevy_subject = { workspace = true, optional = true }
 rx_bevy_subject_behavior = { workspace = true, optional = true }

@@ -4,7 +4,7 @@ use rx_bevy_operator::Operator;
 use crate::Pipe;
 
 pub trait ObservableExtensionPipe<Out>: Observable<Out = Out> + Sized {
-	fn pipe<Op>(self, operator: Op) -> Pipe<Self, Op, Out, Op::Out>
+	fn pipe<Op>(self, operator: Op) -> Pipe<Self, Op, Op::InError, Op::OutError, Out, Op::Out>
 	where
 		Self: Sized,
 		Op: Operator,

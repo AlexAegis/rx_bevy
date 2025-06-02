@@ -7,7 +7,7 @@ pub trait ObservableExtensionFilter<T>: Observable<Out = T> + Sized {
 	fn filter<F: for<'a> Fn(&'a T) -> bool>(
 		self,
 		filter: F,
-	) -> Pipe<Self, FilterOperator<T, F>, T, T> {
+	) -> Pipe<Self, FilterOperator<T, F, Self::Error>, Self::Error, Self::Error, T, T> {
 		Pipe::new(self, FilterOperator::new(filter))
 	}
 }

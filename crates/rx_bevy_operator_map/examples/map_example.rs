@@ -1,6 +1,6 @@
 use rx_bevy_observable::prelude::*;
 use rx_bevy_observable_of::of;
-use rx_bevy_observer_fn::FnObserver;
+use rx_bevy_observer_fn::DynFnObserver;
 use rx_bevy_operator_map::MapOperator;
 use rx_bevy_operator_pipe::prelude::*;
 
@@ -15,7 +15,7 @@ fn main() {
 		.pipe(MapOperator::new(|next: i32| next.to_string()))
 		.pipe(MapOperator::new(|next| format!("{next} is the number")));
 
-	let print_observer = FnObserver::new(|next: String| println!("hello {next}"));
+	let print_observer = DynFnObserver::new().with_on_push(|next: String| println!("hello {next}"));
 
 	piped_again.subscribe(print_observer);
 }

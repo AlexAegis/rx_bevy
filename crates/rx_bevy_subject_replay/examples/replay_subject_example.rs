@@ -2,7 +2,7 @@ use rx_bevy::prelude::*;
 use rx_bevy_subject_replay::ReplaySubject;
 
 fn main() {
-	let mut subject = ReplaySubject::<i32, 2>::new();
+	let mut subject = ReplaySubject::<2, i32>::new();
 
 	// Doesn't print out anything on subscribe
 	subject.subscribe(PrintObserver::<i32>::new("hello"));

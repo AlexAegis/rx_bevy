@@ -1,5 +1,5 @@
 use rx_bevy::prelude::*;
 
 fn main() {
-	of("world").subscribe(FnObserver::new(|next| println!("hello {next}")));
+	of("world").subscribe(DynFnObserver::new().with_on_push(|next| println!("hello {next}")));
 }

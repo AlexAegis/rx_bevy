@@ -4455,6 +4455,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy_observable",
  "rx_bevy_observable_of",
+ "rx_bevy_observable_throw",
  "rx_bevy_observer_fn",
  "rx_bevy_observer_noop",
  "rx_bevy_observer_print",
@@ -4479,6 +4480,15 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_of"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observable_throw"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",

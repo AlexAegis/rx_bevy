@@ -7,13 +7,13 @@ use rx_bevy_subject::{Subject, SubjectSubscription};
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.
 #[derive(Clone)]
-pub struct ReplaySubject<T, const CAPACITY: usize> {
-	subject: Subject<T>,
+pub struct ReplaySubject<const CAPACITY: usize, T, Error = ()> {
+	subject: Subject<T, Error>,
 	/// Refcell so even cloned subjects retain the same current value across clones
 	values: Rc<RefCell<ConstGenericRingBuffer<T, CAPACITY>>>,
 }
 
-impl<T, const CAPACITY: usize> ReplaySubject<T, CAPACITY>
+impl<const CAPACITY: usize, T, Error> ReplaySubject<CAPACITY, T, Error>
 where
 	T: Clone,
 {
@@ -25,25 +25,38 @@ where
 	}
 }
 
-impl<T, const CAPACITY: usize> Observer for ReplaySubject<T, CAPACITY>
+impl<const CAPACITY: usize, T, Error> Observer for ReplaySubject<CAPACITY, T, Error>
 where
 	T: Clone,
+	Error: Clone,
 {
 	type In = T;
+	type Error = Error;
+
 	fn on_push(&mut self, next: T) {
 		self.values.borrow_mut().push(next.clone());
 		self.subject.on_push(next);
 	}
+
+	fn on_error(&mut self, error: Self::Error) {
+		self.subject.on_error(error);
+	}
+
+	fn on_complete(&mut self) {
+		self.subject.on_complete();
+	}
 }
 
-impl<T, const CAPACITY: usize> Observable for ReplaySubject<T, CAPACITY>
+impl<const CAPACITY: usize, T, Error> Observable for ReplaySubject<CAPACITY, T, Error>
 where
 	T: Clone,
+	Error: Clone,
 {
 	type Out = T;
-	type Subscription = SubjectSubscription<T>;
+	type Error = Error;
+	type Subscription = SubjectSubscription<T, Error>;
 
-	fn subscribe<Destination: 'static + Observer<In = Self::Out>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {

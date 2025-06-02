@@ -13,6 +13,7 @@ where
 	Out: Clone,
 {
 	type Out = Out;
+	type Error = ();
 
 	type Subscription = ();
 
@@ -20,10 +21,13 @@ where
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {
+		// TODO: Use an actual Subscriber
 		observer.on_push(self.value.clone());
+		observer.on_complete();
 	}
 }
 
+/// Emits a single value then immediately completes
 pub struct OfObservable<Out>
 where
 	Out: Clone,

@@ -3,7 +3,8 @@ use slab::Slab;
 
 pub struct MulticastObserver<Instance: DynObserverConnector> {
 	pub instance: Instance,
-	pub destination: Slab<Box<dyn Observer<In = Instance::Out>>>,
+	pub destination: Slab<Box<dyn Observer<In = Instance::Out, Error = Instance::OutError>>>,
+	pub closed: bool,
 }
 
 impl<Forwarder> MulticastObserver<Forwarder>
@@ -14,10 +15,13 @@ where
 		Self {
 			instance,
 			destination: Slab::with_capacity(4), // Capacity chosen by fair dice roll.
+			closed: false,
 		}
 	}
 
-	pub fn add_destination<Destination: 'static + Observer<In = Forwarder::Out>>(
+	pub fn add_destination<
+		Destination: 'static + Observer<In = Forwarder::Out, Error = Forwarder::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> usize {
@@ -25,17 +29,40 @@ where
 	}
 }
 
-impl<In, Out, F> Observer for MulticastObserver<F>
+impl<In, Out, InError, F> Observer for MulticastObserver<F>
 where
-	F: DynObserverConnector<In = In, Out = Out>,
+	F: DynObserverConnector<In = In, Out = Out, InError = InError>,
 	In: Clone,
+	InError: Clone,
 {
 	type In = In;
+	type Error = InError;
 
 	fn on_push(&mut self, value: In) {
-		for (_, destination) in self.destination.iter_mut() {
-			self.instance
-				.push_forward(value.clone(), destination.as_mut());
+		if !self.closed {
+			for (_, destination) in self.destination.iter_mut() {
+				self.instance
+					.push_forward(value.clone(), destination.as_mut());
+			}
+		}
+	}
+
+	fn on_error(&mut self, error: Self::Error) {
+		if !self.closed {
+			self.closed = true;
+			for (_, destination) in self.destination.iter_mut() {
+				self.instance
+					.error_forward(error.clone(), destination.as_mut());
+			}
+		}
+	}
+
+	fn on_complete(&mut self) {
+		if !self.closed {
+			self.closed = true;
+			for (_, destination) in self.destination.iter_mut() {
+				self.instance.complete_forward(destination.as_mut());
+			}
 		}
 	}
 }
