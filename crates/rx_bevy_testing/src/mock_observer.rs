@@ -45,12 +45,14 @@ where
 
 pub struct SharedForwardObserver<Destination> {
 	pub destination: Arc<RwLock<Destination>>,
+	closed: bool,
 }
 
 impl<Destination> SharedForwardObserver<Destination> {
 	pub fn new(destination: &Arc<RwLock<Destination>>) -> Self {
 		Self {
 			destination: destination.clone(),
+			closed: false,
 		}
 	}
 }
@@ -63,17 +65,25 @@ where
 	type Error = Error;
 
 	fn on_push(&mut self, value: T) {
-		let mut lock = self.destination.write().expect("lock is poisoned!");
-		lock.on_push(value);
+		if !self.closed {
+			let mut lock = self.destination.write().expect("lock is poisoned!");
+			lock.on_push(value);
+		}
 	}
 
 	fn on_error(&mut self, error: Self::Error) {
-		let mut lock = self.destination.write().expect("lock is poisoned!");
-		lock.on_error(error);
+		if !self.closed {
+			self.closed = true;
+			let mut lock = self.destination.write().expect("lock is poisoned!");
+			lock.on_error(error);
+		}
 	}
 
 	fn on_complete(&mut self) {
-		let mut lock = self.destination.write().expect("lock is poisoned!");
-		lock.on_complete();
+		if !self.closed {
+			self.closed = true;
+			let mut lock = self.destination.write().expect("lock is poisoned!");
+			lock.on_complete();
+		}
 	}
 }
