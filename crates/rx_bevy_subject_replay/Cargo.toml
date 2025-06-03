@@ -19,6 +19,7 @@ workspace = true
 default = ["dev"]
 dev = []
 example = ["dev"]
+inline_subscribe = []
 
 [dependencies]
 ringbuffer = { workspace = true }

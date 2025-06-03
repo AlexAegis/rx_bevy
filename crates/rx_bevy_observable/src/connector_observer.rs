@@ -6,7 +6,7 @@ pub trait ObserverConnector {
 	type InError;
 	type OutError;
 
-	fn push_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn next_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,
@@ -32,7 +32,7 @@ pub trait DynObserverConnector {
 	type InError;
 	type OutError;
 
-	fn push_forward(
+	fn next_forward(
 		&mut self,
 		next: Self::In,
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
@@ -44,6 +44,7 @@ pub trait DynObserverConnector {
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
 	);
 
+	#[inline]
 	fn complete_forward(
 		&mut self,
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
@@ -61,14 +62,16 @@ where
 	type InError = T::InError;
 	type OutError = T::OutError;
 
-	fn push_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	#[inline]
+	fn next_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,
 	) {
-		DynObserverConnector::push_forward(self, next, destination);
+		DynObserverConnector::next_forward(self, next, destination);
 	}
 
+	#[inline]
 	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		error: Self::InError,
@@ -76,6 +79,8 @@ where
 	) {
 		DynObserverConnector::error_forward(self, error, destination);
 	}
+
+	#[inline]
 	fn complete_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		destination: &mut Destination,

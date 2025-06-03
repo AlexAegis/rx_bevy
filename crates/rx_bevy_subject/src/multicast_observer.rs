@@ -42,7 +42,7 @@ where
 		if !self.closed {
 			for (_, destination) in self.destination.iter_mut() {
 				self.instance
-					.push_forward(next.clone(), destination.as_mut());
+					.next_forward(next.clone(), destination.as_mut());
 			}
 		}
 	}

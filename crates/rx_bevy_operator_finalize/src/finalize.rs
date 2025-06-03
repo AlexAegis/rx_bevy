@@ -56,7 +56,8 @@ where
 	type InError = Error;
 	type OutError = Error;
 
-	fn push_forward<Destination: Observer<In = In>>(
+	#[inline]
+	fn next_forward<Destination: Observer<In = In>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,
@@ -64,6 +65,7 @@ where
 		destination.next(next);
 	}
 
+	#[inline]
 	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		error: Self::InError,
@@ -72,6 +74,7 @@ where
 		destination.error(error);
 	}
 
+	#[inline]
 	fn complete_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		destination: &mut Destination,

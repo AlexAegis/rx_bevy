@@ -33,12 +33,14 @@ where
 	type In = In;
 	type Error = InError;
 
+	#[inline]
 	fn next(&mut self, next: In) {
 		if !self.closed {
-			self.instance.push_forward(next, &mut self.destination);
+			self.instance.next_forward(next, &mut self.destination);
 		}
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::Error) {
 		if !self.closed {
 			self.closed = true;
@@ -46,6 +48,7 @@ where
 		}
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		if !self.closed {
 			self.closed = true;

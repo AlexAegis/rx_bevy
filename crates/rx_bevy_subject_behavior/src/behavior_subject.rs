@@ -65,6 +65,7 @@ where
 	type Error = Error;
 	type Subscription = SubjectSubscription<T, Error>;
 
+	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
 		&mut self,
 		mut observer: Destination,

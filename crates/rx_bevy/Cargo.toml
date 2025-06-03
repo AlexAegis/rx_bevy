@@ -34,6 +34,14 @@ pipe = [
     "rx_bevy_operator_finalize/pipe",
     "rx_bevy_operator_switch_map/pipe",
 ]
+# Not sure if a good idea, so I'm keeping it behind a feature
+inline_subscribe = [
+    "rx_bevy_observable_of/inline_subscribe",
+    "rx_bevy_observable_throw/inline_subscribe",
+    "rx_bevy_subject/inline_subscribe",
+    "rx_bevy_subject_behavior/inline_subscribe",
+    "rx_bevy_subject_replay/inline_subscribe",
+]
 
 # Observables
 all_observables = ["observable_of", "observable_throw"]

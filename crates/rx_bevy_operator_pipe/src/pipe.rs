@@ -39,6 +39,7 @@ impl<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
 impl<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
 	Pipe<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
 {
+	#[inline]
 	pub fn pipe<NextOp>(
 		self,
 		operator: NextOp,
@@ -64,6 +65,7 @@ where
 	type Error = PipeOutError;
 	type Subscription = <Source as Observable>::Subscription;
 
+	#[inline]
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
 		&mut self,
 		destination: Destination,

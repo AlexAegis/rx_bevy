@@ -17,6 +17,7 @@ where
 
 	type Subscription = ();
 
+	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: Observer<In = Out>>(
 		&mut self,
 		mut observer: Destination,

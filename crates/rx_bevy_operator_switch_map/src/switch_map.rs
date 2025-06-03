@@ -39,7 +39,8 @@ where
 	type InError = Error;
 	type OutError = Error;
 
-	fn push_forward<Destination: Observer<In = Out>>(
+	#[inline]
+	fn next_forward<Destination: Observer<In = Out>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,
@@ -48,6 +49,7 @@ where
 		destination.next(mapped);
 	}
 
+	#[inline]
 	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		error: Self::InError,

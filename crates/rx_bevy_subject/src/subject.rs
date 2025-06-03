@@ -26,7 +26,8 @@ impl<T, Error> DynObserverConnector for SubjectConnector<T, Error> {
 	type InError = Error;
 	type OutError = Error;
 
-	fn push_forward(
+	#[inline]
+	fn next_forward(
 		&mut self,
 		next: Self::In,
 		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
@@ -34,6 +35,7 @@ impl<T, Error> DynObserverConnector for SubjectConnector<T, Error> {
 		destination.next(next);
 	}
 
+	#[inline]
 	fn error_forward(
 		&mut self,
 		error: Self::InError,
@@ -97,6 +99,7 @@ impl<T, Error> Observable for Subject<T, Error> {
 
 	type Subscription = SubjectSubscription<T, Error>;
 
+	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
 		&mut self,
 		destination: Destination,
