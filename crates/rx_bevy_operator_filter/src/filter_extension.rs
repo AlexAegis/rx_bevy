@@ -4,10 +4,10 @@ use rx_bevy_operator_pipe::Pipe;
 use crate::FilterOperator;
 
 pub trait ObservableExtensionFilter<T>: Observable<Out = T> + Sized {
-	fn filter<F: for<'a> Fn(&'a T) -> bool>(
+	fn filter<F: Clone + for<'a> Fn(&'a T) -> bool>(
 		self,
 		filter: F,
-	) -> Pipe<Self, FilterOperator<T, F, Self::Error>, Self::Error, Self::Error, T, T> {
+	) -> Pipe<Self, FilterOperator<T, F, Self::Error>> {
 		Pipe::new(self, FilterOperator::new(filter))
 	}
 }

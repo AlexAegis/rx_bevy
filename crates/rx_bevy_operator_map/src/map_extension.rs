@@ -4,11 +4,10 @@ use rx_bevy_operator_pipe::Pipe;
 use crate::MapOperator;
 
 pub trait ObservableExtensionMap<Out>: Observable<Out = Out> + Sized {
-	fn map<NextOut, F: Fn(Out) -> NextOut>(
+	fn map<NextOut, F: Clone + Fn(Out) -> NextOut>(
 		self,
 		transform: F,
-	) -> Pipe<Self, MapOperator<Out, NextOut, F, Self::Error>, Self::Error, Self::Error, Out, NextOut>
-	{
+	) -> Pipe<Self, MapOperator<Out, NextOut, F, Self::Error>> {
 		Pipe::new(self, MapOperator::new(transform))
 	}
 }

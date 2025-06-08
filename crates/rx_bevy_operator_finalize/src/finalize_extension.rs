@@ -4,11 +4,10 @@ use rx_bevy_operator_pipe::Pipe;
 use crate::FinalizeOperator;
 
 pub trait ObservableExtensionFinalize<Out>: Observable<Out = Out> + Sized {
-	fn finalize<Callback: FnOnce()>(
+	fn finalize<Callback: Clone + FnOnce()>(
 		self,
 		callback: Callback,
-	) -> Pipe<Self, FinalizeOperator<Out, Callback, Self::Error>, Self::Error, Self::Error, Out, Out>
-	{
+	) -> Pipe<Self, FinalizeOperator<Out, Callback, Self::Error>> {
 		Pipe::new(self, FinalizeOperator::new(callback))
 	}
 }

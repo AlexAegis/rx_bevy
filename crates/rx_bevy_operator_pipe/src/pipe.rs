@@ -1,68 +1,62 @@
-use std::marker::PhantomData;
-
 use rx_bevy_observable::{Observable, Observer, ObserverConnector};
 use rx_bevy_operator::Operator;
 
-pub struct Pipe<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut> {
+pub struct Pipe<Source, Op> {
 	pub(crate) source_observable: Source,
 	pub(crate) operator: Op,
-	_phantom_data: PhantomData<(PipeIn, PipeOut, PipeInError, PipeOutError)>,
 }
 
-impl<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut> Clone
-	for Pipe<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
+impl<Source, Op> Clone for Pipe<Source, Op>
 where
-	Source: Clone,
-	Op: Clone,
+	Source: Observable + Clone,
+	Op: Operator + Clone,
 {
 	fn clone(&self) -> Self {
 		Self {
 			operator: self.operator.clone(),
 			source_observable: self.source_observable.clone(),
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
-	Pipe<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
+impl<Source, Op> Pipe<Source, Op>
+where
+	Op: Operator,
+	Source: Observable,
 {
 	pub fn new(source_observable: Source, operator: Op) -> Self {
 		Self {
 			source_observable,
 			operator,
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
-	Pipe<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
+impl<Source, Op> Pipe<Source, Op>
+where
+	Op: Operator,
+	Source: Observable<Out = Op::In, Error = Op::InError>,
+	<Op as Operator>::InternalSubscriber:
+		ObserverConnector<In = Op::In, InError = Op::InError> + 'static,
 {
 	#[inline]
-	pub fn pipe<NextOp>(
-		self,
-		operator: NextOp,
-	) -> Pipe<Self, NextOp, PipeInError, NextOp::OutError, PipeIn, NextOp::Out>
+	pub fn pipe<NextOp>(self, operator: NextOp) -> Pipe<Self, NextOp>
 	where
-		NextOp: Operator,
+		NextOp: Operator<In = Op::Out, InError = Op::OutError>,
 	{
-		Pipe::<Self, NextOp, PipeInError, NextOp::OutError, PipeIn, NextOp::Out>::new(
-			self, operator,
-		)
+		Pipe::<Self, NextOp>::new(self, operator)
 	}
 }
 
-impl<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut> Observable
-	for Pipe<Source, Op, PipeInError, PipeOutError, PipeIn, PipeOut>
+impl<Source, Op> Observable for Pipe<Source, Op>
 where
-	Op: Operator<Out = PipeOut, OutError = PipeOutError>,
-	Source: Observable<Out = Op::In, Error = PipeInError>,
+	Op: Operator,
+	Source: Observable<Out = Op::In, Error = Op::InError>,
 	<Op as Operator>::InternalSubscriber:
-		ObserverConnector<In = Op::In, InError = PipeInError> + 'static,
+		ObserverConnector<In = Op::In, InError = Op::InError> + 'static,
 {
-	type Out = PipeOut;
-	type Error = PipeOutError;
+	type Out = Op::Out;
+	type Error = Op::OutError;
 	type Subscription = <Source as Observable>::Subscription;
 
 	#[inline]
