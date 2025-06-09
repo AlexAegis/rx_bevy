@@ -58,8 +58,8 @@ where
 
 impl<T, Error> Observable for BehaviorSubject<T, Error>
 where
-	T: Clone,
-	Error: Clone,
+	T: Clone + 'static,
+	Error: Clone + 'static,
 {
 	type Out = T;
 	type Error = Error;

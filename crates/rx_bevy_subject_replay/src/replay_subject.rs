@@ -49,8 +49,8 @@ where
 
 impl<const CAPACITY: usize, T, Error> Observable for ReplaySubject<CAPACITY, T, Error>
 where
-	T: Clone,
-	Error: Clone,
+	T: Clone + 'static,
+	Error: Clone + 'static,
 {
 	type Out = T;
 	type Error = Error;

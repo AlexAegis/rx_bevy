@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observer, ObserverConnector};
-use rx_bevy_operator::{ForwardObserver, Operator};
+use rx_bevy_observable::{Forwarder, Observer, Subscriber};
+use rx_bevy_operator::Operator;
 
 #[derive(Debug)]
 pub struct FinalizeOperator<In, Callback, Error>
@@ -16,30 +16,26 @@ impl<In, Callback, Error> Operator for FinalizeOperator<In, Callback, Error>
 where
 	Callback: Clone + FnOnce(),
 {
-	type In = In;
-	type Out = In;
-	type InError = Error;
-	type OutError = Error;
-
-	type InternalSubscriber = FinalizeOperatorInstance<In, Callback, Error>;
+	type Fw = FinalizeOperatorForwarder<In, Callback, Error>;
 
 	fn operator_subscribe<
-		Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>,
+		Destination: 'static
+			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> rx_bevy_operator::ForwardObserver<Self::InternalSubscriber, Destination> {
-		ForwardObserver::new(
-			FinalizeOperatorInstance {
+	) -> Subscriber<Self::Fw, Destination> {
+		Subscriber::new(
+			destination,
+			FinalizeOperatorForwarder {
 				_phantom_data: PhantomData,
 				callback: Some(self.callback.clone()),
 			},
-			destination,
 		)
 	}
 }
 
-pub struct FinalizeOperatorInstance<In, Callback, Error>
+pub struct FinalizeOperatorForwarder<In, Callback, Error>
 where
 	Callback: FnOnce(),
 {
@@ -47,7 +43,7 @@ where
 	_phantom_data: PhantomData<(In, Error)>,
 }
 
-impl<In, Callback, Error> ObserverConnector for FinalizeOperatorInstance<In, Callback, Error>
+impl<In, Callback, Error> Forwarder for FinalizeOperatorForwarder<In, Callback, Error>
 where
 	Callback: FnOnce(),
 {

@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observer, ObserverConnector};
-use rx_bevy_operator::{ForwardObserver, Operator};
+use rx_bevy_observable::{Forwarder, Observer, Subscriber};
+use rx_bevy_operator::Operator;
 
 pub struct FilterOperator<T, Filter, Error> {
 	pub filter: Filter,
@@ -12,24 +12,20 @@ impl<T, Filter, Error> Operator for FilterOperator<T, Filter, Error>
 where
 	Filter: Clone + for<'a> Fn(&'a T) -> bool,
 {
-	type In = T;
-	type Out = T;
-	type InError = Error;
-	type OutError = Error;
-
-	type InternalSubscriber = Self;
+	type Fw = Self;
 
 	fn operator_subscribe<
-		Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>,
+		Destination: 'static
+			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> ForwardObserver<Self::InternalSubscriber, Destination> {
-		ForwardObserver::new(self.clone(), destination)
+	) -> Subscriber<Self::Fw, Destination> {
+		Subscriber::new(destination, self.clone())
 	}
 }
 
-impl<T, Filter, Error> ObserverConnector for FilterOperator<T, Filter, Error>
+impl<T, Filter, Error> Forwarder for FilterOperator<T, Filter, Error>
 where
 	Filter: for<'a> Fn(&'a T) -> bool,
 {

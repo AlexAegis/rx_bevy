@@ -4,7 +4,7 @@ use std::{
 	rc::{Rc, Weak},
 };
 
-use rx_bevy_observable::{DynObserverConnector, Observable, Observer, Subscription};
+use rx_bevy_observable::{DynForwarder, Observable, Observer, Subscription};
 
 use crate::MulticastObserver;
 
@@ -20,7 +20,7 @@ impl<T, Error> SubjectConnector<T, Error> {
 	}
 }
 
-impl<T, Error> DynObserverConnector for SubjectConnector<T, Error> {
+impl<T, Error> DynForwarder for SubjectConnector<T, Error> {
 	type In = T;
 	type Out = T;
 	type InError = Error;
@@ -93,7 +93,11 @@ impl<T, Error> Subject<T, Error> {
 	}
 }
 
-impl<T, Error> Observable for Subject<T, Error> {
+impl<T, Error> Observable for Subject<T, Error>
+where
+	T: 'static,
+	Error: 'static,
+{
 	type Out = T;
 	type Error = Error;
 

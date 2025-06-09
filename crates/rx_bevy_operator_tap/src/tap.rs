@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observer, ObserverConnector};
-use rx_bevy_operator::{ForwardObserver, Operator};
+use rx_bevy_observable::{Forwarder, Observer, Subscriber};
+use rx_bevy_operator::Operator;
 
 #[derive(Debug)]
 pub struct TapOperator<In, Callback, Error>
@@ -16,24 +16,20 @@ impl<In, Callback, Error> Operator for TapOperator<In, Callback, Error>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
-	type In = In;
-	type Out = In;
-	type InError = Error;
-	type OutError = Error;
-
-	type InternalSubscriber = Self;
+	type Fw = Self;
 
 	fn operator_subscribe<
-		Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>,
+		Destination: 'static
+			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> rx_bevy_operator::ForwardObserver<Self::InternalSubscriber, Destination> {
-		ForwardObserver::new(self.clone(), destination)
+	) -> Subscriber<Self::Fw, Destination> {
+		Subscriber::new(destination, self.clone())
 	}
 }
 
-impl<In, Callback, Error> ObserverConnector for TapOperator<In, Callback, Error>
+impl<In, Callback, Error> Forwarder for TapOperator<In, Callback, Error>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {

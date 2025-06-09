@@ -4,7 +4,7 @@ pub trait Observable {
 	type Out;
 	type Error;
 
-	type Subscription: Subscription;
+	type Subscription: Subscription + 'static;
 
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
 		&mut self,

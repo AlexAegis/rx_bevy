@@ -1,7 +1,7 @@
-use rx_bevy_observable::{DynObserverConnector, Observer};
+use rx_bevy_observable::{DynForwarder, Observer};
 use slab::Slab;
 
-pub struct MulticastObserver<Instance: DynObserverConnector> {
+pub struct MulticastObserver<Instance: DynForwarder> {
 	pub instance: Instance,
 	pub destination: Slab<Box<dyn Observer<In = Instance::Out, Error = Instance::OutError>>>,
 	pub closed: bool,
@@ -9,7 +9,7 @@ pub struct MulticastObserver<Instance: DynObserverConnector> {
 
 impl<Forwarder> MulticastObserver<Forwarder>
 where
-	Forwarder: DynObserverConnector,
+	Forwarder: DynForwarder,
 {
 	pub fn new(instance: Forwarder) -> Self {
 		Self {
@@ -31,7 +31,7 @@ where
 
 impl<In, Out, InError, F> Observer for MulticastObserver<F>
 where
-	F: DynObserverConnector<In = In, Out = Out, InError = InError>,
+	F: DynForwarder<In = In, Out = Out, InError = InError>,
 	In: Clone,
 	InError: Clone,
 {

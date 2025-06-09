@@ -1,9 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observer, ObserverConnector};
-use rx_bevy_operator::{ForwardObserver, Operator, OperatorCallback};
+use rx_bevy_observable::{Forwarder, Observer, Subscriber};
+use rx_bevy_operator::Operator;
 
-// TODO: Actually implement it, this just a copy of the map operator now
 pub struct SwitchMapOperator<In, Out, F, Error> {
 	pub mapper: F,
 	pub _phantom_data: PhantomData<(In, Out, Error)>,
@@ -11,26 +10,36 @@ pub struct SwitchMapOperator<In, Out, F, Error> {
 
 impl<In, Out, Mapper, Error> Operator for SwitchMapOperator<In, Out, Mapper, Error>
 where
-	Mapper: OperatorCallback<In, Out> + Clone,
+	Mapper: Clone + Fn(In) -> Out,
 {
-	type In = In;
-	type Out = Out;
-	type InError = Error;
-	type OutError = Error;
-
-	type InternalSubscriber = Self;
+	type Fw = SwitchMapForwarder<In, Out, Mapper, Error>;
 
 	fn operator_subscribe<
-		Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>,
+		Destination: 'static
+			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> ForwardObserver<Self::InternalSubscriber, Destination> {
-		ForwardObserver::new(self.clone(), destination)
+	) -> Subscriber<Self::Fw, Destination> {
+		Subscriber::new(destination, SwitchMapForwarder::new(self.mapper.clone()))
 	}
 }
 
-impl<In, Out, F, Error> ObserverConnector for SwitchMapOperator<In, Out, F, Error>
+pub struct SwitchMapForwarder<In, Out, F, Error> {
+	pub mapper: F,
+	pub _phantom_data: PhantomData<(In, Out, Error)>,
+}
+
+impl<In, Out, F, Error> SwitchMapForwarder<In, Out, F, Error> {
+	pub fn new(mapper: F) -> Self {
+		Self {
+			mapper,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, Out, F, Error> Forwarder for SwitchMapForwarder<In, Out, F, Error>
 where
 	F: Fn(In) -> Out,
 {
