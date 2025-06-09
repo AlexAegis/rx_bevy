@@ -2,9 +2,9 @@ use rx_bevy_observable::Observer;
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct DynFnObserver<In, Error> {
-	on_next: Option<Box<dyn Fn(In) -> ()>>,
-	on_error: Option<Box<dyn Fn(Error) -> ()>>,
-	on_complete: Option<Box<dyn Fn() -> ()>>,
+	on_next: Option<Box<dyn FnMut(In) -> ()>>,
+	on_error: Option<Box<dyn FnMut(Error) -> ()>>,
+	on_complete: Option<Box<dyn FnMut() -> ()>>,
 }
 
 impl<In, Error> Observer for DynFnObserver<In, Error> {
@@ -12,19 +12,19 @@ impl<In, Error> Observer for DynFnObserver<In, Error> {
 	type Error = Error;
 
 	fn next(&mut self, next: In) {
-		if let Some(on_next) = &self.on_next {
+		if let Some(on_next) = &mut self.on_next {
 			(on_next)(next);
 		}
 	}
 
 	fn error(&mut self, error: Error) {
-		if let Some(on_error) = &self.on_error {
+		if let Some(on_error) = &mut self.on_error {
 			(on_error)(error);
 		}
 	}
 
 	fn complete(&mut self) {
-		if let Some(on_complete) = &self.on_complete {
+		if let Some(on_complete) = &mut self.on_complete {
 			(on_complete)();
 		}
 	}
@@ -45,21 +45,21 @@ impl<In, Error> DynFnObserver<In, Error> {
 		Self::default()
 	}
 
-	pub fn with_next<OnPush: 'static + Fn(In) -> ()>(self, next: OnPush) -> Self {
+	pub fn with_next<OnPush: 'static + FnMut(In) -> ()>(self, next: OnPush) -> Self {
 		Self {
 			on_next: Some(Box::new(next)),
 			..self
 		}
 	}
 
-	pub fn with_error<OnError: 'static + Fn(Error) -> ()>(self, error: OnError) -> Self {
+	pub fn with_error<OnError: 'static + FnMut(Error) -> ()>(self, error: OnError) -> Self {
 		Self {
 			on_error: Some(Box::new(error)),
 			..self
 		}
 	}
 
-	pub fn with_complete<OnComplete: 'static + Fn() -> ()>(self, complete: OnComplete) -> Self {
+	pub fn with_complete<OnComplete: 'static + FnMut() -> ()>(self, complete: OnComplete) -> Self {
 		Self {
 			on_complete: Some(Box::new(complete)),
 			..self
