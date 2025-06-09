@@ -1,6 +1,7 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 
 use rx_bevy_observable::Observer;
+use rx_bevy_observer_shared::{ClosableDestination, SharedObserver};
 
 #[derive(Default, Debug)]
 pub struct MockObserver<T, Error> {
@@ -38,52 +39,7 @@ where
 		}
 	}
 
-	pub fn new_shared() -> Arc<RwLock<Self>> {
-		Arc::new(RwLock::new(Self::new()))
-	}
-}
-
-pub struct SharedForwardObserver<Destination> {
-	pub destination: Arc<RwLock<Destination>>,
-	closed: bool,
-}
-
-impl<Destination> SharedForwardObserver<Destination> {
-	pub fn new(destination: &Arc<RwLock<Destination>>) -> Self {
-		Self {
-			destination: destination.clone(),
-			closed: false,
-		}
-	}
-}
-
-impl<T, Error, Destination> Observer for SharedForwardObserver<Destination>
-where
-	Destination: Observer<In = T, Error = Error>,
-{
-	type In = T;
-	type Error = Error;
-
-	fn next(&mut self, value: T) {
-		if !self.closed {
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.next(value);
-		}
-	}
-
-	fn error(&mut self, error: Self::Error) {
-		if !self.closed {
-			self.closed = true;
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.error(error);
-		}
-	}
-
-	fn complete(&mut self) {
-		if !self.closed {
-			self.closed = true;
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.complete();
-		}
+	pub fn new_shared() -> SharedObserver<Self> {
+		SharedObserver::new(Self::new())
 	}
 }

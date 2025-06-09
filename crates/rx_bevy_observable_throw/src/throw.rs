@@ -46,18 +46,18 @@ where
 mod tests {
 
 	use super::*;
-	use rx_bevy_testing::{MockObserver, SharedForwardObserver};
+	use rx_bevy_testing::MockObserver;
 
 	#[test]
 	fn should_emit_single_value() {
 		let error = "error";
 		let mut observable = ThrowObservable::new(error);
-		let mock_observer = MockObserver::new_shared();
+		let mut mock_observer = MockObserver::new_shared();
 
-		let f = SharedForwardObserver::new(&mock_observer);
+		observable.subscribe(mock_observer.clone());
 
-		observable.subscribe(f);
-
-		assert_eq!(mock_observer.read().unwrap().errors, vec![error]);
+		mock_observer.read(|d| {
+			assert_eq!(d.errors, vec![error]);
+		});
 	}
 }

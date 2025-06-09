@@ -55,6 +55,7 @@
     "chacha",
     "chunkmap",
     "clippy",
+    "cloneable",
     "codegen",
     "codespan",
     "colorchoice",

@@ -2,7 +2,7 @@ use rx_bevy_observable::prelude::*;
 use rx_bevy_observable_of::of;
 use rx_bevy_observer_fn::DynFnObserver;
 use rx_bevy_operator_map::MapOperator;
-use rx_bevy_operator_pipe::prelude::*;
+use rx_bevy_pipe_operator::prelude::*;
 
 /// The map operator is used to transform incoming values into something else
 fn main() {

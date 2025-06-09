@@ -50,13 +50,21 @@ observable_of = ["dep:rx_bevy_observable_of"]
 observable_throw = ["dep:rx_bevy_observable_throw"]
 # Pipes
 all_pipes = ["pipe_operator", "pipe_flat"]
-pipe_operator = ["dep:rx_bevy_operator_pipe"]
+pipe_operator = ["dep:rx_bevy_pipe_operator"]
 pipe_flat = ["dep:rx_bevy_pipe_flat"]
 # Observers
-all_observers = ["observer_noop", "observer_print", "observer_fn"]
+all_observers = [
+    "observer_noop",
+    "observer_print",
+    "observer_fn",
+    "observer_flat",
+    "observer_shared",
+]
 observer_fn = ["dep:rx_bevy_observer_fn"]
 observer_noop = ["dep:rx_bevy_observer_noop"]
 observer_print = ["dep:rx_bevy_observer_print"]
+observer_flat = ["dep:rx_bevy_observer_flat"]
+observer_shared = ["dep:rx_bevy_observer_shared"]
 # Operators
 all_operators = [
     "operator_tap",
@@ -85,12 +93,14 @@ rx_bevy_operator = { workspace = true }
 rx_bevy_observable_of = { workspace = true, optional = true }
 rx_bevy_observable_throw = { workspace = true, optional = true }
 # Pipes
-rx_bevy_operator_pipe = { workspace = true, optional = true }
+rx_bevy_pipe_operator = { workspace = true, optional = true }
 rx_bevy_pipe_flat = { workspace = true, optional = true }
 # Observers
 rx_bevy_observer_noop = { workspace = true, optional = true }
 rx_bevy_observer_print = { workspace = true, optional = true }
 rx_bevy_observer_fn = { workspace = true, optional = true }
+rx_bevy_observer_shared = { workspace = true, optional = true }
+rx_bevy_observer_flat = { workspace = true, optional = true }
 # Operators
 rx_bevy_operator_tap = { workspace = true, optional = true }
 rx_bevy_operator_map = { workspace = true, optional = true }

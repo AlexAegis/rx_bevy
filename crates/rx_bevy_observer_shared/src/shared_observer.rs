@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 
 use rx_bevy_observable::Observer;
 
@@ -6,15 +6,28 @@ pub struct ClosableDestination<Destination>
 where
 	Destination: Observer,
 {
-	destination: Destination,
-	closed: bool,
+	pub destination: Destination,
+	pub closed: bool,
 }
 
+impl<Destination> From<Destination> for ClosableDestination<Destination>
+where
+	Destination: Observer,
+{
+	fn from(destination: Destination) -> Self {
+		Self {
+			destination,
+			closed: false,
+		}
+	}
+}
+
+// Maybe this should be a shared subscriber?
 pub struct SharedObserver<Destination>
 where
 	Destination: Observer,
 {
-	destination: Arc<RwLock<ClosableDestination<Destination>>>,
+	destination: Arc<Mutex<ClosableDestination<Destination>>>,
 }
 
 impl<Destination> SharedObserver<Destination>
@@ -23,17 +36,25 @@ where
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
-			destination: Arc::new(RwLock::new(ClosableDestination {
+			destination: Arc::new(Mutex::new(ClosableDestination {
 				destination,
 				closed: false,
 			})),
 		}
 	}
 
-	pub fn new_from_shared(destination: &Arc<RwLock<ClosableDestination<Destination>>>) -> Self {
+	pub fn new_from_shared(destination: Arc<Mutex<ClosableDestination<Destination>>>) -> Self {
 		Self {
 			destination: destination.clone(),
 		}
+	}
+
+	/// Let's you check the shared observer for the duration of the callback
+	pub fn read<F>(&mut self, mut viewer: F)
+	where
+		F: FnMut(&mut Destination),
+	{
+		viewer(&mut self.destination.lock().unwrap().destination)
 	}
 }
 
@@ -56,15 +77,14 @@ where
 	type Error = Destination::Error;
 
 	fn next(&mut self, next: Self::In) {
-		// TODO: Maybe try with read access first? Or just use a mutex?
-		let mut lock = self.destination.write().expect("lock is poisoned!");
+		let mut lock = self.destination.lock().expect("lock is poisoned!");
 		if !lock.closed {
 			lock.destination.next(next);
 		}
 	}
 
 	fn error(&mut self, error: Self::Error) {
-		let mut lock = self.destination.write().expect("lock is poisoned!");
+		let mut lock = self.destination.lock().expect("lock is poisoned!");
 
 		if !lock.closed {
 			lock.closed = true;
@@ -73,9 +93,8 @@ where
 	}
 
 	fn complete(&mut self) {
-		let mut lock = self.destination.write().expect("lock is poisoned!");
+		let mut lock = self.destination.lock().expect("lock is poisoned!");
 		if !lock.closed {
-			println!("LOL2");
 			lock.closed = true;
 			lock.destination.complete();
 		}
