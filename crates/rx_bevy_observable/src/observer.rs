@@ -29,3 +29,14 @@ impl<T, E> Observer for DynObserver<T, E> {
 		(self.dyn_complete)();
 	}
 }
+
+impl Observer for () {
+	type In = ();
+	type Error = ();
+
+	fn next(&mut self, _next: ()) {}
+
+	fn error(&mut self, _error: Self::Error) {}
+
+	fn complete(&mut self) {}
+}

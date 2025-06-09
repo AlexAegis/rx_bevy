@@ -1,5 +1,5 @@
 use rx_bevy_observable::{Forwarder, Observable, Observer};
-use rx_bevy_operator::{HigherOrderForwarder, HigherOrderOperator, Operator};
+use rx_bevy_operator::Operator;
 
 pub struct Pipe<Source, Op> {
 	pub(crate) source_observable: Source,
@@ -45,19 +45,6 @@ where
 	{
 		Pipe::<Self, NextOp>::new(self, operator)
 	}
-	/*
-	#[inline]
-	pub fn higher_pipe<NextOp>(self, operator: NextOp) -> Pipe<Self, HigherOrderForwarder<NextOp>>
-	where
-		NextOp: HigherOrderOperator,
-	{
-		// let next_source = operator.source_on_next(next);
-
-		let hof = HigherOrderForwarder::<NextOp> {
-			higher_order_operator: operator,
-		};
-		let pipe = Pipe::<Self, NextOp>::new(self, hof);
-	}*/
 }
 
 impl<Source, Op> Observable for Pipe<Source, Op>

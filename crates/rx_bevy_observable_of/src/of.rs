@@ -29,6 +29,7 @@ where
 }
 
 /// Emits a single value then immediately completes
+#[derive(Clone)]
 pub struct OfObservable<Out>
 where
 	Out: Clone,

@@ -4,6 +4,13 @@ pub use rx_bevy_operator::*;
 // Observables
 #[cfg(feature = "observable_of")]
 pub use rx_bevy_observable_of::*;
+#[cfg(feature = "observable_throw")]
+pub use rx_bevy_observable_throw::*;
+// Pipes
+#[cfg(feature = "pipe_operator")]
+pub use rx_bevy_operator_pipe::*;
+#[cfg(feature = "pipe_flat")]
+pub use rx_bevy_pipe_flat::*;
 // Observers
 #[cfg(feature = "observer_fn")]
 pub use rx_bevy_observer_fn::*;
@@ -16,8 +23,7 @@ pub use rx_bevy_operator_finalize::*;
 pub use rx_bevy_operator_identity::*;
 #[cfg(feature = "operator_map")]
 pub use rx_bevy_operator_map::*;
-#[cfg(feature = "operator_pipe")]
-pub use rx_bevy_operator_pipe::*;
+
 #[cfg(feature = "operator_tap")]
 pub use rx_bevy_operator_tap::*;
 // Subjects
@@ -35,6 +41,13 @@ pub mod prelude {
 	// Observables
 	#[cfg(feature = "observable_of")]
 	pub use rx_bevy_observable_of::prelude::*;
+	#[cfg(feature = "observable_throw")]
+	pub use rx_bevy_observable_throw::prelude::*;
+	// Pipes
+	#[cfg(feature = "pipe_operator")]
+	pub use rx_bevy_operator_pipe::prelude::*;
+	#[cfg(feature = "pipe_flat")]
+	pub use rx_bevy_pipe_flat::prelude::*;
 	// Observers
 	#[cfg(feature = "observer_fn")]
 	pub use rx_bevy_observer_fn::prelude::*;
@@ -49,8 +62,6 @@ pub mod prelude {
 	pub use rx_bevy_operator_identity::prelude::*;
 	#[cfg(feature = "operator_map")]
 	pub use rx_bevy_operator_map::prelude::*;
-	#[cfg(feature = "operator_pipe")]
-	pub use rx_bevy_operator_pipe::prelude::*;
 	#[cfg(feature = "operator_tap")]
 	pub use rx_bevy_operator_tap::prelude::*;
 

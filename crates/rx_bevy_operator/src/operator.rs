@@ -16,37 +16,3 @@ pub trait Operator {
 		destination: Destination,
 	) -> Subscriber<Self::Fw, Destination>;
 }
-
-pub trait HigherOrderOperator {
-	type In;
-	type InnerObservable: Observable;
-
-	fn source_on_next(&mut self, next: Self::In) -> Self::InnerObservable;
-	// fn source_on_error() -> Self::InnerObservable;
-}
-
-pub struct HigherOrderForwarder<Hoop>
-where
-	Hoop: HigherOrderOperator,
-{
-	pub higher_order_operator: Hoop,
-}
-/*
-impl<Hoop> Operator for HigherOrderForwarder<Hoop>
-where
-	Hoop: HigherOrderOperator,
-{
-
-	type Fw = ;
-	fn operator_subscribe<
-		Destination: 'static
-			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
-	>(
-		&mut self,
-		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination> {
-	}
-}
-
-
-*/

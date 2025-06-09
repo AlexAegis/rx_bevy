@@ -66,6 +66,7 @@ rx_bevy = { path = "crates/rx_bevy" }
 rx_bevy_observable = { path = "crates/rx_bevy_observable" }
 rx_bevy_operator = { path = "crates/rx_bevy_operator" }
 rx_bevy_testing = { path = "crates/rx_bevy_testing" }
+rx_bevy_higher_order_operator = { path = "crates/rx_bevy_higher_order_operator" }
 # Observables
 rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
 rx_bevy_observable_throw = { path = "crates/rx_bevy_observable_throw" }
@@ -81,6 +82,7 @@ rx_bevy_operator_pipe = { path = "crates/rx_bevy_operator_pipe" }
 rx_bevy_operator_finalize = { path = "crates/rx_bevy_operator_finalize" }
 rx_bevy_operator_identity = { path = "crates/rx_bevy_operator_identity" }
 rx_bevy_operator_switch_map = { path = "crates/rx_bevy_operator_switch_map" }
+rx_bevy_pipe_flat = { path = "crates/rx_bevy_pipe_flat" }
 # Subjects
 rx_bevy_subject = { path = "crates/rx_bevy_subject" }
 rx_bevy_subject_behavior = { path = "crates/rx_bevy_subject_behavior" }

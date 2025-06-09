@@ -1,89 +1,91 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, Observer, Subscriber};
-use rx_bevy_operator::Operator;
+use rx_bevy_higher_order_operator::{
+	HigherOrderForwarder, HigherOrderObserver, HigherOrderOperator, HigherOrderSubscriber,
+};
+use rx_bevy_observable::{Observable, Observer, Subscription};
 
-pub struct SwitchMapOperator<In, Out, F, Error> {
-	pub mapper: F,
-	pub _phantom_data: PhantomData<(In, Out, Error)>,
+pub struct SwitchMapOperator<In, InnerObservable, Switcher> {
+	pub switcher: Switcher,
+	pub _phantom_data: PhantomData<(In, InnerObservable)>,
 }
-
-impl<In, Out, Mapper, Error> Operator for SwitchMapOperator<In, Out, Mapper, Error>
+/*
+impl<In, InnerObservable, Switcher> HigherOrderOperator
+	for SwitchMapOperator<In, InnerObservable, Switcher>
 where
-	Mapper: Clone + Fn(In) -> Out,
+	Switcher: Clone + Fn(In) -> InnerObservable,
+	InnerObservable: Observable,
 {
-	type Fw = SwitchMapForwarder<In, Out, Mapper, Error>;
+	type OutObservable = InnerObservable;
+	type Subscriber = SwitchMapSubscriber<InnerObservable::Subscription>;
 
-	fn operator_subscribe<
+	fn higher_order_operator_subscribe<
 		Destination: 'static
-			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
+			+ Observer<
+				In = <Self::OutObservable as Observable>::Out,
+				//Error = <Self::OutObservable as Observable>::Error,
+			>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(destination, SwitchMapForwarder::new(self.mapper.clone()))
+	) -> HigherOrderForwarder<Self::Subscriber, Destination> {
+		HigherOrderForwarder::new(
+			destination,
+			SwitchMapSubscriber {
+				inner_subscriber: None,
+				switcher: self.switcher.clone(),
+				_phantom_data: PhantomData,
+			},
+		)
 	}
 }
-
-pub struct SwitchMapForwarder<In, Out, F, Error> {
-	pub mapper: F,
-	pub _phantom_data: PhantomData<(In, Out, Error)>,
-}
-
-impl<In, Out, F, Error> SwitchMapForwarder<In, Out, F, Error> {
-	pub fn new(mapper: F) -> Self {
-		Self {
-			mapper,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<In, Out, F, Error> Forwarder for SwitchMapForwarder<In, Out, F, Error>
+*/
+pub struct SwitchMapSubscriber<In, InnerObservable, Switcher, InnerSubscriber>
 where
-	F: Fn(In) -> Out,
+	Switcher: Clone + Fn(In) -> InnerObservable,
+	InnerSubscriber: Subscription,
+{
+	inner_subscriber: Option<InnerSubscriber>,
+	switcher: Switcher,
+	_phantom_data: PhantomData<In>,
+}
+/*
+impl<In, InnerObservable, Switcher, InnerSubscriber> HigherOrderSubscriber
+	for SwitchMapSubscriber<In, InnerObservable, Switcher, InnerSubscriber>
+where
+	Switcher: Clone + Fn(In) -> InnerObservable,
+	InnerObservable: Observable,
+	InnerSubscriber: Subscription,
 {
 	type In = In;
-	type Out = Out;
-	type InError = Error;
-	type OutError = Error;
 
-	#[inline]
-	fn next_forward<Destination: Observer<In = Out>>(
-		&mut self,
-		next: Self::In,
-		destination: &mut Destination,
-	) {
-		let mapped = (self.mapper)(next);
-		destination.next(mapped);
+	fn subscribe_on_next(&mut self, next: Self::In, destination: Destination) {
+		if let Some(mut inner_subscriber) = self.inner_subscriber {
+			inner_subscriber.unsubscribe();
+		}
+
+		let inner_observable = (self.switcher)(next);
+		let subscription = inner_observable.subscribe(observer);
+		self.inner_subscriber = Some(subscription);
 	}
+}*/
 
-	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
-		&mut self,
-		error: Self::InError,
-		destination: &mut Destination,
-	) {
-		destination.error(error);
-	}
-}
-
-impl<In, Out, F, Error> SwitchMapOperator<In, Out, F, Error> {
-	pub fn new(transform: F) -> Self {
+impl<In, OutObservable, Switcher> SwitchMapOperator<In, OutObservable, Switcher> {
+	pub fn new(switcher: Switcher) -> Self {
 		Self {
-			mapper: transform,
+			switcher,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, Out, F, Error> Clone for SwitchMapOperator<In, Out, F, Error>
+impl<In, OutObservable, Switcher> Clone for SwitchMapOperator<In, OutObservable, Switcher>
 where
-	F: Clone,
+	Switcher: Clone,
 {
 	fn clone(&self) -> Self {
 		Self {
-			mapper: self.mapper.clone(),
+			switcher: self.switcher.clone(),
 			_phantom_data: PhantomData,
 		}
 	}
