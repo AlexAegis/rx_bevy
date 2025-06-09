@@ -53,12 +53,12 @@ bevy-inspector-egui = { version = "0.31.0", default-features = false }
 bevy_egui = { version = "0.34.1", features = ["immutable_ctx"] }
 derive-where = { version = "1.4.0" }
 bitflags = { version = "2.9.1" }
-smallvec = { version = "1.15.0" }
+smallvec = { version = "1.15.1" }
 slab = { version = "0.4.9" }
 ringbuffer = { version = "0.15.0" }
 serde = { version = "1.0.219" }
 num-traits = { version = "0.2.19" }
-petgraph = { version = "0.8.1" }
+petgraph = { version = "0.8.2" }
 bevy_kit_action = { path = "crates/bevy_kit_action" }
 examples_common = { path = "crates/examples_common" }
 # Core
@@ -79,6 +79,7 @@ rx_bevy_operator_filter = { path = "crates/rx_bevy_operator_filter" }
 rx_bevy_operator_tap = { path = "crates/rx_bevy_operator_tap" }
 rx_bevy_operator_pipe = { path = "crates/rx_bevy_operator_pipe" }
 rx_bevy_operator_finalize = { path = "crates/rx_bevy_operator_finalize" }
+rx_bevy_operator_identity = { path = "crates/rx_bevy_operator_identity" }
 rx_bevy_operator_switch_map = { path = "crates/rx_bevy_operator_switch_map" }
 # Subjects
 rx_bevy_subject = { path = "crates/rx_bevy_subject" }
