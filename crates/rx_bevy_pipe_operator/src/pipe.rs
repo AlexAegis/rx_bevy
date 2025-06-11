@@ -1,15 +1,15 @@
 use rx_bevy_observable::{Forwarder, Observable, Observer};
 use rx_bevy_operator::Operator;
 
-pub struct Pipe<Source, Op> {
+pub struct Pipe<Source, PipeOp> {
 	pub(crate) source_observable: Source,
-	pub(crate) operator: Op,
+	pub(crate) operator: PipeOp,
 }
 
 impl<Source, Op> Clone for Pipe<Source, Op>
 where
-	Source: Observable + Clone,
-	Op: Operator + Clone,
+	Source: Clone,
+	Op: Clone,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -21,13 +21,13 @@ where
 
 impl<Source, Op> Pipe<Source, Op>
 where
-	Op: Operator,
 	Source: Observable,
+	Op: Operator,
 {
 	pub fn new(source_observable: Source, operator: Op) -> Self {
 		Self {
 			source_observable,
-			operator,
+			operator: operator,
 		}
 	}
 }
@@ -62,16 +62,42 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
-		let operator_subscriber = self.operator_subscribe::<Destination>(destination);
+		let operator_subscriber = self.operator.operator_subscribe::<Destination>(destination);
 		self.source_observable.subscribe(operator_subscriber)
 	}
 }
 
-impl<Source, Op> Operator for Pipe<Source, Op>
+// TODO: Do something with this
+#[derive(Clone)]
+pub enum OperatorPipe<Prev, Op> {
+	Root(Op),
+	Next(Prev, Op),
+}
+
+impl<Prev, Op> OperatorPipe<Prev, Op>
 where
 	Op: Operator,
 	Op::Fw: 'static,
-	Source: Observable<Out = <Op::Fw as Forwarder>::In, Error = <Op::Fw as Forwarder>::InError>,
+{
+	pub fn new(operator: Op) -> Self {
+		Self::Root(operator)
+	}
+
+	#[inline]
+	pub fn pipe<NextOp>(self, operator: NextOp) -> OperatorPipe<Self, NextOp>
+	where
+		NextOp: Operator,
+		NextOp::Fw:
+			Forwarder<In = <Op::Fw as Forwarder>::Out, InError = <Op::Fw as Forwarder>::OutError>,
+	{
+		OperatorPipe::Next(self, operator)
+	}
+}
+
+impl<Prev, Op> Operator for OperatorPipe<Prev, Op>
+where
+	Op: Operator,
+	Op::Fw: 'static,
 {
 	type Fw = <Op as Operator>::Fw;
 
@@ -82,6 +108,11 @@ where
 		&mut self,
 		destination: Destination,
 	) -> rx_bevy_observable::Subscriber<Self::Fw, Destination> {
-		self.operator.operator_subscribe(destination)
+		let operator = match self {
+			OperatorPipe::Root(op) => op,
+			OperatorPipe::Next(_prev, op) => op,
+		};
+
+		operator.operator_subscribe(destination)
 	}
 }
