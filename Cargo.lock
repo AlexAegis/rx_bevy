@@ -4652,6 +4652,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_pipe_lift"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_observer_flat",
+ "rx_bevy_observer_shared",
+ "rx_bevy_operator",
+ "rx_bevy_testing",
+]
+
+[[package]]
 name = "rx_bevy_pipe_operator"
 version = "0.1.0"
 dependencies = [

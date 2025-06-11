@@ -3,7 +3,7 @@ use rx_bevy_operator::Operator;
 
 use crate::Pipe;
 
-pub trait ObservableExtensionPipe<Out>: Observable<Out = Out> + Sized {
+pub trait ObservableExtensionPipe: Observable + Sized {
 	fn pipe<Op>(self, operator: Op) -> Pipe<Self, Op>
 	where
 		Self: Sized,
@@ -13,4 +13,4 @@ pub trait ObservableExtensionPipe<Out>: Observable<Out = Out> + Sized {
 	}
 }
 
-impl<T, Out> ObservableExtensionPipe<Out> for T where T: Observable<Out = Out> {}
+impl<T> ObservableExtensionPipe for T where T: Observable {}

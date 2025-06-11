@@ -1,33 +1,38 @@
-use crate::Observer;
-/*
-pub trait OwnedForwarder {
-	type In;
-	type Out;
-	type InError;
-	type OutError;
+use crate::{Observable, Observer};
 
-	fn next_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+/// A lifted forwarded expects you to return an observable instead of a flat value, the flattening will happen later
+pub trait LiftingForwarder {
+	type In;
+	type InError;
+	type OutObservable: Observable;
+
+	fn next_forward<
+		LiftedDestination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
+	>(
 		&mut self,
 		next: Self::In,
-		destination: Destination,
-	) -> Destination;
+		destination: &mut LiftedDestination,
+	);
 
-	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn error_forward<
+		Destination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
+	>(
 		&mut self,
 		next: Self::InError,
-		destination: Destination,
-	) -> Destination;
+		destination: &mut Destination,
+	);
 
 	#[inline]
-	fn complete_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn complete_forward<
+		Destination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
+	>(
 		&mut self,
-		mut destination: Destination,
-	) -> Destination {
+		destination: &mut Destination,
+	) {
 		destination.complete();
-		destination
 	}
 }
-*/
+
 pub trait Forwarder {
 	type In;
 	type Out;
@@ -118,12 +123,6 @@ where
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed {
 			self.forwarder.next_forward(next, &mut self.destination);
-			// if let Some(destination) = self.destination.take() {
-			// 	let next_destination = self.forwarder.next_forward(next, destination);
-			// 	self.destination = Some(next_destination);
-			// } else {
-			// 	unreachable!("Can't next destination: No Destination!")
-			// }
 		} else {
 			todo!("handle subscriber next notification")
 		}
@@ -133,12 +132,6 @@ where
 	fn error(&mut self, error: Self::Error) {
 		if !self.is_closed {
 			self.forwarder.error_forward(error, &mut self.destination);
-			// if let Some(destination) = self.destination.take() {
-			// 	let next_destination = self.forwarder.error_forward(error, destination);
-			// 	self.destination = Some(next_destination);
-			// } else {
-			// 	unreachable!("Can't error destination: No Destination!")
-			// }
 		} else {
 			todo!("handle subscriber error notification")
 		}
@@ -149,12 +142,67 @@ where
 		if !self.is_closed {
 			self.is_closed = true;
 			self.forwarder.complete_forward(&mut self.destination);
-			// if let Some(destination) = self.destination.take() {
-			// 	let next_destination = self.forwarder.complete_forward(destination);
-			// 	self.destination = Some(next_destination);
-			// } else {
-			// 	unreachable!("Can't complete destination: No Destination!")
-			// }
+		} else {
+			todo!("handle subscriber complete notification")
+		}
+	}
+}
+
+pub struct LiftedSubscriber<Fw, Destination>
+where
+	Fw: LiftingForwarder,
+	Destination: Observer,
+{
+	pub destination: Destination,
+	pub forwarder: Fw,
+	pub is_closed: bool,
+}
+
+impl<Fw, Destination> LiftedSubscriber<Fw, Destination>
+where
+	Fw: LiftingForwarder,
+	Destination: Observer,
+{
+	pub fn new(destination: Destination, forwarder: Fw) -> Self {
+		Self {
+			destination,
+			forwarder,
+			is_closed: false,
+		}
+	}
+}
+
+impl<Fw, Destination> Observer for LiftedSubscriber<Fw, Destination>
+where
+	Fw: LiftingForwarder,
+	Destination: Observer<In = Fw::OutObservable, Error = <Fw::OutObservable as Observable>::Error>,
+{
+	type In = Fw::In;
+	type Error = Fw::InError;
+
+	#[inline]
+	fn next(&mut self, next: Self::In) {
+		if !self.is_closed {
+			self.forwarder.next_forward(next, &mut self.destination);
+		} else {
+			todo!("handle subscriber next notification")
+		}
+	}
+
+	#[inline]
+	fn error(&mut self, error: Self::Error) {
+		if !self.is_closed {
+			self.forwarder.error_forward(error, &mut self.destination);
+		} else {
+			todo!("handle subscriber error notification")
+		}
+	}
+
+	#[inline]
+	fn complete(&mut self) {
+		if !self.is_closed {
+			self.is_closed = true;
+			self.forwarder.complete_forward(&mut self.destination);
 		} else {
 			todo!("handle subscriber complete notification")
 		}
