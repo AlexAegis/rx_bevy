@@ -4,7 +4,7 @@ use rx_bevy_operator::LiftingOperator;
 use crate::LiftPipe;
 
 pub trait ObservableExtensionLiftPipe: Observable + Sized {
-	fn lift<LiftingOp>(self, op: LiftingOp) -> LiftPipe<Self, LiftingOp>
+	fn lift<LiftingOp>(self, operator: LiftingOp) -> LiftPipe<Self, LiftingOp>
 	where
 		Self: Sized
 			+ Observable<
@@ -13,7 +13,7 @@ pub trait ObservableExtensionLiftPipe: Observable + Sized {
 			>,
 		LiftingOp: LiftingOperator,
 	{
-		LiftPipe::new(self, op)
+		LiftPipe::new(self, operator)
 	}
 }
 

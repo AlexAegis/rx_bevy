@@ -1,7 +1,113 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{Observable, Observer, Subscription};
+use rx_bevy_observable_flat::FlatForwarder;
 use rx_bevy_observer_shared::SharedObserver;
+
+pub struct SwitchForwarder<InObservable, InError>
+where
+	InObservable: Observable,
+{
+	closed: bool,
+	inner_subscriber: Option<InObservable::Subscription>,
+	_phantom_data: PhantomData<(InObservable, InError)>,
+}
+
+impl<InObservable, InError> SwitchForwarder<InObservable, InError>
+where
+	InObservable: Observable,
+{
+	pub fn new() -> Self {
+		Self {
+			closed: false,
+			inner_subscriber: None,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<InObservable, InError> Clone for SwitchForwarder<InObservable, InError>
+where
+	InObservable: Observable,
+	InObservable::Subscription: Clone,
+{
+	fn clone(&self) -> Self {
+		Self {
+			inner_subscriber: self.inner_subscriber.clone(),
+			closed: self.closed,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<InObservable, InError> FlatForwarder for SwitchForwarder<InObservable, InError>
+where
+	InObservable: Observable,
+	InError: Into<InObservable::Error>,
+{
+	type InObservable = InObservable;
+	type InError = InError;
+
+	fn next_forward<
+		Destination: 'static
+			+ Observer<
+				In = <Self::InObservable as Observable>::Out,
+				Error = <Self::InObservable as Observable>::Error,
+			>,
+	>(
+		&mut self,
+		mut next: Self::InObservable,
+		destination: &mut SharedObserver<Destination>,
+	) {
+		if !self.closed {
+			if let Some(mut inner_subscriber) = self.inner_subscriber.take() {
+				inner_subscriber.unsubscribe();
+			}
+
+			let d = destination.clone();
+			let subscription = next.subscribe(d);
+			self.inner_subscriber = Some(subscription);
+		}
+	}
+
+	fn error_forward<
+		Destination: 'static
+			+ Observer<
+				In = <Self::InObservable as Observable>::Out,
+				Error = <Self::InObservable as Observable>::Error,
+			>,
+	>(
+		&mut self,
+		error: Self::InError,
+		destination: &mut SharedObserver<Destination>,
+	) {
+		if !self.closed {
+			destination.error(error.into());
+
+			if let Some(mut inner_subscriber) = self.inner_subscriber.take() {
+				inner_subscriber.unsubscribe();
+			}
+		}
+	}
+	fn complete_forward<
+		Destination: 'static
+			+ Observer<
+				In = <Self::InObservable as Observable>::Out,
+				Error = <Self::InObservable as Observable>::Error,
+			>,
+	>(
+		&mut self,
+		destination: &mut SharedObserver<Destination>,
+	) {
+		if !self.closed {
+			self.closed = true;
+			destination.complete();
+			if let Some(mut inner_subscriber) = self.inner_subscriber.take() {
+				inner_subscriber.unsubscribe();
+			}
+		}
+	}
+}
 
 pub struct FlatObserver<InnerObservable, InnerSubscriber, Destination>
 where

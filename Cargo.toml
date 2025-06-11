@@ -70,6 +70,7 @@ rx_bevy_higher_order_operator = { path = "crates/rx_bevy_higher_order_operator" 
 # Observables
 rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
 rx_bevy_observable_throw = { path = "crates/rx_bevy_observable_throw" }
+rx_bevy_observable_flat = { path = "crates/rx_bevy_observable_flat" }
 # Pipes
 rx_bevy_pipe_operator = { path = "crates/rx_bevy_pipe_operator" }
 rx_bevy_pipe_flat = { path = "crates/rx_bevy_pipe_flat" }

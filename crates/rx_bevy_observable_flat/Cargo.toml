@@ -1,7 +1,7 @@
 [package]
-name = "rx_bevy_pipe_flat"
-description = "flat operator for rx_bevy"
+name = "rx_bevy_observable_flat"
 version = "0.1.0"
+description = "rx_bevy"
 readme = "readme.md"
 publish = false
 
@@ -22,10 +22,8 @@ example = ["dev"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
-rx_bevy_observable_flat = { workspace = true }
-rx_bevy_observer_flat = { workspace = true }
 rx_bevy_observer_shared = { workspace = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
 rx_bevy_testing = { workspace = true }
+rx_bevy_observer_fn = { workspace = true }

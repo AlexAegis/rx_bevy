@@ -1,61 +1,57 @@
-use std::marker::PhantomData;
-
 use rx_bevy_observable::{Observable, Observer};
-use rx_bevy_observer_flat::FlatObserver;
-use rx_bevy_observer_shared::SharedObserver;
+use rx_bevy_observable_flat::{FlatForwarder, FlatSubscriber};
 
-pub struct FlatPipe<Source, InnerObservable>
+pub struct FlatPipe<Source, Flattener>
 where
-	Source: Observable<Out = InnerObservable>,
-	InnerObservable: Observable,
+	Source: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
+	Flattener: FlatForwarder,
 {
 	pub(crate) source_observable: Source,
-	_phantom_data: PhantomData<InnerObservable>,
+	pub(crate) flattener: Flattener,
 }
 
-impl<Source, InnerObservable> Clone for FlatPipe<Source, InnerObservable>
+impl<Source, Flattener> Clone for FlatPipe<Source, Flattener>
 where
-	Source: Observable<Out = InnerObservable> + Clone,
-	InnerObservable: Observable + Clone,
+	Source: Observable<Out = Flattener::InObservable, Error = Flattener::InError> + Clone,
+	Flattener: FlatForwarder + Clone,
+	Flattener::InObservable: Clone,
 {
 	fn clone(&self) -> Self {
 		Self {
 			source_observable: self.source_observable.clone(),
-			_phantom_data: PhantomData,
+			flattener: self.flattener.clone(),
 		}
 	}
 }
 
-impl<Source, InnerObservable> FlatPipe<Source, InnerObservable>
+impl<Source, Flattener> FlatPipe<Source, Flattener>
 where
-	Source: Observable<Out = InnerObservable>,
-	InnerObservable: Observable,
+	Source: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
+	Flattener: FlatForwarder,
 {
-	pub fn new(source_observable: Source) -> Self {
+	pub fn new(source_observable: Source, flattener: Flattener) -> Self {
 		Self {
 			source_observable,
-			_phantom_data: PhantomData,
+			flattener,
 		}
 	}
 }
 
-impl<Source, InnerObservable> Observable for FlatPipe<Source, InnerObservable>
+impl<Source, Flattener> Observable for FlatPipe<Source, Flattener>
 where
-	Source: Observable<Out = InnerObservable, Error = InnerObservable::Error>,
-	InnerObservable: Observable + 'static,
-	InnerObservable::Out: 'static,
-	InnerObservable::Error: 'static,
+	Source: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
+	Flattener: FlatForwarder + Clone + 'static,
+	Flattener::InObservable: 'static,
 {
-	type Out = InnerObservable::Out;
-	type Error = InnerObservable::Error;
+	type Out = <Flattener::InObservable as Observable>::Out;
+	type Error = <Flattener::InObservable as Observable>::Error;
 	type Subscription = Source::Subscription;
 
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
-		let shared_observer = SharedObserver::new(destination);
-		self.source_observable
-			.subscribe(FlatObserver::new(shared_observer))
+		let flat_subscriber = FlatSubscriber::new(destination, self.flattener.clone());
+		self.source_observable.subscribe(flat_subscriber)
 	}
 }

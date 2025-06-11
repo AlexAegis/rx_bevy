@@ -1,6 +1,7 @@
 use crate::{Observable, Observer};
 
 /// A lifted forwarded expects you to return an observable instead of a flat value, the flattening will happen later
+///
 pub trait LiftingForwarder {
 	type In;
 	type InError;
@@ -15,19 +16,19 @@ pub trait LiftingForwarder {
 	);
 
 	fn error_forward<
-		Destination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
+		LiftedDestination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
 	>(
 		&mut self,
 		next: Self::InError,
-		destination: &mut Destination,
+		destination: &mut LiftedDestination,
 	);
 
 	#[inline]
 	fn complete_forward<
-		Destination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
+		LiftedDestination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
 	>(
 		&mut self,
-		destination: &mut Destination,
+		destination: &mut LiftedDestination,
 	) {
 		destination.complete();
 	}
