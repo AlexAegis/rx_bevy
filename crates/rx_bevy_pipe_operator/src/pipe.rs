@@ -62,7 +62,26 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
-		let operator_subscriber = self.operator.operator_subscribe::<Destination>(destination);
+		let operator_subscriber = self.operator_subscribe::<Destination>(destination);
 		self.source_observable.subscribe(operator_subscriber)
+	}
+}
+
+impl<Source, Op> Operator for Pipe<Source, Op>
+where
+	Op: Operator,
+	Op::Fw: 'static,
+	Source: Observable<Out = <Op::Fw as Forwarder>::In, Error = <Op::Fw as Forwarder>::InError>,
+{
+	type Fw = <Op as Operator>::Fw;
+
+	fn operator_subscribe<
+		Destination: 'static
+			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
+	>(
+		&mut self,
+		destination: Destination,
+	) -> rx_bevy_observable::Subscriber<Self::Fw, Destination> {
+		self.operator.operator_subscribe(destination)
 	}
 }

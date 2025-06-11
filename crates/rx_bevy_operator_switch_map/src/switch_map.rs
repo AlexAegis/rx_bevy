@@ -1,76 +1,16 @@
 use std::marker::PhantomData;
 
-use rx_bevy_higher_order_operator::{
-	HigherOrderForwarder, HigherOrderObserver, HigherOrderOperator, HigherOrderSubscriber,
+use rx_bevy_observable::{
+	Forwarder, LiftedSubscriber, LiftingForwarder, Observable, Observer, Subscriber, Subscription,
 };
-use rx_bevy_observable::{Observable, Observer, Subscription};
+use rx_bevy_operator::{LiftingOperator, Operator};
 
-pub struct SwitchMapOperator<In, InnerObservable, Switcher> {
+pub struct SwitchMapOperator<In, InError, InnerObservable, Switcher> {
 	pub switcher: Switcher,
-	pub _phantom_data: PhantomData<(In, InnerObservable)>,
+	pub _phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
-/*
-impl<In, InnerObservable, Switcher> HigherOrderOperator
-	for SwitchMapOperator<In, InnerObservable, Switcher>
-where
-	Switcher: Clone + Fn(In) -> InnerObservable,
-	InnerObservable: Observable,
-{
-	type OutObservable = InnerObservable;
-	type Subscriber = SwitchMapSubscriber<InnerObservable::Subscription>;
 
-	fn higher_order_operator_subscribe<
-		Destination: 'static
-			+ Observer<
-				In = <Self::OutObservable as Observable>::Out,
-				//Error = <Self::OutObservable as Observable>::Error,
-			>,
-	>(
-		&mut self,
-		destination: Destination,
-	) -> HigherOrderForwarder<Self::Subscriber, Destination> {
-		HigherOrderForwarder::new(
-			destination,
-			SwitchMapSubscriber {
-				inner_subscriber: None,
-				switcher: self.switcher.clone(),
-				_phantom_data: PhantomData,
-			},
-		)
-	}
-}
-*/
-pub struct SwitchMapSubscriber<In, InnerObservable, Switcher, InnerSubscriber>
-where
-	Switcher: Clone + Fn(In) -> InnerObservable,
-	InnerSubscriber: Subscription,
-{
-	inner_subscriber: Option<InnerSubscriber>,
-	switcher: Switcher,
-	_phantom_data: PhantomData<In>,
-}
-/*
-impl<In, InnerObservable, Switcher, InnerSubscriber> HigherOrderSubscriber
-	for SwitchMapSubscriber<In, InnerObservable, Switcher, InnerSubscriber>
-where
-	Switcher: Clone + Fn(In) -> InnerObservable,
-	InnerObservable: Observable,
-	InnerSubscriber: Subscription,
-{
-	type In = In;
-
-	fn subscribe_on_next(&mut self, next: Self::In, destination: Destination) {
-		if let Some(mut inner_subscriber) = self.inner_subscriber {
-			inner_subscriber.unsubscribe();
-		}
-
-		let inner_observable = (self.switcher)(next);
-		let subscription = inner_observable.subscribe(observer);
-		self.inner_subscriber = Some(subscription);
-	}
-}*/
-
-impl<In, OutObservable, Switcher> SwitchMapOperator<In, OutObservable, Switcher> {
+impl<In, InError, OutObservable, Switcher> SwitchMapOperator<In, InError, OutObservable, Switcher> {
 	pub fn new(switcher: Switcher) -> Self {
 		Self {
 			switcher,
@@ -79,7 +19,8 @@ impl<In, OutObservable, Switcher> SwitchMapOperator<In, OutObservable, Switcher>
 	}
 }
 
-impl<In, OutObservable, Switcher> Clone for SwitchMapOperator<In, OutObservable, Switcher>
+impl<In, InError, OutObservable, Switcher> Clone
+	for SwitchMapOperator<In, InError, OutObservable, Switcher>
 where
 	Switcher: Clone,
 {
@@ -88,5 +29,117 @@ where
 			switcher: self.switcher.clone(),
 			_phantom_data: PhantomData,
 		}
+	}
+}
+
+pub struct SwitchMapSubscriber<In, InError, InnerObservable, Switcher>
+where
+	Switcher: Clone + Fn(In) -> InnerObservable,
+{
+	switcher: Switcher,
+	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError, InnerObservable, Switcher>
+	SwitchMapSubscriber<In, InError, InnerObservable, Switcher>
+where
+	Switcher: Clone + Fn(In) -> InnerObservable,
+{
+	pub fn new(switcher: Switcher) -> Self {
+		Self {
+			switcher,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+pub struct HigherOrderForwarder<S>
+where
+	S: LiftingForwarder,
+{
+	subscriber: S,
+}
+
+impl<S> HigherOrderForwarder<S>
+where
+	S: LiftingForwarder,
+{
+	pub fn new(subscriber: S) -> Self {
+		Self { subscriber }
+	}
+}
+
+impl<S> Forwarder for HigherOrderForwarder<S>
+where
+	S: LiftingForwarder,
+{
+	type In = ();
+	type InError = ();
+	type Out = ();
+	type OutError = ();
+
+	fn next_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+		&mut self,
+		next: Self::In,
+		destination: &mut Destination,
+	) {
+		// self.subscriber.next_forward(next, destination);
+	}
+
+	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+		&mut self,
+		next: Self::InError,
+		destination: &mut Destination,
+	) {
+	}
+
+	fn complete_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+		&mut self,
+		destination: &mut Destination,
+	) {
+	}
+}
+
+impl<In, InError, OutObservable, Switcher> LiftingForwarder
+	for SwitchMapSubscriber<In, InError, OutObservable, Switcher>
+where
+	Self: Clone,
+	Switcher: Clone + Fn(In) -> OutObservable,
+	OutObservable: Observable,
+	InError: Into<OutObservable::Error>,
+{
+	type In = In;
+	type InError = InError;
+	type OutObservable = OutObservable;
+
+	fn next_forward<
+		LiftedDestination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
+	>(
+		&mut self,
+		next: Self::In,
+		destination: &mut LiftedDestination,
+	) {
+		let next_observable = (self.switcher)(next);
+		destination.next(next_observable);
+	}
+
+	fn error_forward<
+		LiftedDestination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
+	>(
+		&mut self,
+		error: Self::InError,
+		destination: &mut LiftedDestination,
+	) {
+		destination.error(error.into());
+	}
+
+	fn complete_forward<
+		LiftedDestination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
+	>(
+		&mut self,
+		destination: &mut LiftedDestination,
+	) {
+		// TODO: Check when this should actually complete, it should wait until the inner obs is closed, is that ensured already or does it even have to be ensured here?
+		destination.complete();
 	}
 }

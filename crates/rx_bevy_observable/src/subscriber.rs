@@ -19,7 +19,7 @@ pub trait LiftingForwarder {
 		LiftedDestination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
 	>(
 		&mut self,
-		next: Self::InError,
+		error: Self::InError,
 		destination: &mut LiftedDestination,
 	);
 

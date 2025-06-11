@@ -4500,20 +4500,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_higher_order_operator"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_observable",
- "rx_bevy_observer_noop",
- "rx_bevy_operator",
- "rx_bevy_operator_identity",
- "rx_bevy_pipe_operator",
- "rx_bevy_subject",
- "rx_bevy_testing",
-]
-
-[[package]]
 name = "rx_bevy_observable"
 version = "0.1.0"
 dependencies = [
@@ -4654,11 +4640,15 @@ dependencies = [
 name = "rx_bevy_operator_switch_map"
 version = "0.1.0"
 dependencies = [
- "rx_bevy_higher_order_operator",
  "rx_bevy_observable",
+ "rx_bevy_observable_flat",
  "rx_bevy_observable_of",
+ "rx_bevy_observer_flat",
  "rx_bevy_observer_fn",
  "rx_bevy_operator",
+ "rx_bevy_operator_identity",
+ "rx_bevy_pipe_flat",
+ "rx_bevy_pipe_lift",
  "rx_bevy_pipe_operator",
  "rx_bevy_testing",
 ]
