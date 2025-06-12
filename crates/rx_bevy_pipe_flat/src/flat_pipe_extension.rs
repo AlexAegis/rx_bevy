@@ -1,12 +1,12 @@
 use rx_bevy_observable::Observable;
-use rx_bevy_observable_flat::FlatForwarder;
+use rx_bevy_observable_flat::ForwardFlattener;
 
 use crate::FlatPipe;
 
 pub trait ObservableExtensionFlatPipe<Flattener>: Observable + Sized
 where
 	Self: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
-	Flattener: FlatForwarder,
+	Flattener: ForwardFlattener,
 {
 	fn flat(self, flattener: Flattener) -> FlatPipe<Self, Flattener>
 	where
@@ -19,6 +19,6 @@ where
 impl<T, Flattener> ObservableExtensionFlatPipe<Flattener> for T
 where
 	Self: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
-	Flattener: FlatForwarder,
+	Flattener: ForwardFlattener,
 {
 }

@@ -1,11 +1,11 @@
-use rx_bevy_observable::{LiftingForwarder, Observable, Observer};
+use rx_bevy_observable::{Forwarder, Observable, Observer};
 use rx_bevy_operator::LiftingOperator;
 
 pub struct LiftPipe<Source, LiftingOp>
 where
 	Source: Observable<
-			Out = <LiftingOp::Fw as LiftingForwarder>::In,
-			Error = <LiftingOp::Fw as LiftingForwarder>::InError,
+			Out = <LiftingOp::Fw as Forwarder>::In,
+			Error = <LiftingOp::Fw as Forwarder>::InError,
 		>,
 	LiftingOp: LiftingOperator,
 {
@@ -16,8 +16,8 @@ where
 impl<Source, LiftingOp> Clone for LiftPipe<Source, LiftingOp>
 where
 	Source: Observable<
-			Out = <LiftingOp::Fw as LiftingForwarder>::In,
-			Error = <LiftingOp::Fw as LiftingForwarder>::InError,
+			Out = <LiftingOp::Fw as Forwarder>::In,
+			Error = <LiftingOp::Fw as Forwarder>::InError,
 		> + Clone,
 	LiftingOp: LiftingOperator + Clone,
 {
@@ -32,8 +32,8 @@ where
 impl<Source, LiftingOp> LiftPipe<Source, LiftingOp>
 where
 	Source: Observable<
-			Out = <LiftingOp::Fw as LiftingForwarder>::In,
-			Error = <LiftingOp::Fw as LiftingForwarder>::InError,
+			Out = <LiftingOp::Fw as Forwarder>::In,
+			Error = <LiftingOp::Fw as Forwarder>::InError,
 		>,
 	LiftingOp: LiftingOperator,
 {
@@ -48,14 +48,14 @@ where
 impl<Source, LiftingOp> Observable for LiftPipe<Source, LiftingOp>
 where
 	Source: Observable<
-			Out = <LiftingOp::Fw as LiftingForwarder>::In,
-			Error = <LiftingOp::Fw as LiftingForwarder>::InError,
+			Out = <LiftingOp::Fw as Forwarder>::In,
+			Error = <LiftingOp::Fw as Forwarder>::InError,
 		>,
-	LiftingOp: LiftingOperator<Fw: LiftingForwarder>,
+	LiftingOp: LiftingOperator<Fw: Forwarder>,
 	<LiftingOp as LiftingOperator>::Fw: 'static,
 {
-	type Out = <LiftingOp::Fw as LiftingForwarder>::OutObservable;
-	type Error = <<LiftingOp::Fw as LiftingForwarder>::OutObservable as Observable>::Error;
+	type Out = <LiftingOp::Fw as Forwarder>::Out;
+	type Error = <LiftingOp::Fw as Forwarder>::OutError;
 	type Subscription = Source::Subscription;
 
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(

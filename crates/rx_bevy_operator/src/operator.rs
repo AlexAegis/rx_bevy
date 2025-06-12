@@ -1,6 +1,4 @@
-use rx_bevy_observable::{
-	Forwarder, LiftedSubscriber, LiftingForwarder, Observable, Observer, Subscriber,
-};
+use rx_bevy_observable::{Forwarder, Observable, Observer, Subscriber};
 
 // OperatorIO OperatorInstanceFactory
 
@@ -19,17 +17,18 @@ pub trait Operator {
 	) -> Subscriber<Self::Fw, Destination>;
 }
 
-pub trait LiftingOperator {
-	type Fw: LiftingForwarder;
+pub trait LiftingOperator
+where
+	Self::Fw: Forwarder<OutError = <<Self::Fw as Forwarder>::Out as Observable>::Error>,
+	<Self::Fw as Forwarder>::Out: Observable,
+{
+	type Fw;
 
 	fn lifted_operator_subscribe<
 		Destination: 'static
-			+ Observer<
-				In = <Self::Fw as LiftingForwarder>::OutObservable,
-				Error = <<Self::Fw as LiftingForwarder>::OutObservable as Observable>::Error,
-			>,
+			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> LiftedSubscriber<Self::Fw, Destination>;
+	) -> Subscriber<Self::Fw, Destination>;
 }

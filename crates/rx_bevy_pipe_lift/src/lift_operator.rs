@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{LiftedSubscriber, LiftingForwarder, Observable, Observer};
+use rx_bevy_observable::{Forwarder, Observable, Observer, Subscriber};
 use rx_bevy_operator::LiftingOperator;
 
 pub struct LiftOperator<In, InError, OutObservable, Lifter, ErrorLifter> {
@@ -21,15 +21,12 @@ where
 
 	fn lifted_operator_subscribe<
 		Destination: 'static
-			+ Observer<
-				In = <Self::Fw as LiftingForwarder>::OutObservable,
-				Error = <<Self::Fw as LiftingForwarder>::OutObservable as Observable>::Error,
-			>,
+			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> LiftedSubscriber<Self::Fw, Destination> {
-		LiftedSubscriber::new(
+	) -> Subscriber<Self::Fw, Destination> {
+		Subscriber::new(
 			destination,
 			LiftForwarder::new(self.lifter.clone(), self.error_lifter.clone()),
 		)
@@ -54,7 +51,7 @@ impl<In, InError, Out, Lifter, ErrorLifter> LiftForwarder<In, InError, Out, Lift
 	}
 }
 
-impl<In, InError, OutObservable, Lifter, ErrorLifter> LiftingForwarder
+impl<In, InError, OutObservable, Lifter, ErrorLifter> Forwarder
 	for LiftForwarder<In, InError, OutObservable, Lifter, ErrorLifter>
 where
 	Lifter: Fn(In) -> OutObservable,
@@ -62,8 +59,9 @@ where
 	OutObservable: Observable,
 {
 	type In = In;
-	type OutObservable = OutObservable;
 	type InError = InError;
+	type Out = OutObservable;
+	type OutError = <OutObservable as Observable>::Error;
 
 	#[inline]
 	fn next_forward<Destination: Observer<In = OutObservable>>(
@@ -77,9 +75,7 @@ where
 	}
 
 	#[inline]
-	fn error_forward<
-		Destination: Observer<In = Self::OutObservable, Error = <Self::OutObservable as Observable>::Error>,
-	>(
+	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		error: Self::InError,
 		destination: &mut Destination,

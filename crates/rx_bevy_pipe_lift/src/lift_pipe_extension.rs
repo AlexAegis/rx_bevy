@@ -1,4 +1,4 @@
-use rx_bevy_observable::{LiftingForwarder, Observable};
+use rx_bevy_observable::{Forwarder, Observable};
 use rx_bevy_operator::LiftingOperator;
 
 use crate::LiftPipe;
@@ -8,8 +8,8 @@ pub trait ObservableExtensionLiftPipe: Observable + Sized {
 	where
 		Self: Sized
 			+ Observable<
-				Out = <LiftingOp::Fw as LiftingForwarder>::In,
-				Error = <LiftingOp::Fw as LiftingForwarder>::InError,
+				Out = <LiftingOp::Fw as Forwarder>::In,
+				Error = <LiftingOp::Fw as Forwarder>::InError,
 			>,
 		LiftingOp: LiftingOperator,
 	{

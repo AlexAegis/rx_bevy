@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{Observable, Observer, Subscription};
-use rx_bevy_observable_flat::FlatForwarder;
+use rx_bevy_observable_flat::ForwardFlattener;
 use rx_bevy_observer_shared::SharedObserver;
 
-pub struct SwitchForwarder<InObservable, InError>
+pub struct SwitchFlattener<InObservable, InError>
 where
 	InObservable: Observable,
 {
@@ -13,7 +13,7 @@ where
 	_phantom_data: PhantomData<(InObservable, InError)>,
 }
 
-impl<InObservable, InError> SwitchForwarder<InObservable, InError>
+impl<InObservable, InError> SwitchFlattener<InObservable, InError>
 where
 	InObservable: Observable,
 {
@@ -26,7 +26,7 @@ where
 	}
 }
 
-impl<InObservable, InError> Clone for SwitchForwarder<InObservable, InError>
+impl<InObservable, InError> Clone for SwitchFlattener<InObservable, InError>
 where
 	InObservable: Observable,
 	InObservable::Subscription: Clone,
@@ -40,7 +40,7 @@ where
 	}
 }
 
-impl<InObservable, InError> FlatForwarder for SwitchForwarder<InObservable, InError>
+impl<InObservable, InError> ForwardFlattener for SwitchFlattener<InObservable, InError>
 where
 	InObservable: Observable,
 	InError: Into<InObservable::Error>,
@@ -48,7 +48,7 @@ where
 	type InObservable = InObservable;
 	type InError = InError;
 
-	fn next_forward<
+	fn flatten_next<
 		Destination: 'static
 			+ Observer<
 				In = <Self::InObservable as Observable>::Out,
@@ -79,7 +79,7 @@ where
 	>(
 		&mut self,
 		error: Self::InError,
-		destination: &mut SharedObserver<Destination>,
+		destination: &mut Destination,
 	) {
 		if !self.closed {
 			destination.error(error.into());
@@ -97,7 +97,7 @@ where
 			>,
 	>(
 		&mut self,
-		destination: &mut SharedObserver<Destination>,
+		destination: &mut Destination,
 	) {
 		if !self.closed {
 			self.closed = true;

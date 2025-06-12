@@ -1,11 +1,11 @@
 use rx_bevy_observable::{Observable, Observer};
-use rx_bevy_observable_flat::{FlatForwarder, FlatSubscriber};
+use rx_bevy_observable_flat::{FlatSubscriber, ForwardFlattener};
 
 // TODO: Try merging pipes together with a single Enum Forwarder over the three forwarders
 pub struct FlatPipe<Source, Flattener>
 where
 	Source: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
-	Flattener: FlatForwarder,
+	Flattener: ForwardFlattener,
 {
 	pub(crate) source_observable: Source,
 	pub(crate) flattener: Flattener,
@@ -14,7 +14,7 @@ where
 impl<Source, Flattener> Clone for FlatPipe<Source, Flattener>
 where
 	Source: Observable<Out = Flattener::InObservable, Error = Flattener::InError> + Clone,
-	Flattener: FlatForwarder + Clone,
+	Flattener: ForwardFlattener + Clone,
 	Flattener::InObservable: Clone,
 {
 	fn clone(&self) -> Self {
@@ -28,7 +28,7 @@ where
 impl<Source, Flattener> FlatPipe<Source, Flattener>
 where
 	Source: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
-	Flattener: FlatForwarder,
+	Flattener: ForwardFlattener,
 {
 	pub fn new(source_observable: Source, flattener: Flattener) -> Self {
 		Self {
@@ -41,7 +41,7 @@ where
 impl<Source, Flattener> Observable for FlatPipe<Source, Flattener>
 where
 	Source: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
-	Flattener: FlatForwarder + Clone + 'static,
+	Flattener: ForwardFlattener + Clone + 'static,
 	Flattener::InObservable: 'static,
 {
 	type Out = <Flattener::InObservable as Observable>::Out;

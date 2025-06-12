@@ -1,9 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
-	Forwarder, LiftedSubscriber, LiftingForwarder, Observable, Observer, Subscriber, Subscription,
-};
-use rx_bevy_operator::{LiftingOperator, Operator};
+use rx_bevy_observable::{Forwarder, Observer};
 
 pub struct SwitchMapOperator<In, InError, InnerObservable, Switcher> {
 	pub switcher: Switcher,
@@ -55,14 +52,14 @@ where
 
 pub struct HigherOrderForwarder<S>
 where
-	S: LiftingForwarder,
+	S: Forwarder,
 {
 	subscriber: S,
 }
 
 impl<S> HigherOrderForwarder<S>
 where
-	S: LiftingForwarder,
+	S: Forwarder,
 {
 	pub fn new(subscriber: S) -> Self {
 		Self { subscriber }
@@ -71,7 +68,7 @@ where
 
 impl<S> Forwarder for HigherOrderForwarder<S>
 where
-	S: LiftingForwarder,
+	S: Forwarder,
 {
 	type In = ();
 	type InError = ();
@@ -99,7 +96,7 @@ where
 	) {
 	}
 }
-
+/*
 impl<In, InError, OutObservable, Switcher> LiftingForwarder
 	for SwitchMapSubscriber<In, InError, OutObservable, Switcher>
 where
@@ -143,3 +140,4 @@ where
 		destination.complete();
 	}
 }
+*/

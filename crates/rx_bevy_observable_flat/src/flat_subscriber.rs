@@ -1,11 +1,11 @@
 use rx_bevy_observable::{Observable, Observer};
 use rx_bevy_observer_shared::SharedObserver;
 
-pub trait FlatForwarder {
+pub trait ForwardFlattener {
 	type InObservable: Observable;
 	type InError;
 
-	fn next_forward<
+	fn flatten_next<
 		Destination: 'static
 			+ Observer<
 				In = <Self::InObservable as Observable>::Out,
@@ -26,7 +26,7 @@ pub trait FlatForwarder {
 	>(
 		&mut self,
 		error: Self::InError,
-		destination: &mut SharedObserver<Destination>,
+		destination: &mut Destination,
 	);
 
 	#[inline]
@@ -38,7 +38,7 @@ pub trait FlatForwarder {
 			>,
 	>(
 		&mut self,
-		destination: &mut SharedObserver<Destination>,
+		destination: &mut Destination,
 	) {
 		destination.complete();
 	}
@@ -46,7 +46,7 @@ pub trait FlatForwarder {
 
 pub struct FlatSubscriber<Fw, Destination>
 where
-	Fw: FlatForwarder,
+	Fw: ForwardFlattener,
 	Destination: Observer,
 {
 	pub destination: SharedObserver<Destination>,
@@ -56,7 +56,7 @@ where
 
 impl<Fw, Destination> FlatSubscriber<Fw, Destination>
 where
-	Fw: FlatForwarder,
+	Fw: ForwardFlattener,
 	Destination: Observer<
 			In = <Fw::InObservable as Observable>::Out,
 			Error = <Fw::InObservable as Observable>::Error,
@@ -73,7 +73,7 @@ where
 
 impl<Fw, Destination> Observer for FlatSubscriber<Fw, Destination>
 where
-	Fw: FlatForwarder,
+	Fw: ForwardFlattener,
 	Destination: 'static
 		+ Observer<
 			In = <Fw::InObservable as Observable>::Out,
@@ -86,7 +86,7 @@ where
 	#[inline]
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed {
-			self.forwarder.next_forward(next, &mut self.destination);
+			self.forwarder.flatten_next(next, &mut self.destination);
 		} else {
 			todo!("handle subscriber next notification")
 		}

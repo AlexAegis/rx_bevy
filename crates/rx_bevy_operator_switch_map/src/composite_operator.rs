@@ -1,17 +1,17 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, LiftingForwarder, Observable, Observer};
-use rx_bevy_observer_flat::SwitchForwarder;
+use rx_bevy_observable::{Forwarder, Observable, Observer};
+use rx_bevy_observer_flat::SwitchFlattener;
 use rx_bevy_operator::LiftingOperator;
 use rx_bevy_pipe_flat::FlatPipe;
 use rx_bevy_pipe_lift::LiftPipe;
-
+/*
 pub fn composite_switch_map<Source, Lifter>(
 	source: Source,
 	lifter: Lifter,
 ) -> FlatPipe<
 	LiftPipe<Source, Lifter>,
-	SwitchForwarder<
+	SwitchFlattener<
 		<Lifter::Fw as LiftingForwarder>::OutObservable,
 		<<Lifter::Fw as LiftingForwarder>::OutObservable as Observable>::Error,
 	>,
@@ -26,9 +26,9 @@ where
 {
 	FlatPipe::new(
 		LiftPipe::<Source, Lifter>::new(source, lifter),
-		SwitchForwarder::new(),
+		SwitchFlattener::new(),
 	)
-}
+}*/
 
 pub struct CompositeOperator<F, Source, Result>
 where
