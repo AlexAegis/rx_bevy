@@ -23,7 +23,6 @@ pipe = ["dep:rx_bevy_pipe_operator"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
-rx_bevy_operator = { workspace = true }
 rx_bevy_pipe_operator = { workspace = true, optional = true }
 rx_bevy_pipe_lift = { workspace = true }
 rx_bevy_pipe_flat = { workspace = true }

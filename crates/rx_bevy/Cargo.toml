@@ -88,7 +88,6 @@ subject_replay = ["dep:rx_bevy_subject_replay"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
-rx_bevy_operator = { workspace = true }
 # Observables
 rx_bevy_observable_of = { workspace = true, optional = true }
 rx_bevy_observable_throw = { workspace = true, optional = true }

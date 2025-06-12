@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, Observer, Subscriber};
-use rx_bevy_operator::Operator;
+use rx_bevy_observable::{Forwarder, Observer, Operator, Subscriber};
 
 pub struct FilterOperator<T, Filter, Error> {
 	pub filter: Filter,

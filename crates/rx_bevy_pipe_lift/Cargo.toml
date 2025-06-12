@@ -24,7 +24,6 @@ example = ["dev"]
 rx_bevy_observable = { workspace = true }
 rx_bevy_observer_flat = { workspace = true }
 rx_bevy_observer_shared = { workspace = true }
-rx_bevy_operator = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

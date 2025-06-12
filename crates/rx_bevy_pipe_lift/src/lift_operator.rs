@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, Observable, Observer, Subscriber};
-use rx_bevy_operator::Operator;
+use rx_bevy_observable::{Forwarder, Observable, Observer, Operator, Subscriber};
 
 pub struct LiftOperator<In, InError, OutObservable, Lifter, ErrorLifter> {
 	pub lifter: Lifter,

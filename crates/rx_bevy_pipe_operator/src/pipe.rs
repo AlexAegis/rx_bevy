@@ -1,5 +1,4 @@
-use rx_bevy_observable::{Forwarder, Observable, Observer};
-use rx_bevy_operator::Operator;
+use rx_bevy_observable::{Forwarder, Observable, Observer, Operator};
 
 pub struct Pipe<Source, PipeOp> {
 	pub(crate) source_observable: Source,
@@ -69,12 +68,12 @@ where
 
 // TODO: Do something with this
 #[derive(Clone)]
-pub enum OperatorPipe<Prev, Op> {
+pub enum OperatorChain<Prev, Op> {
 	Root(Op),
 	Next(Prev, Op),
 }
 
-impl<Prev, Op> OperatorPipe<Prev, Op>
+impl<Prev, Op> OperatorChain<Prev, Op>
 where
 	Op: Operator,
 	Op::Fw: 'static,
@@ -84,17 +83,17 @@ where
 	}
 
 	#[inline]
-	pub fn pipe<NextOp>(self, operator: NextOp) -> OperatorPipe<Self, NextOp>
+	pub fn pipe<NextOp>(self, operator: NextOp) -> OperatorChain<Self, NextOp>
 	where
 		NextOp: Operator,
 		NextOp::Fw:
 			Forwarder<In = <Op::Fw as Forwarder>::Out, InError = <Op::Fw as Forwarder>::OutError>,
 	{
-		OperatorPipe::Next(self, operator)
+		OperatorChain::Next(self, operator)
 	}
 }
 
-impl<Prev, Op> Operator for OperatorPipe<Prev, Op>
+impl<Prev, Op> Operator for OperatorChain<Prev, Op>
 where
 	Op: Operator,
 	Op::Fw: 'static,
@@ -109,8 +108,8 @@ where
 		destination: Destination,
 	) -> rx_bevy_observable::Subscriber<Self::Fw, Destination> {
 		let operator = match self {
-			OperatorPipe::Root(op) => op,
-			OperatorPipe::Next(_prev, op) => op,
+			OperatorChain::Root(op) => op,
+			OperatorChain::Next(_prev, op) => op,
 		};
 
 		operator.operator_subscribe(destination)

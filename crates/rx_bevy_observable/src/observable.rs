@@ -11,3 +11,8 @@ pub trait Observable {
 		observer: Destination,
 	) -> Self::Subscription;
 }
+
+pub trait HasObservableOutput {
+	type Out;
+	type Error;
+}

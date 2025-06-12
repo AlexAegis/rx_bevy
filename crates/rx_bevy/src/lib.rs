@@ -1,5 +1,4 @@
 pub use rx_bevy_observable::*;
-pub use rx_bevy_operator::*;
 
 // Observables
 #[cfg(feature = "observable_of")]
@@ -41,7 +40,6 @@ pub use rx_bevy_subject_replay::*;
 
 pub mod prelude {
 	pub use rx_bevy_observable::prelude::*;
-	pub use rx_bevy_operator::prelude::*;
 
 	// Observables
 	#[cfg(feature = "observable_of")]
