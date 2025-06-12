@@ -1,9 +1,6 @@
 // The implementation is in a separate file so it's easier to search for it
 mod switch_map;
 
-mod composite_operator;
-pub use composite_operator::*;
-
 pub use switch_map::*;
 
 #[cfg(feature = "pipe")]
