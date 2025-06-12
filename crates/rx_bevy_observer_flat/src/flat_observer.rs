@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observable, Observer, Subscription};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer, Subscription};
 use rx_bevy_observable_flat::ForwardFlattener;
 use rx_bevy_observer_shared::SharedObserver;
 
@@ -43,7 +43,7 @@ where
 impl<InObservable, InError> ForwardFlattener for SwitchFlattener<InObservable, InError>
 where
 	InObservable: Observable,
-	InError: Into<InObservable::Error>,
+	InError: Into<InObservable::OutError>,
 {
 	type InObservable = InObservable;
 	type InError = InError;
@@ -51,8 +51,8 @@ where
 	fn flatten_next<
 		Destination: 'static
 			+ Observer<
-				In = <Self::InObservable as Observable>::Out,
-				Error = <Self::InObservable as Observable>::Error,
+				In = <Self::InObservable as ObservableOutput>::Out,
+				Error = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -73,8 +73,8 @@ where
 	fn error_forward<
 		Destination: 'static
 			+ Observer<
-				In = <Self::InObservable as Observable>::Out,
-				Error = <Self::InObservable as Observable>::Error,
+				In = <Self::InObservable as ObservableOutput>::Out,
+				Error = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -92,8 +92,8 @@ where
 	fn complete_forward<
 		Destination: 'static
 			+ Observer<
-				In = <Self::InObservable as Observable>::Out,
-				Error = <Self::InObservable as Observable>::Error,
+				In = <Self::InObservable as ObservableOutput>::Out,
+				Error = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -113,7 +113,7 @@ pub struct FlatObserver<InnerObservable, InnerSubscriber, Destination>
 where
 	InnerObservable: Observable,
 	InnerSubscriber: Subscription,
-	Destination: Observer<In = InnerObservable::Out, Error = InnerObservable::Error>,
+	Destination: Observer<In = InnerObservable::Out, Error = InnerObservable::OutError>,
 {
 	shared_observer: SharedObserver<Destination>,
 	inner_subscriber: Option<InnerSubscriber>,
@@ -126,7 +126,7 @@ impl<InnerObservable, InnerSubscriber, Destination>
 where
 	InnerObservable: Observable,
 	InnerSubscriber: Subscription,
-	Destination: Observer<In = InnerObservable::Out, Error = InnerObservable::Error>,
+	Destination: Observer<In = InnerObservable::Out, Error = InnerObservable::OutError>,
 {
 	pub fn new(shared_observer: SharedObserver<Destination>) -> Self {
 		Self {
@@ -144,11 +144,11 @@ where
 	InnerObservable: Observable<Subscription = InnerSubscription>,
 	InnerSubscription: Subscription,
 	InnerObservable::Out: 'static,
-	InnerObservable::Error: 'static,
-	Destination: 'static + Observer<In = InnerObservable::Out, Error = InnerObservable::Error>,
+	InnerObservable::OutError: 'static,
+	Destination: 'static + Observer<In = InnerObservable::Out, Error = InnerObservable::OutError>,
 {
 	type In = InnerObservable;
-	type Error = InnerObservable::Error;
+	type Error = InnerObservable::OutError;
 
 	fn next(&mut self, mut next: Self::In) {
 		// TODO: This is a switching mechanic, so maybe it should a SwitchingFlatObserver?

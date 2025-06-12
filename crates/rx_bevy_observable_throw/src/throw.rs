@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer};
 
 /// Observable creator for [ThrowObservable]
 pub fn throw<Error>(error: Error) -> ThrowObservable<Error>
@@ -8,13 +8,18 @@ where
 	ThrowObservable::new(error)
 }
 
-impl<Error> Observable for ThrowObservable<Error>
+impl<Error> ObservableOutput for ThrowObservable<Error>
 where
 	Error: Clone,
 {
 	type Out = ();
-	type Error = Error;
+	type OutError = Error;
+}
 
+impl<Error> Observable for ThrowObservable<Error>
+where
+	Error: Clone,
+{
 	type Subscription = ();
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]

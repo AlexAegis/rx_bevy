@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, Observer, Operator, Subscriber};
+use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, Operator, Subscriber};
 
 #[derive(Debug)]
 pub struct IdentityOperator<In, Error> {
@@ -12,7 +12,10 @@ impl<In, Error> Operator for IdentityOperator<In, Error> {
 
 	fn operator_subscribe<
 		Destination: 'static
-			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
+			+ Observer<
+				In = <Self::Fw as ObservableOutput>::Out,
+				Error = <Self::Fw as ObservableOutput>::OutError,
+			>,
 	>(
 		&mut self,
 		destination: Destination,
@@ -21,11 +24,14 @@ impl<In, Error> Operator for IdentityOperator<In, Error> {
 	}
 }
 
+impl<In, Error> ObservableOutput for IdentityOperator<In, Error> {
+	type Out = In;
+	type OutError = Error;
+}
+
 impl<In, Error> Forwarder for IdentityOperator<In, Error> {
 	type In = In;
-	type Out = In;
 	type InError = Error;
-	type OutError = Error;
 
 	#[inline]
 	fn next_forward<Destination: Observer<In = In>>(

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, Observable, Observer, Operator, Subscriber};
+use rx_bevy_observable::{Forwarder, Observable, ObservableOutput, Observer, Operator, Subscriber};
 
 pub struct LiftOperator<In, InError, OutObservable, Lifter, ErrorLifter> {
 	pub lifter: Lifter,
@@ -13,14 +13,17 @@ impl<In, InError, OutObservable, Lifter, ErrorLifter> Operator
 	for LiftOperator<In, InError, OutObservable, Lifter, ErrorLifter>
 where
 	Lifter: Clone + Fn(In) -> OutObservable,
-	ErrorLifter: Clone + Fn(InError) -> Option<<OutObservable as Observable>::Error>,
+	ErrorLifter: Clone + Fn(InError) -> Option<<OutObservable as ObservableOutput>::OutError>,
 	OutObservable: Observable,
 {
 	type Fw = LiftForwarder<In, InError, OutObservable, Lifter, ErrorLifter>;
 
 	fn operator_subscribe<
 		Destination: 'static
-			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
+			+ Observer<
+				In = <Self::Fw as ObservableOutput>::Out,
+				Error = <Self::Fw as ObservableOutput>::OutError,
+			>,
 	>(
 		&mut self,
 		destination: Destination,
@@ -50,17 +53,26 @@ impl<In, InError, Out, Lifter, ErrorLifter> LiftForwarder<In, InError, Out, Lift
 	}
 }
 
+impl<In, InError, OutObservable, Lifter, ErrorLifter> ObservableOutput
+	for LiftForwarder<In, InError, OutObservable, Lifter, ErrorLifter>
+where
+	Lifter: Fn(In) -> OutObservable,
+	ErrorLifter: Clone + Fn(InError) -> Option<<OutObservable as ObservableOutput>::OutError>,
+	OutObservable: Observable,
+{
+	type Out = OutObservable;
+	type OutError = <OutObservable as ObservableOutput>::OutError;
+}
+
 impl<In, InError, OutObservable, Lifter, ErrorLifter> Forwarder
 	for LiftForwarder<In, InError, OutObservable, Lifter, ErrorLifter>
 where
 	Lifter: Fn(In) -> OutObservable,
-	ErrorLifter: Clone + Fn(InError) -> Option<<OutObservable as Observable>::Error>,
+	ErrorLifter: Clone + Fn(InError) -> Option<<OutObservable as ObservableOutput>::OutError>,
 	OutObservable: Observable,
 {
 	type In = In;
 	type InError = InError;
-	type Out = OutObservable;
-	type OutError = <OutObservable as Observable>::Error;
 
 	#[inline]
 	fn next_forward<Destination: Observer<In = OutObservable>>(

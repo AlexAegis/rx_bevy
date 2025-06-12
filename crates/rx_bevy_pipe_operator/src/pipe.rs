@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Forwarder, Observable, Observer, Operator};
+use rx_bevy_observable::{Forwarder, Observable, ObservableOutput, Observer, Operator};
 
 pub struct Pipe<Source, PipeOp> {
 	pub(crate) source_observable: Source,
@@ -35,7 +35,7 @@ impl<Source, Op> Pipe<Source, Op>
 where
 	Op: Operator,
 	Op::Fw: 'static,
-	Source: Observable<Out = <Op::Fw as Forwarder>::In, Error = <Op::Fw as Forwarder>::InError>,
+	Source: Observable<Out = <Op::Fw as Forwarder>::In, OutError = <Op::Fw as Forwarder>::InError>,
 {
 	#[inline]
 	pub fn pipe<NextOp>(self, operator: NextOp) -> Pipe<Self, NextOp>
@@ -46,18 +46,26 @@ where
 	}
 }
 
+impl<Source, Op> ObservableOutput for Pipe<Source, Op>
+where
+	Op: Operator,
+	Op::Fw: 'static,
+	Source: Observable<Out = <Op::Fw as Forwarder>::In, OutError = <Op::Fw as Forwarder>::InError>,
+{
+	type Out = <Op::Fw as ObservableOutput>::Out;
+	type OutError = <Op::Fw as ObservableOutput>::OutError;
+}
+
 impl<Source, Op> Observable for Pipe<Source, Op>
 where
 	Op: Operator,
 	Op::Fw: 'static,
-	Source: Observable<Out = <Op::Fw as Forwarder>::In, Error = <Op::Fw as Forwarder>::InError>,
+	Source: Observable<Out = <Op::Fw as Forwarder>::In, OutError = <Op::Fw as Forwarder>::InError>,
 {
-	type Out = <Op::Fw as Forwarder>::Out;
-	type Error = <Op::Fw as Forwarder>::OutError;
 	type Subscription = <Source as Observable>::Subscription;
 
 	#[inline]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
@@ -86,8 +94,10 @@ where
 	pub fn pipe<NextOp>(self, operator: NextOp) -> OperatorChain<Self, NextOp>
 	where
 		NextOp: Operator,
-		NextOp::Fw:
-			Forwarder<In = <Op::Fw as Forwarder>::Out, InError = <Op::Fw as Forwarder>::OutError>,
+		NextOp::Fw: Forwarder<
+				In = <Op::Fw as ObservableOutput>::Out,
+				InError = <Op::Fw as ObservableOutput>::OutError,
+			>,
 	{
 		OperatorChain::Next(self, operator)
 	}
@@ -102,7 +112,10 @@ where
 
 	fn operator_subscribe<
 		Destination: 'static
-			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
+			+ Observer<
+				In = <Self::Fw as ObservableOutput>::Out,
+				Error = <Self::Fw as ObservableOutput>::OutError,
+			>,
 	>(
 		&mut self,
 		destination: Destination,

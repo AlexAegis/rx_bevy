@@ -1,4 +1,4 @@
-use crate::{Forwarder, Observer, Subscriber};
+use crate::{Forwarder, ObservableOutput, Observer, Subscriber};
 
 // OperatorIO OperatorInstanceFactory
 
@@ -10,7 +10,10 @@ pub trait Operator {
 
 	fn operator_subscribe<
 		Destination: 'static
-			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
+			+ Observer<
+				In = <Self::Fw as ObservableOutput>::Out,
+				Error = <Self::Fw as ObservableOutput>::OutError,
+			>,
 	>(
 		&mut self,
 		destination: Destination,

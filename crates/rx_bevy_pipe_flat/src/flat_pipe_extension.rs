@@ -5,7 +5,7 @@ use crate::FlatPipe;
 
 pub trait ObservableExtensionFlatPipe<Flattener>: Observable + Sized
 where
-	Self: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
+	Self: Observable<Out = Flattener::InObservable, OutError = Flattener::InError>,
 	Flattener: ForwardFlattener,
 {
 	fn flat(self, flattener: Flattener) -> FlatPipe<Self, Flattener>
@@ -18,7 +18,7 @@ where
 
 impl<T, Flattener> ObservableExtensionFlatPipe<Flattener> for T
 where
-	Self: Observable<Out = Flattener::InObservable, Error = Flattener::InError>,
+	Self: Observable<Out = Flattener::InObservable, OutError = Flattener::InError>,
 	Flattener: ForwardFlattener,
 {
 }

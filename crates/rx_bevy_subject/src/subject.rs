@@ -4,7 +4,7 @@ use std::{
 	rc::{Rc, Weak},
 };
 
-use rx_bevy_observable::{DynForwarder, Observable, Observer, Subscription};
+use rx_bevy_observable::{DynForwarder, Observable, ObservableOutput, Observer, Subscription};
 
 use crate::MulticastObserver;
 
@@ -20,11 +20,14 @@ impl<T, Error> SubjectConnector<T, Error> {
 	}
 }
 
+impl<T, Error> ObservableOutput for SubjectConnector<T, Error> {
+	type Out = T;
+	type OutError = Error;
+}
+
 impl<T, Error> DynForwarder for SubjectConnector<T, Error> {
 	type In = T;
-	type Out = T;
 	type InError = Error;
-	type OutError = Error;
 
 	#[inline]
 	fn next_forward(
@@ -93,18 +96,24 @@ impl<T, Error> Subject<T, Error> {
 	}
 }
 
-impl<T, Error> Observable for Subject<T, Error>
+impl<T, Error> ObservableOutput for Subject<T, Error>
 where
 	T: 'static,
 	Error: 'static,
 {
 	type Out = T;
-	type Error = Error;
+	type OutError = Error;
+}
 
+impl<T, Error> Observable for Subject<T, Error>
+where
+	T: 'static,
+	Error: 'static,
+{
 	type Subscription = SubjectSubscription<T, Error>;
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {

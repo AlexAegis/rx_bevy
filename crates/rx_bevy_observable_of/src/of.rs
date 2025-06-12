@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer};
 
 /// Observable creator for [OfObservable]
 pub fn of<T>(value: T) -> OfObservable<T>
@@ -8,13 +8,18 @@ where
 	OfObservable::new(value)
 }
 
-impl<Out> Observable for OfObservable<Out>
+impl<Out> ObservableOutput for OfObservable<Out>
 where
 	Out: Clone,
 {
 	type Out = Out;
-	type Error = ();
+	type OutError = ();
+}
 
+impl<Out> Observable for OfObservable<Out>
+where
+	Out: Clone,
+{
 	type Subscription = ();
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]

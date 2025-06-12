@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer};
 use rx_bevy_subject::{Subject, SubjectSubscription};
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -56,17 +56,24 @@ where
 	}
 }
 
-impl<T, Error> Observable for BehaviorSubject<T, Error>
+impl<T, Error> ObservableOutput for BehaviorSubject<T, Error>
 where
 	T: Clone + 'static,
 	Error: Clone + 'static,
 {
 	type Out = T;
-	type Error = Error;
+	type OutError = Error;
+}
+
+impl<T, Error> Observable for BehaviorSubject<T, Error>
+where
+	T: Clone + 'static,
+	Error: Clone + 'static,
+{
 	type Subscription = SubjectSubscription<T, Error>;
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {

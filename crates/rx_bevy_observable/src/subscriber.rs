@@ -1,10 +1,8 @@
-use crate::Observer;
+use crate::{ObservableOutput, Observer};
 
-pub trait Forwarder {
+pub trait Forwarder: ObservableOutput {
 	type In;
-	type Out;
 	type InError;
-	type OutError;
 
 	fn next_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
@@ -27,11 +25,9 @@ pub trait Forwarder {
 	}
 }
 
-pub trait DynForwarder {
+pub trait DynForwarder: ObservableOutput {
 	type In;
-	type Out;
 	type InError;
-	type OutError;
 
 	fn next_forward(
 		&mut self,

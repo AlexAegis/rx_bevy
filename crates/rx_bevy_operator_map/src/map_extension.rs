@@ -7,7 +7,7 @@ pub trait ObservableExtensionMap<Out>: Observable<Out = Out> + Sized {
 	fn map<NextOut, F: Clone + Fn(Out) -> NextOut>(
 		self,
 		transform: F,
-	) -> Pipe<Self, MapOperator<Out, NextOut, F, Self::Error>> {
+	) -> Pipe<Self, MapOperator<Out, NextOut, F, Self::OutError>> {
 		Pipe::new(self, MapOperator::new(transform))
 	}
 }

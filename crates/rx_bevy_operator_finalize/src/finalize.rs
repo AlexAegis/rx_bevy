@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, Observer, Operator, Subscriber};
+use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, Operator, Subscriber};
 
 #[derive(Debug)]
 pub struct FinalizeOperator<In, Callback, Error>
@@ -19,7 +19,10 @@ where
 
 	fn operator_subscribe<
 		Destination: 'static
-			+ Observer<In = <Self::Fw as Forwarder>::Out, Error = <Self::Fw as Forwarder>::OutError>,
+			+ Observer<
+				In = <Self::Fw as ObservableOutput>::Out,
+				Error = <Self::Fw as ObservableOutput>::OutError,
+			>,
 	>(
 		&mut self,
 		destination: Destination,
@@ -42,14 +45,20 @@ where
 	_phantom_data: PhantomData<(In, Error)>,
 }
 
+impl<In, Callback, Error> ObservableOutput for FinalizeOperatorForwarder<In, Callback, Error>
+where
+	Callback: FnOnce(),
+{
+	type Out = In;
+	type OutError = Error;
+}
+
 impl<In, Callback, Error> Forwarder for FinalizeOperatorForwarder<In, Callback, Error>
 where
 	Callback: FnOnce(),
 {
 	type In = In;
-	type Out = In;
 	type InError = Error;
-	type OutError = Error;
 
 	#[inline]
 	fn next_forward<Destination: Observer<In = In>>(

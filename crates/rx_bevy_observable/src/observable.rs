@@ -1,18 +1,15 @@
 use crate::{Observer, Subscription};
 
-pub trait Observable {
+pub trait ObservableOutput {
 	type Out;
-	type Error;
+	type OutError;
+}
 
+pub trait Observable: ObservableOutput {
 	type Subscription: Subscription + 'static;
 
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::Error>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
 		&mut self,
 		observer: Destination,
 	) -> Self::Subscription;
-}
-
-pub trait HasObservableOutput {
-	type Out;
-	type Error;
 }

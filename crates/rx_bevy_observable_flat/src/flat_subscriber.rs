@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, Observer};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer};
 use rx_bevy_observer_shared::SharedObserver;
 
 pub trait ForwardFlattener {
@@ -8,8 +8,8 @@ pub trait ForwardFlattener {
 	fn flatten_next<
 		Destination: 'static
 			+ Observer<
-				In = <Self::InObservable as Observable>::Out,
-				Error = <Self::InObservable as Observable>::Error,
+				In = <Self::InObservable as ObservableOutput>::Out,
+				Error = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -20,8 +20,8 @@ pub trait ForwardFlattener {
 	fn error_forward<
 		Destination: 'static
 			+ Observer<
-				In = <Self::InObservable as Observable>::Out,
-				Error = <Self::InObservable as Observable>::Error,
+				In = <Self::InObservable as ObservableOutput>::Out,
+				Error = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -33,8 +33,8 @@ pub trait ForwardFlattener {
 	fn complete_forward<
 		Destination: 'static
 			+ Observer<
-				In = <Self::InObservable as Observable>::Out,
-				Error = <Self::InObservable as Observable>::Error,
+				In = <Self::InObservable as ObservableOutput>::Out,
+				Error = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -58,8 +58,8 @@ impl<Fw, Destination> FlatSubscriber<Fw, Destination>
 where
 	Fw: ForwardFlattener,
 	Destination: Observer<
-			In = <Fw::InObservable as Observable>::Out,
-			Error = <Fw::InObservable as Observable>::Error,
+			In = <Fw::InObservable as ObservableOutput>::Out,
+			Error = <Fw::InObservable as ObservableOutput>::OutError,
 		>,
 {
 	pub fn new(destination: Destination, forwarder: Fw) -> Self {
@@ -76,8 +76,8 @@ where
 	Fw: ForwardFlattener,
 	Destination: 'static
 		+ Observer<
-			In = <Fw::InObservable as Observable>::Out,
-			Error = <Fw::InObservable as Observable>::Error,
+			In = <Fw::InObservable as ObservableOutput>::Out,
+			Error = <Fw::InObservable as ObservableOutput>::OutError,
 		>,
 {
 	type In = Fw::InObservable;

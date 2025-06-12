@@ -4,7 +4,7 @@ use rx_bevy_pipe_operator::Pipe;
 use crate::IdentityOperator;
 
 pub trait ObservableExtensionIdentity<Out>: Observable<Out = Out> + Sized {
-	fn identity(self) -> Pipe<Self, IdentityOperator<Out, Self::Error>> {
+	fn identity(self) -> Pipe<Self, IdentityOperator<Out, Self::OutError>> {
 		Pipe::new(self, IdentityOperator::new())
 	}
 }
