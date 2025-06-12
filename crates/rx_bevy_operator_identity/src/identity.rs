@@ -10,33 +10,54 @@ pub struct IdentityOperator<In, InError> {
 }
 
 impl<In, InError> Operator for IdentityOperator<In, InError> {
-	type Fw = Self;
+	type Fw = IdentityForwarder<In, InError>;
 
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
-				In = <Self::Fw as ObservableOutput>::Out,
-				InError = <Self::Fw as ObservableOutput>::OutError,
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
 		destination: Destination,
 	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(destination, self.clone())
+		Subscriber::new(destination, Self::Fw::default())
 	}
 }
 
-impl<In, InError> ObservableOutput for IdentityOperator<In, InError> {
+impl<In, InError> Default for IdentityOperator<In, InError> {
+	fn default() -> Self {
+		Self {
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+#[derive(Debug)]
+pub struct IdentityForwarder<In, InError> {
+	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError> Default for IdentityForwarder<In, InError> {
+	fn default() -> Self {
+		Self {
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError> ObservableOutput for IdentityForwarder<In, InError> {
 	type Out = In;
 	type OutError = InError;
 }
 
-impl<In, InError> ObserverInput for IdentityOperator<In, InError> {
+impl<In, InError> ObserverInput for IdentityForwarder<In, InError> {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError> Forwarder for IdentityOperator<In, InError> {
+impl<In, InError> Forwarder for IdentityForwarder<In, InError> {
 	#[inline]
 	fn next_forward<Destination: Observer<In = In>>(
 		&mut self,
@@ -53,14 +74,6 @@ impl<In, InError> Forwarder for IdentityOperator<In, InError> {
 		destination: &mut Destination,
 	) {
 		destination.error(error);
-	}
-}
-
-impl<In, InError> Default for IdentityOperator<In, InError> {
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
 	}
 }
 

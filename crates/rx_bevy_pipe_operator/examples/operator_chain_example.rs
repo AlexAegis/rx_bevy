@@ -4,6 +4,10 @@ use rx_bevy::prelude::*;
 fn main() {
 	let _a = of(20);
 
+	// let a = MapOperator::new(|i: i32| i + 1);
+
+	// OperatorChain::Root(IdentityOperator::default());
+
 	//of(1)
 	//	.pipe(OperatorPipe::new(MapOperator::new(|i| i * 2)))
 	//	.map(|i| i + 1)

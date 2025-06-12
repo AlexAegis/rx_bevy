@@ -4,8 +4,11 @@ use rx_bevy_observable::{
 	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
 };
 
-pub struct MapOperator<In, Out, F, Error> {
-	pub mapper: F,
+pub struct MapOperator<In, Out, Mapper, Error>
+where
+	Mapper: Fn(In) -> Out,
+{
+	pub mapper: Mapper,
 	pub _phantom_data: PhantomData<(In, Out, Error)>,
 }
 
@@ -18,8 +21,8 @@ where
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
-				In = <Self::Fw as ObservableOutput>::Out,
-				InError = <Self::Fw as ObservableOutput>::OutError,
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -29,14 +32,20 @@ where
 	}
 }
 
-pub struct MapForwarder<In, Out, F, Error> {
-	pub mapper: F,
+pub struct MapForwarder<In, Out, Mapper, Error>
+where
+	Mapper: Fn(In) -> Out,
+{
+	pub mapper: Mapper,
 	pub index: u32,
 	pub _phantom_data: PhantomData<(In, Out, Error)>,
 }
 
-impl<In, Out, F, Error> MapForwarder<In, Out, F, Error> {
-	pub fn new(mapper: F) -> Self {
+impl<In, Out, Mapper, Error> MapForwarder<In, Out, Mapper, Error>
+where
+	Mapper: Fn(In) -> Out,
+{
+	pub fn new(mapper: Mapper) -> Self {
 		Self {
 			mapper,
 			index: 0,
@@ -53,17 +62,17 @@ where
 	type OutError = Error;
 }
 
-impl<In, Out, F, Error> ObserverInput for MapForwarder<In, Out, F, Error>
+impl<In, Out, Mapper, Error> ObserverInput for MapForwarder<In, Out, Mapper, Error>
 where
-	F: Fn(In) -> Out,
+	Mapper: Fn(In) -> Out,
 {
 	type In = In;
 	type InError = Error;
 }
 
-impl<In, Out, F, Error> Forwarder for MapForwarder<In, Out, F, Error>
+impl<In, Out, Mapper, Error> Forwarder for MapForwarder<In, Out, Mapper, Error>
 where
-	F: Fn(In) -> Out,
+	Mapper: Fn(In) -> Out,
 {
 	#[inline]
 	fn next_forward<Destination: Observer<In = Out>>(
@@ -86,8 +95,11 @@ where
 	}
 }
 
-impl<In, Out, F, Error> MapOperator<In, Out, F, Error> {
-	pub fn new(transform: F) -> Self {
+impl<In, Out, Mapper, Error> MapOperator<In, Out, Mapper, Error>
+where
+	Mapper: Fn(In) -> Out,
+{
+	pub fn new(transform: Mapper) -> Self {
 		Self {
 			mapper: transform,
 			_phantom_data: PhantomData,
@@ -95,9 +107,9 @@ impl<In, Out, F, Error> MapOperator<In, Out, F, Error> {
 	}
 }
 
-impl<In, Out, F, Error> Clone for MapOperator<In, Out, F, Error>
+impl<In, Out, Mapper, Error> Clone for MapOperator<In, Out, Mapper, Error>
 where
-	F: Clone,
+	Mapper: Clone + Fn(In) -> Out,
 {
 	fn clone(&self) -> Self {
 		Self {

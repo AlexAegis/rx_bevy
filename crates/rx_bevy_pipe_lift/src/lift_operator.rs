@@ -23,8 +23,8 @@ where
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
-				In = <Self::Fw as ObservableOutput>::Out,
-				InError = <Self::Fw as ObservableOutput>::OutError,
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,

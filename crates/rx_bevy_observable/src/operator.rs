@@ -18,7 +18,6 @@ pub trait Operator {
 	) -> Subscriber<Self::Fw, Destination>;
 }
 
-/*
 impl<T> ObserverInput for T
 where
 	T: Operator,
@@ -34,4 +33,3 @@ where
 	type Out = <T::Fw as ObservableOutput>::Out;
 	type OutError = <T::Fw as ObservableOutput>::OutError;
 }
-*/

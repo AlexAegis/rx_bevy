@@ -17,23 +17,37 @@ impl<In, InError, Callback> Operator for TapOperator<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
-	type Fw = Self;
+	type Fw = TapForwarder<In, InError, Callback>;
 
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
-				In = <Self::Fw as ObservableOutput>::Out,
-				InError = <Self::Fw as ObservableOutput>::OutError,
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
 		destination: Destination,
 	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(destination, self.clone())
+		Subscriber::new(
+			destination,
+			TapForwarder {
+				callback: self.callback.clone(),
+				_phantom_data: PhantomData,
+			},
+		)
 	}
 }
 
-impl<In, InError, Callback> ObservableOutput for TapOperator<In, InError, Callback>
+pub struct TapForwarder<In, InError, Callback>
+where
+	Callback: for<'a> Fn(&'a In),
+{
+	callback: Callback,
+	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError, Callback> ObservableOutput for TapForwarder<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
@@ -41,7 +55,7 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError, Callback> ObserverInput for TapOperator<In, InError, Callback>
+impl<In, InError, Callback> ObserverInput for TapForwarder<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
@@ -49,7 +63,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Callback> Forwarder for TapOperator<In, InError, Callback>
+impl<In, InError, Callback> Forwarder for TapForwarder<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {

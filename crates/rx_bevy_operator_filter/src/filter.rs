@@ -13,23 +13,34 @@ impl<In, Filter, Error> Operator for FilterOperator<In, Filter, Error>
 where
 	Filter: Clone + for<'a> Fn(&'a In) -> bool,
 {
-	type Fw = Self;
+	type Fw = FilterForwarder<In, Filter, Error>;
 
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
-				In = <Self::Fw as ObservableOutput>::Out,
-				InError = <Self::Fw as ObservableOutput>::OutError,
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
 		destination: Destination,
 	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(destination, self.clone())
+		Subscriber::new(
+			destination,
+			FilterForwarder {
+				filter: self.filter.clone(),
+				_phantom_data: PhantomData,
+			},
+		)
 	}
 }
 
-impl<T, Filter, Error> ObservableOutput for FilterOperator<T, Filter, Error>
+pub struct FilterForwarder<In, Filter, Error> {
+	pub filter: Filter,
+	pub _phantom_data: PhantomData<(In, Error)>,
+}
+
+impl<T, Filter, Error> ObservableOutput for FilterForwarder<T, Filter, Error>
 where
 	Filter: for<'a> Fn(&'a T) -> bool,
 {
@@ -37,7 +48,7 @@ where
 	type OutError = Error;
 }
 
-impl<In, Filter, Error> ObserverInput for FilterOperator<In, Filter, Error>
+impl<In, Filter, Error> ObserverInput for FilterForwarder<In, Filter, Error>
 where
 	Filter: for<'a> Fn(&'a In) -> bool,
 {
@@ -45,7 +56,7 @@ where
 	type InError = Error;
 }
 
-impl<T, Filter, Error> Forwarder for FilterOperator<T, Filter, Error>
+impl<T, Filter, Error> Forwarder for FilterForwarder<T, Filter, Error>
 where
 	Filter: for<'a> Fn(&'a T) -> bool,
 {
