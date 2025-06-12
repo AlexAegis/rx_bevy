@@ -1,7 +1,5 @@
-use std::sync::{Arc, Mutex, RwLock};
-
-use rx_bevy_observable::Observer;
-use rx_bevy_observer_shared::{ClosableDestination, SharedObserver};
+use rx_bevy_observable::{Observer, ObserverInput};
+use rx_bevy_observer_shared::SharedObserver;
 
 #[derive(Default, Debug)]
 pub struct MockObserver<T, Error> {
@@ -10,15 +8,17 @@ pub struct MockObserver<T, Error> {
 	pub completed: bool,
 }
 
-impl<T, Error> Observer for MockObserver<T, Error> {
+impl<T, Error> ObserverInput for MockObserver<T, Error> {
 	type In = T;
-	type Error = Error;
+	type InError = Error;
+}
 
+impl<T, Error> Observer for MockObserver<T, Error> {
 	fn next(&mut self, next: T) {
 		self.values.push(next);
 	}
 
-	fn error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::InError) {
 		self.errors.push(error);
 	}
 

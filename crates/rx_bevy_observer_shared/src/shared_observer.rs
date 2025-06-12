@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use rx_bevy_observable::Observer;
+use rx_bevy_observable::{Observer, ObserverInput};
 
 pub struct ClosableDestination<Destination>
 where
@@ -69,13 +69,18 @@ where
 	}
 }
 
-impl<Destination> Observer for SharedObserver<Destination>
+impl<Destination> ObserverInput for SharedObserver<Destination>
 where
 	Destination: Observer,
 {
 	type In = Destination::In;
-	type Error = Destination::Error;
+	type InError = Destination::InError;
+}
 
+impl<Destination> Observer for SharedObserver<Destination>
+where
+	Destination: Observer,
+{
 	fn next(&mut self, next: Self::In) {
 		let mut lock = self.destination.lock().expect("lock is poisoned!");
 		if !lock.closed {
@@ -83,7 +88,7 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::InError) {
 		let mut lock = self.destination.lock().expect("lock is poisoned!");
 
 		if !lock.closed {

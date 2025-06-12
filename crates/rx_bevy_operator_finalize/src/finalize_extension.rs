@@ -7,7 +7,7 @@ pub trait ObservableExtensionFinalize<Out>: Observable<Out = Out> + Sized {
 	fn finalize<Callback: Clone + FnOnce()>(
 		self,
 		callback: Callback,
-	) -> Pipe<Self, FinalizeOperator<Out, Callback, Self::OutError>> {
+	) -> Pipe<Self, FinalizeOperator<Out, Self::OutError, Callback>> {
 		Pipe::new(self, FinalizeOperator::new(callback))
 	}
 }

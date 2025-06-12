@@ -4,7 +4,9 @@ use std::{
 	rc::{Rc, Weak},
 };
 
-use rx_bevy_observable::{DynForwarder, Observable, ObservableOutput, Observer, Subscription};
+use rx_bevy_observable::{
+	DynForwarder, Observable, ObservableOutput, Observer, ObserverInput, Subscription,
+};
 
 use crate::MulticastObserver;
 
@@ -25,15 +27,17 @@ impl<T, Error> ObservableOutput for SubjectConnector<T, Error> {
 	type OutError = Error;
 }
 
-impl<T, Error> DynForwarder for SubjectConnector<T, Error> {
+impl<T, Error> ObserverInput for SubjectConnector<T, Error> {
 	type In = T;
 	type InError = Error;
+}
 
+impl<T, Error> DynForwarder for SubjectConnector<T, Error> {
 	#[inline]
 	fn next_forward(
 		&mut self,
 		next: Self::In,
-		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
+		destination: &mut dyn Observer<In = Self::Out, InError = Self::OutError>,
 	) {
 		destination.next(next);
 	}
@@ -42,7 +46,7 @@ impl<T, Error> DynForwarder for SubjectConnector<T, Error> {
 	fn error_forward(
 		&mut self,
 		error: Self::InError,
-		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
+		destination: &mut dyn Observer<In = Self::Out, InError = Self::OutError>,
 	) {
 		destination.error(error);
 	}
@@ -113,7 +117,7 @@ where
 	type Subscription = SubjectSubscription<T, Error>;
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
@@ -126,19 +130,25 @@ where
 	}
 }
 
-impl<T, Error> Observer for Subject<T, Error>
+impl<T, Error> ObserverInput for Subject<T, Error>
 where
 	T: Clone,
 	Error: Clone,
 {
 	type In = T;
-	type Error = Error;
+	type InError = Error;
+}
 
+impl<T, Error> Observer for Subject<T, Error>
+where
+	T: Clone,
+	Error: Clone,
+{
 	fn next(&mut self, next: Self::In) {
 		self.destinations.borrow_mut().next(next);
 	}
 
-	fn error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::InError) {
 		self.destinations.borrow_mut().error(error);
 	}
 

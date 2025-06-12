@@ -23,7 +23,7 @@ where
 	type Subscription = ();
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: Observer<Error = Error>>(
+	fn subscribe<Destination: Observer<InError = Error>>(
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {

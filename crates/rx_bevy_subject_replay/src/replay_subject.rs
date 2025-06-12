@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
-use rx_bevy_observable::{Observable, ObservableOutput, Observer};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput};
 use rx_bevy_subject::{Subject, SubjectSubscription};
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
@@ -25,20 +25,25 @@ where
 	}
 }
 
-impl<const CAPACITY: usize, T, Error> Observer for ReplaySubject<CAPACITY, T, Error>
+impl<const CAPACITY: usize, T, Error> ObserverInput for ReplaySubject<CAPACITY, T, Error>
 where
 	T: Clone,
 	Error: Clone,
 {
 	type In = T;
-	type Error = Error;
-
+	type InError = Error;
+}
+impl<const CAPACITY: usize, T, Error> Observer for ReplaySubject<CAPACITY, T, Error>
+where
+	T: Clone,
+	Error: Clone,
+{
 	fn next(&mut self, next: T) {
 		self.values.borrow_mut().push(next.clone());
 		self.subject.next(next);
 	}
 
-	fn error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::InError) {
 		self.subject.error(error);
 	}
 
@@ -64,7 +69,7 @@ where
 	type Subscription = SubjectSubscription<T, Error>;
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		mut observer: Destination,
 	) -> Self::Subscription {

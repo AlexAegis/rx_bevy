@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::Observer;
+use rx_bevy_observable::{Observer, ObserverInput};
 
 pub struct ObserverCallbacks<OnPush, OnError, OnComplete> {
 	next: OnPush,
@@ -10,19 +10,19 @@ pub struct ObserverCallbacks<OnPush, OnError, OnComplete> {
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 ///
-pub struct FnObserver<In, Error, OnPush, OnError, OnComplete>
+pub struct FnObserver<In, InError, OnPush, OnError, OnComplete>
 where
 	OnPush: Fn(In) -> (),
-	OnError: Fn(Error) -> (),
+	OnError: Fn(InError) -> (),
 	OnComplete: Fn() -> (),
 {
 	next: OnPush,
 	error: OnError,
 	complete: OnComplete,
-	_phantom_data: PhantomData<(In, Error)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, Error, OnPush, OnError, OnComplete> Observer
+impl<In, Error, OnPush, OnError, OnComplete> ObserverInput
 	for FnObserver<In, Error, OnPush, OnError, OnComplete>
 where
 	OnPush: Fn(In) -> (),
@@ -30,13 +30,21 @@ where
 	OnComplete: Fn() -> (),
 {
 	type In = In;
-	type Error = Error;
+	type InError = Error;
+}
 
+impl<In, InError, OnPush, OnError, OnComplete> Observer
+	for FnObserver<In, InError, OnPush, OnError, OnComplete>
+where
+	OnPush: Fn(In) -> (),
+	OnError: Fn(InError) -> (),
+	OnComplete: Fn() -> (),
+{
 	fn next(&mut self, next: In) {
 		(self.next)(next);
 	}
 
-	fn error(&mut self, error: Error) {
+	fn error(&mut self, error: InError) {
 		(self.error)(error);
 	}
 
@@ -45,10 +53,10 @@ where
 	}
 }
 
-impl<In, Error, OnPush, OnError, OnComplete> FnObserver<In, Error, OnPush, OnError, OnComplete>
+impl<In, InError, OnPush, OnError, OnComplete> FnObserver<In, InError, OnPush, OnError, OnComplete>
 where
 	OnPush: Fn(In) -> (),
-	OnError: Fn(Error) -> (),
+	OnError: Fn(InError) -> (),
 	OnComplete: Fn() -> (),
 {
 	pub fn new(next: OnPush, error: OnError, complete: OnComplete) -> Self {

@@ -7,7 +7,7 @@ pub trait ObservableExtensionTap<Out>: Observable<Out = Out> + Sized {
 	fn tap<Callback: Clone + for<'a> Fn(&'a Out)>(
 		self,
 		callback: Callback,
-	) -> Pipe<Self, TapOperator<Out, Callback, Self::OutError>> {
+	) -> Pipe<Self, TapOperator<Out, Self::OutError, Callback>> {
 		Pipe::new(self, TapOperator::new(callback))
 	}
 }

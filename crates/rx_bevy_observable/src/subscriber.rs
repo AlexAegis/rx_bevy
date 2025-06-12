@@ -1,23 +1,20 @@
-use crate::{ObservableOutput, Observer};
+use crate::{ObservableOutput, Observer, ObserverInput};
 
-pub trait Forwarder: ObservableOutput {
-	type In;
-	type InError;
-
-	fn next_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+pub trait Forwarder: ObserverInput + ObservableOutput {
+	fn next_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,
 	);
 
-	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		next: Self::InError,
 		destination: &mut Destination,
 	);
 
 	#[inline]
-	fn complete_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn complete_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: &mut Destination,
 	) {
@@ -25,26 +22,23 @@ pub trait Forwarder: ObservableOutput {
 	}
 }
 
-pub trait DynForwarder: ObservableOutput {
-	type In;
-	type InError;
-
+pub trait DynForwarder: ObserverInput + ObservableOutput {
 	fn next_forward(
 		&mut self,
 		next: Self::In,
-		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
+		destination: &mut dyn Observer<In = Self::Out, InError = Self::OutError>,
 	);
 
 	fn error_forward(
 		&mut self,
 		next: Self::InError,
-		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
+		destination: &mut dyn Observer<In = Self::Out, InError = Self::OutError>,
 	);
 
 	#[inline]
 	fn complete_forward(
 		&mut self,
-		destination: &mut dyn Observer<In = Self::Out, Error = Self::OutError>,
+		destination: &mut dyn Observer<In = Self::Out, InError = Self::OutError>,
 	) {
 		destination.complete();
 	}
@@ -73,15 +67,20 @@ where
 		}
 	}
 }
+impl<Fw, Destination> ObserverInput for Subscriber<Fw, Destination>
+where
+	Fw: Forwarder,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
+{
+	type In = Fw::In;
+	type InError = Fw::InError;
+}
 
 impl<Fw, Destination> Observer for Subscriber<Fw, Destination>
 where
 	Fw: Forwarder,
-	Destination: Observer<In = Fw::Out, Error = Fw::OutError>,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
-	type In = Fw::In;
-	type Error = Fw::InError;
-
 	#[inline]
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed {
@@ -92,7 +91,7 @@ where
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed {
 			self.forwarder.error_forward(error, &mut self.destination);
 		} else {

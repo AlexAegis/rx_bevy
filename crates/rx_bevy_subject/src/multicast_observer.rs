@@ -1,9 +1,9 @@
-use rx_bevy_observable::{DynForwarder, Observer};
+use rx_bevy_observable::{DynForwarder, Observer, ObserverInput};
 use slab::Slab;
 
 pub struct MulticastObserver<Instance: DynForwarder> {
 	pub instance: Instance,
-	pub destination: Slab<Box<dyn Observer<In = Instance::Out, Error = Instance::OutError>>>,
+	pub destination: Slab<Box<dyn Observer<In = Instance::Out, InError = Instance::OutError>>>,
 	pub closed: bool,
 }
 
@@ -20,7 +20,7 @@ where
 	}
 
 	pub fn add_destination<
-		Destination: 'static + Observer<In = Forwarder::Out, Error = Forwarder::OutError>,
+		Destination: 'static + Observer<In = Forwarder::Out, InError = Forwarder::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
@@ -29,15 +29,22 @@ where
 	}
 }
 
-impl<In, Out, InError, F> Observer for MulticastObserver<F>
+impl<In, Out, InError, F> ObserverInput for MulticastObserver<F>
 where
 	F: DynForwarder<In = In, Out = Out, InError = InError>,
 	In: Clone,
 	InError: Clone,
 {
 	type In = In;
-	type Error = InError;
+	type InError = InError;
+}
 
+impl<In, Out, InError, F> Observer for MulticastObserver<F>
+where
+	F: DynForwarder<In = In, Out = Out, InError = InError>,
+	In: Clone,
+	InError: Clone,
+{
 	fn next(&mut self, next: In) {
 		if !self.closed {
 			for (_, destination) in self.destination.iter_mut() {
@@ -47,7 +54,7 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::InError) {
 		if !self.closed {
 			self.closed = true;
 			for (_, destination) in self.destination.iter_mut() {

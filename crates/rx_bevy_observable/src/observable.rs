@@ -8,7 +8,7 @@ pub trait ObservableOutput {
 pub trait Observable: ObservableOutput {
 	type Subscription: Subscription + 'static;
 
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		observer: Destination,
 	) -> Self::Subscription;

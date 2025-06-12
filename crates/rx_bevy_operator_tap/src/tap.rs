@@ -1,17 +1,19 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, Operator, Subscriber};
+use rx_bevy_observable::{
+	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+};
 
 #[derive(Debug)]
-pub struct TapOperator<In, Callback, Error>
+pub struct TapOperator<In, InError, Callback>
 where
 	Callback: for<'a> Fn(&'a In),
 {
 	callback: Callback,
-	_phantom_data: PhantomData<(In, Error)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, Callback, Error> Operator for TapOperator<In, Callback, Error>
+impl<In, InError, Callback> Operator for TapOperator<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
@@ -21,7 +23,7 @@ where
 		Destination: 'static
 			+ Observer<
 				In = <Self::Fw as ObservableOutput>::Out,
-				Error = <Self::Fw as ObservableOutput>::OutError,
+				InError = <Self::Fw as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -31,21 +33,26 @@ where
 	}
 }
 
-impl<In, Callback, Error> ObservableOutput for TapOperator<In, Callback, Error>
+impl<In, InError, Callback> ObservableOutput for TapOperator<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
 	type Out = In;
-	type OutError = Error;
+	type OutError = InError;
 }
 
-impl<In, Callback, Error> Forwarder for TapOperator<In, Callback, Error>
+impl<In, InError, Callback> ObserverInput for TapOperator<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
 	type In = In;
-	type InError = Error;
+	type InError = InError;
+}
 
+impl<In, InError, Callback> Forwarder for TapOperator<In, InError, Callback>
+where
+	Callback: Clone + for<'a> Fn(&'a In),
+{
 	#[inline]
 	fn next_forward<Destination: Observer<In = In>>(
 		&mut self,
@@ -57,7 +64,7 @@ where
 	}
 
 	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		error: Self::InError,
 		destination: &mut Destination,
@@ -66,7 +73,7 @@ where
 	}
 }
 
-impl<In, Callback, Error> TapOperator<In, Callback, Error>
+impl<In, InError, Callback> TapOperator<In, InError, Callback>
 where
 	Callback: for<'a> Fn(&'a In),
 {
@@ -78,7 +85,7 @@ where
 	}
 }
 
-impl<In, Callback, Error> Clone for TapOperator<In, Callback, Error>
+impl<In, InError, Callback> Clone for TapOperator<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {

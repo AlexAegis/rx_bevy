@@ -1,15 +1,17 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, Operator, Subscriber};
+use rx_bevy_observable::{
+	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+};
 
-pub struct FilterOperator<T, Filter, Error> {
+pub struct FilterOperator<In, Filter, Error> {
 	pub filter: Filter,
-	pub _phantom_data: PhantomData<(T, Error)>,
+	pub _phantom_data: PhantomData<(In, Error)>,
 }
 
-impl<T, Filter, Error> Operator for FilterOperator<T, Filter, Error>
+impl<In, Filter, Error> Operator for FilterOperator<In, Filter, Error>
 where
-	Filter: Clone + for<'a> Fn(&'a T) -> bool,
+	Filter: Clone + for<'a> Fn(&'a In) -> bool,
 {
 	type Fw = Self;
 
@@ -17,7 +19,7 @@ where
 		Destination: 'static
 			+ Observer<
 				In = <Self::Fw as ObservableOutput>::Out,
-				Error = <Self::Fw as ObservableOutput>::OutError,
+				InError = <Self::Fw as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -35,13 +37,18 @@ where
 	type OutError = Error;
 }
 
+impl<In, Filter, Error> ObserverInput for FilterOperator<In, Filter, Error>
+where
+	Filter: for<'a> Fn(&'a In) -> bool,
+{
+	type In = In;
+	type InError = Error;
+}
+
 impl<T, Filter, Error> Forwarder for FilterOperator<T, Filter, Error>
 where
 	Filter: for<'a> Fn(&'a T) -> bool,
 {
-	type In = T;
-	type InError = Error;
-
 	#[inline]
 	fn next_forward<Destination: Observer<In = T>>(
 		&mut self,
@@ -54,7 +61,7 @@ where
 	}
 
 	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		error: Self::InError,
 		destination: &mut Destination,

@@ -1,15 +1,24 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use rx_bevy_observable::Observer;
+use rx_bevy_observable::{Observer, ObserverInput};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
-pub struct PrintObserver<T, Error = ()>
+pub struct PrintObserver<In, InError = ()>
 where
-	T: Debug,
-	Error: Debug,
+	In: Debug,
+	InError: Debug,
 {
 	prefix: &'static str,
-	_phantom_data: PhantomData<(T, Error)>,
+	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError> ObserverInput for PrintObserver<In, InError>
+where
+	In: Debug,
+	InError: Debug,
+{
+	type In = In;
+	type InError = InError;
 }
 
 impl<T, Error> Observer for PrintObserver<T, Error>
@@ -17,14 +26,11 @@ where
 	T: Debug,
 	Error: Debug,
 {
-	type In = T;
-	type Error = Error;
-
-	fn next(&mut self, next: T) {
+	fn next(&mut self, next: Self::In) {
 		println!("{} - next: {:?}", self.prefix, next);
 	}
 
-	fn error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::InError) {
 		println!("{} - error: {:?}", self.prefix, error);
 	}
 

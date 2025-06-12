@@ -1,20 +1,22 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, Operator, Subscriber};
+use rx_bevy_observable::{
+	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+};
 
 #[derive(Debug)]
-pub struct IdentityOperator<In, Error> {
-	_phantom_data: PhantomData<(In, Error)>,
+pub struct IdentityOperator<In, InError> {
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, Error> Operator for IdentityOperator<In, Error> {
+impl<In, InError> Operator for IdentityOperator<In, InError> {
 	type Fw = Self;
 
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
 				In = <Self::Fw as ObservableOutput>::Out,
-				Error = <Self::Fw as ObservableOutput>::OutError,
+				InError = <Self::Fw as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -24,15 +26,17 @@ impl<In, Error> Operator for IdentityOperator<In, Error> {
 	}
 }
 
-impl<In, Error> ObservableOutput for IdentityOperator<In, Error> {
+impl<In, InError> ObservableOutput for IdentityOperator<In, InError> {
 	type Out = In;
-	type OutError = Error;
+	type OutError = InError;
 }
 
-impl<In, Error> Forwarder for IdentityOperator<In, Error> {
+impl<In, InError> ObserverInput for IdentityOperator<In, InError> {
 	type In = In;
-	type InError = Error;
+	type InError = InError;
+}
 
+impl<In, InError> Forwarder for IdentityOperator<In, InError> {
 	#[inline]
 	fn next_forward<Destination: Observer<In = In>>(
 		&mut self,
@@ -43,7 +47,7 @@ impl<In, Error> Forwarder for IdentityOperator<In, Error> {
 	}
 
 	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		error: Self::InError,
 		destination: &mut Destination,
@@ -52,7 +56,7 @@ impl<In, Error> Forwarder for IdentityOperator<In, Error> {
 	}
 }
 
-impl<In, Error> IdentityOperator<In, Error> {
+impl<In, InError> IdentityOperator<In, InError> {
 	pub fn new() -> Self {
 		Self {
 			_phantom_data: PhantomData,
@@ -60,7 +64,7 @@ impl<In, Error> IdentityOperator<In, Error> {
 	}
 }
 
-impl<In, Error> Clone for IdentityOperator<In, Error> {
+impl<In, InError> Clone for IdentityOperator<In, InError> {
 	fn clone(&self) -> Self {
 		Self {
 			_phantom_data: PhantomData,

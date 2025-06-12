@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, ObservableOutput, Observer};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput};
 use rx_bevy_observer_shared::SharedObserver;
 
 pub trait ForwardFlattener {
@@ -9,7 +9,7 @@ pub trait ForwardFlattener {
 		Destination: 'static
 			+ Observer<
 				In = <Self::InObservable as ObservableOutput>::Out,
-				Error = <Self::InObservable as ObservableOutput>::OutError,
+				InError = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -21,7 +21,7 @@ pub trait ForwardFlattener {
 		Destination: 'static
 			+ Observer<
 				In = <Self::InObservable as ObservableOutput>::Out,
-				Error = <Self::InObservable as ObservableOutput>::OutError,
+				InError = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -34,7 +34,7 @@ pub trait ForwardFlattener {
 		Destination: 'static
 			+ Observer<
 				In = <Self::InObservable as ObservableOutput>::Out,
-				Error = <Self::InObservable as ObservableOutput>::OutError,
+				InError = <Self::InObservable as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -59,7 +59,7 @@ where
 	Fw: ForwardFlattener,
 	Destination: Observer<
 			In = <Fw::InObservable as ObservableOutput>::Out,
-			Error = <Fw::InObservable as ObservableOutput>::OutError,
+			InError = <Fw::InObservable as ObservableOutput>::OutError,
 		>,
 {
 	pub fn new(destination: Destination, forwarder: Fw) -> Self {
@@ -71,18 +71,28 @@ where
 	}
 }
 
+impl<Fw, Destination> ObserverInput for FlatSubscriber<Fw, Destination>
+where
+	Fw: ForwardFlattener,
+	Destination: 'static
+		+ Observer<
+			In = <Fw::InObservable as ObservableOutput>::Out,
+			InError = <Fw::InObservable as ObservableOutput>::OutError,
+		>,
+{
+	type In = Fw::InObservable;
+	type InError = Fw::InError;
+}
+
 impl<Fw, Destination> Observer for FlatSubscriber<Fw, Destination>
 where
 	Fw: ForwardFlattener,
 	Destination: 'static
 		+ Observer<
 			In = <Fw::InObservable as ObservableOutput>::Out,
-			Error = <Fw::InObservable as ObservableOutput>::OutError,
+			InError = <Fw::InObservable as ObservableOutput>::OutError,
 		>,
 {
-	type In = Fw::InObservable;
-	type Error = Fw::InError;
-
 	#[inline]
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed {
@@ -93,7 +103,7 @@ where
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::Error) {
+	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed {
 			self.forwarder.error_forward(error, &mut self.destination);
 		} else {

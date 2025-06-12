@@ -56,7 +56,7 @@ where
 {
 	type Subscription = Source::Subscription;
 
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {

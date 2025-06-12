@@ -1,27 +1,29 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, Operator, Subscriber};
+use rx_bevy_observable::{
+	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+};
 
 #[derive(Debug)]
-pub struct FinalizeOperator<In, Callback, Error>
+pub struct FinalizeOperator<In, InError, Callback>
 where
 	Callback: FnOnce(),
 {
 	callback: Callback,
-	_phantom_data: PhantomData<(In, Error)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, Callback, Error> Operator for FinalizeOperator<In, Callback, Error>
+impl<In, InError, Callback> Operator for FinalizeOperator<In, InError, Callback>
 where
 	Callback: Clone + FnOnce(),
 {
-	type Fw = FinalizeOperatorForwarder<In, Callback, Error>;
+	type Fw = FinalizeOperatorForwarder<In, InError, Callback>;
 
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
 				In = <Self::Fw as ObservableOutput>::Out,
-				Error = <Self::Fw as ObservableOutput>::OutError,
+				InError = <Self::Fw as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -37,29 +39,34 @@ where
 	}
 }
 
-pub struct FinalizeOperatorForwarder<In, Callback, Error>
+pub struct FinalizeOperatorForwarder<In, InError, Callback>
 where
 	Callback: FnOnce(),
 {
 	callback: Option<Callback>,
-	_phantom_data: PhantomData<(In, Error)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, Callback, Error> ObservableOutput for FinalizeOperatorForwarder<In, Callback, Error>
+impl<In, InError, Callback> ObservableOutput for FinalizeOperatorForwarder<In, InError, Callback>
 where
 	Callback: FnOnce(),
 {
 	type Out = In;
-	type OutError = Error;
+	type OutError = InError;
 }
 
-impl<In, Callback, Error> Forwarder for FinalizeOperatorForwarder<In, Callback, Error>
+impl<In, InError, Callback> ObserverInput for FinalizeOperatorForwarder<In, InError, Callback>
 where
 	Callback: FnOnce(),
 {
 	type In = In;
-	type InError = Error;
+	type InError = InError;
+}
 
+impl<In, InError, Callback> Forwarder for FinalizeOperatorForwarder<In, InError, Callback>
+where
+	Callback: FnOnce(),
+{
 	#[inline]
 	fn next_forward<Destination: Observer<In = In>>(
 		&mut self,
@@ -70,7 +77,7 @@ where
 	}
 
 	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		error: Self::InError,
 		destination: &mut Destination,
@@ -79,7 +86,7 @@ where
 	}
 
 	#[inline]
-	fn complete_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn complete_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: &mut Destination,
 	) {
@@ -90,7 +97,7 @@ where
 	}
 }
 
-impl<In, Callback, Error> FinalizeOperator<In, Callback, Error>
+impl<In, InError, Callback> FinalizeOperator<In, InError, Callback>
 where
 	Callback: FnOnce(),
 {
@@ -102,7 +109,7 @@ where
 	}
 }
 
-impl<In, Callback, Error> Clone for FinalizeOperator<In, Callback, Error>
+impl<In, InError, Callback> Clone for FinalizeOperator<In, InError, Callback>
 where
 	Callback: Clone + FnOnce(),
 {

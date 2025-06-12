@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, Operator, Subscriber};
+use rx_bevy_observable::{
+	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+};
 
 pub struct MapOperator<In, Out, F, Error> {
 	pub mapper: F,
@@ -17,7 +19,7 @@ where
 		Destination: 'static
 			+ Observer<
 				In = <Self::Fw as ObservableOutput>::Out,
-				Error = <Self::Fw as ObservableOutput>::OutError,
+				InError = <Self::Fw as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -51,13 +53,18 @@ where
 	type OutError = Error;
 }
 
-impl<In, Out, F, Error> Forwarder for MapForwarder<In, Out, F, Error>
+impl<In, Out, F, Error> ObserverInput for MapForwarder<In, Out, F, Error>
 where
 	F: Fn(In) -> Out,
 {
 	type In = In;
 	type InError = Error;
+}
 
+impl<In, Out, F, Error> Forwarder for MapForwarder<In, Out, F, Error>
+where
+	F: Fn(In) -> Out,
+{
 	#[inline]
 	fn next_forward<Destination: Observer<In = Out>>(
 		&mut self,
@@ -70,7 +77,7 @@ where
 	}
 
 	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, Error = Self::OutError>>(
+	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		error: Self::InError,
 		destination: &mut Destination,

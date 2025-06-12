@@ -1,4 +1,6 @@
-use rx_bevy_observable::{Forwarder, Observable, ObservableOutput, Observer, Operator};
+use rx_bevy_observable::{
+	Forwarder, Observable, ObservableOutput, Observer, ObserverInput, Operator,
+};
 
 pub struct Pipe<Source, PipeOp> {
 	pub(crate) source_observable: Source,
@@ -35,7 +37,10 @@ impl<Source, Op> Pipe<Source, Op>
 where
 	Op: Operator,
 	Op::Fw: 'static,
-	Source: Observable<Out = <Op::Fw as Forwarder>::In, OutError = <Op::Fw as Forwarder>::InError>,
+	Source: Observable<
+			Out = <Op::Fw as ObserverInput>::In,
+			OutError = <Op::Fw as ObserverInput>::InError,
+		>,
 {
 	#[inline]
 	pub fn pipe<NextOp>(self, operator: NextOp) -> Pipe<Self, NextOp>
@@ -50,7 +55,10 @@ impl<Source, Op> ObservableOutput for Pipe<Source, Op>
 where
 	Op: Operator,
 	Op::Fw: 'static,
-	Source: Observable<Out = <Op::Fw as Forwarder>::In, OutError = <Op::Fw as Forwarder>::InError>,
+	Source: Observable<
+			Out = <Op::Fw as ObserverInput>::In,
+			OutError = <Op::Fw as ObserverInput>::InError,
+		>,
 {
 	type Out = <Op::Fw as ObservableOutput>::Out;
 	type OutError = <Op::Fw as ObservableOutput>::OutError;
@@ -60,12 +68,15 @@ impl<Source, Op> Observable for Pipe<Source, Op>
 where
 	Op: Operator,
 	Op::Fw: 'static,
-	Source: Observable<Out = <Op::Fw as Forwarder>::In, OutError = <Op::Fw as Forwarder>::InError>,
+	Source: Observable<
+			Out = <Op::Fw as ObserverInput>::In,
+			OutError = <Op::Fw as ObserverInput>::InError,
+		>,
 {
 	type Subscription = <Source as Observable>::Subscription;
 
 	#[inline]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, Error = Self::OutError>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
@@ -114,7 +125,7 @@ where
 		Destination: 'static
 			+ Observer<
 				In = <Self::Fw as ObservableOutput>::Out,
-				Error = <Self::Fw as ObservableOutput>::OutError,
+				InError = <Self::Fw as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
