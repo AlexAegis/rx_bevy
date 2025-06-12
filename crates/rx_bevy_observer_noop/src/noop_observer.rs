@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_observable::{Observer, ObserverInput};
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct NoopObserver<In, Error> {
 	_phantom_data: PhantomData<(In, Error)>,
 }
@@ -20,9 +20,9 @@ impl<In, Error> Observer for NoopObserver<In, Error> {
 	fn complete(&mut self) {}
 }
 
-impl<In, Error> NoopObserver<In, Error> {
-	pub fn new() -> Self {
-		NoopObserver {
+impl<In, Error> Default for NoopObserver<In, Error> {
+	fn default() -> Self {
+		Self {
 			_phantom_data: PhantomData,
 		}
 	}

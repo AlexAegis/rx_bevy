@@ -20,7 +20,7 @@ where
 	fn default() -> Self {
 		Self {
 			subject: Subject::default(),
-			values: Rc::new(RefCell::new(ConstGenericRingBuffer::new())),
+			values: Rc::new(RefCell::new(ConstGenericRingBuffer::default())),
 		}
 	}
 }

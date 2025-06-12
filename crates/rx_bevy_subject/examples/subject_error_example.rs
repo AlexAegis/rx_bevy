@@ -2,7 +2,7 @@ use rx_bevy::prelude::*;
 use rx_bevy_subject::Subject;
 
 fn main() {
-	let mut subject = Subject::<i32, String>::new();
+	let mut subject = Subject::<i32, String>::default();
 
 	let mut hello_subscription = subject.subscribe(PrintObserver::<i32, String>::new("hello"));
 	subject.subscribe(PrintObserver::<i32, String>::new("hi"));

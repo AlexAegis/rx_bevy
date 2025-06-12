@@ -43,10 +43,6 @@ impl<In, InError> Default for DynFnObserver<In, InError> {
 }
 
 impl<In, InError> DynFnObserver<In, InError> {
-	pub fn new() -> Self {
-		Self::default()
-	}
-
 	pub fn with_next<OnPush: 'static + FnMut(In)>(self, next: OnPush) -> Self {
 		Self {
 			on_next: Some(Box::new(next)),

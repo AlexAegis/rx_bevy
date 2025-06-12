@@ -37,12 +37,6 @@ private = true
 command = "pnpm"
 args = ["install"]
 
-[tasks.install-rls]
-description = "Install rustup component rls"
-workspace = false
-private = true
-install_crate = { rustup_component_name = "rls" }
-
 [tasks.install-clippy]
 description = "Install rustup component clippy"
 workspace = false
@@ -250,7 +244,6 @@ script = { file = "scripts/link_assets.sh" }
 description = "Prepares the workspace for development"
 workspace = false
 dependencies = [
-    "install-rls",
     "install-git-lfs",
     "install-clippy",
     "install-rustfmt",

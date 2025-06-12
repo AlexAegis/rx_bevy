@@ -1,6 +1,4 @@
-use crate::{Forwarder, ObservableOutput, Observer, Subscriber};
-
-// OperatorIO OperatorInstanceFactory
+use crate::{Forwarder, ObservableOutput, Observer, ObserverInput, Subscriber};
 
 /// Every Operator is an Observer that can subscribe to an observable, and upon
 /// subscription, returns it's own [OperatorObserver] that you can subscribe to.
@@ -19,3 +17,21 @@ pub trait Operator {
 		destination: Destination,
 	) -> Subscriber<Self::Fw, Destination>;
 }
+
+/*
+impl<T> ObserverInput for T
+where
+	T: Operator,
+{
+	type In = <T::Fw as ObserverInput>::In;
+	type InError = <T::Fw as ObserverInput>::InError;
+}
+
+impl<T> ObservableOutput for T
+where
+	T: Operator,
+{
+	type Out = <T::Fw as ObservableOutput>::Out;
+	type OutError = <T::Fw as ObservableOutput>::OutError;
+}
+*/

@@ -4,5 +4,5 @@ use rx_bevy::prelude::*;
 fn main() {
 	of(12)
 		.tap(|next| println!("hello {next}"))
-		.subscribe(NoopObserver::new());
+		.subscribe(NoopObserver::default());
 }

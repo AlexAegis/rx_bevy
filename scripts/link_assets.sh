@@ -9,8 +9,22 @@ fi
 
 create_symlinks() {
     target_dir=$1
+    pattern="${2-*}"
+    negative_pattern="${3}"
+
     if [ -d "$repo_root/$target_dir" ]; then
-        for dir in "$repo_root/$target_dir"/*/; do
+        for dir in "$repo_root"/"$target_dir"/$pattern/; do
+
+            if [ -n "$negative_pattern" ]; then
+                dir_name=$(basename "$dir")
+                # shellcheck disable=SC2254
+                case "$dir_name" in
+                    $negative_pattern) 
+                        continue
+                        ;;
+                esac
+            fi
+
             if [ -d "${dir}assets" ]; then
                 echo "An assets directory already exists at ${dir}. Skipping..."
             else                
@@ -26,4 +40,4 @@ create_symlinks() {
 
 create_symlinks "examples"
 create_symlinks "games"
-create_symlinks "crates"
+create_symlinks "crates" "*" "rx_bevy*"
