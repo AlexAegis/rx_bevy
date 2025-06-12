@@ -19,7 +19,7 @@ where
 {
 	pub fn new(value: T) -> Self {
 		Self {
-			subject: Subject::new(),
+			subject: Subject::default(),
 			value: Rc::new(RefCell::new(value)),
 		}
 	}

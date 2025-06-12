@@ -13,11 +13,11 @@ where
 	_phantom_data: PhantomData<(InObservable, InError)>,
 }
 
-impl<InObservable, InError> SwitchFlattener<InObservable, InError>
+impl<InObservable, InError> Default for SwitchFlattener<InObservable, InError>
 where
 	InObservable: Observable,
 {
-	pub fn new() -> Self {
+	fn default() -> Self {
 		Self {
 			closed: false,
 			inner_subscriber: None,

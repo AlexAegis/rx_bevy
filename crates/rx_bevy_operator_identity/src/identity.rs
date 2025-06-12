@@ -56,8 +56,8 @@ impl<In, InError> Forwarder for IdentityOperator<In, InError> {
 	}
 }
 
-impl<In, InError> IdentityOperator<In, InError> {
-	pub fn new() -> Self {
+impl<In, InError> Default for IdentityOperator<In, InError> {
+	fn default() -> Self {
 		Self {
 			_phantom_data: PhantomData,
 		}

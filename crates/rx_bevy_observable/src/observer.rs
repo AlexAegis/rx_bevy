@@ -10,9 +10,9 @@ pub trait Observer: ObserverInput {
 }
 
 pub struct DynObserver<T, E> {
-	pub dyn_next: Box<dyn FnMut(T) -> ()>,
-	pub dyn_error: Box<dyn FnMut(E) -> ()>,
-	pub dyn_complete: Box<dyn FnMut() -> ()>,
+	pub dyn_next: Box<dyn FnMut(T)>,
+	pub dyn_error: Box<dyn FnMut(E)>,
+	pub dyn_complete: Box<dyn FnMut()>,
 }
 
 impl<T, E> ObserverInput for DynObserver<T, E> {

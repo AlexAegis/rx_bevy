@@ -14,8 +14,8 @@ pub struct SubjectConnector<T, Error> {
 	phantom_data: PhantomData<(T, Error)>,
 }
 
-impl<T, Error> SubjectConnector<T, Error> {
-	pub fn new() -> Self {
+impl<T, Error> Default for SubjectConnector<T, Error> {
+	fn default() -> Self {
 		Self {
 			phantom_data: PhantomData,
 		}
@@ -90,12 +90,12 @@ impl<T, Error> Clone for Subject<T, Error> {
 	}
 }
 
-impl<T, Error> Subject<T, Error> {
-	pub fn new() -> Self {
+impl<T, Error> Default for Subject<T, Error> {
+	fn default() -> Self {
 		Self {
-			destinations: Rc::new(RefCell::new(
-				MulticastObserver::new(SubjectConnector::new()),
-			)),
+			destinations: Rc::new(RefCell::new(MulticastObserver::new(
+				SubjectConnector::default(),
+			))),
 		}
 	}
 }

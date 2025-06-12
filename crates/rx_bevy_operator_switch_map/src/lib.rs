@@ -9,6 +9,6 @@ pub mod switch_map_extension;
 pub mod prelude {
 	pub use crate::switch_map::*;
 
-	#[cfg(feature = "pipe")]
-	pub use crate::switch_map_extension::*;
+	// #[cfg(feature = "pipe")]
+	// pub use crate::switch_map_extension::*;
 }

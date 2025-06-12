@@ -13,13 +13,13 @@ pub struct ReplaySubject<const CAPACITY: usize, T, Error = ()> {
 	values: Rc<RefCell<ConstGenericRingBuffer<T, CAPACITY>>>,
 }
 
-impl<const CAPACITY: usize, T, Error> ReplaySubject<CAPACITY, T, Error>
+impl<const CAPACITY: usize, T, Error> Default for ReplaySubject<CAPACITY, T, Error>
 where
 	T: Clone,
 {
-	pub fn new() -> Self {
+	fn default() -> Self {
 		Self {
-			subject: Subject::new(),
+			subject: Subject::default(),
 			values: Rc::new(RefCell::new(ConstGenericRingBuffer::new())),
 		}
 	}

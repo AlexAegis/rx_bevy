@@ -12,9 +12,9 @@ pub struct ObserverCallbacks<OnPush, OnError, OnComplete> {
 ///
 pub struct FnObserver<In, InError, OnPush, OnError, OnComplete>
 where
-	OnPush: Fn(In) -> (),
-	OnError: Fn(InError) -> (),
-	OnComplete: Fn() -> (),
+	OnPush: Fn(In),
+	OnError: Fn(InError),
+	OnComplete: Fn(),
 {
 	next: OnPush,
 	error: OnError,
@@ -25,9 +25,9 @@ where
 impl<In, Error, OnPush, OnError, OnComplete> ObserverInput
 	for FnObserver<In, Error, OnPush, OnError, OnComplete>
 where
-	OnPush: Fn(In) -> (),
-	OnError: Fn(Error) -> (),
-	OnComplete: Fn() -> (),
+	OnPush: Fn(In),
+	OnError: Fn(Error),
+	OnComplete: Fn(),
 {
 	type In = In;
 	type InError = Error;
@@ -36,9 +36,9 @@ where
 impl<In, InError, OnPush, OnError, OnComplete> Observer
 	for FnObserver<In, InError, OnPush, OnError, OnComplete>
 where
-	OnPush: Fn(In) -> (),
-	OnError: Fn(InError) -> (),
-	OnComplete: Fn() -> (),
+	OnPush: Fn(In),
+	OnError: Fn(InError),
+	OnComplete: Fn(),
 {
 	fn next(&mut self, next: In) {
 		(self.next)(next);
@@ -55,9 +55,9 @@ where
 
 impl<In, InError, OnPush, OnError, OnComplete> FnObserver<In, InError, OnPush, OnError, OnComplete>
 where
-	OnPush: Fn(In) -> (),
-	OnError: Fn(InError) -> (),
-	OnComplete: Fn() -> (),
+	OnPush: Fn(In),
+	OnError: Fn(InError),
+	OnComplete: Fn(),
 {
 	pub fn new(next: OnPush, error: OnError, complete: OnComplete) -> Self {
 		Self {

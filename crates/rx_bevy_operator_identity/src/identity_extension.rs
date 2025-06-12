@@ -5,7 +5,7 @@ use crate::IdentityOperator;
 
 pub trait ObservableExtensionIdentity<Out>: Observable<Out = Out> + Sized {
 	fn identity(self) -> Pipe<Self, IdentityOperator<Out, Self::OutError>> {
-		Pipe::new(self, IdentityOperator::new())
+		Pipe::new(self, IdentityOperator::default())
 	}
 }
 

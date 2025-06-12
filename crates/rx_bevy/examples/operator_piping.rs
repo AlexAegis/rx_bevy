@@ -5,10 +5,10 @@ fn main() {
 	let observable = OfObservable::<i32>::new(12);
 	let mut pipe = observable
 		.pipe(MapOperator::new(|n: i32| -> i32 {
-			return n * 2;
+			n * 2
 		}))
 		.pipe(MapOperator::new(|n: i32| -> String {
-			return n.to_string();
+			n.to_string()
 		}));
 
 	let observer = DynFnObserver::new().with_next(|next| println!("{next}"));

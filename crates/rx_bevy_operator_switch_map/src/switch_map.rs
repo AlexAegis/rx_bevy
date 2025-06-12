@@ -31,7 +31,7 @@ pub struct SwitchMapSubscriber<In, InError, InnerObservable, Switcher>
 where
 	Switcher: Clone + Fn(In) -> InnerObservable,
 {
-	switcher: Switcher,
+	_switcher: Switcher,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -40,9 +40,9 @@ impl<In, InError, InnerObservable, Switcher>
 where
 	Switcher: Clone + Fn(In) -> InnerObservable,
 {
-	pub fn new(switcher: Switcher) -> Self {
+	pub fn new(_switcher: Switcher) -> Self {
 		Self {
-			switcher,
+			_switcher,
 			_phantom_data: PhantomData,
 		}
 	}

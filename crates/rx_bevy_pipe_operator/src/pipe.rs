@@ -28,7 +28,7 @@ where
 	pub fn new(source_observable: Source, operator: Op) -> Self {
 		Self {
 			source_observable,
-			operator: operator,
+			operator,
 		}
 	}
 }
