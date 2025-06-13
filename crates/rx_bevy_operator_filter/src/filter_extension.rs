@@ -3,6 +3,14 @@ use rx_bevy_pipe_operator::Pipe;
 
 use crate::FilterOperator;
 
+/// Operator creator function
+pub fn filter<Error, Filter, Out>(filter: Filter) -> FilterOperator<Out, Error, Filter>
+where
+	Filter: Clone + for<'a> Fn(&'a Out) -> bool,
+{
+	FilterOperator::new(filter)
+}
+
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionFilter<Out>: Observable<Out = Out> + Sized {
 	fn filter<Filter: Clone + for<'a> Fn(&'a Out) -> bool>(

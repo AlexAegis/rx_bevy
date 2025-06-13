@@ -3,6 +3,14 @@ use rx_bevy_pipe_operator::Pipe;
 
 use crate::MapOperator;
 
+/// Operator creator function
+pub fn map<Mapper, Out, NextOut, Error>(mapper: Mapper) -> MapOperator<Mapper, Out, NextOut, Error>
+where
+	Mapper: Clone + Fn(Out) -> NextOut,
+{
+	MapOperator::new(mapper)
+}
+
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionMap<Out>: Observable<Out = Out> + Sized {
 	fn map<NextOut, Mapper: Clone + Fn(Out) -> NextOut>(

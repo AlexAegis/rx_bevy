@@ -3,6 +3,11 @@ use rx_bevy_pipe_operator::Pipe;
 
 use crate::IdentityOperator;
 
+/// Operator creator function
+pub fn identity<In, InError>() -> IdentityOperator<In, InError> {
+	IdentityOperator::<In, InError>::default()
+}
+
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionIdentity<Out>: Observable<Out = Out> + Sized {
 	fn identity(self) -> Pipe<Self, IdentityOperator<Out, Self::OutError>> {

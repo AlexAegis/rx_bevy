@@ -3,6 +3,16 @@ use rx_bevy_pipe_operator::Pipe;
 
 use crate::FinalizeOperator;
 
+/// Operator creator function
+pub fn finalize<Out, OutError, Callback>(
+	callback: Callback,
+) -> FinalizeOperator<Out, OutError, Callback>
+where
+	Callback: Clone + FnOnce(),
+{
+	FinalizeOperator::new(callback)
+}
+
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionFinalize<Out>: Observable<Out = Out> + Sized {
 	fn finalize<Callback: Clone + FnOnce()>(
