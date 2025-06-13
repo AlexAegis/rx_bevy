@@ -11,6 +11,7 @@ fn main() {
 	of(1)
 		.map(|i| i + 1)
 		.map(|i| i * 2)
+		.map(|i| i + 99)
 		.map(|i| i.to_string())
 		.subscribe(print_observer);
 }

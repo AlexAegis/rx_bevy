@@ -6,6 +6,9 @@ use crate::{Forwarder, ObservableOutput, Observer, ObserverInput, Subscriber};
 pub trait Operator {
 	type Fw: Forwarder;
 
+	fn create_instance(&self) -> Self::Fw;
+
+	#[inline]
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
@@ -15,7 +18,9 @@ pub trait Operator {
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination>;
+	) -> Subscriber<Self::Fw, Destination> {
+		Subscriber::new(destination, self.create_instance())
+	}
 }
 
 impl<T> ObserverInput for T

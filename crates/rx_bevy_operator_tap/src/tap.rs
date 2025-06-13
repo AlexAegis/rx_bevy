@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
-	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
-};
+use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator};
 
 #[derive(Debug)]
 pub struct TapOperator<In, InError, Callback>
@@ -19,23 +17,9 @@ where
 {
 	type Fw = TapForwarder<In, InError, Callback>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Observer<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(
-			destination,
-			TapForwarder {
-				callback: self.callback.clone(),
-				_phantom_data: PhantomData,
-			},
-		)
+	#[inline]
+	fn create_instance(&self) -> Self::Fw {
+		Self::Fw::new(self.callback.clone())
 	}
 }
 
@@ -45,6 +29,18 @@ where
 {
 	callback: Callback,
 	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError, Callback> TapForwarder<In, InError, Callback>
+where
+	Callback: for<'a> Fn(&'a In),
+{
+	pub fn new(callback: Callback) -> Self {
+		Self {
+			callback,
+			_phantom_data: PhantomData,
+		}
+	}
 }
 
 impl<In, InError, Callback> ObservableOutput for TapForwarder<In, InError, Callback>

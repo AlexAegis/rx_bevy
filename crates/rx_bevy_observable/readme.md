@@ -1,1 +1,1 @@
-# rx_bevy_observable
+# rx_bevy_core

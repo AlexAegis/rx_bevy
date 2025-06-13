@@ -1,6 +1,4 @@
-use rx_bevy_observable::{
-	Forwarder, Observable, ObservableOutput, Observer, ObserverInput, Operator,
-};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput, Operator};
 
 pub struct Pipe<Source, PipeOp> {
 	pub(crate) source_observable: Source,

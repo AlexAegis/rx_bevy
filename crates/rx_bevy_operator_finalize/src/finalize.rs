@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
-	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
-};
+use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator};
 
 #[derive(Debug)]
 pub struct FinalizeOperator<In, InError, Callback>
@@ -19,23 +17,33 @@ where
 {
 	type Fw = FinalizeOperatorForwarder<In, InError, Callback>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Observer<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(
-			destination,
-			FinalizeOperatorForwarder {
-				_phantom_data: PhantomData,
-				callback: Some(self.callback.clone()),
-			},
-		)
+	#[inline]
+	fn create_instance(&self) -> Self::Fw {
+		Self::Fw::new(self.callback.clone())
+	}
+}
+
+impl<In, InError, Callback> FinalizeOperator<In, InError, Callback>
+where
+	Callback: FnOnce(),
+{
+	pub fn new(callback: Callback) -> Self {
+		Self {
+			callback,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError, Callback> Clone for FinalizeOperator<In, InError, Callback>
+where
+	Callback: Clone + FnOnce(),
+{
+	fn clone(&self) -> Self {
+		Self {
+			callback: self.callback.clone(),
+			_phantom_data: PhantomData,
+		}
 	}
 }
 
@@ -43,8 +51,21 @@ pub struct FinalizeOperatorForwarder<In, InError, Callback>
 where
 	Callback: FnOnce(),
 {
+	/// It's in an option so it can be removed when used, allowing the use of an FnOnce
 	callback: Option<Callback>,
 	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError, Callback> FinalizeOperatorForwarder<In, InError, Callback>
+where
+	Callback: FnOnce(),
+{
+	pub fn new(callback: Callback) -> Self {
+		Self {
+			callback: Some(callback),
+			_phantom_data: PhantomData,
+		}
+	}
 }
 
 impl<In, InError, Callback> ObservableOutput for FinalizeOperatorForwarder<In, InError, Callback>
@@ -94,29 +115,5 @@ where
 			(complete)();
 		}
 		destination.complete();
-	}
-}
-
-impl<In, InError, Callback> FinalizeOperator<In, InError, Callback>
-where
-	Callback: FnOnce(),
-{
-	pub fn new(callback: Callback) -> Self {
-		Self {
-			callback,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<In, InError, Callback> Clone for FinalizeOperator<In, InError, Callback>
-where
-	Callback: Clone + FnOnce(),
-{
-	fn clone(&self) -> Self {
-		Self {
-			callback: self.callback.clone(),
-			_phantom_data: PhantomData,
-		}
 	}
 }

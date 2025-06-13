@@ -9,7 +9,7 @@ pub trait Forwarder: ObserverInput + ObservableOutput {
 
 	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
-		next: Self::InError,
+		error: Self::InError,
 		destination: &mut Destination,
 	);
 
@@ -31,7 +31,7 @@ pub trait DynForwarder: ObserverInput + ObservableOutput {
 
 	fn error_forward(
 		&mut self,
-		next: Self::InError,
+		error: Self::InError,
 		destination: &mut dyn Observer<In = Self::Out, InError = Self::OutError>,
 	);
 

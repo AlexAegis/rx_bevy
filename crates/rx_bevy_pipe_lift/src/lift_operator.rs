@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	Forwarder, Observable, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+	Forwarder, Observable, ObservableOutput, Observer, ObserverInput, Operator,
 };
 
 pub struct LiftOperator<In, InError, OutObservable, Lifter, ErrorLifter> {
@@ -20,20 +20,9 @@ where
 {
 	type Fw = LiftForwarder<In, InError, OutObservable, Lifter, ErrorLifter>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Observer<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(
-			destination,
-			LiftForwarder::new(self.lifter.clone(), self.error_lifter.clone()),
-		)
+	#[inline]
+	fn create_instance(&self) -> Self::Fw {
+		Self::Fw::new(self.lifter.clone(), self.error_lifter.clone())
 	}
 }
 

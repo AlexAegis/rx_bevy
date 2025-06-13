@@ -1,67 +1,60 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
-	Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
-};
+use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator};
 
-pub struct FilterOperator<In, Filter, Error> {
+pub struct FilterOperator<In, InError, Filter> {
 	pub filter: Filter,
-	pub _phantom_data: PhantomData<(In, Error)>,
+	pub _phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, Filter, Error> Operator for FilterOperator<In, Filter, Error>
+impl<In, InError, Filter> Operator for FilterOperator<In, InError, Filter>
 where
 	Filter: Clone + for<'a> Fn(&'a In) -> bool,
 {
-	type Fw = FilterForwarder<In, Filter, Error>;
+	type Fw = FilterForwarder<In, InError, Filter>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Observer<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(
-			destination,
-			FilterForwarder {
-				filter: self.filter.clone(),
-				_phantom_data: PhantomData,
-			},
-		)
+	#[inline]
+	fn create_instance(&self) -> Self::Fw {
+		Self::Fw::new(self.filter.clone())
 	}
 }
 
-pub struct FilterForwarder<In, Filter, Error> {
+pub struct FilterForwarder<In, InError, Filter> {
 	pub filter: Filter,
-	pub _phantom_data: PhantomData<(In, Error)>,
+	pub _phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<T, Filter, Error> ObservableOutput for FilterForwarder<T, Filter, Error>
+impl<In, InError, Filter> FilterForwarder<In, InError, Filter> {
+	pub fn new(filter: Filter) -> Self {
+		Self {
+			filter,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<T, InError, Filter> ObservableOutput for FilterForwarder<T, InError, Filter>
 where
 	Filter: for<'a> Fn(&'a T) -> bool,
 {
 	type Out = T;
-	type OutError = Error;
+	type OutError = InError;
 }
 
-impl<In, Filter, Error> ObserverInput for FilterForwarder<In, Filter, Error>
+impl<In, InError, Filter> ObserverInput for FilterForwarder<In, InError, Filter>
 where
 	Filter: for<'a> Fn(&'a In) -> bool,
 {
 	type In = In;
-	type InError = Error;
+	type InError = InError;
 }
 
-impl<T, Filter, Error> Forwarder for FilterForwarder<T, Filter, Error>
+impl<In, InError, Filter> Forwarder for FilterForwarder<In, InError, Filter>
 where
-	Filter: for<'a> Fn(&'a T) -> bool,
+	Filter: for<'a> Fn(&'a In) -> bool,
 {
 	#[inline]
-	fn next_forward<Destination: Observer<In = T>>(
+	fn next_forward<Destination: Observer<In = In>>(
 		&mut self,
 		next: Self::In,
 		destination: &mut Destination,
@@ -81,9 +74,9 @@ where
 	}
 }
 
-impl<T, F, Error> Clone for FilterOperator<T, F, Error>
+impl<In, InError, Filter> Clone for FilterOperator<In, InError, Filter>
 where
-	F: Clone,
+	Filter: Clone,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -93,8 +86,8 @@ where
 	}
 }
 
-impl<T, F, Error> FilterOperator<T, F, Error> {
-	pub fn new(filter: F) -> Self {
+impl<In, InError, Filter> FilterOperator<In, InError, Filter> {
+	pub fn new(filter: Filter) -> Self {
 		Self {
 			filter,
 			_phantom_data: PhantomData,
