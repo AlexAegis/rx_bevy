@@ -63,6 +63,8 @@ pub mod prelude {
 	#[cfg(feature = "observer_shared")]
 	pub use rx_bevy_observer_shared::prelude::*;
 	// Operators
+	#[cfg(feature = "operator_filter")]
+	pub use rx_bevy_operator_filter::prelude::*;
 	#[cfg(feature = "operator_finalize")]
 	pub use rx_bevy_operator_finalize::prelude::*;
 	#[cfg(feature = "operator_identity")]
