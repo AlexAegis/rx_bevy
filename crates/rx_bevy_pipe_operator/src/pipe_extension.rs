@@ -2,6 +2,8 @@ use rx_bevy_observable::{Observable, Operator};
 
 use crate::Pipe;
 
+/// Provides a convenient function to pipe an operator from an observable
+/// It's most useful for composite operators
 pub trait ObservableExtensionPipe: Observable + Sized {
 	fn pipe<Op>(self, operator: Op) -> Pipe<Self, Op>
 	where

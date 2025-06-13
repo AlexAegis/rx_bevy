@@ -1,8 +1,9 @@
-use rx_bevy_observable::Observable;
+use rx_bevy_observable::{CompositeOperator, Observable, ObservableOutput, Operator};
 use rx_bevy_pipe_operator::Pipe;
 
 use crate::FilterOperator;
 
+/// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionFilter<Out>: Observable<Out = Out> + Sized {
 	fn filter<Filter: Clone + for<'a> Fn(&'a Out) -> bool>(
 		self,
@@ -13,3 +14,22 @@ pub trait ObservableExtensionFilter<Out>: Observable<Out = Out> + Sized {
 }
 
 impl<T, Out> ObservableExtensionFilter<Out> for T where T: Observable<Out = Out> {}
+
+/// Provides a convenient function to pipe the operator from another operator
+pub trait CompositeOperatorExtensionFilter: Operator + Sized {
+	fn filter<Filter: Clone + for<'a> Fn(&'a <Self::Fw as ObservableOutput>::Out) -> bool>(
+		self,
+		filter: Filter,
+	) -> CompositeOperator<
+		Self,
+		FilterOperator<
+			<Self::Fw as ObservableOutput>::Out,
+			<Self::Fw as ObservableOutput>::OutError,
+			Filter,
+		>,
+	> {
+		CompositeOperator::new(self, FilterOperator::new(filter))
+	}
+}
+
+impl<T> CompositeOperatorExtensionFilter for T where T: Operator {}

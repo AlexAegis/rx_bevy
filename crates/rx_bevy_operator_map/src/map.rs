@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator};
 
-pub struct MapOperator<In, Out, Mapper, Error>
+pub struct MapOperator<Mapper, In, Out, Error>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -10,11 +10,11 @@ where
 	pub _phantom_data: PhantomData<(In, Out, Error)>,
 }
 
-impl<In, Out, Mapper, Error> Operator for MapOperator<In, Out, Mapper, Error>
+impl<Mapper, In, Out, Error> Operator for MapOperator<Mapper, In, Out, Error>
 where
 	Mapper: Clone + Fn(In) -> Out,
 {
-	type Fw = MapForwarder<In, Out, Mapper, Error>;
+	type Fw = MapForwarder<Mapper, In, Out, Error>;
 
 	#[inline]
 	fn create_instance(&self) -> Self::Fw {
@@ -22,7 +22,7 @@ where
 	}
 }
 
-pub struct MapForwarder<In, Out, Mapper, Error>
+pub struct MapForwarder<Mapper, In, Out, Error>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -31,7 +31,7 @@ where
 	pub _phantom_data: PhantomData<(In, Out, Error)>,
 }
 
-impl<In, Out, Mapper, Error> MapForwarder<In, Out, Mapper, Error>
+impl<Mapper, In, Out, Error> MapForwarder<Mapper, In, Out, Error>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -44,15 +44,15 @@ where
 	}
 }
 
-impl<In, Out, F, Error> ObservableOutput for MapForwarder<In, Out, F, Error>
+impl<Mapper, In, Out, Error> ObservableOutput for MapForwarder<Mapper, In, Out, Error>
 where
-	F: Fn(In) -> Out,
+	Mapper: Fn(In) -> Out,
 {
 	type Out = Out;
 	type OutError = Error;
 }
 
-impl<In, Out, Mapper, Error> ObserverInput for MapForwarder<In, Out, Mapper, Error>
+impl<Mapper, In, Out, Error> ObserverInput for MapForwarder<Mapper, In, Out, Error>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -60,7 +60,7 @@ where
 	type InError = Error;
 }
 
-impl<In, Out, Mapper, Error> Forwarder for MapForwarder<In, Out, Mapper, Error>
+impl<Mapper, In, Out, Error> Forwarder for MapForwarder<Mapper, In, Out, Error>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -85,7 +85,7 @@ where
 	}
 }
 
-impl<In, Out, Mapper, Error> MapOperator<In, Out, Mapper, Error>
+impl<Mapper, In, Out, Error> MapOperator<Mapper, In, Out, Error>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -97,7 +97,7 @@ where
 	}
 }
 
-impl<In, Out, Mapper, Error> Clone for MapOperator<In, Out, Mapper, Error>
+impl<Mapper, In, Out, Error> Clone for MapOperator<Mapper, In, Out, Error>
 where
 	Mapper: Clone + Fn(In) -> Out,
 {

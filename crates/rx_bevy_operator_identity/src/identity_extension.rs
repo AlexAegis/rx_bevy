@@ -1,8 +1,9 @@
-use rx_bevy_observable::Observable;
+use rx_bevy_observable::{CompositeOperator, Observable, ObservableOutput, Operator};
 use rx_bevy_pipe_operator::Pipe;
 
 use crate::IdentityOperator;
 
+/// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionIdentity<Out>: Observable<Out = Out> + Sized {
 	fn identity(self) -> Pipe<Self, IdentityOperator<Out, Self::OutError>> {
 		Pipe::new(self, IdentityOperator::default())
@@ -10,3 +11,20 @@ pub trait ObservableExtensionIdentity<Out>: Observable<Out = Out> + Sized {
 }
 
 impl<T, Out> ObservableExtensionIdentity<Out> for T where T: Observable<Out = Out> {}
+
+/// Provides a convenient function to pipe the operator from another operator
+pub trait CompositeOperatorExtensionIdentity: Operator + Sized {
+	fn identity(
+		self,
+	) -> CompositeOperator<
+		Self,
+		IdentityOperator<
+			<Self::Fw as ObservableOutput>::Out,
+			<Self::Fw as ObservableOutput>::OutError,
+		>,
+	> {
+		CompositeOperator::new(self, IdentityOperator::default())
+	}
+}
+
+impl<T> CompositeOperatorExtensionIdentity for T where T: Operator {}
