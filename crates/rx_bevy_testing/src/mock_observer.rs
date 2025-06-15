@@ -1,5 +1,4 @@
-use rx_bevy_observable::{Observer, ObserverInput};
-use rx_bevy_observer_shared::SharedObserver;
+use rx_bevy_observable::{Observer, ObserverInput, SharedObserver};
 
 #[derive(Debug)]
 pub struct MockObserver<T, Error> {

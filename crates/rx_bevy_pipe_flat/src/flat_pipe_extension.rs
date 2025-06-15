@@ -1,5 +1,4 @@
-use rx_bevy_observable::Observable;
-use rx_bevy_observable_flat::ForwardFlattener;
+use rx_bevy_observable::{ForwardFlattener, Observable};
 
 use crate::FlatPipe;
 

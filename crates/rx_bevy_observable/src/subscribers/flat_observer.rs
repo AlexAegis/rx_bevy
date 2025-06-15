@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput, Subscription};
-use rx_bevy_observable_flat::ForwardFlattener;
-use rx_bevy_observer_shared::SharedObserver;
+use crate::{
+	ForwardFlattener, Observable, ObservableOutput, Observer, ObserverInput, SharedObserver,
+	Subscription,
+};
 
 pub struct SwitchFlattener<InObservable, InError>
 where

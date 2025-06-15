@@ -1,5 +1,4 @@
-use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput};
-use rx_bevy_observer_shared::SharedObserver;
+use crate::{Observable, ObservableOutput, Observer, ObserverInput, SharedObserver};
 
 pub trait ForwardFlattener {
 	type InObservable: Observable;

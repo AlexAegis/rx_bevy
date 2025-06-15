@@ -4479,11 +4479,9 @@ dependencies = [
  "rx_bevy_observable",
  "rx_bevy_observable_of",
  "rx_bevy_observable_throw",
- "rx_bevy_observer_flat",
  "rx_bevy_observer_fn",
  "rx_bevy_observer_noop",
  "rx_bevy_observer_print",
- "rx_bevy_observer_shared",
  "rx_bevy_operator_filter",
  "rx_bevy_operator_filter_map",
  "rx_bevy_operator_finalize",
@@ -4508,16 +4506,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_observable_flat"
-version = "0.1.0"
-dependencies = [
- "rx_bevy_observable",
- "rx_bevy_observer_fn",
- "rx_bevy_observer_shared",
- "rx_bevy_testing",
-]
-
-[[package]]
 name = "rx_bevy_observable_of"
 version = "0.1.0"
 dependencies = [
@@ -4532,17 +4520,6 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observer_flat"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_observable",
- "rx_bevy_observable_flat",
- "rx_bevy_observer_shared",
  "rx_bevy_testing",
 ]
 
@@ -4566,15 +4543,6 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observer_print"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_observable",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observer_shared"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
@@ -4638,9 +4606,7 @@ name = "rx_bevy_operator_switch_map"
 version = "0.1.0"
 dependencies = [
  "rx_bevy_observable",
- "rx_bevy_observable_flat",
  "rx_bevy_observable_of",
- "rx_bevy_observer_flat",
  "rx_bevy_observer_fn",
  "rx_bevy_operator_identity",
  "rx_bevy_pipe_flat",
@@ -4665,9 +4631,6 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
- "rx_bevy_observable_flat",
- "rx_bevy_observer_flat",
- "rx_bevy_observer_shared",
  "rx_bevy_testing",
 ]
 
@@ -4677,8 +4640,6 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
- "rx_bevy_observer_flat",
- "rx_bevy_observer_shared",
  "rx_bevy_testing",
 ]
 
@@ -4729,7 +4690,6 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
- "rx_bevy_observer_shared",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
+use rx_bevy_observable::{FlatSubscriber, ForwardFlattener};
 use rx_bevy_observable::{Observable, ObservableOutput, Observer};
-use rx_bevy_observable_flat::{FlatSubscriber, ForwardFlattener};
 
 // TODO: Try merging pipes together with a single Enum Forwarder over the three forwarders
 pub struct FlatPipe<Source, Flattener>

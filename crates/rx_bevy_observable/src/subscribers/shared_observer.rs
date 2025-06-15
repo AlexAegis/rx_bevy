@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use rx_bevy_observable::{Observer, ObserverInput};
+use crate::{Observer, ObserverInput};
 
 pub struct ClosableDestination<Destination>
 where
