@@ -1,4 +1,4 @@
-use crate::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator, Subscriber};
+use crate::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator};
 
 impl<T> Operator for Option<T>
 where
@@ -8,19 +8,6 @@ where
 
 	fn create_instance(&self) -> Self::Fw {
 		OptionForwarder::new(self.as_ref().map(|operator| operator.create_instance()))
-	}
-
-	fn operator_subscribe<
-		Destination: 'static
-			+ Observer<
-				In = <Self::Fw as ObservableOutput>::Out,
-				InError = <Self::Fw as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(destination, self.create_instance())
 	}
 }
 

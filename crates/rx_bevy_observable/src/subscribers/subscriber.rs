@@ -1,9 +1,12 @@
-use crate::{Forwarder, Observer, ObserverInput};
+use crate::{
+	Forwarder, ObservableOutput, Observer, ObserverInput, SharedObserver, SharedSubscriber,
+	SubscriberForwarder, subscribers::subscriber,
+};
 
 pub struct Subscriber<Fw, Destination>
 where
-	Fw: Forwarder,
-	Destination: Observer,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
+	Fw: SubscriberForwarder,
 {
 	pub destination: Destination,
 	pub forwarder: Fw,
@@ -12,8 +15,8 @@ where
 
 impl<Fw, Destination> Subscriber<Fw, Destination>
 where
-	Fw: Forwarder,
-	Destination: Observer,
+	Fw: SubscriberForwarder,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	pub fn new(destination: Destination, forwarder: Fw) -> Self {
 		Self {
@@ -23,9 +26,10 @@ where
 		}
 	}
 }
+
 impl<Fw, Destination> ObserverInput for Subscriber<Fw, Destination>
 where
-	Fw: Forwarder,
+	Fw: SubscriberForwarder,
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	type In = Fw::In;
@@ -34,7 +38,7 @@ where
 
 impl<Fw, Destination> Observer for Subscriber<Fw, Destination>
 where
-	Fw: Forwarder,
+	Fw: SubscriberForwarder<Destination = Destination>,
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	#[inline]
@@ -65,3 +69,52 @@ where
 		}
 	}
 }
+/*
+pub enum SuperSubscriber<Fw, Destination>
+where
+	Fw: SubscriberForwarder,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
+{
+	Flat(SharedSubscriber<Fw, Destination>),
+	Regular(Subscriber<Fw, Destination>),
+}
+
+impl<Fw, Destination> ObserverInput for SuperSubscriber<Fw, Destination>
+where
+	Fw: SubscriberForwarder,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
+{
+	type In = Fw::In;
+	type InError = Fw::InError;
+}
+
+impl<Fw, Destination> Observer for SuperSubscriber<Fw, Destination>
+where
+	Fw: SubscriberForwarder,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
+{
+	#[inline]
+	fn next(&mut self, next: Self::In) {
+		match self {
+			Self::Regular(subscriber) => subscriber.next(next),
+			Self::Flat(subscriber) => subscriber.next(next),
+		}
+	}
+
+	#[inline]
+	fn error(&mut self, error: Self::InError) {
+		match self {
+			Self::Regular(subscriber) => subscriber.error(error),
+			Self::Flat(subscriber) => subscriber.error(error),
+		}
+	}
+
+	#[inline]
+	fn complete(&mut self) {
+		match self {
+			Self::Regular(subscriber) => subscriber.complete(),
+			Self::Flat(subscriber) => subscriber.complete(),
+		}
+	}
+}
+*/

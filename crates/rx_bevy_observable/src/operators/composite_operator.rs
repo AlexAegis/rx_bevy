@@ -1,4 +1,7 @@
-use crate::{Forwarder, IntermediateObserver, ObservableOutput, Observer, ObserverInput, Operator};
+use crate::{
+	Forwarder, IntermediateObserver, ObservableOutput, Observer, ObserverInput, Operator,
+	SubscriberForwarder,
+};
 
 #[derive(Clone)]
 pub struct CompositeOperator<PrevOp, Op>

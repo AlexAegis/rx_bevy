@@ -1,4 +1,7 @@
-use crate::{Forwarder, ObservableOutput, Observer, ObserverInput, Subscriber};
+use crate::{
+	Forwarder, ForwarderBridge, ObservableOutput, Observer, ObserverInput, Subscriber,
+	SubscriberForwarder,
+};
 
 /// Every Operator is an Observer that can subscribe to an observable, and upon
 /// subscription, returns it's own [OperatorObserver] that you can subscribe to.
@@ -18,8 +21,12 @@ pub trait Operator {
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscriber<Self::Fw, Destination> {
-		Subscriber::new(destination, self.create_instance())
+	) -> Subscriber<ForwarderBridge<Self::Fw, Destination>, Destination> {
+		let fw = self.create_instance();
+
+		let fwb = ForwarderBridge::new(fw);
+
+		Subscriber::new(destination, fwb)
 	}
 }
 

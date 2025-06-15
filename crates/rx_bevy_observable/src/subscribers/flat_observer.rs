@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use crate::{
 	Forwarder, Observable, ObservableOutput, Observer, ObserverInput, SharedObserver, Subscription,
+	subscribers::shared_observer,
 };
 
 pub struct SwitchFlattener<InObservable, InError>

@@ -1,58 +1,58 @@
-use crate::{Forwarder, Observable, ObservableOutput, Observer, ObserverInput, SharedObserver};
-/*
-pub struct FlatSubscriber<Fw, Destination>
+use crate::{
+	Observable, ObservableOutput, Observer, ObserverInput, SharedObserver, SubscriberForwarder,
+};
+
+pub struct SharedSubscriber<Fw, Destination>
 where
-	Fw: Forwarder,
-	Destination: Observer,
+	Fw: SubscriberForwarder,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	pub destination: SharedObserver<Destination>,
 	pub forwarder: Fw,
-	pub is_closed: bool,
+	pub is_complete: bool,
 }
 
-impl<Fw, Destination> FlatSubscriber<Fw, Destination>
+impl<Fw, Destination> SharedSubscriber<Fw, Destination>
 where
-	Fw: Forwarder,
-	Destination: Observer<
-			In = <Fw::In as ObservableOutput>::Out,
-			InError = <Fw::In as ObservableOutput>::OutError,
-		>,
+	Fw: SubscriberForwarder<Destination = SharedObserver<Destination>>,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	pub fn new(destination: Destination, forwarder: Fw) -> Self {
 		Self {
 			destination: SharedObserver::new(destination),
 			forwarder,
-			is_closed: false,
+			is_complete: false,
 		}
 	}
 }
 
-impl<Fw, Destination> ObserverInput for FlatSubscriber<Fw, Destination>
+impl<Fw, Destination> ObserverInput for SharedSubscriber<Fw, Destination>
 where
-	Fw: Forwarder,
-	Destination: 'static
-		+ Observer<
-			In = <Fw::InObservable as ObservableOutput>::Out,
-			InError = <Fw::InObservable as ObservableOutput>::OutError,
-		>,
+	Fw: SubscriberForwarder<Destination = SharedObserver<Destination>>,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
-	type In = Fw::InObservable;
+	type In = Fw::In;
 	type InError = Fw::InError;
 }
 
-impl<Fw, Destination> Observer for FlatSubscriber<Fw, Destination>
+impl<Fw, Destination> ObservableOutput for SharedSubscriber<Fw, Destination>
 where
-	Fw: ForwardFlattener,
-	Destination: 'static
-		+ Observer<
-			In = <Fw::InObservable as ObservableOutput>::Out,
-			InError = <Fw::InObservable as ObservableOutput>::OutError,
-		>,
+	Fw: SubscriberForwarder<Destination = SharedObserver<Destination>>,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
+{
+	type Out = Fw::Out;
+	type OutError = Fw::OutError;
+}
+
+impl<Fw, Destination> Observer for SharedSubscriber<Fw, Destination>
+where
+	Fw: SubscriberForwarder<Destination = SharedObserver<Destination>>,
+	Destination: 'static + Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		if !self.is_closed {
-			self.forwarder.flatten_next(next, &mut self.destination);
+		if !self.is_complete {
+			self.forwarder.next_forward(next, &mut self.destination);
 		} else {
 			todo!("handle subscriber next notification")
 		}
@@ -60,7 +60,7 @@ where
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed {
+		if !self.is_complete {
 			self.forwarder.error_forward(error, &mut self.destination);
 		} else {
 			todo!("handle subscriber error notification")
@@ -69,12 +69,33 @@ where
 
 	#[inline]
 	fn complete(&mut self) {
-		if !self.is_closed {
-			self.is_closed = true;
+		if !self.is_complete {
+			self.is_complete = true;
 			self.forwarder.complete_forward(&mut self.destination);
 		} else {
 			todo!("handle subscriber complete notification")
 		}
 	}
 }
-*/
+
+pub trait SharedForwarder: ObserverInput + ObservableOutput {
+	fn next_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+		&mut self,
+		next: Self::In,
+		destination: &mut SharedObserver<Destination>,
+	);
+
+	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+		&mut self,
+		error: Self::InError,
+		destination: &mut SharedObserver<Destination>,
+	);
+
+	#[inline]
+	fn complete_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+		&mut self,
+		destination: &mut SharedObserver<Destination>,
+	) {
+		destination.complete();
+	}
+}
