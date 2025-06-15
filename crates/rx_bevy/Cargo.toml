@@ -50,9 +50,8 @@ all_observables = ["observable_of", "observable_throw"]
 observable_of = ["dep:rx_bevy_observable_of"]
 observable_throw = ["dep:rx_bevy_observable_throw"]
 # Pipes
-all_pipes = ["pipe_operator", "pipe_flat"]
+all_pipes = ["pipe_operator"]
 pipe_operator = ["dep:rx_bevy_pipe_operator"]
-pipe_flat = ["dep:rx_bevy_pipe_flat"]
 # Observers
 all_observers = ["observer_noop", "observer_print", "observer_fn"]
 observer_fn = ["dep:rx_bevy_observer_fn"]
@@ -88,7 +87,6 @@ rx_bevy_observable_of = { workspace = true, optional = true }
 rx_bevy_observable_throw = { workspace = true, optional = true }
 # Pipes
 rx_bevy_pipe_operator = { workspace = true, optional = true }
-rx_bevy_pipe_flat = { workspace = true, optional = true }
 # Observers
 rx_bevy_observer_noop = { workspace = true, optional = true }
 rx_bevy_observer_print = { workspace = true, optional = true }

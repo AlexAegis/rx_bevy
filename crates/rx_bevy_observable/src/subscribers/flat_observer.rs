@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-	ForwardFlattener, Observable, ObservableOutput, Observer, ObserverInput, SharedObserver,
-	Subscription,
+	Forwarder, Observable, ObservableOutput, Observer, ObserverInput, SharedObserver, Subscription,
 };
 
 pub struct SwitchFlattener<InObservable, InError>
@@ -41,41 +40,53 @@ where
 	}
 }
 
-impl<InObservable, InError> ForwardFlattener for SwitchFlattener<InObservable, InError>
+impl<InObservable, InError> ObserverInput for SwitchFlattener<InObservable, InError>
+where
+	InObservable: Observable,
+{
+	type In = InObservable;
+	type InError = InError;
+}
+
+impl<InObservable, InError> ObservableOutput for SwitchFlattener<InObservable, InError>
+where
+	InObservable: Observable,
+{
+	type Out = <InObservable as ObservableOutput>::Out;
+	type OutError = <InObservable as ObservableOutput>::OutError;
+}
+
+impl<InObservable, InError> Forwarder for SwitchFlattener<InObservable, InError>
 where
 	InObservable: Observable,
 	InError: Into<InObservable::OutError>,
 {
-	type InObservable = InObservable;
-	type InError = InError;
-
-	fn flatten_next<
-		Destination: 'static
-			+ Observer<
-				In = <Self::InObservable as ObservableOutput>::Out,
-				InError = <Self::InObservable as ObservableOutput>::OutError,
+	fn next_forward<
+		Destination: Observer<
+				In = <Self::In as ObservableOutput>::Out,
+				InError = <Self::In as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
-		mut next: Self::InObservable,
-		destination: &mut SharedObserver<Destination>,
+		mut next: Self::In,
+		destination: &mut Destination,
+		//destination: &mut SharedObserver<Destination>,
 	) {
 		if !self.closed {
 			if let Some(mut inner_subscriber) = self.inner_subscriber.take() {
 				inner_subscriber.unsubscribe();
 			}
 
-			let d = destination.clone();
-			let subscription = next.subscribe(d);
-			self.inner_subscriber = Some(subscription);
+			// let d = destination.clone();
+			// let subscription = next.subscribe(d);
+			// self.inner_subscriber = Some(subscription);
 		}
 	}
 
 	fn error_forward<
-		Destination: 'static
-			+ Observer<
-				In = <Self::InObservable as ObservableOutput>::Out,
-				InError = <Self::InObservable as ObservableOutput>::OutError,
+		Destination: Observer<
+				In = <Self::In as ObservableOutput>::Out,
+				InError = <Self::In as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
@@ -91,10 +102,9 @@ where
 		}
 	}
 	fn complete_forward<
-		Destination: 'static
-			+ Observer<
-				In = <Self::InObservable as ObservableOutput>::Out,
-				InError = <Self::InObservable as ObservableOutput>::OutError,
+		Destination: Observer<
+				In = <Self::In as ObservableOutput>::Out,
+				InError = <Self::In as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,

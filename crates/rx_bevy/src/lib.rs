@@ -6,8 +6,6 @@ pub use rx_bevy_observable_of::*;
 #[cfg(feature = "observable_throw")]
 pub use rx_bevy_observable_throw::*;
 // Pipes
-#[cfg(feature = "pipe_flat")]
-pub use rx_bevy_pipe_flat::*;
 #[cfg(feature = "pipe_operator")]
 pub use rx_bevy_pipe_operator::*;
 // Observers
@@ -43,8 +41,6 @@ pub mod prelude {
 	#[cfg(feature = "observable_throw")]
 	pub use rx_bevy_observable_throw::prelude::*;
 	// Pipes
-	#[cfg(feature = "pipe_flat")]
-	pub use rx_bevy_pipe_flat::prelude::*;
 	#[cfg(feature = "pipe_operator")]
 	pub use rx_bevy_pipe_operator::prelude::*;
 	// Observers

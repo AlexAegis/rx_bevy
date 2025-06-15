@@ -1,51 +1,8 @@
-use crate::{Observable, ObservableOutput, Observer, ObserverInput, SharedObserver};
-
-pub trait ForwardFlattener {
-	type InObservable: Observable;
-	type InError;
-
-	fn flatten_next<
-		Destination: 'static
-			+ Observer<
-				In = <Self::InObservable as ObservableOutput>::Out,
-				InError = <Self::InObservable as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		next: Self::InObservable,
-		destination: &mut SharedObserver<Destination>,
-	);
-
-	fn error_forward<
-		Destination: 'static
-			+ Observer<
-				In = <Self::InObservable as ObservableOutput>::Out,
-				InError = <Self::InObservable as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		error: Self::InError,
-		destination: &mut Destination,
-	);
-
-	#[inline]
-	fn complete_forward<
-		Destination: 'static
-			+ Observer<
-				In = <Self::InObservable as ObservableOutput>::Out,
-				InError = <Self::InObservable as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		destination: &mut Destination,
-	) {
-		destination.complete();
-	}
-}
-
+use crate::{Forwarder, Observable, ObservableOutput, Observer, ObserverInput, SharedObserver};
+/*
 pub struct FlatSubscriber<Fw, Destination>
 where
-	Fw: ForwardFlattener,
+	Fw: Forwarder,
 	Destination: Observer,
 {
 	pub destination: SharedObserver<Destination>,
@@ -55,10 +12,10 @@ where
 
 impl<Fw, Destination> FlatSubscriber<Fw, Destination>
 where
-	Fw: ForwardFlattener,
+	Fw: Forwarder,
 	Destination: Observer<
-			In = <Fw::InObservable as ObservableOutput>::Out,
-			InError = <Fw::InObservable as ObservableOutput>::OutError,
+			In = <Fw::In as ObservableOutput>::Out,
+			InError = <Fw::In as ObservableOutput>::OutError,
 		>,
 {
 	pub fn new(destination: Destination, forwarder: Fw) -> Self {
@@ -72,7 +29,7 @@ where
 
 impl<Fw, Destination> ObserverInput for FlatSubscriber<Fw, Destination>
 where
-	Fw: ForwardFlattener,
+	Fw: Forwarder,
 	Destination: 'static
 		+ Observer<
 			In = <Fw::InObservable as ObservableOutput>::Out,
@@ -120,3 +77,4 @@ where
 		}
 	}
 }
+*/
