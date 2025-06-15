@@ -1,143 +1,112 @@
 use std::marker::PhantomData;
 
 use crate::{
-	Forwarder, Observable, ObservableOutput, Observer, ObserverInput, SharedObserver, Subscription,
-	subscribers::shared_observer,
+	Forwarder, Observable, ObservableOutput, Observer, ObserverInput, SharedObserver,
+	SubscriberForwarder, Subscription, subscribers::shared_observer,
 };
 
-pub struct SwitchFlattener<InObservable, InError>
+pub struct SwitchFlattener<InObservable, InError, Destination>
 where
 	InObservable: Observable,
+	Destination: Observer,
 {
 	closed: bool,
+	destination: SharedObserver<Destination>,
 	inner_subscriber: Option<InObservable::Subscription>,
 	_phantom_data: PhantomData<(InObservable, InError)>,
 }
-
-impl<InObservable, InError> Default for SwitchFlattener<InObservable, InError>
+/*
+impl<InObservable, InError, Destination> Default
+	for SwitchFlattener<InObservable, InError, Destination>
 where
 	InObservable: Observable,
+	Destination: Observer,
 {
 	fn default() -> Self {
 		Self {
 			closed: false,
+			destination: SharedObserver::new(destination)
 			inner_subscriber: None,
 			_phantom_data: PhantomData,
 		}
 	}
 }
+*/
 
-impl<InObservable, InError> Clone for SwitchFlattener<InObservable, InError>
+impl<InObservable, InError, Destination> Clone
+	for SwitchFlattener<InObservable, InError, Destination>
 where
 	InObservable: Observable,
 	InObservable::Subscription: Clone,
+	Destination: Observer,
 {
 	fn clone(&self) -> Self {
 		Self {
 			inner_subscriber: self.inner_subscriber.clone(),
+			destination: self.destination.clone(),
 			closed: self.closed,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<InObservable, InError> ObserverInput for SwitchFlattener<InObservable, InError>
+impl<InObservable, InError, Destination> ObserverInput
+	for SwitchFlattener<InObservable, InError, Destination>
 where
 	InObservable: Observable,
+	Destination: Observer,
 {
 	type In = InObservable;
 	type InError = InError;
 }
 
-impl<InObservable, InError> ObservableOutput for SwitchFlattener<InObservable, InError>
+impl<InObservable, InError, Destination> ObservableOutput
+	for SwitchFlattener<InObservable, InError, Destination>
 where
 	InObservable: Observable,
+	Destination: Observer,
 {
 	type Out = <InObservable as ObservableOutput>::Out;
 	type OutError = <InObservable as ObservableOutput>::OutError;
 }
 
-impl<InObservable, InError> Forwarder for SwitchFlattener<InObservable, InError>
+impl<InObservable, InError, Destination> SubscriberForwarder
+	for SwitchFlattener<InObservable, InError, Destination>
 where
 	InObservable: Observable,
+	InObservable::Out: 'static,
+	InObservable::OutError: 'static,
 	InError: Into<InObservable::OutError>,
+	Destination: 'static + Observer<In = InObservable::Out, InError = InObservable::OutError>,
 {
-	fn next_forward<
-		Destination: Observer<
-				In = <Self::In as ObservableOutput>::Out,
-				InError = <Self::In as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		mut next: Self::In,
-		destination: &mut Destination,
-		//destination: &mut SharedObserver<Destination>,
-	) {
-		if !self.closed {
-			if let Some(mut inner_subscriber) = self.inner_subscriber.take() {
-				inner_subscriber.unsubscribe();
-			}
+	type Destination = FlatObserver<InObservable, Destination>;
 
-			// let d = destination.clone();
-			// let subscription = next.subscribe(d);
-			// self.inner_subscriber = Some(subscription);
-		}
+	fn next_forward(&mut self, next: Self::In, destination: &mut Self::Destination) {
+		destination.next(next);
 	}
 
-	fn error_forward<
-		Destination: Observer<
-				In = <Self::In as ObservableOutput>::Out,
-				InError = <Self::In as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		error: Self::InError,
-		destination: &mut Destination,
-	) {
-		if !self.closed {
-			destination.error(error.into());
-
-			if let Some(mut inner_subscriber) = self.inner_subscriber.take() {
-				inner_subscriber.unsubscribe();
-			}
-		}
+	fn error_forward(&mut self, error: Self::InError, destination: &mut Self::Destination) {
+		destination.error(error.into());
 	}
-	fn complete_forward<
-		Destination: Observer<
-				In = <Self::In as ObservableOutput>::Out,
-				InError = <Self::In as ObservableOutput>::OutError,
-			>,
-	>(
-		&mut self,
-		destination: &mut Destination,
-	) {
-		if !self.closed {
-			self.closed = true;
-			destination.complete();
-			if let Some(mut inner_subscriber) = self.inner_subscriber.take() {
-				inner_subscriber.unsubscribe();
-			}
-		}
+	fn complete_forward(&mut self, destination: &mut Self::Destination) {
+		destination.complete();
 	}
 }
 
-pub struct FlatObserver<InnerObservable, InnerSubscriber, Destination>
+pub struct FlatObserver<InnerObservable, Destination>
 where
 	InnerObservable: Observable,
-	InnerSubscriber: Subscription,
 	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	shared_observer: SharedObserver<Destination>,
-	inner_subscriber: Option<InnerSubscriber>,
+	inner_subscriber: Option<InnerObservable::Subscription>,
 	closed: bool,
 	_phantom_data: PhantomData<InnerObservable>,
 }
 
-impl<InnerObservable, InnerSubscriber, Destination>
-	FlatObserver<InnerObservable, InnerSubscriber, Destination>
+impl<InnerObservable, Destination> FlatObserver<InnerObservable, Destination>
 where
 	InnerObservable: Observable,
-	InnerSubscriber: Subscription,
 	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	pub fn new(shared_observer: SharedObserver<Destination>) -> Self {
@@ -149,24 +118,18 @@ where
 		}
 	}
 }
-impl<InnerObservable, InnerSubscription, Destination> ObserverInput
-	for FlatObserver<InnerObservable, InnerSubscription, Destination>
+impl<InnerObservable, Destination> ObserverInput for FlatObserver<InnerObservable, Destination>
 where
-	InnerObservable: Observable<Subscription = InnerSubscription>,
-	InnerSubscription: Subscription,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
-	Destination: 'static + Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	InnerObservable: Observable,
+	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	type In = InnerObservable;
 	type InError = InnerObservable::OutError;
 }
 
-impl<InnerObservable, InnerSubscription, Destination> Observer
-	for FlatObserver<InnerObservable, InnerSubscription, Destination>
+impl<InnerObservable, Destination> Observer for FlatObserver<InnerObservable, Destination>
 where
-	InnerObservable: Observable<Subscription = InnerSubscription>,
-	InnerSubscription: Subscription,
+	InnerObservable: Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static + Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,

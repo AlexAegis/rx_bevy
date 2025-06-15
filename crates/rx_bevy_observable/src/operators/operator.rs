@@ -1,35 +1,31 @@
-use crate::{
-	Forwarder, ForwarderBridge, ObservableOutput, Observer, ObserverInput, Subscriber,
-	SubscriberForwarder,
-};
+use crate::{ObservableOutput, Observer, ObserverInput, Subscriber, SubscriberForwarder};
 
 /// Every Operator is an Observer that can subscribe to an observable, and upon
 /// subscription, returns it's own [OperatorObserver] that you can subscribe to.
 /// Destination is the Observer that will get subscribed to this internal Observable.
-pub trait Operator {
-	type Fw: Forwarder;
+pub trait Operator: ObserverInput + ObservableOutput {
+	type Sub<D>: SubscriberForwarder<Destination = D>
+		+ ObserverInput<In = Self::In, InError = Self::InError>
+		+ ObservableOutput<Out = Self::Out, OutError = Self::OutError>;
 
-	fn create_instance(&self) -> Self::Fw;
+	fn create_instance<Destination>(&self) -> Self::Sub<Destination>;
 
 	#[inline]
 	fn operator_subscribe<
 		Destination: 'static
 			+ Observer<
-				In = <Self::Fw as ObservableOutput>::Out,
-				InError = <Self::Fw as ObservableOutput>::OutError,
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
 			>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscriber<ForwarderBridge<Self::Fw, Destination>, Destination> {
-		let fw = self.create_instance();
-
-		let fwb = ForwarderBridge::new(fw);
-
-		Subscriber::new(destination, fwb)
+	) -> Subscriber<Self::Sub<Destination>, Destination> {
+		Subscriber::new(destination, self.create_instance::<Destination>())
 	}
 }
 
+/*
 impl<T> ObserverInput for T
 where
 	T: Operator,
@@ -45,3 +41,4 @@ where
 	type Out = <T::Fw as ObservableOutput>::Out;
 	type OutError = <T::Fw as ObservableOutput>::OutError;
 }
+*/

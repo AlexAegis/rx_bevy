@@ -15,12 +15,28 @@ impl<In, InError, Callback> Operator for TapOperator<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
-	type Fw = TapForwarder<In, InError, Callback>;
+	type Sub = TapForwarder<In, InError, Callback>;
 
 	#[inline]
 	fn create_instance(&self) -> Self::Fw {
 		Self::Fw::new(self.callback.clone())
 	}
+}
+
+impl<In, InError, Callback> ObservableOutput for TapOperator<In, InError, Callback>
+where
+	Callback: for<'a> Fn(&'a In),
+{
+	type Out = In;
+	type OutError = InError;
+}
+
+impl<In, InError, Callback> ObserverInput for TapOperator<In, InError, Callback>
+where
+	Callback: for<'a> Fn(&'a In),
+{
+	type In = In;
+	type InError = InError;
 }
 
 pub struct TapForwarder<In, InError, Callback>

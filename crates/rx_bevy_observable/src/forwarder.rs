@@ -6,7 +6,7 @@ pub struct ObserverWrapper<D>
 where
 	D: Observer,
 {
-	destination: D,
+	pub destination: D,
 }
 
 impl<D> ObserverInput for ObserverWrapper<D>
@@ -57,7 +57,7 @@ pub trait RootForwarder<D>: ObserverInput + ObservableOutput {
 pub struct ForwarderBridge<Fw, Destination>
 where
 	Fw: Forwarder,
-	Destination: Observer,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	forwarder: Fw,
 	_phantom_data: PhantomData<Destination>,
@@ -66,7 +66,7 @@ where
 impl<Fw, Destination> ForwarderBridge<Fw, Destination>
 where
 	Fw: Forwarder,
-	Destination: Observer,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	pub fn new(forwarder: Fw) -> Self {
 		Self {
@@ -79,7 +79,7 @@ where
 impl<Fw, Destination> ObservableOutput for ForwarderBridge<Fw, Destination>
 where
 	Fw: Forwarder,
-	Destination: Observer,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	type Out = Fw::Out;
 	type OutError = Fw::OutError;
@@ -88,7 +88,7 @@ where
 impl<Fw, Destination> ObserverInput for ForwarderBridge<Fw, Destination>
 where
 	Fw: Forwarder,
-	Destination: Observer,
+	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	type In = Fw::In;
 	type InError = Fw::InError;
@@ -101,21 +101,24 @@ where
 {
 	type Destination = D;
 
+	#[inline]
 	fn next_forward(&mut self, next: Self::In, destination: &mut Self::Destination) {
 		self.forwarder.next_forward(next, destination);
 	}
 
+	#[inline]
 	fn error_forward(&mut self, error: Self::InError, destination: &mut Self::Destination) {
 		self.forwarder.error_forward(error, destination);
 	}
 
+	#[inline]
 	fn complete_forward(&mut self, destination: &mut Self::Destination) {
 		self.forwarder.complete_forward(destination);
 	}
 }
 
 pub trait SubscriberForwarder: ObserverInput + ObservableOutput {
-	type Destination: Observer<In = Self::Out, InError = Self::OutError>;
+	type Destination: Observer;
 
 	fn next_forward(&mut self, next: Self::In, destination: &mut Self::Destination);
 

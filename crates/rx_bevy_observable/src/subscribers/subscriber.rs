@@ -6,7 +6,7 @@ use crate::{
 pub struct Subscriber<Fw, Destination>
 where
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
-	Fw: SubscriberForwarder,
+	Fw: SubscriberForwarder<Destination = Destination>,
 {
 	pub destination: Destination,
 	pub forwarder: Fw,
@@ -15,7 +15,7 @@ where
 
 impl<Fw, Destination> Subscriber<Fw, Destination>
 where
-	Fw: SubscriberForwarder,
+	Fw: SubscriberForwarder<Destination = Destination>,
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	pub fn new(destination: Destination, forwarder: Fw) -> Self {
@@ -29,7 +29,7 @@ where
 
 impl<Fw, Destination> ObserverInput for Subscriber<Fw, Destination>
 where
-	Fw: SubscriberForwarder,
+	Fw: SubscriberForwarder<Destination = Destination>,
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	type In = Fw::In;
