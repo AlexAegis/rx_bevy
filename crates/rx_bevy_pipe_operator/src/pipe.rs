@@ -69,7 +69,7 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
-		let operator_subscriber = self.operator.operator_subscribe::<Destination>(destination);
+		let operator_subscriber = self.operator.operator_subscribe(destination);
 		self.source_observable.subscribe(operator_subscriber)
 	}
 }

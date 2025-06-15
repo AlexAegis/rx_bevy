@@ -70,7 +70,6 @@ rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
 rx_bevy_observable_throw = { path = "crates/rx_bevy_observable_throw" }
 # Pipes
 rx_bevy_pipe_operator = { path = "crates/rx_bevy_pipe_operator" }
-rx_bevy_pipe_lift = { path = "crates/rx_bevy_pipe_lift" }
 # Observers
 rx_bevy_observer_noop = { path = "crates/rx_bevy_observer_noop" }
 rx_bevy_observer_print = { path = "crates/rx_bevy_observer_print" }
