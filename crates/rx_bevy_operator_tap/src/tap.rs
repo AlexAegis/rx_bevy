@@ -15,7 +15,7 @@ impl<In, InError, Callback> Operator for TapOperator<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
-	type Sub = TapForwarder<In, InError, Callback>;
+	type Subscriber = TapForwarder<In, InError, Callback>;
 
 	#[inline]
 	fn create_instance(&self) -> Self::Fw {

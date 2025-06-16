@@ -1,13 +1,26 @@
-use crate::{ObservableOutput, ObserverInput, Operator, SubscriberForwarder};
+use crate::{ObservableOutput, Observer, ObserverInput, Operator, Subscriber, Subscription};
 
 impl<T> Operator for Option<T>
 where
 	T: Operator,
 {
-	type Sub<D> = OptionForwarder<T::Sub<D>>;
+	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>> =
+		OptionSubscriber<T::Subscriber<D>>;
 
-	fn create_instance<D>(&self) -> Self::Sub<D> {
-		OptionForwarder::new(self.as_ref().map(|operator| operator.create_instance()))
+	fn operator_subscribe<
+		Destination: 'static
+			+ Observer<
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
+			>,
+	>(
+		&mut self,
+		destination: Destination,
+	) -> Self::Subscriber<Destination> {
+		OptionSubscriber::new(
+			self.as_mut()
+				.map(|operator| operator.operator_subscribe(destination)),
+		)
 	}
 }
 
@@ -15,99 +28,100 @@ impl<T> ObservableOutput for Option<T>
 where
 	T: Operator,
 {
-	type Out = <T as ObservableOutput>::Out;
-	type OutError = <T as ObservableOutput>::OutError;
+	type Out = T::Out;
+	type OutError = T::OutError;
 }
 
 impl<T> ObserverInput for Option<T>
 where
 	T: Operator,
 {
-	type In = <T as ObserverInput>::In;
-	type InError = <T as ObserverInput>::InError;
+	type In = T::In;
+	type InError = T::InError;
 }
 
 #[derive(Debug)]
-pub struct OptionForwarder<Fw>
+pub struct OptionSubscriber<Sub>
 where
-	Fw: SubscriberForwarder,
+	Sub: Subscriber,
 {
-	optional_internal_forwarder: Option<Fw>,
+	internal_subscriber: Option<Sub>,
 }
 
-impl<Fw> OptionForwarder<Fw>
+impl<Sub> OptionSubscriber<Sub>
 where
-	Fw: SubscriberForwarder,
+	Sub: Subscriber,
 {
-	pub fn new(optional_internal_forwarder: Option<Fw>) -> Self {
+	pub fn new(internal_subscriber: Option<Sub>) -> Self {
 		Self {
-			optional_internal_forwarder,
+			internal_subscriber,
 		}
 	}
 }
 
-impl<Fw> Default for OptionForwarder<Fw>
+impl<Sub> ObservableOutput for OptionSubscriber<Sub>
 where
-	Fw: SubscriberForwarder,
+	Sub: Subscriber,
 {
-	fn default() -> Self {
-		Self {
-			optional_internal_forwarder: None,
-		}
-	}
+	type Out = Sub::Out;
+	type OutError = Sub::OutError;
 }
 
-impl<Fw> ObservableOutput for OptionForwarder<Fw>
+impl<Sub> ObserverInput for OptionSubscriber<Sub>
 where
-	Fw: SubscriberForwarder,
+	Sub: Subscriber,
 {
-	type Out = <Fw as ObservableOutput>::Out;
-	type OutError = <Fw as ObservableOutput>::OutError;
+	type In = Sub::In;
+	type InError = Sub::InError;
 }
 
-impl<Fw> ObserverInput for OptionForwarder<Fw>
+impl<Sub> Observer for OptionSubscriber<Sub>
 where
-	Fw: SubscriberForwarder,
+	Sub: Subscriber,
 {
-	type In = <Fw as ObserverInput>::In;
-	type InError = <Fw as ObserverInput>::InError;
-}
-
-impl<Fw> SubscriberForwarder for OptionForwarder<Fw>
-where
-	Fw: SubscriberForwarder,
-{
-	type Destination = Fw::Destination;
-
 	#[inline]
-	fn next_forward(&mut self, next: Self::In, destination: &mut Self::Destination) {
-		if let Some(internal_forwarder) = &mut self.optional_internal_forwarder {
-			internal_forwarder.next_forward(next, destination);
+	fn next(&mut self, next: Self::In) {
+		if let Some(internal_subscriber) = &mut self.internal_subscriber {
+			internal_subscriber.next(next);
 		}
 	}
 
 	#[inline]
-	fn error_forward(&mut self, error: Self::InError, destination: &mut Self::Destination) {
-		if let Some(internal_forwarder) = &mut self.optional_internal_forwarder {
-			internal_forwarder.error_forward(error, destination);
+	fn error(&mut self, error: Self::InError) {
+		if let Some(internal_subscriber) = &mut self.internal_subscriber {
+			internal_subscriber.error(error);
 		}
 	}
 
 	#[inline]
-	fn complete_forward(&mut self, destination: &mut Self::Destination) {
-		if let Some(internal_forwarder) = &mut self.optional_internal_forwarder {
-			internal_forwarder.complete_forward(destination);
+	fn complete(&mut self) {
+		if let Some(internal_subscriber) = &mut self.internal_subscriber {
+			internal_subscriber.complete();
 		}
 	}
 }
 
-impl<Fw> Clone for OptionForwarder<Fw>
+impl<Sub> Subscriber for OptionSubscriber<Sub>
 where
-	Fw: Clone + SubscriberForwarder,
+	Sub: Subscriber,
 {
-	fn clone(&self) -> Self {
-		Self {
-			optional_internal_forwarder: self.optional_internal_forwarder.clone(),
-		}
+	type Destination = Sub::Destination;
+}
+
+impl<Sub> Subscription for OptionSubscriber<Sub>
+where
+	Sub: Subscriber,
+{
+	fn is_closed(&self) -> bool {
+		self.internal_subscriber
+			.as_ref()
+			.map(|internal_sub| internal_sub.is_closed())
+			.unwrap_or(true)
+	}
+
+	fn unsubscribe(&mut self) {
+		self.internal_subscriber
+			.as_mut()
+			.map(|internal_sub| internal_sub.unsubscribe());
 	}
 }

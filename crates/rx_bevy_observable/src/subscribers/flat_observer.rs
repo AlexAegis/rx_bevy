@@ -66,8 +66,8 @@ where
 	InObservable: Observable,
 	Destination: Observer,
 {
-	type Out = <InObservable as ObservableOutput>::Out;
-	type OutError = <InObservable as ObservableOutput>::OutError;
+	type Out = InObservable::Out;
+	type OutError = InObservable::OutError;
 }
 
 impl<InObservable, InError, Destination> SubscriberForwarder
@@ -79,10 +79,16 @@ where
 	InError: Into<InObservable::OutError>,
 	Destination: 'static + Observer<In = InObservable::Out, InError = InObservable::OutError>,
 {
-	type Destination = FlatObserver<InObservable, Destination>;
+	type Destination = Destination;
 
-	fn next_forward(&mut self, next: Self::In, destination: &mut Self::Destination) {
-		destination.next(next);
+	fn next_forward(&mut self, mut next: Self::In, destination: &mut Self::Destination) {
+		// destination.next(next);
+		if let Some(mut inner_subscriber) = self.inner_subscriber.take() {
+			inner_subscriber.unsubscribe();
+		}
+
+		let subscription = next.subscribe(self.destination.clone());
+		self.inner_subscriber = Some(subscription);
 	}
 
 	fn error_forward(&mut self, error: Self::InError, destination: &mut Self::Destination) {

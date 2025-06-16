@@ -1,10 +1,10 @@
-use crate::{Forwarder, Observer, ObserverInput};
+use crate::{Observer, ObserverInput, SubscriberForwarder};
 
 /// Combines an operator instance and a destination
 /// Useful for combining operators, as a short lived struct
 pub struct IntermediateObserver<'a, Fw, Dest>
 where
-	Fw: Forwarder,
+	Fw: SubscriberForwarder<Destination = Dest>,
 	Dest: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	pub operator_instance: &'a mut Fw,
@@ -13,7 +13,7 @@ where
 
 impl<'a, Fw, Dest> IntermediateObserver<'a, Fw, Dest>
 where
-	Fw: Forwarder,
+	Fw: SubscriberForwarder<Destination = Dest>,
 	Dest: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	pub fn new(operator_instance: &'a mut Fw, destination: &'a mut Dest) -> Self {
@@ -26,7 +26,7 @@ where
 
 impl<'a, Fw, Dest> ObserverInput for IntermediateObserver<'a, Fw, Dest>
 where
-	Fw: Forwarder,
+	Fw: SubscriberForwarder<Destination = Dest>,
 	Dest: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	type In = Fw::In;
@@ -35,7 +35,7 @@ where
 
 impl<'a, Fw, Dest> Observer for IntermediateObserver<'a, Fw, Dest>
 where
-	Fw: Forwarder,
+	Fw: SubscriberForwarder<Destination = Dest>,
 	Dest: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
 	#[inline]

@@ -1,13 +1,39 @@
 use std::sync::{Arc, Mutex};
 
-use crate::{Observer, ObserverInput};
+use crate::{Observer, ObserverInput, Subscription};
 
+#[derive(Debug)]
 pub struct ClosableDestination<Destination>
 where
 	Destination: Observer,
 {
 	pub destination: Destination,
 	pub closed: bool,
+}
+
+impl<Destination> ClosableDestination<Destination>
+where
+	Destination: Observer,
+{
+	pub fn new(destination: Destination) -> Self {
+		Self {
+			destination,
+			closed: false,
+		}
+	}
+}
+
+impl<Destination> Subscription for ClosableDestination<Destination>
+where
+	Destination: Observer,
+{
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
+
+	fn unsubscribe(&mut self) {
+		self.closed = true;
+	}
 }
 
 impl<Destination> From<Destination> for ClosableDestination<Destination>

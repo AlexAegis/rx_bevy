@@ -1,6 +1,6 @@
 use std::{marker::PhantomData, ops::Sub};
 
-use crate::{ObservableOutput, Observer, ObserverInput, SharedObserver, Subscriber};
+use crate::{ObservableOutput, Observer, ObserverInput, SharedObserver, HardSubscriber};
 
 pub struct ObserverWrapper<D>
 where
@@ -118,7 +118,7 @@ where
 }
 
 pub trait SubscriberForwarder: ObserverInput + ObservableOutput {
-	type Destination: Observer;
+	type Destination: Observer<In = Self::Out, InError = Self::OutError>;
 
 	fn next_forward(&mut self, next: Self::In, destination: &mut Self::Destination);
 

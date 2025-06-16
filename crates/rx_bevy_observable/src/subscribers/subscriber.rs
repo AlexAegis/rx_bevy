@@ -3,7 +3,7 @@ use crate::{
 	SubscriberForwarder, subscribers::subscriber,
 };
 
-pub struct Subscriber<Fw, Destination>
+pub struct HardSubscriber<Fw, Destination>
 where
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 	Fw: SubscriberForwarder<Destination = Destination>,
@@ -13,7 +13,7 @@ where
 	pub is_closed: bool,
 }
 
-impl<Fw, Destination> Subscriber<Fw, Destination>
+impl<Fw, Destination> HardSubscriber<Fw, Destination>
 where
 	Fw: SubscriberForwarder<Destination = Destination>,
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
@@ -27,7 +27,7 @@ where
 	}
 }
 
-impl<Fw, Destination> ObserverInput for Subscriber<Fw, Destination>
+impl<Fw, Destination> ObserverInput for HardSubscriber<Fw, Destination>
 where
 	Fw: SubscriberForwarder<Destination = Destination>,
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
@@ -36,7 +36,7 @@ where
 	type InError = Fw::InError;
 }
 
-impl<Fw, Destination> Observer for Subscriber<Fw, Destination>
+impl<Fw, Destination> Observer for HardSubscriber<Fw, Destination>
 where
 	Fw: SubscriberForwarder<Destination = Destination>,
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
