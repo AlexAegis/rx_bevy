@@ -1,5 +1,7 @@
-use crate::ObservableOutput;
+use crate::Observable;
 
-pub trait IntoObservable: ObservableOutput {}
+pub trait IntoObservable {
+	type Obs: Observable;
 
-impl<T> IntoObservable for T where T: IntoObservable {}
+	fn into_observable(self) -> Self::Obs;
+}

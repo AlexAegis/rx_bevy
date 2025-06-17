@@ -3,9 +3,10 @@ use rx_bevy_operator_switch_map::switch_map_extension::ObservableExtensionSwitch
 
 fn main() {
 	// TODO: Fix this
-	IteratorObservable::new(1..=10)
+	(1..=5)
+		.into_observable()
 		.switch_map(|next| {
-			IteratorObservable::new(next..=10).map(move |i| format!("from {next} i: {i}"))
+			IteratorObservable::new(next..=3).map(move |i| format!("from {next} i: {i}"))
 		})
 		.subscribe(PrintObserver::new("switch_map"))
 }
