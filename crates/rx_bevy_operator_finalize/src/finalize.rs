@@ -17,6 +17,8 @@ where
 impl<In, InError, Callback> ObservableOutput for FinalizeOperator<In, InError, Callback>
 where
 	Callback: FnOnce(),
+	In: 'static,
+	InError: 'static,
 {
 	type Out = In;
 	type OutError = InError;
@@ -25,6 +27,8 @@ where
 impl<In, InError, Callback> ObserverInput for FinalizeOperator<In, InError, Callback>
 where
 	Callback: FnOnce(),
+	In: 'static,
+	InError: 'static,
 {
 	type In = In;
 	type InError = InError;
@@ -32,12 +36,16 @@ where
 
 impl<In, InError, Callback> Operator for FinalizeOperator<In, InError, Callback>
 where
-	Callback: Clone + FnOnce(),
+	Callback: 'static + Clone + FnOnce(),
+	In: 'static,
+	InError: 'static,
 {
-	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
 		FinalizeSubscriber<In, InError, Callback, Destination>;
 
-	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
@@ -99,6 +107,8 @@ impl<In, InError, Callback, Destination> ObservableOutput
 where
 	Callback: FnOnce(),
 	Destination: Observer,
+	In: 'static,
+	InError: 'static,
 {
 	type Out = In;
 	type OutError = InError;
@@ -109,6 +119,8 @@ impl<In, InError, Callback, Destination> ObserverInput
 where
 	Callback: FnOnce(),
 	Destination: Observer,
+	In: 'static,
+	InError: 'static,
 {
 	type In = In;
 	type InError = InError;
@@ -122,6 +134,8 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	In: 'static,
+	InError: 'static,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -165,6 +179,8 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	In: 'static,
+	InError: 'static,
 {
 	type Destination = Destination;
 }

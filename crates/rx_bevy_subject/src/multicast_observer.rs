@@ -32,8 +32,8 @@ where
 impl<In, Out, InError, F> ObserverInput for MulticastSubscriber<F>
 where
 	F: DynForwarder<In = In, Out = Out, InError = InError>,
-	In: Clone,
-	InError: Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
 {
 	type In = In;
 	type InError = InError;
@@ -42,8 +42,8 @@ where
 impl<In, Out, InError, F> Observer for MulticastSubscriber<F>
 where
 	F: DynForwarder<In = In, Out = Out, InError = InError>,
-	In: Clone,
-	InError: Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
 {
 	fn next(&mut self, next: In) {
 		if !self.closed {

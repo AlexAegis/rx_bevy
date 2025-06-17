@@ -14,8 +14,11 @@ where
 }
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionMap<Out>: Observable<Out = Out> + Sized {
-	fn filter_map<NextOut, Mapper: Clone + Fn(Out) -> Option<NextOut>>(
+pub trait ObservableExtensionMap<Out>: Observable<Out = Out> + Sized
+where
+	Out: 'static,
+{
+	fn filter_map<NextOut: 'static, Mapper: 'static + Clone + Fn(Out) -> Option<NextOut>>(
 		self,
 		mapper: Mapper,
 	) -> Pipe<Self, FilterMapOperator<Mapper, Out, NextOut, Self::OutError>> {
@@ -23,11 +26,16 @@ pub trait ObservableExtensionMap<Out>: Observable<Out = Out> + Sized {
 	}
 }
 
-impl<T, Out> ObservableExtensionMap<Out> for T where T: Observable<Out = Out> {}
+impl<T, Out> ObservableExtensionMap<Out> for T
+where
+	T: Observable<Out = Out>,
+	Out: 'static,
+{
+}
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionMap: Operator + Sized {
-	fn filter_map<NextOut, Mapper: Clone + Fn(Self::Out) -> Option<NextOut>>(
+	fn filter_map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> Option<NextOut>>(
 		self,
 		mapper: Mapper,
 	) -> CompositeOperator<Self, FilterMapOperator<Mapper, Self::Out, NextOut, Self::OutError>> {

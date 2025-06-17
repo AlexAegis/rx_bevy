@@ -43,7 +43,7 @@ where
 	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
-	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
 		CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<D>>, Op::Subscriber<D>, D>;
 
 	fn operator_subscribe<

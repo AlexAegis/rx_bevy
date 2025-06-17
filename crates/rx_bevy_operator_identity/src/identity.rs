@@ -26,21 +26,35 @@ impl<In, InError> Clone for IdentityOperator<In, InError> {
 	}
 }
 
-impl<In, InError> ObservableOutput for IdentityOperator<In, InError> {
+impl<In, InError> ObservableOutput for IdentityOperator<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
 	type Out = In;
 	type OutError = InError;
 }
 
-impl<In, InError> ObserverInput for IdentityOperator<In, InError> {
+impl<In, InError> ObserverInput for IdentityOperator<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError> Operator for IdentityOperator<In, InError> {
-	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>> =
+impl<In, InError> Operator for IdentityOperator<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
+	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
 		IdentitySubscriber<In, InError, Destination>;
 
-	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
@@ -72,6 +86,8 @@ where
 impl<In, InError, Destination> ObservableOutput for IdentitySubscriber<In, InError, Destination>
 where
 	Destination: Observer,
+	In: 'static,
+	InError: 'static,
 {
 	type Out = In;
 	type OutError = InError;
@@ -80,6 +96,8 @@ where
 impl<In, InError, Destination> ObserverInput for IdentitySubscriber<In, InError, Destination>
 where
 	Destination: Observer,
+	In: 'static,
+	InError: 'static,
 {
 	type In = In;
 	type InError = InError;
@@ -91,6 +109,8 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	In: 'static,
+	InError: 'static,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -113,6 +133,8 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	In: 'static,
+	InError: 'static,
 {
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
@@ -129,6 +151,8 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	In: 'static,
+	InError: 'static,
 {
 	type Destination = Destination;
 }

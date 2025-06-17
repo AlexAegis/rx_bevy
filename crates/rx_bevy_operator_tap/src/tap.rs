@@ -16,12 +16,16 @@ where
 
 impl<In, InError, Callback> Operator for TapOperator<In, InError, Callback>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
+	Callback: 'static + Clone + for<'a> Fn(&'a In),
+	In: 'static,
+	InError: 'static,
 {
-	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
 		TapSubscriber<In, InError, Callback, D>;
 
-	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
@@ -32,6 +36,8 @@ where
 impl<In, InError, Callback> ObservableOutput for TapOperator<In, InError, Callback>
 where
 	Callback: for<'a> Fn(&'a In),
+	In: 'static,
+	InError: 'static,
 {
 	type Out = In;
 	type OutError = InError;
@@ -40,6 +46,8 @@ where
 impl<In, InError, Callback> ObserverInput for TapOperator<In, InError, Callback>
 where
 	Callback: for<'a> Fn(&'a In),
+	In: 'static,
+	InError: 'static,
 {
 	type In = In;
 	type InError = InError;
@@ -98,6 +106,8 @@ impl<In, InError, Callback, Destination> ObservableOutput
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 	Destination: Observer<In = In, InError = InError>,
+	In: 'static,
+	InError: 'static,
 {
 	type Out = In;
 	type OutError = InError;
@@ -108,6 +118,8 @@ impl<In, InError, Callback, Destination> ObserverInput
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 	Destination: Observer<In = In, InError = InError>,
+	In: 'static,
+	InError: 'static,
 {
 	type In = In;
 	type InError = InError;
@@ -118,6 +130,8 @@ impl<In, InError, Callback, Destination> Observer
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 	Destination: Observer<In = In, InError = InError>,
+	In: 'static,
+	InError: 'static,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {

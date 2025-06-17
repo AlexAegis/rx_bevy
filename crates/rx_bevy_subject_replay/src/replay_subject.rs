@@ -7,7 +7,11 @@ use rx_bevy_subject::{Subject, SubjectSubscription};
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.
 #[derive(Clone)]
-pub struct ReplaySubject<const CAPACITY: usize, T, Error = ()> {
+pub struct ReplaySubject<const CAPACITY: usize, T, Error = ()>
+where
+	T: 'static,
+	Error: 'static,
+{
 	subject: Subject<T, Error>,
 	/// Refcell so even cloned subjects retain the same current value across clones
 	values: Rc<RefCell<ConstGenericRingBuffer<T, CAPACITY>>>,

@@ -16,6 +16,8 @@ where
 impl<Mapper, In, Out, Error> ObserverInput for FilterMapOperator<Mapper, In, Out, Error>
 where
 	Mapper: Fn(In) -> Option<Out>,
+	In: 'static,
+	Error: 'static,
 {
 	type In = In;
 	type InError = Error;
@@ -24,6 +26,8 @@ where
 impl<Mapper, In, Out, Error> ObservableOutput for FilterMapOperator<Mapper, In, Out, Error>
 where
 	Mapper: Fn(In) -> Option<Out>,
+	Out: 'static,
+	Error: 'static,
 {
 	type Out = Out;
 	type OutError = Error;
@@ -31,12 +35,17 @@ where
 
 impl<Mapper, In, Out, Error> Operator for FilterMapOperator<Mapper, In, Out, Error>
 where
-	Mapper: Clone + Fn(In) -> Option<Out>,
+	Mapper: 'static + Clone + Fn(In) -> Option<Out>,
+	In: 'static,
+	Out: 'static,
+	Error: 'static,
 {
-	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
 		FilterMapSubscriber<Mapper, In, Out, Error, D>;
 
-	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
@@ -102,6 +111,9 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	In: 'static,
+	Out: 'static,
+	Error: 'static,
 {
 	type In = In;
 	type InError = Error;
@@ -112,6 +124,8 @@ impl<Mapper, In, Out, Error, Destination> ObservableOutput
 where
 	Mapper: Fn(In) -> Option<Out>,
 	Destination: Observer,
+	Out: 'static,
+	Error: 'static,
 {
 	type Out = Out;
 	type OutError = Error;
@@ -125,6 +139,9 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	In: 'static,
+	Out: 'static,
+	Error: 'static,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -152,6 +169,8 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	Out: 'static,
+	Error: 'static,
 {
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()

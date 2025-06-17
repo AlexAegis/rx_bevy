@@ -7,7 +7,7 @@ impl<T> Operator for Option<T>
 where
 	T: Operator,
 {
-	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
 		OptionSubscriber<T::Subscriber<D>>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(

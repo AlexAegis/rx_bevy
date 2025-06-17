@@ -22,15 +22,17 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, Error, OnPush, OnError, OnComplete> ObserverInput
-	for FnObserver<In, Error, OnPush, OnError, OnComplete>
+impl<In, InError, OnPush, OnError, OnComplete> ObserverInput
+	for FnObserver<In, InError, OnPush, OnError, OnComplete>
 where
 	OnPush: FnMut(In),
-	OnError: FnMut(Error),
+	OnError: FnMut(InError),
 	OnComplete: FnMut(),
+	In: 'static,
+	InError: 'static,
 {
 	type In = In;
-	type InError = Error;
+	type InError = InError;
 }
 
 impl<In, InError, OnPush, OnError, OnComplete> Observer
@@ -39,6 +41,8 @@ where
 	OnPush: FnMut(In),
 	OnError: FnMut(InError),
 	OnComplete: FnMut(),
+	In: 'static,
+	InError: 'static,
 {
 	fn next(&mut self, next: In) {
 		(self.next)(next);

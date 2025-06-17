@@ -10,7 +10,7 @@ where
 
 impl<Error> ObservableOutput for ThrowObservable<Error>
 where
-	Error: Clone,
+	Error: 'static + Clone,
 {
 	type Out = ();
 	type OutError = Error;
@@ -18,7 +18,7 @@ where
 
 impl<Error> Observable for ThrowObservable<Error>
 where
-	Error: Clone,
+	Error: 'static + Clone,
 {
 	type Subscription = ();
 

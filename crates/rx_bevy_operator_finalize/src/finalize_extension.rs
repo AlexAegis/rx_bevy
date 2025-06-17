@@ -14,8 +14,11 @@ where
 }
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionFinalize<Out>: Observable<Out = Out> + Sized {
-	fn finalize<Callback: Clone + FnOnce()>(
+pub trait ObservableExtensionFinalize<Out>: Observable<Out = Out> + Sized
+where
+	Out: 'static,
+{
+	fn finalize<Callback: 'static + Clone + FnOnce()>(
 		self,
 		callback: Callback,
 	) -> Pipe<Self, FinalizeOperator<Out, Self::OutError, Callback>> {
@@ -23,11 +26,16 @@ pub trait ObservableExtensionFinalize<Out>: Observable<Out = Out> + Sized {
 	}
 }
 
-impl<T, Out> ObservableExtensionFinalize<Out> for T where T: Observable<Out = Out> {}
+impl<T, Out> ObservableExtensionFinalize<Out> for T
+where
+	T: Observable<Out = Out>,
+	Out: 'static,
+{
+}
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionFinalize: Operator + Sized {
-	fn finalize<Callback: Clone + FnOnce()>(
+	fn finalize<Callback: 'static + Clone + FnOnce()>(
 		self,
 		callback: Callback,
 	) -> CompositeOperator<Self, FinalizeOperator<Self::Out, Self::OutError, Callback>> {

@@ -7,12 +7,20 @@ pub struct DynFnObserver<In, Error> {
 	on_complete: Option<Box<dyn FnMut()>>,
 }
 
-impl<In, InError> ObserverInput for DynFnObserver<In, InError> {
+impl<In, InError> ObserverInput for DynFnObserver<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError> Observer for DynFnObserver<In, InError> {
+impl<In, InError> Observer for DynFnObserver<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
 	fn next(&mut self, next: In) {
 		if let Some(on_next) = &mut self.on_next {
 			(on_next)(next);

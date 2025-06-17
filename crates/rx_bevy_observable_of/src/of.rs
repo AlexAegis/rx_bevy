@@ -10,7 +10,7 @@ where
 
 impl<Out> ObservableOutput for OfObservable<Out>
 where
-	Out: Clone,
+	Out: 'static + Clone,
 {
 	type Out = Out;
 	type OutError = ();
@@ -18,7 +18,7 @@ where
 
 impl<Out> Observable for OfObservable<Out>
 where
-	Out: Clone,
+	Out: 'static + Clone,
 {
 	type Subscription = ();
 

@@ -12,8 +12,11 @@ where
 }
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionFilter<Out>: Observable<Out = Out> + Sized {
-	fn filter<Filter: Clone + for<'a> Fn(&'a Out) -> bool>(
+pub trait ObservableExtensionFilter<Out>: Observable<Out = Out> + Sized
+where
+	Out: 'static,
+{
+	fn filter<Filter: 'static + Clone + for<'a> Fn(&'a Out) -> bool>(
 		self,
 		filter: Filter,
 	) -> Pipe<Self, FilterOperator<Out, Self::OutError, Filter>> {
@@ -21,11 +24,16 @@ pub trait ObservableExtensionFilter<Out>: Observable<Out = Out> + Sized {
 	}
 }
 
-impl<T, Out> ObservableExtensionFilter<Out> for T where T: Observable<Out = Out> {}
+impl<T, Out> ObservableExtensionFilter<Out> for T
+where
+	T: Observable<Out = Out>,
+	Out: 'static,
+{
+}
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionFilter: Operator + Sized {
-	fn filter<Filter: Clone + for<'a> Fn(&'a Self::Out) -> bool>(
+	fn filter<Filter: 'static + Clone + for<'a> Fn(&'a Self::Out) -> bool>(
 		self,
 		filter: Filter,
 	) -> CompositeOperator<Self, FilterOperator<Self::Out, Self::OutError, Filter>> {

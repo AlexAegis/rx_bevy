@@ -53,8 +53,9 @@ where
 impl<InObservable, InError, Destination> ObserverInput
 	for SwitchFlattener<InObservable, InError, Destination>
 where
-	InObservable: Observable,
-	Destination: Observer,
+	InObservable: 'static + Observable,
+	InError: 'static,
+	Destination: 'static + Observer,
 {
 	type In = InObservable;
 	type InError = InError;
@@ -73,10 +74,10 @@ where
 impl<InObservable, InError, Destination> SubscriberForwarder
 	for SwitchFlattener<InObservable, InError, Destination>
 where
-	InObservable: Observable,
+	InObservable: 'static + Observable,
 	InObservable::Out: 'static,
 	InObservable::OutError: 'static,
-	InError: Into<InObservable::OutError>,
+	InError: 'static + Into<InObservable::OutError>,
 	Destination: 'static + Observer<In = InObservable::Out, InError = InObservable::OutError>,
 {
 	type Destination = Destination;
@@ -126,7 +127,7 @@ where
 }
 impl<InnerObservable, Destination> ObserverInput for FlatObserver<InnerObservable, Destination>
 where
-	InnerObservable: Observable,
+	InnerObservable: 'static + Observable,
 	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	type In = InnerObservable;
@@ -135,7 +136,7 @@ where
 
 impl<InnerObservable, Destination> Observer for FlatObserver<InnerObservable, Destination>
 where
-	InnerObservable: Observable,
+	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static + Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,

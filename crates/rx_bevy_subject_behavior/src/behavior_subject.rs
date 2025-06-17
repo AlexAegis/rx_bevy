@@ -6,10 +6,14 @@ use rx_bevy_subject::{Subject, SubjectSubscription};
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.
 #[derive(Clone)]
-pub struct BehaviorSubject<T, Error = ()> {
-	subject: Subject<T, Error>,
+pub struct BehaviorSubject<In, Error = ()>
+where
+	In: 'static,
+	Error: 'static,
+{
+	subject: Subject<In, Error>,
 	/// RefCell so even cloned subjects retain the same current value across clones
-	value: Rc<RefCell<T>>,
+	value: Rc<RefCell<In>>,
 }
 
 impl<T, Error> BehaviorSubject<T, Error>

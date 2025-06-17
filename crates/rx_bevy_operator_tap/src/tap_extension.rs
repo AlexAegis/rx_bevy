@@ -1,4 +1,4 @@
-use rx_bevy_observable::{CompositeOperator, Observable, ObservableOutput, Operator};
+use rx_bevy_observable::{CompositeOperator, Observable, Operator};
 use rx_bevy_pipe_operator::Pipe;
 
 use crate::TapOperator;
@@ -12,8 +12,11 @@ where
 }
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionTapNext<Out>: Observable<Out = Out> + Sized {
-	fn tap_next<Callback: Clone + for<'a> Fn(&'a Out)>(
+pub trait ObservableExtensionTapNext<Out>: Observable<Out = Out> + Sized
+where
+	Out: 'static,
+{
+	fn tap_next<Callback: 'static + Clone + for<'a> Fn(&'a Out)>(
 		self,
 		callback: Callback,
 	) -> Pipe<Self, TapOperator<Out, Self::OutError, Callback>> {
@@ -21,11 +24,16 @@ pub trait ObservableExtensionTapNext<Out>: Observable<Out = Out> + Sized {
 	}
 }
 
-impl<T, Out> ObservableExtensionTapNext<Out> for T where T: Observable<Out = Out> {}
+impl<T, Out> ObservableExtensionTapNext<Out> for T
+where
+	T: Observable<Out = Out>,
+	Out: 'static,
+{
+}
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
-	fn tap_next<Callback: Clone + for<'a> Fn(&'a Self::Out)>(
+	fn tap_next<Callback: 'static + Clone + for<'a> Fn(&'a Self::Out)>(
 		self,
 		callback: Callback,
 	) -> CompositeOperator<Self, TapOperator<Self::Out, Self::OutError, Callback>> {

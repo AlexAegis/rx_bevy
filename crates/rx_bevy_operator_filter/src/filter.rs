@@ -12,7 +12,9 @@ pub struct FilterOperator<In, InError, Filter> {
 
 impl<In, InError, Filter> Operator for FilterOperator<In, InError, Filter>
 where
-	Filter: Clone + for<'a> Fn(&'a In) -> bool,
+	Filter: 'static + Clone + for<'a> Fn(&'a In) -> bool,
+	In: 'static,
+	InError: 'static,
 {
 	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
 		FilterSubscriber<In, InError, Filter, D>;
@@ -28,6 +30,8 @@ where
 impl<In, InError, Filter> ObserverInput for FilterOperator<In, InError, Filter>
 where
 	Filter: for<'a> Fn(&'a In) -> bool,
+	In: 'static,
+	InError: 'static,
 {
 	type In = In;
 	type InError = InError;
@@ -35,6 +39,8 @@ where
 
 impl<In, InError, Filter> ObservableOutput for FilterOperator<In, InError, Filter>
 where
+	In: 'static,
+	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
 {
 	type Out = In;
@@ -66,6 +72,8 @@ where
 impl<In, InError, Filter, Destination> ObserverInput
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
+	In: 'static,
+	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Observer,
 {
@@ -76,6 +84,8 @@ where
 impl<In, InError, Filter, Destination> ObservableOutput
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
+	In: 'static,
+	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Observer,
 {
@@ -86,6 +96,8 @@ where
 impl<In, InError, Filter, Destination> Observer
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
+	In: 'static,
+	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Observer<
 			In = <Self as ObservableOutput>::Out,
@@ -112,6 +124,8 @@ where
 impl<In, InError, Filter, Destination> Operation
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
+	In: 'static,
+	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Observer<
 			In = <Self as ObservableOutput>::Out,
@@ -124,6 +138,8 @@ where
 impl<In, InError, Filter, Destination> Subscription
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
+	In: 'static,
+	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Observer<
 			In = <Self as ObservableOutput>::Out,

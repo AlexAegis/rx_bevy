@@ -1,6 +1,6 @@
 pub trait ObserverInput {
-	type In;
-	type InError;
+	type In: 'static;
+	type InError: 'static;
 }
 
 pub trait Observer: ObserverInput {
@@ -15,12 +15,20 @@ pub struct DynObserver<T, E> {
 	pub dyn_complete: Box<dyn FnMut()>,
 }
 
-impl<T, E> ObserverInput for DynObserver<T, E> {
+impl<T, E> ObserverInput for DynObserver<T, E>
+where
+	T: 'static,
+	E: 'static,
+{
 	type In = T;
 	type InError = E;
 }
 
-impl<T, E> Observer for DynObserver<T, E> {
+impl<T, E> Observer for DynObserver<T, E>
+where
+	T: 'static,
+	E: 'static,
+{
 	fn next(&mut self, next: T) {
 		(self.dyn_next)(next);
 	}

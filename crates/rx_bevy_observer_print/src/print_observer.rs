@@ -14,17 +14,17 @@ where
 
 impl<In, InError> ObserverInput for PrintObserver<In, InError>
 where
-	In: Debug,
-	InError: Debug,
+	In: 'static + Debug,
+	InError: 'static + Debug,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<T, Error> Observer for PrintObserver<T, Error>
+impl<In, InError> Observer for PrintObserver<In, InError>
 where
-	T: Debug,
-	Error: Debug,
+	In: 'static + Debug,
+	InError: 'static + Debug,
 {
 	fn next(&mut self, next: Self::In) {
 		println!("{} - next: {:?}", self.prefix, next);
@@ -39,10 +39,10 @@ where
 	}
 }
 
-impl<T, Error> PrintObserver<T, Error>
+impl<In, InError> PrintObserver<In, InError>
 where
-	T: Debug,
-	Error: Debug,
+	In: Debug,
+	InError: Debug,
 {
 	pub fn new(message: &'static str) -> Self {
 		Self {

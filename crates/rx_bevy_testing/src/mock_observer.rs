@@ -7,12 +7,20 @@ pub struct MockObserver<T, Error> {
 	pub completed: bool,
 }
 
-impl<T, Error> ObserverInput for MockObserver<T, Error> {
+impl<T, Error> ObserverInput for MockObserver<T, Error>
+where
+	T: 'static,
+	Error: 'static,
+{
 	type In = T;
 	type InError = Error;
 }
 
-impl<T, Error> Observer for MockObserver<T, Error> {
+impl<T, Error> Observer for MockObserver<T, Error>
+where
+	T: 'static,
+	Error: 'static,
+{
 	fn next(&mut self, next: T) {
 		self.values.push(next);
 	}
@@ -38,7 +46,8 @@ impl<T, Error> Default for MockObserver<T, Error> {
 
 impl<T, Error> MockObserver<T, Error>
 where
-	T: Clone,
+	T: 'static + Clone,
+	Error: 'static,
 {
 	pub fn new_shared() -> SharedObserver<Self> {
 		SharedObserver::new(Self::default())
