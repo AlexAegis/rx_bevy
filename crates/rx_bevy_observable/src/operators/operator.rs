@@ -1,20 +1,20 @@
 use crate::{ObservableOutput, Observer, ObserverInput, Subscription};
 
-// TODO: Not sure if Subscriber should require ObservableOutput, since it's already in Destination
-pub trait Subscriber: Observer + ObserverInput + ObservableOutput + Subscription {
-	type Destination: Observer<In = Self::Out, InError = Self::OutError>;
+pub trait Subscriber: Observer + Subscription {}
+impl<T> Subscriber for T where T: Observer + Subscription {}
+
+/// An operation is something that does something to its [`Self::Destination`]
+pub trait Operation {
+	type Destination: Observer;
 }
 
-pub trait Operator: ObserverInput + ObservableOutput {
-	type Subscriber<Destination: Observer<In = Self::Out, InError = Self::OutError>>: Subscriber<
-			Destination = Destination,
-			In = Self::In,
-			InError = Self::InError,
-			Out = Destination::In,
-			OutError = Destination::InError,
-		>;
+pub trait OperationSubscriber: Observer + Operation + Subscription {}
+impl<T> OperationSubscriber for T where T: Observer + Operation + Subscription {}
 
-	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+pub trait Operator: ObserverInput + ObservableOutput {
+	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>: OperationSubscriber<Destination = Destination, In = Self::In, InError = Self::InError>;
+
+	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination>;

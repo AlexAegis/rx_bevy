@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
-	Subscription,
+	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operation, Operator,
+	Subscriber, Subscription,
 };
 
 pub struct FilterMapOperator<Mapper, In, Out, Error>
@@ -33,10 +33,10 @@ impl<Mapper, In, Out, Error> Operator for FilterMapOperator<Mapper, In, Out, Err
 where
 	Mapper: Clone + Fn(In) -> Option<Out>,
 {
-	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
 		FilterMapSubscriber<Mapper, In, Out, Error, D>;
 
-	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
@@ -162,11 +162,11 @@ where
 	}
 }
 
-impl<Mapper, In, Out, Error, Destination> Subscriber
+impl<Mapper, In, Out, Error, Destination> Operation
 	for FilterMapSubscriber<Mapper, In, Out, Error, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Destination: Observer<In = Self::Out, InError = Self::OutError>,
+	Destination: Observer<In = Out, InError = Error>,
 {
 	type Destination = Destination;
 }

@@ -5,7 +5,8 @@ use std::{
 };
 
 use rx_bevy_observable::{
-	DynForwarder, Observable, ObservableOutput, Observer, ObserverInput, Subscription,
+	ClosableDestination, DynForwarder, Observable, ObservableOutput, Observer, ObserverInput,
+	Subscriber, Subscription,
 };
 
 use crate::MulticastSubscriber;
@@ -113,7 +114,11 @@ impl<T, Error> Observable for Subject<T, Error> {
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
-		let key = self.destinations.borrow_mut().add_destination(destination);
+		let closable_destination = ClosableDestination::new(destination);
+		let key = self
+			.destinations
+			.borrow_mut()
+			.add_destination(closable_destination);
 
 		SubjectSubscription {
 			key,

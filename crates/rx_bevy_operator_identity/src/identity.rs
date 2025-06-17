@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, Forwarder, ObservableOutput, Observer, ObserverInput, Operator,
+	ClosableDestination, Forwarder, ObservableOutput, Observer, ObserverInput, Operation, Operator,
 	Subscriber, Subscription,
 };
 
@@ -37,10 +37,10 @@ impl<In, InError> ObserverInput for IdentityOperator<In, InError> {
 }
 
 impl<In, InError> Operator for IdentityOperator<In, InError> {
-	type Subscriber<Destination: Observer<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>> =
 		IdentitySubscriber<In, InError, Destination>;
 
-	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
@@ -123,7 +123,7 @@ where
 	}
 }
 
-impl<In, InError, Destination> Subscriber for IdentitySubscriber<In, InError, Destination>
+impl<In, InError, Destination> Operation for IdentitySubscriber<In, InError, Destination>
 where
 	Destination: Observer<
 			In = <Self as ObservableOutput>::Out,

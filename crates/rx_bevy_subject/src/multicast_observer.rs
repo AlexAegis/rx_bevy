@@ -1,9 +1,9 @@
-use rx_bevy_observable::{DynForwarder, Observer, ObserverInput, Subscription};
+use rx_bevy_observable::{DynForwarder, Observer, ObserverInput, Subscriber, Subscription};
 use slab::Slab;
 
 pub struct MulticastSubscriber<Instance: DynForwarder> {
 	pub instance: Instance,
-	pub destination: Slab<Box<dyn Observer<In = Instance::Out, InError = Instance::OutError>>>,
+	pub destination: Slab<Box<dyn Subscriber<In = Instance::Out, InError = Instance::OutError>>>,
 	pub closed: bool,
 }
 
@@ -20,7 +20,7 @@ where
 	}
 
 	pub fn add_destination<
-		Destination: Observer<In = Forwarder::Out, InError = Forwarder::OutError>,
+		Destination: 'static + Subscriber<In = Forwarder::Out, InError = Forwarder::OutError>,
 	>(
 		&mut self,
 		destination: Destination,

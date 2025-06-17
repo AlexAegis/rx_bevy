@@ -1,13 +1,16 @@
-use crate::{ObservableOutput, Observer, ObserverInput, Operator, Subscriber, Subscription};
+use crate::{
+	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
+	Subscriber, Subscription,
+};
 
 impl<T> Operator for Option<T>
 where
 	T: Operator,
 {
-	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
 		OptionSubscriber<T::Subscriber<D>>;
 
-	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
@@ -53,14 +56,6 @@ where
 	}
 }
 
-impl<Sub> ObservableOutput for OptionSubscriber<Sub>
-where
-	Sub: Subscriber,
-{
-	type Out = Sub::Out;
-	type OutError = Sub::OutError;
-}
-
 impl<Sub> ObserverInput for OptionSubscriber<Sub>
 where
 	Sub: Subscriber,
@@ -95,9 +90,9 @@ where
 	}
 }
 
-impl<Sub> Subscriber for OptionSubscriber<Sub>
+impl<Sub> Operation for OptionSubscriber<Sub>
 where
-	Sub: Subscriber,
+	Sub: OperationSubscriber,
 {
 	type Destination = Sub::Destination;
 }

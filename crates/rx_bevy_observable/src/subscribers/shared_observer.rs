@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{Observer, ObserverInput, Subscription};
+use crate::{Observer, ObserverInput, Operation, Subscriber, Subscription};
 
 #[derive(Debug)]
 pub struct ClosableDestination<Destination>
@@ -65,6 +65,13 @@ where
 	fn unsubscribe(&mut self) {
 		self.closed = true;
 	}
+}
+
+impl<Destination> Operation for ClosableDestination<Destination>
+where
+	Destination: Observer,
+{
+	type Destination = Destination;
 }
 
 impl<Destination> From<Destination> for ClosableDestination<Destination>

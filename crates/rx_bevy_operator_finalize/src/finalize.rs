@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
-	Subscription,
+	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operation, Operator,
+	Subscriber, Subscription,
 };
 
 #[derive(Debug)]
@@ -34,10 +34,10 @@ impl<In, InError, Callback> Operator for FinalizeOperator<In, InError, Callback>
 where
 	Callback: Clone + FnOnce(),
 {
-	type Subscriber<Destination: Observer<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>> =
 		FinalizeSubscriber<In, InError, Callback, Destination>;
 
-	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
@@ -157,7 +157,7 @@ where
 	}
 }
 
-impl<In, InError, Callback, Destination> Subscriber
+impl<In, InError, Callback, Destination> Operation
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),

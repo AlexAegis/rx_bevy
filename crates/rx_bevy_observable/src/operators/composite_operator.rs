@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use crate::{ObservableOutput, Observer, ObserverInput, Operator, Subscriber, Subscription};
+use crate::{
+	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
+	Subscriber, Subscription,
+};
 
 #[derive(Clone)]
 pub struct CompositeOperator<PrevOp, Op>
@@ -40,11 +43,11 @@ where
 	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
-	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
 		CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<D>>, Op::Subscriber<D>, D>;
 
 	fn operator_subscribe<
-		Destination: Observer<
+		Destination: Subscriber<
 				In = <Self as ObservableOutput>::Out,
 				InError = <Self as ObservableOutput>::OutError,
 			>,
@@ -82,9 +85,9 @@ where
 #[derive(Clone)]
 pub struct CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevSub: Subscriber<Destination = Sub>,
-	Sub: Subscriber<Destination = Destination>,
-	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
+	PrevSub: OperationSubscriber<Destination = Sub>,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber,
 {
 	pub sub: PrevSub,
 	_phantom_data: PhantomData<Destination>,
@@ -92,29 +95,19 @@ where
 
 impl<PrevSub, Sub, Destination> ObserverInput for CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevSub: Subscriber<Destination = Sub>,
-	Sub: Subscriber<Destination = Destination>,
-	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
+	PrevSub: OperationSubscriber<Destination = Sub>,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber,
 {
 	type In = PrevSub::In;
 	type InError = PrevSub::InError;
 }
 
-impl<PrevSub, Sub, Destination> ObservableOutput for CompositeSubscriber<PrevSub, Sub, Destination>
-where
-	PrevSub: Subscriber<Destination = Sub>,
-	Sub: Subscriber<Destination = Destination>,
-	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
-{
-	type Out = Sub::Out;
-	type OutError = Sub::OutError;
-}
-
 impl<PrevSub, Sub, Destination> Observer for CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevSub: Subscriber<Destination = Sub>,
-	Sub: Subscriber<Destination = Destination>,
-	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
+	PrevSub: OperationSubscriber<Destination = Sub>,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
 		self.sub.next(next);
@@ -129,20 +122,20 @@ where
 	}
 }
 
-impl<PrevSub, Sub, Destination> Subscriber for CompositeSubscriber<PrevSub, Sub, Destination>
+impl<PrevSub, Sub, Destination> Operation for CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevSub: Subscriber<Destination = Sub>,
-	Sub: Subscriber<Destination = Destination>,
-	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
+	PrevSub: OperationSubscriber<Destination = Sub>,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber,
 {
 	type Destination = Destination;
 }
 
 impl<PrevSub, Sub, Destination> Subscription for CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevSub: Subscriber<Destination = Sub>,
-	Sub: Subscriber<Destination = Destination>,
-	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
+	PrevSub: OperationSubscriber<Destination = Sub>,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber,
 {
 	fn is_closed(&self) -> bool {
 		self.sub.is_closed()

@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
-	Subscription,
+	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operation, Operator,
+	Subscriber, Subscription,
 };
 
 pub struct MapOperator<Mapper, In, Out, Error>
@@ -33,11 +33,11 @@ impl<Mapper, In, Out, Error> Operator for MapOperator<Mapper, In, Out, Error>
 where
 	Mapper: Clone + Fn(In) -> Out,
 {
-	type Subscriber<Destination: Observer<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>> =
 		MapSubscriber<Mapper, In, Out, Error, Destination>;
 
 	fn operator_subscribe<
-		Destination: Observer<
+		Destination: Subscriber<
 				In = <Self as ObservableOutput>::Out,
 				InError = <Self as ObservableOutput>::OutError,
 			>,
@@ -167,11 +167,11 @@ where
 	}
 }
 
-impl<Mapper, In, Out, Error, Destination> Subscriber
+impl<Mapper, In, Out, Error, Destination> Operation
 	for MapSubscriber<Mapper, In, Out, Error, Destination>
 where
 	Mapper: Fn(In) -> Out,
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
