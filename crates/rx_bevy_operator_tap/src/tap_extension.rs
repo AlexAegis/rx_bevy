@@ -25,17 +25,10 @@ impl<T, Out> ObservableExtensionTapNext<Out> for T where T: Observable<Out = Out
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
-	fn tap_next<Callback: Clone + for<'a> Fn(&'a <Self::Fw as ObservableOutput>::Out)>(
+	fn tap_next<Callback: Clone + for<'a> Fn(&'a Self::Out)>(
 		self,
 		callback: Callback,
-	) -> CompositeOperator<
-		Self,
-		TapOperator<
-			<Self::Fw as ObservableOutput>::Out,
-			<Self::Fw as ObservableOutput>::OutError,
-			Callback,
-		>,
-	> {
+	) -> CompositeOperator<Self, TapOperator<Self::Out, Self::OutError, Callback>> {
 		CompositeOperator::new(self, TapOperator::new(callback))
 	}
 }

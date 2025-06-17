@@ -1,6 +1,6 @@
-use std::{marker::PhantomData, ops::Sub};
+use std::marker::PhantomData;
 
-use crate::{ObservableOutput, Observer, ObserverInput, SharedObserver, HardSubscriber};
+use crate::{ObservableOutput, Observer, ObserverInput};
 
 pub struct ObserverWrapper<D>
 where

@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator};
+use rx_bevy_observable::{
+	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+	Subscription,
+};
 
 #[derive(Debug)]
 pub struct FinalizeOperator<In, InError, Callback>
@@ -11,15 +14,34 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
+impl<In, InError, Callback> ObservableOutput for FinalizeOperator<In, InError, Callback>
+where
+	Callback: FnOnce(),
+{
+	type Out = In;
+	type OutError = InError;
+}
+
+impl<In, InError, Callback> ObserverInput for FinalizeOperator<In, InError, Callback>
+where
+	Callback: FnOnce(),
+{
+	type In = In;
+	type InError = InError;
+}
+
 impl<In, InError, Callback> Operator for FinalizeOperator<In, InError, Callback>
 where
 	Callback: Clone + FnOnce(),
 {
-	type Fw = FinalizeOperatorForwarder<In, InError, Callback>;
+	type Subscriber<Destination: Observer<In = Self::Out, InError = Self::OutError>> =
+		FinalizeSubscriber<In, InError, Callback, Destination>;
 
-	#[inline]
-	fn create_instance(&self) -> Self::Fw {
-		Self::Fw::new(self.callback.clone())
+	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+		&mut self,
+		destination: Destination,
+	) -> Self::Subscriber<Destination> {
+		FinalizeSubscriber::new(destination, self.callback.clone())
 	}
 }
 
@@ -47,73 +69,102 @@ where
 	}
 }
 
-pub struct FinalizeOperatorForwarder<In, InError, Callback>
+pub struct FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
+	Destination: Observer,
 {
+	destination: ClosableDestination<Destination>,
 	/// It's in an option so it can be removed when used, allowing the use of an FnOnce
 	callback: Option<Callback>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Callback> FinalizeOperatorForwarder<In, InError, Callback>
+impl<In, InError, Callback, Destination> FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
+	Destination: Observer,
 {
-	pub fn new(callback: Callback) -> Self {
+	pub fn new(destination: Destination, callback: Callback) -> Self {
 		Self {
+			destination: ClosableDestination::new(destination),
 			callback: Some(callback),
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, Callback> ObservableOutput for FinalizeOperatorForwarder<In, InError, Callback>
+impl<In, InError, Callback, Destination> ObservableOutput
+	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
+	Destination: Observer,
 {
 	type Out = In;
 	type OutError = InError;
 }
 
-impl<In, InError, Callback> ObserverInput for FinalizeOperatorForwarder<In, InError, Callback>
+impl<In, InError, Callback, Destination> ObserverInput
+	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
+	Destination: Observer,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Callback> Forwarder for FinalizeOperatorForwarder<In, InError, Callback>
+impl<In, InError, Callback, Destination> Observer
+	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
+	Destination: Observer<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
 {
 	#[inline]
-	fn next_forward<Destination: Observer<In = In>>(
-		&mut self,
-		next: Self::In,
-		destination: &mut Destination,
-	) {
-		destination.next(next);
+	fn next(&mut self, next: Self::In) {
+		self.destination.next(next);
 	}
 
 	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
-		&mut self,
-		error: Self::InError,
-		destination: &mut Destination,
-	) {
-		destination.error(error);
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
 	}
 
 	#[inline]
-	fn complete_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
-		&mut self,
-		destination: &mut Destination,
-	) {
+	fn complete(&mut self) {
 		if let Some(complete) = self.callback.take() {
 			(complete)();
 		}
-		destination.complete();
+		self.destination.complete();
 	}
+}
+
+impl<In, InError, Callback, Destination> Subscription
+	for FinalizeSubscriber<In, InError, Callback, Destination>
+where
+	Callback: FnOnce(),
+	Destination: Observer,
+{
+	fn is_closed(&self) -> bool {
+		self.destination.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.destination.unsubscribe();
+	}
+}
+
+impl<In, InError, Callback, Destination> Subscriber
+	for FinalizeSubscriber<In, InError, Callback, Destination>
+where
+	Callback: FnOnce(),
+	Destination: Observer<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Destination = Destination;
 }

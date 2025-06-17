@@ -1,13 +1,13 @@
-use rx_bevy_observable::{DynForwarder, Observer, ObserverInput};
+use rx_bevy_observable::{DynForwarder, Observer, ObserverInput, Subscription};
 use slab::Slab;
 
-pub struct MulticastObserver<Instance: DynForwarder> {
+pub struct MulticastSubscriber<Instance: DynForwarder> {
 	pub instance: Instance,
 	pub destination: Slab<Box<dyn Observer<In = Instance::Out, InError = Instance::OutError>>>,
 	pub closed: bool,
 }
 
-impl<Forwarder> MulticastObserver<Forwarder>
+impl<Forwarder> MulticastSubscriber<Forwarder>
 where
 	Forwarder: DynForwarder,
 {
@@ -20,7 +20,7 @@ where
 	}
 
 	pub fn add_destination<
-		Destination: 'static + Observer<In = Forwarder::Out, InError = Forwarder::OutError>,
+		Destination: Observer<In = Forwarder::Out, InError = Forwarder::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
@@ -29,7 +29,7 @@ where
 	}
 }
 
-impl<In, Out, InError, F> ObserverInput for MulticastObserver<F>
+impl<In, Out, InError, F> ObserverInput for MulticastSubscriber<F>
 where
 	F: DynForwarder<In = In, Out = Out, InError = InError>,
 	In: Clone,
@@ -39,7 +39,7 @@ where
 	type InError = InError;
 }
 
-impl<In, Out, InError, F> Observer for MulticastObserver<F>
+impl<In, Out, InError, F> Observer for MulticastSubscriber<F>
 where
 	F: DynForwarder<In = In, Out = Out, InError = InError>,
 	In: Clone,
@@ -71,5 +71,21 @@ where
 				self.instance.complete_forward(destination.as_mut());
 			}
 		}
+	}
+}
+
+impl<In, Out, InError, F> Subscription for MulticastSubscriber<F>
+where
+	F: DynForwarder<In = In, Out = Out, InError = InError>,
+	In: Clone,
+	InError: Clone,
+{
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
+
+	fn unsubscribe(&mut self) {
+		self.closed = true;
+		//for destination in self.destination.drain() {}
 	}
 }

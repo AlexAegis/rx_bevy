@@ -8,7 +8,7 @@ use rx_bevy_observable::{
 	DynForwarder, Observable, ObservableOutput, Observer, ObserverInput, Subscription,
 };
 
-use crate::MulticastObserver;
+use crate::MulticastSubscriber;
 
 pub struct SubjectConnector<T, Error> {
 	phantom_data: PhantomData<(T, Error)>,
@@ -54,7 +54,7 @@ impl<T, Error> DynForwarder for SubjectConnector<T, Error> {
 
 pub struct SubjectSubscription<T, Error> {
 	key: usize,
-	subject_ref: Weak<RefCell<MulticastObserver<SubjectConnector<T, Error>>>>,
+	subject_ref: Weak<RefCell<MulticastSubscriber<SubjectConnector<T, Error>>>>,
 }
 
 impl<T, Error> Subscription for SubjectSubscription<T, Error> {
@@ -78,7 +78,7 @@ impl<T, Error> Subscription for SubjectSubscription<T, Error> {
 /// a clone of it still has the same set of subscribers, and is needed if you
 /// want to make multiple pipes out of the same subject
 pub struct Subject<T, Error = ()> {
-	destinations: Rc<RefCell<MulticastObserver<SubjectConnector<T, Error>>>>,
+	destinations: Rc<RefCell<MulticastSubscriber<SubjectConnector<T, Error>>>>,
 }
 
 impl<T, Error> Clone for Subject<T, Error> {
@@ -93,31 +93,23 @@ impl<T, Error> Clone for Subject<T, Error> {
 impl<T, Error> Default for Subject<T, Error> {
 	fn default() -> Self {
 		Self {
-			destinations: Rc::new(RefCell::new(MulticastObserver::new(
+			destinations: Rc::new(RefCell::new(MulticastSubscriber::new(
 				SubjectConnector::default(),
 			))),
 		}
 	}
 }
 
-impl<T, Error> ObservableOutput for Subject<T, Error>
-where
-	T: 'static,
-	Error: 'static,
-{
+impl<T, Error> ObservableOutput for Subject<T, Error> {
 	type Out = T;
 	type OutError = Error;
 }
 
-impl<T, Error> Observable for Subject<T, Error>
-where
-	T: 'static,
-	Error: 'static,
-{
+impl<T, Error> Observable for Subject<T, Error> {
 	type Subscription = SubjectSubscription<T, Error>;
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
+	fn subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {

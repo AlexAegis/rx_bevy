@@ -6,21 +6,15 @@ pub trait Subscriber: Observer + ObserverInput + ObservableOutput + Subscription
 }
 
 pub trait Operator: ObserverInput + ObservableOutput {
-	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>>: Subscriber<
-			Destination = D,
+	type Subscriber<Destination: Observer<In = Self::Out, InError = Self::OutError>>: Subscriber<
+			Destination = Destination,
 			In = Self::In,
 			InError = Self::InError,
-			Out = Self::Out,
-			OutError = Self::OutError,
+			Out = Destination::In,
+			OutError = Destination::InError,
 		>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Observer<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
+	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination>;

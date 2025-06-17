@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator};
+use rx_bevy_observable::{
+	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+	Subscription,
+};
 
 #[derive(Debug)]
 pub struct TapOperator<In, InError, Callback>
@@ -15,11 +18,14 @@ impl<In, InError, Callback> Operator for TapOperator<In, InError, Callback>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {
-	type Subscriber = TapForwarder<In, InError, Callback>;
+	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>> =
+		TapSubscriber<In, InError, Callback, D>;
 
-	#[inline]
-	fn create_instance(&self) -> Self::Fw {
-		Self::Fw::new(self.callback.clone())
+	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+		&mut self,
+		destination: Destination,
+	) -> Self::Subscriber<Destination> {
+		TapSubscriber::new(destination, self.callback.clone())
 	}
 }
 
@@ -37,66 +43,6 @@ where
 {
 	type In = In;
 	type InError = InError;
-}
-
-pub struct TapForwarder<In, InError, Callback>
-where
-	Callback: for<'a> Fn(&'a In),
-{
-	callback: Callback,
-	_phantom_data: PhantomData<(In, InError)>,
-}
-
-impl<In, InError, Callback> TapForwarder<In, InError, Callback>
-where
-	Callback: for<'a> Fn(&'a In),
-{
-	pub fn new(callback: Callback) -> Self {
-		Self {
-			callback,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<In, InError, Callback> ObservableOutput for TapForwarder<In, InError, Callback>
-where
-	Callback: Clone + for<'a> Fn(&'a In),
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError, Callback> ObserverInput for TapForwarder<In, InError, Callback>
-where
-	Callback: Clone + for<'a> Fn(&'a In),
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Callback> Forwarder for TapForwarder<In, InError, Callback>
-where
-	Callback: Clone + for<'a> Fn(&'a In),
-{
-	#[inline]
-	fn next_forward<Destination: Observer<In = In>>(
-		&mut self,
-		next: Self::In,
-		destination: &mut Destination,
-	) {
-		(self.callback)(&next);
-		destination.next(next);
-	}
-
-	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
-		&mut self,
-		error: Self::InError,
-		destination: &mut Destination,
-	) {
-		destination.error(error);
-	}
 }
 
 impl<In, InError, Callback> TapOperator<In, InError, Callback>
@@ -120,5 +66,96 @@ where
 			callback: self.callback.clone(),
 			_phantom_data: PhantomData,
 		}
+	}
+}
+
+pub struct TapSubscriber<In, InError, Callback, Destination>
+where
+	Callback: for<'a> Fn(&'a In),
+	Destination: Observer<In = In, InError = InError>,
+{
+	destination: ClosableDestination<Destination>,
+	callback: Callback,
+	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError, Callback, Destination> TapSubscriber<In, InError, Callback, Destination>
+where
+	Callback: for<'a> Fn(&'a In),
+	Destination: Observer<In = In, InError = InError>,
+{
+	pub fn new(destination: Destination, callback: Callback) -> Self {
+		Self {
+			destination: ClosableDestination::new(destination),
+			callback,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError, Callback, Destination> ObservableOutput
+	for TapSubscriber<In, InError, Callback, Destination>
+where
+	Callback: Clone + for<'a> Fn(&'a In),
+	Destination: Observer<In = In, InError = InError>,
+{
+	type Out = In;
+	type OutError = InError;
+}
+
+impl<In, InError, Callback, Destination> ObserverInput
+	for TapSubscriber<In, InError, Callback, Destination>
+where
+	Callback: Clone + for<'a> Fn(&'a In),
+	Destination: Observer<In = In, InError = InError>,
+{
+	type In = In;
+	type InError = InError;
+}
+
+impl<In, InError, Callback, Destination> Observer
+	for TapSubscriber<In, InError, Callback, Destination>
+where
+	Callback: Clone + for<'a> Fn(&'a In),
+	Destination: Observer<In = In, InError = InError>,
+{
+	#[inline]
+	fn next(&mut self, next: Self::In) {
+		(self.callback)(&next);
+		self.destination.next(next);
+	}
+
+	#[inline]
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
+	}
+
+	#[inline]
+	fn complete(&mut self) {
+		self.destination.complete();
+	}
+}
+
+impl<In, InError, Callback, Destination> Subscriber
+	for TapSubscriber<In, InError, Callback, Destination>
+where
+	Callback: Clone + for<'a> Fn(&'a In),
+	Destination: Observer<In = In, InError = InError>,
+{
+	type Destination = Destination;
+}
+
+impl<In, InError, Callback, Destination> Subscription
+	for TapSubscriber<In, InError, Callback, Destination>
+where
+	Callback: Clone + for<'a> Fn(&'a In),
+	Destination: Observer<In = In, InError = InError>,
+{
+	fn is_closed(&self) -> bool {
+		self.destination.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.destination.unsubscribe();
 	}
 }

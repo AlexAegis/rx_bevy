@@ -19,15 +19,7 @@ impl<T, Out> ObservableExtensionIdentity<Out> for T where T: Observable<Out = Ou
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionIdentity: Operator + Sized {
-	fn identity(
-		self,
-	) -> CompositeOperator<
-		Self,
-		IdentityOperator<
-			<Self::Fw as ObservableOutput>::Out,
-			<Self::Fw as ObservableOutput>::OutError,
-		>,
-	> {
+	fn identity(self) -> CompositeOperator<Self, IdentityOperator<Self::Out, Self::OutError>> {
 		CompositeOperator::new(self, IdentityOperator::default())
 	}
 }

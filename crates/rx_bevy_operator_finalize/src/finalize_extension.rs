@@ -1,4 +1,4 @@
-use rx_bevy_observable::{CompositeOperator, Observable, ObservableOutput, Operator};
+use rx_bevy_observable::{CompositeOperator, Observable, Operator};
 use rx_bevy_pipe_operator::Pipe;
 
 use crate::FinalizeOperator;
@@ -30,14 +30,7 @@ pub trait CompositeOperatorExtensionFinalize: Operator + Sized {
 	fn finalize<Callback: Clone + FnOnce()>(
 		self,
 		callback: Callback,
-	) -> CompositeOperator<
-		Self,
-		FinalizeOperator<
-			<Self::Fw as ObservableOutput>::Out,
-			<Self::Fw as ObservableOutput>::OutError,
-			Callback,
-		>,
-	> {
+	) -> CompositeOperator<Self, FinalizeOperator<Self::Out, Self::OutError, Callback>> {
 		CompositeOperator::new(self, FinalizeOperator::new(callback))
 	}
 }

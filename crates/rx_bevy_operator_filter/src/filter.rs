@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Forwarder, ObservableOutput, Observer, ObserverInput, Operator};
+use rx_bevy_observable::{
+	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operator, Subscriber,
+	Subscription,
+};
 
 pub struct FilterOperator<In, InError, Filter> {
 	pub filter: Filter,
@@ -11,37 +14,18 @@ impl<In, InError, Filter> Operator for FilterOperator<In, InError, Filter>
 where
 	Filter: Clone + for<'a> Fn(&'a In) -> bool,
 {
-	type Fw = FilterForwarder<In, InError, Filter>;
+	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>> =
+		FilterSubscriber<In, InError, Filter, D>;
 
-	#[inline]
-	fn create_instance(&self) -> Self::Fw {
-		Self::Fw::new(self.filter.clone())
+	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
+		&mut self,
+		destination: Destination,
+	) -> Self::Subscriber<Destination> {
+		FilterSubscriber::new(destination, self.filter.clone())
 	}
 }
 
-pub struct FilterForwarder<In, InError, Filter> {
-	pub filter: Filter,
-	pub _phantom_data: PhantomData<(In, InError)>,
-}
-
-impl<In, InError, Filter> FilterForwarder<In, InError, Filter> {
-	pub fn new(filter: Filter) -> Self {
-		Self {
-			filter,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<T, InError, Filter> ObservableOutput for FilterForwarder<T, InError, Filter>
-where
-	Filter: for<'a> Fn(&'a T) -> bool,
-{
-	type Out = T;
-	type OutError = InError;
-}
-
-impl<In, InError, Filter> ObserverInput for FilterForwarder<In, InError, Filter>
+impl<In, InError, Filter> ObserverInput for FilterOperator<In, InError, Filter>
 where
 	Filter: for<'a> Fn(&'a In) -> bool,
 {
@@ -49,28 +33,109 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Filter> Forwarder for FilterForwarder<In, InError, Filter>
+impl<In, InError, Filter> ObservableOutput for FilterOperator<In, InError, Filter>
 where
 	Filter: for<'a> Fn(&'a In) -> bool,
 {
+	type Out = In;
+	type OutError = InError;
+}
+
+pub struct FilterSubscriber<In, InError, Filter, Destination>
+where
+	Destination: Observer,
+{
+	destination: ClosableDestination<Destination>,
+	filter: Filter,
+	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError, Filter, Destination> FilterSubscriber<In, InError, Filter, Destination>
+where
+	Destination: Observer,
+{
+	pub fn new(destination: Destination, filter: Filter) -> Self {
+		Self {
+			destination: ClosableDestination::new(destination),
+			filter,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError, Filter, Destination> ObserverInput
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Observer,
+{
+	type In = In;
+	type InError = InError;
+}
+
+impl<In, InError, Filter, Destination> ObservableOutput
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Observer,
+{
+	type Out = In;
+	type OutError = InError;
+}
+
+impl<In, InError, Filter, Destination> Observer
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Observer<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
-	fn next_forward<Destination: Observer<In = In>>(
-		&mut self,
-		next: Self::In,
-		destination: &mut Destination,
-	) {
+	fn next(&mut self, next: Self::In) {
 		if (self.filter)(&next) {
-			destination.next(next);
+			self.destination.next(next);
 		}
 	}
 
 	#[inline]
-	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
-		&mut self,
-		error: Self::InError,
-		destination: &mut Destination,
-	) {
-		destination.error(error);
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
+	}
+
+	fn complete(&mut self) {
+		self.destination.complete();
+	}
+}
+
+impl<In, InError, Filter, Destination> Subscriber
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Observer<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Destination = Destination;
+}
+
+impl<In, InError, Filter, Destination> Subscription
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Observer<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	fn is_closed(&self) -> bool {
+		self.destination.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.destination.unsubscribe();
 	}
 }
 

@@ -1,8 +1,9 @@
-use std::cell::{Ref, RefCell};
+use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
 use crate::{Observer, ObserverInput};
 
+// TODO: WeakSubscriber?
 pub struct WeakObserver<Destination>
 where
 	Destination: Observer,

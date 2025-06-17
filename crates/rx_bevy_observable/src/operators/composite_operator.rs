@@ -1,14 +1,11 @@
 use std::marker::PhantomData;
 
-use crate::{
-	IntermediateObserver, ObservableOutput, Observer, ObserverInput, Operator, SubscriberForwarder,
-};
+use crate::{ObservableOutput, Observer, ObserverInput, Operator, Subscriber, Subscription};
 
 #[derive(Clone)]
 pub struct CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator,
-	PrevOp: ObservableOutput<Out = <Op as ObserverInput>::In, OutError = <Op as ObserverInput>::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
 	prev_op: PrevOp,
@@ -17,8 +14,7 @@ where
 
 impl<PrevOp, Op> CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator,
-	PrevOp: ObservableOutput<Out = <Op as ObserverInput>::In, OutError = <Op as ObserverInput>::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
 	pub fn new(first_operator: PrevOp, second_operator: Op) -> Self {
@@ -30,11 +26,7 @@ where
 
 	pub fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
 	where
-		NextOp: Operator,
-		NextOp: ObserverInput<
-				In = <Op as ObservableOutput>::Out,
-				InError = <Op as ObservableOutput>::OutError,
-			>,
+		NextOp: Operator<In = Op::Out, InError = Op::OutError>,
 	{
 		CompositeOperator {
 			prev_op: self,
@@ -45,22 +37,25 @@ where
 
 impl<PrevOp, Op> Operator for CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator,
-	PrevOp: ObservableOutput<Out = <Op as ObserverInput>::In, OutError = <Op as ObserverInput>::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
-	type Subscriber<D>
-		= CompositeForwarder<PrevOp::Subscriber<D>, Op::Subscriber<D>, D>
-	where
-		D: Observer<In = Self::Out, InError = Self::OutError>;
+	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>> =
+		CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<D>>, Op::Subscriber<D>, D>;
 
-	fn create_instance<D>(&self) -> Self::Subscriber<D>
-	where
-		D: Observer<In = Self::Out, InError = Self::OutError>,
-	{
-		CompositeForwarder {
-			prev_op: self.prev_op.create_instance(),
-			op: self.op.create_instance(),
+	fn operator_subscribe<
+		Destination: Observer<
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
+			>,
+	>(
+		&mut self,
+		destination: Destination,
+	) -> Self::Subscriber<Destination> {
+		CompositeSubscriber {
+			sub: self
+				.prev_op
+				.operator_subscribe(self.op.operator_subscribe(destination)),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -68,8 +63,7 @@ where
 
 impl<PrevOp, Op> ObserverInput for CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator,
-	PrevOp: ObservableOutput<Out = <Op as ObserverInput>::In, OutError = <Op as ObserverInput>::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
 	type In = PrevOp::In;
@@ -78,8 +72,7 @@ where
 
 impl<PrevOp, Op> ObservableOutput for CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator,
-	PrevOp: ObservableOutput<Out = <Op as ObserverInput>::In, OutError = <Op as ObserverInput>::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
 	type Out = Op::Out;
@@ -87,73 +80,83 @@ where
 }
 
 #[derive(Clone)]
-pub struct CompositeForwarder<PrevFw, Fw, D>
+pub struct CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevFw: SubscriberForwarder<Destination = Fw::Destination>
-		+ ObservableOutput<Out = Fw::In, OutError = Fw::InError>,
-	Fw: SubscriberForwarder<Destination = D>,
-	D: Observer<In = Fw::Out, InError = Fw::OutError>,
+	PrevSub: Subscriber<Destination = Sub>,
+	Sub: Subscriber<Destination = Destination>,
+	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
 {
-	pub prev_op: PrevFw,
-	pub op: Fw,
-	_phantom_data: PhantomData<D>,
+	pub sub: PrevSub,
+	_phantom_data: PhantomData<Destination>,
 }
 
-impl<PrevFw, Fw, D> ObserverInput for CompositeForwarder<PrevFw, Fw, D>
+impl<PrevSub, Sub, Destination> ObserverInput for CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevFw: SubscriberForwarder<Destination = Fw::Destination>
-		+ ObservableOutput<Out = Fw::In, OutError = Fw::InError>,
-	Fw: SubscriberForwarder<Destination = D>,
-	D: Observer<In = Fw::Out, InError = Fw::OutError>,
+	PrevSub: Subscriber<Destination = Sub>,
+	Sub: Subscriber<Destination = Destination>,
+	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
 {
-	type In = <PrevFw as ObserverInput>::In;
-	type InError = <PrevFw as ObserverInput>::InError;
+	type In = PrevSub::In;
+	type InError = PrevSub::InError;
 }
 
-impl<PrevFw, Fw, D> ObservableOutput for CompositeForwarder<PrevFw, Fw, D>
+impl<PrevSub, Sub, Destination> ObservableOutput for CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevFw: SubscriberForwarder<Destination = Fw::Destination>
-		+ ObservableOutput<Out = Fw::In, OutError = Fw::InError>,
-	Fw: SubscriberForwarder<Destination = D>,
-	D: Observer<In = Fw::Out, InError = Fw::OutError>,
+	PrevSub: Subscriber<Destination = Sub>,
+	Sub: Subscriber<Destination = Destination>,
+	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
 {
-	type Out = <Fw as ObservableOutput>::Out;
-	type OutError = <Fw as ObservableOutput>::OutError;
+	type Out = Sub::Out;
+	type OutError = Sub::OutError;
 }
 
-impl<PrevFw, Fw, D> SubscriberForwarder for CompositeForwarder<PrevFw, Fw, D>
+impl<PrevSub, Sub, Destination> Observer for CompositeSubscriber<PrevSub, Sub, Destination>
 where
-	PrevFw: for<'a> SubscriberForwarder + ObservableOutput<Out = Fw::In, OutError = Fw::InError>,
-	Fw: SubscriberForwarder<Destination = D>,
-	D: Observer<In = Fw::Out, InError = Fw::OutError>,
+	PrevSub: Subscriber<Destination = Sub>,
+	Sub: Subscriber<Destination = Destination>,
+	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
 {
-	type Destination = D;
-
-	fn next_forward(&mut self, next: Self::In, destination: &mut Self::Destination) {
-		let mut intermediate_observer = IntermediateObserver::new(&mut self.op, destination);
-		self.prev_op.next_forward(next, &mut intermediate_observer);
+	fn next(&mut self, next: Self::In) {
+		self.sub.next(next);
 	}
 
-	fn error_forward(&mut self, error: Self::InError, destination: &mut Self::Destination) {
-		let mut intermediate_observer = IntermediateObserver::new(&mut self.op, destination);
-		self.prev_op
-			.error_forward(error, &mut intermediate_observer);
+	fn error(&mut self, error: Self::InError) {
+		self.sub.error(error);
 	}
 
-	fn complete_forward(&mut self, destination: &mut Self::Destination) {
-		let mut intermediate_observer = IntermediateObserver::new(&mut self.op, destination);
-		self.prev_op.complete_forward(&mut intermediate_observer);
+	fn complete(&mut self) {
+		self.sub.complete();
+	}
+}
+
+impl<PrevSub, Sub, Destination> Subscriber for CompositeSubscriber<PrevSub, Sub, Destination>
+where
+	PrevSub: Subscriber<Destination = Sub>,
+	Sub: Subscriber<Destination = Destination>,
+	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
+{
+	type Destination = Destination;
+}
+
+impl<PrevSub, Sub, Destination> Subscription for CompositeSubscriber<PrevSub, Sub, Destination>
+where
+	PrevSub: Subscriber<Destination = Sub>,
+	Sub: Subscriber<Destination = Destination>,
+	Destination: Observer<In = Sub::Out, InError = Sub::OutError>,
+{
+	fn is_closed(&self) -> bool {
+		self.sub.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.sub.unsubscribe();
 	}
 }
 
 pub trait CompositeOperatorExtension: Operator + Sized {
 	fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
 	where
-		NextOp: Operator,
-		NextOp: ObserverInput<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
+		NextOp: Operator<In = Self::Out, InError = Self::OutError>,
 	{
 		CompositeOperator {
 			prev_op: self,

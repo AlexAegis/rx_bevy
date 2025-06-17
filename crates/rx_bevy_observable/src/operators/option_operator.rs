@@ -7,13 +7,7 @@ where
 	type Subscriber<D: Observer<In = Self::Out, InError = Self::OutError>> =
 		OptionSubscriber<T::Subscriber<D>>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Observer<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
+	fn operator_subscribe<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
