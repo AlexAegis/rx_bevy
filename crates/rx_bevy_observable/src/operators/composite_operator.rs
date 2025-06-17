@@ -89,7 +89,7 @@ where
 	Sub: OperationSubscriber<Destination = Destination>,
 	Destination: Subscriber,
 {
-	pub sub: PrevSub,
+	sub: PrevSub,
 	_phantom_data: PhantomData<Destination>,
 }
 

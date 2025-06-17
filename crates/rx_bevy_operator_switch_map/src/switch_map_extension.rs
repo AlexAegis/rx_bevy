@@ -1,16 +1,58 @@
-// use rx_bevy_observable::Observable;
-// use rx_bevy_pipe_operator::Pipe;
-//
-// use crate::SwitchMapOperator;
-//
-// pub trait ObservableExtensionSwitchMap<Out>: Observable<Out = Out> + Sized {
-// 	fn switch_map<NextOut, F: Clone + Fn(Out) -> NextOut>(
-// 		self,
-// 		transform: F,
-// 	) -> Pipe<Self, SwitchMapOperator<Out, NextOut, F, Self::Error>> {
-// 		Pipe::new(self, SwitchMapOperator::new(transform))
-// 	}
-// }
-//
-// impl<T, Out> ObservableExtensionSwitchMap<Out> for T where T: Observable<Out = Out> {}
-//
+use rx_bevy_observable::{CompositeOperator, Observable, Operator};
+use rx_bevy_pipe_operator::Pipe;
+
+use crate::SwitchMapOperator;
+
+/// Operator creator function
+pub fn switch_map<In, InError, Switcher, Out>(
+	mapper: Switcher,
+) -> SwitchMapOperator<In, InError, Switcher, Out>
+where
+	Switcher: Clone + Fn(In) -> Out,
+{
+	SwitchMapOperator::new(mapper)
+}
+
+/// Provides a convenient function to pipe the operator from an observable
+pub trait ObservableExtensionSwitchMap: Observable + Sized {
+	fn switch_map<
+		NextInnerObservable: 'static + Observable,
+		Switcher: 'static + Clone + Fn(Self::Out) -> NextInnerObservable,
+	>(
+		self,
+		switcher: Switcher,
+	) -> Pipe<Self, SwitchMapOperator<Self::Out, Self::OutError, Switcher, NextInnerObservable>>
+	where
+		Self::OutError: Into<NextInnerObservable::OutError>,
+	{
+		Pipe::new(self, SwitchMapOperator::new(switcher))
+	}
+}
+
+impl<T> ObservableExtensionSwitchMap for T
+where
+	T: Observable,
+	Self::Out: 'static,
+{
+}
+
+/// Provides a convenient function to pipe the operator from another operator
+pub trait CompositeOperatorExtensionSwitchMap: Operator + Sized {
+	fn switch_map<
+		NextInnerObservable: 'static + Observable,
+		Switcher: 'static + Clone + Fn(Self::Out) -> NextInnerObservable,
+	>(
+		self,
+		switcher: Switcher,
+	) -> CompositeOperator<
+		Self,
+		SwitchMapOperator<Self::Out, Self::OutError, Switcher, NextInnerObservable>,
+	>
+	where
+		Self::OutError: Into<NextInnerObservable::OutError>,
+	{
+		CompositeOperator::new(self, SwitchMapOperator::new(switcher))
+	}
+}
+
+impl<T> CompositeOperatorExtensionSwitchMap for T where T: Operator {}

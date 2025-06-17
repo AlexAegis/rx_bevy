@@ -9,21 +9,13 @@ pub fn identity<In, InError>() -> IdentityOperator<In, InError> {
 }
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionIdentity<Out>: Observable<Out = Out> + Sized
-where
-	Out: 'static,
-{
-	fn identity(self) -> Pipe<Self, IdentityOperator<Out, Self::OutError>> {
+pub trait ObservableExtensionIdentity: Observable + Sized {
+	fn identity(self) -> Pipe<Self, IdentityOperator<Self::Out, Self::OutError>> {
 		Pipe::new(self, IdentityOperator::default())
 	}
 }
 
-impl<T, Out> ObservableExtensionIdentity<Out> for T
-where
-	T: Observable<Out = Out>,
-	Out: 'static,
-{
-}
+impl<T> ObservableExtensionIdentity for T where T: Observable {}
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionIdentity: Operator + Sized {

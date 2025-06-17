@@ -12,24 +12,16 @@ where
 }
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionTapNext<Out>: Observable<Out = Out> + Sized
-where
-	Out: 'static,
-{
-	fn tap_next<Callback: 'static + Clone + for<'a> Fn(&'a Out)>(
+pub trait ObservableExtensionTapNext: Observable + Sized {
+	fn tap_next<Callback: 'static + Clone + for<'a> Fn(&'a Self::Out)>(
 		self,
 		callback: Callback,
-	) -> Pipe<Self, TapOperator<Out, Self::OutError, Callback>> {
+	) -> Pipe<Self, TapOperator<Self::Out, Self::OutError, Callback>> {
 		Pipe::new(self, TapOperator::new(callback))
 	}
 }
 
-impl<T, Out> ObservableExtensionTapNext<Out> for T
-where
-	T: Observable<Out = Out>,
-	Out: 'static,
-{
-}
+impl<T> ObservableExtensionTapNext for T where T: Observable {}
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {

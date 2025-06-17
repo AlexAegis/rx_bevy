@@ -1,15 +1,13 @@
-use crate::{
-	Observable, ObservableOutput, Observer, ObserverInput, SharedObserver, SubscriberForwarder,
-};
+use crate::{ObservableOutput, Observer, ObserverInput, SharedObserver, SubscriberForwarder};
 
 pub struct SharedSubscriber<Fw, Destination>
 where
 	Fw: SubscriberForwarder,
 	Destination: Observer<In = Fw::Out, InError = Fw::OutError>,
 {
-	pub destination: SharedObserver<Destination>,
-	pub forwarder: Fw,
-	pub is_complete: bool,
+	destination: SharedObserver<Destination>,
+	forwarder: Fw,
+	is_complete: bool,
 }
 
 impl<Fw, Destination> SharedSubscriber<Fw, Destination>
