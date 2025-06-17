@@ -1,9 +1,10 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{Observer, ObserverInput, Operation, Subscriber, Subscription};
+use crate::{Observer, ObserverInput, Operation, Subscription};
 
+/// A simple wrapper for a plain [Observer] to make it "closeable"
 #[derive(Debug)]
-pub struct ClosableDestination<Destination>
+pub struct ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -11,7 +12,7 @@ where
 	pub closed: bool,
 }
 
-impl<Destination> ClosableDestination<Destination>
+impl<Destination> ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -23,7 +24,7 @@ where
 	}
 }
 
-impl<Destination> Observer for ClosableDestination<Destination>
+impl<Destination> Observer for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -46,7 +47,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for ClosableDestination<Destination>
+impl<Destination> ObserverInput for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -54,7 +55,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> Subscription for ClosableDestination<Destination>
+impl<Destination> Subscription for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -67,14 +68,14 @@ where
 	}
 }
 
-impl<Destination> Operation for ClosableDestination<Destination>
+impl<Destination> Operation for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
 	type Destination = Destination;
 }
 
-impl<Destination> From<Destination> for ClosableDestination<Destination>
+impl<Destination> From<Destination> for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -87,27 +88,27 @@ where
 }
 
 // Maybe this should be a shared subscriber?
-pub struct SharedObserver<Destination>
+pub struct SharedSubscriber<Destination>
 where
 	Destination: Observer,
 {
-	destination: Arc<RwLock<ClosableDestination<Destination>>>,
+	destination: Arc<RwLock<ObserverSubscriber<Destination>>>,
 }
 
-impl<Destination> SharedObserver<Destination>
+impl<Destination> SharedSubscriber<Destination>
 where
 	Destination: Observer,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
-			destination: Arc::new(RwLock::new(ClosableDestination {
+			destination: Arc::new(RwLock::new(ObserverSubscriber {
 				destination,
 				closed: false,
 			})),
 		}
 	}
 
-	pub fn new_from_shared(destination: Arc<RwLock<ClosableDestination<Destination>>>) -> Self {
+	pub fn new_from_shared(destination: Arc<RwLock<ObserverSubscriber<Destination>>>) -> Self {
 		Self {
 			destination: destination.clone(),
 		}
@@ -130,7 +131,7 @@ where
 	}
 }
 
-impl<Destination> Clone for SharedObserver<Destination>
+impl<Destination> Clone for SharedSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -141,7 +142,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for SharedObserver<Destination>
+impl<Destination> ObserverInput for SharedSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -149,7 +150,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> Observer for SharedObserver<Destination>
+impl<Destination> Observer for SharedSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -177,7 +178,7 @@ where
 	}
 }
 
-impl<Destination> Subscription for SharedObserver<Destination>
+impl<Destination> Subscription for SharedSubscriber<Destination>
 where
 	Destination: Observer,
 {

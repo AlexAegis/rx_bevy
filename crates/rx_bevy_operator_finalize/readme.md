@@ -3,7 +3,11 @@
 ## Example
 
 ```sh
-cargo run -p rx_bevy_operator_finalize --features example --example finalize_example
+cargo run -p rx_bevy_operator_finalize --features example --example finalize_operator_completion_example
+```
+
+```sh
+cargo run -p rx_bevy_operator_finalize --features example --example finalize_operator_unsubscribe_example
 ```
 
 ````rs

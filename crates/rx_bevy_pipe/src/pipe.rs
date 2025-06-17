@@ -1,4 +1,6 @@
-use rx_bevy_observable::{ClosableDestination, Observable, ObservableOutput, Observer, Operator};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, Operator, subscribers::ObserverSubscriber,
+};
 
 pub struct Pipe<Source, PipeOp> {
 	pub(crate) source_observable: Source,
@@ -66,8 +68,8 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
-		let closable = ClosableDestination::new(destination);
-		let operator_subscriber = self.operator.operator_subscribe(closable);
+		let subscriber = ObserverSubscriber::new(destination);
+		let operator_subscriber = self.operator.operator_subscribe(subscriber);
 		self.source_observable.subscribe(operator_subscriber)
 	}
 }

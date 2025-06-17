@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, Forwarder, ObservableOutput, Observer, ObserverInput, Operation, Operator,
-	Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
 };
 
 #[derive(Debug)]
@@ -65,19 +64,19 @@ where
 #[derive(Debug)]
 pub struct IdentitySubscriber<In, InError, Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
-	destination: ClosableDestination<Destination>,
+	destination: Destination,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
 impl<In, InError, Destination> IdentitySubscriber<In, InError, Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	fn new(destination: Destination) -> Self {
 		Self {
-			destination: ClosableDestination::new(destination),
+			destination,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -85,7 +84,7 @@ where
 
 impl<In, InError, Destination> ObservableOutput for IdentitySubscriber<In, InError, Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 	In: 'static,
 	InError: 'static,
 {
@@ -95,7 +94,7 @@ where
 
 impl<In, InError, Destination> ObserverInput for IdentitySubscriber<In, InError, Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 	In: 'static,
 	InError: 'static,
 {
@@ -105,7 +104,7 @@ where
 
 impl<In, InError, Destination> Observer for IdentitySubscriber<In, InError, Destination>
 where
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
@@ -129,7 +128,7 @@ where
 
 impl<In, InError, Destination> Subscription for IdentitySubscriber<In, InError, Destination>
 where
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
@@ -147,7 +146,7 @@ where
 
 impl<In, InError, Destination> Operation for IdentitySubscriber<In, InError, Destination>
 where
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,

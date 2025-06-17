@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use crate::{Observable, Observer, ObserverInput, SharedObserver, Subscription};
+use super::SharedSubscriber;
+use crate::{Observable, Observer, ObserverInput, Subscription};
 
 /// TODO: Add a dedicated error mapper
 pub struct SwitchSubscriber<InnerObservable, Destination>
@@ -8,7 +9,7 @@ where
 	InnerObservable: Observable,
 	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	shared_destination: SharedObserver<Destination>,
+	shared_destination: SharedSubscriber<Destination>,
 	inner_subscriber: Option<InnerObservable::Subscription>,
 	closed: bool,
 	_phantom_data: PhantomData<InnerObservable>,
@@ -22,7 +23,7 @@ where
 	pub fn new(destination: Destination) -> Self {
 		Self {
 			inner_subscriber: None,
-			shared_destination: SharedObserver::new(destination),
+			shared_destination: SharedSubscriber::new(destination),
 			closed: false,
 			_phantom_data: PhantomData,
 		}

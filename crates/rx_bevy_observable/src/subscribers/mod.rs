@@ -1,9 +1,7 @@
-mod flat_observer;
-mod flat_subscriber;
-mod shared_observer;
-mod weak_observer;
+mod shared_subscriber;
+mod switch_subscriber;
+mod weak_subscriber;
 
-pub use flat_observer::*;
-pub use flat_subscriber::*;
-pub use shared_observer::*;
-pub use weak_observer::*;
+pub use shared_subscriber::*;
+pub use switch_subscriber::*;
+pub use weak_subscriber::*;

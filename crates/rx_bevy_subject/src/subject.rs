@@ -5,8 +5,8 @@ use std::{
 };
 
 use rx_bevy_observable::{
-	ClosableDestination, DynForwarder, Observable, ObservableOutput, Observer, ObserverInput,
-	Subscriber, Subscription,
+	Observable, ObservableOutput, Observer, ObserverInput, Subscription, forwarders::DynForwarder,
+	subscribers::ObserverSubscriber,
 };
 
 use crate::MulticastSubscriber;
@@ -76,15 +76,24 @@ where
 
 impl<T, Error> Subscription for SubjectSubscription<T, Error> {
 	fn unsubscribe(&mut self) {
-		if let Some(subject) = self.subject_ref.upgrade() {
-			subject.borrow_mut().destination.remove(self.key);
+		if let Some(subject_refcell) = self.subject_ref.upgrade() {
+			let mut subject = subject_refcell.borrow_mut();
+			if let Some(destination) = subject.destination.get_mut(self.key) {
+				destination.unsubscribe();
+			}
+			subject.destination.remove(self.key);
 		}
 	}
 
 	fn is_closed(&self) -> bool {
 		if let Some(subject_refcell) = self.subject_ref.upgrade() {
 			let subject = subject_refcell.borrow();
-			subject.closed || !subject.destination.contains(self.key)
+
+			subject
+				.destination
+				.get(self.key)
+				.map(|destination| destination.is_closed())
+				.unwrap_or(subject.closed || !subject.destination.contains(self.key))
 		} else {
 			true
 		}
@@ -142,7 +151,7 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscription {
-		let closable_destination = ClosableDestination::new(destination);
+		let closable_destination = ObserverSubscriber::new(destination);
 		let key = self
 			.destinations
 			.borrow_mut()

@@ -1,47 +1,46 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operation, Operator,
-	Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
 };
 
-pub struct FilterMapOperator<Mapper, In, Out, Error>
+pub struct FilterMapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Fn(In) -> Option<Out>,
 {
 	pub mapper: Mapper,
-	pub _phantom_data: PhantomData<(In, Out, Error)>,
+	pub _phantom_data: PhantomData<(In, Out, InError)>,
 }
 
-impl<Mapper, In, Out, Error> ObserverInput for FilterMapOperator<Mapper, In, Out, Error>
+impl<In, InError, Mapper, Out> ObserverInput for FilterMapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Fn(In) -> Option<Out>,
 	In: 'static,
-	Error: 'static,
+	InError: 'static,
 {
 	type In = In;
-	type InError = Error;
+	type InError = InError;
 }
 
-impl<Mapper, In, Out, Error> ObservableOutput for FilterMapOperator<Mapper, In, Out, Error>
+impl<In, InError, Mapper, Out> ObservableOutput for FilterMapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Fn(In) -> Option<Out>,
 	Out: 'static,
-	Error: 'static,
+	InError: 'static,
 {
 	type Out = Out;
-	type OutError = Error;
+	type OutError = InError;
 }
 
-impl<Mapper, In, Out, Error> Operator for FilterMapOperator<Mapper, In, Out, Error>
+impl<In, InError, Mapper, Out> Operator for FilterMapOperator<In, InError, Mapper, Out>
 where
 	Mapper: 'static + Clone + Fn(In) -> Option<Out>,
 	In: 'static,
 	Out: 'static,
-	Error: 'static,
+	InError: 'static,
 {
 	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		FilterMapSubscriber<Mapper, In, Out, Error, D>;
+		FilterMapSubscriber<In, InError, Mapper, Out, D>;
 
 	fn operator_subscribe<
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
@@ -53,7 +52,7 @@ where
 	}
 }
 
-impl<Mapper, In, Out, Error> FilterMapOperator<Mapper, In, Out, Error>
+impl<In, InError, Mapper, Out> FilterMapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Fn(In) -> Option<Out>,
 {
@@ -65,7 +64,7 @@ where
 	}
 }
 
-impl<Mapper, In, Out, Error> Clone for FilterMapOperator<Mapper, In, Out, Error>
+impl<In, InError, Mapper, Out> Clone for FilterMapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Clone + Fn(In) -> Option<Out>,
 {
@@ -77,25 +76,26 @@ where
 	}
 }
 
-pub struct FilterMapSubscriber<Mapper, In, Out, Error, Destination>
+pub struct FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Destination: Observer,
+	Destination: Subscriber,
 {
-	destination: ClosableDestination<Destination>,
-	pub mapper: Mapper,
-	pub index: u32,
-	pub _phantom_data: PhantomData<(In, Out, Error)>,
+	destination: Destination,
+	mapper: Mapper,
+	index: u32,
+	_phantom_data: PhantomData<(In, Out, InError)>,
 }
 
-impl<Mapper, In, Out, Error, Destination> FilterMapSubscriber<Mapper, In, Out, Error, Destination>
+impl<In, InError, Out, Mapper, Destination>
+	FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	pub fn new(destination: Destination, mapper: Mapper) -> Self {
 		Self {
-			destination: ClosableDestination::new(destination),
+			destination,
 			mapper,
 			index: 0,
 			_phantom_data: PhantomData,
@@ -103,45 +103,45 @@ where
 	}
 }
 
-impl<Mapper, In, Out, Error, Destination> ObserverInput
-	for FilterMapSubscriber<Mapper, In, Out, Error, Destination>
+impl<In, InError, Mapper, Out, Destination> ObserverInput
+	for FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 	In: 'static,
 	Out: 'static,
-	Error: 'static,
+	InError: 'static,
 {
 	type In = In;
-	type InError = Error;
+	type InError = InError;
 }
 
-impl<Mapper, In, Out, Error, Destination> ObservableOutput
-	for FilterMapSubscriber<Mapper, In, Out, Error, Destination>
+impl<In, InError, Mapper, Out, Destination> ObservableOutput
+	for FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Destination: Observer,
+	Destination: Subscriber,
 	Out: 'static,
-	Error: 'static,
+	InError: 'static,
 {
 	type Out = Out;
-	type OutError = Error;
+	type OutError = InError;
 }
 
-impl<Mapper, In, Out, Error, Destination> Observer
-	for FilterMapSubscriber<Mapper, In, Out, Error, Destination>
+impl<In, InError, Mapper, Out, Destination> Observer
+	for FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 	In: 'static,
 	Out: 'static,
-	Error: 'static,
+	InError: 'static,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -161,16 +161,16 @@ where
 	}
 }
 
-impl<Mapper, In, Out, Error, Destination> Subscription
-	for FilterMapSubscriber<Mapper, In, Out, Error, Destination>
+impl<In, InError, Mapper, Out, Destination> Subscription
+	for FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 	Out: 'static,
-	Error: 'static,
+	InError: 'static,
 {
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
@@ -181,11 +181,11 @@ where
 	}
 }
 
-impl<Mapper, In, Out, Error, Destination> Operation
-	for FilterMapSubscriber<Mapper, In, Out, Error, Destination>
+impl<In, InError, Mapper, Out, Destination> Operation
+	for FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Destination: Observer<In = Out, InError = Error>,
+	Destination: Subscriber<In = Out, InError = InError>,
 {
 	type Destination = Destination;
 }

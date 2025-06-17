@@ -1,4 +1,6 @@
-use rx_bevy_observable::{DynForwarder, Observer, ObserverInput, Subscriber, Subscription};
+use rx_bevy_observable::{
+	Observer, ObserverInput, Subscriber, Subscription, forwarders::DynForwarder,
+};
 use slab::Slab;
 
 pub struct MulticastSubscriber<Instance: DynForwarder> {

@@ -2,58 +2,6 @@ use std::marker::PhantomData;
 
 use crate::{ObservableOutput, Observer, ObserverInput};
 
-pub struct ObserverWrapper<D>
-where
-	D: Observer,
-{
-	pub destination: D,
-}
-
-impl<D> ObserverInput for ObserverWrapper<D>
-where
-	D: Observer,
-{
-	type In = D::In;
-	type InError = D::InError;
-}
-
-impl<D> Observer for ObserverWrapper<D>
-where
-	D: Observer,
-{
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(next);
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
-	}
-
-	fn complete(&mut self) {
-		self.destination.complete();
-	}
-}
-/*
-pub trait RootForwarder<D>: ObserverInput + ObservableOutput {
-	fn next_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
-		&mut self,
-		next: Self::In,
-		destination: &mut D,
-	);
-
-	fn error_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
-		&mut self,
-		error: Self::InError,
-		destination: &mut D,
-	);
-
-	fn complete_forward<Destination: Observer<In = Self::Out, InError = Self::OutError>>(
-		&mut self,
-		destination: &mut D,
-	);
-}
-*/
-
 pub struct ForwarderBridge<Fw, Destination>
 where
 	Fw: Forwarder,

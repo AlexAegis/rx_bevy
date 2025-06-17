@@ -1,13 +1,15 @@
 pub use rx_bevy_observable::*;
 
 // Observables
+#[cfg(feature = "observable_iterator")]
+pub use rx_bevy_observable_iterator::*;
 #[cfg(feature = "observable_of")]
 pub use rx_bevy_observable_of::*;
 #[cfg(feature = "observable_throw")]
 pub use rx_bevy_observable_throw::*;
-// Pipes
-#[cfg(feature = "pipe_operator")]
-pub use rx_bevy_pipe_operator::*;
+// Pipe
+#[cfg(feature = "pipe")]
+pub use rx_bevy_pipe::*;
 // Observers
 #[cfg(feature = "observer_fn")]
 pub use rx_bevy_observer_fn::*;
@@ -16,12 +18,18 @@ pub use rx_bevy_observer_noop::*;
 #[cfg(feature = "observer_print")]
 pub use rx_bevy_observer_print::*;
 // Operators
+#[cfg(feature = "operator_filter")]
+pub use rx_bevy_operator_filter::*;
+#[cfg(feature = "operator_filter_map")]
+pub use rx_bevy_operator_filter_map::*;
 #[cfg(feature = "operator_finalize")]
 pub use rx_bevy_operator_finalize::*;
 #[cfg(feature = "operator_identity")]
 pub use rx_bevy_operator_identity::*;
 #[cfg(feature = "operator_map")]
 pub use rx_bevy_operator_map::*;
+#[cfg(feature = "operator_switch_map")]
+pub use rx_bevy_operator_switch_map::*;
 #[cfg(feature = "operator_tap")]
 pub use rx_bevy_operator_tap::*;
 // Subjects
@@ -36,13 +44,15 @@ pub mod prelude {
 	pub use rx_bevy_observable::prelude::*;
 
 	// Observables
+	#[cfg(feature = "observable_iterator")]
+	pub use rx_bevy_observable_iterator::prelude::*;
 	#[cfg(feature = "observable_of")]
 	pub use rx_bevy_observable_of::prelude::*;
 	#[cfg(feature = "observable_throw")]
 	pub use rx_bevy_observable_throw::prelude::*;
-	// Pipes
-	#[cfg(feature = "pipe_operator")]
-	pub use rx_bevy_pipe_operator::prelude::*;
+	// Pipe
+	#[cfg(feature = "pipe")]
+	pub use rx_bevy_pipe::prelude::*;
 	// Observers
 	#[cfg(feature = "observer_fn")]
 	pub use rx_bevy_observer_fn::prelude::*;
@@ -53,12 +63,16 @@ pub mod prelude {
 	// Operators
 	#[cfg(feature = "operator_filter")]
 	pub use rx_bevy_operator_filter::prelude::*;
+	#[cfg(feature = "operator_filter_map")]
+	pub use rx_bevy_operator_filter_map::prelude::*;
 	#[cfg(feature = "operator_finalize")]
 	pub use rx_bevy_operator_finalize::prelude::*;
 	#[cfg(feature = "operator_identity")]
 	pub use rx_bevy_operator_identity::prelude::*;
 	#[cfg(feature = "operator_map")]
 	pub use rx_bevy_operator_map::prelude::*;
+	#[cfg(feature = "operator_switch_map")]
+	pub use rx_bevy_operator_switch_map::prelude::*;
 	#[cfg(feature = "operator_tap")]
 	pub use rx_bevy_operator_tap::prelude::*;
 

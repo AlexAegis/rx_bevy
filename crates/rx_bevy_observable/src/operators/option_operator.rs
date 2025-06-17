@@ -109,8 +109,8 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		self.internal_subscriber
-			.as_mut()
-			.map(|internal_sub| internal_sub.unsubscribe());
+		if let Some(internal_subscriber) = self.internal_subscriber.as_mut() {
+			internal_subscriber.unsubscribe()
+		}
 	}
 }

@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operation, Operator,
-	Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
 };
 
 #[derive(Debug)]
@@ -82,7 +81,7 @@ where
 	Callback: for<'a> Fn(&'a In),
 	Destination: Observer<In = In, InError = InError>,
 {
-	destination: ClosableDestination<Destination>,
+	destination: Destination,
 	callback: Callback,
 	_phantom_data: PhantomData<(In, InError)>,
 }
@@ -94,7 +93,7 @@ where
 {
 	pub fn new(destination: Destination, callback: Callback) -> Self {
 		Self {
-			destination: ClosableDestination::new(destination),
+			destination,
 			callback,
 			_phantom_data: PhantomData,
 		}
@@ -163,7 +162,7 @@ impl<In, InError, Callback, Destination> Subscription
 	for TapSubscriber<In, InError, Callback, Destination>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
-	Destination: Observer<In = In, InError = InError>,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()

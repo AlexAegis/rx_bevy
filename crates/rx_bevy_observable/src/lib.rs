@@ -1,19 +1,19 @@
-mod forwarder;
+pub mod forwarders;
+mod into_observable;
 mod observable;
 mod observer;
 mod operators;
-mod subscribers;
+pub mod subscribers;
 mod subscription;
 
-pub use forwarder::*;
+pub use into_observable::*;
 pub use observable::*;
 pub use observer::*;
 pub use operators::*;
-pub use subscribers::*;
+
 pub use subscription::*;
 
 pub mod prelude {
-	pub use crate::forwarder::*;
 	pub use crate::observable::*;
 	pub use crate::observer::*;
 	pub use crate::subscribers::*;

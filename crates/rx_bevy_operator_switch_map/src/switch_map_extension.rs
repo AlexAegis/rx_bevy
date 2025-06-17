@@ -1,5 +1,5 @@
 use rx_bevy_observable::{CompositeOperator, Observable, Operator};
-use rx_bevy_pipe_operator::Pipe;
+use rx_bevy_pipe::Pipe;
 
 use crate::SwitchMapOperator;
 

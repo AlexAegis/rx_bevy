@@ -1,12 +1,11 @@
-// The implementation is in a separate file so it's easier to search for it
-mod filter;
-pub use filter::*;
+mod filter_operator;
+pub use filter_operator::*;
 
 #[cfg(feature = "pipe")]
 pub mod filter_extension;
 
 pub mod prelude {
-	pub use crate::filter::*;
+	pub use crate::filter_operator::*;
 
 	#[cfg(feature = "pipe")]
 	pub use crate::filter_extension::*;

@@ -1,12 +1,11 @@
-// The implementation is in a separate file so it's easier to search for it
-mod tap;
-pub use tap::*;
+mod tap_operator;
+pub use tap_operator::*;
 
 #[cfg(feature = "pipe")]
 pub mod tap_extension;
 
 pub mod prelude {
-	pub use crate::tap::*;
+	pub use crate::tap_operator::*;
 
 	#[cfg(feature = "pipe")]
 	pub use crate::tap_extension::*;

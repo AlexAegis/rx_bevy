@@ -27,17 +27,18 @@ default = [
 dev = []
 example = ["dev"]
 pipe = [
-    "all_pipes",
-    "rx_bevy_operator_tap/pipe",
-    "rx_bevy_operator_map/pipe",
+    "dep:rx_bevy_pipe",
     "rx_bevy_operator_filter/pipe",
     "rx_bevy_operator_filter_map/pipe",
     "rx_bevy_operator_finalize/pipe",
     "rx_bevy_operator_identity/pipe",
+    "rx_bevy_operator_map/pipe",
     "rx_bevy_operator_switch_map/pipe",
+    "rx_bevy_operator_tap/pipe",
 ]
 # Observables and Subjects. Not sure if a good idea, so I'm keeping it behind a feature
 inline_subscribe = [
+    "rx_bevy_observable_iterator/inline_subscribe",
     "rx_bevy_observable_of/inline_subscribe",
     "rx_bevy_observable_throw/inline_subscribe",
     "rx_bevy_subject/inline_subscribe",
@@ -46,12 +47,10 @@ inline_subscribe = [
 ]
 
 # Observables
-all_observables = ["observable_of", "observable_throw"]
+all_observables = ["observable_iterator", "observable_of", "observable_throw"]
 observable_of = ["dep:rx_bevy_observable_of"]
+observable_iterator = ["dep:rx_bevy_observable_iterator"]
 observable_throw = ["dep:rx_bevy_observable_throw"]
-# Pipes
-all_pipes = ["pipe_operator"]
-pipe_operator = ["dep:rx_bevy_pipe_operator"]
 # Observers
 all_observers = ["observer_noop", "observer_print", "observer_fn"]
 observer_fn = ["dep:rx_bevy_observer_fn"]
@@ -59,21 +58,21 @@ observer_noop = ["dep:rx_bevy_observer_noop"]
 observer_print = ["dep:rx_bevy_observer_print"]
 # Operators
 all_operators = [
-    "operator_tap",
-    "operator_map",
     "operator_filter",
     "operator_filter_map",
     "operator_finalize",
     "operator_identity",
+    "operator_map",
     "operator_switch_map",
+    "operator_tap",
 ]
-operator_tap = ["dep:rx_bevy_operator_tap"]
-operator_map = ["dep:rx_bevy_operator_map"]
 operator_filter = ["dep:rx_bevy_operator_filter"]
 operator_filter_map = ["dep:rx_bevy_operator_filter_map"]
 operator_finalize = ["dep:rx_bevy_operator_finalize"]
 operator_identity = ["dep:rx_bevy_operator_identity"]
+operator_map = ["dep:rx_bevy_operator_map"]
 operator_switch_map = ["dep:rx_bevy_operator_switch_map"]
+operator_tap = ["dep:rx_bevy_operator_tap"]
 # Subjects
 all_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["dep:rx_bevy_subject"]
@@ -83,22 +82,23 @@ subject_replay = ["dep:rx_bevy_subject_replay"]
 [dependencies]
 rx_bevy_observable = { workspace = true }
 # Observables
+rx_bevy_observable_iterator = { workspace = true, optional = true }
 rx_bevy_observable_of = { workspace = true, optional = true }
 rx_bevy_observable_throw = { workspace = true, optional = true }
-# Pipes
-rx_bevy_pipe_operator = { workspace = true, optional = true }
+# Pipe
+rx_bevy_pipe = { workspace = true, optional = true }
 # Observers
+rx_bevy_observer_fn = { workspace = true, optional = true }
 rx_bevy_observer_noop = { workspace = true, optional = true }
 rx_bevy_observer_print = { workspace = true, optional = true }
-rx_bevy_observer_fn = { workspace = true, optional = true }
 # Operators
-rx_bevy_operator_tap = { workspace = true, optional = true }
-rx_bevy_operator_map = { workspace = true, optional = true }
 rx_bevy_operator_filter = { workspace = true, optional = true }
 rx_bevy_operator_filter_map = { workspace = true, optional = true }
 rx_bevy_operator_finalize = { workspace = true, optional = true }
 rx_bevy_operator_identity = { workspace = true, optional = true }
+rx_bevy_operator_map = { workspace = true, optional = true }
 rx_bevy_operator_switch_map = { workspace = true, optional = true }
+rx_bevy_operator_tap = { workspace = true, optional = true }
 # Subjects
 rx_bevy_subject = { workspace = true, optional = true }
 rx_bevy_subject_behavior = { workspace = true, optional = true }

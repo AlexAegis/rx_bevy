@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber,
-	Subscription, SwitchSubscriber,
+	Subscription, prelude::SwitchSubscriber,
 };
 
 pub struct SwitchMapOperator<In, InError, Switcher, InnerObservable> {
@@ -79,7 +79,7 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	destination: SwitchSubscriber<InnerObservable, Destination>,
 	switcher: Switcher,
@@ -93,7 +93,7 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Clone + Fn(In) -> InnerObservable,
-	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	pub fn new(destination: Destination, switcher: Switcher) -> Self {
 		Self {
@@ -111,7 +111,8 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: 'static + Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 {
@@ -135,7 +136,7 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	type In = In;
 	type InError = InError;
@@ -148,7 +149,7 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	type Out = InnerObservable::Out;
 	type OutError = InnerObservable::OutError;
@@ -161,7 +162,7 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	type Destination = Destination;
 }
@@ -173,7 +174,8 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: 'static + Observer<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()

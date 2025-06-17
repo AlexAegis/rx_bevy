@@ -1,4 +1,4 @@
-use crate::{Observer, ObserverInput, SubscriberForwarder};
+use crate::{Observer, ObserverInput, forwarders::SubscriberForwarder};
 
 /// Combines an operator instance and a destination
 /// Useful for combining operators, as a short lived struct

@@ -1,38 +1,38 @@
 use rx_bevy_observable::{CompositeOperator, Observable, Operator};
-use rx_bevy_pipe_operator::Pipe;
+use rx_bevy_pipe::Pipe;
 
 use crate::FilterMapOperator;
 
 /// Operator creator function
-pub fn filter_map<Mapper, Out, NextOut, Error>(
+pub fn filter_map<In, InError, Mapper, Out>(
 	mapper: Mapper,
-) -> FilterMapOperator<Mapper, Out, NextOut, Error>
+) -> FilterMapOperator<In, InError, Mapper, Out>
 where
-	Mapper: Clone + Fn(Out) -> Option<NextOut>,
+	Mapper: Clone + Fn(In) -> Option<Out>,
 {
 	FilterMapOperator::new(mapper)
 }
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionMap: Observable + Sized {
+pub trait ObservableExtensionFilterMap: Observable + Sized {
 	fn filter_map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> Option<NextOut>>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, FilterMapOperator<Mapper, Self::Out, NextOut, Self::OutError>> {
+	) -> Pipe<Self, FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
 		Pipe::new(self, FilterMapOperator::new(mapper))
 	}
 }
 
-impl<T> ObservableExtensionMap for T where T: Observable {}
+impl<T> ObservableExtensionFilterMap for T where T: Observable {}
 
 /// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionMap: Operator + Sized {
+pub trait CompositeOperatorExtensionFilterMap: Operator + Sized {
 	fn filter_map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> Option<NextOut>>(
 		self,
 		mapper: Mapper,
-	) -> CompositeOperator<Self, FilterMapOperator<Mapper, Self::Out, NextOut, Self::OutError>> {
+	) -> CompositeOperator<Self, FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
 		CompositeOperator::new(self, FilterMapOperator::new(mapper))
 	}
 }
 
-impl<T> CompositeOperatorExtensionMap for T where T: Operator {}
+impl<T> CompositeOperatorExtensionFilterMap for T where T: Operator {}

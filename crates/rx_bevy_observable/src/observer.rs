@@ -9,39 +9,6 @@ pub trait Observer: ObserverInput {
 	fn complete(&mut self);
 }
 
-pub struct DynObserver<T, E> {
-	pub dyn_next: Box<dyn FnMut(T)>,
-	pub dyn_error: Box<dyn FnMut(E)>,
-	pub dyn_complete: Box<dyn FnMut()>,
-}
-
-impl<T, E> ObserverInput for DynObserver<T, E>
-where
-	T: 'static,
-	E: 'static,
-{
-	type In = T;
-	type InError = E;
-}
-
-impl<T, E> Observer for DynObserver<T, E>
-where
-	T: 'static,
-	E: 'static,
-{
-	fn next(&mut self, next: T) {
-		(self.dyn_next)(next);
-	}
-
-	fn error(&mut self, error: E) {
-		(self.dyn_error)(error);
-	}
-
-	fn complete(&mut self) {
-		(self.dyn_complete)();
-	}
-}
-
 impl ObserverInput for () {
 	type In = ();
 	type InError = ();

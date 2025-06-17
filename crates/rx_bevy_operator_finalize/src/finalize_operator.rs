@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operation, Operator,
-	Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
 };
 
 #[derive(Debug)]
@@ -80,9 +79,9 @@ where
 pub struct FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
-	Destination: Observer,
+	Destination: Subscriber,
 {
-	destination: ClosableDestination<Destination>,
+	destination: Destination,
 	/// It's in an option so it can be removed when used, allowing the use of an FnOnce
 	callback: Option<Callback>,
 	_phantom_data: PhantomData<(In, InError)>,
@@ -91,11 +90,11 @@ where
 impl<In, InError, Callback, Destination> FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	pub fn new(destination: Destination, callback: Callback) -> Self {
 		Self {
-			destination: ClosableDestination::new(destination),
+			destination,
 			callback: Some(callback),
 			_phantom_data: PhantomData,
 		}
@@ -106,7 +105,7 @@ impl<In, InError, Callback, Destination> ObservableOutput
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
-	Destination: Observer,
+	Destination: Subscriber,
 	In: 'static,
 	InError: 'static,
 {
@@ -118,7 +117,7 @@ impl<In, InError, Callback, Destination> ObserverInput
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
-	Destination: Observer,
+	Destination: Subscriber,
 	In: 'static,
 	InError: 'static,
 {
@@ -130,7 +129,7 @@ impl<In, InError, Callback, Destination> Observer
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
@@ -160,7 +159,7 @@ impl<In, InError, Callback, Destination> Subscription
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
@@ -175,7 +174,7 @@ impl<In, InError, Callback, Destination> Operation
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,

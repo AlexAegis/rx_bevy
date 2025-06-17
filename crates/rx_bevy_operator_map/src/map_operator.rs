@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operation, Operator,
-	Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
 };
 
 pub struct MapOperator<Mapper, In, InError, Out>
@@ -84,9 +83,9 @@ where
 pub struct MapSubscriber<Mapper, In, InError, Out, Destination>
 where
 	Mapper: Fn(In) -> Out,
-	Destination: Observer,
+	Destination: Subscriber,
 {
-	destination: ClosableDestination<Destination>,
+	destination: Destination,
 	mapper: Mapper,
 	index: u32,
 	_phantom_data: PhantomData<(In, InError, Out)>,
@@ -95,7 +94,7 @@ where
 impl<Mapper, In, InError, Out, Destination> MapSubscriber<Mapper, In, InError, Out, Destination>
 where
 	Mapper: Fn(In) -> Out,
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
@@ -104,7 +103,7 @@ where
 {
 	pub fn new(destination: Destination, mapper: Mapper) -> Self {
 		Self {
-			destination: ClosableDestination::new(destination),
+			destination,
 			mapper,
 			index: 0,
 			_phantom_data: PhantomData,
@@ -116,7 +115,7 @@ impl<Mapper, In, InError, Out, Destination> ObservableOutput
 	for MapSubscriber<Mapper, In, InError, Out, Destination>
 where
 	Mapper: Fn(In) -> Out,
-	Destination: Observer,
+	Destination: Subscriber,
 	Out: 'static,
 	InError: 'static,
 {
@@ -128,7 +127,7 @@ impl<Mapper, In, InError, Out, Destination> ObserverInput
 	for MapSubscriber<Mapper, In, InError, Out, Destination>
 where
 	Mapper: Fn(In) -> Out,
-	Destination: Observer,
+	Destination: Subscriber,
 	In: 'static,
 	InError: 'static,
 {
@@ -140,7 +139,7 @@ impl<Mapper, In, InError, Out, Destination> Observer
 	for MapSubscriber<Mapper, In, InError, Out, Destination>
 where
 	Mapper: Fn(In) -> Out,
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
@@ -170,7 +169,7 @@ impl<Mapper, In, InError, Out, Destination> Subscription
 	for MapSubscriber<Mapper, In, InError, Out, Destination>
 where
 	Mapper: Fn(In) -> Out,
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,

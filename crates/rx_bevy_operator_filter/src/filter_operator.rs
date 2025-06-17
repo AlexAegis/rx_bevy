@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ClosableDestination, ObservableOutput, Observer, ObserverInput, Operation, Operator,
-	Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
 };
 
 pub struct FilterOperator<In, InError, Filter> {
@@ -51,7 +50,7 @@ pub struct FilterSubscriber<In, InError, Filter, Destination>
 where
 	Destination: Observer,
 {
-	destination: ClosableDestination<Destination>,
+	destination: Destination,
 	filter: Filter,
 	_phantom_data: PhantomData<(In, InError)>,
 }
@@ -62,7 +61,7 @@ where
 {
 	pub fn new(destination: Destination, filter: Filter) -> Self {
 		Self {
-			destination: ClosableDestination::new(destination),
+			destination,
 			filter,
 			_phantom_data: PhantomData,
 		}
@@ -141,7 +140,7 @@ where
 	In: 'static,
 	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Observer<
+	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,

@@ -1,17 +1,16 @@
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
-use crate::{Observer, ObserverInput};
+use crate::{Observer, ObserverInput, Subscriber, Subscription};
 
-// TODO: WeakSubscriber?
-pub struct WeakObserver<Destination>
+pub struct WeakSubscriber<Destination>
 where
 	Destination: Observer,
 {
 	destination: Weak<RefCell<Destination>>,
 }
 
-impl<Destination> WeakObserver<Destination>
+impl<Destination> WeakSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -23,7 +22,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for WeakObserver<Destination>
+impl<Destination> ObserverInput for WeakSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -31,7 +30,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> Observer for WeakObserver<Destination>
+impl<Destination> Observer for WeakSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -50,6 +49,25 @@ where
 	fn complete(&mut self) {
 		if let Some(destination) = self.destination.upgrade() {
 			destination.borrow_mut().complete();
+		}
+	}
+}
+
+impl<Destination> Subscription for WeakSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn is_closed(&self) -> bool {
+		if let Some(destination) = self.destination.upgrade() {
+			destination.borrow().is_closed()
+		} else {
+			true
+		}
+	}
+
+	fn unsubscribe(&mut self) {
+		if let Some(destination) = self.destination.upgrade() {
+			destination.borrow_mut().unsubscribe();
 		}
 	}
 }

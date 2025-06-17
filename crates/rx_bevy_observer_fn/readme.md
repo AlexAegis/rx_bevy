@@ -3,5 +3,9 @@
 ## Example
 
 ```sh
-cargo run -p rx_bevy_observer_fn --features example --example fn_example
+cargo run -p rx_bevy_observer_fn --features example --example fn_observer_example
+```
+
+```sh
+cargo run -p rx_bevy_observer_fn --features example --example dyn_fn_observer_example
 ```
