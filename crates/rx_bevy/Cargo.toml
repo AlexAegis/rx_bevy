@@ -31,7 +31,6 @@ pipe = [
     "rx_bevy_operator_filter/pipe",
     "rx_bevy_operator_filter_map/pipe",
     "rx_bevy_operator_finalize/pipe",
-    "rx_bevy_operator_identity/pipe",
     "rx_bevy_operator_map/pipe",
     "rx_bevy_operator_switch_map/pipe",
     "rx_bevy_operator_tap/pipe",
@@ -62,7 +61,6 @@ all_operators = [
     "operator_filter",
     "operator_filter_map",
     "operator_finalize",
-    "operator_identity",
     "operator_map",
     "operator_switch_map",
     "operator_tap",
@@ -70,7 +68,6 @@ all_operators = [
 operator_filter = ["dep:rx_bevy_operator_filter"]
 operator_filter_map = ["dep:rx_bevy_operator_filter_map"]
 operator_finalize = ["dep:rx_bevy_operator_finalize"]
-operator_identity = ["dep:rx_bevy_operator_identity"]
 operator_map = ["dep:rx_bevy_operator_map"]
 operator_switch_map = ["dep:rx_bevy_operator_switch_map"]
 operator_tap = ["dep:rx_bevy_operator_tap"]
@@ -96,7 +93,6 @@ rx_bevy_observer_print = { workspace = true, optional = true }
 rx_bevy_operator_filter = { workspace = true, optional = true }
 rx_bevy_operator_filter_map = { workspace = true, optional = true }
 rx_bevy_operator_finalize = { workspace = true, optional = true }
-rx_bevy_operator_identity = { workspace = true, optional = true }
 rx_bevy_operator_map = { workspace = true, optional = true }
 rx_bevy_operator_switch_map = { workspace = true, optional = true }
 rx_bevy_operator_tap = { workspace = true, optional = true }

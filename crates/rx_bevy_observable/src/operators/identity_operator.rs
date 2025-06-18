@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
+use crate::{
 	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, SubscriptionLike,
 };
 
@@ -74,7 +74,7 @@ impl<In, InError, Destination> IdentitySubscriber<In, InError, Destination>
 where
 	Destination: Subscriber,
 {
-	fn new(destination: Destination) -> Self {
+	pub fn new(destination: Destination) -> Self {
 		Self {
 			destination,
 			_phantom_data: PhantomData,
@@ -146,10 +146,7 @@ where
 
 impl<In, InError, Destination> Operation for IdentitySubscriber<In, InError, Destination>
 where
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber,
 	In: 'static,
 	InError: 'static,
 {

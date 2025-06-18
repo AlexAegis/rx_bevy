@@ -5,10 +5,6 @@ use rx_bevy::prelude::*;
 /// of other [Operator]s without having to use a [Pipe] which would require a
 /// source [Observable]
 fn main() {
-	of(1)
-		.identity()
-		.subscribe(PrintObserver::new("identity_operator (useless)"));
-
 	let composite_operator = IdentityOperator::<i32, ()>::default()
 		.map(|i| i + 1)
 		.filter(|i| i < &4);

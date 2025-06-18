@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::{ObservableOutput, Observer, ObserverInput, SubscriptionLike};
+use crate::{IdentityOperator, ObservableOutput, Observer, ObserverInput, SubscriptionLike};
 
 /// A [Subscriber] is an [Observer] that is also a [SubscriptionLike], so it
 /// can clean itself up upon unsubscribe.
@@ -54,57 +54,5 @@ where
 
 	fn unsubscribe(&mut self) {
 		self.deref_mut().unsubscribe();
-	}
-}
-
-impl<T, Target> Observer for T
-where
-	Target: Observer,
-	T: DerefMut<Target = Target>,
-{
-	fn next(&mut self, next: Self::In) {
-		self.deref_mut().next(next);
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		self.deref_mut().error(error);
-	}
-
-	fn complete(&mut self) {
-		self.deref_mut().complete();
-	}
-}
-
-impl<T, Target> ObserverInput for T
-where
-	Target: ObserverInput,
-	T: DerefMut<Target = Target>,
-{
-	type In = Target::In;
-	type InError = Target::InError;
-}
-
-impl<T, Target> ObservableOutput for T
-where
-	Target: ObservableOutput,
-	T: DerefMut<Target = Target>,
-{
-	type Out = Target::Out;
-	type OutError = Target::OutError;
-}
-
-impl<T, Target> Operator for T
-where
-	Target: Operator,
-	T: DerefMut<Target = Target>,
-{
-	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>> =
-		Target::Subscriber<Destination>;
-
-	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
-		&mut self,
-		destination: Destination,
-	) -> Self::Subscriber<Destination> {
-		self.deref_mut().operator_subscribe(destination)
 	}
 }

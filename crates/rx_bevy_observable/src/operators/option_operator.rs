@@ -3,112 +3,143 @@ use crate::{
 	Subscriber, SubscriptionLike,
 };
 
-/*
-TODO: Test of the blanket deref impl really works for optional operators
-
-impl<T> Operator for Option<T>
+/// [Operator]s with the same outputs as its inputs can be made optional.
+/// If upon subscription the operator was [Some] the subscription will be
+/// created with the operator, if it's [None], values will just pass through.
+impl<In, InError, Op> Operator for Option<Op>
 where
-	T: Operator,
+	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
+	In: 'static,
+	InError: 'static,
 {
 	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		OptionSubscriber<T::Subscriber<D>>;
+		OptionOperatorSubscriber<Op::Subscriber<D>, D>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
-		OptionSubscriber::new(
-			self.as_mut()
-				.map(|operator| operator.operator_subscribe(destination)),
-		)
-	}
-}
-
-#[derive(Debug)]
-pub struct OptionSubscriber<Sub>
-where
-	Sub: Subscriber,
-{
-	internal_subscriber: Option<Sub>,
-}
-
-impl<Sub> OptionSubscriber<Sub>
-where
-	Sub: Subscriber,
-{
-	pub fn new(internal_subscriber: Option<Sub>) -> Self {
-		Self {
-			internal_subscriber,
+		match self {
+			Some(operator) => {
+				OptionOperatorSubscriber::Some(operator.operator_subscribe(destination))
+			}
+			None => OptionOperatorSubscriber::None(destination),
 		}
 	}
 }
 
-impl<Sub> ObserverInput for OptionSubscriber<Sub>
+impl<In, InError, Op> ObserverInput for Option<Op>
 where
-	Sub: Subscriber,
+	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
+	In: 'static,
+	InError: 'static,
+{
+	type In = In;
+	type InError = InError;
+}
+
+impl<In, InError, Op> ObservableOutput for Option<Op>
+where
+	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
+	In: 'static,
+	InError: 'static,
+{
+	type Out = In;
+	type OutError = InError;
+}
+
+pub enum OptionOperatorSubscriber<OpSub, Destination>
+where
+	OpSub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber<In = OpSub::In, InError = OpSub::InError>,
+{
+	Some(OpSub),
+	None(Destination),
+}
+
+impl<Sub, Destination> ObserverInput for OptionOperatorSubscriber<Sub, Destination>
+where
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	type In = Sub::In;
 	type InError = Sub::InError;
 }
 
-impl<Sub> Observer for OptionSubscriber<Sub>
+impl<Sub, Destination> Observer for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: Subscriber,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
+	Sub::In: 'static,
+	Sub::InError: 'static,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		if let Some(internal_subscriber) = &mut self.internal_subscriber {
-			internal_subscriber.next(next);
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.next(next),
+			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.next(next),
 		}
 	}
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		if let Some(internal_subscriber) = &mut self.internal_subscriber {
-			internal_subscriber.error(error);
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.error(error),
+			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.error(error),
 		}
 	}
 
 	#[inline]
 	fn complete(&mut self) {
-		if let Some(internal_subscriber) = &mut self.internal_subscriber {
-			internal_subscriber.complete();
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.complete(),
+			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.complete(),
 		}
 	}
 }
 
-impl<Sub> Operation for OptionSubscriber<Sub>
+impl<Sub, Destination> Operation for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	type Destination = Sub::Destination;
 }
 
-impl<Sub> SubscriptionLike for OptionSubscriber<Sub>
+impl<Sub, Destination> SubscriptionLike for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: Subscriber,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
+	Sub::In: 'static,
+	Sub::InError: 'static,
 {
 	fn is_closed(&self) -> bool {
-		self.internal_subscriber
-			.as_ref()
-			.map(|internal_sub| internal_sub.is_closed())
-			.unwrap_or(true)
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.is_closed(),
+			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.is_closed(),
+		}
 	}
 
 	fn unsubscribe(&mut self) {
-		if let Some(internal_subscriber) = self.internal_subscriber.as_mut() {
-			internal_subscriber.unsubscribe()
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => {
+				internal_subscriber.unsubscribe()
+			}
+			OptionOperatorSubscriber::None(fallback_subscriber) => {
+				fallback_subscriber.unsubscribe()
+			}
 		}
 	}
 }
 
-impl<Sub> Drop for OptionSubscriber<Sub>
+impl<Sub, Destination> Drop for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: Subscriber,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
+	Sub::In: 'static,
+	Sub::InError: 'static,
 {
 	fn drop(&mut self) {
 		self.unsubscribe();
 	}
 }
-
-*/
