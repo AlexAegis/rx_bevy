@@ -1,15 +1,9 @@
-use std::{
-	cell::RefCell,
-	marker::PhantomData,
-	rc::{Rc, Weak},
-};
-
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, ObserverInput, Operator, Subscriber, Subscription,
-	SubscriptionLike, forwarders::DynForwarder, subscribers::ObserverSubscriber,
+	Observable, ObservableOutput, Observer, ObserverInput, Operator, Subscription,
+	subscribers::ObserverSubscriber,
 };
 
-use crate::{MulticastOperator, MulticastOuterSubscriber};
+use rx_bevy_operator_multicast::{MulticastOperator, MulticastOuterSubscriber};
 
 /// A Subject is a shared multicast observer, can be used for broadcasting
 /// a clone of it still has the same set of subscribers, and is needed if you
@@ -19,14 +13,14 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	destinations: MulticastOperator<In, InError>,
+	multicast: MulticastOperator<In, InError>,
 }
 
 impl<T, Error> Clone for Subject<T, Error> {
 	/// Cloning a subject keeps all existing destinations
 	fn clone(&self) -> Self {
 		Self {
-			destinations: self.destinations.clone(),
+			multicast: self.multicast.clone(),
 		}
 	}
 }
@@ -34,7 +28,7 @@ impl<T, Error> Clone for Subject<T, Error> {
 impl<T, Error> Default for Subject<T, Error> {
 	fn default() -> Self {
 		Self {
-			destinations: MulticastOperator::new(),
+			multicast: MulticastOperator::default(),
 		}
 	}
 }
@@ -61,11 +55,10 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Subscription<Self::Subscriber<Destination>> {
-		let multicast_subscriber = self
-			.destinations
-			.operator_subscribe(ObserverSubscriber::new(destination));
-
-		Subscription::new(multicast_subscriber)
+		Subscription::new(
+			self.multicast
+				.operator_subscribe(ObserverSubscriber::new(destination)),
+		)
 	}
 }
 
@@ -84,15 +77,14 @@ where
 	Error: 'static + Clone,
 {
 	fn next(&mut self, next: Self::In) {
-		self.destinations.next(next);
+		self.multicast.next(next);
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		self.destinations.error(error);
+		self.multicast.error(error);
 	}
 
 	fn complete(&mut self) {
-		// TODO: Check what a subject actually does on complete
-		self.destinations.complete();
+		self.multicast.complete();
 	}
 }

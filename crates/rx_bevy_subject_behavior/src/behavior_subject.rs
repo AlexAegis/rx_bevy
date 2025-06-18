@@ -4,7 +4,7 @@ use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscription,
 	prelude::ObserverSubscriber,
 };
-use rx_bevy_subject::{MulticastOperator, MulticastOuterSubscriber, Subject};
+use rx_bevy_subject::{MulticastOuterSubscriber, Subject};
 
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.

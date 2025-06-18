@@ -1,5 +1,3 @@
-use std::ops::{Deref, DerefMut};
-
 use crate::{ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike};
 
 /// A simple wrapper for a plain [Observer] to make it "closeable"

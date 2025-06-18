@@ -5,7 +5,7 @@ use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscription,
 	prelude::ObserverSubscriber,
 };
-use rx_bevy_subject::{MulticastOperator, MulticastOuterSubscriber, Subject};
+use rx_bevy_subject::{MulticastOuterSubscriber, Subject};
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.

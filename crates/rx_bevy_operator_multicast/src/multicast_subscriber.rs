@@ -1,28 +1,16 @@
-use std::{
-	cell::RefCell,
-	rc::{Rc, Weak},
-	sync::{Arc, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
-use rx_bevy_observable::{
-	Observer, ObserverInput, Operation, Subscriber, SubscriptionLike, Teardown,
-};
-use slab::Slab;
+use rx_bevy_observable::{Observer, ObserverInput, Operation, SubscriptionLike};
 
-use crate::MulticastOperator;
+use crate::MulticastDestination;
 
 pub struct MulticastOuterSubscriber<Destination>
 where
 	Destination: 'static + Observer,
 {
 	pub(crate) key: usize,
-	pub(crate) subscriber_ref: Arc<
-		RwLock<
-			Slab<
-				Box<dyn Subscriber<In = Destination::In, InError = Destination::InError> + 'static>,
-			>,
-		>,
-	>,
+	pub(crate) subscriber_ref:
+		Arc<RwLock<MulticastDestination<Destination::In, Destination::InError>>>,
 }
 
 impl<Destination> ObserverInput for MulticastOuterSubscriber<Destination>
@@ -46,7 +34,7 @@ where
 {
 	fn next(&mut self, next: Self::In) {
 		if let Ok(mut subscriber) = self.subscriber_ref.write() {
-			if let Some(sub) = subscriber.get_mut(self.key) {
+			if let Some(sub) = subscriber.slab.get_mut(self.key) {
 				sub.next(next);
 			}
 		}
@@ -54,7 +42,7 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		if let Ok(mut subscriber) = self.subscriber_ref.write() {
-			if let Some(sub) = subscriber.get_mut(self.key) {
+			if let Some(sub) = subscriber.slab.get_mut(self.key) {
 				sub.error(error);
 			}
 		}
@@ -62,7 +50,7 @@ where
 
 	fn complete(&mut self) {
 		if let Ok(mut subscriber) = self.subscriber_ref.write() {
-			if let Some(sub) = subscriber.get_mut(self.key) {
+			if let Some(sub) = subscriber.slab.get_mut(self.key) {
 				sub.complete();
 			}
 		}
@@ -75,9 +63,9 @@ where
 {
 	fn unsubscribe(&mut self) {
 		if let Ok(mut subject) = self.subscriber_ref.write() {
-			if let Some(destination) = subject.get_mut(self.key) {
+			if let Some(destination) = subject.slab.get_mut(self.key) {
 				destination.unsubscribe();
-				subject.remove(self.key);
+				subject.slab.remove(self.key);
 			}
 		}
 	}
@@ -85,9 +73,10 @@ where
 	fn is_closed(&self) -> bool {
 		if let Ok(subject) = self.subscriber_ref.read() {
 			subject
+				.slab
 				.get(self.key)
 				.map(|destination| destination.is_closed())
-				.unwrap_or(!subject.contains(self.key))
+				.unwrap_or(!subject.slab.contains(self.key))
 		} else {
 			true
 		}
@@ -109,13 +98,8 @@ where
 {
 	pub(crate) destination: Destination,
 	pub(crate) key: usize,
-	pub(crate) subscriber_ref: Arc<
-		RwLock<
-			Slab<
-				Box<dyn Subscriber<In = Destination::In, InError = Destination::InError> + 'static>,
-			>,
-		>,
-	>,
+	pub(crate) multicast_source:
+		Arc<RwLock<MulticastDestination<Destination::In, Destination::InError>>>,
 }
 
 impl<Destination> Operation for MulticastInnerSubscriber<Destination>
@@ -130,20 +114,21 @@ where
 	Destination: 'static + Observer,
 {
 	fn unsubscribe(&mut self) {
-		if let Ok(mut subject) = self.subscriber_ref.write() {
-			if let Some(destination) = subject.get_mut(self.key) {
+		if let Ok(mut subject) = self.multicast_source.write() {
+			if let Some(destination) = subject.slab.get_mut(self.key) {
 				destination.unsubscribe();
-				subject.remove(self.key);
+				subject.slab.remove(self.key);
 			}
 		}
 	}
 
 	fn is_closed(&self) -> bool {
-		if let Ok(subject) = self.subscriber_ref.read() {
+		if let Ok(subject) = self.multicast_source.read() {
 			subject
+				.slab
 				.get(self.key)
 				.map(|destination| destination.is_closed())
-				.unwrap_or(!subject.contains(self.key))
+				.unwrap_or(!subject.slab.contains(self.key))
 		} else {
 			true
 		}

@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::{IdentityOperator, ObservableOutput, Observer, ObserverInput, SubscriptionLike};
+use crate::{ObservableOutput, Observer, ObserverInput, SubscriptionLike};
 
 /// A [Subscriber] is an [Observer] that is also a [SubscriptionLike], so it
 /// can clean itself up upon unsubscribe.

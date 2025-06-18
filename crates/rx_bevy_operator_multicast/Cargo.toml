@@ -1,6 +1,6 @@
 [package]
-name = "rx_bevy_subject"
-description = "rx_bevy's subject implementation"
+name = "rx_bevy_operator_multicast"
+description = "multicast operator for rx_bevy"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -16,14 +16,15 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
+default = ["pipe"]
 dev = []
 example = ["dev"]
-inline_subscribe = []
+pipe = ["dep:rx_bevy_pipe"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
-rx_bevy_operator_multicast = { workspace = true }
+rx_bevy_pipe = { workspace = true, optional = true }
+slab = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

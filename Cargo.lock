@@ -4478,6 +4478,7 @@ dependencies = [
  "rx_bevy_operator_filter_map",
  "rx_bevy_operator_finalize",
  "rx_bevy_operator_map",
+ "rx_bevy_operator_multicast",
  "rx_bevy_operator_switch_map",
  "rx_bevy_operator_tap",
  "rx_bevy_pipe",
@@ -4590,6 +4591,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_operator_multicast"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_pipe",
+ "rx_bevy_testing",
+ "slab",
+]
+
+[[package]]
 name = "rx_bevy_operator_switch_map"
 version = "0.1.0"
 dependencies = [
@@ -4627,8 +4639,8 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_operator_multicast",
  "rx_bevy_testing",
- "slab",
 ]
 
 [[package]]
