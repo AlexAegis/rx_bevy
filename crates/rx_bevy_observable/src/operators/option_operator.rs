@@ -1,7 +1,10 @@
 use crate::{
 	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
-	Subscriber, Subscription,
+	Subscriber, SubscriptionLike,
 };
+
+/*
+TODO: Test of the blanket deref impl really works for optional operators
 
 impl<T> Operator for Option<T>
 where
@@ -19,22 +22,6 @@ where
 				.map(|operator| operator.operator_subscribe(destination)),
 		)
 	}
-}
-
-impl<T> ObservableOutput for Option<T>
-where
-	T: Operator,
-{
-	type Out = T::Out;
-	type OutError = T::OutError;
-}
-
-impl<T> ObserverInput for Option<T>
-where
-	T: Operator,
-{
-	type In = T::In;
-	type InError = T::InError;
 }
 
 #[derive(Debug)]
@@ -97,7 +84,7 @@ where
 	type Destination = Sub::Destination;
 }
 
-impl<Sub> Subscription for OptionSubscriber<Sub>
+impl<Sub> SubscriptionLike for OptionSubscriber<Sub>
 where
 	Sub: Subscriber,
 {
@@ -114,3 +101,14 @@ where
 		}
 	}
 }
+
+impl<Sub> Drop for OptionSubscriber<Sub>
+where
+	Sub: Subscriber,
+{
+	fn drop(&mut self) {
+		self.unsubscribe();
+	}
+}
+
+*/

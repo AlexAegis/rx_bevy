@@ -1,18 +1,18 @@
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
-use crate::{Observer, ObserverInput, Subscriber, Subscription};
+use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike};
 
 pub struct WeakSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	destination: Weak<RefCell<Destination>>,
 }
 
 impl<Destination> WeakSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	pub fn new(destination: Destination) -> Self {
 		let w = Rc::new(RefCell::new(destination));
@@ -24,7 +24,7 @@ where
 
 impl<Destination> ObserverInput for WeakSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -32,7 +32,7 @@ where
 
 impl<Destination> Observer for WeakSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
 		if let Some(destination) = self.destination.upgrade() {
@@ -53,7 +53,7 @@ where
 	}
 }
 
-impl<Destination> Subscription for WeakSubscriber<Destination>
+impl<Destination> SubscriptionLike for WeakSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
@@ -69,5 +69,14 @@ where
 		if let Some(destination) = self.destination.upgrade() {
 			destination.borrow_mut().unsubscribe();
 		}
+	}
+}
+
+impl<Destination> Drop for WeakSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn drop(&mut self) {
+		self.unsubscribe()
 	}
 }

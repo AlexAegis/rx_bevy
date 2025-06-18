@@ -4492,7 +4492,7 @@ dependencies = [
 name = "rx_bevy_observable"
 version = "0.1.0"
 dependencies = [
- "rx_bevy_observer_fn",
+ "rx_bevy",
  "rx_bevy_testing",
 ]
 

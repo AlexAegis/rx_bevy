@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber,
-	Subscription, prelude::SwitchSubscriber,
+	SubscriptionLike, prelude::SwitchSubscriber,
 };
 
 pub struct SwitchMapOperator<In, InError, Switcher, InnerObservable> {
@@ -77,9 +77,10 @@ pub struct SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destinati
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: Observable,
+	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	destination: SwitchSubscriber<InnerObservable, Destination>,
 	switcher: Switcher,
@@ -91,9 +92,10 @@ impl<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: Observable,
+	InnerObservable: 'static + Observable,
 	Switcher: Clone + Fn(In) -> InnerObservable,
-	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	pub fn new(destination: Destination, switcher: Switcher) -> Self {
 		Self {
@@ -167,7 +169,7 @@ where
 	type Destination = Destination;
 }
 
-impl<In, InError, Switcher, InnerObservable, Destination> Subscription
+impl<In, InError, Switcher, InnerObservable, Destination> SubscriptionLike
 	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: 'static,

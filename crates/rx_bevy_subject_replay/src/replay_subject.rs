@@ -1,8 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
-use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput};
-use rx_bevy_subject::{Subject, SubjectSubscription};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, ObserverInput, Subscription,
+	prelude::ObserverSubscriber,
+};
+use rx_bevy_subject::{MulticastOperator, MulticastOuterSubscriber, Subject};
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.
@@ -70,13 +73,14 @@ where
 	T: Clone + 'static,
 	Error: Clone + 'static,
 {
-	type Subscription = SubjectSubscription<T, Error>;
+	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
+		MulticastOuterSubscriber<ObserverSubscriber<Destination>>;
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		mut observer: Destination,
-	) -> Self::Subscription {
+	) -> Subscription<Self::Subscriber<Destination>> {
 		for value in self.values.borrow().iter() {
 			observer.next(value.clone());
 		}

@@ -1,6 +1,6 @@
-mod of;
-pub use of::*;
+mod of_observable;
+pub use of_observable::*;
 
 pub mod prelude {
-	pub use crate::of::*;
+	pub use crate::of_observable::*;
 }

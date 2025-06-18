@@ -1,4 +1,7 @@
-use rx_bevy_observable::{Observer, ObserverInput, subscribers::SharedSubscriber};
+use rx_bevy_observable::{
+	Observer, ObserverInput,
+	prelude::{ObserverSubscriber, SharedSubscriber},
+};
 
 #[derive(Debug)]
 pub struct MockObserver<T, Error> {
@@ -49,7 +52,7 @@ where
 	T: 'static + Clone,
 	Error: 'static,
 {
-	pub fn new_shared() -> SharedSubscriber<Self> {
-		SharedSubscriber::new(Self::default())
+	pub fn new_shared() -> SharedSubscriber<ObserverSubscriber<Self>> {
+		SharedSubscriber::new(ObserverSubscriber::new(Self::default()))
 	}
 }

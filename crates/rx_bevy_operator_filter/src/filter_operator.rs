@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, SubscriptionLike,
 };
 
 pub struct FilterOperator<In, InError, Filter> {
@@ -134,7 +134,7 @@ where
 	type Destination = Destination;
 }
 
-impl<In, InError, Filter, Destination> Subscription
+impl<In, InError, Filter, Destination> SubscriptionLike
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
 	In: 'static,

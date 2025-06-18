@@ -12,6 +12,9 @@
     "lint:md": "remark --frail --no-stdout --silently-ignore --ignore-pattern '*.ron' --ignore-pattern '.github' --ignore-pattern '.credits' .",
     "lint:md:fix": "remark --frail --silently-ignore --output ./**/*.md"
   },
+  "dependencies": {
+    "rxjs": "^7.8.2"
+  },
   "devDependencies": {
     "@alexaegis/autotool-plugin-remark": "0.14.1",
     "remark": "^15.0.1",

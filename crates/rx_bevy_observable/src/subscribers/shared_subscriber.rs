@@ -1,116 +1,36 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{Observer, ObserverInput, Operation, Subscription};
+use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike};
 
-/// A simple wrapper for a plain [Observer] to make it "closeable"
-#[derive(Debug)]
-pub struct ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	pub destination: Destination,
-	pub closed: bool,
-}
-
-impl<Destination> ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	pub fn new(destination: Destination) -> Self {
-		Self {
-			destination,
-			closed: false,
-		}
-	}
-}
-
-impl<Destination> Observer for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() {
-			self.destination.next(next);
-		}
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			self.destination.error(error);
-		}
-	}
-
-	fn complete(&mut self) {
-		if !self.is_closed() {
-			self.destination.complete();
-		}
-	}
-}
-
-impl<Destination> ObserverInput for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
-}
-
-impl<Destination> Subscription for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	fn is_closed(&self) -> bool {
-		self.closed
-	}
-
-	fn unsubscribe(&mut self) {
-		self.closed = true;
-	}
-}
-
-impl<Destination> Operation for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	type Destination = Destination;
-}
-
-impl<Destination> From<Destination> for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	fn from(destination: Destination) -> Self {
-		Self {
-			destination,
-			closed: false,
-		}
-	}
-}
-
-// Maybe this should be a shared subscriber?
 pub struct SharedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
-	destination: Arc<RwLock<ObserverSubscriber<Destination>>>,
+	destination: Arc<RwLock<Destination>>,
+}
+
+impl<Destination> From<Destination> for SharedSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn from(destination: Destination) -> Self {
+		Self::new(destination)
+	}
 }
 
 impl<Destination> SharedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
-			destination: Arc::new(RwLock::new(ObserverSubscriber {
-				destination,
-				closed: false,
-			})),
+			destination: Arc::new(RwLock::new(destination)),
 		}
 	}
 
-	pub fn new_from_shared(destination: Arc<RwLock<ObserverSubscriber<Destination>>>) -> Self {
+	pub fn new_from_shared(destination: impl Into<Arc<RwLock<Destination>>>) -> Self {
 		Self {
-			destination: destination.clone(),
+			destination: destination.into(),
 		}
 	}
 
@@ -119,7 +39,7 @@ where
 	where
 		F: Fn(&Destination),
 	{
-		reader(&self.destination.read().unwrap().destination)
+		reader(&self.destination.read().expect("poisoned"))
 	}
 
 	/// Let's you check the shared observer for the duration of the callback
@@ -127,13 +47,13 @@ where
 	where
 		F: FnMut(&mut Destination),
 	{
-		reader(&mut self.destination.write().unwrap().destination)
+		reader(&mut self.destination.write().expect("poisoned"))
 	}
 }
 
 impl<Destination> Clone for SharedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -144,7 +64,7 @@ where
 
 impl<Destination> ObserverInput for SharedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -152,43 +72,50 @@ where
 
 impl<Destination> Observer for SharedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.destination.next(next);
+			lock.next(next);
 		}
 	}
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.closed = true;
-			lock.destination.error(error);
+			lock.error(error);
 		}
 	}
 
 	fn complete(&mut self) {
 		if !self.is_closed() {
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.closed = true;
-			lock.destination.complete();
+			lock.complete();
 		}
 	}
 }
 
-impl<Destination> Subscription for SharedSubscriber<Destination>
+impl<Destination> SubscriptionLike for SharedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: Subscriber,
 {
 	fn is_closed(&self) -> bool {
 		let lock = self.destination.read().expect("lock is poisoned!");
-		lock.closed
+		lock.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
 		let mut lock = self.destination.write().expect("lock is poisoned!");
-		lock.closed = true;
+		lock.unsubscribe();
+	}
+}
+
+impl<Destination> Drop for SharedSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn drop(&mut self) {
+		self.unsubscribe();
 	}
 }

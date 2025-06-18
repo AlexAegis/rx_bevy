@@ -1,16 +1,21 @@
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, Operator, subscribers::ObserverSubscriber,
+	Observable, ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscription,
+	SubscriptionLike, subscribers::ObserverSubscriber,
 };
 
-pub struct Pipe<Source, PipeOp> {
+pub struct Pipe<Source, Op>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+{
 	pub(crate) source_observable: Source,
-	pub(crate) operator: PipeOp,
+	pub(crate) operator: Op,
 }
 
 impl<Source, Op> Clone for Pipe<Source, Op>
 where
-	Source: Clone,
-	Op: Clone,
+	Source: 'static + Clone + Observable,
+	Op: 'static + Clone + Operator<In = Source::Out, InError = Source::OutError>,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -22,8 +27,8 @@ where
 
 impl<Source, Op> Pipe<Source, Op>
 where
-	Source: Observable,
-	Op: Operator,
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
 {
 	pub fn new(source_observable: Source, operator: Op) -> Self {
 		Self {
@@ -35,13 +40,17 @@ where
 
 impl<Source, Op> Pipe<Source, Op>
 where
-	Op: Operator,
-	Source: Observable<Out = Op::In, OutError = Op::InError>,
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
 {
 	#[inline]
 	pub fn pipe<NextOp>(self, operator: NextOp) -> Pipe<Self, NextOp>
 	where
-		NextOp: Operator,
+		NextOp: 'static
+			+ Operator<
+				In = <Self as ObservableOutput>::Out,
+				InError = <Self as ObservableOutput>::OutError,
+			>,
 	{
 		Pipe::<Self, NextOp>::new(self, operator)
 	}
@@ -49,8 +58,8 @@ where
 
 impl<Source, Op> ObservableOutput for Pipe<Source, Op>
 where
-	Op: Operator,
-	Source: Observable<Out = Op::In, OutError = Op::InError>,
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
 {
 	type Out = Op::Out;
 	type OutError = Op::OutError;
@@ -58,18 +67,115 @@ where
 
 impl<Source, Op> Observable for Pipe<Source, Op>
 where
-	Op: Operator,
-	Source: Observable<Out = Op::In, OutError = Op::InError>,
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
 {
-	type Subscription = Source::Subscription;
+	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
+		PipeSubscriber<Source, Op, Destination>;
 
 	#[inline]
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
-	) -> Self::Subscription {
+	) -> Subscription<Self::Subscriber<Destination>> {
 		let subscriber = ObserverSubscriber::new(destination);
 		let operator_subscriber = self.operator.operator_subscribe(subscriber);
-		self.source_observable.subscribe(operator_subscriber)
+		let source_subscriber = self.source_observable.subscribe(operator_subscriber);
+
+		let pipe_subscriber = PipeSubscriber::new(source_subscriber);
+		Subscription::new(pipe_subscriber)
+	}
+}
+
+pub struct PipeSubscriber<Source, Op, Destination>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Destination: 'static + Observer<In = Op::Out, InError = Op::OutError>,
+{
+	source_subscriber:
+		Subscription<Source::Subscriber<Op::Subscriber<ObserverSubscriber<Destination>>>>,
+}
+
+impl<Source, Op, Destination> PipeSubscriber<Source, Op, Destination>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Destination: 'static + Observer<In = Op::Out, InError = Op::OutError>,
+{
+	pub fn new(
+		source_subscriber: Subscription<
+			Source::Subscriber<Op::Subscriber<ObserverSubscriber<Destination>>>,
+		>,
+	) -> Self {
+		Self { source_subscriber }
+	}
+}
+
+impl<Source, Op, Destination> ObservableOutput for PipeSubscriber<Source, Op, Destination>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Destination: 'static + Observer<In = Op::Out, InError = Op::OutError>,
+{
+	type Out = Op::Out;
+	type OutError = Op::OutError;
+}
+
+impl<Source, Op, Destination> ObserverInput for PipeSubscriber<Source, Op, Destination>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Destination: 'static + Observer<In = Op::Out, InError = Op::OutError>,
+{
+	type In = Op::Out;
+	type InError = Op::OutError;
+}
+
+impl<Source, Op, Destination> Observer for PipeSubscriber<Source, Op, Destination>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Destination: 'static + Observer<In = Op::Out, InError = Op::OutError>,
+{
+	fn next(&mut self, _next: Self::In) {}
+
+	fn error(&mut self, _error: Self::InError) {}
+
+	fn complete(&mut self) {}
+}
+
+impl<Source, Op, Destination> SubscriptionLike for PipeSubscriber<Source, Op, Destination>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Destination: 'static + Observer<In = Op::Out, InError = Op::OutError>,
+{
+	fn is_closed(&self) -> bool {
+		self.source_subscriber.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.source_subscriber.unsubscribe();
+	}
+}
+
+impl<Source, Op, Destination> Operation for PipeSubscriber<Source, Op, Destination>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Destination: 'static + Observer<In = Op::Out, InError = Op::OutError>,
+{
+	type Destination = Destination;
+}
+
+impl<Source, Op, Destination> Drop for PipeSubscriber<Source, Op, Destination>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Destination: 'static + Observer<In = Op::Out, InError = Op::OutError>,
+{
+	fn drop(&mut self) {
+		self.unsubscribe();
 	}
 }

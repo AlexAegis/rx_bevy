@@ -1,4 +1,7 @@
-use rx_bevy_observable::{Observable, ObservableOutput, Observer};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, Subscriber, Subscription, SubscriptionLike,
+	prelude::ObserverSubscriber,
+};
 
 /// Observable creator for [OfObservable]
 pub fn of<T>(value: T) -> OfObservable<T>
@@ -20,16 +23,17 @@ impl<Out> Observable for OfObservable<Out>
 where
 	Out: 'static + Clone,
 {
-	type Subscription = ();
+	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
+		ObserverSubscriber<Destination>;
 
-	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: Observer<In = Out>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
-		mut observer: Destination,
-	) -> Self::Subscription {
-		// TODO: Use an actual Subscriber
-		observer.next(self.value.clone());
-		observer.complete();
+		destination: Destination,
+	) -> Subscription<Self::Subscriber<Destination>> {
+		let mut subscriber = ObserverSubscriber::new(destination);
+		subscriber.next(self.value.clone());
+		subscriber.complete();
+		Subscription::new(subscriber)
 	}
 }
 
@@ -66,7 +70,7 @@ mod tests {
 		observable.subscribe(mock_observer.clone());
 
 		mock_observer.read(|d| {
-			assert_eq!(d.values, vec![value]);
+			assert_eq!(d.destination.values, vec![value]);
 		});
 	}
 }

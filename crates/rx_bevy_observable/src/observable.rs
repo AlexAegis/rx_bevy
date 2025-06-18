@@ -1,4 +1,4 @@
-use crate::{Observer, Subscription};
+use crate::{Observer, Subscriber, Subscription};
 
 pub trait ObservableOutput {
 	type Out: 'static;
@@ -6,10 +6,11 @@ pub trait ObservableOutput {
 }
 
 pub trait Observable: ObservableOutput {
-	type Subscription: Subscription;
+	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>: Subscriber<In = Self::Out, InError = Self::OutError>;
 
+	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
-		observer: Destination,
-	) -> Self::Subscription;
+		destination: Destination,
+	) -> Subscription<Self::Subscriber<Destination>>;
 }

@@ -19,10 +19,10 @@ workspace = true
 default = ["dev"]
 dev = []
 example = ["dev"]
+inline_subscribe = []
 
 [dependencies]
 
 [dev-dependencies]
-# rx_bevy = { workspace = true }
+rx_bevy = { workspace = true }
 rx_bevy_testing = { workspace = true }
-rx_bevy_observer_fn = { workspace = true }

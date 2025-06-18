@@ -1,7 +1,10 @@
 use std::{cell::RefCell, rc::Rc};
 
-use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput};
-use rx_bevy_subject::{Subject, SubjectSubscription};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, ObserverInput, Subscription,
+	prelude::ObserverSubscriber,
+};
+use rx_bevy_subject::{MulticastOperator, MulticastOuterSubscriber, Subject};
 
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.
@@ -80,13 +83,14 @@ where
 	T: Clone + 'static,
 	Error: Clone + 'static,
 {
-	type Subscription = SubjectSubscription<T, Error>;
+	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
+		MulticastOuterSubscriber<ObserverSubscriber<Destination>>;
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		mut observer: Destination,
-	) -> Self::Subscription {
+	) -> Subscription<Self::Subscriber<Destination>> {
 		observer.next(self.value.borrow().clone());
 		self.subject.subscribe(observer)
 	}

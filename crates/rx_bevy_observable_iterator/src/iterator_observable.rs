@@ -1,4 +1,6 @@
-use rx_bevy_observable::{Observable, ObservableOutput, Observer};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, Subscription, prelude::ObserverSubscriber,
+};
 
 /// Emits a single value then immediately completes
 #[derive(Clone)]
@@ -32,16 +34,28 @@ where
 	Iterator: Clone + IntoIterator<Item = Out>,
 	Out: 'static + Clone,
 {
-	type Subscription = ();
+	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
+		ObserverSubscriber<Destination>;
 
-	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: Observer<In = Out>>(
+	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
-		mut observer: Destination,
-	) -> Self::Subscription {
+		destination: Destination,
+	) -> Subscription<Self::Subscriber<Destination>> {
+		let mut subscriber = ObserverSubscriber::new(destination);
 		for item in self.iterator.clone().into_iter() {
-			observer.next(item);
+			subscriber.next(item);
 		}
-		observer.complete();
+		subscriber.complete();
+		Subscription::new(subscriber)
 	}
 }
+
+/*
+
+
+for item in self.iterator.clone().into_iter() {
+	observer.next(item);
+}
+observer.complete();
+
+*/

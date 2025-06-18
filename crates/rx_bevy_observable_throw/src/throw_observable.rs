@@ -1,4 +1,7 @@
-use rx_bevy_observable::{Observable, ObservableOutput, Observer};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, OperationSubscriber, Subscription,
+	prelude::ObserverSubscriber,
+};
 
 /// Observable creator for [ThrowObservable]
 pub fn throw<Error>(error: Error) -> ThrowObservable<Error>
@@ -20,14 +23,17 @@ impl<Error> Observable for ThrowObservable<Error>
 where
 	Error: 'static + Clone,
 {
-	type Subscription = ();
+	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
+		ObserverSubscriber<Destination>;
 
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: Observer<InError = Error>>(
+	fn subscribe<Destination: 'static + Observer<In = (), InError = Error>>(
 		&mut self,
-		mut observer: Destination,
-	) -> Self::Subscription {
-		observer.error(self.error.clone());
+		observer: Destination,
+	) -> Subscription<Self::Subscriber<Destination>> {
+		let mut subscriber = ObserverSubscriber::new(observer);
+		subscriber.error(self.error.clone());
+		Subscription::new(subscriber)
 	}
 }
 
@@ -51,6 +57,7 @@ where
 mod tests {
 
 	use super::*;
+
 	use rx_bevy_testing::MockObserver;
 
 	#[test]
@@ -62,7 +69,7 @@ mod tests {
 		observable.subscribe(mock_observer.clone());
 
 		mock_observer.read(|d| {
-			assert_eq!(d.errors, vec![error]);
+			assert_eq!(d.destination.errors, vec![error]);
 		});
 	}
 }

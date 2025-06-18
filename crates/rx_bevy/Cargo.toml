@@ -38,6 +38,7 @@ pipe = [
 ]
 # Observables and Subjects. Not sure if a good idea, so I'm keeping it behind a feature
 inline_subscribe = [
+    "rx_bevy_observable/inline_subscribe",
     "rx_bevy_observable_iterator/inline_subscribe",
     "rx_bevy_observable_of/inline_subscribe",
     "rx_bevy_observable_throw/inline_subscribe",

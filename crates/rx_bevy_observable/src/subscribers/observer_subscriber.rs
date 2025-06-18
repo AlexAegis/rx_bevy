@@ -1,0 +1,105 @@
+use std::ops::{Deref, DerefMut};
+
+use crate::{ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike};
+
+/// A simple wrapper for a plain [Observer] to make it "closeable"
+#[derive(Debug)]
+pub struct ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	pub destination: Destination,
+	pub closed: bool,
+}
+
+impl<Destination> ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	pub fn new(destination: Destination) -> Self {
+		Self {
+			destination,
+			closed: false,
+		}
+	}
+}
+
+impl<Destination> Observer for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	fn next(&mut self, next: Self::In) {
+		if !self.is_closed() {
+			self.destination.next(next);
+		}
+	}
+
+	fn error(&mut self, error: Self::InError) {
+		if !self.is_closed() {
+			self.destination.error(error);
+		}
+	}
+
+	fn complete(&mut self) {
+		if !self.is_closed() {
+			self.destination.complete();
+		}
+	}
+}
+
+impl<Destination> ObserverInput for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	type In = Destination::In;
+	type InError = Destination::InError;
+}
+
+impl<Destination> ObservableOutput for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	type Out = Destination::In;
+	type OutError = Destination::InError;
+}
+
+impl<Destination> SubscriptionLike for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
+
+	fn unsubscribe(&mut self) {
+		self.closed = true;
+	}
+}
+
+impl<Destination> Operation for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	type Destination = Destination;
+}
+
+impl<Destination> From<Destination> for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	fn from(destination: Destination) -> Self {
+		Self {
+			destination,
+			closed: false,
+		}
+	}
+}
+
+impl<Destination> Drop for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	fn drop(&mut self) {
+		self.unsubscribe();
+	}
+}

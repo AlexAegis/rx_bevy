@@ -22,8 +22,8 @@ example = ["dev"]
 inline_subscribe = []
 
 [dependencies]
-slab = { workspace = true }
 rx_bevy_observable = { workspace = true }
+slab = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

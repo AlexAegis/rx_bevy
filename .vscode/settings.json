@@ -98,6 +98,8 @@
     "fastrand",
     "fdeflate",
     "filetime",
+    "Finalizer",
+    "finalizers",
     "fixedbitset",
     "fjordic",
     "flate",

@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, SubscriptionLike,
 };
 
 pub struct FilterMapOperator<In, InError, Mapper, Out>
@@ -161,7 +161,7 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out, Destination> Subscription
+impl<In, InError, Mapper, Out, Destination> SubscriptionLike
 	for FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	Mapper: Fn(In) -> Option<Out>,

@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, Subscription,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, SubscriptionLike,
 };
 
 #[derive(Debug)]
@@ -155,7 +155,7 @@ where
 	}
 }
 
-impl<In, InError, Callback, Destination> Subscription
+impl<In, InError, Callback, Destination> SubscriptionLike
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),

@@ -8,5 +8,5 @@ fn main() {
 		.switch_map(|next| {
 			IteratorObservable::new(next..=3).map(move |i| format!("from {next} i: {i}"))
 		})
-		.subscribe(PrintObserver::new("switch_map"))
+		.subscribe(PrintObserver::new("switch_map"));
 }

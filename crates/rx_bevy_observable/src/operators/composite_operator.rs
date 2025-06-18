@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::{
 	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
-	Subscriber, Subscription,
+	Subscriber, SubscriptionLike,
 };
 
 #[derive(Clone)]
@@ -131,7 +131,7 @@ where
 	type Destination = Destination;
 }
 
-impl<PrevSub, Sub, Destination> Subscription for CompositeSubscriber<PrevSub, Sub, Destination>
+impl<PrevSub, Sub, Destination> SubscriptionLike for CompositeSubscriber<PrevSub, Sub, Destination>
 where
 	PrevSub: OperationSubscriber<Destination = Sub>,
 	Sub: OperationSubscriber<Destination = Destination>,
@@ -159,3 +159,14 @@ pub trait CompositeOperatorExtension: Operator + Sized {
 }
 
 impl<T> CompositeOperatorExtension for T where T: Operator {}
+
+impl<PrevSub, Sub, Destination> Drop for CompositeSubscriber<PrevSub, Sub, Destination>
+where
+	PrevSub: OperationSubscriber<Destination = Sub>,
+	Sub: OperationSubscriber<Destination = Destination>,
+	Destination: Subscriber,
+{
+	fn drop(&mut self) {
+		self.unsubscribe();
+	}
+}
