@@ -39,6 +39,8 @@ pipe = [
 # Observables and Subjects. Not sure if a good idea, so I'm keeping it behind a feature
 inline_subscribe = [
     "rx_bevy_observable/inline_subscribe",
+    "rx_bevy_observable_connectable/inline_subscribe",
+    "rx_bevy_observable_deferred/inline_subscribe",
     "rx_bevy_observable_iterator/inline_subscribe",
     "rx_bevy_observable_of/inline_subscribe",
     "rx_bevy_observable_throw/inline_subscribe",
@@ -48,9 +50,17 @@ inline_subscribe = [
 ]
 
 # Observables
-all_observables = ["observable_iterator", "observable_of", "observable_throw"]
-observable_of = ["dep:rx_bevy_observable_of"]
+all_observables = [
+    "observable_connectable",
+    "observable_deferred",
+    "observable_iterator",
+    "observable_of",
+    "observable_throw",
+]
+observable_connectable = ["dep:rx_bevy_observable_connectable"]
+observable_deferred = ["dep:rx_bevy_observable_deferred"]
 observable_iterator = ["dep:rx_bevy_observable_iterator"]
+observable_of = ["dep:rx_bevy_observable_of"]
 observable_throw = ["dep:rx_bevy_observable_throw"]
 # Observers
 all_observers = ["observer_noop", "observer_print", "observer_fn"]
@@ -83,6 +93,8 @@ subject_replay = ["dep:rx_bevy_subject_replay"]
 [dependencies]
 rx_bevy_observable = { workspace = true }
 # Observables
+rx_bevy_observable_connectable = { workspace = true, optional = true }
+rx_bevy_observable_deferred = { workspace = true, optional = true }
 rx_bevy_observable_iterator = { workspace = true, optional = true }
 rx_bevy_observable_of = { workspace = true, optional = true }
 rx_bevy_observable_throw = { workspace = true, optional = true }

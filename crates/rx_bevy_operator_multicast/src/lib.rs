@@ -1,12 +1,10 @@
-mod connectable_observable;
-mod deferred_observable;
+mod multicast_inner_subscriber;
 mod multicast_operator;
-mod multicast_subscriber;
+mod multicast_outer_subscriber;
 
-pub use connectable_observable::*;
-pub use deferred_observable::*;
+pub use multicast_inner_subscriber::*;
 pub use multicast_operator::*;
-pub use multicast_subscriber::*;
+pub use multicast_outer_subscriber::*;
 
 #[cfg(feature = "pipe")]
 pub mod multicast_extension;

@@ -66,6 +66,8 @@ rx_bevy = { path = "crates/rx_bevy" }
 rx_bevy_observable = { path = "crates/rx_bevy_observable" }
 rx_bevy_testing = { path = "crates/rx_bevy_testing" }
 # Observables
+rx_bevy_observable_connectable = { path = "crates/rx_bevy_observable_connectable" }
+rx_bevy_observable_deferred = { path = "crates/rx_bevy_observable_deferred" }
 rx_bevy_observable_iterator = { path = "crates/rx_bevy_observable_iterator" }
 rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
 rx_bevy_observable_throw = { path = "crates/rx_bevy_observable_throw" }

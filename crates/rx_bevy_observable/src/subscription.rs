@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational, and safe to drop
 /// but it doesn't actually execute any teardown logic beyond its own, it is
@@ -90,5 +92,19 @@ impl SubscriptionLike for Subscription {
 impl Drop for Subscription {
 	fn drop(&mut self) {
 		self.unsubscribe();
+	}
+}
+
+impl<T, Target> SubscriptionLike for T
+where
+	Target: SubscriptionLike,
+	T: DerefMut<Target = Target>,
+{
+	fn is_closed(&self) -> bool {
+		self.deref().is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.deref_mut().unsubscribe();
 	}
 }

@@ -4468,6 +4468,8 @@ name = "rx_bevy"
 version = "0.1.0"
 dependencies = [
  "rx_bevy_observable",
+ "rx_bevy_observable_connectable",
+ "rx_bevy_observable_deferred",
  "rx_bevy_observable_iterator",
  "rx_bevy_observable_of",
  "rx_bevy_observable_throw",
@@ -4493,6 +4495,24 @@ name = "rx_bevy_observable"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observable_connectable"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observable_deferred"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
  "rx_bevy_testing",
 ]
 

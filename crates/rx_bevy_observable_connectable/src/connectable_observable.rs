@@ -1,10 +1,8 @@
-use rx_bevy_observable::{Observable, ObservableOutput, Observer, Subscription, SubscriptionLike};
+use rx_bevy_observable::{Observable, ObservableOutput, Observer, SubjectLike, Subscription};
 
 pub trait Connectable: Observable {
 	fn connect(&mut self) -> Subscription;
 }
-
-pub trait SubjectLike: Clone + Observable + Observer + SubscriptionLike {}
 
 /// TODO: Should be part of core or its own
 pub struct ConnectableObservable<Source, Connector>
