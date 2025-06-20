@@ -1,5 +1,8 @@
 mod tap_operator;
+mod tap_subscriber;
+
 pub use tap_operator::*;
+pub use tap_subscriber::*;
 
 #[cfg(feature = "pipe")]
 pub mod tap_extension;

@@ -6,14 +6,6 @@ pub trait Connectable: Observable {
 
 pub trait SubjectLike: Clone + Observable + Observer + SubscriptionLike {}
 
-pub struct ConnectableObservableConfiguration<Connector, ConnectorCreator>
-where
-	ConnectorCreator: Fn() -> Connector,
-	Connector: 'static + SubjectLike,
-{
-	connector_creator: ConnectorCreator,
-}
-
 /// TODO: Should be part of core or its own
 pub struct ConnectableObservable<Source, Connector>
 where
@@ -26,6 +18,16 @@ where
 	/// Upon subscription this connector subject is what will be used as the
 	/// source
 	connector: Connector,
+}
+
+impl<Source, Connector> ConnectableObservable<Source, Connector>
+where
+	Source: Observable,
+	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
+{
+	pub fn new(source: Source, connector: Connector) -> Self {
+		Self { source, connector }
+	}
 }
 
 impl<Source, Connector> ObservableOutput for ConnectableObservable<Source, Connector>

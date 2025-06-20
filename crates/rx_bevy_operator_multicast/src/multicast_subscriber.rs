@@ -13,21 +13,6 @@ where
 		Arc<RwLock<MulticastDestination<Destination::In, Destination::InError>>>,
 }
 
-impl<Destination> ObserverInput for MulticastOuterSubscriber<Destination>
-where
-	Destination: 'static + Observer,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
-}
-
-impl<Destination> Operation for MulticastOuterSubscriber<Destination>
-where
-	Destination: 'static + Observer,
-{
-	type Destination = Destination;
-}
-
 impl<Destination> Observer for MulticastOuterSubscriber<Destination>
 where
 	Destination: 'static + Observer,
@@ -83,6 +68,21 @@ where
 	}
 }
 
+impl<Destination> ObserverInput for MulticastOuterSubscriber<Destination>
+where
+	Destination: 'static + Observer,
+{
+	type In = Destination::In;
+	type InError = Destination::InError;
+}
+
+impl<Destination> Operation for MulticastOuterSubscriber<Destination>
+where
+	Destination: 'static + Observer,
+{
+	type Destination = Destination;
+}
+
 impl<Destination> Drop for MulticastOuterSubscriber<Destination>
 where
 	Destination: 'static + Observer,
@@ -107,6 +107,23 @@ where
 	Destination: 'static + Observer,
 {
 	type Destination = Destination;
+}
+
+impl<Destination> Observer for MulticastInnerSubscriber<Destination>
+where
+	Destination: 'static + Observer,
+{
+	fn next(&mut self, next: Self::In) {
+		self.destination.next(next);
+	}
+
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
+	}
+
+	fn complete(&mut self) {
+		self.destination.complete();
+	}
 }
 
 impl<Destination> SubscriptionLike for MulticastInnerSubscriber<Destination>
@@ -135,31 +152,6 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for MulticastInnerSubscriber<Destination>
-where
-	Destination: 'static + Observer,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
-}
-
-impl<Destination> Observer for MulticastInnerSubscriber<Destination>
-where
-	Destination: 'static + Observer,
-{
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(next);
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
-	}
-
-	fn complete(&mut self) {
-		self.destination.complete();
-	}
-}
-
 impl<Destination> Drop for MulticastInnerSubscriber<Destination>
 where
 	Destination: 'static + Observer,
@@ -167,4 +159,12 @@ where
 	fn drop(&mut self) {
 		self.unsubscribe();
 	}
+}
+
+impl<Destination> ObserverInput for MulticastInnerSubscriber<Destination>
+where
+	Destination: 'static + Observer,
+{
+	type In = Destination::In;
+	type InError = Destination::InError;
 }

@@ -1,6 +1,8 @@
 mod switch_map_operator;
+mod switch_map_subscriber;
 
 pub use switch_map_operator::*;
+pub use switch_map_subscriber::*;
 
 #[cfg(feature = "pipe")]
 pub mod switch_map_extension;

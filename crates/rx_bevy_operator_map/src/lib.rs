@@ -1,5 +1,8 @@
 mod map_operator;
+mod map_subscriber;
+
 pub use map_operator::*;
+pub use map_subscriber::*;
 
 #[cfg(feature = "pipe")]
 pub mod map_extension;

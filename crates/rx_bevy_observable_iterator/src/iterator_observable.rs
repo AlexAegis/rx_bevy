@@ -46,13 +46,3 @@ where
 		Subscription::new(subscriber)
 	}
 }
-
-/*
-
-
-for item in self.iterator.clone().into_iter() {
-	observer.next(item);
-}
-observer.complete();
-
-*/

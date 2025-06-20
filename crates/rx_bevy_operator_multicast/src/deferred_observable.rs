@@ -34,15 +34,6 @@ where
 	}
 }
 
-impl<F, Source> ObservableOutput for DeferredObservable<F, Source>
-where
-	Source: Observable,
-	F: Fn() -> Source,
-{
-	type Out = Source::Out;
-	type OutError = Source::OutError;
-}
-
 impl<F, Source> Observable for DeferredObservable<F, Source>
 where
 	Source: Observable,
@@ -55,4 +46,13 @@ where
 		let mut source = (self.observable_creator)();
 		source.subscribe(destination)
 	}
+}
+
+impl<F, Source> ObservableOutput for DeferredObservable<F, Source>
+where
+	Source: Observable,
+	F: Fn() -> Source,
+{
+	type Out = Source::Out;
+	type OutError = Source::OutError;
 }
