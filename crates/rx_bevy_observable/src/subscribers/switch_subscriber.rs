@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use super::SharedSubscriber;
 use crate::{Observable, Observer, ObserverInput, Subscriber, Subscription, SubscriptionLike};
 
@@ -9,9 +11,9 @@ where
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	shared_destination: SharedSubscriber<Destination>,
-	inner_subscription:
-		Option<Subscription<InnerObservable::Subscriber<SharedSubscriber<Destination>>>>,
+	inner_subscription: Option<Subscription>,
 	closed: bool,
+	_phantom_data: PhantomData<InnerObservable>,
 }
 
 impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>
@@ -24,6 +26,7 @@ where
 			inner_subscription: None,
 			shared_destination: SharedSubscriber::new(destination),
 			closed: false,
+			_phantom_data: PhantomData,
 		}
 	}
 }

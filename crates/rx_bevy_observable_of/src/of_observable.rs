@@ -22,13 +22,10 @@ impl<Out> Observable for OfObservable<Out>
 where
 	Out: 'static + Clone,
 {
-	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
-		ObserverSubscriber<Destination>;
-
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription<Self::Subscriber<Destination>> {
+	) -> Subscription {
 		let mut subscriber = ObserverSubscriber::new(destination);
 		subscriber.next(self.value.clone());
 		subscriber.complete();

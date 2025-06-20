@@ -22,14 +22,11 @@ impl<Error> Observable for ThrowObservable<Error>
 where
 	Error: 'static + Clone,
 {
-	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
-		ObserverSubscriber<Destination>;
-
 	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: 'static + Observer<In = (), InError = Error>>(
 		&mut self,
 		observer: Destination,
-	) -> Subscription<Self::Subscriber<Destination>> {
+	) -> Subscription {
 		let mut subscriber = ObserverSubscriber::new(observer);
 		subscriber.error(self.error.clone());
 		Subscription::new(subscriber)

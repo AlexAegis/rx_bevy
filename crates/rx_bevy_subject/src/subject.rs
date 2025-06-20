@@ -3,7 +3,7 @@ use rx_bevy_observable::{
 	subscribers::ObserverSubscriber,
 };
 
-use rx_bevy_operator_multicast::{MulticastOperator, MulticastOuterSubscriber};
+use rx_bevy_operator_multicast::MulticastOperator;
 
 /// A Subject is a shared multicast observer, can be used for broadcasting
 /// a clone of it still has the same set of subscribers, and is needed if you
@@ -47,14 +47,11 @@ where
 	T: 'static,
 	Error: 'static,
 {
-	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
-		MulticastOuterSubscriber<ObserverSubscriber<Destination>>;
-
 	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription<Self::Subscriber<Destination>> {
+	) -> Subscription {
 		Subscription::new(
 			self.multicast
 				.operator_subscribe(ObserverSubscriber::new(destination)),

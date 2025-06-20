@@ -34,13 +34,10 @@ where
 	Iterator: Clone + IntoIterator<Item = Out>,
 	Out: 'static + Clone,
 {
-	type Subscriber<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>> =
-		ObserverSubscriber<Destination>;
-
 	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription<Self::Subscriber<Destination>> {
+	) -> Subscription {
 		let mut subscriber = ObserverSubscriber::new(destination);
 		for item in self.iterator.clone().into_iter() {
 			subscriber.next(item);

@@ -1,5 +1,3 @@
-use crate::Subscriber;
-
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational, and safe to drop
 /// but it doesn't actually execute any teardown logic beyond its own, it is
@@ -14,18 +12,12 @@ pub trait SubscriptionLike {
 	fn is_closed(&self) -> bool;
 }
 
-pub enum Teardown<Destination>
-where
-	Destination: 'static + Subscriber,
-{
+pub enum Teardown {
 	Fn(Box<dyn FnOnce()>),
-	Subscription(Box<Subscription<Destination>>),
+	Subscription(Box<dyn SubscriptionLike>),
 }
 
-impl<Destination> Teardown<Destination>
-where
-	Destination: 'static + Subscriber,
-{
+impl Teardown {
 	pub fn new<F: 'static + FnOnce()>(f: F) -> Self {
 		Self::Fn(Box::new(f))
 	}
@@ -40,49 +32,36 @@ where
 	}
 }
 
-impl<Destination, F: 'static + FnOnce()> From<F> for Teardown<Destination>
+impl<S> From<S> for Teardown
 where
-	Destination: 'static + Subscriber,
+	S: 'static + SubscriptionLike,
 {
-	fn from(f: F) -> Self {
-		Self::new(f)
-	}
-}
-
-impl<Destination> From<Subscription<Destination>> for Teardown<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn from(value: Subscription<Destination>) -> Self {
+	fn from(value: S) -> Self {
 		Self::Subscription(Box::new(value))
 	}
 }
 
-pub struct Subscription<Destination>
-where
-	Destination: 'static + Subscriber,
-{
+pub struct Subscription {
 	is_closed: bool,
-	destination: Option<Destination>,
-	finalizers: Vec<Teardown<Destination>>,
+	finalizers: Vec<Teardown>,
 }
 
-impl<Destination> Subscription<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	pub fn new(destination: Destination) -> Self {
+impl Subscription {
+	pub fn new(finalizer: impl Into<Teardown>) -> Self {
 		Self {
 			is_closed: false,
-			destination: Some(destination),
+			finalizers: vec![finalizer.into()],
+		}
+	}
+
+	pub fn new_empty() -> Self {
+		Self {
+			is_closed: false,
 			finalizers: Vec::new(),
 		}
 	}
 
-	pub fn add<Finalizer: 'static + FnOnce()>(
-		&mut self,
-		finalizer: impl Into<Teardown<Destination>>,
-	) {
+	pub fn add(&mut self, finalizer: impl Into<Teardown>) {
 		if self.is_closed() {
 			// If the subscription is already closed, the finalizer is called immediately
 			finalizer.into().call();
@@ -92,10 +71,7 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for Subscription<Destination>
-where
-	Destination: 'static + Subscriber,
-{
+impl SubscriptionLike for Subscription {
 	fn is_closed(&self) -> bool {
 		self.is_closed
 	}
@@ -104,10 +80,6 @@ where
 		if !self.is_closed {
 			self.is_closed = true;
 
-			if let Some(mut destination) = self.destination.take() {
-				destination.unsubscribe();
-			}
-
 			for teardown in self.finalizers.drain(..) {
 				teardown.call();
 			}
@@ -115,10 +87,7 @@ where
 	}
 }
 
-impl<Destination> Drop for Subscription<Destination>
-where
-	Destination: 'static + Subscriber,
-{
+impl Drop for Subscription {
 	fn drop(&mut self) {
 		self.unsubscribe();
 	}
