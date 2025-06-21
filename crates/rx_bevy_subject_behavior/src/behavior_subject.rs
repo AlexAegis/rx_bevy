@@ -1,6 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
-use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput, Subscription};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, ObserverInput, Subscription, SubscriptionLike,
+};
 use rx_bevy_subject::Subject;
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -87,5 +89,19 @@ where
 	) -> Subscription {
 		observer.next(self.value.borrow().clone());
 		self.subject.subscribe(observer)
+	}
+}
+
+impl<T, Error> SubscriptionLike for BehaviorSubject<T, Error>
+where
+	T: 'static + Clone,
+	Error: 'static + Clone,
+{
+	fn is_closed(&self) -> bool {
+		self.subject.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.subject.unsubscribe();
 	}
 }

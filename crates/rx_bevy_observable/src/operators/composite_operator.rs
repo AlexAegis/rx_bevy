@@ -109,14 +109,17 @@ where
 	Sub: OperationSubscriber<Destination = Destination>,
 	Destination: Subscriber,
 {
+	#[inline]
 	fn next(&mut self, next: Self::In) {
 		self.sub.next(next);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.sub.error(error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.sub.complete();
 	}
@@ -137,10 +140,12 @@ where
 	Sub: OperationSubscriber<Destination = Destination>,
 	Destination: Subscriber,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.sub.is_closed()
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self) {
 		self.sub.unsubscribe();
 	}

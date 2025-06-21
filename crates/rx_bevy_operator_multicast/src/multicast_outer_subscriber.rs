@@ -1,12 +1,12 @@
 use std::sync::{Arc, RwLock};
 
-use rx_bevy_observable::{Observer, ObserverInput, Operation, SubscriptionLike};
+use rx_bevy_observable::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 use crate::MulticastDestination;
 
 pub struct MulticastOuterSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	pub(crate) key: usize,
 	pub(crate) subscriber_ref:
@@ -15,7 +15,7 @@ where
 
 impl<Destination> Observer for MulticastOuterSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
 		if let Ok(mut subscriber) = self.subscriber_ref.write() {
@@ -44,14 +44,23 @@ where
 
 impl<Destination> SubscriptionLike for MulticastOuterSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	fn unsubscribe(&mut self) {
-		if let Ok(mut subject) = self.subscriber_ref.write() {
-			if let Some(destination) = subject.slab.get_mut(self.key) {
-				destination.unsubscribe();
-				subject.slab.remove(self.key);
-			}
+		println!("MulticastOuterSubscriber unsubscribe 1");
+
+		let self_ref = self
+			.subscriber_ref
+			.write()
+			.map(|mut d| d.take(self.key))
+			.expect("no poison");
+
+		println!("    MulticastOuterSubscriber unsubscribes2");
+
+		if let Some(mut self_ref) = self_ref {
+			println!("    MulticastOuterSubscriber unsubscribe 3");
+
+			self_ref.unsubscribe();
 		}
 	}
 
@@ -70,7 +79,7 @@ where
 
 impl<Destination> ObserverInput for MulticastOuterSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -78,14 +87,14 @@ where
 
 impl<Destination> Operation for MulticastOuterSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	type Destination = Destination;
 }
 
 impl<Destination> Drop for MulticastOuterSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	fn drop(&mut self) {
 		self.unsubscribe();

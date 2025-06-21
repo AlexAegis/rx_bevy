@@ -12,6 +12,20 @@ pub struct MulticastDestination<In, InError> {
 	pub(crate) closed: bool,
 }
 
+impl<In, InError> MulticastDestination<In, InError> {
+	/// Closes this destination and drains its subscribers
+	/// It does not do anything with the subscribers as their actions too might
+	/// need write access to this destination
+	pub fn drain(&mut self) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
+		self.closed = true;
+		self.slab.drain().collect::<Vec<_>>()
+	}
+
+	pub fn take(&mut self, key: usize) -> Option<Box<dyn Subscriber<In = In, InError = InError>>> {
+		self.slab.try_remove(key)
+	}
+}
+
 impl<In, InError> Default for MulticastDestination<In, InError> {
 	fn default() -> Self {
 		Self {
@@ -23,6 +37,23 @@ impl<In, InError> Default for MulticastDestination<In, InError> {
 
 pub struct MulticastOperator<In, InError> {
 	pub multicast_destination: Arc<RwLock<MulticastDestination<In, InError>>>,
+}
+
+impl<In, InError> MulticastOperator<In, InError> {
+	/// Closes this destination and drains its subscribers
+	/// It does not do anything with the subscribers as their actions too might
+	/// need write access to this destination
+	pub fn drain(&mut self) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
+		self.multicast_destination
+			.write()
+			.map(|mut multicast_destination| multicast_destination.drain())
+			.expect("No poison")
+	}
+
+	pub fn take(&mut self, key: usize) -> Option<Box<dyn Subscriber<In = In, InError = InError>>> {
+		let mut destination = self.multicast_destination.write().expect("no poison");
+		destination.take(key)
+	}
 }
 
 impl<In, InError> Clone for MulticastOperator<In, InError>
@@ -68,8 +99,10 @@ where
 			let key = entry.key();
 			let inner_subscriber = MulticastInnerSubscriber {
 				destination,
-				key,
-				multicast_source: self.multicast_destination.clone(),
+				outer: MulticastOuterSubscriber {
+					key,
+					subscriber_ref: self.multicast_destination.clone(),
+				},
 			};
 			entry.insert(Box::new(inner_subscriber));
 			key
@@ -106,9 +139,16 @@ where
 	InError: 'static + Clone,
 {
 	fn next(&mut self, next: In) {
-		if !self.is_closed() {
+		let is_closed = self.is_closed();
+		println!("MulticastOperator next 1");
+
+		if !is_closed {
+			println!("MulticastOperator next 2");
+
 			if let Ok(mut slab) = self.multicast_destination.write() {
 				for (_, destination) in slab.slab.iter_mut() {
+					println!("MulticastOperator next 3");
+
 					destination.next(next.clone());
 				}
 			}
@@ -116,7 +156,9 @@ where
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
+		let is_closed = self.is_closed();
+
+		if !is_closed {
 			if let Ok(mut slab) = self.multicast_destination.write() {
 				slab.closed = true;
 				for (_, destination) in slab.slab.iter_mut() {
@@ -127,13 +169,16 @@ where
 	}
 
 	fn complete(&mut self) {
-		if !self.is_closed() {
-			if let Ok(mut slab) = self.multicast_destination.write() {
-				slab.closed = true;
+		let is_closed = self.is_closed();
 
-				for (_, destination) in slab.slab.iter_mut() {
-					destination.complete();
-				}
+		println!("MulticastOperator complete 1");
+
+		if !is_closed {
+			let mut destinations = self.drain();
+			println!("MulticastOperator complete 2");
+
+			for destination in destinations.iter_mut() {
+				destination.complete();
 			}
 		}
 	}
@@ -149,11 +194,13 @@ impl<In, InError> SubscriptionLike for MulticastOperator<In, InError> {
 	}
 
 	fn unsubscribe(&mut self) {
-		if let Ok(mut slab) = self.multicast_destination.write() {
-			slab.closed = true;
-			for mut destination in slab.slab.drain() {
-				destination.unsubscribe();
-			}
+		println!("MulticastOperator unsubscribe 1");
+		let destinations = self.drain();
+
+		println!("    MulticastOperator unsubscribe 2");
+
+		for mut destination in destinations {
+			destination.unsubscribe();
 		}
 	}
 }

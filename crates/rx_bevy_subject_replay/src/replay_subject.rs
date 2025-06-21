@@ -1,7 +1,9 @@
 use std::{cell::RefCell, rc::Rc};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
-use rx_bevy_observable::{Observable, ObservableOutput, Observer, ObserverInput, Subscription};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, ObserverInput, Subscription, SubscriptionLike,
+};
 use rx_bevy_subject::Subject;
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
@@ -80,5 +82,19 @@ where
 		}
 
 		self.subject.subscribe(observer)
+	}
+}
+
+impl<const CAPACITY: usize, T, Error> SubscriptionLike for ReplaySubject<CAPACITY, T, Error>
+where
+	T: 'static + Clone,
+	Error: 'static + Clone,
+{
+	fn is_closed(&self) -> bool {
+		self.subject.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.subject.unsubscribe();
 	}
 }

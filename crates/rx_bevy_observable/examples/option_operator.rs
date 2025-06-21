@@ -2,7 +2,7 @@ use rx_bevy::prelude::*;
 
 fn main() {
 	let mut optional_map_operator = Some(MapOperator::new(|i: i32| i * 2));
-	optional_map_operator.take();
+	Option::take(&mut optional_map_operator);
 
 	(1..10)
 		.into_observable()

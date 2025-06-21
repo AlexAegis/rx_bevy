@@ -1,22 +1,18 @@
-use std::sync::{Arc, RwLock};
+use rx_bevy_observable::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
-use rx_bevy_observable::{Observer, ObserverInput, Operation, SubscriptionLike};
-
-use crate::MulticastDestination;
+use crate::MulticastOuterSubscriber;
 
 pub struct MulticastInnerSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	pub(crate) destination: Destination,
-	pub(crate) key: usize,
-	pub(crate) multicast_source:
-		Arc<RwLock<MulticastDestination<Destination::In, Destination::InError>>>,
+	pub(crate) outer: MulticastOuterSubscriber<Destination>,
 }
 
 impl<Destination> Observer for MulticastInnerSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
 		self.destination.next(next);
@@ -33,33 +29,22 @@ where
 
 impl<Destination> SubscriptionLike for MulticastInnerSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	fn unsubscribe(&mut self) {
-		if let Ok(mut subject) = self.multicast_source.write() {
-			if let Some(destination) = subject.slab.get_mut(self.key) {
-				destination.unsubscribe();
-				subject.slab.remove(self.key);
-			}
-		}
+		println!("MulticastInnerSubscriber unsubscribe 1");
+
+		self.outer.unsubscribe();
 	}
 
 	fn is_closed(&self) -> bool {
-		if let Ok(subject) = self.multicast_source.read() {
-			subject
-				.slab
-				.get(self.key)
-				.map(|destination| destination.is_closed())
-				.unwrap_or(!subject.slab.contains(self.key))
-		} else {
-			true
-		}
+		self.outer.is_closed()
 	}
 }
 
 impl<Destination> ObserverInput for MulticastInnerSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -67,14 +52,14 @@ where
 
 impl<Destination> Operation for MulticastInnerSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	type Destination = Destination;
 }
 
 impl<Destination> Drop for MulticastInnerSubscriber<Destination>
 where
-	Destination: 'static + Observer,
+	Destination: 'static + Subscriber,
 {
 	fn drop(&mut self) {
 		self.unsubscribe();

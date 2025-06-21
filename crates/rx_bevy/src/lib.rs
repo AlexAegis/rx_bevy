@@ -30,6 +30,8 @@ pub use rx_bevy_operator_map::*;
 pub use rx_bevy_operator_multicast::*;
 #[cfg(feature = "operator_switch_map")]
 pub use rx_bevy_operator_switch_map::*;
+#[cfg(feature = "operator_take")]
+pub use rx_bevy_operator_take::*;
 #[cfg(feature = "operator_tap")]
 pub use rx_bevy_operator_tap::*;
 // Subjects
@@ -73,6 +75,8 @@ pub mod prelude {
 	pub use rx_bevy_operator_multicast::prelude::*;
 	#[cfg(feature = "operator_switch_map")]
 	pub use rx_bevy_operator_switch_map::prelude::*;
+	#[cfg(feature = "operator_take")]
+	pub use rx_bevy_operator_take::prelude::*;
 	#[cfg(feature = "operator_tap")]
 	pub use rx_bevy_operator_tap::prelude::*;
 

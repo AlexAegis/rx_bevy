@@ -2,8 +2,10 @@ use std::ops::Deref;
 
 use crate::{ObservableOutput, Observer, ObserverInput, Subscriber};
 
-/// An [Operator] defines it's own inputs and output, and an [OperationSubscriber]
-/// that defines how those inputs will produce an output.
+/// # [Operator]
+///
+/// An [Operator] defines its own inputs and output, and a [OperationSubscriber]
+/// that defines how those input signals will produce output signals.
 pub trait Operator: ObserverInput + ObservableOutput {
 	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>: OperationSubscriber<Destination = Destination, In = Self::In, InError = Self::InError>;
 
@@ -14,8 +16,8 @@ pub trait Operator: ObserverInput + ObservableOutput {
 }
 
 /// An [OperationSubscriber] is a more specialized version of a [Subscriber]
-/// used by [Operators]. It's a [Subscriber] that is aware of it's Destination
-/// because it has constrains on it's own outputs.
+/// used by [Operators]. It's a [Subscriber] that is aware of its Destination
+/// because it has constrains on its own outputs.
 pub trait OperationSubscriber: Subscriber + Operation {}
 impl<T> OperationSubscriber for T where T: Subscriber + Operation {}
 

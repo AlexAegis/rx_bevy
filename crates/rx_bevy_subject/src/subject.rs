@@ -1,6 +1,6 @@
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operator, Subscription,
-	subscribers::ObserverSubscriber,
+	SubscriptionLike, subscribers::ObserverSubscriber,
 };
 
 use rx_bevy_operator_multicast::MulticastOperator;
@@ -83,5 +83,19 @@ where
 
 	fn complete(&mut self) {
 		self.multicast.complete();
+	}
+}
+
+impl<T, Error> SubscriptionLike for Subject<T, Error>
+where
+	T: 'static + Clone,
+	Error: 'static + Clone,
+{
+	fn is_closed(&self) -> bool {
+		self.multicast.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.multicast.unsubscribe();
 	}
 }

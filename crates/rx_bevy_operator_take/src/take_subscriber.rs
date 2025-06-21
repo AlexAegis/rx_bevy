@@ -1,0 +1,117 @@
+use std::marker::PhantomData;
+
+use rx_bevy_observable::{
+	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+};
+
+pub struct TakeSubscriber<In, InError, Destination>
+where
+	Destination: Subscriber,
+{
+	destination: Destination,
+	count: usize,
+	index: usize,
+	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError, Destination> TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	pub fn new(destination: Destination, count: usize) -> Self {
+		Self {
+			destination,
+			count,
+			index: 0,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError, Destination> Observer for TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	#[inline]
+	fn next(&mut self, next: Self::In) {
+		if self.index <= self.count {
+			self.index += 1;
+			self.destination.next(next);
+
+			if self.index == self.count {
+				self.complete();
+				self.unsubscribe();
+			}
+		}
+	}
+
+	#[inline]
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
+	}
+
+	#[inline]
+	fn complete(&mut self) {
+		self.destination.complete();
+	}
+}
+
+impl<In, InError, Destination> SubscriptionLike for TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	fn is_closed(&self) -> bool {
+		self.destination.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		self.destination.unsubscribe();
+	}
+}
+
+impl<In, InError, Destination> ObservableOutput for TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber,
+{
+	type Out = In;
+	type OutError = InError;
+}
+
+impl<In, InError, Destination> ObserverInput for TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber,
+{
+	type In = In;
+	type InError = InError;
+}
+
+impl<In, InError, Destination> Operation for TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Destination = Destination;
+}

@@ -1,5 +1,6 @@
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, Operator, Subscription, subscribers::ObserverSubscriber,
+	Observable, ObservableOutput, Observer, Operator, Subscription, SubscriptionLike,
+	subscribers::ObserverSubscriber,
 };
 
 pub struct Pipe<Source, Op>

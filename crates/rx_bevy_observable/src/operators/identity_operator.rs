@@ -4,6 +4,10 @@ use crate::{
 	ObservableOutput, Observer, ObserverInput, Operation, Operator, Subscriber, SubscriptionLike,
 };
 
+/// # [IdentityOperator]
+///
+/// The [IdentityOperator] does nothing. It's only purpose is to let you
+/// easily define input types for a [CompositeOperator]
 #[derive(Debug)]
 pub struct IdentityOperator<In, InError> {
 	_phantom_data: PhantomData<(In, InError)>,
@@ -51,6 +55,7 @@ where
 	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
 		IdentitySubscriber<In, InError, Destination>;
 
+	#[inline]
 	fn operator_subscribe<
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
 	>(
@@ -121,6 +126,7 @@ where
 		self.destination.error(error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.destination.complete();
 	}
@@ -135,10 +141,12 @@ where
 	In: 'static,
 	InError: 'static,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self) {
 		self.destination.unsubscribe();
 	}
