@@ -82,7 +82,6 @@ rx_bevy_operator_filter = { path = "crates/rx_bevy_operator_filter" }
 rx_bevy_operator_filter_map = { path = "crates/rx_bevy_operator_filter_map" }
 rx_bevy_operator_finalize = { path = "crates/rx_bevy_operator_finalize" }
 rx_bevy_operator_map = { path = "crates/rx_bevy_operator_map" }
-rx_bevy_operator_multicast = { path = "crates/rx_bevy_operator_multicast" }
 rx_bevy_operator_switch_map = { path = "crates/rx_bevy_operator_switch_map" }
 rx_bevy_operator_take = { path = "crates/rx_bevy_operator_take" }
 rx_bevy_operator_tap = { path = "crates/rx_bevy_operator_tap" }
