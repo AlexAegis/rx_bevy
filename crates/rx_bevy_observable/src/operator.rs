@@ -6,7 +6,7 @@ use crate::{ObservableOutput, Observer, ObserverInput, Subscriber};
 ///
 /// An [Operator] defines its own inputs and output, and a [OperationSubscriber]
 /// that defines how those input signals will produce output signals.
-pub trait Operator: ObserverInput + ObservableOutput {
+pub trait Operator: ObserverInput + ObservableOutput + Clone {
 	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>: OperationSubscriber<Destination = Destination, In = Self::In, InError = Self::InError>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(

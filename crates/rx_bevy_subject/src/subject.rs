@@ -2,10 +2,10 @@ use std::sync::{Arc, RwLock};
 
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, Subscription,
-	SubscriptionLike, UpgradeableObserver, subscribers::ObserverSubscriber,
+	SubscriptionLike, Teardown, UpgradeableObserver,
 };
 
-use crate::{MulticastDestination, MulticastInnerSubscriber, MulticastOuterSubscriber};
+use crate::{MulticastDestination, MulticastSubscriber};
 
 /// A Subject is a shared multicast observer, can be used for broadcasting
 /// a clone of it still has the same set of subscribers, and is needed if you
@@ -26,15 +26,7 @@ impl<In, InError> Subject<In, InError> {
 		self.multicast
 			.write()
 			.map(|mut multicast_destination| multicast_destination.drain())
-			.expect("No poison")
-	}
-
-	pub(crate) fn take(
-		&mut self,
-		key: usize,
-	) -> Option<Box<dyn Subscriber<In = In, InError = InError>>> {
-		let mut destination = self.multicast.write().expect("no poison");
-		destination.take(key)
+			.expect("No poison 1")
 	}
 }
 
@@ -69,7 +61,6 @@ where
 	T: 'static,
 	Error: 'static,
 {
-	/// TODO: IntoSubscriber!! instead of observer, and plain observers should be into ObserverSubscriber, normal subscribers couldbe then unchanged!!!
 	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
@@ -77,29 +68,33 @@ where
 		&mut self,
 		d: Destination,
 	) -> Subscription {
-		let mut multicast_destination = self.multicast.write().expect("Poisoned!");
-
 		let destination = d.upgrade();
+
+		let mut multicast_destination = self.multicast.try_write().expect("Poisoned!");
+
 		let key = {
 			let entry = multicast_destination.slab.vacant_entry();
 			let key = entry.key();
-			let inner_subscriber = MulticastInnerSubscriber {
+			let subscriber = MulticastSubscriber::<Destination::Subscriber> {
+				key,
 				destination,
-				outer: MulticastOuterSubscriber {
-					key,
-					subscriber_ref: self.multicast.clone(),
-				},
+				subscriber_ref: self.multicast.clone(),
 			};
-			entry.insert(Box::new(inner_subscriber));
+			entry.insert(Box::new(subscriber));
 			key
 		};
 
-		let outer = MulticastOuterSubscriber::<Destination::Subscriber> {
-			key,
-			subscriber_ref: self.multicast.clone(),
-		};
+		let multicast_ref = self.multicast.clone();
+		Subscription::new(Teardown::Fn(Box::new(move || {
+			let subscriber = {
+				let mut write_multicast = multicast_ref.try_write().expect("blocked 1");
+				write_multicast.take(key)
+			};
 
-		Subscription::new(outer)
+			if let Some(mut subscriber) = subscriber {
+				subscriber.unsubscribe();
+			}
+		})))
 	}
 }
 
@@ -118,15 +113,9 @@ where
 	Error: 'static + Clone,
 {
 	fn next(&mut self, next: Self::In) {
-		println!("MulticastOperator next 1");
-
 		if !self.is_closed() {
-			println!("MulticastOperator next 2");
-
-			if let Ok(mut multicast) = self.multicast.write() {
+			if let Ok(mut multicast) = self.multicast.try_write() {
 				for (_, destination) in multicast.slab.iter_mut() {
-					println!("MulticastOperator next 3");
-
 					destination.next(next.clone());
 				}
 			}
@@ -135,7 +124,7 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			if let Ok(mut multicast) = self.multicast.write() {
+			if let Ok(mut multicast) = self.multicast.try_write() {
 				multicast.closed = true;
 				for (_, destination) in multicast.slab.iter_mut() {
 					destination.error(error.clone());
@@ -145,12 +134,8 @@ where
 	}
 
 	fn complete(&mut self) {
-		println!("MulticastOperator complete 1");
-
 		if !self.is_closed() {
 			let mut destinations = self.drain();
-			println!("MulticastOperator complete 2");
-
 			for destination in destinations.iter_mut() {
 				destination.complete();
 			}
@@ -164,7 +149,7 @@ where
 	Error: 'static,
 {
 	fn is_closed(&self) -> bool {
-		if let Ok(multicast) = self.multicast.read() {
+		if let Ok(multicast) = self.multicast.try_read() {
 			multicast.closed
 		} else {
 			true
@@ -172,11 +157,7 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		println!("MulticastOperator unsubscribe 1");
 		let destinations = self.drain();
-
-		println!("    MulticastOperator unsubscribe 2");
-
 		for mut destination in destinations {
 			destination.unsubscribe();
 		}
@@ -188,7 +169,6 @@ where
 	T: 'static,
 	Error: 'static,
 {
-	fn drop(&mut self) {
-		self.unsubscribe();
-	}
+	// Must not unsubscribe on drop, it's the shared destination that should do that
+	fn drop(&mut self) {}
 }

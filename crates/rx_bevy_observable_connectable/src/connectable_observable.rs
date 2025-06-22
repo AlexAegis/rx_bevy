@@ -60,6 +60,19 @@ where
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
 	fn connect(&mut self) -> Subscription {
-		self.source.subscribe(self.connector.clone())
+		self.source.clone().subscribe(self.connector.clone())
+	}
+}
+
+impl<Source, Connector> Clone for ConnectableObservable<Source, Connector>
+where
+	Source: Observable,
+	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
+{
+	fn clone(&self) -> Self {
+		Self {
+			connector: self.connector.clone(),
+			source: self.source.clone(),
+		}
 	}
 }

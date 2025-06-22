@@ -4,6 +4,7 @@ use rx_bevy_observable::{
 	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
 };
 
+// TODO: Fix
 pub struct FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
@@ -52,9 +53,6 @@ where
 
 	#[inline]
 	fn complete(&mut self) {
-		if let Some(complete) = self.callback.take() {
-			(complete)();
-		}
 		self.destination.complete();
 	}
 }
@@ -70,6 +68,9 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
+		if let Some(complete) = self.callback.take() {
+			(complete)();
+		}
 		self.destination.unsubscribe();
 	}
 }

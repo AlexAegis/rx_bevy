@@ -34,6 +34,7 @@ where
 	}
 }
 
+#[derive(Clone)]
 pub struct ThrowObservable<Error>
 where
 	Error: Clone,

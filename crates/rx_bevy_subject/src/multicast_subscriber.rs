@@ -4,68 +4,51 @@ use rx_bevy_observable::{Observer, ObserverInput, Operation, Subscriber, Subscri
 
 use crate::MulticastDestination;
 
-pub struct MulticastOuterSubscriber<Destination>
+pub struct MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
 	pub(crate) key: usize,
+	pub(crate) destination: Destination,
 	pub(crate) subscriber_ref:
 		Arc<RwLock<MulticastDestination<Destination::In, Destination::InError>>>,
 }
 
-impl<Destination> Observer for MulticastOuterSubscriber<Destination>
+impl<Destination> Observer for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
-		if let Ok(mut subscriber) = self.subscriber_ref.write() {
-			if let Some(sub) = subscriber.slab.get_mut(self.key) {
-				sub.next(next);
-			}
-		}
+		self.destination.next(next);
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		if let Ok(mut subscriber) = self.subscriber_ref.write() {
-			if let Some(sub) = subscriber.slab.get_mut(self.key) {
-				sub.error(error);
-			}
-		}
+		self.destination.error(error);
 	}
 
 	fn complete(&mut self) {
-		if let Ok(mut subscriber) = self.subscriber_ref.write() {
-			if let Some(sub) = subscriber.slab.get_mut(self.key) {
-				sub.complete();
-			}
-		}
+		self.destination.complete();
 	}
 }
 
-impl<Destination> SubscriptionLike for MulticastOuterSubscriber<Destination>
+impl<Destination> SubscriptionLike for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
 	fn unsubscribe(&mut self) {
-		println!("MulticastOuterSubscriber unsubscribe 1");
-
 		let self_ref = self
 			.subscriber_ref
-			.write()
+			.try_write()
 			.map(|mut d| d.take(self.key))
-			.expect("no poison");
-
-		println!("    MulticastOuterSubscriber unsubscribes2");
+			.expect("no poison 3");
 
 		if let Some(mut self_ref) = self_ref {
-			println!("    MulticastOuterSubscriber unsubscribe 3");
-
 			self_ref.unsubscribe();
 		}
 	}
 
 	fn is_closed(&self) -> bool {
-		if let Ok(subject) = self.subscriber_ref.read() {
+		if let Ok(subject) = self.subscriber_ref.try_read() {
 			subject
 				.slab
 				.get(self.key)
@@ -77,7 +60,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for MulticastOuterSubscriber<Destination>
+impl<Destination> ObserverInput for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -85,14 +68,14 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> Operation for MulticastOuterSubscriber<Destination>
+impl<Destination> Operation for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
 	type Destination = Destination;
 }
 
-impl<Destination> Drop for MulticastOuterSubscriber<Destination>
+impl<Destination> Drop for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {

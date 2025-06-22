@@ -5,8 +5,9 @@ pub trait ObservableOutput {
 	type OutError: 'static;
 }
 
-pub trait Observable: ObservableOutput {
+pub trait Observable: ObservableOutput + Clone {
 	#[cfg_attr(feature = "inline_subscribe", inline)]
+	#[must_use]
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	>(

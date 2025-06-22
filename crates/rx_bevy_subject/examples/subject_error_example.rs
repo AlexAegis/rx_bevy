@@ -4,8 +4,12 @@ use rx_bevy_subject::Subject;
 fn main() {
 	let mut subject = Subject::<i32, String>::default();
 
-	let mut hello_subscription = subject.subscribe(PrintObserver::<i32, String>::new("hello"));
-	subject.subscribe(PrintObserver::<i32, String>::new("hi"));
+	let mut hello_subscription = subject
+		.clone()
+		.subscribe(PrintObserver::<i32, String>::new("hello"));
+	subject
+		.clone()
+		.subscribe(PrintObserver::<i32, String>::new("hi"));
 	println!(
 		"1 hello_subscription is_closed {}",
 		hello_subscription.is_closed()

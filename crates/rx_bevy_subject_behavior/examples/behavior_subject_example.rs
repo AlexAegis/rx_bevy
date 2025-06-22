@@ -5,7 +5,9 @@ fn main() {
 	let mut subject = BehaviorSubject::<i32>::new(10);
 
 	// Immediately prints "hello 10"
-	let mut hello_subscription = subject.subscribe(PrintObserver::<i32>::new("hello"));
+	let mut hello_subscription = subject
+		.clone()
+		.subscribe(PrintObserver::<i32>::new("hello"));
 
 	subject.next(12);
 
