@@ -9,11 +9,11 @@ use rx_bevy::prelude::*;
 ///
 /// ```sh
 /// finalize_example - next: 12
-/// finally!
 /// finalize_example - completed
+/// finally!
 /// ```
 fn main() {
-	of(12)
+	let _s = of(12)
 		.finalize(|| println!("finally!"))
 		.subscribe(PrintObserver::new("finalize_operator"));
 }

@@ -1,6 +1,5 @@
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, Subscription, UpgradeableObserver,
-	prelude::ObserverSubscriber,
+	Observable, ObservableOutput, Observer, Subscription, SubscriptionLike, UpgradeableObserver,
 };
 
 /// Emits a single value then immediately completes
@@ -43,6 +42,9 @@ where
 	) -> Subscription {
 		let mut subscriber = destination.upgrade();
 		for item in self.iterator.clone().into_iter() {
+			if subscriber.is_closed() {
+				break;
+			}
 			subscriber.next(item);
 		}
 		subscriber.complete();

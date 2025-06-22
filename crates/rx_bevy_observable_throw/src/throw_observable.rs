@@ -1,6 +1,5 @@
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, Subscription, UpgradeableObserver,
-	prelude::ObserverSubscriber,
 };
 
 /// Observable creator for [ThrowObservable]

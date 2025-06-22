@@ -36,19 +36,13 @@ where
 	Destination: 'static + Subscriber,
 {
 	fn unsubscribe(&mut self) {
-		let self_ref = self
-			.subscriber_ref
-			.try_write()
-			.map(|mut d| d.take(self.key))
-			.expect("no poison 3");
-
-		if let Some(mut self_ref) = self_ref {
-			self_ref.unsubscribe();
-		}
+		// See the subjects Teardown Fn to learn how this subscriber is
+		// removed from the subject.
+		self.destination.unsubscribe();
 	}
 
 	fn is_closed(&self) -> bool {
-		if let Ok(subject) = self.subscriber_ref.try_read() {
+		if let Ok(subject) = self.subscriber_ref.read() {
 			subject
 				.slab
 				.get(self.key)

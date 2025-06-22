@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike};
+use crate::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 pub struct SharedSubscriber<Destination>
 where
@@ -118,4 +118,11 @@ where
 	fn drop(&mut self) {
 		self.unsubscribe();
 	}
+}
+
+impl<Destination> Operation for SharedSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	type Destination = Destination;
 }

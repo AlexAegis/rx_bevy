@@ -1,7 +1,9 @@
 use std::marker::PhantomData;
 
 use super::SharedSubscriber;
-use crate::{Observable, Observer, ObserverInput, Subscriber, Subscription, SubscriptionLike};
+use crate::{
+	Observable, Observer, ObserverInput, Operation, Subscriber, Subscription, SubscriptionLike,
+};
 
 /// TODO: Add a dedicated error mapper
 pub struct SwitchSubscriber<InnerObservable, Destination>
@@ -107,4 +109,15 @@ where
 	fn drop(&mut self) {
 		self.unsubscribe();
 	}
+}
+
+impl<InnerObservable, Destination> Operation for SwitchSubscriber<InnerObservable, Destination>
+where
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+{
+	type Destination = Destination;
 }

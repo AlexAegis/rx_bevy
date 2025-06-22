@@ -1,5 +1,5 @@
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, SubjectLike, Subscription, UpgradeableObserver,
+	Observable, ObservableOutput, SubjectLike, Subscription, UpgradeableObserver,
 };
 
 pub trait Connectable: Observable {

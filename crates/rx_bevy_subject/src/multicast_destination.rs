@@ -10,7 +10,7 @@ impl<In, InError> MulticastDestination<In, InError> {
 	/// Closes this destination and drains its subscribers
 	/// It does not do anything with the subscribers as their actions too might
 	/// need write access to this destination
-	pub fn drain(&mut self) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
+	pub fn close_and_drain(&mut self) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
 		self.closed = true;
 		self.slab.drain().collect::<Vec<_>>()
 	}

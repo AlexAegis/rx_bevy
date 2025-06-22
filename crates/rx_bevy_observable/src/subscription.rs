@@ -4,11 +4,7 @@ use std::ops::DerefMut;
 /// close it, rendering it no longer operational, and safe to drop
 /// but it doesn't actually execute any teardown logic beyond its own, it is
 /// primarily used by operators.
-/// TODO: owned self in unsubscribe? Define it's behavior during drop instead
 pub trait SubscriptionLike {
-	/// TODO: Verify below comment, write test
-	/// unsubscribe propagates backwards from the subscription back to the original observable's subscriber, stopping it.
-	/// It should always be called before
 	fn unsubscribe(&mut self);
 
 	fn is_closed(&self) -> bool;
@@ -50,9 +46,24 @@ pub struct Subscription {
 
 impl Subscription {
 	pub fn new(finalizer: impl Into<Teardown>) -> Self {
-		Self {
-			is_closed: false,
-			finalizers: vec![finalizer.into()],
+		let teardown = finalizer.into();
+
+		let is_already_closed = match &teardown {
+			Teardown::Subscription(subscription) => subscription.is_closed(),
+			_ => false,
+		};
+
+		if is_already_closed {
+			teardown.call();
+			Self {
+				is_closed: true,
+				finalizers: Vec::new(),
+			}
+		} else {
+			Self {
+				is_closed: is_already_closed,
+				finalizers: vec![teardown],
+			}
 		}
 	}
 

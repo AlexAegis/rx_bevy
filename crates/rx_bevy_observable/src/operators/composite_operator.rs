@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use crate::{
 	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
 	Subscriber, SubscriptionLike,
@@ -59,7 +57,6 @@ where
 			sub: self
 				.prev_op
 				.operator_subscribe(self.op.operator_subscribe(destination)),
-			_phantom_data: PhantomData,
 		}
 	}
 }
@@ -90,7 +87,6 @@ where
 	Destination: Subscriber,
 {
 	sub: PrevSub,
-	_phantom_data: PhantomData<Destination>,
 }
 
 impl<PrevSub, Sub, Destination> ObserverInput for CompositeSubscriber<PrevSub, Sub, Destination>

@@ -7,9 +7,8 @@ use rx_bevy_observable::{
 
 use crate::{MulticastDestination, MulticastSubscriber};
 
-/// A Subject is a shared multicast observer, can be used for broadcasting
-/// a clone of it still has the same set of subscribers, and is needed if you
-/// want to make multiple pipes out of the same subject
+/// A Subject is a shared multicast observer, can be used for broadcasting,
+/// A subjects clone still multicasts to the same set of subscribers.
 pub struct Subject<In, InError = ()>
 where
 	In: 'static,
@@ -19,14 +18,15 @@ where
 }
 
 impl<In, InError> Subject<In, InError> {
-	/// Closes this destination and drains its subscribers
+	/// Closes the multicast and drains its subscribers to be unsubscribed.
 	/// It does not do anything with the subscribers as their actions too might
 	/// need write access to this destination
-	pub(crate) fn drain(&mut self) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
-		self.multicast
-			.write()
-			.map(|mut multicast_destination| multicast_destination.drain())
-			.expect("No poison 1")
+	pub(crate) fn close_and_drain(
+		&mut self,
+	) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
+		let mut multicast = self.multicast.write().expect("poison");
+		multicast.closed = true;
+		multicast.close_and_drain()
 	}
 }
 
@@ -66,18 +66,18 @@ where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	>(
 		&mut self,
-		d: Destination,
+		destination: Destination,
 	) -> Subscription {
-		let destination = d.upgrade();
+		let subscriber = destination.upgrade();
 
-		let mut multicast_destination = self.multicast.try_write().expect("Poisoned!");
+		let mut multicast_destination = self.multicast.write().expect("Poisoned!");
 
 		let key = {
 			let entry = multicast_destination.slab.vacant_entry();
 			let key = entry.key();
 			let subscriber = MulticastSubscriber::<Destination::Subscriber> {
 				key,
-				destination,
+				destination: subscriber,
 				subscriber_ref: self.multicast.clone(),
 			};
 			entry.insert(Box::new(subscriber));
@@ -87,7 +87,7 @@ where
 		let multicast_ref = self.multicast.clone();
 		Subscription::new(Teardown::Fn(Box::new(move || {
 			let subscriber = {
-				let mut write_multicast = multicast_ref.try_write().expect("blocked 1");
+				let mut write_multicast = multicast_ref.write().expect("blocked 1");
 				write_multicast.take(key)
 			};
 
@@ -114,7 +114,7 @@ where
 {
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
-			if let Ok(mut multicast) = self.multicast.try_write() {
+			if let Ok(mut multicast) = self.multicast.write() {
 				for (_, destination) in multicast.slab.iter_mut() {
 					destination.next(next.clone());
 				}
@@ -124,7 +124,7 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			if let Ok(mut multicast) = self.multicast.try_write() {
+			if let Ok(mut multicast) = self.multicast.write() {
 				multicast.closed = true;
 				for (_, destination) in multicast.slab.iter_mut() {
 					destination.error(error.clone());
@@ -135,7 +135,7 @@ where
 
 	fn complete(&mut self) {
 		if !self.is_closed() {
-			let mut destinations = self.drain();
+			let mut destinations = self.close_and_drain();
 			for destination in destinations.iter_mut() {
 				destination.complete();
 			}
@@ -149,7 +149,7 @@ where
 	Error: 'static,
 {
 	fn is_closed(&self) -> bool {
-		if let Ok(multicast) = self.multicast.try_read() {
+		if let Ok(multicast) = self.multicast.read() {
 			multicast.closed
 		} else {
 			true
@@ -157,8 +157,7 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		let destinations = self.drain();
-		for mut destination in destinations {
+		for mut destination in self.close_and_drain() {
 			destination.unsubscribe();
 		}
 	}

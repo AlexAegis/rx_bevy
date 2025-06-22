@@ -22,15 +22,14 @@ pub trait OperationSubscriber: Subscriber + Operation {}
 impl<T> OperationSubscriber for T where T: Subscriber + Operation {}
 
 /// An operation is something that does something to its [`Self::Destination`]
-/// TODO: Add a get_destination and get_destination_mut methods so subscription can be auto implemented
 pub trait Operation {
 	type Destination: Observer;
 }
 
 impl<T, Target> Operation for T
 where
-	Target: Operation,
-	T: Deref<Target = Target>,
+	Target: 'static + Operation,
+	T: Deref<Target = Target> + std::ops::DerefMut<Target = Target>,
 {
 	type Destination = Target::Destination;
 }

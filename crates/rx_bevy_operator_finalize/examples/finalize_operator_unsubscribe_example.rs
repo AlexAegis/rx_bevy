@@ -8,10 +8,14 @@ use rx_bevy::prelude::*;
 /// Output:
 ///
 /// ```sh
-/// finalize_example - next: 12
+/// finalize_example - next: 1
+/// finalize_example - next: 2
 /// finally!
-/// finalize_example - completed
 /// ```
+///
+/// > Notice how there is no completion signal, the source didn't complete, we
+/// > just stopped listening.
+///
 fn main() {
 	let mut subject = Subject::<i32>::default();
 	let mut subscription = subject
@@ -22,5 +26,4 @@ fn main() {
 	subject.next(1);
 	subject.next(2);
 	subscription.unsubscribe();
-	// TODO: FIX
 }

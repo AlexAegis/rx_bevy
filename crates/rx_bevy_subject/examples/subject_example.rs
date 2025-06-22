@@ -16,7 +16,7 @@ fn main() {
 	// Bind subscriptions to a variable if you want it to live until the end of the block (naming it "_" doesn't do that)
 	let _subscription_2 = subject
 		.clone()
-		.finalize(|| println!("finalize 0"))
+		.finalize(|| println!("finalize 1"))
 		.subscribe(PrintObserver::<i32>::new(
 			"subject_example (subscription 1)",
 		));
@@ -25,4 +25,5 @@ fn main() {
 	subscription_1.unsubscribe();
 	subject.next(3);
 	subject.complete();
+	subject.next(4); // Wont get emitted as it's already closed
 }
