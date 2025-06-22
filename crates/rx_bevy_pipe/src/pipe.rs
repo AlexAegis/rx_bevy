@@ -1,6 +1,6 @@
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, Operator, Subscription, SubscriptionLike,
-	subscribers::ObserverSubscriber,
+	UpgradeableObserver, subscribers::ObserverSubscriber,
 };
 
 pub struct Pipe<Source, Op>
@@ -71,11 +71,13 @@ where
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
 {
 	#[inline]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
+	fn subscribe<
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> Subscription {
-		let subscriber = ObserverSubscriber::new(destination);
+		let subscriber = destination.upgrade();
 		let operator_subscriber = self.operator.operator_subscribe(subscriber);
 		self.source_observable.subscribe(operator_subscriber)
 	}

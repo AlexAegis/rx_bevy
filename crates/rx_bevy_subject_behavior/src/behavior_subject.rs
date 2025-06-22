@@ -2,6 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscription, SubscriptionLike,
+	UpgradeableObserver,
 };
 use rx_bevy_subject::Subject;
 
@@ -83,12 +84,16 @@ where
 	Error: Clone + 'static,
 {
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
+	fn subscribe<
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
-		mut observer: Destination,
+		destination: Destination,
 	) -> Subscription {
-		observer.next(self.value.borrow().clone());
-		self.subject.subscribe(observer)
+		let mut subscriber = destination.upgrade();
+
+		subscriber.next(self.value.borrow().clone());
+		self.subject.subscribe(subscriber)
 	}
 }
 

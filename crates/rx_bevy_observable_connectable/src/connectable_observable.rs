@@ -1,4 +1,6 @@
-use rx_bevy_observable::{Observable, ObservableOutput, Observer, SubjectLike, Subscription};
+use rx_bevy_observable::{
+	Observable, ObservableOutput, Observer, SubjectLike, Subscription, UpgradeableObserver,
+};
 
 pub trait Connectable: Observable {
 	fn connect(&mut self) -> Subscription;
@@ -42,7 +44,9 @@ where
 	Source: Observable,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
+	fn subscribe<
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> Subscription {

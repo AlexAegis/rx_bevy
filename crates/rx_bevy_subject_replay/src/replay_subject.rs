@@ -3,6 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscription, SubscriptionLike,
+	UpgradeableObserver,
 };
 use rx_bevy_subject::Subject;
 
@@ -73,15 +74,19 @@ where
 	Error: Clone + 'static,
 {
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
+	fn subscribe<
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
-		mut observer: Destination,
+		destination: Destination,
 	) -> Subscription {
+		let mut subscriber = destination.upgrade();
+
 		for value in self.values.borrow().iter() {
-			observer.next(value.clone());
+			subscriber.next(value.clone());
 		}
 
-		self.subject.subscribe(observer)
+		self.subject.subscribe(subscriber)
 	}
 }
 

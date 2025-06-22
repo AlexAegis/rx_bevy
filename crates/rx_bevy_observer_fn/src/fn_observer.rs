@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observer, ObserverInput};
+use rx_bevy_observable::{
+	Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber,
+};
 
 /// An [FnObserver] requires you to define a callback for all three notifications
 pub struct FnObserver<In, InError, OnPush, OnError, OnComplete>
@@ -47,6 +49,22 @@ where
 
 	fn complete(&mut self) {
 		(self.on_complete)();
+	}
+}
+
+impl<In, InError, OnPush, OnError, OnComplete> UpgradeableObserver
+	for FnObserver<In, InError, OnPush, OnError, OnComplete>
+where
+	In: 'static,
+	InError: 'static,
+	OnPush: 'static + FnMut(In),
+	OnError: 'static + FnMut(InError),
+	OnComplete: 'static + FnMut(),
+{
+	type Subscriber = ObserverSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Subscriber {
+		ObserverSubscriber::new(self)
 	}
 }
 

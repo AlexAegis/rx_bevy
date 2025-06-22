@@ -1,4 +1,6 @@
-use rx_bevy_observable::{Observer, ObserverInput};
+use rx_bevy_observable::{
+	Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber,
+};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct DynFnObserver<In, Error> {
@@ -37,6 +39,18 @@ where
 		if let Some(on_complete) = &mut self.on_complete {
 			(on_complete)();
 		}
+	}
+}
+
+impl<In, InError> UpgradeableObserver for DynFnObserver<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
+	type Subscriber = ObserverSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Subscriber {
+		ObserverSubscriber::new(self)
 	}
 }
 

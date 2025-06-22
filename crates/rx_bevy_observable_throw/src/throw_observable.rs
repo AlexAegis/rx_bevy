@@ -1,5 +1,6 @@
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, Subscription, prelude::ObserverSubscriber,
+	Observable, ObservableOutput, Observer, Subscription, UpgradeableObserver,
+	prelude::ObserverSubscriber,
 };
 
 /// Observable creator for [ThrowObservable]
@@ -23,11 +24,11 @@ where
 	Error: 'static + Clone,
 {
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = (), InError = Error>>(
+	fn subscribe<Destination: 'static + UpgradeableObserver<In = (), InError = Error>>(
 		&mut self,
-		observer: Destination,
+		destination: Destination,
 	) -> Subscription {
-		let mut subscriber = ObserverSubscriber::new(observer);
+		let mut subscriber = destination.upgrade();
 		subscriber.error(self.error.clone());
 		Subscription::new(subscriber)
 	}

@@ -1,6 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use rx_bevy_observable::{Observer, ObserverInput};
+use rx_bevy_observable::{
+	Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber,
+};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct PrintObserver<In, InError = ()>
@@ -36,6 +38,18 @@ where
 
 	fn complete(&mut self) {
 		println!("{} - completed", self.prefix);
+	}
+}
+
+impl<In, InError> UpgradeableObserver for PrintObserver<In, InError>
+where
+	In: 'static + Debug,
+	InError: 'static + Debug,
+{
+	type Subscriber = ObserverSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Subscriber {
+		ObserverSubscriber::new(self)
 	}
 }
 

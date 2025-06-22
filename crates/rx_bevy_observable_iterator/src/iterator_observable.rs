@@ -1,5 +1,6 @@
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, Subscription, prelude::ObserverSubscriber,
+	Observable, ObservableOutput, Observer, Subscription, UpgradeableObserver,
+	prelude::ObserverSubscriber,
 };
 
 /// Emits a single value then immediately completes
@@ -34,11 +35,13 @@ where
 	Iterator: Clone + IntoIterator<Item = Out>,
 	Out: 'static + Clone,
 {
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
+	fn subscribe<
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 	) -> Subscription {
-		let mut subscriber = ObserverSubscriber::new(destination);
+		let mut subscriber = destination.upgrade();
 		for item in self.iterator.clone().into_iter() {
 			subscriber.next(item);
 		}

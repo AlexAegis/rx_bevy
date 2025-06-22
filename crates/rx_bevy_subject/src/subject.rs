@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, Subscription,
-	SubscriptionLike, subscribers::ObserverSubscriber,
+	SubscriptionLike, UpgradeableObserver, subscribers::ObserverSubscriber,
 };
 
 use crate::{MulticastDestination, MulticastInnerSubscriber, MulticastOuterSubscriber};
@@ -71,13 +71,15 @@ where
 {
 	/// TODO: IntoSubscriber!! instead of observer, and plain observers should be into ObserverSubscriber, normal subscribers couldbe then unchanged!!!
 	#[cfg_attr(feature = "inline_subscribe", inline)]
-	fn subscribe<Destination: 'static + Observer<In = Self::Out, InError = Self::OutError>>(
+	fn subscribe<
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		d: Destination,
 	) -> Subscription {
 		let mut multicast_destination = self.multicast.write().expect("Poisoned!");
 
-		let destination = ObserverSubscriber::new(d);
+		let destination = d.upgrade();
 		let key = {
 			let entry = multicast_destination.slab.vacant_entry();
 			let key = entry.key();
@@ -92,7 +94,7 @@ where
 			key
 		};
 
-		let outer = MulticastOuterSubscriber::<ObserverSubscriber<Destination>> {
+		let outer = MulticastOuterSubscriber::<Destination::Subscriber> {
 			key,
 			subscriber_ref: self.multicast.clone(),
 		};

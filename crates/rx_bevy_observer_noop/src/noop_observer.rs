@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observer, ObserverInput};
+use rx_bevy_observable::{
+	Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber,
+};
 
 #[derive(Debug)]
 pub struct NoopObserver<In, InError> {
@@ -26,6 +28,18 @@ where
 	fn error(&mut self, _error: Self::InError) {}
 
 	fn complete(&mut self) {}
+}
+
+impl<In, InError> UpgradeableObserver for NoopObserver<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
+	type Subscriber = ObserverSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Subscriber {
+		ObserverSubscriber::new(self)
+	}
 }
 
 impl<In, InError> Default for NoopObserver<In, InError> {
