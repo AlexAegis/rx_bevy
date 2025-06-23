@@ -1,8 +1,15 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_observable::{
+	CompositeSubscriber, ObservableOutput, ObserverInput, Operator, Subscriber,
+};
+use rx_bevy_operator_lift_option::LiftOptionSubscriber;
+use rx_bevy_operator_map::MapSubscriber;
 
-use crate::FilterMapSubscriber;
+pub type FilterMapSubscriber<In, InError, Mapper, Out, D> = CompositeSubscriber<
+	MapSubscriber<In, InError, Mapper, Option<Out>, LiftOptionSubscriber<Out, InError, D>>,
+	D,
+>;
 
 pub struct FilterMapOperator<In, InError, Mapper, Out>
 where
@@ -40,7 +47,10 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
-		FilterMapSubscriber::new(destination, self.mapper.clone())
+		CompositeSubscriber::new(MapSubscriber::new(
+			LiftOptionSubscriber::new(destination),
+			self.mapper.clone(),
+		))
 	}
 }
 

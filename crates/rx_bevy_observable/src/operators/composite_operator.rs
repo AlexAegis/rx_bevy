@@ -1,7 +1,4 @@
-use crate::{
-	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
-	Subscriber, SubscriptionLike,
-};
+use crate::{CompositeSubscriber, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 #[derive(Clone)]
 pub struct CompositeOperator<PrevOp, Op>
@@ -42,7 +39,7 @@ where
 	Op: Operator,
 {
 	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<D>>, Op::Subscriber<D>, D>;
+		CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<D>>, D>;
 
 	fn operator_subscribe<
 		Destination: Subscriber<
@@ -53,11 +50,10 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Self::Subscriber<Destination> {
-		CompositeSubscriber {
-			sub: self
-				.prev_op
+		CompositeSubscriber::new(
+			self.prev_op
 				.operator_subscribe(self.op.operator_subscribe(destination)),
-		}
+		)
 	}
 }
 
@@ -79,74 +75,6 @@ where
 	type OutError = Op::OutError;
 }
 
-#[derive(Clone)]
-pub struct CompositeSubscriber<PrevSub, Sub, Destination>
-where
-	PrevSub: OperationSubscriber<Destination = Sub>,
-	Sub: OperationSubscriber<Destination = Destination>,
-	Destination: Subscriber,
-{
-	sub: PrevSub,
-}
-
-impl<PrevSub, Sub, Destination> ObserverInput for CompositeSubscriber<PrevSub, Sub, Destination>
-where
-	PrevSub: OperationSubscriber<Destination = Sub>,
-	Sub: OperationSubscriber<Destination = Destination>,
-	Destination: Subscriber,
-{
-	type In = PrevSub::In;
-	type InError = PrevSub::InError;
-}
-
-impl<PrevSub, Sub, Destination> Observer for CompositeSubscriber<PrevSub, Sub, Destination>
-where
-	PrevSub: OperationSubscriber<Destination = Sub>,
-	Sub: OperationSubscriber<Destination = Destination>,
-	Destination: Subscriber,
-{
-	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.sub.next(next);
-	}
-
-	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.sub.error(error);
-	}
-
-	#[inline]
-	fn complete(&mut self) {
-		self.sub.complete();
-	}
-}
-
-impl<PrevSub, Sub, Destination> Operation for CompositeSubscriber<PrevSub, Sub, Destination>
-where
-	PrevSub: OperationSubscriber<Destination = Sub>,
-	Sub: OperationSubscriber<Destination = Destination>,
-	Destination: Subscriber,
-{
-	type Destination = Destination;
-}
-
-impl<PrevSub, Sub, Destination> SubscriptionLike for CompositeSubscriber<PrevSub, Sub, Destination>
-where
-	PrevSub: OperationSubscriber<Destination = Sub>,
-	Sub: OperationSubscriber<Destination = Destination>,
-	Destination: Subscriber,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.sub.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self) {
-		self.sub.unsubscribe();
-	}
-}
-
 pub trait CompositeOperatorExtension: Operator + Sized {
 	fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
 	where
@@ -160,14 +88,3 @@ pub trait CompositeOperatorExtension: Operator + Sized {
 }
 
 impl<T> CompositeOperatorExtension for T where T: Operator {}
-
-impl<PrevSub, Sub, Destination> Drop for CompositeSubscriber<PrevSub, Sub, Destination>
-where
-	PrevSub: OperationSubscriber<Destination = Sub>,
-	Sub: OperationSubscriber<Destination = Destination>,
-	Destination: Subscriber,
-{
-	fn drop(&mut self) {
-		self.unsubscribe();
-	}
-}
