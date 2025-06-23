@@ -1,4 +1,6 @@
-use crate::{CompositeSubscriber, ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, Subscriber};
+
+use crate::CompositeSubscriber;
 
 #[derive(Clone)]
 pub struct CompositeOperator<PrevOp, Op>
@@ -74,17 +76,3 @@ where
 	type Out = Op::Out;
 	type OutError = Op::OutError;
 }
-
-pub trait CompositeOperatorExtension: Operator + Sized {
-	fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
-	where
-		NextOp: Operator<In = Self::Out, InError = Self::OutError>,
-	{
-		CompositeOperator {
-			prev_op: self,
-			op: next_operator,
-		}
-	}
-}
-
-impl<T> CompositeOperatorExtension for T where T: Operator {}

@@ -4,12 +4,18 @@ mod tap_subscriber;
 pub use tap_operator::*;
 pub use tap_subscriber::*;
 
+#[cfg(feature = "compose")]
+pub mod tap_extension_compose;
+
 #[cfg(feature = "pipe")]
-pub mod tap_extension;
+pub mod tap_extension_pipe;
 
 pub mod prelude {
 	pub use crate::tap_operator::*;
 
+	#[cfg(feature = "compose")]
+	pub use crate::tap_extension_compose::*;
+
 	#[cfg(feature = "pipe")]
-	pub use crate::tap_extension::*;
+	pub use crate::tap_extension_pipe::*;
 }

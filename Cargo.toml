@@ -4,9 +4,9 @@ members = ["crates/*"]
 
 [workspace.package]
 edition = "2024"
-homepage = "https://github.com/AlexAegis/bevy_envelope_action"
-repository = "https://github.com/AlexAegis/bevy_envelope_action"
-documentation = "https://github.com/AlexAegis/bevy_envelope_action"
+homepage = "https://github.com/AlexAegis/rx_bevy"
+repository = "https://github.com/AlexAegis/rx_bevy"
+documentation = "https://github.com/AlexAegis/rx_bevy"
 authors = ["alexaegis"]
 license-file = "/license"
 # Crates in this repository are private, for now
@@ -78,6 +78,7 @@ rx_bevy_observer_fn = { path = "crates/rx_bevy_observer_fn" }
 rx_bevy_observer_noop = { path = "crates/rx_bevy_observer_noop" }
 rx_bevy_observer_print = { path = "crates/rx_bevy_observer_print" }
 # Operators
+rx_bevy_operator_composite = { path = "crates/rx_bevy_operator_composite" }
 rx_bevy_operator_filter = { path = "crates/rx_bevy_operator_filter" }
 rx_bevy_operator_filter_map = { path = "crates/rx_bevy_operator_filter_map" }
 rx_bevy_operator_finalize = { path = "crates/rx_bevy_operator_finalize" }

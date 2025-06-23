@@ -4477,6 +4477,7 @@ dependencies = [
  "rx_bevy_observer_fn",
  "rx_bevy_observer_noop",
  "rx_bevy_observer_print",
+ "rx_bevy_operator_composite",
  "rx_bevy_operator_filter",
  "rx_bevy_operator_filter_map",
  "rx_bevy_operator_finalize",
@@ -4574,11 +4575,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_operator_composite"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_pipe",
+ "rx_bevy_testing",
+]
+
+[[package]]
 name = "rx_bevy_operator_filter"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_operator_composite",
  "rx_bevy_pipe",
  "rx_bevy_testing",
 ]
@@ -4589,6 +4601,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_operator_composite",
  "rx_bevy_operator_lift_option",
  "rx_bevy_operator_map",
  "rx_bevy_pipe",
@@ -4601,6 +4614,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_operator_composite",
  "rx_bevy_pipe",
  "rx_bevy_testing",
 ]
@@ -4611,6 +4625,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_operator_composite",
  "rx_bevy_pipe",
  "rx_bevy_testing",
 ]
@@ -4621,6 +4636,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_operator_composite",
  "rx_bevy_pipe",
  "rx_bevy_testing",
 ]
@@ -4631,8 +4647,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
- "rx_bevy_observable_of",
- "rx_bevy_observer_fn",
+ "rx_bevy_operator_composite",
  "rx_bevy_pipe",
  "rx_bevy_testing",
 ]
@@ -4643,6 +4658,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_operator_composite",
  "rx_bevy_pipe",
  "rx_bevy_testing",
 ]
@@ -4653,6 +4669,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_operator_composite",
  "rx_bevy_pipe",
  "rx_bevy_testing",
 ]

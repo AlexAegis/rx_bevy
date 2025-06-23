@@ -1,14 +1,19 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
-	CompositeSubscriber, ObservableOutput, ObserverInput, Operator, Subscriber,
-};
+use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_operator_composite::CompositeSubscriber;
 use rx_bevy_operator_lift_option::LiftOptionSubscriber;
 use rx_bevy_operator_map::MapSubscriber;
 
-pub type FilterMapSubscriber<In, InError, Mapper, Out, D> = CompositeSubscriber<
-	MapSubscriber<In, InError, Mapper, Option<Out>, LiftOptionSubscriber<Out, InError, D>>,
-	D,
+pub type FilterMapSubscriber<In, InError, Mapper, Out, Destination> = CompositeSubscriber<
+	MapSubscriber<
+		In,
+		InError,
+		Mapper,
+		Option<Out>,
+		LiftOptionSubscriber<Out, InError, Destination>,
+	>,
+	Destination,
 >;
 
 pub struct FilterMapOperator<In, InError, Mapper, Out>

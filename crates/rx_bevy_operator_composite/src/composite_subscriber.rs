@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_observable::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 #[derive(Clone)]
 pub struct CompositeSubscriber<Inner, Destination>

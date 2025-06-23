@@ -16,13 +16,15 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["pipe"]
+default = ["compose", "pipe"]
 dev = []
 example = ["dev"]
+compose = []
 pipe = ["dep:rx_bevy_pipe"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
+rx_bevy_operator_composite = { workspace = true }
 rx_bevy_operator_map = { workspace = true }
 rx_bevy_operator_lift_option = { workspace = true }
 rx_bevy_pipe = { workspace = true, optional = true }

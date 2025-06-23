@@ -9,7 +9,7 @@ fn main() {
 		.map(|i| i + 1)
 		.filter(|i| i < &4);
 
-	(1..=5)
+	let _s = (1..=5)
 		.into_observable()
 		.pipe(composite_operator)
 		.subscribe(PrintObserver::new("identity_operator (composite)"));

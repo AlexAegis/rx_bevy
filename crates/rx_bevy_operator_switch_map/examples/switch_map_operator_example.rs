@@ -1,5 +1,5 @@
 use rx_bevy::prelude::*;
-use rx_bevy_operator_switch_map::switch_map_extension::ObservableExtensionSwitchMap;
+use rx_bevy_operator_switch_map::switch_map_extension_pipe::ObservableExtensionSwitchMap;
 
 fn main() {
 	// TODO: Fix this

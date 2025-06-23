@@ -5,6 +5,7 @@ use rx_bevy::prelude::*;
 fn main() {
 	let _s = (1..=5)
 		.into_observable()
+		.pipe(map(|next: i32| next + 1))
 		.filter(|i| i > &2)
 		.subscribe(PrintObserver::new("filter_operator"));
 }
