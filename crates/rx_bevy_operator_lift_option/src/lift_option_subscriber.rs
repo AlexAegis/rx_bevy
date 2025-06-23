@@ -4,46 +4,35 @@ use rx_bevy_observable::{
 	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
 };
 
-pub struct MapSubscriber<In, InError, Mapper, Out, Destination>
+pub struct LiftOptionSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
 	Destination: Subscriber,
 {
 	destination: Destination,
-	mapper: Mapper,
-	_phantom_data: PhantomData<(In, InError, Out)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Mapper, Out, Destination> MapSubscriber<In, InError, Mapper, Out, Destination>
+impl<In, InError, Destination> LiftOptionSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	In: 'static,
+	InError: 'static,
 {
-	pub fn new(destination: Destination, mapper: Mapper) -> Self {
+	pub fn new(destination: Destination) -> Self {
 		Self {
 			destination,
-			mapper,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, Mapper, Out, Destination> Observer
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
+impl<In, InError, Destination> Observer for LiftOptionSubscriber<In, InError, Destination>
 where
 	In: 'static,
 	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -51,8 +40,9 @@ where
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		let mapped = (self.mapper)(next);
-		self.destination.next(mapped);
+		if let Some(next) = next {
+			self.destination.next(next);
+		}
 	}
 
 	#[inline]
@@ -66,13 +56,10 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out, Destination> SubscriptionLike
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
+impl<In, InError, Destination> SubscriptionLike for LiftOptionSubscriber<In, InError, Destination>
 where
 	In: 'static,
 	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -87,38 +74,30 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out, Destination> ObserverInput
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
+impl<In, InError, Destination> ObserverInput for LiftOptionSubscriber<In, InError, Destination>
 where
 	In: 'static,
 	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
 	Destination: Subscriber,
 {
-	type In = In;
+	type In = Option<In>;
 	type InError = InError;
 }
 
-impl<In, InError, Mapper, Out, Destination> ObservableOutput
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
-	Destination: Subscriber,
-{
-	type Out = Out;
-	type OutError = InError;
-}
-
-impl<In, InError, Mapper, Out, Destination> Operation
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
+impl<In, InError, Destination> ObservableOutput for LiftOptionSubscriber<In, InError, Destination>
 where
 	In: 'static,
 	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
+	Destination: Subscriber,
+{
+	type Out = In;
+	type OutError = InError;
+}
+
+impl<In, InError, Destination> Operation for LiftOptionSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,

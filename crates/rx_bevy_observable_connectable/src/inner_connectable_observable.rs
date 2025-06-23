@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 use rx_bevy_observable::{
 	Observable, ObservableOutput, SubjectLike, Subscription, SubscriptionLike, Teardown,
@@ -21,7 +21,7 @@ where
 	/// source
 	connector: Option<Connector>,
 
-	connection: Option<Arc<Mutex<Subscription>>>,
+	connection: Option<Arc<RwLock<Subscription>>>,
 
 	options: ConnectableOptions<ConnectorCreator, Connector>,
 }
@@ -61,17 +61,17 @@ where
 		self.get_connector()
 	}
 
-	fn get_active_connection(&mut self) -> Option<Arc<Mutex<Subscription>>> {
+	fn get_active_connection(&mut self) -> Option<Arc<RwLock<Subscription>>> {
 		self.connection
 			.as_ref()
-			.filter(|connection| !connection.lock().unwrap().is_closed())
-			.map(|connection| connection.clone())
+			.filter(|connection| !connection.read().unwrap().is_closed())
+			.cloned()
 	}
 
 	fn is_connection_closed(&self) -> bool {
 		self.connection
 			.as_ref()
-			.map(|connection| connection.lock().unwrap().is_closed())
+			.map(|connection| connection.read().unwrap().is_closed())
 			.unwrap_or(true)
 	}
 }
@@ -116,10 +116,10 @@ where
 		let connection = self.get_active_connection().unwrap_or_else(|| {
 			let mut connector = self.get_connector().clone();
 
-			let connection = Arc::new(Mutex::new(self.source.subscribe(connector.clone())));
+			let connection = Arc::new(RwLock::new(self.source.subscribe(connector.clone())));
 
 			if self.options.unsubscribe_connector_on_disconnect {
-				let mut connection = connection.lock().unwrap();
+				let mut connection = connection.write().unwrap();
 				connection.add(Teardown::Fn(Box::new(move || {
 					connector.unsubscribe();
 				})));
@@ -131,7 +131,7 @@ where
 		});
 
 		Subscription::new(Teardown::Fn(Box::new(move || {
-			connection.lock().unwrap().unsubscribe();
+			connection.write().unwrap().unsubscribe();
 		})))
 	}
 }

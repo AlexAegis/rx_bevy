@@ -1,6 +1,6 @@
 [package]
-name = "rx_bevy_operator_filter_map"
-description = "filter_map operator for rx_bevy"
+name = "rx_bevy_operator_lift_option"
+description = "lift_option operator for rx_bevy"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -23,8 +23,6 @@ pipe = ["dep:rx_bevy_pipe"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
-rx_bevy_operator_map = { workspace = true }
-rx_bevy_operator_lift_option = { workspace = true }
 rx_bevy_pipe = { workspace = true, optional = true }
 
 [dev-dependencies]

@@ -4,7 +4,7 @@ use rx_bevy_pipe::Pipe;
 use crate::MapOperator;
 
 /// Operator creator function
-pub fn map<Mapper, In, InError, Out>(mapper: Mapper) -> MapOperator<Mapper, In, InError, Out>
+pub fn map<In, InError, Mapper, Out>(mapper: Mapper) -> MapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Clone + Fn(In) -> Out,
 {
@@ -16,7 +16,7 @@ pub trait ObservableExtensionMap: Observable + Sized {
 	fn map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> NextOut>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, MapOperator<Mapper, Self::Out, Self::OutError, NextOut>> {
+	) -> Pipe<Self, MapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
 		Pipe::new(self, MapOperator::new(mapper))
 	}
 }
@@ -28,7 +28,7 @@ pub trait CompositeOperatorExtensionMap: Operator + Sized {
 	fn map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> NextOut>(
 		self,
 		mapper: Mapper,
-	) -> CompositeOperator<Self, MapOperator<Mapper, Self::Out, Self::OutError, NextOut>> {
+	) -> CompositeOperator<Self, MapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
 		CompositeOperator::new(self, MapOperator::new(mapper))
 	}
 }

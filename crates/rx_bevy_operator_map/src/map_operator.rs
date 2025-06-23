@@ -4,7 +4,7 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::MapSubscriber;
 
-pub struct MapOperator<Mapper, In, InError, Out>
+pub struct MapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -12,7 +12,7 @@ where
 	pub _phantom_data: PhantomData<(In, InError, Out)>,
 }
 
-impl<Mapper, In, InError, Out> MapOperator<Mapper, In, InError, Out>
+impl<In, InError, Mapper, Out> MapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -24,15 +24,15 @@ where
 	}
 }
 
-impl<Mapper, In, InError, Out> Operator for MapOperator<Mapper, In, InError, Out>
+impl<In, InError, Mapper, Out> Operator for MapOperator<In, InError, Mapper, Out>
 where
-	Mapper: 'static + Clone + Fn(In) -> Out,
 	In: 'static,
-	Out: 'static,
 	InError: 'static,
+	Mapper: 'static + Clone + Fn(In) -> Out,
+	Out: 'static,
 {
 	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		MapSubscriber<Mapper, In, InError, Out, Destination>;
+		MapSubscriber<In, InError, Mapper, Out, Destination>;
 
 	fn operator_subscribe<
 		Destination: 'static
@@ -48,7 +48,7 @@ where
 	}
 }
 
-impl<Mapper, In, InError, Out> ObservableOutput for MapOperator<Mapper, In, InError, Out>
+impl<In, InError, Mapper, Out> ObservableOutput for MapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Fn(In) -> Out,
 	Out: 'static,
@@ -58,7 +58,7 @@ where
 	type OutError = InError;
 }
 
-impl<Mapper, In, InError, Out> ObserverInput for MapOperator<Mapper, In, InError, Out>
+impl<In, InError, Mapper, Out> ObserverInput for MapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Fn(In) -> Out,
 	In: 'static,
@@ -68,7 +68,7 @@ where
 	type InError = InError;
 }
 
-impl<Mapper, In, InError, Out> Clone for MapOperator<Mapper, In, InError, Out>
+impl<In, InError, Mapper, Out> Clone for MapOperator<In, InError, Mapper, Out>
 where
 	Mapper: Clone + Fn(In) -> Out,
 {
