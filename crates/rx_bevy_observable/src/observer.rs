@@ -11,7 +11,7 @@ pub trait Observer: ObserverInput {
 	fn complete(&mut self);
 }
 
-pub trait UpgradeableObserver: ObserverInput {
+pub trait UpgradeableObserver: Observer {
 	type Subscriber: Subscriber<In = Self::In, InError = Self::InError>;
 	fn upgrade(self) -> Self::Subscriber;
 }

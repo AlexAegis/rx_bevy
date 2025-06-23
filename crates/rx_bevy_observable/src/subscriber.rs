@@ -28,7 +28,5 @@ impl<T> Subscriber for T
 where
 	T: 'static + Observer + SubscriptionLike,
 {
-	fn finalize(&mut self) {
-		println!("finalize");
-	}
+	fn finalize(&mut self) {}
 }

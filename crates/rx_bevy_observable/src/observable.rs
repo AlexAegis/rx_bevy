@@ -5,7 +5,7 @@ pub trait ObservableOutput {
 	type OutError: 'static;
 }
 
-pub trait Observable: ObservableOutput + Clone {
+pub trait Observable: ObservableOutput {
 	#[cfg_attr(feature = "inline_subscribe", inline)]
 	#[must_use]
 	fn subscribe<

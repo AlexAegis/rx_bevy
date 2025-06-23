@@ -49,7 +49,7 @@ where
 				.map(|destination| destination.is_closed())
 				.unwrap_or(!subject.slab.contains(self.key))
 		} else {
-			true
+			self.destination.is_closed()
 		}
 	}
 }

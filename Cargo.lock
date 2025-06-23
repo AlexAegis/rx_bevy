@@ -4504,6 +4504,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
+ "rx_bevy_observable_deferred",
  "rx_bevy_testing",
 ]
 

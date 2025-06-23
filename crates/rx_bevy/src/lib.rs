@@ -1,6 +1,10 @@
 pub use rx_bevy_observable::*;
 
 // Observables
+#[cfg(feature = "observable_connectable")]
+pub use rx_bevy_observable_connectable::*;
+#[cfg(feature = "observable_deferred")]
+pub use rx_bevy_observable_deferred::*;
 #[cfg(feature = "observable_iterator")]
 pub use rx_bevy_observable_iterator::*;
 #[cfg(feature = "observable_of")]
@@ -44,6 +48,10 @@ pub mod prelude {
 	pub use rx_bevy_observable::prelude::*;
 
 	// Observables
+	#[cfg(feature = "observable_connectable")]
+	pub use rx_bevy_observable_connectable::prelude::*;
+	#[cfg(feature = "observable_deferred")]
+	pub use rx_bevy_observable_deferred::prelude::*;
 	#[cfg(feature = "observable_iterator")]
 	pub use rx_bevy_observable_iterator::prelude::*;
 	#[cfg(feature = "observable_of")]

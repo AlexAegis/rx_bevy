@@ -1,47 +1,51 @@
+use std::sync::{Arc, Mutex};
+
 use rx_bevy_observable::{
-	Observable, ObservableOutput, SubjectLike, Subscription, UpgradeableObserver,
+	Observable, ObservableOutput, SubjectLike, Subscription, SubscriptionLike, UpgradeableObserver,
 };
 
-pub trait Connectable: Observable {
-	fn connect(&mut self) -> Subscription;
-}
+use crate::{
+	Connectable, ConnectableOptions, inner_connectable_observable::InnerConnectableObservable,
+};
 
-/// TODO: Should be part of core or its own
-pub struct ConnectableObservable<Source, Connector>
+pub struct ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
+	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
-	/// Upon connection, the connector subject will subscribe to this source
-	/// observable
-	source: Source,
-	/// Upon subscription this connector subject is what will be used as the
-	/// source
-	connector: Connector,
+	connector: Arc<Mutex<InnerConnectableObservable<Source, ConnectorCreator, Connector>>>,
 }
 
-impl<Source, Connector> ConnectableObservable<Source, Connector>
+impl<Source, ConnectorCreator, Connector> ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
+	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
-	pub fn new(source: Source, connector: Connector) -> Self {
-		Self { source, connector }
+	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
+		Self {
+			connector: Arc::new(Mutex::new(InnerConnectableObservable::new(source, options))),
+		}
 	}
 }
 
-impl<Source, Connector> ObservableOutput for ConnectableObservable<Source, Connector>
+impl<Source, ConnectorCreator, Connector> ObservableOutput
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
+	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
 	type Out = Connector::Out;
 	type OutError = Connector::OutError;
 }
 
-impl<Source, Connector> Observable for ConnectableObservable<Source, Connector>
+impl<Source, ConnectorCreator, Connector> Observable
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
+	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
 	fn subscribe<
@@ -50,29 +54,52 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Subscription {
-		self.connector.subscribe(destination)
+		let mut connector = self.connector.lock().expect("cant lock");
+		connector.subscribe(destination)
 	}
 }
 
-impl<Source, Connector> Connectable for ConnectableObservable<Source, Connector>
+impl<Source, ConnectorCreator, Connector> SubscriptionLike
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
+{
+	fn is_closed(&self) -> bool {
+		let connector = self.connector.lock().expect("lockable");
+		connector.is_closed()
+	}
+
+	fn unsubscribe(&mut self) {
+		let mut connector = self.connector.lock().expect("lockable");
+		connector.unsubscribe();
+	}
+}
+
+impl<Source, ConnectorCreator, Connector> Connectable
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
+where
+	Source: Observable,
+	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
 	fn connect(&mut self) -> Subscription {
-		self.source.clone().subscribe(self.connector.clone())
+		let mut connector = self.connector.lock().expect("cant lock");
+		connector.connect()
 	}
 }
 
-impl<Source, Connector> Clone for ConnectableObservable<Source, Connector>
+impl<Source, ConnectorCreator, Connector> Clone
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
-	Source: Observable,
+	Source: Clone + Observable,
+	ConnectorCreator: Clone + Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
 	fn clone(&self) -> Self {
 		Self {
 			connector: self.connector.clone(),
-			source: self.source.clone(),
 		}
 	}
 }

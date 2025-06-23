@@ -52,10 +52,9 @@ where
 
 #[cfg(test)]
 mod tests {
-
 	use super::*;
 
-	use rx_bevy_testing::MockObserver;
+	use rx_bevy_testing::prelude::*;
 
 	#[test]
 	fn should_emit_single_value() {
@@ -63,7 +62,7 @@ mod tests {
 		let mut observable = ThrowObservable::new(error);
 		let mut mock_observer = MockObserver::new_shared();
 
-		observable.subscribe(mock_observer.clone());
+		let _s = observable.subscribe(mock_observer.clone());
 
 		mock_observer.read(|d| {
 			assert_eq!(d.destination.errors, vec![error]);

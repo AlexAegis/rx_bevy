@@ -26,7 +26,7 @@ impl<In, InError> Subject<In, InError> {
 	) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
 		let mut multicast = self.multicast.write().expect("poison");
 		multicast.closed = true;
-		multicast.close_and_drain()
+		multicast.drain()
 	}
 }
 

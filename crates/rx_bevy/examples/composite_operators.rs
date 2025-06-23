@@ -1,5 +1,4 @@
 use rx_bevy::prelude::*;
-use rx_bevy_operator_filter::prelude::CompositeOperatorExtensionFilter;
 
 /// Composite operators offer an easy way to create complex operators, but they
 /// do increase type complexity, good for prototyping and smaller things, but
@@ -11,12 +10,12 @@ fn main() {
 		.pipe(map(|next: i32| next + 1))
 		.pipe(map(|next: i32| next * 100));
 
-	of(1).pipe(op).subscribe(PrintObserver::new("hello"));
+	let _s = of(1).pipe(op).subscribe(PrintObserver::new("hello"));
 
 	// Or though the type extensions you can chain built in operators just like on observables
 	let op_2 = IdentityOperator::<i32, ()>::default()
 		.map(|i| i * 2)
 		.filter(|i| i % 2 == 0);
 
-	of(1).pipe(op_2).subscribe(PrintObserver::new("bello"));
+	let _s2 = of(1).pipe(op_2).subscribe(PrintObserver::new("bello"));
 }

@@ -10,8 +10,40 @@ where
 	In: Debug,
 	InError: Debug,
 {
-	prefix: &'static str,
+	prefix: Option<&'static str>,
 	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError> PrintObserver<In, InError>
+where
+	In: Debug,
+	InError: Debug,
+{
+	pub fn new(message: &'static str) -> Self {
+		Self {
+			prefix: Some(message),
+			_phantom_data: PhantomData,
+		}
+	}
+
+	fn get_prefix(&self) -> String {
+		self.prefix
+			.map(|prefix| format!("{} - ", prefix))
+			.unwrap_or_default()
+	}
+}
+
+impl<In, InError> Default for PrintObserver<In, InError>
+where
+	In: 'static + Debug,
+	InError: 'static + Debug,
+{
+	fn default() -> Self {
+		Self {
+			prefix: None,
+			_phantom_data: PhantomData,
+		}
+	}
 }
 
 impl<In, InError> ObserverInput for PrintObserver<In, InError>
@@ -29,15 +61,15 @@ where
 	InError: 'static + Debug,
 {
 	fn next(&mut self, next: Self::In) {
-		println!("{} - next: {:?}", self.prefix, next);
+		println!("{}next: {:?}", self.get_prefix(), next);
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		println!("{} - error: {:?}", self.prefix, error);
+		println!("{}error: {:?}", self.get_prefix(), error);
 	}
 
 	fn complete(&mut self) {
-		println!("{} - completed", self.prefix);
+		println!("{}completed", self.get_prefix());
 	}
 }
 
@@ -50,18 +82,5 @@ where
 
 	fn upgrade(self) -> Self::Subscriber {
 		ObserverSubscriber::new(self)
-	}
-}
-
-impl<In, InError> PrintObserver<In, InError>
-where
-	In: Debug,
-	InError: Debug,
-{
-	pub fn new(message: &'static str) -> Self {
-		Self {
-			prefix: message,
-			_phantom_data: PhantomData,
-		}
 	}
 }
