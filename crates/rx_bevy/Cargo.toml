@@ -34,6 +34,7 @@ pipe = [
     "rx_bevy_operator_filter_map/pipe",
     "rx_bevy_operator_finalize/pipe",
     "rx_bevy_operator_lift_option/pipe",
+    "rx_bevy_operator_lift_result/pipe",
     "rx_bevy_operator_map/pipe",
     "rx_bevy_operator_switch_map/pipe",
     "rx_bevy_operator_take/pipe",
@@ -45,6 +46,7 @@ compose = [
     "rx_bevy_operator_filter_map/compose",
     "rx_bevy_operator_finalize/compose",
     "rx_bevy_operator_lift_option/compose",
+    "rx_bevy_operator_lift_result/compose",
     "rx_bevy_operator_map/compose",
     "rx_bevy_operator_switch_map/compose",
     "rx_bevy_operator_take/compose",
@@ -62,7 +64,6 @@ inline_subscribe = [
     "rx_bevy_subject_behavior/inline_subscribe",
     "rx_bevy_subject_replay/inline_subscribe",
 ]
-
 # Observables
 all_observables = [
     "observable_connectable",
@@ -88,6 +89,7 @@ all_operators = [
     "operator_filter_map",
     "operator_finalize",
     "operator_lift_option",
+    "operator_lift_result",
     "operator_map",
     "operator_switch_map",
     "operator_take",
@@ -98,6 +100,7 @@ operator_filter = ["dep:rx_bevy_operator_filter"]
 operator_filter_map = ["dep:rx_bevy_operator_filter_map"]
 operator_finalize = ["dep:rx_bevy_operator_finalize"]
 operator_lift_option = ["dep:rx_bevy_operator_lift_option"]
+operator_lift_result = ["dep:rx_bevy_operator_lift_option"]
 operator_map = ["dep:rx_bevy_operator_map"]
 operator_switch_map = ["dep:rx_bevy_operator_switch_map"]
 operator_take = ["dep:rx_bevy_operator_take"]
@@ -128,6 +131,7 @@ rx_bevy_operator_filter = { workspace = true, optional = true }
 rx_bevy_operator_filter_map = { workspace = true, optional = true }
 rx_bevy_operator_finalize = { workspace = true, optional = true }
 rx_bevy_operator_lift_option = { workspace = true, optional = true }
+rx_bevy_operator_lift_result = { workspace = true, optional = true }
 rx_bevy_operator_map = { workspace = true, optional = true }
 rx_bevy_operator_switch_map = { workspace = true, optional = true }
 rx_bevy_operator_take = { workspace = true, optional = true }

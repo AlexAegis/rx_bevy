@@ -4482,6 +4482,7 @@ dependencies = [
  "rx_bevy_operator_filter_map",
  "rx_bevy_operator_finalize",
  "rx_bevy_operator_lift_option",
+ "rx_bevy_operator_lift_result",
  "rx_bevy_operator_map",
  "rx_bevy_operator_switch_map",
  "rx_bevy_operator_take",
@@ -4622,6 +4623,17 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_operator_lift_option"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_operator_composite",
+ "rx_bevy_pipe",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_operator_lift_result"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",

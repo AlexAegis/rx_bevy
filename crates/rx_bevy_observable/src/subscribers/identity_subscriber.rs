@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use crate::{ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 #[derive(Debug)]

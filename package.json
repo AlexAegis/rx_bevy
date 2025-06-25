@@ -7,7 +7,7 @@
     "tooling-only"
   ],
   "type": "module",
-  "packageManager": "pnpm@10.12.2",
+  "packageManager": "pnpm@10.12.3",
   "scripts": {
     "lint:md": "remark --frail --no-stdout --silently-ignore --ignore-pattern '*.ron' --ignore-pattern '.github' --ignore-pattern '.credits' .",
     "lint:md:fix": "remark --frail --silently-ignore --output ./**/*.md"
