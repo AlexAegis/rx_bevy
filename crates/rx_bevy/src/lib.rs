@@ -24,6 +24,8 @@ pub use rx_bevy_observer_print::*;
 // Operators
 #[cfg(feature = "operator_composite")]
 pub use rx_bevy_operator_composite::*;
+#[cfg(feature = "operator_enumerate")]
+pub use rx_bevy_operator_enumerate::*;
 #[cfg(feature = "operator_filter")]
 pub use rx_bevy_operator_filter::*;
 #[cfg(feature = "operator_filter_map")]
@@ -77,6 +79,8 @@ pub mod prelude {
 	// Operators
 	#[cfg(feature = "operator_composite")]
 	pub use rx_bevy_operator_composite::prelude::*;
+	#[cfg(feature = "operator_enumerate")]
+	pub use rx_bevy_operator_enumerate::prelude::*;
 	#[cfg(feature = "operator_filter")]
 	pub use rx_bevy_operator_filter::prelude::*;
 	#[cfg(feature = "operator_filter_map")]

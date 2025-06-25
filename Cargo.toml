@@ -79,6 +79,7 @@ rx_bevy_observer_noop = { path = "crates/rx_bevy_observer_noop" }
 rx_bevy_observer_print = { path = "crates/rx_bevy_observer_print" }
 # Operators
 rx_bevy_operator_composite = { path = "crates/rx_bevy_operator_composite" }
+rx_bevy_operator_enumerate = { path = "crates/rx_bevy_operator_enumerate" }
 rx_bevy_operator_filter = { path = "crates/rx_bevy_operator_filter" }
 rx_bevy_operator_filter_map = { path = "crates/rx_bevy_operator_filter_map" }
 rx_bevy_operator_finalize = { path = "crates/rx_bevy_operator_finalize" }

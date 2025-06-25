@@ -30,6 +30,7 @@ example = ["dev"]
 pipe = [
     "dep:rx_bevy_pipe",
     "rx_bevy_operator_composite/pipe",
+    "rx_bevy_operator_enumerate/pipe",
     "rx_bevy_operator_filter/pipe",
     "rx_bevy_operator_filter_map/pipe",
     "rx_bevy_operator_finalize/pipe",
@@ -43,6 +44,7 @@ pipe = [
 ]
 compose = [
     "dep:rx_bevy_operator_composite",
+    "rx_bevy_operator_enumerate/compose",
     "rx_bevy_operator_filter/compose",
     "rx_bevy_operator_filter_map/compose",
     "rx_bevy_operator_finalize/compose",
@@ -87,6 +89,7 @@ observer_print = ["dep:rx_bevy_observer_print"]
 # Operators
 all_operators = [
     "operator_composite",
+    "operator_enumerate",
     "operator_filter",
     "operator_filter_map",
     "operator_finalize",
@@ -99,6 +102,7 @@ all_operators = [
     "operator_try_capture",
 ]
 operator_composite = ["dep:rx_bevy_operator_composite"]
+operator_enumerate = ["dep:rx_bevy_operator_enumerate"]
 operator_filter = ["dep:rx_bevy_operator_filter"]
 operator_filter_map = ["dep:rx_bevy_operator_filter_map"]
 operator_finalize = ["dep:rx_bevy_operator_finalize"]
@@ -131,6 +135,7 @@ rx_bevy_observer_noop = { workspace = true, optional = true }
 rx_bevy_observer_print = { workspace = true, optional = true }
 # Operators
 rx_bevy_operator_composite = { workspace = true, optional = true }
+rx_bevy_operator_enumerate = { workspace = true, optional = true }
 rx_bevy_operator_filter = { workspace = true, optional = true }
 rx_bevy_operator_filter_map = { workspace = true, optional = true }
 rx_bevy_operator_finalize = { workspace = true, optional = true }
