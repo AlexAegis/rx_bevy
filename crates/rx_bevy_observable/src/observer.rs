@@ -1,3 +1,10 @@
+use std::{
+	cell::RefCell,
+	ops::{Deref, DerefMut},
+	rc::Rc,
+	sync::{Arc, Mutex, RwLock},
+};
+
 use crate::Subscriber;
 
 pub trait ObserverInput {
@@ -25,5 +32,30 @@ where
 	#[inline]
 	fn upgrade(self) -> Self::Subscriber {
 		self
+	}
+}
+
+impl<T> ObserverInput for RefCell<T>
+where
+	T: ObserverInput,
+{
+	type In = T::In;
+	type InError = T::InError;
+}
+
+impl<T> Observer for RefCell<T>
+where
+	T: Observer,
+{
+	fn next(&mut self, next: Self::In) {
+		self.borrow_mut().next(next);
+	}
+
+	fn error(&mut self, error: Self::InError) {
+		self.borrow_mut().error(error);
+	}
+
+	fn complete(&mut self) {
+		self.borrow_mut().complete();
 	}
 }

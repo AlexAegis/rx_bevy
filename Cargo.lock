@@ -4499,6 +4499,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_testing",
+ "smallvec",
 ]
 
 [[package]]
@@ -4648,6 +4649,8 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
+ "rx_bevy_operator_finalize",
+ "rx_bevy_operator_map",
  "rx_bevy_pipe",
  "rx_bevy_testing",
 ]

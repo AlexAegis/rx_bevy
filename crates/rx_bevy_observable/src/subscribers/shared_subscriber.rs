@@ -115,9 +115,8 @@ impl<Destination> Drop for SharedSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	fn drop(&mut self) {
-		self.unsubscribe();
-	}
+	/// Should not unsubscribe on drop as it's shared
+	fn drop(&mut self) {}
 }
 
 impl<Destination> Operation for SharedSubscriber<Destination>

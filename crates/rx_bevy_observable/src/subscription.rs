@@ -1,5 +1,7 @@
 use std::ops::DerefMut;
 
+use smallvec::SmallVec;
+
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational, and safe to drop
 /// but it doesn't actually execute any teardown logic beyond its own, it is
@@ -41,7 +43,7 @@ where
 
 pub struct Subscription {
 	is_closed: bool,
-	finalizers: Vec<Teardown>,
+	finalizers: SmallVec<[Teardown; 1]>,
 }
 
 impl Subscription {
@@ -57,12 +59,12 @@ impl Subscription {
 			teardown.call();
 			Self {
 				is_closed: true,
-				finalizers: Vec::new(),
+				finalizers: SmallVec::new(),
 			}
 		} else {
 			Self {
 				is_closed: is_already_closed,
-				finalizers: vec![teardown],
+				finalizers: smallvec::smallvec![teardown],
 			}
 		}
 	}
@@ -70,7 +72,7 @@ impl Subscription {
 	pub fn new_empty() -> Self {
 		Self {
 			is_closed: false,
-			finalizers: Vec::new(),
+			finalizers: SmallVec::new(),
 		}
 	}
 

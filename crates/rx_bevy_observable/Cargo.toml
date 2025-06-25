@@ -22,6 +22,7 @@ example = ["dev"]
 inline_subscribe = []
 
 [dependencies]
+smallvec = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

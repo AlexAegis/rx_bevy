@@ -65,7 +65,7 @@ mod tests {
 		let mut observable = OfObservable::new(value);
 		let mut mock_observer = MockObserver::new_shared();
 
-		observable.subscribe(mock_observer.clone());
+		let _s = observable.subscribe(mock_observer.clone());
 
 		mock_observer.read(|d| {
 			assert_eq!(d.destination.values, vec![value]);

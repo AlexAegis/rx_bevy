@@ -30,3 +30,5 @@ rx_bevy_operator_composite = { workspace = true, optional = true }
 [dev-dependencies]
 rx_bevy = { workspace = true }
 rx_bevy_testing = { workspace = true }
+rx_bevy_operator_finalize = { workspace = true }
+rx_bevy_operator_map = { workspace = true }

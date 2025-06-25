@@ -3,54 +3,41 @@ use std::marker::PhantomData;
 use crate::{ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 #[derive(Debug)]
-pub struct IdentitySubscriber<In, InError, Destination>
+pub struct IdentitySubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	destination: Destination,
-	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Destination> IdentitySubscriber<In, InError, Destination>
+impl<Destination> IdentitySubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	pub fn new(destination: Destination) -> Self {
-		Self {
-			destination,
-			_phantom_data: PhantomData,
-		}
+		Self { destination }
 	}
 }
 
-impl<In, InError, Destination> ObservableOutput for IdentitySubscriber<In, InError, Destination>
+impl<Destination> ObservableOutput for IdentitySubscriber<Destination>
 where
 	Destination: Subscriber,
-	In: 'static,
-	InError: 'static,
 {
-	type Out = In;
-	type OutError = InError;
+	type Out = Destination::In;
+	type OutError = Destination::InError;
 }
 
-impl<In, InError, Destination> ObserverInput for IdentitySubscriber<In, InError, Destination>
+impl<Destination> ObserverInput for IdentitySubscriber<Destination>
 where
 	Destination: Subscriber,
-	In: 'static,
-	InError: 'static,
 {
-	type In = In;
-	type InError = InError;
+	type In = Destination::In;
+	type InError = Destination::InError;
 }
 
-impl<In, InError, Destination> Observer for IdentitySubscriber<In, InError, Destination>
+impl<Destination> Observer for IdentitySubscriber<Destination>
 where
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-	In: 'static,
-	InError: 'static,
+	Destination: Subscriber,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -68,14 +55,9 @@ where
 	}
 }
 
-impl<In, InError, Destination> SubscriptionLike for IdentitySubscriber<In, InError, Destination>
+impl<Destination> SubscriptionLike for IdentitySubscriber<Destination>
 where
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-	In: 'static,
-	InError: 'static,
+	Destination: Subscriber,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -88,11 +70,9 @@ where
 	}
 }
 
-impl<In, InError, Destination> Operation for IdentitySubscriber<In, InError, Destination>
+impl<Destination> Operation for IdentitySubscriber<Destination>
 where
 	Destination: Subscriber,
-	In: 'static,
-	InError: 'static,
 {
 	type Destination = Destination;
 }

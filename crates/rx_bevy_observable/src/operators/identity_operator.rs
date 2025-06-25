@@ -51,7 +51,7 @@ where
 	InError: 'static,
 {
 	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		IdentitySubscriber<In, InError, Destination>;
+		IdentitySubscriber<Destination>;
 
 	#[inline]
 	fn operator_subscribe<

@@ -1,18 +1,18 @@
 use std::marker::PhantomData;
 
-use super::SharedSubscriber;
 use crate::{
-	Observable, Observer, ObserverInput, Operation, Subscriber, Subscription, SubscriptionLike,
+	DetachedSubscriber, Observable, Observer, ObserverInput, Operation, SharedSubscriber,
+	Subscriber, Subscription, SubscriptionLike,
 };
 
-/// TODO: Add a dedicated error mapper
+/// A subscriber that switches to new inner observables, unsubscribing from the previous one.
 pub struct SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	shared_destination: SharedSubscriber<Destination>,
+	destination: SharedSubscriber<Destination>,
 	inner_subscription: Option<Subscription>,
 	closed: bool,
 	_phantom_data: PhantomData<InnerObservable>,
@@ -25,8 +25,8 @@ where
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
+			destination: SharedSubscriber::new(destination),
 			inner_subscription: None,
-			shared_destination: SharedSubscriber::new(destination),
 			closed: false,
 			_phantom_data: PhantomData,
 		}
@@ -51,30 +51,30 @@ where
 {
 	fn next(&mut self, mut next: Self::In) {
 		if !self.is_closed() {
-			if let Some(mut inner_subscriber) = self.inner_subscription.take() {
-				inner_subscriber.unsubscribe();
+			if let Some(mut inner_subscription) = self.inner_subscription.take() {
+				inner_subscription.unsubscribe();
 			}
 
-			let destination = self.shared_destination.clone();
-			let subscription = next.subscribe(destination);
+			let subscription = next.subscribe(DetachedSubscriber::new(self.destination.clone()));
 			self.inner_subscription = Some(subscription);
 		}
 	}
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			self.shared_destination.error(error);
-
-			if let Some(mut inner_subscriber) = self.inner_subscription.take() {
-				inner_subscriber.unsubscribe();
-			}
+			self.destination.error(error);
+			self.unsubscribe();
 		}
 	}
 
 	fn complete(&mut self) {
 		if !self.is_closed() {
-			self.shared_destination.complete();
-			self.unsubscribe();
+			// If there's no active inner subscription, complete immediately
+			// Otherwise, completion will be handled when the inner subscription finishes
+			if self.inner_subscription.is_none() {
+				self.destination.complete();
+				self.unsubscribe();
+			}
 		}
 	}
 }
@@ -94,8 +94,8 @@ where
 
 	fn unsubscribe(&mut self) {
 		self.closed = true;
-		if let Some(mut inner_subscriber) = self.inner_subscription.take() {
-			inner_subscriber.unsubscribe();
+		if let Some(mut inner_subscription) = self.inner_subscription.take() {
+			inner_subscription.unsubscribe();
 		}
 	}
 }
