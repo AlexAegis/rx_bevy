@@ -53,8 +53,8 @@ where
 	#[inline]
 	fn next(&mut self, next: Self::In) {
 		match next {
-			Ok(next) => self.destination.next(next.into()),
-			Err(error) => self.destination.error(error.into()),
+			Ok(next) => self.destination.next(next),
+			Err(error) => self.destination.error(error),
 		}
 	}
 

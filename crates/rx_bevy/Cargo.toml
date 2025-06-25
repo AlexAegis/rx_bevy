@@ -39,6 +39,7 @@ pipe = [
     "rx_bevy_operator_switch_map/pipe",
     "rx_bevy_operator_take/pipe",
     "rx_bevy_operator_tap/pipe",
+    "rx_bevy_operator_try_capture/pipe",
 ]
 compose = [
     "dep:rx_bevy_operator_composite",
@@ -51,6 +52,7 @@ compose = [
     "rx_bevy_operator_switch_map/compose",
     "rx_bevy_operator_take/compose",
     "rx_bevy_operator_tap/compose",
+    "rx_bevy_operator_try_capture/compose",
 ]
 # Observables and Subjects. Not sure if a good idea, so I'm keeping it behind a feature
 inline_subscribe = [
@@ -94,6 +96,7 @@ all_operators = [
     "operator_switch_map",
     "operator_take",
     "operator_tap",
+    "operator_try_capture",
 ]
 operator_composite = ["dep:rx_bevy_operator_composite"]
 operator_filter = ["dep:rx_bevy_operator_filter"]
@@ -105,6 +108,7 @@ operator_map = ["dep:rx_bevy_operator_map"]
 operator_switch_map = ["dep:rx_bevy_operator_switch_map"]
 operator_take = ["dep:rx_bevy_operator_take"]
 operator_tap = ["dep:rx_bevy_operator_tap"]
+operator_try_capture = ["dep:rx_bevy_operator_try_capture"]
 # Subjects
 all_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["dep:rx_bevy_subject"]
@@ -136,6 +140,7 @@ rx_bevy_operator_map = { workspace = true, optional = true }
 rx_bevy_operator_switch_map = { workspace = true, optional = true }
 rx_bevy_operator_take = { workspace = true, optional = true }
 rx_bevy_operator_tap = { workspace = true, optional = true }
+rx_bevy_operator_try_capture = { workspace = true, optional = true }
 # Subjects
 rx_bevy_subject = { workspace = true, optional = true }
 rx_bevy_subject_behavior = { workspace = true, optional = true }
