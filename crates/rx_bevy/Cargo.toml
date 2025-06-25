@@ -37,6 +37,7 @@ pipe = [
     "rx_bevy_operator_lift_option/pipe",
     "rx_bevy_operator_lift_result/pipe",
     "rx_bevy_operator_map/pipe",
+    "rx_bevy_operator_skip/pipe",
     "rx_bevy_operator_switch_map/pipe",
     "rx_bevy_operator_take/pipe",
     "rx_bevy_operator_tap/pipe",
@@ -51,6 +52,7 @@ compose = [
     "rx_bevy_operator_lift_option/compose",
     "rx_bevy_operator_lift_result/compose",
     "rx_bevy_operator_map/compose",
+    "rx_bevy_operator_skip/compose",
     "rx_bevy_operator_switch_map/compose",
     "rx_bevy_operator_take/compose",
     "rx_bevy_operator_tap/compose",
@@ -96,6 +98,7 @@ all_operators = [
     "operator_lift_option",
     "operator_lift_result",
     "operator_map",
+    "operator_skip",
     "operator_switch_map",
     "operator_take",
     "operator_tap",
@@ -109,6 +112,7 @@ operator_finalize = ["dep:rx_bevy_operator_finalize"]
 operator_lift_option = ["dep:rx_bevy_operator_lift_option"]
 operator_lift_result = ["dep:rx_bevy_operator_lift_option"]
 operator_map = ["dep:rx_bevy_operator_map"]
+operator_skip = ["dep:rx_bevy_operator_map"]
 operator_switch_map = ["dep:rx_bevy_operator_switch_map"]
 operator_take = ["dep:rx_bevy_operator_take"]
 operator_tap = ["dep:rx_bevy_operator_tap"]
@@ -142,6 +146,7 @@ rx_bevy_operator_finalize = { workspace = true, optional = true }
 rx_bevy_operator_lift_option = { workspace = true, optional = true }
 rx_bevy_operator_lift_result = { workspace = true, optional = true }
 rx_bevy_operator_map = { workspace = true, optional = true }
+rx_bevy_operator_skip = { workspace = true, optional = true }
 rx_bevy_operator_switch_map = { workspace = true, optional = true }
 rx_bevy_operator_take = { workspace = true, optional = true }
 rx_bevy_operator_tap = { workspace = true, optional = true }

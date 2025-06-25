@@ -1,0 +1,18 @@
+use rx_bevy_observable::Observable;
+use rx_bevy_pipe::Pipe;
+
+use crate::SkipOperator;
+
+/// Operator creator function
+pub fn skip<In, InError>(count: usize) -> SkipOperator<In, InError> {
+	SkipOperator::new(count)
+}
+
+/// Provides a convenient function to pipe the operator from an observable
+pub trait ObservableExtensionSkip: Observable + Sized {
+	fn skip(self, count: usize) -> Pipe<Self, SkipOperator<Self::Out, Self::OutError>> {
+		Pipe::new(self, SkipOperator::new(count))
+	}
+}
+
+impl<T> ObservableExtensionSkip for T where T: Observable {}
