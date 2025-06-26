@@ -45,8 +45,9 @@ where
 		&mut self,
 		destination: Destination,
 	) -> Subscription {
+		let subscriber = destination.upgrade();
 		let mut source = (self.observable_creator)();
-		source.subscribe(destination)
+		source.subscribe(subscriber)
 	}
 }
 

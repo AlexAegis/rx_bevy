@@ -18,7 +18,9 @@ where
 
 impl<In, InError, Callback, Destination> FinalizeSubscriber<In, InError, Callback, Destination>
 where
-	Callback: FnOnce(),
+	In: 'static,
+	InError: 'static,
+	Callback: 'static + FnOnce(),
 	Destination: Subscriber,
 {
 	pub fn new(destination: Destination, callback: Callback) -> Self {
@@ -63,15 +65,21 @@ where
 	Callback: FnOnce(),
 	Destination: Subscriber,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
-		if let Some(complete) = self.callback.take() {
-			(complete)();
+		if let Some(finalize) = self.callback.take() {
+			(finalize)();
 		}
 		self.destination.unsubscribe();
+	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.destination.add(subscription);
 	}
 }
 

@@ -2,7 +2,7 @@ use rx_bevy::prelude::*;
 use rx_bevy_operator_switch_map::switch_map_extension_pipe::ObservableExtensionSwitchMap;
 
 fn main() {
-	let _s = (1..=5)
+	let _s = (1..=3)
 		.into_observable()
 		.finalize(|| println!("fir fin"))
 		.tap_next(|n| println!("1n {n}"))

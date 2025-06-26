@@ -52,6 +52,11 @@ where
 			self.destination.is_closed()
 		}
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.destination.add(subscription);
+	}
 }
 
 impl<Destination> ObserverInput for MulticastSubscriber<Destination>

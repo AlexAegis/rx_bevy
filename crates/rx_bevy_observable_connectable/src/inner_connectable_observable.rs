@@ -149,4 +149,11 @@ where
 			connector.unsubscribe();
 		}
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		if let Some(connector) = &mut self.connector {
+			connector.add(subscription);
+		}
+	}
 }

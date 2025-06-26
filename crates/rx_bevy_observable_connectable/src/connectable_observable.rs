@@ -75,6 +75,12 @@ where
 		let mut connector = self.connector.lock().expect("lockable");
 		connector.unsubscribe();
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		let mut connector = self.connector.lock().expect("lockable");
+		connector.add(subscription);
+	}
 }
 
 impl<Source, ConnectorCreator, Connector> Connectable

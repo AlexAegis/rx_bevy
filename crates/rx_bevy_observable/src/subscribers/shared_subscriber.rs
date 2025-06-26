@@ -109,6 +109,11 @@ where
 		let mut lock = self.destination.write().expect("lock is poisoned!");
 		lock.unsubscribe();
 	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		let mut lock = self.destination.write().expect("lock is poisoned!");
+		lock.add(subscription);
+	}
 }
 
 impl<Destination> Drop for SharedSubscriber<Destination>

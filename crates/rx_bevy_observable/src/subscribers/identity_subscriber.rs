@@ -66,6 +66,11 @@ where
 	fn unsubscribe(&mut self) {
 		self.destination.unsubscribe();
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.destination.add(subscription);
+	}
 }
 
 impl<Destination> Operation for IdentitySubscriber<Destination>

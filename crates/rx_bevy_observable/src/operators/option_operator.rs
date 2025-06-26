@@ -130,6 +130,17 @@ where
 			}
 		}
 	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => {
+				internal_subscriber.add(subscription);
+			}
+			OptionOperatorSubscriber::None(fallback_subscriber) => {
+				fallback_subscriber.add(subscription);
+			}
+		}
+	}
 }
 
 impl<Sub, Destination> Drop for OptionOperatorSubscriber<Sub, Destination>

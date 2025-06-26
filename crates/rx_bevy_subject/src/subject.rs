@@ -161,6 +161,13 @@ where
 			destination.unsubscribe();
 		}
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		if let Ok(mut multicast) = self.multicast.write() {
+			multicast.add(subscription);
+		}
+	}
 }
 
 impl<T, Error> Drop for Subject<T, Error>

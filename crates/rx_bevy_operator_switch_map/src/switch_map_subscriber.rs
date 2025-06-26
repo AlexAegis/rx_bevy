@@ -73,12 +73,19 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self) {
 		self.destination.unsubscribe();
+	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.destination.add(subscription);
 	}
 }
 

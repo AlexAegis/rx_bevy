@@ -10,11 +10,14 @@ pub trait SubscriptionLike {
 	fn unsubscribe(&mut self);
 
 	fn is_closed(&self) -> bool;
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike);
 }
 
 pub enum Teardown {
 	Fn(Box<dyn FnOnce()>),
 	Subscription(Box<dyn SubscriptionLike>),
+	Sub(&'static mut dyn SubscriptionLike),
 }
 
 impl Teardown {
@@ -27,6 +30,9 @@ impl Teardown {
 			Self::Fn(fun) => fun(),
 			Self::Subscription(mut subscription) => {
 				subscription.unsubscribe();
+			}
+			Self::Sub(sub) => {
+				sub.unsubscribe();
 			}
 		}
 	}
@@ -58,6 +64,12 @@ impl Subscription {
 		}
 	}
 
+	pub fn new_empty() -> Self {
+		Self {
+			inner: Arc::new(RwLock::new(InnerSubscription::new_empty())),
+		}
+	}
+
 	pub fn add(&mut self, finalizer: impl Into<Teardown>) {
 		if self.is_closed() {
 			// If the subscription is already closed, the finalizer is called immediately
@@ -79,6 +91,13 @@ impl SubscriptionLike for Subscription {
 
 	fn unsubscribe(&mut self) {
 		self.inner.write().expect("to not be locked").unsubscribe();
+	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.inner
+			.write()
+			.expect("to not be locked")
+			.add(Teardown::Sub(subscription));
 	}
 }
 
@@ -136,10 +155,24 @@ impl SubscriptionLike for InnerSubscription {
 			}
 		}
 	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.add(Teardown::Sub(subscription));
+	}
 }
 
 impl Drop for InnerSubscription {
 	fn drop(&mut self) {
 		self.unsubscribe();
 	}
+}
+
+impl SubscriptionLike for () {
+	fn is_closed(&self) -> bool {
+		true
+	}
+
+	fn unsubscribe(&mut self) {}
+
+	fn add(&mut self, _subscription: &'static mut dyn SubscriptionLike) {}
 }

@@ -60,6 +60,11 @@ where
 	fn unsubscribe(&mut self) {
 		self.subscriber.unsubscribe();
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.subscriber.add(subscription);
+	}
 }
 
 impl<Inner, Destination> ObserverInput for CompositeSubscriber<Inner, Destination>

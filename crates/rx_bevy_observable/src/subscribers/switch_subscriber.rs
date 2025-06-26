@@ -69,12 +69,10 @@ where
 
 	fn complete(&mut self) {
 		if !self.is_closed() {
-			// If there's no active inner subscription, complete immediately
-			// Otherwise, completion will be handled when the inner subscription finishes
 			if self.inner_subscription.is_none() {
 				self.destination.complete();
-				self.unsubscribe();
 			}
+			self.closed = true;
 		}
 	}
 }
@@ -88,6 +86,7 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
@@ -99,6 +98,11 @@ where
 		}
 		self.destination.unsubscribe();
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.destination.add(subscription);
+	}
 }
 
 impl<InnerObservable, Destination> Drop for SwitchSubscriber<InnerObservable, Destination>
@@ -107,6 +111,7 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
+	#[inline]
 	fn drop(&mut self) {
 		self.unsubscribe();
 	}

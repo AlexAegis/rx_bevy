@@ -72,6 +72,10 @@ where
 	fn unsubscribe(&mut self) {
 		self.destination.unsubscribe();
 	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.destination.add(subscription);
+	}
 }
 
 impl<In, InError, Destination> ObserverInput for TryCaptureSubscriber<In, InError, Destination>

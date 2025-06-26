@@ -52,11 +52,18 @@ impl<Destination> SubscriptionLike for DetachedSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self) {
 		// The subscription management is handled by the implementor
+	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.destination.add(subscription);
 	}
 }

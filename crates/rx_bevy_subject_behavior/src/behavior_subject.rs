@@ -102,11 +102,18 @@ where
 	T: 'static + Clone,
 	Error: 'static + Clone,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.subject.is_closed()
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self) {
 		self.subject.unsubscribe();
+	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.subject.add(subscription);
 	}
 }

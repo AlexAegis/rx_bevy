@@ -1,9 +1,10 @@
-use rx_bevy_observable::Subscriber;
+use rx_bevy_observable::{InnerSubscription, Subscriber, SubscriptionLike, Teardown};
 use slab::Slab;
 
 pub struct MulticastDestination<In, InError> {
 	pub(crate) slab: Slab<Box<dyn Subscriber<In = In, InError = InError>>>,
 	pub(crate) closed: bool,
+	pub(crate) teardown: InnerSubscription,
 }
 
 impl<In, InError> MulticastDestination<In, InError> {
@@ -25,6 +26,21 @@ impl<In, InError> Default for MulticastDestination<In, InError> {
 		Self {
 			slab: Slab::with_capacity(1),
 			closed: false,
+			teardown: InnerSubscription::new_empty(),
 		}
+	}
+}
+
+impl<In, InError> SubscriptionLike for MulticastDestination<In, InError> {
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
+
+	fn unsubscribe(&mut self) {
+		self.teardown.unsubscribe();
+	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.teardown.add(Teardown::Sub(subscription));
 	}
 }

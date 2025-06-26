@@ -1,13 +1,17 @@
-use crate::{ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike};
+use crate::{
+	InnerSubscription, ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike,
+	Teardown,
+};
 
 /// A simple wrapper for a plain [Observer] to make it "closeable"
-#[derive(Debug)]
+
 pub struct ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
 	pub destination: Destination,
 	pub closed: bool,
+	pub teardown: InnerSubscription,
 }
 
 impl<Destination> ObserverSubscriber<Destination>
@@ -18,6 +22,7 @@ where
 		Self {
 			destination,
 			closed: false,
+			teardown: InnerSubscription::new_empty(),
 		}
 	}
 }
@@ -74,6 +79,11 @@ where
 	fn unsubscribe(&mut self) {
 		self.closed = true;
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.teardown.add(Teardown::Sub(subscription));
+	}
 }
 
 impl<Destination> Operation for ObserverSubscriber<Destination>
@@ -91,6 +101,7 @@ where
 		Self {
 			destination,
 			closed: false,
+			teardown: InnerSubscription::new_empty(),
 		}
 	}
 }

@@ -48,7 +48,7 @@ where
 
 			if self.count == 0 {
 				self.complete();
-				self.unsubscribe();
+				//	self.unsubscribe();
 			}
 		}
 	}
@@ -79,6 +79,10 @@ where
 
 	fn unsubscribe(&mut self) {
 		self.destination.unsubscribe();
+	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.destination.add(subscription);
 	}
 }
 

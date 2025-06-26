@@ -70,6 +70,13 @@ where
 			destination.borrow_mut().unsubscribe();
 		}
 	}
+
+	#[inline]
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		if let Some(destination) = self.destination.upgrade() {
+			destination.borrow_mut().add(subscription);
+		}
+	}
 }
 
 impl<Destination> Drop for WeakSubscriber<Destination>
