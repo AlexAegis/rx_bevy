@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use std::sync::{Arc, RwLock};
 
 use smallvec::SmallVec;
 
@@ -41,12 +41,48 @@ where
 	}
 }
 
-pub struct Subscription {
+pub struct InnerSubscription {
 	is_closed: bool,
 	finalizers: SmallVec<[Teardown; 1]>,
 }
 
+#[derive(Clone)]
+pub struct Subscription {
+	inner: Arc<RwLock<InnerSubscription>>,
+}
+
 impl Subscription {
+	pub fn new(finalizer: impl Into<Teardown>) -> Self {
+		Self {
+			inner: Arc::new(RwLock::new(InnerSubscription::new(finalizer))),
+		}
+	}
+
+	pub fn add(&mut self, finalizer: impl Into<Teardown>) {
+		if self.is_closed() {
+			// If the subscription is already closed, the finalizer is called immediately
+			finalizer.into().call();
+		} else {
+			self.inner
+				.write()
+				.expect("not locked")
+				.finalizers
+				.push(finalizer.into());
+		}
+	}
+}
+
+impl SubscriptionLike for Subscription {
+	fn is_closed(&self) -> bool {
+		self.inner.read().expect("to not be locked").is_closed
+	}
+
+	fn unsubscribe(&mut self) {
+		self.inner.write().expect("to not be locked").unsubscribe();
+	}
+}
+
+impl InnerSubscription {
 	pub fn new(finalizer: impl Into<Teardown>) -> Self {
 		let teardown = finalizer.into();
 
@@ -86,7 +122,7 @@ impl Subscription {
 	}
 }
 
-impl SubscriptionLike for Subscription {
+impl SubscriptionLike for InnerSubscription {
 	fn is_closed(&self) -> bool {
 		self.is_closed
 	}
@@ -102,22 +138,8 @@ impl SubscriptionLike for Subscription {
 	}
 }
 
-impl Drop for Subscription {
+impl Drop for InnerSubscription {
 	fn drop(&mut self) {
 		self.unsubscribe();
-	}
-}
-
-impl<T, Target> SubscriptionLike for T
-where
-	Target: SubscriptionLike,
-	T: DerefMut<Target = Target>,
-{
-	fn is_closed(&self) -> bool {
-		self.deref().is_closed()
-	}
-
-	fn unsubscribe(&mut self) {
-		self.deref_mut().unsubscribe();
 	}
 }

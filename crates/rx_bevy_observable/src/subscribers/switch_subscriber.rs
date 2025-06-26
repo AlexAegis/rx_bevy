@@ -97,6 +97,7 @@ where
 		if let Some(mut inner_subscription) = self.inner_subscription.take() {
 			inner_subscription.unsubscribe();
 		}
+		self.destination.unsubscribe();
 	}
 }
 

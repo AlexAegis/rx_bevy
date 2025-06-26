@@ -32,6 +32,8 @@ where
 	fn error(&mut self, error: InError) {
 		if let Some(on_error) = &mut self.on_error {
 			(on_error)(error);
+		} else {
+			panic!("Unhandled error!");
 		}
 	}
 

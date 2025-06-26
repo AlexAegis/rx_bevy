@@ -25,7 +25,12 @@ where
 {
 	fn next(&mut self, _next: Self::In) {}
 
-	fn error(&mut self, _error: Self::InError) {}
+	fn error(&mut self, _error: Self::InError) {
+		#[cfg(feature = "panic_on_error")]
+		{
+			panic!("noop observer observed an error!")
+		}
+	}
 
 	fn complete(&mut self) {}
 }

@@ -10,7 +10,6 @@ where
 {
 	destination: Destination,
 	count: usize,
-	index: usize,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -27,7 +26,6 @@ where
 		Self {
 			destination,
 			count,
-			index: 0,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -44,11 +42,11 @@ where
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		if self.index <= self.count {
-			self.index += 1;
+		if self.count > 0 {
+			self.count -= 1;
 			self.destination.next(next);
 
-			if self.index == self.count {
+			if self.count == 0 {
 				self.complete();
 				self.unsubscribe();
 			}

@@ -9,5 +9,5 @@ fn main() {
 
 	let observer = DynFnObserver::default().with_next(|next| println!("{next}"));
 
-	pipe.subscribe(observer);
+	let _s = pipe.subscribe(observer);
 }
