@@ -38,6 +38,8 @@ pub use rx_bevy_operator_lift_option::*;
 pub use rx_bevy_operator_lift_result::*;
 #[cfg(feature = "operator_map")]
 pub use rx_bevy_operator_map::*;
+#[cfg(feature = "operator_map_into")]
+pub use rx_bevy_operator_map_into::*;
 #[cfg(feature = "operator_skip")]
 pub use rx_bevy_operator_skip::*;
 #[cfg(feature = "operator_switch_map")]
@@ -95,6 +97,8 @@ pub mod prelude {
 	pub use rx_bevy_operator_lift_result::prelude::*;
 	#[cfg(feature = "operator_map")]
 	pub use rx_bevy_operator_map::prelude::*;
+	#[cfg(feature = "operator_map_into")]
+	pub use rx_bevy_operator_map_into::prelude::*;
 	#[cfg(feature = "operator_skip")]
 	pub use rx_bevy_operator_skip::prelude::*;
 	#[cfg(feature = "operator_switch_map")]

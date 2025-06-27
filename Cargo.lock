@@ -2913,9 +2913,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.9.0"
+version = "2.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cea70ddb795996207ad57735b50c5982d8844f38ba9ee5f1aedcfb708a2aa11e"
+checksum = "fe4cd85333e22411419a0bcae1297d25e58c9443848b11dc6a86fefe8c78a661"
 dependencies = [
  "equivalent",
  "hashbrown",
@@ -4485,6 +4485,7 @@ dependencies = [
  "rx_bevy_operator_lift_option",
  "rx_bevy_operator_lift_result",
  "rx_bevy_operator_map",
+ "rx_bevy_operator_map_into",
  "rx_bevy_operator_skip",
  "rx_bevy_operator_switch_map",
  "rx_bevy_operator_take",
@@ -4659,6 +4660,17 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_operator_map"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_operator_composite",
+ "rx_bevy_pipe",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_operator_map_into"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
