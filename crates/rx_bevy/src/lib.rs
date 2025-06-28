@@ -7,6 +7,8 @@ pub use rx_bevy_observable_connectable::*;
 pub use rx_bevy_observable_deferred::*;
 #[cfg(feature = "observable_iterator")]
 pub use rx_bevy_observable_iterator::*;
+#[cfg(feature = "observable_merge")]
+pub use rx_bevy_observable_merge::*;
 #[cfg(feature = "observable_of")]
 pub use rx_bevy_observable_of::*;
 #[cfg(feature = "observable_throw")]
@@ -66,6 +68,8 @@ pub mod prelude {
 	pub use rx_bevy_observable_deferred::prelude::*;
 	#[cfg(feature = "observable_iterator")]
 	pub use rx_bevy_observable_iterator::prelude::*;
+	#[cfg(feature = "observable_merge")]
+	pub use rx_bevy_observable_merge::prelude::*;
 	#[cfg(feature = "observable_of")]
 	pub use rx_bevy_observable_of::prelude::*;
 	#[cfg(feature = "observable_throw")]

@@ -72,17 +72,8 @@ where
 
 		let mut multicast_destination = self.multicast.write().expect("Poisoned!");
 
-		let key = {
-			let entry = multicast_destination.slab.vacant_entry();
-			let key = entry.key();
-			let subscriber = MulticastSubscriber::<Destination::Subscriber> {
-				key,
-				destination: subscriber,
-				subscriber_ref: self.multicast.clone(),
-			};
-			entry.insert(Box::new(subscriber));
-			key
-		};
+		let key = multicast_destination
+			.multicast_subscribe::<Destination>(subscriber, self.multicast.clone());
 
 		let multicast_ref = self.multicast.clone();
 		Subscription::new(Teardown::Fn(Box::new(move || {

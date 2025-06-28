@@ -10,12 +10,22 @@ where
 	OfObservable::new(value)
 }
 
-impl<Out> ObservableOutput for OfObservable<Out>
+/// Emits a single value then immediately completes
+#[derive(Clone)]
+pub struct OfObservable<Out>
 where
-	Out: 'static + Clone,
+	Out: Clone,
 {
-	type Out = Out;
-	type OutError = ();
+	value: Out,
+}
+
+impl<Out> OfObservable<Out>
+where
+	Out: Clone,
+{
+	pub fn new(value: Out) -> Self {
+		Self { value }
+	}
 }
 
 impl<Out> Observable for OfObservable<Out>
@@ -35,22 +45,12 @@ where
 	}
 }
 
-/// Emits a single value then immediately completes
-#[derive(Clone)]
-pub struct OfObservable<Out>
+impl<Out> ObservableOutput for OfObservable<Out>
 where
-	Out: Clone,
+	Out: 'static + Clone,
 {
-	value: Out,
-}
-
-impl<Out> OfObservable<Out>
-where
-	Out: Clone,
-{
-	pub fn new(value: Out) -> Self {
-		Self { value }
-	}
+	type Out = Out;
+	type OutError = ();
 }
 
 #[cfg(test)]
