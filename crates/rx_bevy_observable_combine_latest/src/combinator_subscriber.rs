@@ -24,7 +24,7 @@ where
 	O2Error(O2::OutError),
 }
 
-pub struct InnerCombinatorSubscriber<Destination, O1, O2>
+pub struct CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
 	O1: 'static + Observable,
@@ -37,7 +37,7 @@ where
 	destination: Destination,
 }
 
-impl<Destination, O1, O2> InnerCombinatorSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
 	O1: 'static + Observable,
@@ -46,7 +46,7 @@ where
 	O2::Out: Clone,
 {
 	pub fn new(destination: Destination) -> Self {
-		InnerCombinatorSubscriber {
+		CombineLatestSubscriber {
 			o1_val: None,
 			o2_val: None,
 			destination,
@@ -54,7 +54,7 @@ where
 	}
 }
 
-impl<Destination, O1, O2> ObserverInput for InnerCombinatorSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> ObserverInput for CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
 	O1: 'static + Observable,
@@ -66,7 +66,7 @@ where
 	type InError = EitherError<O1, O2>;
 }
 
-impl<Destination, O1, O2> Observer for InnerCombinatorSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> Observer for CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
 	O1: 'static + Observable,
@@ -100,7 +100,7 @@ where
 	}
 }
 
-impl<Destination, O1, O2> SubscriptionLike for InnerCombinatorSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> SubscriptionLike for CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
 	O1: 'static + Observable,
@@ -121,7 +121,7 @@ where
 	}
 }
 
-impl<Destination, O1, O2> Operation for InnerCombinatorSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> Operation for CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
 	O1: 'static + Observable,

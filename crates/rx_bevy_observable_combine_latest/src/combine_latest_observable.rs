@@ -2,7 +2,9 @@ use rx_bevy_observable::{
 	Observable, ObservableOutput, RcSubscriber, Subscription, UpgradeableObserver,
 };
 
-use crate::{EitherEmission, EitherError, InnerCombinatorSubscriber, IntoVariantSubscriber};
+use crate::{
+	CombineLatestSubscriber, EitherError, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
+};
 
 pub fn combine_latest<O1, O2>(observable_1: O1, observable_2: O2) -> CombineLatest<O1, O2>
 where
@@ -68,26 +70,22 @@ where
 		Self: Sized,
 	{
 		let mut subscription = Subscription::new_empty();
-		let upgraded_subscriber = destination.upgrade();
 
-		let s =
-			InnerCombinatorSubscriber::<Destination::Subscriber, O1, O2>::new(upgraded_subscriber);
+		let rc_subscriber = RcSubscriber::new(CombineLatestSubscriber::<
+			Destination::Subscriber,
+			O1,
+			O2,
+		>::new(destination.upgrade()));
 
-		let rc_subscriber = RcSubscriber::new(s);
+		subscription.add(
+			self.observable_1
+				.subscribe(IntoVariant1of2Subscriber::new(rc_subscriber.clone())),
+		);
 
-		let s1 = self.observable_1.subscribe(IntoVariantSubscriber::new(
-			rc_subscriber.clone(),
-			|inp| EitherEmission::O1(inp),
-			|in_error| EitherError::O1Error(in_error),
-		));
-		subscription.add(s1);
-
-		let s2 = self.observable_2.subscribe(IntoVariantSubscriber::new(
-			rc_subscriber.clone(),
-			|inp| EitherEmission::O2(inp),
-			|in_error| EitherError::O2Error(in_error),
-		));
-		subscription.add(s2);
+		subscription.add(
+			self.observable_2
+				.subscribe(IntoVariant2of2Subscriber::new(rc_subscriber.clone())),
+		);
 
 		subscription
 	}
