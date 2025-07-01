@@ -4,7 +4,6 @@ use crate::{
 };
 
 /// A simple wrapper for a plain [Observer] to make it "closeable"
-
 pub struct ObserverSubscriber<Destination>
 where
 	Destination: Observer,

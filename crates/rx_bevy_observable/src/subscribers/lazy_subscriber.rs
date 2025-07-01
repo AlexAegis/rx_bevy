@@ -8,12 +8,21 @@ where
 	Initialized(Destination),
 }
 
+impl<Destination> Default for LazySubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn default() -> Self {
+		Self::Empty
+	}
+}
+
 impl<Destination> LazySubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	pub fn new() -> Self {
-		Self::Empty
+		Self::default()
 	}
 
 	pub fn new_initialized(destination: Destination) -> Self {

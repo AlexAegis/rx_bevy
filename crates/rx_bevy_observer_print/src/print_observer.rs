@@ -1,9 +1,6 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use rx_bevy_observable::{
-	InnerSubscription, Observer, ObserverInput, SubscriptionLike, Teardown, UpgradeableObserver,
-	prelude::ObserverSubscriber,
-};
+use rx_bevy_observable::{InnerSubscription, Observer, ObserverInput, SubscriptionLike, Teardown};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct PrintObserver<In, InError = ()>
@@ -34,7 +31,7 @@ where
 
 	fn get_prefix(&self) -> String {
 		self.prefix
-			.map(|prefix| format!("{} - ", prefix))
+			.map(|prefix| format!("{prefix} - "))
 			.unwrap_or_default()
 	}
 }

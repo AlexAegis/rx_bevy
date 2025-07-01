@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	Observable, ObservableOutput, SharedRcSubscriber, Subscription, UpgradeableObserver,
+	Observable, ObservableOutput, RcSubscriber, Subscription, UpgradeableObserver,
 };
 use rx_bevy_operator_map_into::MapIntoSubscriber;
 
@@ -95,7 +95,7 @@ where
 	{
 		let mut subscription = Subscription::new_empty();
 
-		let rc_subscriber = SharedRcSubscriber::new(destination.upgrade());
+		let rc_subscriber = RcSubscriber::new(destination.upgrade());
 
 		let s1 = self
 			.observable_1

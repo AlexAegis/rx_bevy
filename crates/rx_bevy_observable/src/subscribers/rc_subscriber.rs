@@ -2,7 +2,8 @@ use std::sync::{Arc, RwLock};
 
 use crate::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
-/// Does not do reference counting by itself, use [SharedRcSubscriber]
+/// Internal to [RcSubscriber]
+#[doc(hidden)]
 pub struct RcDestination<Destination>
 where
 	Destination: Subscriber,
@@ -23,18 +24,14 @@ where
 	Destination: Subscriber,
 {
 	fn new(destination: Destination) -> Self {
-		let (new_count, new_closed) = if destination.is_closed() {
-			(1, true)
-		} else {
-			(0, false)
-		};
+		let is_already_closed = destination.is_closed();
 
 		Self {
 			destination,
 			ref_count: 1,
-			completion_count: new_count,
-			unsubscribe_count: new_count,
-			closed: new_closed,
+			completion_count: is_already_closed.into(),
+			unsubscribe_count: is_already_closed.into(),
+			closed: is_already_closed,
 		}
 	}
 
@@ -121,18 +118,16 @@ where
 	}
 }
 
-/// TODO: Maybe instead of a weak boolean, a different type would be more correct, and simpler, for now fuck it
-pub struct SharedRcSubscriber<Destination>
+pub struct RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	destination: Arc<RwLock<RcDestination<Destination>>>,
-	weak: bool,
 	completed: bool,
 	unsubscribed: bool,
 }
 
-impl<Destination> From<Destination> for SharedRcSubscriber<Destination>
+impl<Destination> From<Destination> for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
@@ -141,14 +136,13 @@ where
 	}
 }
 
-impl<Destination> SharedRcSubscriber<Destination>
+impl<Destination> RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
 			destination: Arc::new(RwLock::new(RcDestination::new(destination))),
-			weak: false,
 			completed: false,
 			unsubscribed: false,
 		}
@@ -170,36 +164,35 @@ where
 		reader(&mut self.destination.write().expect("poisoned"))
 	}
 
-	/// Clone without incrementing the reference counter
-	pub fn weak_clone(&self) -> Self {
-		Self {
+	/// Acquire a clone to the same reference which will not interact with
+	/// the reference counts, and only attempts to complete or unsubscribe it
+	/// when it too completes or unsubscribes. And can still be used as a
+	/// subscriber
+	pub fn downgrade(&self) -> WeakRcSubscriber<Destination> {
+		WeakRcSubscriber {
 			destination: self.destination.clone(),
-			weak: true,
-			completed: self.completed,
-			unsubscribed: self.unsubscribed,
+			closed: self.completed || self.unsubscribed,
 		}
 	}
 }
 
-impl<Destination> Clone for SharedRcSubscriber<Destination>
+impl<Destination> Clone for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	fn clone(&self) -> Self {
-		if !self.weak {
-			let mut destination = self.destination.write().expect("lock is poisoned!");
-			destination.ref_count += 1;
+		let mut destination = self.destination.write().expect("lock is poisoned!");
+		destination.ref_count += 1;
 
-			if self.completed {
-				destination.completion_count += 1;
-			}
+		if self.completed {
+			destination.completion_count += 1;
+		}
 
-			if self.unsubscribed {
-				destination.unsubscribe_count += 1;
-			}
-		};
+		if self.unsubscribed {
+			destination.unsubscribe_count += 1;
+		}
+
 		Self {
-			weak: self.weak,
 			completed: self.completed,
 			unsubscribed: self.completed,
 			destination: self.destination.clone(),
@@ -207,7 +200,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for SharedRcSubscriber<Destination>
+impl<Destination> ObserverInput for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
@@ -215,7 +208,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> Observer for SharedRcSubscriber<Destination>
+impl<Destination> Observer for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
@@ -242,7 +235,7 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for SharedRcSubscriber<Destination>
+impl<Destination> SubscriptionLike for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
@@ -264,23 +257,21 @@ where
 	}
 }
 
-impl<Destination> Drop for SharedRcSubscriber<Destination>
+impl<Destination> Drop for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	fn drop(&mut self) {
 		let mut lock = self.destination.write().expect("lock is poisoned!");
 
-		if !self.weak {
-			lock.ref_count -= 1;
+		lock.ref_count -= 1;
 
-			if self.completed {
-				lock.completion_count -= 1;
-			}
+		if self.completed {
+			lock.completion_count -= 1;
+		}
 
-			if self.unsubscribed {
-				lock.unsubscribe_count -= 1;
-			}
+		if self.unsubscribed {
+			lock.unsubscribe_count -= 1;
 		}
 
 		lock.complete_if_can();
@@ -288,7 +279,135 @@ where
 	}
 }
 
-impl<Destination> Operation for SharedRcSubscriber<Destination>
+impl<Destination> Operation for RcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	type Destination = Destination;
+}
+
+/// Acquired by calling `downgrade` on `RcSubscriber`
+pub struct WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	destination: Arc<RwLock<RcDestination<Destination>>>,
+	closed: bool,
+}
+
+impl<Destination> WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	/// Let's you check the shared observer for the duration of the callback
+	pub fn read<F>(&mut self, reader: F)
+	where
+		F: Fn(&RcDestination<Destination>),
+	{
+		if let Ok(destination) = self.destination.try_read() {
+			reader(&destination)
+		}
+	}
+
+	/// Let's you check the shared observer for the duration of the callback
+	pub fn read_mut<F>(&mut self, mut reader: F)
+	where
+		F: FnMut(&mut RcDestination<Destination>),
+	{
+		if let Ok(mut destination) = self.destination.try_write() {
+			reader(&mut destination)
+		}
+	}
+}
+
+impl<Destination> Clone for WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn clone(&self) -> Self {
+		Self {
+			closed: self.closed,
+			destination: self.destination.clone(),
+		}
+	}
+}
+
+impl<Destination> ObserverInput for WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	type In = Destination::In;
+	type InError = Destination::InError;
+}
+
+impl<Destination> Observer for WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn next(&mut self, next: Self::In) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.try_write() {
+				lock.next(next);
+			}
+		}
+	}
+
+	fn error(&mut self, error: Self::InError) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.try_write() {
+				lock.error(error);
+			}
+			self.unsubscribe();
+		}
+	}
+
+	fn complete(&mut self) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.try_write() {
+				lock.complete();
+			}
+			self.unsubscribe();
+		}
+	}
+}
+
+impl<Destination> SubscriptionLike for WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
+
+	fn unsubscribe(&mut self) {
+		if !self.is_closed() {
+			self.closed = true;
+			if let Ok(mut lock) = self.destination.try_write() {
+				lock.unsubscribe();
+			}
+		}
+	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		if let Ok(mut lock) = self.destination.try_write() {
+			lock.add(subscription);
+		}
+	}
+}
+
+impl<Destination> Drop for WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn drop(&mut self) {
+		if let Ok(mut lock) = self.destination.try_write() {
+			lock.complete_if_can();
+			lock.unsubscribe_if_can();
+		}
+	}
+}
+
+impl<Destination> Operation for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
