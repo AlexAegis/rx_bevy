@@ -1,6 +1,8 @@
 pub use rx_bevy_observable::*;
 
 // Observables
+#[cfg(feature = "observable_combine_latest")]
+pub use rx_bevy_observable_combine_latest::*;
 #[cfg(feature = "observable_connectable")]
 pub use rx_bevy_observable_connectable::*;
 #[cfg(feature = "observable_deferred")]
@@ -62,6 +64,8 @@ pub mod prelude {
 	pub use rx_bevy_observable::prelude::*;
 
 	// Observables
+	#[cfg(feature = "observable_combine_latest")]
+	pub use rx_bevy_observable_combine_latest::prelude::*;
 	#[cfg(feature = "observable_connectable")]
 	pub use rx_bevy_observable_connectable::prelude::*;
 	#[cfg(feature = "observable_deferred")]
