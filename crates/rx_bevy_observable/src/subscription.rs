@@ -52,6 +52,15 @@ pub struct InnerSubscription {
 	finalizers: SmallVec<[Teardown; 1]>,
 }
 
+impl Default for InnerSubscription {
+	fn default() -> Self {
+		Self {
+			finalizers: SmallVec::new(),
+			is_closed: false,
+		}
+	}
+}
+
 #[derive(Clone)]
 pub struct Subscription {
 	inner: Arc<RwLock<InnerSubscription>>,

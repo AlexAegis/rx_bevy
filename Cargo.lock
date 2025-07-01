@@ -4509,6 +4509,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_observable_collection"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
 name = "rx_bevy_observable_connectable"
 version = "0.1.0"
 dependencies = [
@@ -4543,10 +4552,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_observable",
  "rx_bevy_operator_map_into",
- "rx_bevy_subject",
  "rx_bevy_testing",
- "slab",
- "variadics_please",
 ]
 
 [[package]]

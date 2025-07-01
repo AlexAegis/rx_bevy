@@ -78,6 +78,7 @@ where
 
 	fn unsubscribe(&mut self) {
 		self.closed = true;
+		self.teardown.unsubscribe();
 	}
 
 	#[inline]

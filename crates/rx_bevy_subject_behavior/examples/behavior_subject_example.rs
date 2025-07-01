@@ -11,7 +11,7 @@ fn main() {
 
 	subject.next(12);
 
-	subject
+	let _s1 = subject
 		.clone() // Clone since piping needs an owned value, it's still a shared reference over the same set of subscribers
 		.map(|next| next * 2)
 		.subscribe(PrintObserver::<i32>::new("hi double"));

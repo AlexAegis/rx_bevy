@@ -1,7 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_bevy_observable::{
-	Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber,
+	InnerSubscription, Observer, ObserverInput, SubscriptionLike, Teardown, UpgradeableObserver,
+	prelude::ObserverSubscriber,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -11,6 +12,9 @@ where
 	InError: Debug,
 {
 	prefix: Option<&'static str>,
+
+	closed: bool,
+	teardown: InnerSubscription,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -22,6 +26,8 @@ where
 	pub fn new(message: &'static str) -> Self {
 		Self {
 			prefix: Some(message),
+			closed: false,
+			teardown: InnerSubscription::new_empty(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -41,6 +47,8 @@ where
 	fn default() -> Self {
 		Self {
 			prefix: None,
+			closed: false,
+			teardown: InnerSubscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -73,14 +81,24 @@ where
 	}
 }
 
-impl<In, InError> UpgradeableObserver for PrintObserver<In, InError>
+impl<In, InError> SubscriptionLike for PrintObserver<In, InError>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
 {
-	type Subscriber = ObserverSubscriber<Self>;
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
 
-	fn upgrade(self) -> Self::Subscriber {
-		ObserverSubscriber::new(self)
+	fn unsubscribe(&mut self) {
+		if !self.closed {
+			self.closed = true;
+			self.teardown.unsubscribe();
+			println!("{}unsubscribed", self.get_prefix());
+		}
+	}
+
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+		self.teardown.add(Teardown::Sub(subscription));
 	}
 }

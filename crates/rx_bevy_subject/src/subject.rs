@@ -5,7 +5,7 @@ use rx_bevy_observable::{
 	SubscriptionLike, Teardown, UpgradeableObserver,
 };
 
-use crate::{MulticastDestination, MulticastSubscriber};
+use crate::MulticastDestination;
 
 /// A Subject is a shared multicast observer, can be used for broadcasting,
 /// A subjects clone still multicasts to the same set of subscribers.

@@ -6,7 +6,7 @@ fn main() {
 
 	println!("example 1");
 
-	let mut subscription_1 = subject.clone().subscribe(PrintObserver::<i32>::new(
+	let mut _subscription_1 = subject.clone().subscribe(PrintObserver::<i32>::new(
 		"subject_example (subscription 1)",
 	));
 
@@ -15,7 +15,7 @@ fn main() {
 	subject.next(12);
 	subject.next(43);
 	println!("example 4");
-	// subscription_1.unsubscribe();
+	// _subscription_1.unsubscribe();
 	println!("example 5");
 	subject.next(11);
 	subject.complete();

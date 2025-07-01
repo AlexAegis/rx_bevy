@@ -4,6 +4,6 @@ use rx_bevy::prelude::*;
 fn main() {
 	let observable_1 = (1..=3).into_observable();
 	let observable_2 = (4..=6).into_observable();
-	let _s = merge(ObservableBundle2(observable_1, observable_2))
+	let _s = merge(observable_1, observable_2)
 		.subscribe(PrintObserver::<i32, ()>::new("merge_operator"));
 }
