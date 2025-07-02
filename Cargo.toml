@@ -76,6 +76,7 @@ rx_bevy_observable_iterator = { path = "crates/rx_bevy_observable_iterator" }
 rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
 rx_bevy_observable_merge = { path = "crates/rx_bevy_observable_merge" }
 rx_bevy_observable_throw = { path = "crates/rx_bevy_observable_throw" }
+rx_bevy_observable_zip = { path = "crates/rx_bevy_observable_zip" }
 # Pipes
 rx_bevy_pipe = { path = "crates/rx_bevy_pipe" }
 # Observers

@@ -5,19 +5,19 @@ use rx_bevy_observable::{
 	Observable, ObservableOutput, RcSubscriber, Subscription, UpgradeableObserver,
 };
 
-use crate::CombineLatestSubscriber;
+use crate::ZipSubscriber;
 
-pub fn combine_latest<O1, O2>(observable_1: O1, observable_2: O2) -> CombineLatest<O1, O2>
+pub fn zip<O1, O2>(observable_1: O1, observable_2: O2) -> Zip<O1, O2>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	CombineLatest::new(observable_1, observable_2)
+	Zip::new(observable_1, observable_2)
 }
 
-pub struct CombineLatest<O1, O2>
+pub struct Zip<O1, O2>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
@@ -28,7 +28,7 @@ where
 	observable_2: O2,
 }
 
-impl<O1, O2> CombineLatest<O1, O2>
+impl<O1, O2> Zip<O1, O2>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
@@ -43,7 +43,7 @@ where
 	}
 }
 
-impl<O1, O2> ObservableOutput for CombineLatest<O1, O2>
+impl<O1, O2> ObservableOutput for Zip<O1, O2>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
@@ -54,7 +54,7 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<O1, O2> Observable for CombineLatest<O1, O2>
+impl<O1, O2> Observable for Zip<O1, O2>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
@@ -72,11 +72,9 @@ where
 	{
 		let mut subscription = Subscription::new_empty();
 
-		let rc_subscriber = RcSubscriber::new(CombineLatestSubscriber::<
-			Destination::Subscriber,
-			O1,
-			O2,
-		>::new(destination.upgrade()));
+		let rc_subscriber = RcSubscriber::new(
+			ZipSubscriber::<Destination::Subscriber, O1, O2>::new(destination.upgrade()),
+		);
 
 		subscription.add(
 			self.observable_1

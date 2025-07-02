@@ -70,6 +70,7 @@ inline_subscribe = [
     "rx_bevy_observable_merge/inline_subscribe",
     "rx_bevy_observable_of/inline_subscribe",
     "rx_bevy_observable_throw/inline_subscribe",
+    "rx_bevy_observable_zip/inline_subscribe",
     "rx_bevy_subject/inline_subscribe",
     "rx_bevy_subject_behavior/inline_subscribe",
     "rx_bevy_subject_replay/inline_subscribe",
@@ -83,6 +84,7 @@ all_observables = [
     "observable_merge",
     "observable_of",
     "observable_throw",
+    "observable_zip",
 ]
 observable_combine_latest = ["dep:rx_bevy_observable_combine_latest"]
 observable_connectable = ["dep:rx_bevy_observable_connectable"]
@@ -91,6 +93,7 @@ observable_iterator = ["dep:rx_bevy_observable_iterator"]
 observable_merge = ["dep:rx_bevy_observable_merge"]
 observable_of = ["dep:rx_bevy_observable_of"]
 observable_throw = ["dep:rx_bevy_observable_throw"]
+observable_zip = ["dep:rx_bevy_observable_zip"]
 # Observers
 all_observers = ["observer_noop", "observer_print", "observer_fn"]
 observer_fn = ["dep:rx_bevy_observer_fn"]
@@ -143,6 +146,7 @@ rx_bevy_observable_iterator = { workspace = true, optional = true }
 rx_bevy_observable_merge = { workspace = true, optional = true }
 rx_bevy_observable_of = { workspace = true, optional = true }
 rx_bevy_observable_throw = { workspace = true, optional = true }
+rx_bevy_observable_zip = { workspace = true, optional = true }
 # Pipe
 rx_bevy_pipe = { workspace = true, optional = true }
 # Observers

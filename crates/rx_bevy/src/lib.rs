@@ -15,6 +15,8 @@ pub use rx_bevy_observable_merge::*;
 pub use rx_bevy_observable_of::*;
 #[cfg(feature = "observable_throw")]
 pub use rx_bevy_observable_throw::*;
+#[cfg(feature = "observable_zip")]
+pub use rx_bevy_observable_zip::*;
 // Pipe
 #[cfg(feature = "pipe")]
 pub use rx_bevy_pipe::*;
@@ -78,6 +80,8 @@ pub mod prelude {
 	pub use rx_bevy_observable_of::prelude::*;
 	#[cfg(feature = "observable_throw")]
 	pub use rx_bevy_observable_throw::prelude::*;
+	#[cfg(feature = "observable_zip")]
+	pub use rx_bevy_observable_zip::prelude::*;
 	// Pipe
 	#[cfg(feature = "pipe")]
 	pub use rx_bevy_pipe::prelude::*;

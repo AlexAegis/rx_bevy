@@ -1,6 +1,9 @@
 use rx_bevy::prelude::*;
 
-/// The tap operator is used to peek inside a stream without changing its behavior
+/// The [CombineLatestObserver] combines the latest values from multiple observables
+/// Notice that in the output, 1, and 2 is not present, that's because
+/// the first observable emits all of its values immediately upon subscription,
+/// before the second one could even start listening.
 fn main() {
 	let mut subject_1 = Subject::<i32>::default();
 	let mut subject_2 = Subject::<i32>::default();
