@@ -4,35 +4,35 @@ use rx_bevy_observable::{
 
 /// Emits a single value then immediately completes
 #[derive(Clone)]
-pub struct IteratorObservable<Iterator, Out>
+pub struct IteratorObservable<Iterator>
 where
-	Iterator: Clone + IntoIterator<Item = Out>,
+	Iterator: Clone + IntoIterator,
 {
 	iterator: Iterator,
 }
 
-impl<Iterator, Out> IteratorObservable<Iterator, Out>
+impl<Iterator> IteratorObservable<Iterator>
 where
-	Iterator: Clone + IntoIterator<Item = Out>,
+	Iterator: Clone + IntoIterator,
 {
 	pub fn new(iterator: Iterator) -> Self {
 		Self { iterator }
 	}
 }
 
-impl<Iterator, Out> ObservableOutput for IteratorObservable<Iterator, Out>
+impl<Iterator> ObservableOutput for IteratorObservable<Iterator>
 where
-	Iterator: Clone + IntoIterator<Item = Out>,
-	Out: 'static,
+	Iterator: Clone + IntoIterator,
+	Iterator::Item: 'static + Clone,
 {
-	type Out = Out;
+	type Out = Iterator::Item;
 	type OutError = ();
 }
 
-impl<Iterator, Out> Observable for IteratorObservable<Iterator, Out>
+impl<Iterator> Observable for IteratorObservable<Iterator>
 where
-	Iterator: Clone + IntoIterator<Item = Out>,
-	Out: 'static + Clone,
+	Iterator: Clone + IntoIterator,
+	Iterator::Item: 'static + Clone,
 {
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
