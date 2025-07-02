@@ -5,7 +5,7 @@ use rx_bevy_observable::{
 	Observable, ObservableOutput, RcSubscriber, Subscription, UpgradeableObserver,
 };
 
-use crate::ZipSubscriber;
+use crate::{ZipSubscriber, ZipSubscriberOptions};
 
 pub fn zip<O1, O2>(observable_1: O1, observable_2: O2) -> Zip<O1, O2>
 where
@@ -24,6 +24,7 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
+	options: ZipSubscriberOptions,
 	observable_1: O1,
 	observable_2: O2,
 }
@@ -37,9 +38,15 @@ where
 {
 	pub fn new(observable_1: O1, observable_2: O2) -> Self {
 		Self {
+			options: ZipSubscriberOptions::default(),
 			observable_1,
 			observable_2,
 		}
+	}
+
+	pub fn with_options(mut self, options: ZipSubscriberOptions) -> Self {
+		self.options = options;
+		self
 	}
 }
 
@@ -72,9 +79,11 @@ where
 	{
 		let mut subscription = Subscription::new_empty();
 
-		let rc_subscriber = RcSubscriber::new(
-			ZipSubscriber::<Destination::Subscriber, O1, O2>::new(destination.upgrade()),
-		);
+		let rc_subscriber =
+			RcSubscriber::new(ZipSubscriber::<Destination::Subscriber, O1, O2>::new(
+				destination.upgrade(),
+				self.options.clone(),
+			));
 
 		subscription.add(
 			self.observable_1
