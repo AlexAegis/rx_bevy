@@ -240,13 +240,19 @@ where
 	Destination: Subscriber,
 {
 	fn is_closed(&self) -> bool {
-		self.completed || self.unsubscribed
+		let is_this_clone_closed = self.completed || self.unsubscribed;
+
+		is_this_clone_closed || {
+			let lock = self.destination.read().expect("lock is poisoned");
+			lock.is_closed()
+		}
 	}
 
 	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
 			self.unsubscribed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
+
 			lock.unsubscribe();
 		}
 	}

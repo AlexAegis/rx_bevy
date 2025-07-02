@@ -61,6 +61,7 @@ where
 
 	#[inline]
 	fn complete(&mut self) {
+		self.destination.next(EitherOut2::CompleteO1);
 		self.destination.complete();
 	}
 }
@@ -186,6 +187,7 @@ where
 
 	#[inline]
 	fn complete(&mut self) {
+		self.destination.next(EitherOut2::CompleteO2);
 		self.destination.complete();
 	}
 }

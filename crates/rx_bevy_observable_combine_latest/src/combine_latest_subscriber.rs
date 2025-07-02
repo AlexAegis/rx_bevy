@@ -61,6 +61,8 @@ where
 			EitherOut2::O2(o2_next) => {
 				self.o2_val.replace(o2_next);
 			}
+			// Completions are ignored
+			_ => {}
 		}
 
 		if let Some((o1_val, o2_val)) = self.o1_val.as_ref().zip(self.o2_val.as_ref()) {
@@ -109,16 +111,4 @@ where
 	O2::Out: Clone,
 {
 	type Destination = Destination;
-}
-
-pub enum EitherObservable<Destination, O1, O2>
-where
-	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	O1((O1, Destination)),
-	O2((O2, Destination)),
 }

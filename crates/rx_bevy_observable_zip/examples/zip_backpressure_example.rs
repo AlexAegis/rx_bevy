@@ -1,4 +1,4 @@
-use rx_bevy::{ZipSubscriberDropBehavior, ZipSubscriberOptions, prelude::*};
+use rx_bevy::{QueueOverflowBehavior, ZipSubscriberOptions, prelude::*};
 
 /// The [ZipObservable] combines values from multiple observables, grouping
 /// their emissions in the order they were emitted. That is, the first emission
@@ -11,7 +11,7 @@ fn main() {
 	let _s = zip(observable_1, observable_2)
 		.with_options(ZipSubscriberOptions {
 			max_queue_length: 2, // Since the first observable immediately fires all 3 of its values, the first emission `1` will be dropped, and nothing will pair up with 6
-			drop_behavior: ZipSubscriberDropBehavior::Old,
+			overflow_behavior: QueueOverflowBehavior::DropOldest,
 		})
 		.subscribe(
 			DynFnObserver::default()
