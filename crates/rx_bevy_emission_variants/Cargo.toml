@@ -1,6 +1,6 @@
 [package]
-name = "rx_bevy_observable_combine_latest"
-description = "combine_latest observable for rx_bevy"
+name = "rx_bevy_emission_variants"
+description = "emission variants for rx_bevy used for observable combinators"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -23,7 +23,7 @@ inline_subscribe = []
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
-rx_bevy_emission_variants = { workspace = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

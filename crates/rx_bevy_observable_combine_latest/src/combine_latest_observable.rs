@@ -1,11 +1,11 @@
+use rx_bevy_emission_variants::{
+	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
+};
 use rx_bevy_observable::{
 	Observable, ObservableOutput, RcSubscriber, Subscription, UpgradeableObserver,
 };
 
-use crate::{
-	CombineLatestSubscriber, EitherError, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
-};
-
+use crate::CombineLatestSubscriber;
 pub fn combine_latest<O1, O2>(observable_1: O1, observable_2: O2) -> CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
@@ -50,7 +50,7 @@ where
 	O2::Out: Clone,
 {
 	type Out = (O1::Out, O2::Out);
-	type OutError = EitherError<O1, O2>;
+	type OutError = EitherOutError2<O1, O2>;
 }
 
 impl<O1, O2> Observable for CombineLatest<O1, O2>

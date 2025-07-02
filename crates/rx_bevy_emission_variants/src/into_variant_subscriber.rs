@@ -4,7 +4,7 @@ use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
 };
 
-use crate::{EitherEmission, EitherError};
+use crate::{EitherOut2, EitherOutError2};
 
 pub struct IntoVariant1of2Subscriber<O1, O2, Destination>
 where
@@ -51,12 +51,12 @@ where
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		self.destination.next(EitherEmission::O1(next));
+		self.destination.next(EitherOut2::O1(next));
 	}
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error(EitherError::O1Error(error));
+		self.destination.error(EitherOutError2::O1Error(error));
 	}
 
 	#[inline]
@@ -113,8 +113,8 @@ where
 	O2::Out: Clone,
 	Destination: Subscriber,
 {
-	type Out = EitherEmission<O1, O2>;
-	type OutError = EitherError<O1, O2>;
+	type Out = EitherOut2<O1, O2>;
+	type OutError = EitherOutError2<O1, O2>;
 }
 
 impl<O1, O2, Destination> Operation for IntoVariant1of2Subscriber<O1, O2, Destination>
@@ -176,12 +176,12 @@ where
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		self.destination.next(EitherEmission::O2(next));
+		self.destination.next(EitherOut2::O2(next));
 	}
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error(EitherError::O2Error(error));
+		self.destination.error(EitherOutError2::O2Error(error));
 	}
 
 	#[inline]
@@ -238,8 +238,8 @@ where
 	O2::Out: Clone,
 	Destination: Subscriber,
 {
-	type Out = EitherEmission<O1, O2>;
-	type OutError = EitherError<O1, O2>;
+	type Out = EitherOut2<O1, O2>;
+	type OutError = EitherOutError2<O1, O2>;
 }
 
 impl<O1, O2, Destination> Operation for IntoVariant2of2Subscriber<O1, O2, Destination>

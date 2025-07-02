@@ -4501,6 +4501,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_emission_variants"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_bevy",
+ "rx_bevy_observable",
+ "rx_bevy_testing",
+]
+
+[[package]]
 name = "rx_bevy_observable"
 version = "0.1.0"
 dependencies = [
@@ -4522,8 +4532,8 @@ dependencies = [
 name = "rx_bevy_observable_combine_latest"
 version = "0.1.0"
 dependencies = [
- "derive-where",
  "rx_bevy",
+ "rx_bevy_emission_variants",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]

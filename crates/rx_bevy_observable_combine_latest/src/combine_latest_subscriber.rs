@@ -1,32 +1,11 @@
+use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 use rx_bevy_observable::{
 	Observable, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
 };
 
-#[derive(Debug)]
-pub enum EitherEmission<O1, O2>
-where
-	O1: Observable,
-	O2: Observable,
-{
-	O1(O1::Out),
-	O2(O2::Out),
-}
-
-#[derive(Debug)]
-pub enum EitherError<O1, O2>
-where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	O1Error(O1::OutError),
-	O2Error(O2::OutError),
-}
-
 pub struct CombineLatestSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
@@ -39,7 +18,7 @@ where
 
 impl<Destination, O1, O2> CombineLatestSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
@@ -56,19 +35,19 @@ where
 
 impl<Destination, O1, O2> ObserverInput for CombineLatestSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type In = EitherEmission<O1, O2>;
-	type InError = EitherError<O1, O2>;
+	type In = EitherOut2<O1, O2>;
+	type InError = EitherOutError2<O1, O2>;
 }
 
 impl<Destination, O1, O2> Observer for CombineLatestSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
@@ -76,10 +55,10 @@ where
 {
 	fn next(&mut self, next: Self::In) {
 		match next {
-			EitherEmission::O1(o1_next) => {
+			EitherOut2::O1(o1_next) => {
 				self.o1_val.replace(o1_next);
 			}
-			EitherEmission::O2(o2_next) => {
+			EitherOut2::O2(o2_next) => {
 				self.o2_val.replace(o2_next);
 			}
 		}
@@ -102,7 +81,7 @@ where
 
 impl<Destination, O1, O2> SubscriptionLike for CombineLatestSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
@@ -123,7 +102,7 @@ where
 
 impl<Destination, O1, O2> Operation for CombineLatestSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherError<O1, O2>>,
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
@@ -134,7 +113,7 @@ where
 
 pub enum EitherObservable<Destination, O1, O2>
 where
-	Destination: Subscriber<In = EitherEmission<O1, O2>, InError = EitherError<O1, O2>>,
+	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
