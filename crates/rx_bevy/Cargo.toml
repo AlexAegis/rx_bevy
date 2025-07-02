@@ -27,6 +27,8 @@ default = [
 ]
 dev = []
 example = ["dev"]
+# All Bevy specific features, Components, Schedulers. If not enabled, bevy is not used as a dependency.
+bevy = []
 pipe = [
     "dep:rx_bevy_pipe",
     "rx_bevy_operator_composite/pipe",

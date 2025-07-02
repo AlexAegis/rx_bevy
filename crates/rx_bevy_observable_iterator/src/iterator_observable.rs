@@ -23,7 +23,7 @@ where
 impl<Iterator> ObservableOutput for IteratorObservable<Iterator>
 where
 	Iterator: Clone + IntoIterator,
-	Iterator::Item: 'static + Clone,
+	Iterator::Item: 'static,
 {
 	type Out = Iterator::Item;
 	type OutError = ();
@@ -32,7 +32,7 @@ where
 impl<Iterator> Observable for IteratorObservable<Iterator>
 where
 	Iterator: Clone + IntoIterator,
-	Iterator::Item: 'static + Clone,
+	Iterator::Item: 'static,
 {
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,

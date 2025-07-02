@@ -33,7 +33,7 @@ incremental = true
 debug = 0
 
 [workspace.dependencies]
-bevy = { version = "0.16", default-features = false, features = [
+bevy = { version = "0.17.0-dev", git = "https://github.com/bevyengine/bevy", branch = "main", default-features = false, features = [
     "multi_threaded",
     "bevy_core_pipeline",
     "bevy_asset",
@@ -102,3 +102,5 @@ rx_bevy_operator_try_capture = { path = "crates/rx_bevy_operator_try_capture" }
 rx_bevy_subject = { path = "crates/rx_bevy_subject" }
 rx_bevy_subject_behavior = { path = "crates/rx_bevy_subject_behavior" }
 rx_bevy_subject_replay = { path = "crates/rx_bevy_subject_replay" }
+# Bevy
+rx_bevy_plugin = { path = "crates/rx_bevy_plugin" }
