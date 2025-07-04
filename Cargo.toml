@@ -33,7 +33,7 @@ incremental = true
 debug = 0
 
 [workspace.dependencies]
-bevy = { version = "0.17.0-dev", git = "https://github.com/bevyengine/bevy", branch = "main", default-features = false, features = [
+bevy = { version = "0.16.1", default-features = false, features = [
     "multi_threaded",
     "bevy_core_pipeline",
     "bevy_asset",

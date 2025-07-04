@@ -11,4 +11,5 @@ impl Plugin for RxPlugin {
 
 fn tick() {
 	println!("tick");
+	// flush stuff!
 }

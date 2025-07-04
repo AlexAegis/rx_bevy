@@ -21,6 +21,7 @@ dev = []
 example = ["dev"]
 inline_subscribe = []
 
+
 [dependencies]
 smallvec = { workspace = true }
 

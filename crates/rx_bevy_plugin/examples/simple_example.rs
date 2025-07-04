@@ -1,9 +1,16 @@
-use bevy::prelude::*;
+use std::{
+	marker::PhantomData,
+	ops::{Deref, RangeInclusive},
+};
+
+use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use examples_common::send_event;
+
 use rx_bevy_plugin::{
-	EntityCommandObservableExtension, EntityObserver, EntitySubscriptionDestination,
-	InternalEntityObserver, IteratorObservableComponent, OnNext,
+	CommandQuerySubscriber, IteratorObservableComponent, RxNext, Subscribe, SubscriberEntity,
+	SubscriptionComponent, flush_subscriptions_system, subscribe_to,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -16,8 +23,27 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 		))
+		.register_type::<CommandQuerySubscriber<i32, ()>>()
+		.register_type::<SubscriptionComponent<i32, ()>>()
+		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
+		.add_systems(
+			Update,
+			send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
+		)
+		.add_systems(Update, flush_subscriptions_system::<i32, ()>)
+		.add_observer(subscribe_to::<IteratorObservableComponent<RangeInclusive<i32>>>)
 		.run()
+}
+
+fn next_number_observer(next: Trigger<RxNext<i32>>) {
+	println!("value observed: {:?} by {:?}", next.event(), next.target());
+}
+
+#[derive(Resource, Reflect)]
+struct ExampleEntities {
+	observable_entity: Entity,
+	observer_entity: Entity,
 }
 
 fn setup(
@@ -30,6 +56,16 @@ fn setup(
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
+	let observer_entity = commands
+		.spawn((
+			Name::new("Other Cube"),
+			Transform::from_xyz(-1.0, 0.0, 4.0),
+			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
+		))
+		.observe(next_number_observer)
+		.id();
+
 	let observable_entity = commands
 		.spawn((
 			Name::new("IteratorObservable"),
@@ -38,31 +74,15 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 			IteratorObservableComponent::new(1..=10),
 		))
-		.subscribe(EntityObserver {
-			// Mybe an On<Subscribe> event handler/observer to define how a subscription/pipeline is made??
-			destination: EntitySubscriptionDestination::This,
-			/// TODO:This probably should just define an event type and use a reguler observer system with On<Next<Signal>>
-			on_next_system: next_number_observer,
-		})
+		.trigger(
+			Subscribe::<IteratorObservableComponent<RangeInclusive<i32>>>::new(
+				SubscriberEntity::Other(observer_entity),
+			),
+		)
 		.id();
 
-	let observer_entity = commands
-		.spawn((
-			Name::new("IteratorObservable"),
-			Transform::from_xyz(-1.0, 0.0, 0.0),
-			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
-			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-		))
-		.subscribe(EntitySubscriptionDestination::Other(observable_entity))
-		.id();
-}
-
-#[derive(Event, Debug)]
-pub struct NumberSignal {
-	value: i32,
-}
-
-/// TODO: Trigger<Next<NumberSignal>> ?
-fn next_number_observer(next: OnNext<NumberSignal>) {
-	println!("value observed: {:?}", next.value);
+	commands.insert_resource(ExampleEntities {
+		observable_entity,
+		observer_entity,
+	});
 }

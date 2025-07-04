@@ -3,7 +3,7 @@ use rx_bevy_observable::{
 };
 
 /// Emits a single value then immediately completes
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct IteratorObservable<Iterator>
 where
 	Iterator: Clone + IntoIterator,
