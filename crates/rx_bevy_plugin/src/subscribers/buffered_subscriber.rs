@@ -18,7 +18,7 @@ where
 }
 
 #[derive(Debug, Reflect)]
-pub struct CommandQuerySubscriber<In, InError>
+pub struct RxBufferedSubscriber<In, InError>
 where
 	In: 'static + Send + Sync,
 	InError: 'static + Send + Sync,
@@ -30,7 +30,7 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError> CommandQuerySubscriber<In, InError>
+impl<In, InError> RxBufferedSubscriber<In, InError>
 where
 	In: 'static + Send + Sync,
 	InError: 'static + Send + Sync,
@@ -64,7 +64,8 @@ where
 		flushed_something
 	}
 }
-impl<In, InError> ObserverInput for CommandQuerySubscriber<In, InError>
+
+impl<In, InError> ObserverInput for RxBufferedSubscriber<In, InError>
 where
 	In: 'static + Send + Sync,
 	InError: 'static + Send + Sync,
@@ -73,7 +74,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> rx_bevy::Observer for CommandQuerySubscriber<In, InError>
+impl<In, InError> rx_bevy::Observer for RxBufferedSubscriber<In, InError>
 where
 	In: 'static + Send + Sync,
 	InError: 'static + Send + Sync,
@@ -93,7 +94,7 @@ where
 	}
 }
 
-impl<In, InError> rx_bevy::SubscriptionLike for CommandQuerySubscriber<In, InError>
+impl<In, InError> rx_bevy::SubscriptionLike for RxBufferedSubscriber<In, InError>
 where
 	In: 'static + Send + Sync,
 	InError: 'static + Send + Sync,

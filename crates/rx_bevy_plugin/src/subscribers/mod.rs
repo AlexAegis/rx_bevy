@@ -1,3 +1,3 @@
-mod command_query_subscription;
+mod buffered_subscriber;
 
-pub use command_query_subscription::*;
+pub use buffered_subscriber::*;

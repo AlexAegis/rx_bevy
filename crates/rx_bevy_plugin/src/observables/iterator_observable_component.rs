@@ -1,4 +1,4 @@
-use crate::{CommandQuerySubscriber, ObservableComponent, SubscriptionComponent};
+use crate::{ObservableComponent, RxBufferedSubscriber, SubscriptionComponent};
 use bevy::prelude::*;
 use rx_bevy::Observer;
 use rx_bevy::prelude::*;
@@ -28,8 +28,8 @@ where
 {
 	fn component_subscribe(
 		&mut self,
-		mut subscriber: CommandQuerySubscriber<Self::Out, Self::OutError>,
-	) -> SubscriptionComponent<Self::Out, Self::OutError> {
+		mut subscriber: RxBufferedSubscriber<Self::Out, Self::OutError>,
+	) -> Option<SubscriptionComponent<Self::Out, Self::OutError>> {
 		for item in self.iterator.clone().into_iter() {
 			if subscriber.is_closed() {
 				break;
@@ -37,7 +37,7 @@ where
 			subscriber.next(item);
 		}
 
-		SubscriptionComponent::new(subscriber)
+		Some(SubscriptionComponent::new(subscriber))
 	}
 }
 

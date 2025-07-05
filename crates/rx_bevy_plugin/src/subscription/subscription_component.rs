@@ -1,7 +1,17 @@
-use bevy::prelude::*;
+use bevy::{ecs::component::Mutable, prelude::*};
+use rx_bevy::SubscriptionLike;
 
-use crate::CommandQuerySubscriber;
+use crate::RxBufferedSubscriber;
 
+pub trait SubscriptionComponentLike: Component<Mutability = Mutable> {
+	fn is_closed(&self) -> bool;
+
+	fn unsubscribe(&mut self);
+
+	fn flush(&mut self, commands: &mut Commands) -> bool;
+}
+
+// TODO: This should be able to hold multiple subscriptions, for multiple observing entities, instead of just one
 #[derive(Component, Debug, Reflect)]
 pub struct SubscriptionComponent<In, InError>
 where
@@ -9,25 +19,10 @@ where
 	InError: 'static + Send + Sync,
 {
 	// TODO: Teardown events
-	subscriber: CommandQuerySubscriber<In, InError>,
+	subscriber: RxBufferedSubscriber<In, InError>,
 }
 
-impl<In, InError> SubscriptionComponent<In, InError>
-where
-	In: 'static + Send + Sync,
-	InError: 'static + Send + Sync,
-{
-	pub fn new(subscriber: CommandQuerySubscriber<In, InError>) -> Self {
-		Self { subscriber }
-	}
-
-	pub fn flush(&mut self, commands: &mut Commands) -> bool {
-		self.subscriber.flush(commands)
-	}
-}
-
-// TODO Maybe this trait too will need to be ecs specific, due to the add method
-impl<In, InError> rx_bevy::SubscriptionLike for SubscriptionComponent<In, InError>
+impl<In, InError> SubscriptionComponentLike for SubscriptionComponent<In, InError>
 where
 	In: 'static + Send + Sync,
 	InError: 'static + Send + Sync,
@@ -40,16 +35,25 @@ where
 		self.subscriber.unsubscribe();
 	}
 
-	fn add(&mut self, _subscription: &'static mut dyn rx_bevy::SubscriptionLike) {}
+	fn flush(&mut self, commands: &mut Commands) -> bool {
+		self.subscriber.flush(commands)
+	}
 }
 
-pub fn flush_subscriptions_system<In, InError>(
-	mut subscription_query: Query<&mut SubscriptionComponent<In, InError>>,
-	mut commands: Commands,
-) where
-	In: Send + Sync + std::fmt::Debug,
-	InError: Send + Sync + std::fmt::Debug,
+impl<In, InError> SubscriptionComponent<In, InError>
+where
+	In: 'static + Send + Sync,
+	InError: 'static + Send + Sync,
 {
+	pub fn new(subscriber: RxBufferedSubscriber<In, InError>) -> Self {
+		Self { subscriber }
+	}
+}
+
+pub fn flush_subscriptions_system<C: SubscriptionComponentLike>(
+	mut subscription_query: Query<&mut C>,
+	mut commands: Commands,
+) {
 	for mut subscription in subscription_query.iter_mut() {
 		subscription.flush(&mut commands);
 	}
