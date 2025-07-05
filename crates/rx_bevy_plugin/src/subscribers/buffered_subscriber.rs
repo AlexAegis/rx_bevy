@@ -18,6 +18,7 @@ where
 }
 
 #[derive(Debug, Reflect)]
+#[deprecated]
 pub struct RxBufferedSubscriber<In, InError>
 where
 	In: 'static + Send + Sync,

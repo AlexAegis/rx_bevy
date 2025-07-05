@@ -1,13 +1,13 @@
 use std::ops::RangeInclusive;
 
-use bevy::{ecs::observer::ObservedBy, input::common_conditions::input_just_pressed, prelude::*};
+use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
 
 use rx_bevy_plugin::{
-	IteratorObservableComponent, RxBufferedSubscriber, RxNext, SubjectComponent, Subscribe,
-	SubscriberEntity, SubscriptionComponent, flush_subscriptions_system, subscribe_to,
+	IteratorObservableComponent, RxNext, SubjectComponent, Subscribe, SubscriberEntity,
+	SubscriptionComponent,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -20,7 +20,6 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 		))
-		.register_type::<RxBufferedSubscriber<i32, ()>>()
 		.register_type::<SubscriptionComponent<i32, ()>>()
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -28,16 +27,6 @@ fn main() -> AppExit {
 			Update,
 			send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 		)
-		.add_systems(
-			Update,
-			(
-				flush_subscriptions_system::<SubscriptionComponent<i32, ()>>,
-				flush_subscriptions_system::<SubjectComponent<i32, ()>>,
-			)
-				.chain(),
-		)
-		.add_observer(subscribe_to::<IteratorObservableComponent<RangeInclusive<i32>>>)
-		.add_observer(subscribe_to::<SubjectComponent<i32, ()>>)
 		.run()
 }
 
@@ -96,6 +85,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 			SubjectComponent::<i32, ()>::new(),
 		))
+		.observe(next_number_observer)
 		.trigger(Subscribe::<SubjectComponent<i32, ()>>::new(
 			SubscriberEntity::Other(observer_entity),
 		))

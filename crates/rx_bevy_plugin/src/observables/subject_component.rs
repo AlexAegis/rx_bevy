@@ -1,41 +1,36 @@
-use crate::{ObservableComponent, RxBufferedSubscriber, SubscriptionComponent};
-use crate::{RxNext, SubscriptionComponentLike};
-use bevy::ecs::component::HookContext;
-use bevy::ecs::world::DeferredWorld;
+use crate::RxNext;
+use crate::{
+	ObservableComponent, ObservableOnInsertContext, ObservableOnSubscribeContext,
+	SubscriptionComponent, setup_observable_hook,
+};
+use bevy::ecs::component::{Mutable, StorageType};
 use bevy::prelude::*;
-use rx_bevy::Observer;
 use rx_bevy::prelude::*;
-use smallvec::SmallVec;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
-#[derive(Component, Debug)]
-#[component(on_insert=on_subject_insert::<In, InError>)]
+/// A component that turns an entity into a multicast source, can observe
+/// multiple other observables, and other entities can subscribe to it.
+#[derive(Debug)]
 pub struct SubjectComponent<In, InError>
 where
 	In: 'static + Send + Sync + Clone,
 	InError: 'static + Send + Sync + Clone,
 {
-	subscribers: SmallVec<[RxBufferedSubscriber<In, InError>; 2]>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-fn on_subject_insert<In, InError>(mut world: DeferredWorld, hook_context: HookContext)
+impl<In, InError> Component for SubjectComponent<In, InError>
 where
 	In: 'static + Send + Sync + Clone,
 	InError: 'static + Send + Sync + Clone,
 {
-	let mut commands = world.commands();
-	let mut entity = commands.entity(hook_context.entity);
-	// TODO(bevy-0.17): the created observer should be tied to this subject
-	entity.observe(
-		move |trigger: Trigger<RxNext<In>>,
-		      mut subject_query: Query<&mut SubjectComponent<In, InError>>| {
-			if let Ok(mut subject_component) = subject_query.get_mut(hook_context.entity) {
-				subject_component.next(trigger.event().0.clone());
-			}
-		},
-	);
+	const STORAGE_TYPE: bevy::ecs::component::StorageType = StorageType::Table;
+	type Mutability = Mutable;
+
+	fn on_insert() -> Option<bevy::ecs::component::ComponentHook> {
+		Some(setup_observable_hook::<Self>)
+	}
 }
 
 impl<In, InError> SubjectComponent<In, InError>
@@ -45,7 +40,6 @@ where
 {
 	pub fn new() -> Self {
 		Self {
-			subscribers: SmallVec::new(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -56,61 +50,47 @@ where
 	In: 'static + Send + Sync + Clone,
 	InError: 'static + Send + Sync + Clone,
 {
-	fn component_subscribe(
+	/// A Subject is also an observer, so if subscriptions to itself were
+	/// allowed, an infinite loop would happen
+	const CAN_SELF_SUBSCRIBE: bool = false;
+
+	fn on_insert(&mut self, commands: &mut Commands, context: ObservableOnInsertContext) {
+		// TODO: this could be turned into an Commands method, as the only variable here is the observer-system
+		commands.entity(context.observable_entity).insert(
+			bevy_ecs::prelude::Observer::new(subject_observer::<In, InError>)
+				.with_entity(context.observable_entity),
+		);
+	}
+
+	// TODO: Return value should describe how to clean up
+	fn on_subscribe(
 		&mut self,
-		subscriber: RxBufferedSubscriber<Self::Out, Self::OutError>,
-	) -> Option<SubscriptionComponent<Self::Out, Self::OutError>> {
-		self.subscribers.push(subscriber);
-		None
+		_commands: &mut Commands,
+		_subscription_context: ObservableOnSubscribeContext,
+	) {
 	}
 }
 
-impl<In, InError> SubscriptionComponentLike for SubjectComponent<In, InError>
-where
+fn subject_observer<In, InError>(
+	trigger: Trigger<RxNext<In>>,
+	mut subject_query: Query<
+		&mut SubscriptionComponent<In, InError>,
+		With<SubjectComponent<In, InError>>,
+	>,
+	mut commands: Commands,
+) where
 	In: 'static + Send + Sync + Clone,
 	InError: 'static + Send + Sync + Clone,
 {
-	fn is_closed(&self) -> bool {
-		self.subscribers.iter().all(|s| s.is_closed())
-	}
+	let Ok(subscription) = subject_query.get_mut(trigger.target()) else {
+		return;
+	};
 
-	fn unsubscribe(&mut self) {
-		for mut subscriber in self.subscribers.drain(..) {
-			subscriber.unsubscribe();
-		}
-	}
-
-	fn flush(&mut self, commands: &mut Commands) -> bool {
-		let mut flushed_something = true;
-		for subscriber in self.subscribers.iter_mut() {
-			flushed_something = flushed_something && subscriber.flush(commands);
-		}
-		flushed_something
-	}
-}
-
-impl<In, InError> Observer for SubjectComponent<In, InError>
-where
-	In: 'static + Send + Sync + Clone,
-	InError: 'static + Send + Sync + Clone,
-{
-	fn next(&mut self, next: Self::In) {
-		for subscriber in self.subscribers.iter_mut() {
-			subscriber.next(next.clone());
-		}
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		for subscriber in self.subscribers.iter_mut() {
-			subscriber.error(error.clone());
-		}
-	}
-
-	fn complete(&mut self) {
-		for subscriber in self.subscribers.iter_mut() {
-			subscriber.complete();
-		}
-	}
+	// This could easily cause an infinite loop if not for CAN_SELF_SUBSCRIBE
+	commands.trigger_targets(
+		trigger.event().clone(),
+		subscription.get_subscriber_entities(),
+	);
 }
 
 impl<In, InError> ObserverInput for SubjectComponent<In, InError>

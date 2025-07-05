@@ -4792,7 +4792,9 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_ecs",
  "bevy_egui",
+ "derive-where",
  "examples_common",
  "rx_bevy",
  "rx_bevy_observable",
