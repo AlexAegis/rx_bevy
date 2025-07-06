@@ -7,7 +7,6 @@ use examples_common::send_event;
 
 use rx_bevy_plugin::{
 	IteratorObservableComponent, RxNext, SubjectComponent, Subscribe, SubscriberEntity,
-	SubscriptionComponent,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -20,7 +19,6 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 		))
-		.register_type::<SubscriptionComponent<i32, ()>>()
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
 		.add_systems(
@@ -45,6 +43,7 @@ struct ExampleEntities {
 	observer_entity: Entity,
 	another_observer_entity: Entity,
 	subject_entity: Entity,
+	another_observable_entity: Entity,
 }
 
 fn setup(
@@ -100,7 +99,7 @@ fn setup(
 			Transform::from_xyz(-1.0, 0.0, 0.0),
 			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			IteratorObservableComponent::new(1..=10),
+			IteratorObservableComponent::new(1..=2),
 		))
 		.trigger(
 			Subscribe::<IteratorObservableComponent<RangeInclusive<i32>>>::new(
@@ -109,10 +108,28 @@ fn setup(
 		)
 		.id();
 
+	let another_observable_entity = commands
+		.spawn((
+			Name::new("AnotherIteratorObservable"),
+			Transform::from_xyz(-1.0, 0.0, 0.0),
+			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
+			IteratorObservableComponent::new(10..=11),
+		))
+		.trigger(
+			Subscribe::<IteratorObservableComponent<RangeInclusive<i32>>>::new(
+				SubscriberEntity::Other(subject_entity),
+			),
+		)
+		.id();
+
+	println!("spawned");
+
 	commands.insert_resource(ExampleEntities {
 		observable_entity,
 		observer_entity,
 		another_observer_entity,
 		subject_entity,
+		another_observable_entity,
 	});
 }

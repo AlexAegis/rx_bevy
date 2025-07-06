@@ -3,6 +3,7 @@ use bevy::{
 	prelude::{Deref, DerefMut},
 };
 
+// TODO: Join these into a single enum if you don't want to spawn 3 of observer entities
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
 pub struct RxNext<In>(pub In)
 where

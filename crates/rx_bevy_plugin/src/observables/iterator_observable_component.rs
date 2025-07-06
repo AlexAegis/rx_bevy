@@ -1,60 +1,123 @@
-use crate::{ObservableComponent, ObservableOnSubscribeContext, setup_observable_hook};
-use crate::{ObservableOnInsertContext, RxNext};
+use crate::{DebugBound, ObservableOnInsertContext, ObservableOnRxEventContext, RxNext};
+use crate::{
+	ObservableComponent, ObservableOnSubscribeContext, ObservableSignalBound,
+	ScheduledSubscription, on_observable_insert_hook, on_observable_remove_hook,
+};
 use bevy::ecs::component::{Mutable, StorageType};
 use bevy::prelude::*;
 
 use derive_where::derive_where;
 use rx_bevy::prelude::*;
 
-// TODO: This could be combined into a single derive for ObservableComponent
-#[derive(Clone)]
-// TODO(bevy-0.17): Derive Component && #[component(on_insert = setup_observable::<Self>(on_subscribe))]
+#[cfg_attr(feature = "debug", derive(Debug))]
+pub struct IteratorObservableSubscriber<Iterator>
+where
+	Iterator: 'static + IntoIterator + Send + Sync,
+	Iterator::Item: 'static + ObservableSignalBound,
+{
+	iterator: Iterator,
+}
+
+impl<Iterator> ObservableOutput for IteratorObservableSubscriber<Iterator>
+where
+	Iterator: 'static + IntoIterator + Send + Sync,
+	Iterator::Item: 'static + ObservableSignalBound,
+{
+	type Out = Iterator::Item;
+	type OutError = ();
+}
+
+impl<Iterator> ScheduledSubscription for IteratorObservableSubscriber<Iterator>
+where
+	Iterator: 'static + IntoIterator + Send + Sync + DebugBound,
+	Iterator::Item: 'static + ObservableSignalBound,
+{
+	fn on_event(&mut self, event: RxNext<Self::Out>, context: ObservableOnRxEventContext) {
+		println!(
+			"IteratorObservableSubscriber on event should not receive one! {:?}",
+			event
+		);
+	}
+}
+
+#[derive(Clone, Reflect)]
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
 pub struct IteratorObservableComponent<Iterator>
 where
 	Iterator: 'static + Clone + IntoIterator + Send + Sync,
-	Iterator::Item: 'static + Send + Sync,
+	Iterator::Item: 'static + ObservableSignalBound,
 {
 	iterator: Iterator,
+	/// One on One relationship, will spawn and despawn together
+	subscribe_observer_entity: Option<Entity>,
 }
 
 /// TODO: Abstract this away, this is what makes an ObservableComponent Subscribable
 impl<Iterator> Component for IteratorObservableComponent<Iterator>
 where
-	Iterator: 'static + Clone + IntoIterator + Send + Sync,
-	Iterator::Item: 'static + Send + Sync,
+	Iterator: 'static + Clone + IntoIterator + Send + Sync + DebugBound,
+	Iterator::Item: 'static + ObservableSignalBound,
 {
 	const STORAGE_TYPE: bevy::ecs::component::StorageType = StorageType::Table;
 	type Mutability = Mutable;
 
-	fn on_insert() -> Option<bevy::ecs::component::ComponentHook> {
-		Some(setup_observable_hook::<Self>)
+	fn register_component_hooks(hooks: &mut bevy_ecs::component::ComponentHooks) {
+		hooks.on_insert(on_observable_insert_hook::<Self>);
+		hooks.on_remove(on_observable_remove_hook::<Self>);
 	}
 }
 
 impl<Iterator> IteratorObservableComponent<Iterator>
 where
 	Iterator: 'static + Clone + IntoIterator + Send + Sync,
-	Iterator::Item: 'static + Send + Sync,
+	Iterator::Item: 'static + ObservableSignalBound,
 {
 	pub fn new(iterator: Iterator) -> Self {
-		Self { iterator }
+		Self {
+			iterator,
+			subscribe_observer_entity: None,
+		}
 	}
 }
 
 impl<Iterator> ObservableComponent for IteratorObservableComponent<Iterator>
 where
-	Iterator: 'static + Clone + IntoIterator + Send + Sync,
-	Iterator::Item: 'static + Send + Sync,
+	Iterator: 'static + Clone + IntoIterator + Send + Sync + DebugBound,
+	Iterator::Item: 'static + ObservableSignalBound,
 {
 	const CAN_SELF_SUBSCRIBE: bool = true;
 
-	fn on_insert(&mut self, _commands: &mut Commands, _context: ObservableOnInsertContext) {}
+	type ScheduledSubscription = IteratorObservableSubscriber<Iterator>;
 
-	fn on_subscribe(&mut self, commands: &mut Commands, context: ObservableOnSubscribeContext) {
+	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
+		self.subscribe_observer_entity
+	}
+
+	fn set_subscribe_observer_entity(&mut self, subscribe_observer_entity: Entity) {
+		self.subscribe_observer_entity = Some(subscribe_observer_entity);
+	}
+
+	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
+
+	fn on_subscribe<Destination: rx_bevy::Observer<In = Self::Out, InError = Self::OutError>>(
+		&mut self,
+		mut destination: Destination,
+
+		_context: ObservableOnSubscribeContext,
+	) -> Self::ScheduledSubscription {
+		//for item in self.iterator.clone().into_iter() {
+		//	context
+		//		.commands
+		//		.trigger_targets(RxNext(item), context.subscriber_entity);
+		//}
+
 		for item in self.iterator.clone().into_iter() {
-			commands.trigger_targets(RxNext(item), context.subscriber_entity);
+			destination.next(item);
+		}
+
+		IteratorObservableSubscriber {
+			iterator: self.iterator.clone(),
 		}
 	}
 }
@@ -62,7 +125,7 @@ where
 impl<Iterator> ObservableOutput for IteratorObservableComponent<Iterator>
 where
 	Iterator: 'static + Clone + IntoIterator + Send + Sync,
-	Iterator::Item: 'static + Send + Sync,
+	Iterator::Item: 'static + ObservableSignalBound,
 {
 	type Out = Iterator::Item;
 	type OutError = ();

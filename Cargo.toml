@@ -62,6 +62,7 @@ num-traits = { version = "0.2.19" }
 petgraph = { version = "0.8.2" }
 variadics_please = { version = "1.1.0" }
 either = { version = "1.15.0" }
+short_type_name = { path = "crates/short_type_name" }
 bevy_kit_action = { path = "crates/bevy_kit_action" }
 examples_common = { path = "crates/examples_common" }
 # Core
