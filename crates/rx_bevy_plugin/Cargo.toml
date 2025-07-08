@@ -18,7 +18,7 @@ workspace = true
 [features]
 default = ["dev", "reflect", "debug"]
 dev = ["bevy/dynamic_linking", "inspector"]
-debug = []
+debug = ["bevy/track_location"]
 serialize = []
 example = [
     "dev",

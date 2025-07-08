@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, system::Commands};
 use rx_bevy::{ObservableOutput, ObserverInput};
 
-use crate::{DebugBound, ObservableOnRxEventContext, RxComplete, RxError, RxNext};
+use crate::{DebugBound, RxComplete, RxError, RxNext, RxTick, SubscriptionOnTickContext};
 
 // TODO: Should be schedulable, probably from the Subscribe event, like schedule asap, once per frame, and time (maybe two, one ticked when AT LEAST a time passes, or when the current frame is expected to end after that limit)
 pub trait ScheduledSubscription: ObservableOutput + DebugBound
@@ -12,7 +12,8 @@ where
 	Self::Out: Send + Sync,
 	Self::OutError: Send + Sync,
 {
-	fn on_event(&mut self, event: RxNext<Self::Out>, context: ObservableOnRxEventContext);
+	fn on_event(&mut self, event: RxNext<Self::Out>, context: SubscriptionOnTickContext);
+	fn on_tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext);
 }
 
 pub struct CommandObserver<'a, 'w, 's, In, InError>

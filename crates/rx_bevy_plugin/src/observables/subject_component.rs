@@ -1,7 +1,7 @@
 use crate::{
-	DebugBound, ObservableComponent, ObservableOnInsertContext, ObservableOnRxEventContext,
-	ObservableOnSubscribeContext, ObservableSignalBound, ScheduledSubscription,
-	on_observable_insert_hook, on_observable_remove_hook,
+	DebugBound, ObservableComponent, ObservableOnInsertContext, ObservableOnSubscribeContext,
+	ObservableSignalBound, RxTick, ScheduledSubscription, SubscriptionComponent,
+	SubscriptionOnTickContext, on_observable_insert_hook, on_observable_remove_hook,
 };
 use crate::{RxNext, Subscriptions};
 use bevy::ecs::component::{Mutable, StorageType};
@@ -33,8 +33,13 @@ where
 	In: 'static + Send + Sync + Clone + DebugBound,
 	InError: 'static + Send + Sync + Clone + DebugBound,
 {
-	fn on_event(&mut self, event: RxNext<In>, context: ObservableOnRxEventContext) {
+	fn on_event(&mut self, event: RxNext<In>, context: SubscriptionOnTickContext) {
 		// next in, trigger on subscriber!
+		// TODO: FORWARD TO SUBSCRIBERS! (add them to the context?)
+		println!("subject event!");
+	}
+
+	fn on_tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext) {
 		println!("subject tick!");
 	}
 }
@@ -103,6 +108,8 @@ where
 	}
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext) {
+		println!("on_insert of subject");
+
 		let subject_observer_entity = context
 			.commands
 			.spawn((
@@ -110,7 +117,8 @@ where
 					"Observer Subject Subscriber {}",
 					context.observable_entity
 				)),
-				bevy_ecs::prelude::Observer::new(forward_to_subscriptions::<Self>),
+				bevy_ecs::prelude::Observer::new(forward_to_subscribers::<Self>)
+					.with_entity(context.observable_entity),
 			))
 			.id();
 
@@ -118,20 +126,22 @@ where
 	}
 
 	// TODO: Return value should describe how to clean up
-	fn on_subscribe<Destination>(
+	fn on_subscribe(
 		&mut self,
-		destination: Destination,
 		_subscription_context: ObservableOnSubscribeContext,
 	) -> Self::ScheduledSubscription {
+		println!("on subscribe subject");
 		SubjectComponentSubscriber {
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-pub fn forward_to_subscriptions<O>(
+/// Manually triggered events should trigger all subscribers
+pub fn forward_to_subscribers<O>(
 	trigger: Trigger<RxNext<O::Out>>,
 	mut observable_subscriptions_query: Query<&mut Subscriptions<O>, With<O>>,
+	subscription_query: Query<&SubscriptionComponent<O>>,
 	mut commands: Commands,
 ) where
 	O: ObservableComponent + Send + Sync,
@@ -145,7 +155,10 @@ pub fn forward_to_subscriptions<O>(
 	println!("forward to subs {:?}", subscriptions.get_subscriptions());
 
 	// This could easily cause an infinite loop if not for CAN_SELF_SUBSCRIBE
-	commands.trigger_targets(trigger.event().clone(), subscriptions.get_subscriptions());
+	commands.trigger_targets(
+		trigger.event().clone(),
+		subscriptions.get_subscribers(&subscription_query),
+	);
 }
 
 impl<In, InError> ObserverInput for SubjectComponent<In, InError>

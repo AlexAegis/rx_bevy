@@ -1,10 +1,13 @@
-use std::{cell::RefCell, marker::PhantomData};
+use std::marker::PhantomData;
 
 use bevy::prelude::*;
 use derive_where::derive_where;
 use smallvec::{SmallVec, smallvec};
 
-use crate::{ObservableComponent, ObservableOnRxEventContext, ObservableSignalBound};
+use crate::{
+	ObservableComponent, ObservableSignalBound, RxTick, ScheduledSubscription,
+	SubscriptionOnTickContext,
+};
 
 /// This semantically is a relationship but that imposes too many restrictions,
 /// and subscriptions are managed their own way anyways.
@@ -39,6 +42,21 @@ where
 
 	pub fn get_subscriptions(&self) -> Vec<Entity> {
 		self.subscriptions.iter().copied().collect()
+	}
+
+	pub fn get_subscribers(
+		&self,
+		subscription_query: &Query<&SubscriptionComponent<O>>,
+	) -> Vec<Entity> {
+		self.subscriptions
+			.iter()
+			.filter_map(|&subscription_entity| {
+				subscription_query
+					.get(subscription_entity)
+					.ok()
+					.map(|subscription| subscription.subscriber_entity)
+			})
+			.collect()
 	}
 }
 
@@ -77,12 +95,16 @@ where
 		}
 	}
 
-	pub fn into_subscription_context<'a, 'w, 's>(
+	pub fn tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext) {
+		self.scheduled_subscription.on_tick(event, context);
+	}
+
+	pub fn into_subscription_on_tick_context<'a, 'w, 's>(
 		&self,
 		commands: &'a mut Commands<'w, 's>,
 		subscription_entity: Entity,
-	) -> ObservableOnRxEventContext<'a, 'w, 's> {
-		ObservableOnRxEventContext::<'a, 'w, 's> {
+	) -> SubscriptionOnTickContext<'a, 'w, 's> {
+		SubscriptionOnTickContext::<'a, 'w, 's> {
 			commands,
 			observable_entity: self.observable_entity,
 			subscriber_entity: self.subscriber_entity,

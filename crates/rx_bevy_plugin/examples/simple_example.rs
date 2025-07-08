@@ -6,7 +6,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
 
 use rx_bevy_plugin::{
-	IteratorObservableComponent, RxNext, SubjectComponent, Subscribe, SubscriberEntity,
+	IteratorObservableComponent, RxNext, SubjectComponent, SubscribeFor, SubscriberEntity,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -85,10 +85,10 @@ fn setup(
 			SubjectComponent::<i32, ()>::new(),
 		))
 		.observe(next_number_observer)
-		.trigger(Subscribe::<SubjectComponent<i32, ()>>::new(
+		.trigger(SubscribeFor::<SubjectComponent<i32, ()>>::new(
 			SubscriberEntity::Other(observer_entity),
 		))
-		.trigger(Subscribe::<SubjectComponent<i32, ()>>::new(
+		.trigger(SubscribeFor::<SubjectComponent<i32, ()>>::new(
 			SubscriberEntity::Other(another_observer_entity),
 		))
 		.id();
@@ -99,13 +99,11 @@ fn setup(
 			Transform::from_xyz(-1.0, 0.0, 0.0),
 			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			IteratorObservableComponent::new(1..=2),
+			IteratorObservableComponent::new(1..=1),
 		))
-		.trigger(
-			Subscribe::<IteratorObservableComponent<RangeInclusive<i32>>>::new(
-				SubscriberEntity::Other(subject_entity),
-			),
-		)
+		.trigger(SubscribeFor::<
+			IteratorObservableComponent<RangeInclusive<i32>>,
+		>::new(SubscriberEntity::Other(subject_entity)))
 		.id();
 
 	let another_observable_entity = commands
@@ -114,13 +112,11 @@ fn setup(
 			Transform::from_xyz(-1.0, 0.0, 0.0),
 			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			IteratorObservableComponent::new(10..=11),
+			IteratorObservableComponent::new(10..=10),
 		))
-		.trigger(
-			Subscribe::<IteratorObservableComponent<RangeInclusive<i32>>>::new(
-				SubscriberEntity::Other(subject_entity),
-			),
-		)
+		.trigger(SubscribeFor::<
+			IteratorObservableComponent<RangeInclusive<i32>>,
+		>::new(SubscriberEntity::Other(subject_entity)))
 		.id();
 
 	println!("spawned");

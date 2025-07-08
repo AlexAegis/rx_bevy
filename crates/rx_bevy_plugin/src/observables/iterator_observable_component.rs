@@ -1,4 +1,4 @@
-use crate::{DebugBound, ObservableOnInsertContext, ObservableOnRxEventContext, RxNext};
+use crate::{DebugBound, ObservableOnInsertContext, RxNext, RxTick, SubscriptionOnTickContext};
 use crate::{
 	ObservableComponent, ObservableOnSubscribeContext, ObservableSignalBound,
 	ScheduledSubscription, on_observable_insert_hook, on_observable_remove_hook,
@@ -32,11 +32,15 @@ where
 	Iterator: 'static + IntoIterator + Send + Sync + DebugBound,
 	Iterator::Item: 'static + ObservableSignalBound,
 {
-	fn on_event(&mut self, event: RxNext<Self::Out>, context: ObservableOnRxEventContext) {
+	fn on_event(&mut self, event: RxNext<Self::Out>, context: SubscriptionOnTickContext) {
 		println!(
 			"IteratorObservableSubscriber on event should not receive one! {:?}",
 			event
 		);
+	}
+
+	fn on_tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext) {
+		println!("iterator tick!");
 	}
 }
 
@@ -100,22 +104,19 @@ where
 
 	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
 
-	fn on_subscribe<Destination: rx_bevy::Observer<In = Self::Out, InError = Self::OutError>>(
+	fn on_subscribe(
 		&mut self,
-		mut destination: Destination,
-
 		_context: ObservableOnSubscribeContext,
 	) -> Self::ScheduledSubscription {
-		//for item in self.iterator.clone().into_iter() {
-		//	context
-		//		.commands
-		//		.trigger_targets(RxNext(item), context.subscriber_entity);
-		//}
+		println!("on_subscribe iterator! {:?}", _context);
 
 		for item in self.iterator.clone().into_iter() {
-			destination.next(item);
+			_context
+				.commands
+				.trigger_targets(RxNext(item), _context.subscriber_entity);
 		}
 
+		// TODO: use instead if scheduled
 		IteratorObservableSubscriber {
 			iterator: self.iterator.clone(),
 		}

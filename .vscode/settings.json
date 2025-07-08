@@ -4,6 +4,7 @@
   "rust-analyzer.cargo.targetDir": true,
   "rust-analyzer.testExplorer": true,
   "rust-analyzer.check.allTargets": true,
+  "rust-analyzer.check.features": ["dev"],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },

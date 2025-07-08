@@ -1,12 +1,13 @@
 use bevy::{ecs::component::Mutable, prelude::*};
 use bevy_ecs::{component::HookContext, world::DeferredWorld};
+use derive_where::derive_where;
 use rx_bevy::ObservableOutput;
 use short_type_name::short_type_name;
 use std::{fmt::Debug, marker::PhantomData};
 
 use crate::{
-	CommandObserver, DebugBound, ObservableSignalBound, RxNext, ScheduledSubscription,
-	SubscriptionComponent, Subscriptions,
+	DebugBound, ObservableSignalBound, RxTick, ScheduledSubscription, SubscriptionComponent,
+	Subscriptions,
 };
 
 /// Since the nature of a Subscription is very different in the context of an
@@ -33,21 +34,24 @@ where
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext);
 
-	fn on_subscribe<Destination: rx_bevy::Observer<In = Self::Out, InError = Self::OutError>>(
+	fn on_subscribe(
 		&mut self,
-		destination: Destination,
 		context: ObservableOnSubscribeContext,
 	) -> Self::ScheduledSubscription;
 }
 
+#[derive_where(Debug)]
 pub struct ObservableOnInsertContext<'a, 'w, 's> {
+	#[derive_where(skip)]
 	pub commands: &'a mut Commands<'w, 's>,
 	/// "This" entity
 	pub observable_entity: Entity,
 }
 
-pub struct ObservableOnSubscribeContext /*<'a, 'w, 's> */ {
-	// pub commands: &'a mut Commands<'w, 's>,
+#[derive_where(Debug)]
+pub struct ObservableOnSubscribeContext<'a, 'w, 's> {
+	#[derive_where(skip)]
+	pub commands: &'a mut Commands<'w, 's>,
 	/// "This" entity
 	pub observable_entity: Entity,
 	/// "Destination" entity
@@ -57,7 +61,9 @@ pub struct ObservableOnSubscribeContext /*<'a, 'w, 's> */ {
 	pub subscription_entity: Entity,
 }
 
-pub struct ObservableOnRxEventContext<'a, 'w, 's> {
+#[derive_where(Debug)]
+pub struct SubscriptionOnTickContext<'a, 'w, 's> {
+	#[derive_where(skip)]
 	pub commands: &'a mut Commands<'w, 's>,
 	/// "This" entity
 	pub observable_entity: Entity,
@@ -104,7 +110,8 @@ where
 {
 	let observable_entity = hook_context.entity;
 
-	// This is the observer that processes [Subscribe] events.
+	// This is the observer that processes [Subscribe] events for this specific observable.
+	// It will be despawned when the observable is removed.
 	let subscribe_observer_entity = {
 		let mut commands = deferred_world.commands();
 		debug!(
@@ -115,13 +122,15 @@ where
 
 		commands
 			.spawn((
+				ChildOf(observable_entity), // Purely for organizational purposes in debug views like WorldInspector
 				SubscribeObserverComponent::<O>::new(observable_entity),
 				Name::new(format!(
 					"Observer (Observable Subscribe) - {}({}) ",
 					short_type_name::<O>(),
 					observable_entity
 				)),
-				bevy_ecs::prelude::Observer::new(on_observable_subscribe::<O>),
+				bevy_ecs::prelude::Observer::new(on_observable_subscribe::<O>)
+					.with_entity(observable_entity),
 			))
 			.id()
 	};
@@ -163,9 +172,8 @@ where
 	}
 }
 
-// TODO: Move the subscription component to the Observer entity, spawn it manually.
 pub fn on_observable_subscribe<O>(
-	trigger: Trigger<Subscribe<O>>,
+	trigger: Trigger<SubscribeFor<O>>,
 	mut observable_component_query: Query<(&mut O, Option<&mut Subscriptions<O>>)>,
 	mut commands: Commands,
 ) where
@@ -174,7 +182,8 @@ pub fn on_observable_subscribe<O>(
 	O::OutError: ObservableSignalBound,
 {
 	let observable_entity = trigger.target();
-	let Ok((mut observable_component, mut existing_subscriptions_component)) =
+	println!("on_observable_subscribe {}", observable_entity);
+	let Ok((mut observable_component, existing_subscriptions_component)) =
 		observable_component_query.get_mut(observable_entity)
 	else {
 		warn!(
@@ -184,11 +193,11 @@ pub fn on_observable_subscribe<O>(
 		);
 		return;
 	};
-	let subscriber_entity = trigger.subscriber_entity.resolve(observable_entity);
+	let destination_entity = trigger.subscriber_entity.resolve(observable_entity);
 
 	// Observables that re-emit everything they observe should not be able to
 	// subscribe to themselves as that would cause an infinite loop
-	if !O::CAN_SELF_SUBSCRIBE && observable_entity == subscriber_entity {
+	if !O::CAN_SELF_SUBSCRIBE && observable_entity == destination_entity {
 		warn!(
 			"Tried to subscribe to itself when it is disallowed! {}({})",
 			short_type_name::<O>(),
@@ -211,20 +220,16 @@ pub fn on_observable_subscribe<O>(
 	}
 
 	{
-		let command_observer =
-			CommandObserver::<O::Out, O::OutError>::new(&mut commands, subscriber_entity);
+		//let command_observer =
+		//	CommandObserver::<O::Out, O::OutError>::new(&mut commands, destination_entity);
 
-		let scheduled_subscription = observable_component.on_subscribe(
-			command_observer,
-			ObservableOnSubscribeContext {
+		let scheduled_subscription =
+			observable_component.on_subscribe(ObservableOnSubscribeContext {
+				commands: &mut commands,
 				observable_entity,
-				subscriber_entity,
+				subscriber_entity: destination_entity,
 				subscription_entity,
-			},
-		);
-
-		println!("the subscription component better be ready!");
-		// scheduled_subscription.tick();
+			});
 
 		commands.entity(subscription_entity).insert((
 			Name::new(format!(
@@ -234,16 +239,48 @@ pub fn on_observable_subscribe<O>(
 			)),
 			SubscriptionComponent::<O>::new(
 				observable_entity,
-				subscriber_entity,
+				destination_entity,
 				scheduled_subscription,
 			),
-			bevy::ecs::prelude::Observer::new(subscription_observer::<O>),
+			bevy::ecs::prelude::Observer::new(subscription_tick_observer::<O>)
+				.with_entity(subscription_entity),
 		));
 	}
 }
 
-pub fn subscription_observer<O>(
-	trigger: Trigger<RxNext<O::Out>>,
+// now THIS needs a plugin
+// TODO: Add clocks
+pub fn tick_subscriptions_system<O>(
+	mut commands: Commands,
+	time: Res<Time>,
+	subscription_query: Query<
+		Entity,
+		(
+			With<SubscriptionComponent<O>>,
+			With<bevy::ecs::prelude::Observer>,
+		),
+	>,
+) where
+	O: ObservableComponent + Send + Sync,
+	O::Out: ObservableSignalBound + Clone,
+	O::OutError: ObservableSignalBound,
+{
+	println!("TICK EVERY SUBSCRIPTION");
+	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
+	// TODO: Or maybe just call .tick without an extra event?
+	commands.trigger_targets(
+		RxTick {
+			now: time.elapsed(),
+			delta: time.delta(),
+		},
+		subscriptions,
+	);
+}
+
+/// This is what would drive an "intervalObserver" ticking a subscriber,
+/// that will decide if it should next something to its subscribers or not
+pub fn subscription_tick_observer<O>(
+	trigger: Trigger<RxTick>,
 	mut subscription_query: Query<&mut SubscriptionComponent<O>>,
 	mut commands: Commands,
 ) where
@@ -252,13 +289,12 @@ pub fn subscription_observer<O>(
 	O::OutError: ObservableSignalBound,
 {
 	#[cfg(feature = "debug")]
-	println!("subscription_observer {:?}", trigger.event());
+	println!("subscription_tick_observer {:?}", trigger.event());
 
 	if let Ok(mut subscription) = subscription_query.get_mut(trigger.target()) {
-		let context = subscription.into_subscription_context(&mut commands, trigger.target());
-		subscription
-			.scheduled_subscription
-			.on_event(trigger.event().clone(), context);
+		let context =
+			subscription.into_subscription_on_tick_context(&mut commands, trigger.target());
+		subscription.tick(trigger.event(), context);
 	}
 }
 
@@ -278,7 +314,7 @@ impl SubscriberEntity {
 }
 
 #[derive(Event, Debug)]
-pub struct Subscribe<O>
+pub struct SubscribeFor<O>
 where
 	O: ObservableComponent,
 	O::Out: ObservableSignalBound,
@@ -288,7 +324,7 @@ where
 	pub _phantom_data: PhantomData<O>,
 }
 
-impl<O> Subscribe<O>
+impl<O> SubscribeFor<O>
 where
 	O: ObservableComponent,
 	O::Out: ObservableSignalBound,
@@ -302,7 +338,7 @@ where
 	}
 }
 
-impl<O> From<SubscriberEntity> for Subscribe<O>
+impl<O> From<SubscriberEntity> for SubscribeFor<O>
 where
 	O: ObservableComponent,
 	O::Out: ObservableSignalBound,
