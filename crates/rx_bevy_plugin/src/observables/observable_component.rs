@@ -21,6 +21,9 @@ where
 {
 	const CAN_SELF_SUBSCRIBE: bool;
 
+	/// If the Observable does not need any scheduling, use [NonScheduledSubscription]
+	/// Otherwise implement a [ScheduledSubscription] that can emit events when
+	/// ticked by an [RxScheduler].
 	type ScheduledSubscription: ScheduledSubscription<Out = Self::Out, OutError = Self::OutError>
 		+ Send
 		+ Sync;
@@ -30,7 +33,12 @@ where
 	/// TODO(relationship-one-on-one): Refactor once one-on-one relationships are a thing
 	fn get_subscribe_observer_entity(&self) -> Option<Entity>;
 
-	fn set_subscribe_observer_entity(&mut self, subscribe_observer_entity: Entity);
+	/// Returns the previous observer entity, if exists.
+	/// (Implement as `.replace` on the stored `Option<Entity>`)
+	fn set_subscribe_observer_entity(
+		&mut self,
+		subscribe_observer_entity: Entity,
+	) -> Option<Entity>;
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext);
 
@@ -38,6 +46,42 @@ where
 		&mut self,
 		context: ObservableOnSubscribeContext,
 	) -> Self::ScheduledSubscription;
+}
+
+#[derive_where(Default)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+pub struct NonScheduledSubscription<Out, OutError>
+where
+	Out: 'static + Send + Sync + DebugBound,
+	OutError: 'static + Send + Sync + DebugBound,
+{
+	_phantom_data: PhantomData<(Out, OutError)>,
+}
+
+impl<Out, OutError> ObservableOutput for NonScheduledSubscription<Out, OutError>
+where
+	Out: 'static + Send + Sync + DebugBound,
+	OutError: 'static + Send + Sync + DebugBound,
+{
+	type Out = Out;
+	type OutError = OutError;
+}
+
+impl<Out, OutError> ScheduledSubscription for NonScheduledSubscription<Out, OutError>
+where
+	Out: 'static + Send + Sync + DebugBound,
+	OutError: 'static + Send + Sync + DebugBound,
+{
+	const TICKABLE: bool = false;
+
+	fn on_event(&mut self, _event: crate::RxNext<Self::Out>, _context: SubscriptionOnTickContext) {
+		unreachable!()
+	}
+
+	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionOnTickContext) {
+		unreachable!()
+	}
 }
 
 #[derive_where(Debug)]
@@ -73,6 +117,9 @@ pub struct SubscriptionOnTickContext<'a, 'w, 's> {
 	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
 	pub subscription_entity: Entity,
 }
+
+// TODO: So that you can just .next stuff instead of emitting values by hand
+//impl Observer for SubscriptionOnTickContext {}
 
 /// TODO: Add on remove hooks to despawn this and the observable component together, the observable should be removed when this is removed, and when the observable is removed this entire entity should despawn
 #[derive(Component, Reflect)]
@@ -220,9 +267,6 @@ pub fn on_observable_subscribe<O>(
 	}
 
 	{
-		//let command_observer =
-		//	CommandObserver::<O::Out, O::OutError>::new(&mut commands, destination_entity);
-
 		let scheduled_subscription =
 			observable_component.on_subscribe(ObservableOnSubscribeContext {
 				commands: &mut commands,
@@ -231,7 +275,8 @@ pub fn on_observable_subscribe<O>(
 				subscription_entity,
 			});
 
-		commands.entity(subscription_entity).insert((
+		let mut subscription_entity_commands = commands.entity(subscription_entity);
+		subscription_entity_commands.insert((
 			Name::new(format!(
 				"Observer (Subscription) {}({})",
 				short_type_name::<O>(),
@@ -242,40 +287,21 @@ pub fn on_observable_subscribe<O>(
 				destination_entity,
 				scheduled_subscription,
 			),
-			bevy::ecs::prelude::Observer::new(subscription_tick_observer::<O>)
-				.with_entity(subscription_entity),
 		));
+		if O::ScheduledSubscription::TICKABLE {
+			// It's observing itself!
+			subscription_entity_commands.insert(
+				bevy::ecs::prelude::Observer::new(subscription_tick_observer::<O>)
+					.with_entity(subscription_entity),
+			);
+		};
 	}
 }
 
-// now THIS needs a plugin
-// TODO: Add clocks
-pub fn tick_subscriptions_system<O>(
-	mut commands: Commands,
-	time: Res<Time>,
-	subscription_query: Query<
-		Entity,
-		(
-			With<SubscriptionComponent<O>>,
-			With<bevy::ecs::prelude::Observer>,
-		),
-	>,
-) where
-	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound + Clone,
-	O::OutError: ObservableSignalBound,
-{
-	println!("TICK EVERY SUBSCRIPTION");
-	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
-	// TODO: Or maybe just call .tick without an extra event?
-	commands.trigger_targets(
-		RxTick {
-			now: time.elapsed(),
-			delta: time.delta(),
-		},
-		subscriptions,
-	);
-}
+#[derive(Component, Default)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+pub struct SubscriptionMarkerComponent;
 
 /// This is what would drive an "intervalObserver" ticking a subscriber,
 /// that will decide if it should next something to its subscribers or not
@@ -289,7 +315,7 @@ pub fn subscription_tick_observer<O>(
 	O::OutError: ObservableSignalBound,
 {
 	#[cfg(feature = "debug")]
-	println!("subscription_tick_observer {:?}", trigger.event());
+	trace!("subscription_tick_observer {:?}", trigger.event());
 
 	if let Ok(mut subscription) = subscription_query.get_mut(trigger.target()) {
 		let context =

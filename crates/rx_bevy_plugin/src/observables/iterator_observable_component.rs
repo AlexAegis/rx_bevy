@@ -10,6 +10,8 @@ use derive_where::derive_where;
 use rx_bevy::prelude::*;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+
 pub struct IteratorObservableSubscriber<Iterator>
 where
 	Iterator: 'static + IntoIterator + Send + Sync,
@@ -32,16 +34,15 @@ where
 	Iterator: 'static + IntoIterator + Send + Sync + DebugBound,
 	Iterator::Item: 'static + ObservableSignalBound,
 {
+	const TICKABLE: bool = false;
+
 	fn on_event(&mut self, event: RxNext<Self::Out>, context: SubscriptionOnTickContext) {
 		println!(
-			"IteratorObservableSubscriber on event should not receive one! {:?}",
-			event
+			"IteratorObservableSubscriber on event should not receive one! {event:?} {context:?}"
 		);
 	}
 
-	fn on_tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext) {
-		println!("iterator tick!");
-	}
+	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionOnTickContext) {}
 }
 
 #[derive(Clone, Reflect)]
@@ -98,8 +99,12 @@ where
 		self.subscribe_observer_entity
 	}
 
-	fn set_subscribe_observer_entity(&mut self, subscribe_observer_entity: Entity) {
-		self.subscribe_observer_entity = Some(subscribe_observer_entity);
+	fn set_subscribe_observer_entity(
+		&mut self,
+		subscribe_observer_entity: Entity,
+	) -> Option<Entity> {
+		self.subscribe_observer_entity
+			.replace(subscribe_observer_entity)
 	}
 
 	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}

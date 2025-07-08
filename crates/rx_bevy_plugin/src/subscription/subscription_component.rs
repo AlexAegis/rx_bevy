@@ -6,7 +6,7 @@ use smallvec::{SmallVec, smallvec};
 
 use crate::{
 	ObservableComponent, ObservableSignalBound, RxTick, ScheduledSubscription,
-	SubscriptionOnTickContext,
+	SubscriptionMarkerComponent, SubscriptionOnTickContext,
 };
 
 /// This semantically is a relationship but that imposes too many restrictions,
@@ -61,7 +61,7 @@ where
 }
 
 #[derive(Component, Debug)]
-// #[relationship(relationship_target = Subscriptions::<O>)]
+#[require(SubscriptionMarkerComponent)] // Erased type to trigger `Tick` events without the knowledge of the actual Observables type
 pub struct SubscriptionComponent<O>
 where
 	O: ObservableComponent + Send + Sync,

@@ -1,7 +1,8 @@
 use crate::{
-	DebugBound, ObservableComponent, ObservableOnInsertContext, ObservableOnSubscribeContext,
-	ObservableSignalBound, RxTick, ScheduledSubscription, SubscriptionComponent,
-	SubscriptionOnTickContext, on_observable_insert_hook, on_observable_remove_hook,
+	DebugBound, NonScheduledSubscription, ObservableComponent, ObservableOnInsertContext,
+	ObservableOnSubscribeContext, ObservableSignalBound, RxTick, ScheduledSubscription,
+	SubscriptionComponent, SubscriptionOnTickContext, on_observable_insert_hook,
+	on_observable_remove_hook,
 };
 use crate::{RxNext, Subscriptions};
 use bevy::ecs::component::{Mutable, StorageType};
@@ -9,40 +10,6 @@ use bevy::prelude::*;
 use rx_bevy::prelude::*;
 use std::fmt::Debug;
 use std::marker::PhantomData;
-
-#[cfg_attr(feature = "debug", derive(Debug))]
-pub struct SubjectComponentSubscriber<In, InError>
-where
-	In: 'static + Send + Sync + Clone + DebugBound,
-	InError: 'static + Send + Sync + Clone + DebugBound,
-{
-	_phantom_data: PhantomData<(In, InError)>,
-}
-
-impl<In, InError> ObservableOutput for SubjectComponentSubscriber<In, InError>
-where
-	In: 'static + Send + Sync + Clone + DebugBound,
-	InError: 'static + Send + Sync + Clone + DebugBound,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError> ScheduledSubscription for SubjectComponentSubscriber<In, InError>
-where
-	In: 'static + Send + Sync + Clone + DebugBound,
-	InError: 'static + Send + Sync + Clone + DebugBound,
-{
-	fn on_event(&mut self, event: RxNext<In>, context: SubscriptionOnTickContext) {
-		// next in, trigger on subscriber!
-		// TODO: FORWARD TO SUBSCRIBERS! (add them to the context?)
-		println!("subject event!");
-	}
-
-	fn on_tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext) {
-		println!("subject tick!");
-	}
-}
 
 /// A component that turns an entity into a multicast source, can observe
 /// multiple other observables, and other entities can subscribe to it.
@@ -97,14 +64,18 @@ where
 	/// allowed, an infinite loop would happen
 	const CAN_SELF_SUBSCRIBE: bool = false;
 
-	type ScheduledSubscription = SubjectComponentSubscriber<In, InError>;
+	type ScheduledSubscription = NonScheduledSubscription<In, InError>;
 
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
 	}
 
-	fn set_subscribe_observer_entity(&mut self, subscribe_observer_entity: Entity) {
-		self.subscribe_observer_entity = Some(subscribe_observer_entity);
+	fn set_subscribe_observer_entity(
+		&mut self,
+		subscribe_observer_entity: Entity,
+	) -> Option<Entity> {
+		self.subscribe_observer_entity
+			.replace(subscribe_observer_entity)
 	}
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext) {
@@ -131,9 +102,7 @@ where
 		_subscription_context: ObservableOnSubscribeContext,
 	) -> Self::ScheduledSubscription {
 		println!("on subscribe subject");
-		SubjectComponentSubscriber {
-			_phantom_data: PhantomData,
-		}
+		NonScheduledSubscription::default()
 	}
 }
 

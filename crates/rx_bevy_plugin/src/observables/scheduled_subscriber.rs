@@ -12,8 +12,23 @@ where
 	Self::Out: Send + Sync,
 	Self::OutError: Send + Sync,
 {
+	/// When set to false, the subscription will not be ticked at all.
+	const TICKABLE: bool = true;
+
+	// /// Checked on every tick, and the [RxScheduler] will not call `tick` if
+	// /// this returns false. Can be used as filter and/or to advance timers
+	// fn can_tick_now(&mut self, _event: &RxTick) -> bool {
+	// 	true
+	// }
+
 	fn on_event(&mut self, event: RxNext<Self::Out>, context: SubscriptionOnTickContext);
 	fn on_tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext);
+}
+
+impl ScheduledSubscription for () {
+	fn on_event(&mut self, _event: RxNext<Self::Out>, _context: SubscriptionOnTickContext) {}
+
+	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionOnTickContext) {}
 }
 
 pub struct CommandObserver<'a, 'w, 's, In, InError>

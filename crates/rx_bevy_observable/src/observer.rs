@@ -7,6 +7,11 @@ pub trait ObserverInput {
 	type InError: 'static;
 }
 
+impl ObserverInput for () {
+	type In = ();
+	type InError = ();
+}
+
 pub trait Observer: ObserverInput {
 	fn next(&mut self, next: Self::In);
 	fn error(&mut self, error: Self::InError);

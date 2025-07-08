@@ -1,4 +1,4 @@
-use std::ops::RangeInclusive;
+use std::{ops::RangeInclusive, time::Duration};
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
@@ -6,7 +6,8 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
 
 use rx_bevy_plugin::{
-	IteratorObservableComponent, RxNext, SubjectComponent, SubscribeFor, SubscriberEntity,
+	IntervalObservableComponent, IteratorObservableComponent, RxNext, RxPlugin, SubjectComponent,
+	SubscribeFor, SubscriberEntity,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -18,6 +19,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
+			RxPlugin,
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -99,7 +101,7 @@ fn setup(
 			Transform::from_xyz(-1.0, 0.0, 0.0),
 			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			IteratorObservableComponent::new(1..=1),
+			IteratorObservableComponent::new(99..=99),
 		))
 		.trigger(SubscribeFor::<
 			IteratorObservableComponent<RangeInclusive<i32>>,
@@ -108,15 +110,15 @@ fn setup(
 
 	let another_observable_entity = commands
 		.spawn((
-			Name::new("AnotherIteratorObservable"),
+			Name::new("IntervalObservable"),
 			Transform::from_xyz(-1.0, 0.0, 0.0),
 			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			IteratorObservableComponent::new(10..=10),
+			IntervalObservableComponent::new(Duration::from_secs(1)),
 		))
-		.trigger(SubscribeFor::<
-			IteratorObservableComponent<RangeInclusive<i32>>,
-		>::new(SubscriberEntity::Other(subject_entity)))
+		.trigger(SubscribeFor::<IntervalObservableComponent>::new(
+			SubscriberEntity::Other(subject_entity),
+		))
 		.id();
 
 	println!("spawned");

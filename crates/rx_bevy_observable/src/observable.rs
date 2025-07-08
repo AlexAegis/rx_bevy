@@ -15,3 +15,8 @@ pub trait Observable: ObservableOutput {
 		destination: Destination,
 	) -> Subscription;
 }
+
+impl ObservableOutput for () {
+	type Out = ();
+	type OutError = ();
+}

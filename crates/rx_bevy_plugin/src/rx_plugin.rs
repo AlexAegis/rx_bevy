@@ -1,15 +1,12 @@
 use bevy::prelude::*;
 
-/// ? Probably will be generic on Scheduler
-pub struct RxPlugin {}
+use crate::RxScheduler;
+
+/// A collection of default plugins
+pub struct RxPlugin;
 
 impl Plugin for RxPlugin {
 	fn build(&self, app: &mut App) {
-		app.add_systems(Update, tick);
+		app.add_plugins((RxScheduler::on(Update), RxScheduler::on(PostUpdate)));
 	}
-}
-
-fn tick() {
-	println!("tick");
-	// flush stuff!
 }
