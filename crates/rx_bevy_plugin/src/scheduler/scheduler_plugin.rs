@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs::schedule::ScheduleLabel;
 
-use crate::{RxTick, SubscriptionMarkerComponent};
+use crate::{RxTick, SubscriptionSchedule};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -39,18 +39,18 @@ where
 	S: ScheduleLabel + Clone,
 {
 	fn build(&self, app: &mut App) {
-		app.add_systems(self.schedule.clone(), tick_subscriptions_system);
+		app.add_systems(self.schedule.clone(), tick_subscriptions_system::<S>);
 	}
 }
 
 // TODO: Add clocks
-pub fn tick_subscriptions_system(
+pub fn tick_subscriptions_system<S: ScheduleLabel>(
 	mut commands: Commands,
 	time: Res<Time>,
 	subscription_query: Query<
 		Entity,
 		(
-			With<SubscriptionMarkerComponent>,
+			With<SubscriptionSchedule<S>>,
 			With<bevy::ecs::prelude::Observer>, // The tick Observer, which is optional for non tickable Subscribers
 		),
 	>,

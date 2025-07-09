@@ -34,7 +34,7 @@ where
 	Iterator: 'static + IntoIterator + Send + Sync + DebugBound,
 	Iterator::Item: 'static + ObservableSignalBound,
 {
-	const TICKABLE: bool = false;
+	const SCHEDULED: bool = false;
 
 	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionContext) {}
 
@@ -89,7 +89,7 @@ where
 {
 	const CAN_SELF_SUBSCRIBE: bool = true;
 
-	type ScheduledSubscription = IteratorObservableSubscriber<Iterator>;
+	type Subscription = IteratorObservableSubscriber<Iterator>;
 
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
@@ -105,7 +105,7 @@ where
 
 	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
 
-	fn on_subscribe(&mut self, _context: SubscriptionContext) -> Self::ScheduledSubscription {
+	fn on_subscribe(&mut self, _context: SubscriptionContext) -> Self::Subscription {
 		println!("on_subscribe iterator! {:?}", _context);
 
 		for item in self.iterator.clone().into_iter() {

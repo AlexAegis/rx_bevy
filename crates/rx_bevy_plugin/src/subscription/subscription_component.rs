@@ -9,7 +9,7 @@ use smallvec::{SmallVec, smallvec};
 
 use crate::{
 	ObservableComponent, ObservableSignalBound, RxTick, ScheduledSubscription, SubscriptionContext,
-	SubscriptionEntityContext, SubscriptionMarkerComponent,
+	SubscriptionEntityContext,
 };
 
 /// This semantically is a relationship but that imposes too many restrictions,
@@ -104,7 +104,6 @@ where
 }
 
 #[derive(Component, Debug)]
-#[require(SubscriptionMarkerComponent)] // Erased type to trigger `Tick` events without the knowledge of the actual Observables type
 #[component(on_remove = subscription_on_remove_hook::<O>)]
 pub struct SubscriptionComponent<O>
 where
@@ -117,7 +116,7 @@ where
 	/// This is only an [Option] so it can be removed from the component while it's unsubscribing
 	/// Note that it is `None` already when the `unsubscribe` is running, not that you would need
 	/// to access it from here, since it's available as `self`
-	pub scheduled_subscription: Option<O::ScheduledSubscription>,
+	pub scheduled_subscription: Option<O::Subscription>,
 	_phantom_data: PhantomData<O>,
 }
 
@@ -166,7 +165,7 @@ where
 	pub fn new(
 		observable_entity: Entity,
 		subscriber_entity: Entity,
-		scheduled_subscription: O::ScheduledSubscription,
+		scheduled_subscription: O::Subscription,
 	) -> Self {
 		Self {
 			observable_entity,

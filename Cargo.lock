@@ -4801,6 +4801,7 @@ dependencies = [
  "rx_bevy_testing",
  "short_type_name",
  "smallvec",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

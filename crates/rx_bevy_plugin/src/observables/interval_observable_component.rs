@@ -44,7 +44,7 @@ impl Component for IntervalObservableComponent {
 impl ObservableComponent for IntervalObservableComponent {
 	const CAN_SELF_SUBSCRIBE: bool = true;
 
-	type ScheduledSubscription = IntervalSubscription;
+	type Subscription = IntervalSubscription;
 
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer
@@ -59,10 +59,7 @@ impl ObservableComponent for IntervalObservableComponent {
 
 	fn on_insert(&mut self, _context: super::ObservableOnInsertContext) {}
 
-	fn on_subscribe(
-		&mut self,
-		_context: super::SubscriptionContext,
-	) -> Self::ScheduledSubscription {
+	fn on_subscribe(&mut self, _context: super::SubscriptionContext) -> Self::Subscription {
 		println!("interval on_subscribe {_context:?}");
 		IntervalSubscription::new(self.duration.clone())
 	}

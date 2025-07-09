@@ -6,8 +6,9 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
 
 use rx_bevy_plugin::{
-	IntervalObservableComponent, IteratorObservableComponent, RxNext, RxPlugin, SubjectComponent,
-	SubscribeFor, SubscriberEntity,
+	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, IntervalObservableComponent,
+	IteratorObservableComponent, RxNext, RxPlugin, SubjectComponent, SubscribeFor,
+	SubscriberEntity,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -25,7 +26,10 @@ fn main() -> AppExit {
 		.add_systems(Startup, setup)
 		.add_systems(
 			Update,
-			send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
+			(
+				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
+				unsubscribe_from_interval.run_if(input_just_pressed(KeyCode::Space)),
+			),
 		)
 		.run()
 }
@@ -39,13 +43,14 @@ fn next_number_observer(next: Trigger<RxNext<i32>>, name_query: Query<&Name>) {
 	);
 }
 
+fn unsubscribe_from_interval(mut commands: Commands, example_entities: Res<ExampleEntities>) {
+	println!("Unsubscribe subjects_interval_subscription!");
+	commands.unsubscribe(example_entities.subjects_interval_subscription);
+}
+
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
-	observable_entity: Entity,
-	observer_entity: Entity,
-	another_observer_entity: Entity,
-	subject_entity: Entity,
-	another_observable_entity: Entity,
+	subjects_interval_subscription: Entity,
 }
 
 fn setup(
@@ -78,58 +83,52 @@ fn setup(
 		.observe(next_number_observer)
 		.id();
 
-	let subject_entity = commands
-		.spawn((
-			Name::new("Subject Cube"),
-			Transform::from_xyz(2.0, 0.0, 4.0),
-			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
-			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			SubjectComponent::<i32, ()>::new(),
-		))
-		.observe(next_number_observer)
-		.trigger(SubscribeFor::<SubjectComponent<i32, ()>>::new(
-			SubscriberEntity::Other(observer_entity),
-		))
-		.trigger(SubscribeFor::<SubjectComponent<i32, ()>>::new(
-			SubscriberEntity::Other(another_observer_entity),
-		))
-		.id();
+	let mut subject_entity_commands = commands.spawn((
+		Name::new("Subject Cube"),
+		Transform::from_xyz(2.0, 0.0, 4.0),
+		Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
+		SubjectComponent::<i32, ()>::new(),
+	));
+	let subject_entity = subject_entity_commands.observe(next_number_observer).id();
 
-	let observable_entity = commands
-		.spawn((
-			Name::new("IteratorObservable"),
-			Transform::from_xyz(-1.0, 0.0, 0.0),
-			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
-			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			IteratorObservableComponent::new(99..=99),
-		))
-		// TODO A subscribe method (from either direction, should return the subscription entity's id, so users can save it somewhere)
-		.trigger(SubscribeFor::<
-			IteratorObservableComponent<RangeInclusive<i32>>,
-		>::new(SubscriberEntity::Other(subject_entity)))
-		.id();
+	let _s = subject_entity_commands.subscribe_to_this_unscheduled::<SubjectComponent<i32, ()>>(
+		SubscriberEntity::Other(observer_entity),
+	);
 
-	let another_observable_entity = commands
-		.spawn((
-			Name::new("IntervalObservable"),
-			Transform::from_xyz(-1.0, 0.0, 0.0),
-			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
-			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			IntervalObservableComponent::new(Duration::from_secs(1)),
-		))
-		// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
-		.trigger(SubscribeFor::<IntervalObservableComponent>::new(
-			SubscriberEntity::Other(subject_entity),
-		))
-		.id();
+	let _s2 = subject_entity_commands.subscribe_to_this_unscheduled::<SubjectComponent<i32, ()>>(
+		SubscriberEntity::Other(another_observer_entity),
+	);
+
+	let mut iterator_observable_entity_commands = commands.spawn((
+		Name::new("IteratorObservable"),
+		Transform::from_xyz(-1.0, 0.0, 0.0),
+		Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
+		IteratorObservableComponent::new(99..=99),
+	));
+
+	let _subjects_iterator_observable_subscription = iterator_observable_entity_commands
+		.subscribe_to_this_unscheduled::<IteratorObservableComponent<
+		RangeInclusive<i32>,
+	>>(SubscriberEntity::Other(subject_entity));
+
+	let mut interval_observable_entity_commands = commands.spawn((
+		Name::new("IntervalObservable"),
+		Transform::from_xyz(-1.0, 0.0, 0.0),
+		Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
+		IntervalObservableComponent::new(Duration::from_secs(1)),
+	));
+	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
+	let subjects_interval_subscription = interval_observable_entity_commands
+		.subscribe_to_this_scheduled::<IntervalObservableComponent, Update>(
+		SubscriberEntity::Other(subject_entity),
+	);
 
 	println!("spawned");
 
 	commands.insert_resource(ExampleEntities {
-		observable_entity,
-		observer_entity,
-		another_observer_entity,
-		subject_entity,
-		another_observable_entity,
+		subjects_interval_subscription,
 	});
 }

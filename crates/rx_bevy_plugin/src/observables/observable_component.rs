@@ -1,9 +1,10 @@
 use bevy::{ecs::component::Mutable, prelude::*};
-use bevy_ecs::{component::HookContext, world::DeferredWorld};
+use bevy_ecs::{component::HookContext, schedule::ScheduleLabel, world::DeferredWorld};
 use derive_where::derive_where;
 use rx_bevy::ObservableOutput;
 use short_type_name::short_type_name;
 use std::{fmt::Debug, marker::PhantomData};
+use thiserror::Error;
 
 use crate::{
 	DebugBound, ObservableSignalBound, RxTick, ScheduledSubscription, SubscriptionComponent,
@@ -24,7 +25,7 @@ where
 	/// If the Observable does not need any scheduling, use [NonScheduledSubscription]
 	/// Otherwise implement a [ScheduledSubscription] that can emit events when
 	/// ticked by an [RxScheduler].
-	type ScheduledSubscription: ScheduledSubscription<Out = Self::Out, OutError = Self::OutError>
+	type Subscription: ScheduledSubscription<Out = Self::Out, OutError = Self::OutError>
 		+ Send
 		+ Sync;
 
@@ -42,7 +43,7 @@ where
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext);
 
-	fn on_subscribe(&mut self, context: SubscriptionContext) -> Self::ScheduledSubscription;
+	fn on_subscribe(&mut self, context: SubscriptionContext) -> Self::Subscription;
 }
 
 #[derive_where(Default)]
@@ -70,7 +71,7 @@ where
 	Out: 'static + Send + Sync + DebugBound,
 	OutError: 'static + Send + Sync + DebugBound,
 {
-	const TICKABLE: bool = false;
+	const SCHEDULED: bool = false;
 
 	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionContext) {
 		unreachable!()
@@ -225,6 +226,18 @@ where
 	}
 }
 
+#[derive(Error, Debug)]
+pub enum SubscribeError {
+	#[error("Tried to subscribe to an entity that does not contain an ObservableComponent")]
+	NotAnObservable,
+	#[error(
+		"Tried to subscribe to an ObservableComponent which disallows subscriptions from the same entity"
+	)]
+	SelfSubscribeDisallowed,
+	#[error("Tried to subscribe to a scheduled observable with an unscheduled Subscription!")]
+	UnscheduledSubscribeOnScheduledObservable,
+}
+
 pub fn on_observable_subscribe<O>(
 	trigger: Trigger<SubscribeFor<O>>,
 	mut observable_component_query: Query<(&mut O, Option<&mut Subscriptions<O>>)>,
@@ -244,7 +257,7 @@ pub fn on_observable_subscribe<O>(
 			short_type_name::<O>(),
 			observable_entity
 		);
-		return;
+		return; // Err(SubscribeError::NotAnObservable.into());
 	};
 	let destination_entity = trigger.subscriber_entity.resolve(observable_entity);
 
@@ -256,11 +269,20 @@ pub fn on_observable_subscribe<O>(
 			short_type_name::<O>(),
 			observable_entity
 		);
-		return;
+		return; // Err(SubscribeError::SelfSubscribeDisallowed.into());
 	}
 
-	// Spawn (soon-to-be) Subscription entity
-	let subscription_entity = commands.spawn_empty().id();
+	if O::Subscription::SCHEDULED && !trigger.event().is_scheduled() {
+		error!(
+			"Tried to subscribe to a scheduled observable with an unscheduled Subscription! {}({})",
+			short_type_name::<O>(),
+			observable_entity
+		);
+		return; // Err(SubscribeError::UnscheduledSubscribeOnScheduledObservable.into());
+	}
+
+	// Get the pre-spawned scheduled Subscription entity
+	let subscription_entity = trigger.event().get_subscription_entity();
 
 	// Initialize the Subscriptions component on the observable
 	if let Some(mut subscriptions) = existing_subscriptions_component {
@@ -293,12 +315,13 @@ pub fn on_observable_subscribe<O>(
 				scheduled_subscription,
 			),
 		));
-		if O::ScheduledSubscription::TICKABLE {
-			// It's observing itself!
-			subscription_entity_commands.insert(
+
+		if O::Subscription::SCHEDULED {
+			subscription_entity_commands.insert((
+				SubscriptionMarker,
 				bevy::ecs::prelude::Observer::new(subscription_tick_observer::<O>)
-					.with_entity(subscription_entity),
-			);
+					.with_entity(subscription_entity), // It's observing itself!
+			));
 		};
 	}
 }
@@ -306,10 +329,26 @@ pub fn on_observable_subscribe<O>(
 #[derive(Component, Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscriptionMarkerComponent;
+pub struct SubscriptionMarker;
+
+/// Erased type to trigger `Tick` events without the knowledge of the actual Observables type
+#[derive(Component)]
+#[derive_where(Default)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+pub struct SubscriptionSchedule<S>
+where
+	S: ScheduleLabel,
+{
+	_phantom_data: PhantomData<S>,
+}
 
 /// This is what would drive an "intervalObserver" ticking a subscriber,
 /// that will decide if it should next something to its subscribers or not
+///
+/// Notice how the schedule is not present. The [RxScheduler] plugin will
+/// query based on the Schedule but the Subscription itself does not have to be
+/// aware of the Schedule it runs on.
 pub fn subscription_tick_observer<O>(
 	trigger: Trigger<RxTick>,
 	mut subscription_query: Query<&mut SubscriptionComponent<O>>,
@@ -352,8 +391,11 @@ where
 	O::Out: ObservableSignalBound,
 	O::OutError: ObservableSignalBound,
 {
-	pub subscriber_entity: SubscriberEntity,
-	pub _phantom_data: PhantomData<O>,
+	subscriber_entity: SubscriberEntity,
+	/// This entity can only be spawned from this events constructors
+	subscription_entity: Entity,
+	scheduled: bool,
+	_phantom_data: PhantomData<O>,
 }
 
 impl<O> SubscribeFor<O>
@@ -362,21 +404,50 @@ where
 	O::Out: ObservableSignalBound,
 	O::OutError: ObservableSignalBound,
 {
-	pub fn new(subscriber_entity: SubscriberEntity) -> Self {
-		Self {
-			subscriber_entity,
-			_phantom_data: PhantomData,
-		}
-	}
-}
+	/// Be aware that if you can't subscribe to a scheduled observable
+	/// with an unscheduled subscribe request
+	pub fn unscheduled(
+		subscriber_entity: SubscriberEntity,
+		commands: &mut Commands,
+	) -> (Self, Entity) {
+		let subscription_entity = commands.spawn_empty().id();
 
-impl<O> From<SubscriberEntity> for SubscribeFor<O>
-where
-	O: ObservableComponent,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
-{
-	fn from(subscriber_entity: SubscriberEntity) -> Self {
-		Self::new(subscriber_entity)
+		(
+			Self {
+				subscriber_entity,
+				subscription_entity,
+				scheduled: false,
+				_phantom_data: PhantomData,
+			},
+			subscription_entity,
+		)
+	}
+
+	pub fn scheduled<S>(
+		subscriber_entity: SubscriberEntity,
+		commands: &mut Commands,
+	) -> (Self, Entity)
+	where
+		S: ScheduleLabel,
+	{
+		let subscription_entity = commands.spawn(SubscriptionSchedule::<S>::default()).id();
+
+		(
+			Self {
+				subscriber_entity,
+				subscription_entity,
+				scheduled: true,
+				_phantom_data: PhantomData,
+			},
+			subscription_entity,
+		)
+	}
+
+	pub fn is_scheduled(&self) -> bool {
+		self.scheduled
+	}
+
+	pub fn get_subscription_entity(&self) -> Entity {
+		self.subscription_entity
 	}
 }

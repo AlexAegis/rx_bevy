@@ -52,6 +52,7 @@ rx_bevy = { workspace = true }
 smallvec = { workspace = true }
 derive-where = { workspace = true }
 short_type_name = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 rx_bevy_testing = { workspace = true }

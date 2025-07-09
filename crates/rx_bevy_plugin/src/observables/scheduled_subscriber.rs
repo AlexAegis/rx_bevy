@@ -5,7 +5,6 @@ use rx_bevy::{ObservableOutput, ObserverInput};
 
 use crate::{DebugBound, RxComplete, RxError, RxNext, RxTick, SubscriptionContext};
 
-// TODO: Should be schedulable, probably from the Subscribe event, like schedule asap, once per frame, and time (maybe two, one ticked when AT LEAST a time passes, or when the current frame is expected to end after that limit)
 pub trait ScheduledSubscription: ObservableOutput + DebugBound
 where
 	Self: Send + Sync,
@@ -13,7 +12,7 @@ where
 	Self::OutError: Send + Sync,
 {
 	/// When set to false, the subscription will not be ticked at all.
-	const TICKABLE: bool = true;
+	const SCHEDULED: bool = true;
 
 	fn on_tick(&mut self, event: &RxTick, context: SubscriptionContext);
 

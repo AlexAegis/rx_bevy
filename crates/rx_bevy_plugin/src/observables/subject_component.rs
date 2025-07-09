@@ -63,7 +63,7 @@ where
 	/// allowed, an infinite loop would happen
 	const CAN_SELF_SUBSCRIBE: bool = false;
 
-	type ScheduledSubscription = NonScheduledSubscription<In, InError>;
+	type Subscription = NonScheduledSubscription<In, InError>;
 
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
@@ -96,10 +96,7 @@ where
 	}
 
 	// TODO: Return value should describe how to clean up
-	fn on_subscribe(
-		&mut self,
-		_subscription_context: SubscriptionContext,
-	) -> Self::ScheduledSubscription {
+	fn on_subscribe(&mut self, _subscription_context: SubscriptionContext) -> Self::Subscription {
 		println!("on subscribe subject");
 		NonScheduledSubscription::default()
 	}

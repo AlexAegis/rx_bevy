@@ -1,4 +1,5 @@
 mod clock;
+mod entity_command_subscribe;
 mod feature_bounds;
 mod observables;
 mod observer_events;
@@ -8,6 +9,7 @@ mod scheduler;
 mod subscription;
 
 pub use clock::*;
+pub use entity_command_subscribe::*;
 pub use feature_bounds::*;
 pub use observables::*;
 pub use observer_events::*;
