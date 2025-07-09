@@ -65,10 +65,10 @@ impl ObservableComponent for IntervalObservableComponent {
 
 	fn on_subscribe(
 		&mut self,
-		mut context: CommandSubscriber<Self::Out, Self::OutError>,
+		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		if self.options.start_on_subscribe {
-			context.next(0);
+			subscriber.next(0);
 		}
 		IntervalSubscription::new(self.options.clone())
 	}

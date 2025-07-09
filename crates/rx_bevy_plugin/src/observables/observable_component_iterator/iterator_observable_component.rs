@@ -1,5 +1,5 @@
 use crate::{
-	DebugBound, IteratorSubscription, ObservableOnInsertContext, CommandSubscriber,
+	CommandSubscriber, DebugBound, IteratorSubscription, ObservableOnInsertContext,
 	WithSubscribeObserverReference,
 };
 use crate::{
@@ -97,11 +97,11 @@ where
 
 	fn on_subscribe(
 		&mut self,
-		mut context: CommandSubscriber<Self::Out, Self::OutError>,
+		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		if !EMIT_ON_TICK {
 			for item in self.iterator.clone().into_iter() {
-				context.next(item);
+				subscriber.next(item);
 			}
 		}
 

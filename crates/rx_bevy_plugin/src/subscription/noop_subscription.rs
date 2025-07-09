@@ -45,5 +45,5 @@ where
 	}
 
 	/// Still gets called, doesn't need to do anything
-	fn unsubscribe(&mut self, _context: CommandSubscriber<Self::Out, Self::OutError>) {}
+	fn unsubscribe(&mut self, _subscriber: CommandSubscriber<Self::Out, Self::OutError>) {}
 }

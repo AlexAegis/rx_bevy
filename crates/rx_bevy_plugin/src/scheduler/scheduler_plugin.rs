@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy_app::{App, Plugin};
 use bevy_ecs::{
 	entity::Entity,
@@ -7,8 +9,9 @@ use bevy_ecs::{
 	system::{Commands, Query, Res},
 };
 use bevy_time::Time;
+use derive_where::derive_where;
 
-use crate::{RxTick, SubscriptionSchedule};
+use crate::{Clock, RxTick, SubscriptionSchedule};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -23,37 +26,29 @@ use crate::{RxTick, SubscriptionSchedule};
 ///
 /// An RxScheduler is tied to a regular bevy Schedule, and all it does is call
 /// `tick` on [SubscriptionComponent]s at the schedule they are implemented for.
-///
-/// TODO: Do Clocks tie into schedulers or just subscriptions?
-pub struct RxScheduler<S>
+#[derive_where(Default)]
+pub struct RxScheduler<S, C>
 where
-	S: ScheduleLabel + Clone,
+	S: ScheduleLabel + Default + Clone,
+	C: Clock,
 {
 	schedule: S,
+	_phantom_data: PhantomData<C>,
 }
 
-impl<S> RxScheduler<S>
+impl<S, C> Plugin for RxScheduler<S, C>
 where
-	S: ScheduleLabel + Clone,
-{
-	pub fn on(schedule: S) -> Self {
-		Self { schedule }
-	}
-}
-
-impl<S> Plugin for RxScheduler<S>
-where
-	S: ScheduleLabel + Clone,
+	S: ScheduleLabel + Default + Clone,
+	C: Clock,
 {
 	fn build(&self, app: &mut App) {
-		app.add_systems(self.schedule.clone(), tick_subscriptions_system::<S>);
+		app.add_systems(self.schedule.clone(), tick_subscriptions_system::<S, C>);
 	}
 }
 
-// TODO: Add clocks
-pub fn tick_subscriptions_system<S: ScheduleLabel>(
+pub fn tick_subscriptions_system<S: ScheduleLabel, C: Clock>(
 	mut commands: Commands,
-	time: Res<Time>,
+	time: Res<Time<C>>,
 	subscription_query: Query<
 		Entity,
 		(

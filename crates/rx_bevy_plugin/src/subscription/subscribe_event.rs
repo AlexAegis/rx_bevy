@@ -151,10 +151,10 @@ pub fn subscription_tick_observer<O>(
 	trace!("subscription_tick_observer {:?}", trigger.event());
 
 	if let Ok(mut subscription) = subscription_query.get_mut(trigger.target()) {
-		let context = subscription
+		let subscriber = subscription
 			.get_subscription_entity_context(trigger.target())
 			.upgrade(&mut commands);
-		subscription.tick(trigger.event(), context);
+		subscription.tick(trigger.event(), subscriber);
 	}
 }
 

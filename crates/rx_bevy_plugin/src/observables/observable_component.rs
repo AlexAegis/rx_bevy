@@ -39,7 +39,7 @@ where
 
 	fn on_subscribe(
 		&mut self,
-		context: CommandSubscriber<Self::Out, Self::OutError>,
+		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscription;
 }
 

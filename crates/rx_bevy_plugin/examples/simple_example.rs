@@ -7,7 +7,7 @@ use examples_common::send_event;
 
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, IntervalObservableComponent,
-	IntervalObservableOptions, IteratorObservableComponent, RelativeEntity, RxEvent, RxPlugin,
+	IntervalObservableOptions, IteratorObservableComponent, RelativeEntity, RxPlugin, RxSignal,
 	SubjectComponent,
 };
 
@@ -35,7 +35,7 @@ fn main() -> AppExit {
 }
 
 fn next_number_observer(
-	next: Trigger<RxEvent<i32, ()>>,
+	next: Trigger<RxSignal<i32, ()>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) {
@@ -119,6 +119,7 @@ fn setup(
 				RelativeEntity::Other(subject_entity),
 			);
 
+	// TODO: Add another interval, one should use a virtual clock an the other a real clock
 	let mut interval_observable_entity_commands = commands.spawn((
 		Name::new("IntervalObservable"),
 		Transform::from_xyz(-1.0, 0.0, 0.0),

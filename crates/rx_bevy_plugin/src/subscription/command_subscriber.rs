@@ -7,7 +7,7 @@ use rx_bevy_observable::{InnerSubscription, ObserverInput, SubscriptionLike, Tea
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{DebugBound, RxEvent};
+use crate::{DebugBound, RxSignal};
 
 #[cfg_attr(feature = "debug", derive_where(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
@@ -53,21 +53,23 @@ where
 	fn next(&mut self, next: Self::In) {
 		if !self.closed {
 			self.commands
-				.trigger_targets(RxEvent::<In, InError>::Next(next), self.subscriber_entity);
+				.trigger_targets(RxSignal::<In, InError>::Next(next), self.subscriber_entity);
 		}
 	}
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.closed {
-			self.commands
-				.trigger_targets(RxEvent::<In, InError>::Error(error), self.subscriber_entity);
+			self.commands.trigger_targets(
+				RxSignal::<In, InError>::Error(error),
+				self.subscriber_entity,
+			);
 		}
 	}
 
 	fn complete(&mut self) {
 		if !self.closed {
 			self.commands
-				.trigger_targets(RxEvent::<In, InError>::Complete, self.subscriber_entity);
+				.trigger_targets(RxSignal::<In, InError>::Complete, self.subscriber_entity);
 			self.unsubscribe();
 		}
 	}

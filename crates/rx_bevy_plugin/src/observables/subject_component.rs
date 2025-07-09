@@ -3,7 +3,7 @@ use crate::{
 	ObservableSignalBound, SubscriptionComponent, WithSubscribeObserverReference,
 	observable_on_insert_hook, observable_on_remove_hook,
 };
-use crate::{RxEvent, Subscriptions};
+use crate::{RxSignal, Subscriptions};
 
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -96,8 +96,6 @@ where
 	type Subscription = NoopSubscription<In, InError>;
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext) {
-		println!("on_insert of subject");
-
 		let subject_observer_entity = context
 			.commands
 			.spawn((
@@ -113,17 +111,14 @@ where
 		self.subject_observer_entity = Some(subject_observer_entity);
 	}
 
-	fn on_subscribe(
-		&mut self,
-		_subscription_context: CommandSubscriber<In, InError>,
-	) -> Self::Subscription {
+	fn on_subscribe(&mut self, _subscriber: CommandSubscriber<In, InError>) -> Self::Subscription {
 		NoopSubscription::default()
 	}
 }
 
 /// Manually triggered events should trigger all subscribers
 pub fn forward_to_subscribers<O>(
-	trigger: Trigger<RxEvent<O::Out, O::OutError>>,
+	trigger: Trigger<RxSignal<O::Out, O::OutError>>,
 	mut observable_subscriptions_query: Query<&mut Subscriptions<O>, With<O>>,
 	subscription_query: Query<&SubscriptionComponent<O>>,
 	mut commands: Commands,

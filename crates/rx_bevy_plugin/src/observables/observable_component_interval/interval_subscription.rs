@@ -35,11 +35,11 @@ impl ScheduledSubscription for IntervalSubscription {
 	fn on_tick(
 		&mut self,
 		event: &RxTick,
-		mut context: CommandSubscriber<Self::Out, Self::OutError>,
+		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) {
 		self.timer.tick(event.delta);
 		if self.timer.just_finished() {
-			context.next(self.count);
+			subscriber.next(self.count);
 			self.count += 1;
 		}
 	}

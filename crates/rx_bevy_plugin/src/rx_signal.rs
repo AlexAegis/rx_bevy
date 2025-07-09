@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy_ecs::{event::Event, system::Res};
 use bevy_time::Time;
 
-use crate::DebugBound;
+use crate::{Clock, DebugBound};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -11,7 +11,7 @@ use bevy_reflect::Reflect;
 #[derive(Event, Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub enum RxEvent<In, InError>
+pub enum RxSignal<In, InError>
 where
 	In: 'static + Sync + Send + DebugBound,
 	InError: 'static + Sync + Send + DebugBound,
@@ -30,7 +30,8 @@ pub struct RxTick {
 }
 
 impl RxTick {
-	pub fn new(time: &Res<Time>) -> Self {
+	// Move this generic to Tick itself, and make the tick function generic
+	pub fn new<C: Clock>(time: &Res<Time<C>>) -> Self {
 		Self {
 			now: time.elapsed(),
 			delta: time.delta(),
