@@ -1,8 +1,6 @@
-use rx_bevy_observable::ObservableOutput;
+use rx_bevy_observable::{ObservableOutput, Observer, SubscriptionLike};
 
-use crate::{
-	DebugBound, ObservableSignalBound, RxNext, RxTick, ScheduledSubscription, SubscriptionContext,
-};
+use crate::{CommandSubscriber, DebugBound, ObservableSignalBound, RxTick, ScheduledSubscription};
 
 use derive_where::derive_where;
 
@@ -53,14 +51,19 @@ where
 {
 	const SCHEDULED: bool = EMIT_ON_TICK;
 
-	fn on_tick(&mut self, _event: &RxTick, context: SubscriptionContext) {
+	fn on_tick(
+		&mut self,
+		_event: &RxTick,
+		mut destination: CommandSubscriber<Self::Out, Self::OutError>,
+	) {
 		if let Some(next) = self.iterator.next() {
-			context
-				.commands
-				.trigger_targets(RxNext(next), context.subscriber_entity);
+			destination.next(next);
+		} else {
+			destination.complete();
 		}
-		// TODO: Else complete
 	}
 
-	fn unsubscribe(&mut self, _context: SubscriptionContext) {}
+	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
+		destination.unsubscribe();
+	}
 }

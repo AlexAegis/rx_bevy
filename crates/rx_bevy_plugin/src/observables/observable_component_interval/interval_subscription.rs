@@ -1,9 +1,7 @@
 use bevy_time::{Timer, TimerMode};
-use rx_bevy_observable::ObservableOutput;
+use rx_bevy_observable::{ObservableOutput, Observer, SubscriptionLike};
 
-use crate::{
-	IntervalObservableOptions, RxNext, RxTick, ScheduledSubscription, SubscriptionContext,
-};
+use crate::{CommandSubscriber, IntervalObservableOptions, RxTick, ScheduledSubscription};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -34,21 +32,19 @@ impl ObservableOutput for IntervalSubscription {
 }
 
 impl ScheduledSubscription for IntervalSubscription {
-	fn on_tick(&mut self, event: &RxTick, context: SubscriptionContext) {
+	fn on_tick(
+		&mut self,
+		event: &RxTick,
+		mut context: CommandSubscriber<Self::Out, Self::OutError>,
+	) {
 		self.timer.tick(event.delta);
 		if self.timer.just_finished() {
-			context
-				.commands
-				.trigger_targets(RxNext(self.count), context.subscriber_entity);
+			context.next(self.count);
 			self.count += 1;
 		}
 	}
 
-	fn unsubscribe(&mut self, _context: SubscriptionContext) {
-		println!(
-			"Interval unsubscribed! {}, {}",
-			self.timer.elapsed_secs(),
-			self.count
-		);
+	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
+		destination.unsubscribe();
 	}
 }

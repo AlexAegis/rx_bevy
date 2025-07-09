@@ -11,7 +11,7 @@ use derive_where::derive_where;
 use smallvec::{SmallVec, smallvec};
 
 use crate::{
-	ObservableComponent, ObservableSignalBound, RxTick, ScheduledSubscription, SubscriptionContext,
+	ObservableComponent, ObservableSignalBound, RxTick, ScheduledSubscription, CommandSubscriber,
 	SubscriptionEntityContext,
 };
 
@@ -101,12 +101,13 @@ where
 				}) {
 			let mut commands = deferred_world.commands();
 
-			scheduled_subscription.unsubscribe(SubscriptionContext {
-				commands: &mut commands,
+			let context = SubscriptionEntityContext {
 				observable_entity,
-				subscription_entity,
 				subscriber_entity,
-			});
+				subscription_entity,
+			};
+
+			scheduled_subscription.unsubscribe(context.upgrade(&mut commands));
 		}
 	}
 }
@@ -149,7 +150,7 @@ where
 		}
 	}
 
-	pub fn tick(&mut self, event: &RxTick, context: SubscriptionContext) {
+	pub fn tick(&mut self, event: &RxTick, context: CommandSubscriber<O::Out, O::OutError>) {
 		self.scheduled_subscription
 			.as_mut()
 			.expect("subscriber should always be present when ticked")

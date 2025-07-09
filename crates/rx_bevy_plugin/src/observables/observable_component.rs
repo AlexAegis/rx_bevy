@@ -14,7 +14,7 @@ use rx_bevy_observable::ObservableOutput;
 use short_type_name::short_type_name;
 
 use crate::{
-	DebugBound, ObservableSignalBound, ScheduledSubscription, SubscriptionContext, on_subscribe,
+	CommandSubscriber, DebugBound, ObservableSignalBound, ScheduledSubscription, on_subscribe,
 };
 
 /// Since the nature of a Subscription is very different in the context of an
@@ -37,7 +37,10 @@ where
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext);
 
-	fn on_subscribe(&mut self, context: SubscriptionContext) -> Self::Subscription;
+	fn on_subscribe(
+		&mut self,
+		context: CommandSubscriber<Self::Out, Self::OutError>,
+	) -> Self::Subscription;
 }
 
 /// TODO: While this is required for all ObservableComponents, it's a separate trait to be the auto-implementable by a macro.

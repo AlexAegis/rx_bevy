@@ -3,12 +3,12 @@ use bevy_ecs::{
 	entity::Entity,
 };
 use bevy_reflect::Reflect;
-use rx_bevy_observable::ObservableOutput;
+use rx_bevy_observable::{ObservableOutput, Observer};
 
 use crate::{
-	IntervalObservableOptions, IntervalSubscription, ObservableComponent,
-	ObservableOnInsertContext, RxNext, SubscriptionContext, WithSubscribeObserverReference,
-	observable_on_insert_hook, observable_on_remove_hook,
+	CommandSubscriber, IntervalObservableOptions, IntervalSubscription, ObservableComponent,
+	ObservableOnInsertContext, WithSubscribeObserverReference, observable_on_insert_hook,
+	observable_on_remove_hook,
 };
 
 #[derive(Clone)]
@@ -63,11 +63,12 @@ impl ObservableComponent for IntervalObservableComponent {
 
 	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
 
-	fn on_subscribe(&mut self, context: SubscriptionContext) -> Self::Subscription {
+	fn on_subscribe(
+		&mut self,
+		mut context: CommandSubscriber<Self::Out, Self::OutError>,
+	) -> Self::Subscription {
 		if self.options.start_on_subscribe {
-			context
-				.commands
-				.trigger_targets(RxNext(0), context.subscriber_entity);
+			context.next(0);
 		}
 		IntervalSubscription::new(self.options.clone())
 	}

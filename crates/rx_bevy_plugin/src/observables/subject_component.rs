@@ -1,6 +1,6 @@
 use crate::{
 	NoopSubscription, ObservableComponent, ObservableOnInsertContext, ObservableSignalBound,
-	SubscriptionComponent, SubscriptionContext, WithSubscribeObserverReference,
+	SubscriptionComponent, CommandSubscriber, WithSubscribeObserverReference,
 	observable_on_insert_hook, observable_on_remove_hook,
 };
 use crate::{RxNext, Subscriptions};
@@ -114,7 +114,10 @@ where
 	}
 
 	// TODO: Return value should describe how to clean up
-	fn on_subscribe(&mut self, _subscription_context: SubscriptionContext) -> Self::Subscription {
+	fn on_subscribe(
+		&mut self,
+		_subscription_context: CommandSubscriber<In, InError>,
+	) -> Self::Subscription {
 		println!("on subscribe subject");
 		NoopSubscription::default()
 	}

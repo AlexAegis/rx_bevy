@@ -4,7 +4,7 @@ use derive_where::derive_where;
 
 use rx_bevy_observable::ObservableOutput;
 
-use crate::{DebugBound, RxTick, ScheduledSubscription, SubscriptionContext};
+use crate::{CommandSubscriber, DebugBound, RxTick, ScheduledSubscription};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -40,10 +40,10 @@ where
 {
 	const SCHEDULED: bool = false;
 
-	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionContext) {
+	fn on_tick(&mut self, _event: &RxTick, _context: CommandSubscriber<Self::Out, Self::OutError>) {
 		unreachable!()
 	}
 
 	/// Still gets called, doesn't need to do anything
-	fn unsubscribe(&mut self, _context: SubscriptionContext) {}
+	fn unsubscribe(&mut self, _context: CommandSubscriber<Self::Out, Self::OutError>) {}
 }

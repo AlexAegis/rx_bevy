@@ -16,7 +16,7 @@ use thiserror::Error;
 
 use crate::{
 	ObservableComponent, ObservableSignalBound, RelativeEntity, RxTick, ScheduledSubscription,
-	SubscriptionComponent, SubscriptionContext, SubscriptionSchedule, Subscriptions,
+	SubscriptionComponent, SubscriptionEntityContext, SubscriptionSchedule, Subscriptions,
 };
 
 #[cfg(feature = "reflect")]
@@ -100,12 +100,14 @@ pub fn on_subscribe<O>(
 	}
 
 	{
-		let scheduled_subscription = observable_component.on_subscribe(SubscriptionContext {
-			commands: &mut commands,
+		let context = SubscriptionEntityContext {
 			observable_entity,
 			subscriber_entity: destination_entity,
 			subscription_entity,
-		});
+		};
+
+		let scheduled_subscription =
+			observable_component.on_subscribe(context.upgrade(&mut commands));
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 		subscription_entity_commands.insert((

@@ -1,20 +1,21 @@
 use crate::{
-	DebugBound, IteratorSubscription, ObservableOnInsertContext, RxNext, SubscriptionContext,
+	DebugBound, IteratorSubscription, ObservableOnInsertContext, CommandSubscriber,
 	WithSubscribeObserverReference,
 };
 use crate::{
 	ObservableComponent, ObservableSignalBound, observable_on_insert_hook,
 	observable_on_remove_hook,
 };
+
 use bevy_ecs::{
 	component::{Component, ComponentHooks, Mutable, StorageType},
 	entity::Entity,
 };
 use derive_where::derive_where;
+use rx_bevy_observable::{ObservableOutput, Observer};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
-use rx_bevy_observable::ObservableOutput;
 
 #[derive(Clone, Reflect)]
 #[derive_where(Debug)]
@@ -94,14 +95,13 @@ where
 
 	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
 
-	fn on_subscribe(&mut self, _context: SubscriptionContext) -> Self::Subscription {
-		println!("on_subscribe iterator! {:?}", _context);
-
+	fn on_subscribe(
+		&mut self,
+		mut context: CommandSubscriber<Self::Out, Self::OutError>,
+	) -> Self::Subscription {
 		if !EMIT_ON_TICK {
 			for item in self.iterator.clone().into_iter() {
-				_context
-					.commands
-					.trigger_targets(RxNext(item), _context.subscriber_entity);
+				context.next(item);
 			}
 		}
 
