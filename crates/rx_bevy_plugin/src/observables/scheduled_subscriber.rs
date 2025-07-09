@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, system::Commands};
-use rx_bevy::{ObservableOutput, ObserverInput};
+use rx_bevy_observable::{ObservableOutput, ObserverInput};
 
 use crate::{DebugBound, RxComplete, RxError, RxNext, RxTick, SubscriptionContext};
 
@@ -62,7 +62,8 @@ where
 	type InError = InError;
 }
 
-impl<'a, 'w, 's, In, InError> rx_bevy::Observer for CommandObserver<'a, 'w, 's, In, InError>
+impl<'a, 'w, 's, In, InError> rx_bevy_observable::Observer
+	for CommandObserver<'a, 'w, 's, In, InError>
 where
 	In: 'static + Send + Sync,
 	InError: 'static + Send + Sync,

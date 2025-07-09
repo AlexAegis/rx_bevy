@@ -1,8 +1,11 @@
 use std::marker::PhantomData;
 
-use bevy::prelude::*;
 use bevy_ecs::{
-	component::HookContext, relationship::RelationshipSourceCollection, world::DeferredWorld,
+	component::{Component, HookContext},
+	entity::Entity,
+	relationship::RelationshipSourceCollection,
+	system::Query,
+	world::DeferredWorld,
 };
 use derive_where::derive_where;
 use smallvec::{SmallVec, smallvec};
@@ -12,11 +15,16 @@ use crate::{
 	SubscriptionEntityContext,
 };
 
+#[cfg(feature = "reflect")]
+use bevy_reflect::Reflect;
+
 /// This semantically is a relationship but that imposes too many restrictions,
 /// and subscriptions are managed uniquely anyways.
 #[derive(Component)]
 #[component(on_remove = subscriptions_on_remove_hook::<O>)]
-#[derive_where(Default, Debug)]
+#[derive_where(Default)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct Subscriptions<O>
 where
 	O: ObservableComponent + Send + Sync,
@@ -103,8 +111,10 @@ where
 	}
 }
 
-#[derive(Component, Debug)]
+#[derive(Component)]
 #[component(on_remove = subscription_on_remove_hook::<O>)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscriptionComponent<O>
 where
 	O: ObservableComponent + Send + Sync,
@@ -118,42 +128,6 @@ where
 	/// to access it from here, since it's available as `self`
 	pub scheduled_subscription: Option<O::Subscription>,
 	_phantom_data: PhantomData<O>,
-}
-
-fn subscription_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
-where
-	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
-{
-	let subscription_entity = hook_context.entity;
-
-	let (mut scheduled_subscription, entity_context) = {
-		let mut subscription = deferred_world
-			.get_mut::<SubscriptionComponent<O>>(subscription_entity)
-			.expect("the component should be available as the hook is for this component");
-
-		(
-			subscription
-				.scheduled_subscription
-				.take()
-				.expect("the subscription has to be present until unsubscribe"),
-			subscription.get_subscription_entity_context(subscription_entity),
-		)
-	};
-
-	if let Some(mut subscriptions_component) =
-		deferred_world.get_mut::<Subscriptions<O>>(entity_context.observable_entity)
-	{
-		subscriptions_component
-			.subscriptions
-			.retain(|&mut subscription_entity_reference| {
-				subscription_entity != subscription_entity_reference
-			});
-	}
-
-	let mut commands = deferred_world.commands();
-	scheduled_subscription.unsubscribe(entity_context.upgrade(&mut commands));
 }
 
 impl<O> SubscriptionComponent<O>
@@ -192,4 +166,40 @@ where
 			subscription_entity,
 		}
 	}
+}
+
+fn subscription_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+where
+	O: ObservableComponent + Send + Sync,
+	O::Out: ObservableSignalBound,
+	O::OutError: ObservableSignalBound,
+{
+	let subscription_entity = hook_context.entity;
+
+	let (mut scheduled_subscription, entity_context) = {
+		let mut subscription = deferred_world
+			.get_mut::<SubscriptionComponent<O>>(subscription_entity)
+			.expect("the component should be available as the hook is for this component");
+
+		(
+			subscription
+				.scheduled_subscription
+				.take()
+				.expect("the subscription has to be present until unsubscribe"),
+			subscription.get_subscription_entity_context(subscription_entity),
+		)
+	};
+
+	if let Some(mut subscriptions_component) =
+		deferred_world.get_mut::<Subscriptions<O>>(entity_context.observable_entity)
+	{
+		subscriptions_component
+			.subscriptions
+			.retain(|&mut subscription_entity_reference| {
+				subscription_entity != subscription_entity_reference
+			});
+	}
+
+	let mut commands = deferred_world.commands();
+	scheduled_subscription.unsubscribe(entity_context.upgrade(&mut commands));
 }

@@ -1,11 +1,8 @@
 use std::time::Duration;
 
-use bevy::{
-	ecs::event::Event,
-	prelude::{Deref, DerefMut},
-	time::Time,
-};
-use bevy_ecs::system::Res;
+use bevy_derive::{Deref, DerefMut};
+use bevy_ecs::{event::Event, system::Res};
+use bevy_time::Time;
 
 // TODO: Join these into a single enum if you don't want to spawn 3 of observer entities
 #[derive(Event, Deref, DerefMut, Debug, Clone)]

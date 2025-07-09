@@ -40,20 +40,28 @@ inspector = [
     "dep:bevy_egui",
     "bevy-inspector-egui/bevy_render",
 ]
-reflect = []
+reflect = ["dep:bevy_reflect"]
 
 [dependencies]
+# rx_bevy dependencies
 rx_bevy_observable = { workspace = true }
-bevy = { workspace = true }
+# bevy dependencies
+bevy_app = { workspace = true }
+bevy_derive = { workspace = true }
 bevy_ecs = { workspace = true }
+bevy_log = { workspace = true }
+bevy_reflect = { workspace = true, optional = true }
+bevy_time = { workspace = true }
+# third party bevy dependencies
 bevy-inspector-egui = { workspace = true, optional = true, features = [] }
 bevy_egui = { workspace = true, optional = true }
-rx_bevy = { workspace = true }
-smallvec = { workspace = true }
+# misc
 derive-where = { workspace = true }
+smallvec = { workspace = true }
 short_type_name = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
+bevy = { workspace = true }
 rx_bevy_testing = { workspace = true }
 examples_common = { workspace = true }

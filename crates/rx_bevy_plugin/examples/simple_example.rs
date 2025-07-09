@@ -7,8 +7,8 @@ use examples_common::send_event;
 
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, IntervalObservableComponent,
-	IntervalObservableOptions, IteratorObservableComponent, RxNext, RxPlugin, SubjectComponent,
-	SubscribeFor, SubscriberEntity,
+	IntervalObservableOptions, IteratorObservableComponent, RelativeEntity, RxNext, RxPlugin,
+	SubjectComponent,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -94,11 +94,11 @@ fn setup(
 	let subject_entity = subject_entity_commands.observe(next_number_observer).id();
 
 	let _s = subject_entity_commands.subscribe_to_this_unscheduled::<SubjectComponent<i32, ()>>(
-		SubscriberEntity::Other(observer_entity),
+		RelativeEntity::Other(observer_entity),
 	);
 
 	let _s2 = subject_entity_commands.subscribe_to_this_unscheduled::<SubjectComponent<i32, ()>>(
-		SubscriberEntity::Other(another_observer_entity),
+		RelativeEntity::Other(another_observer_entity),
 	);
 
 	let mut iterator_observable_entity_commands = commands.spawn((
@@ -106,13 +106,14 @@ fn setup(
 		Transform::from_xyz(-1.0, 0.0, 0.0),
 		Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-		IteratorObservableComponent::new(99..=99),
+		IteratorObservableComponent::<RangeInclusive<i32>, true>::new(90..=99),
 	));
 
-	let _subjects_iterator_observable_subscription = iterator_observable_entity_commands
-		.subscribe_to_this_unscheduled::<IteratorObservableComponent<
-		RangeInclusive<i32>,
-	>>(SubscriberEntity::Other(subject_entity));
+	let _subjects_iterator_observable_subscription =
+		iterator_observable_entity_commands
+			.subscribe_to_this_scheduled::<IteratorObservableComponent<RangeInclusive<i32>, true>, Update>(
+				RelativeEntity::Other(subject_entity),
+			);
 
 	let mut interval_observable_entity_commands = commands.spawn((
 		Name::new("IntervalObservable"),
@@ -127,7 +128,7 @@ fn setup(
 	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
 	let subjects_interval_subscription = interval_observable_entity_commands
 		.subscribe_to_this_scheduled::<IntervalObservableComponent, Update>(
-		SubscriberEntity::Other(subject_entity),
+		RelativeEntity::Other(subject_entity),
 	);
 
 	println!("spawned");

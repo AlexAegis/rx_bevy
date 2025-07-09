@@ -1,5 +1,12 @@
-use bevy::prelude::*;
-use bevy_ecs::schedule::ScheduleLabel;
+use bevy_app::{App, Plugin};
+use bevy_ecs::{
+	entity::Entity,
+	observer::Observer,
+	query::With,
+	schedule::ScheduleLabel,
+	system::{Commands, Query, Res},
+};
+use bevy_time::Time;
 
 use crate::{RxTick, SubscriptionSchedule};
 
@@ -51,7 +58,7 @@ pub fn tick_subscriptions_system<S: ScheduleLabel>(
 		Entity,
 		(
 			With<SubscriptionSchedule<S>>,
-			With<bevy::ecs::prelude::Observer>, // The tick Observer, which is optional for non tickable Subscribers
+			With<Observer>, // The tick Observer, which is optional for non tickable Subscribers
 		),
 	>,
 ) {

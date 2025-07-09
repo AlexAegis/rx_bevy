@@ -1,7 +1,7 @@
 #[cfg(feature = "reflect")]
-use bevy::reflect::FromReflect;
+use bevy_reflect::FromReflect;
 #[cfg(feature = "reflect")]
-use bevy::reflect::Reflectable;
+use bevy_reflect::Reflectable;
 
 #[cfg(not(feature = "reflect"))]
 pub trait ReflectBound {}

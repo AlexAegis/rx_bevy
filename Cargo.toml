@@ -49,7 +49,12 @@ bevy = { version = "0.16.1", default-features = false, features = [
     "bevy_gltf",
     "bevy_log",
 ] }
+bevy_app = { version = "0.16.1", default-features = false }
+bevy_derive = { version = "0.16.1", default-features = false }
 bevy_ecs = { version = "0.16.1", default-features = false }
+bevy_log = { version = "0.16.1", default-features = false }
+bevy_reflect = { version = "0.16.1", default-features = false }
+bevy_time = { version = "0.16.1", default-features = false }
 bevy-inspector-egui = { version = "0.31.0", default-features = false }
 bevy_egui = { version = "0.34.1", features = ["immutable_ctx"] }
 derive-where = { version = "1.4.0" }
@@ -59,7 +64,6 @@ slab = { version = "0.4.9" }
 ringbuffer = { version = "0.15.0" }
 serde = { version = "1.0.219" }
 num-traits = { version = "0.2.19" }
-petgraph = { version = "0.8.2" }
 variadics_please = { version = "1.1.0" }
 either = { version = "1.15.0" }
 thiserror = { version = "2.0.12" }

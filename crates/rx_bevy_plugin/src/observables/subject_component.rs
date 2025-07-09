@@ -1,14 +1,26 @@
 use crate::{
-	NonScheduledSubscription, ObservableComponent, ObservableOnInsertContext,
-	ObservableSignalBound, SubscriptionComponent, SubscriptionContext,
-	WithSubscribeObserverReference, on_observable_insert_hook, on_observable_remove_hook,
+	NoopSubscription, ObservableComponent, ObservableOnInsertContext, ObservableSignalBound,
+	SubscriptionComponent, SubscriptionContext, WithSubscribeObserverReference,
+	observable_on_insert_hook, observable_on_remove_hook,
 };
 use crate::{RxNext, Subscriptions};
-use bevy::ecs::component::{Mutable, StorageType};
-use bevy::prelude::*;
-use rx_bevy::prelude::*;
+
 use std::fmt::Debug;
 use std::marker::PhantomData;
+
+use bevy_ecs::{
+	component::{Component, Mutable, StorageType},
+	entity::Entity,
+	name::Name,
+	observer::Trigger,
+	query::With,
+	system::{Commands, Query},
+};
+
+use rx_bevy_observable::{ObservableOutput, ObserverInput};
+
+#[cfg(feature = "reflect")]
+use bevy_reflect::Reflect;
 
 /// A component that turns an entity into a multicast source, can observe
 /// multiple other observables, and other entities can subscribe to it.
@@ -31,12 +43,12 @@ where
 	In: 'static + Clone + ObservableSignalBound,
 	InError: 'static + Clone + ObservableSignalBound,
 {
-	const STORAGE_TYPE: bevy::ecs::component::StorageType = StorageType::Table;
+	const STORAGE_TYPE: StorageType = StorageType::Table;
 	type Mutability = Mutable;
 
 	fn register_component_hooks(hooks: &mut bevy_ecs::component::ComponentHooks) {
-		hooks.on_insert(on_observable_insert_hook::<Self>);
-		hooks.on_remove(on_observable_remove_hook::<Self>);
+		hooks.on_insert(observable_on_insert_hook::<Self>);
+		hooks.on_remove(observable_on_remove_hook::<Self>);
 	}
 }
 
@@ -81,7 +93,7 @@ where
 	/// allowed, an infinite loop would happen
 	const CAN_SELF_SUBSCRIBE: bool = false;
 
-	type Subscription = NonScheduledSubscription<In, InError>;
+	type Subscription = NoopSubscription<In, InError>;
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext) {
 		println!("on_insert of subject");
@@ -104,7 +116,7 @@ where
 	// TODO: Return value should describe how to clean up
 	fn on_subscribe(&mut self, _subscription_context: SubscriptionContext) -> Self::Subscription {
 		println!("on subscribe subject");
-		NonScheduledSubscription::default()
+		NoopSubscription::default()
 	}
 }
 
