@@ -1,3 +1,4 @@
+mod clock;
 mod feature_bounds;
 mod observables;
 mod observer_events;
@@ -6,6 +7,7 @@ mod rx_plugin;
 mod scheduler;
 mod subscription;
 
+pub use clock::*;
 pub use feature_bounds::*;
 pub use observables::*;
 pub use observer_events::*;

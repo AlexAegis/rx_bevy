@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use bevy::prelude::*;
 use bevy_ecs::schedule::ScheduleLabel;
 
 #[derive(Debug)]

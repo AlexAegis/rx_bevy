@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, system::Commands};
 use rx_bevy::{ObservableOutput, ObserverInput};
 
-use crate::{DebugBound, RxComplete, RxError, RxNext, RxTick, SubscriptionOnTickContext};
+use crate::{DebugBound, RxComplete, RxError, RxNext, RxTick, SubscriptionContext};
 
 // TODO: Should be schedulable, probably from the Subscribe event, like schedule asap, once per frame, and time (maybe two, one ticked when AT LEAST a time passes, or when the current frame is expected to end after that limit)
 pub trait ScheduledSubscription: ObservableOutput + DebugBound
@@ -15,20 +15,19 @@ where
 	/// When set to false, the subscription will not be ticked at all.
 	const TICKABLE: bool = true;
 
-	// /// Checked on every tick, and the [RxScheduler] will not call `tick` if
-	// /// this returns false. Can be used as filter and/or to advance timers
-	// fn can_tick_now(&mut self, _event: &RxTick) -> bool {
-	// 	true
-	// }
+	fn on_tick(&mut self, event: &RxTick, context: SubscriptionContext);
 
-	fn on_event(&mut self, event: RxNext<Self::Out>, context: SubscriptionOnTickContext);
-	fn on_tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext);
+	/// Happens when either the [Subscription] or its relation from [Subscriptions] is removed
+	///
+	/// > Note that when this runs, this [ScheduledSubscription] instance is already removed
+	/// > from the [SubscriptionComponent], not that you would ever try that, since `self` is that.
+	fn unsubscribe(&mut self, _context: SubscriptionContext);
 }
 
 impl ScheduledSubscription for () {
-	fn on_event(&mut self, _event: RxNext<Self::Out>, _context: SubscriptionOnTickContext) {}
+	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionContext) {}
 
-	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionOnTickContext) {}
+	fn unsubscribe(&mut self, _context: SubscriptionContext) {}
 }
 
 pub struct CommandObserver<'a, 'w, 's, In, InError>

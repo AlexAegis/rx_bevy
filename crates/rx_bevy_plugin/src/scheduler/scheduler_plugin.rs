@@ -1,12 +1,7 @@
-use std::marker::PhantomData;
-
 use bevy::prelude::*;
 use bevy_ecs::schedule::ScheduleLabel;
 
-use crate::{
-	ObservableComponent, ObservableSignalBound, RxTick, SubscriptionComponent,
-	SubscriptionMarkerComponent,
-};
+use crate::{RxTick, SubscriptionMarkerComponent};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -61,11 +56,6 @@ pub fn tick_subscriptions_system(
 	>,
 ) {
 	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
-	commands.trigger_targets(
-		RxTick {
-			now: time.elapsed(),
-			delta: time.delta(),
-		},
-		subscriptions,
-	);
+
+	commands.trigger_targets(RxTick::new(&time), subscriptions);
 }

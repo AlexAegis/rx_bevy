@@ -1,7 +1,6 @@
 use crate::{
-	DebugBound, NonScheduledSubscription, ObservableComponent, ObservableOnInsertContext,
-	ObservableOnSubscribeContext, ObservableSignalBound, RxTick, ScheduledSubscription,
-	SubscriptionComponent, SubscriptionOnTickContext, on_observable_insert_hook,
+	NonScheduledSubscription, ObservableComponent, ObservableOnInsertContext,
+	ObservableSignalBound, SubscriptionComponent, SubscriptionContext, on_observable_insert_hook,
 	on_observable_remove_hook,
 };
 use crate::{RxNext, Subscriptions};
@@ -99,7 +98,7 @@ where
 	// TODO: Return value should describe how to clean up
 	fn on_subscribe(
 		&mut self,
-		_subscription_context: ObservableOnSubscribeContext,
+		_subscription_context: SubscriptionContext,
 	) -> Self::ScheduledSubscription {
 		println!("on subscribe subject");
 		NonScheduledSubscription::default()

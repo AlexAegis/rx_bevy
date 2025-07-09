@@ -1,7 +1,7 @@
-use crate::{DebugBound, ObservableOnInsertContext, RxNext, RxTick, SubscriptionOnTickContext};
+use crate::{DebugBound, ObservableOnInsertContext, RxNext, RxTick, SubscriptionContext};
 use crate::{
-	ObservableComponent, ObservableOnSubscribeContext, ObservableSignalBound,
-	ScheduledSubscription, on_observable_insert_hook, on_observable_remove_hook,
+	ObservableComponent, ObservableSignalBound, ScheduledSubscription, on_observable_insert_hook,
+	on_observable_remove_hook,
 };
 use bevy::ecs::component::{Mutable, StorageType};
 use bevy::prelude::*;
@@ -36,13 +36,9 @@ where
 {
 	const TICKABLE: bool = false;
 
-	fn on_event(&mut self, event: RxNext<Self::Out>, context: SubscriptionOnTickContext) {
-		println!(
-			"IteratorObservableSubscriber on event should not receive one! {event:?} {context:?}"
-		);
-	}
+	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionContext) {}
 
-	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionOnTickContext) {}
+	fn unsubscribe(&mut self, _context: SubscriptionContext) {}
 }
 
 #[derive(Clone, Reflect)]
@@ -109,10 +105,7 @@ where
 
 	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
 
-	fn on_subscribe(
-		&mut self,
-		_context: ObservableOnSubscribeContext,
-	) -> Self::ScheduledSubscription {
+	fn on_subscribe(&mut self, _context: SubscriptionContext) -> Self::ScheduledSubscription {
 		println!("on_subscribe iterator! {:?}", _context);
 
 		for item in self.iterator.clone().into_iter() {

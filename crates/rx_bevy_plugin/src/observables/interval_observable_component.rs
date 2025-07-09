@@ -1,12 +1,12 @@
-use bevy::{prelude::*, time::Stopwatch};
+use bevy::prelude::*;
 use bevy_ecs::component::{Mutable, StorageType};
 use rx_bevy::ObservableOutput;
 
 use std::time::Duration;
 
 use crate::{
-	DebugBound, ObservableComponent, ObservableSignalBound, RxNext, RxTick, ScheduledSubscription,
-	SubscriptionOnTickContext, on_observable_insert_hook, on_observable_remove_hook,
+	ObservableComponent, RxNext, RxTick, ScheduledSubscription, SubscriptionContext,
+	on_observable_insert_hook, on_observable_remove_hook,
 };
 
 #[derive(Clone)]
@@ -61,7 +61,7 @@ impl ObservableComponent for IntervalObservableComponent {
 
 	fn on_subscribe(
 		&mut self,
-		_context: super::ObservableOnSubscribeContext,
+		_context: super::SubscriptionContext,
 	) -> Self::ScheduledSubscription {
 		println!("interval on_subscribe {_context:?}");
 		IntervalSubscription::new(self.duration.clone())
@@ -90,22 +90,21 @@ impl ObservableOutput for IntervalSubscription {
 }
 
 impl ScheduledSubscription for IntervalSubscription {
-	fn on_event(&mut self, event: RxNext<Self::Out>, context: SubscriptionOnTickContext) {
-		println!(
-			"on_event Interval!, what even is this for?? {:?}, {:?}",
-			event, context,
-		);
-	}
-
-	fn on_tick(&mut self, event: &RxTick, context: SubscriptionOnTickContext) {
+	fn on_tick(&mut self, event: &RxTick, context: SubscriptionContext) {
 		self.timer.tick(event.delta);
 		if self.timer.just_finished() {
-			// TODO: This should be simplified to a typical observer interface, next and whatnot, in a scheduler
-
 			context
 				.commands
 				.trigger_targets(RxNext(self.count), context.subscriber_entity);
 			self.count += 1;
 		}
+	}
+
+	fn unsubscribe(&mut self, _context: SubscriptionContext) {
+		println!(
+			"Interval unsubscribed! {}, {}",
+			self.timer.elapsed_secs(),
+			self.count
+		);
 	}
 }

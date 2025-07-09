@@ -42,10 +42,7 @@ where
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext);
 
-	fn on_subscribe(
-		&mut self,
-		context: ObservableOnSubscribeContext,
-	) -> Self::ScheduledSubscription;
+	fn on_subscribe(&mut self, context: SubscriptionContext) -> Self::ScheduledSubscription;
 }
 
 #[derive_where(Default)]
@@ -75,13 +72,11 @@ where
 {
 	const TICKABLE: bool = false;
 
-	fn on_event(&mut self, _event: crate::RxNext<Self::Out>, _context: SubscriptionOnTickContext) {
+	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionContext) {
 		unreachable!()
 	}
 
-	fn on_tick(&mut self, _event: &RxTick, _context: SubscriptionOnTickContext) {
-		unreachable!()
-	}
+	fn unsubscribe(&mut self, _context: SubscriptionContext) {}
 }
 
 #[derive_where(Debug)]
@@ -93,7 +88,7 @@ pub struct ObservableOnInsertContext<'a, 'w, 's> {
 }
 
 #[derive_where(Debug)]
-pub struct ObservableOnSubscribeContext<'a, 'w, 's> {
+pub struct SubscriptionContext<'a, 'w, 's> {
 	#[derive_where(skip)]
 	pub commands: &'a mut Commands<'w, 's>,
 	/// "This" entity
@@ -105,21 +100,32 @@ pub struct ObservableOnSubscribeContext<'a, 'w, 's> {
 	pub subscription_entity: Entity,
 }
 
-#[derive_where(Debug)]
-pub struct SubscriptionOnTickContext<'a, 'w, 's> {
-	#[derive_where(skip)]
-	pub commands: &'a mut Commands<'w, 's>,
+#[derive(Debug)]
+pub struct SubscriptionEntityContext {
 	/// "This" entity
 	pub observable_entity: Entity,
 	/// "Destination" entity
 	pub subscriber_entity: Entity,
-
 	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
 	pub subscription_entity: Entity,
+}
+
+impl SubscriptionEntityContext {
+	pub fn upgrade<'a, 'w, 's>(
+		self,
+		commands: &'a mut Commands<'w, 's>,
+	) -> SubscriptionContext<'a, 'w, 's> {
+		SubscriptionContext {
+			commands,
+			observable_entity: self.observable_entity,
+			subscriber_entity: self.subscriber_entity,
+			subscription_entity: self.subscription_entity,
+		}
+	}
 }
 
 // TODO: So that you can just .next stuff instead of emitting values by hand
-//impl Observer for SubscriptionOnTickContext {}
+//impl Observer for SubscriptionContext {}
 
 /// TODO: Add on remove hooks to despawn this and the observable component together, the observable should be removed when this is removed, and when the observable is removed this entire entity should despawn
 #[derive(Component, Reflect)]
@@ -267,13 +273,12 @@ pub fn on_observable_subscribe<O>(
 	}
 
 	{
-		let scheduled_subscription =
-			observable_component.on_subscribe(ObservableOnSubscribeContext {
-				commands: &mut commands,
-				observable_entity,
-				subscriber_entity: destination_entity,
-				subscription_entity,
-			});
+		let scheduled_subscription = observable_component.on_subscribe(SubscriptionContext {
+			commands: &mut commands,
+			observable_entity,
+			subscriber_entity: destination_entity,
+			subscription_entity,
+		});
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 		subscription_entity_commands.insert((
@@ -318,8 +323,9 @@ pub fn subscription_tick_observer<O>(
 	trace!("subscription_tick_observer {:?}", trigger.event());
 
 	if let Ok(mut subscription) = subscription_query.get_mut(trigger.target()) {
-		let context =
-			subscription.into_subscription_on_tick_context(&mut commands, trigger.target());
+		let context = subscription
+			.get_subscription_entity_context(trigger.target())
+			.upgrade(&mut commands);
 		subscription.tick(trigger.event(), context);
 	}
 }

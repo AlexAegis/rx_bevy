@@ -103,6 +103,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 			IteratorObservableComponent::new(99..=99),
 		))
+		// TODO A subscribe method (from either direction, should return the subscription entity's id, so users can save it somewhere)
 		.trigger(SubscribeFor::<
 			IteratorObservableComponent<RangeInclusive<i32>>,
 		>::new(SubscriberEntity::Other(subject_entity)))
@@ -116,6 +117,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 			IntervalObservableComponent::new(Duration::from_secs(1)),
 		))
+		// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
 		.trigger(SubscribeFor::<IntervalObservableComponent>::new(
 			SubscriberEntity::Other(subject_entity),
 		))

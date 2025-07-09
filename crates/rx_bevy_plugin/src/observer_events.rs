@@ -3,7 +3,9 @@ use std::time::Duration;
 use bevy::{
 	ecs::event::Event,
 	prelude::{Deref, DerefMut},
+	time::Time,
 };
+use bevy_ecs::system::Res;
 
 // TODO: Join these into a single enum if you don't want to spawn 3 of observer entities
 #[derive(Event, Deref, DerefMut, Debug, Clone)]
@@ -25,4 +27,13 @@ pub struct RxComplete;
 pub struct RxTick {
 	pub now: Duration,
 	pub delta: Duration,
+}
+
+impl RxTick {
+	pub fn new(time: &Res<Time>) -> Self {
+		Self {
+			now: time.elapsed(),
+			delta: time.delta(),
+		}
+	}
 }
