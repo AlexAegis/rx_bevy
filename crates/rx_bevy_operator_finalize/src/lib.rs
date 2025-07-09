@@ -11,11 +11,11 @@ pub mod finalize_extension_compose;
 pub mod finalize_extension_pipe;
 
 pub mod prelude {
-	pub use crate::finalize_operator::*;
+	pub use super::finalize_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::finalize_extension_compose::*;
+	pub use super::finalize_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::finalize_extension_pipe::*;
+	pub use super::finalize_extension_pipe::*;
 }

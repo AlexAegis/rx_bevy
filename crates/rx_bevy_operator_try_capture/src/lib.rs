@@ -11,11 +11,11 @@ pub mod try_capture_extension_compose;
 pub mod try_capture_extension_pipe;
 
 pub mod prelude {
-	pub use crate::try_capture_operator::*;
+	pub use super::try_capture_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::try_capture_extension_compose::*;
+	pub use super::try_capture_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::try_capture_extension_pipe::*;
+	pub use super::try_capture_extension_pipe::*;
 }

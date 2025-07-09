@@ -20,4 +20,15 @@ pub use rx_plugin::*;
 pub use scheduler::*;
 pub use subscription::*;
 
-pub mod prelude {}
+pub mod prelude {
+	pub use super::observables::prelude::*;
+	pub use super::scheduler::prelude::*;
+	pub use super::subscription::prelude::*;
+
+	pub use super::clock::*;
+	pub use super::entity_command_subscribe::*;
+	pub use super::feature_bounds::*;
+	pub use super::observer_events::*;
+	pub use super::relative_entity::*;
+	pub use super::rx_plugin::*;
+}

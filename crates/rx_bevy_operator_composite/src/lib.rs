@@ -7,6 +7,6 @@ pub use composite_operator_extension_pipe::*;
 pub use composite_subscriber::*;
 
 pub mod prelude {
-	pub use crate::composite_operator::*;
-	pub use crate::composite_operator_extension_pipe::*;
+	pub use super::composite_operator::*;
+	pub use super::composite_operator_extension_pipe::*;
 }

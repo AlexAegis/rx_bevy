@@ -11,11 +11,11 @@ pub mod take_extension_compose;
 pub mod take_extension_pipe;
 
 pub mod prelude {
-	pub use crate::take_operator::*;
+	pub use super::take_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::take_extension_compose::*;
+	pub use super::take_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::take_extension_pipe::*;
+	pub use super::take_extension_pipe::*;
 }

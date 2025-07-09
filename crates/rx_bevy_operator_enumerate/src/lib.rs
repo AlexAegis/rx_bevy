@@ -11,11 +11,11 @@ pub mod enumerate_extension_compose;
 pub mod enumerate_extension_pipe;
 
 pub mod prelude {
-	pub use crate::enumerate_operator::*;
+	pub use super::enumerate_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::enumerate_extension_compose::*;
+	pub use super::enumerate_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::enumerate_extension_pipe::*;
+	pub use super::enumerate_extension_pipe::*;
 }

@@ -8,7 +8,7 @@ pub use connectable_observable::*;
 pub use connectable_observable_options::*;
 
 pub mod prelude {
-	pub use crate::connectable::*;
-	pub use crate::connectable_observable::*;
-	pub use crate::connectable_observable_options::*;
+	pub use super::connectable::*;
+	pub use super::connectable_observable::*;
+	pub use super::connectable_observable_options::*;
 }

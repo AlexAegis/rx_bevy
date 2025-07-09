@@ -11,11 +11,11 @@ pub mod skip_extension_compose;
 pub mod skip_extension_pipe;
 
 pub mod prelude {
-	pub use crate::skip_operator::*;
+	pub use super::skip_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::skip_extension_compose::*;
+	pub use super::skip_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::skip_extension_pipe::*;
+	pub use super::skip_extension_pipe::*;
 }

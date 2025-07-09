@@ -11,11 +11,11 @@ pub mod filter_extension_compose;
 pub mod filter_extension_pipe;
 
 pub mod prelude {
-	pub use crate::filter_operator::*;
+	pub use super::filter_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::filter_extension_compose::*;
+	pub use super::filter_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::filter_extension_pipe::*;
+	pub use super::filter_extension_pipe::*;
 }

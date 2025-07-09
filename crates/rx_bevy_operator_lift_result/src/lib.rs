@@ -11,11 +11,11 @@ pub mod lift_result_extension_compose;
 pub mod lift_result_extension_pipe;
 
 pub mod prelude {
-	pub use crate::lift_result_operator::*;
+	pub use super::lift_result_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::lift_result_extension_compose::*;
+	pub use super::lift_result_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::lift_result_extension_pipe::*;
+	pub use super::lift_result_extension_pipe::*;
 }

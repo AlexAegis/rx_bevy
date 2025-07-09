@@ -5,5 +5,5 @@ pub use fixed_subscriber_observable::*;
 pub use observable_collection::*;
 
 pub mod prelude {
-	pub use crate::observable_collection::*;
+	pub use super::observable_collection::*;
 }

@@ -11,11 +11,11 @@ pub mod map_extension_compose;
 pub mod map_extension_pipe;
 
 pub mod prelude {
-	pub use crate::map_operator::*;
+	pub use super::map_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::map_extension_compose::*;
+	pub use super::map_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::map_extension_pipe::*;
+	pub use super::map_extension_pipe::*;
 }

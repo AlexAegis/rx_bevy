@@ -9,6 +9,6 @@ pub use zip_subscriber::*;
 pub use zip_subscriber_options::*;
 
 pub mod prelude {
-	pub use crate::zip_observable::*;
-	pub use crate::zip_subscriber_options::*;
+	pub use super::zip_observable::*;
+	pub use super::zip_subscriber_options::*;
 }

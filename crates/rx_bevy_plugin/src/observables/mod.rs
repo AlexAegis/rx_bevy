@@ -11,3 +11,13 @@ pub use observable_component_iterator::*;
 pub use observable_signal_bound::*;
 pub use scheduled_subscriber::*;
 pub use subject_component::*;
+
+pub mod prelude {
+	pub use super::observable_component_interval::prelude::*;
+	pub use super::observable_component_iterator::prelude::*;
+
+	pub use super::observable_component::*;
+	pub use super::observable_signal_bound::*;
+	pub use super::scheduled_subscriber::*;
+	pub use super::subject_component::*;
+}

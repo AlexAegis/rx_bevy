@@ -11,11 +11,11 @@ pub mod tap_extension_compose;
 pub mod tap_extension_pipe;
 
 pub mod prelude {
-	pub use crate::tap_operator::*;
+	pub use super::tap_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::tap_extension_compose::*;
+	pub use super::tap_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::tap_extension_pipe::*;
+	pub use super::tap_extension_pipe::*;
 }

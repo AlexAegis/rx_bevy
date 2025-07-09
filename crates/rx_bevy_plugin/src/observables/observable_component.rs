@@ -14,8 +14,7 @@ use rx_bevy_observable::ObservableOutput;
 use short_type_name::short_type_name;
 
 use crate::{
-	DebugBound, ObservableSignalBound, ScheduledSubscription, SubscribeObserverComponent,
-	SubscriptionContext, on_subscribe,
+	DebugBound, ObservableSignalBound, ScheduledSubscription, SubscriptionContext, on_subscribe,
 };
 
 /// Since the nature of a Subscription is very different in the context of an
@@ -89,7 +88,6 @@ where
 		commands
 			.spawn((
 				ChildOf(observable_entity), // Purely for organizational purposes in debug views like WorldInspector
-				SubscribeObserverComponent::<O>::new(observable_entity),
 				Name::new(format!(
 					"Observer (Observable Subscribe) - {}({}) ",
 					short_type_name::<O>(),

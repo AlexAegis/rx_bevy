@@ -5,3 +5,9 @@ mod interval_subscription;
 pub use interval_observable_component::*;
 pub use interval_observable_options::*;
 pub use interval_subscription::*;
+
+pub mod prelude {
+	pub use super::interval_observable_component::*;
+	pub use super::interval_observable_options::*;
+	pub use super::interval_subscription::*;
+}

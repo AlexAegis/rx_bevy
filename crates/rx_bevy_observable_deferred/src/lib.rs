@@ -5,7 +5,6 @@ pub use deferred_observable::*;
 pub use detached_observable::*;
 
 pub mod prelude {
-	pub use crate::detached_observable::*;
-
-	pub use crate::deferred_observable::*;
+	pub use super::deferred_observable::*;
+	pub use super::detached_observable::*;
 }

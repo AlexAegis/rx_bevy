@@ -11,11 +11,11 @@ pub mod switch_map_extension_compose;
 pub mod switch_map_extension_pipe;
 
 pub mod prelude {
-	pub use crate::switch_map_operator::*;
+	pub use super::switch_map_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::switch_map_extension_compose::*;
+	pub use super::switch_map_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::switch_map_extension_pipe::*;
+	pub use super::switch_map_extension_pipe::*;
 }

@@ -11,11 +11,11 @@ pub mod map_into_extension_compose;
 pub mod map_into_extension_pipe;
 
 pub mod prelude {
-	pub use crate::map_into_operator::*;
+	pub use super::map_into_operator::*;
 
 	#[cfg(feature = "compose")]
-	pub use crate::map_into_extension_compose::*;
+	pub use super::map_into_extension_compose::*;
 
 	#[cfg(feature = "pipe")]
-	pub use crate::map_into_extension_pipe::*;
+	pub use super::map_into_extension_pipe::*;
 }
