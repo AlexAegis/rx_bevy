@@ -2,12 +2,12 @@ use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, system::Commands};
 use derive_where::derive_where;
+use rx_bevy_observable::{InnerSubscription, ObserverInput, SubscriptionLike, Teardown};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
-use rx_bevy_observable::{InnerSubscription, ObserverInput, SubscriptionLike, Teardown};
 
-use crate::RxNext;
+use crate::{DebugBound, RxEvent};
 
 #[cfg_attr(feature = "debug", derive_where(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
@@ -47,26 +47,28 @@ where
 impl<'a, 'w, 's, In, InError> rx_bevy_observable::Observer
 	for CommandSubscriber<'a, 'w, 's, In, InError>
 where
-	In: 'static + Send + Sync,
-	InError: 'static + Send + Sync,
+	In: 'static + Send + Sync + DebugBound,
+	InError: 'static + Send + Sync + DebugBound,
 {
 	fn next(&mut self, next: Self::In) {
 		if !self.closed {
 			self.commands
-				.trigger_targets(RxNext(next), self.subscriber_entity);
+				.trigger_targets(RxEvent::<In, InError>::Next(next), self.subscriber_entity);
 		}
 	}
 
-	fn error(&mut self, _error: Self::InError) {
+	fn error(&mut self, error: Self::InError) {
 		if !self.closed {
-			//todo!("impl")
+			self.commands
+				.trigger_targets(RxEvent::<In, InError>::Error(error), self.subscriber_entity);
 		}
 	}
 
 	fn complete(&mut self) {
 		if !self.closed {
+			self.commands
+				.trigger_targets(RxEvent::<In, InError>::Complete, self.subscriber_entity);
 			self.unsubscribe();
-			//	todo!("impl sending complete event");
 		}
 	}
 }

@@ -1,22 +1,25 @@
 use std::time::Duration;
 
-use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{event::Event, system::Res};
 use bevy_time::Time;
 
-// TODO: Join these into a single enum if you don't want to spawn 3 of observer entities
-#[derive(Event, Deref, DerefMut, Debug, Clone)]
-pub struct RxNext<In>(pub In)
-where
-	In: 'static + Sync + Send;
+use crate::DebugBound;
 
-#[derive(Event, Deref, DerefMut, Debug, Clone)]
-pub struct RxError<InError>(pub InError)
-where
-	InError: 'static + Sync + Send;
+#[cfg(feature = "reflect")]
+use bevy_reflect::Reflect;
 
-#[derive(Event, Debug, Clone)]
-pub struct RxComplete;
+#[derive(Event, Clone)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+pub enum RxEvent<In, InError>
+where
+	In: 'static + Sync + Send + DebugBound,
+	InError: 'static + Sync + Send + DebugBound,
+{
+	Next(In),
+	Error(InError),
+	Complete,
+}
 
 /// Used for scheduling, the subscriptions are ticked with this event
 /// ? Could be generic over Schedule or something thats associated with the observer

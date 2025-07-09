@@ -1,9 +1,9 @@
 use crate::{
-	NoopSubscription, ObservableComponent, ObservableOnInsertContext, ObservableSignalBound,
-	SubscriptionComponent, CommandSubscriber, WithSubscribeObserverReference,
+	CommandSubscriber, NoopSubscription, ObservableComponent, ObservableOnInsertContext,
+	ObservableSignalBound, SubscriptionComponent, WithSubscribeObserverReference,
 	observable_on_insert_hook, observable_on_remove_hook,
 };
-use crate::{RxNext, Subscriptions};
+use crate::{RxEvent, Subscriptions};
 
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -113,19 +113,17 @@ where
 		self.subject_observer_entity = Some(subject_observer_entity);
 	}
 
-	// TODO: Return value should describe how to clean up
 	fn on_subscribe(
 		&mut self,
 		_subscription_context: CommandSubscriber<In, InError>,
 	) -> Self::Subscription {
-		println!("on subscribe subject");
 		NoopSubscription::default()
 	}
 }
 
 /// Manually triggered events should trigger all subscribers
 pub fn forward_to_subscribers<O>(
-	trigger: Trigger<RxNext<O::Out>>,
+	trigger: Trigger<RxEvent<O::Out, O::OutError>>,
 	mut observable_subscriptions_query: Query<&mut Subscriptions<O>, With<O>>,
 	subscription_query: Query<&SubscriptionComponent<O>>,
 	mut commands: Commands,
@@ -137,8 +135,6 @@ pub fn forward_to_subscribers<O>(
 	let Ok(subscriptions) = observable_subscriptions_query.get_mut(trigger.target()) else {
 		return;
 	};
-
-	println!("forward to subs {:?}", subscriptions.get_subscriptions());
 
 	// This could easily cause an infinite loop if not for CAN_SELF_SUBSCRIBE
 	commands.trigger_targets(

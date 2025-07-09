@@ -7,7 +7,7 @@ use examples_common::send_event;
 
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, IntervalObservableComponent,
-	IntervalObservableOptions, IteratorObservableComponent, RelativeEntity, RxNext, RxPlugin,
+	IntervalObservableOptions, IteratorObservableComponent, RelativeEntity, RxEvent, RxPlugin,
 	SubjectComponent,
 };
 
@@ -34,9 +34,13 @@ fn main() -> AppExit {
 		.run()
 }
 
-fn next_number_observer(next: Trigger<RxNext<i32>>, name_query: Query<&Name>, time: Res<Time>) {
+fn next_number_observer(
+	next: Trigger<RxEvent<i32, ()>>,
+	name_query: Query<&Name>,
+	time: Res<Time>,
+) {
 	println!(
-		"value observed: {:?} by {:?} name: {:?} elapsed: {}",
+		"value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
 		next.event(),
 		next.target(),
 		name_query.get(next.target()).unwrap(),
