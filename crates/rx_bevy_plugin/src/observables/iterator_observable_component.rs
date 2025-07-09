@@ -1,4 +1,7 @@
-use crate::{DebugBound, ObservableOnInsertContext, RxNext, RxTick, SubscriptionContext};
+use crate::{
+	DebugBound, ObservableOnInsertContext, RxNext, RxTick, SubscriptionContext,
+	WithSubscribeObserverReference,
+};
 use crate::{
 	ObservableComponent, ObservableSignalBound, ScheduledSubscription, on_observable_insert_hook,
 	on_observable_remove_hook,
@@ -82,15 +85,11 @@ where
 	}
 }
 
-impl<Iterator> ObservableComponent for IteratorObservableComponent<Iterator>
+impl<Iterator> WithSubscribeObserverReference for IteratorObservableComponent<Iterator>
 where
 	Iterator: 'static + Clone + IntoIterator + Send + Sync + DebugBound,
 	Iterator::Item: 'static + ObservableSignalBound,
 {
-	const CAN_SELF_SUBSCRIBE: bool = true;
-
-	type Subscription = IteratorObservableSubscriber<Iterator>;
-
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
 	}
@@ -102,6 +101,16 @@ where
 		self.subscribe_observer_entity
 			.replace(subscribe_observer_entity)
 	}
+}
+
+impl<Iterator> ObservableComponent for IteratorObservableComponent<Iterator>
+where
+	Iterator: 'static + Clone + IntoIterator + Send + Sync + DebugBound,
+	Iterator::Item: 'static + ObservableSignalBound,
+{
+	const CAN_SELF_SUBSCRIBE: bool = true;
+
+	type Subscription = IteratorObservableSubscriber<Iterator>;
 
 	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
 

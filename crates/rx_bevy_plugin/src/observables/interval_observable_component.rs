@@ -6,21 +6,31 @@ use std::time::Duration;
 
 use crate::{
 	ObservableComponent, RxNext, RxTick, ScheduledSubscription, SubscriptionContext,
-	on_observable_insert_hook, on_observable_remove_hook,
+	WithSubscribeObserverReference, on_observable_insert_hook, on_observable_remove_hook,
 };
+
+#[derive(Clone, Default)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+pub struct IntervalObservableOptions {
+	pub duration: Duration,
+	/// Whether or not the first emission, `0` should happen on subscribe
+	/// or after the duration had elapsed once.
+	pub start_on_subscribe: bool,
+}
 
 #[derive(Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IntervalObservableComponent {
+	options: IntervalObservableOptions,
 	subscribe_observer: Option<Entity>,
-	duration: Duration,
 }
 
 impl IntervalObservableComponent {
-	pub fn new(duration: Duration) -> Self {
+	pub fn new(options: IntervalObservableOptions) -> Self {
 		Self {
-			duration,
+			options,
 			subscribe_observer: None,
 		}
 	}
@@ -41,11 +51,7 @@ impl Component for IntervalObservableComponent {
 	}
 }
 
-impl ObservableComponent for IntervalObservableComponent {
-	const CAN_SELF_SUBSCRIBE: bool = true;
-
-	type Subscription = IntervalSubscription;
-
+impl WithSubscribeObserverReference for IntervalObservableComponent {
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer
 	}
@@ -56,12 +62,22 @@ impl ObservableComponent for IntervalObservableComponent {
 	) -> Option<Entity> {
 		self.subscribe_observer.replace(subscribe_observer_entity)
 	}
+}
+
+impl ObservableComponent for IntervalObservableComponent {
+	const CAN_SELF_SUBSCRIBE: bool = true;
+
+	type Subscription = IntervalSubscription;
 
 	fn on_insert(&mut self, _context: super::ObservableOnInsertContext) {}
 
-	fn on_subscribe(&mut self, _context: super::SubscriptionContext) -> Self::Subscription {
-		println!("interval on_subscribe {_context:?}");
-		IntervalSubscription::new(self.duration.clone())
+	fn on_subscribe(&mut self, context: super::SubscriptionContext) -> Self::Subscription {
+		if self.options.start_on_subscribe {
+			context
+				.commands
+				.trigger_targets(RxNext(0), context.subscriber_entity);
+		}
+		IntervalSubscription::new(self.options.clone())
 	}
 }
 
@@ -73,10 +89,14 @@ pub struct IntervalSubscription {
 }
 
 impl IntervalSubscription {
-	pub fn new(duration: Duration) -> Self {
+	pub fn new(interval_observable_options: IntervalObservableOptions) -> Self {
 		Self {
-			timer: Timer::new(duration, TimerMode::Repeating),
-			count: 0,
+			timer: Timer::new(interval_observable_options.duration, TimerMode::Repeating),
+			count: if interval_observable_options.start_on_subscribe {
+				1
+			} else {
+				0
+			},
 		}
 	}
 }

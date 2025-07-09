@@ -11,11 +11,29 @@ use crate::{
 	Subscriptions,
 };
 
+/// TODO: While this is required for all ObservableComponents, it's a separate trait
+/// to be the auto-implemented by a macro.
+///
+/// This is technically a one-on-one relationship, each ObservableComponent has
+/// exactly one other entity listening for [Subscribe] events
+pub trait WithSubscribeObserverReference {
+	/// Should return the entity reference to the entity that observes [Subscribe]
+	/// events for this observable
+	fn get_subscribe_observer_entity(&self) -> Option<Entity>;
+
+	/// Returns the previous observer entity, if exists.
+	/// (Implement as `.replace` on the stored `Option<Entity>`)
+	fn set_subscribe_observer_entity(
+		&mut self,
+		subscribe_observer_entity: Entity,
+	) -> Option<Entity>;
+}
+
 /// Since the nature of a Subscription is very different in the context of an
 /// ECS, where there are no long term references, the nature of an Observable
 /// also changes.
 pub trait ObservableComponent:
-	ObservableOutput + Component<Mutability = Mutable> + DebugBound
+	ObservableOutput + Component<Mutability = Mutable> + WithSubscribeObserverReference + DebugBound
 where
 	Self::Out: Send + Sync + DebugBound,
 	Self::OutError: Send + Sync + DebugBound,
@@ -28,18 +46,6 @@ where
 	type Subscription: ScheduledSubscription<Out = Self::Out, OutError = Self::OutError>
 		+ Send
 		+ Sync;
-
-	/// Should return the entity reference to the entity that observes [Subscribe]
-	/// events for this observable
-	/// TODO(relationship-one-on-one): Refactor once one-on-one relationships are a thing
-	fn get_subscribe_observer_entity(&self) -> Option<Entity>;
-
-	/// Returns the previous observer entity, if exists.
-	/// (Implement as `.replace` on the stored `Option<Entity>`)
-	fn set_subscribe_observer_entity(
-		&mut self,
-		subscribe_observer_entity: Entity,
-	) -> Option<Entity>;
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext);
 

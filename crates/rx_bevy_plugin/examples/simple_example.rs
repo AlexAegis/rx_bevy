@@ -7,8 +7,8 @@ use examples_common::send_event;
 
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, IntervalObservableComponent,
-	IteratorObservableComponent, RxNext, RxPlugin, SubjectComponent, SubscribeFor,
-	SubscriberEntity,
+	IntervalObservableOptions, IteratorObservableComponent, RxNext, RxPlugin, SubjectComponent,
+	SubscribeFor, SubscriberEntity,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -34,12 +34,13 @@ fn main() -> AppExit {
 		.run()
 }
 
-fn next_number_observer(next: Trigger<RxNext<i32>>, name_query: Query<&Name>) {
+fn next_number_observer(next: Trigger<RxNext<i32>>, name_query: Query<&Name>, time: Res<Time>) {
 	println!(
-		"value observed: {:?} by {:?} name: {:?}",
+		"value observed: {:?} by {:?} name: {:?} elapsed: {}",
 		next.event(),
 		next.target(),
-		name_query.get(next.target()).unwrap()
+		name_query.get(next.target()).unwrap(),
+		time.elapsed_secs()
 	);
 }
 
@@ -118,7 +119,10 @@ fn setup(
 		Transform::from_xyz(-1.0, 0.0, 0.0),
 		Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-		IntervalObservableComponent::new(Duration::from_secs(1)),
+		IntervalObservableComponent::new(IntervalObservableOptions {
+			duration: Duration::from_secs(1),
+			start_on_subscribe: true,
+		}),
 	));
 	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
 	let subjects_interval_subscription = interval_observable_entity_commands

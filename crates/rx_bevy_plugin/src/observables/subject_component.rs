@@ -1,7 +1,7 @@
 use crate::{
 	NonScheduledSubscription, ObservableComponent, ObservableOnInsertContext,
-	ObservableSignalBound, SubscriptionComponent, SubscriptionContext, on_observable_insert_hook,
-	on_observable_remove_hook,
+	ObservableSignalBound, SubscriptionComponent, SubscriptionContext,
+	WithSubscribeObserverReference, on_observable_insert_hook, on_observable_remove_hook,
 };
 use crate::{RxNext, Subscriptions};
 use bevy::ecs::component::{Mutable, StorageType};
@@ -54,17 +54,11 @@ where
 	}
 }
 
-impl<In, InError> ObservableComponent for SubjectComponent<In, InError>
+impl<In, InError> WithSubscribeObserverReference for SubjectComponent<In, InError>
 where
 	In: 'static + Clone + ObservableSignalBound,
 	InError: 'static + Clone + ObservableSignalBound,
 {
-	/// A Subject is also an observer, so if subscriptions to itself were
-	/// allowed, an infinite loop would happen
-	const CAN_SELF_SUBSCRIBE: bool = false;
-
-	type Subscription = NonScheduledSubscription<In, InError>;
-
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
 	}
@@ -76,6 +70,18 @@ where
 		self.subscribe_observer_entity
 			.replace(subscribe_observer_entity)
 	}
+}
+
+impl<In, InError> ObservableComponent for SubjectComponent<In, InError>
+where
+	In: 'static + Clone + ObservableSignalBound,
+	InError: 'static + Clone + ObservableSignalBound,
+{
+	/// A Subject is also an observer, so if subscriptions to itself were
+	/// allowed, an infinite loop would happen
+	const CAN_SELF_SUBSCRIBE: bool = false;
+
+	type Subscription = NonScheduledSubscription<In, InError>;
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext) {
 		println!("on_insert of subject");
