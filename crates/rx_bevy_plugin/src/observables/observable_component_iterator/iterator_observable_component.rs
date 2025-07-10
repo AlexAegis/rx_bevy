@@ -17,9 +17,13 @@ use rx_bevy_observable::{ObservableOutput, Observer};
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-#[derive(Clone, Reflect)]
-#[derive_where(Debug)]
-#[derive_where(skip_inner(Debug))]
+#[derive(Clone)]
+#[cfg_attr(
+	feature = "debug",
+	derive_where(Debug),
+	derive_where(skip_inner(Debug))
+)]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IteratorObservableComponent<Iterator, const EMIT_ON_TICK: bool>
 where
 	Iterator: 'static + IntoIterator + Send + Sync + Clone,

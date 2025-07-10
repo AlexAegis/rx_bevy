@@ -11,8 +11,8 @@ use derive_where::derive_where;
 use smallvec::{SmallVec, smallvec};
 
 use crate::{
-	CommandSubscriber, ObservableComponent, ObservableSignalBound, RxTick, ScheduledSubscription,
-	SubscriptionEntityContext,
+	CommandSubscriber, EntityContext, ObservableComponent, ObservableSignalBound, RxTick,
+	ScheduledSubscription, SubscriptionEntityContext,
 };
 
 #[cfg(feature = "reflect")]
@@ -101,11 +101,11 @@ where
 				}) {
 			let mut commands = deferred_world.commands();
 
-			let context = SubscriptionEntityContext {
+			let context = SubscriptionEntityContext::new(EntityContext {
 				observable_entity,
 				subscriber_entity,
 				subscription_entity,
-			};
+			});
 
 			scheduled_subscription.unsubscribe(context.upgrade(&mut commands));
 		}
@@ -160,12 +160,12 @@ where
 	pub fn get_subscription_entity_context(
 		&self,
 		subscription_entity: Entity,
-	) -> SubscriptionEntityContext {
-		SubscriptionEntityContext {
+	) -> SubscriptionEntityContext<O::Out, O::OutError> {
+		SubscriptionEntityContext::new(EntityContext {
 			observable_entity: self.observable_entity,
 			subscriber_entity: self.subscriber_entity,
 			subscription_entity,
-		}
+		})
 	}
 }
 
@@ -192,7 +192,7 @@ where
 	};
 
 	if let Some(mut subscriptions_component) =
-		deferred_world.get_mut::<Subscriptions<O>>(entity_context.observable_entity)
+		deferred_world.get_mut::<Subscriptions<O>>(entity_context.get_observable_entity())
 	{
 		subscriptions_component
 			.subscriptions

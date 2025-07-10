@@ -45,6 +45,7 @@ reflect = ["dep:bevy_reflect"]
 [dependencies]
 # rx_bevy dependencies
 rx_bevy_observable = { workspace = true }
+rx_bevy_operator_composite = { workspace = true }
 # bevy dependencies
 bevy_app = { workspace = true }
 bevy_derive = { workspace = true }

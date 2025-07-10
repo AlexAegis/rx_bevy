@@ -7,7 +7,7 @@ use rx_bevy_observable::{InnerSubscription, ObserverInput, SubscriptionLike, Tea
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{DebugBound, RxSignal};
+use crate::{DebugBound, ObservableSignalBound, RxSignal};
 
 #[cfg_attr(feature = "debug", derive_where(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
@@ -33,6 +33,23 @@ where
 	teardown: InnerSubscription,
 
 	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<'a, 'w, 's, In, InError> CommandSubscriber<'a, 'w, 's, In, InError>
+where
+	In: 'static + ObservableSignalBound,
+	InError: 'static + ObservableSignalBound,
+{
+	pub fn downgrade(self) -> SubscriptionEntityContext<In, InError> {
+		SubscriptionEntityContext {
+			observable_entity: self.observable_entity,
+			subscriber_entity: self.subscriber_entity,
+			subscription_entity: self.subscription_entity,
+			closed: self.closed,
+			teardown: self.teardown,
+			_phantom_data: PhantomData,
+		}
+	}
 }
 
 impl<'a, 'w, 's, In, InError> ObserverInput for CommandSubscriber<'a, 'w, 's, In, InError>
@@ -97,9 +114,8 @@ where
 	}
 }
 
-#[cfg_attr(feature = "debug", derive(Debug))]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscriptionEntityContext {
+/// This intermediate struct is used to avoid mixing up the three entities
+pub struct EntityContext {
 	/// "This" entity
 	pub observable_entity: Entity,
 	/// "Destination" entity
@@ -108,8 +124,57 @@ pub struct SubscriptionEntityContext {
 	pub subscription_entity: Entity,
 }
 
-impl SubscriptionEntityContext {
-	pub fn upgrade<'a, 'w, 's, In, InError>(
+#[cfg_attr(feature = "debug", derive_where(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+pub struct SubscriptionEntityContext<In, InError>
+where
+	In: 'static + Send + Sync + ObservableSignalBound,
+	InError: 'static + Send + Sync + ObservableSignalBound,
+{
+	/// "This" entity
+	observable_entity: Entity,
+	/// "Destination" entity
+	subscriber_entity: Entity,
+	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
+	subscription_entity: Entity,
+
+	closed: bool,
+
+	#[derive_where(skip)]
+	#[reflect(ignore)]
+	teardown: InnerSubscription,
+
+	_phantom_data: PhantomData<(In, InError)>,
+}
+
+impl<In, InError> SubscriptionEntityContext<In, InError>
+where
+	In: 'static + Send + Sync + ObservableSignalBound,
+	InError: 'static + Send + Sync + ObservableSignalBound,
+{
+	pub fn new(entity_context: EntityContext) -> Self {
+		Self {
+			observable_entity: entity_context.observable_entity,
+			subscriber_entity: entity_context.subscriber_entity,
+			subscription_entity: entity_context.subscription_entity,
+			closed: false,
+			teardown: InnerSubscription::new_empty(),
+			_phantom_data: PhantomData,
+		}
+	}
+
+	#[inline]
+	pub fn get_observable_entity(&self) -> Entity {
+		self.observable_entity
+	}
+}
+
+impl<In, InError> SubscriptionEntityContext<In, InError>
+where
+	In: 'static + Send + Sync + ObservableSignalBound,
+	InError: 'static + Send + Sync + ObservableSignalBound,
+{
+	pub fn upgrade<'a, 'w, 's>(
 		self,
 		commands: &'a mut Commands<'w, 's>,
 	) -> CommandSubscriber<'a, 'w, 's, In, InError>
@@ -122,9 +187,58 @@ impl SubscriptionEntityContext {
 			observable_entity: self.observable_entity,
 			subscriber_entity: self.subscriber_entity,
 			subscription_entity: self.subscription_entity,
-			closed: false,
+			closed: self.closed,
 			teardown: InnerSubscription::new_empty(),
 			_phantom_data: PhantomData,
 		}
+	}
+}
+
+impl<In, InError> ObserverInput for SubscriptionEntityContext<In, InError>
+where
+	In: 'static + Send + Sync + ObservableSignalBound,
+	InError: 'static + Send + Sync + ObservableSignalBound,
+{
+	type In = In;
+	type InError = InError;
+}
+
+impl<In, InError> rx_bevy_observable::Observer for SubscriptionEntityContext<In, InError>
+where
+	In: 'static + Send + Sync + ObservableSignalBound,
+	InError: 'static + Send + Sync + ObservableSignalBound,
+{
+	fn next(&mut self, next: Self::In) {
+		// TODO: Maybe collect in a buffer then drain on upgrade? Or panic if not supposed to receive anything un-upgraded
+		println!("SubscriptionEntityContext next {:?}", next);
+	}
+
+	fn error(&mut self, error: Self::InError) {
+		println!("SubscriptionEntityContext error {:?}", error);
+	}
+
+	fn complete(&mut self) {
+		println!("SubscriptionEntityContext complete");
+	}
+}
+
+impl<In, InError> rx_bevy_observable::SubscriptionLike for SubscriptionEntityContext<In, InError>
+where
+	In: 'static + Send + Sync + ObservableSignalBound,
+	InError: 'static + Send + Sync + ObservableSignalBound,
+{
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
+
+	fn unsubscribe(&mut self) {
+		if !self.closed {
+			self.closed = true;
+			self.teardown.unsubscribe();
+		}
+	}
+
+	fn add(&mut self, subscription: &'static mut dyn rx_bevy_observable::SubscriptionLike) {
+		self.teardown.add(Teardown::Sub(subscription));
 	}
 }

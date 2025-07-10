@@ -15,8 +15,9 @@ use short_type_name::short_type_name;
 use thiserror::Error;
 
 use crate::{
-	ObservableComponent, ObservableSignalBound, RelativeEntity, RxTick, ScheduledSubscription,
-	SubscriptionComponent, SubscriptionEntityContext, SubscriptionSchedule, Subscriptions,
+	EntityContext, ObservableComponent, ObservableSignalBound, RelativeEntity, RxTick,
+	ScheduledSubscription, SubscriptionComponent, SubscriptionEntityContext, SubscriptionSchedule,
+	Subscriptions,
 };
 
 #[cfg(feature = "reflect")]
@@ -100,11 +101,11 @@ pub fn on_subscribe<O>(
 	}
 
 	{
-		let context = SubscriptionEntityContext {
+		let context = SubscriptionEntityContext::new(EntityContext {
 			observable_entity,
 			subscriber_entity: destination_entity,
 			subscription_entity,
-		};
+		});
 
 		let scheduled_subscription =
 			observable_component.on_subscribe(context.upgrade(&mut commands));
