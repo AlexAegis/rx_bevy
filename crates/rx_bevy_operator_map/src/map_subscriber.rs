@@ -1,9 +1,12 @@
 use std::marker::PhantomData;
 
+use derive_where::derive_where;
 use rx_bevy_observable::{
 	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
 };
 
+#[derive_where(Debug)]
+#[derive_where(skip_inner(Debug))]
 pub struct MapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	In: 'static,

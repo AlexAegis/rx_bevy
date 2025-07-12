@@ -1,6 +1,7 @@
 use bevy_ecs::{
 	component::{Component, Mutable, StorageType},
 	entity::Entity,
+	name::Name,
 	observer::Trigger,
 	system::{Commands, Query},
 };
@@ -8,8 +9,9 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
 	CommandSubscriber, DebugBound, ObservableComponent, ObservableOnInsertContext,
-	ObservableSignalBound, PipeSubscription, RxSignal, SubscriptionEntityContext,
-	WithSubscribeObserverReference, observable_on_insert_hook, observable_on_remove_hook,
+	ObservableSignalBound, PipeSubscription, RelativeEntity, RxSignal, Subscribe,
+	SubscriptionEntityContext, WithSubscribeObserverReference, observable_on_insert_hook,
+	observable_on_remove_hook,
 };
 
 #[cfg(feature = "debug")]
@@ -30,7 +32,10 @@ where
 	Op::OutError: Send + Sync + ObservableSignalBound,
 	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
+	source: RelativeEntity,
 	subscribe_observer_entity: Option<Entity>,
+	pipe_source_observer_entity: Option<Entity>,
+	pipe_source_subscription_entity: Option<Entity>,
 	operator: Op,
 }
 
@@ -43,11 +48,47 @@ where
 	Op::OutError: Send + Sync + ObservableSignalBound,
 	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
-	pub fn new() {}
-
-	pub fn pipe(self) {
-		todo!("impl piping logic, similar to the original pipe struct!")
+	pub fn new(source: RelativeEntity, operator: Op) -> Self {
+		Self {
+			source,
+			operator,
+			pipe_source_subscription_entity: None,
+			pipe_source_observer_entity: None,
+			subscribe_observer_entity: None,
+		}
 	}
+
+	// #[inline]
+	// pub fn pipe<NextOp>(self, operator: NextOp) -> PipeComponent<CompositeOperator<Op, NextOp>>
+	// where
+	// 	NextOp: 'static
+	// 		+ Operator<
+	// 			In = <Self as ObservableOutput>::Out,
+	// 			InError = <Self as ObservableOutput>::OutError,
+	// 		>
+	// 		+ Send
+	// 		+ Sync
+	// 		+ DebugBound,
+	// 	NextOp::In: Send + Sync + ObservableSignalBound,
+	// 	NextOp::InError: Send + Sync + ObservableSignalBound,
+	// 	NextOp::Out: Send + Sync + ObservableSignalBound,
+	// 	NextOp::OutError: Send + Sync + ObservableSignalBound,
+	// 	NextOp::Subscriber<SubscriptionEntityContext<NextOp::Out, NextOp::OutError>>:
+	// 		Send + Sync + DebugBound,
+	// 	<Op as Operator>::Subscriber<
+	// 		<NextOp as Operator>::Subscriber<
+	// 			SubscriptionEntityContext<
+	// 				<NextOp as ObservableOutput>::Out,
+	// 				<NextOp as ObservableOutput>::OutError,
+	// 			>,
+	// 		>,
+	// 	>: Send + Sync + DebugBound,
+	// {
+	// 	PipeComponent::<CompositeOperator<Op, NextOp>>::new(
+	// 		self.source,
+	// 		CompositeOperator::new(self.operator, operator),
+	// 	)
+	// }
 }
 
 impl<Op> Component for PipeComponent<Op>
@@ -132,27 +173,47 @@ where
 	type Subscription = PipeSubscription<Op>;
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext) {
-		context
+		let source_observable = self.source.this_or(context.observable_entity);
+		// TODO: FINISH, On insert, only setup should happen, the source subscription should happen on subscribe, so each
+		// TODO: subscription to the pipe has a new instance of it too.
+		let (event, subscription_entity) = Subscribe::<Self>::unscheduled(
+			RelativeEntity::Other(source_observable),
+			context.commands,
+		);
+
+		let pipe_source_observer_entity = context
 			.commands
-			.entity(context.observable_entity)
-			.observe(pipe_next_observer::<Op>);
+			.spawn((
+				Name::new(format!(
+					"Observer Pipe Subscriber {}",
+					context.observable_entity
+				)),
+				bevy_ecs::prelude::Observer::new(pipe_next_observer::<Self, Op>)
+					.with_entity(self.source.this_or(context.observable_entity)),
+			))
+			.id();
+
+		self.pipe_source_observer_entity = Some(pipe_source_observer_entity);
 	}
 
 	/// The subscription creates a new observer entity, that entity should have the subscriber on it.
 	fn on_subscribe(
 		&mut self,
-		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		let static_subscriber = subscriber.downgrade();
 		PipeSubscription::<Op>::new(self.operator.operator_subscribe(static_subscriber))
 	}
 }
 
-fn pipe_next_observer<Op>(
+fn pipe_next_observer<O, Op>(
 	trigger: Trigger<RxSignal<Op::In, Op::InError>>,
 	mut subject_query: Query<(&PipeComponent<Op>,)>,
 	mut commands: Commands,
 ) where
+	O: ObservableComponent + Send + Sync,
+	O::Out: Clone + ObservableSignalBound,
+	O::OutError: Clone + ObservableSignalBound,
 	Op: 'static + Operator + Send + Sync + DebugBound,
 	Op::In: Send + Sync + ObservableSignalBound,
 	Op::InError: Send + Sync + ObservableSignalBound,

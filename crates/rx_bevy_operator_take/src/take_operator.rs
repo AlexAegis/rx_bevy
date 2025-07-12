@@ -4,6 +4,7 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::TakeSubscriber;
 
+#[derive(Debug)]
 pub struct TakeOperator<In, InError> {
 	pub count: usize,
 	pub _phantom_data: PhantomData<(In, InError)>,

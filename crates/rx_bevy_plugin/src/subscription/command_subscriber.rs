@@ -28,10 +28,9 @@ where
 
 	closed: bool,
 
-	#[derive_where(skip)]
-	#[reflect(ignore)]
-	teardown: InnerSubscription,
-
+	// #[derive_where(skip)]
+	// #[reflect(ignore)]
+	// teardown: InnerSubscription,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -46,7 +45,7 @@ where
 			subscriber_entity: self.subscriber_entity,
 			subscription_entity: self.subscription_entity,
 			closed: self.closed,
-			teardown: self.teardown,
+			// teardown: self.teardown,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -104,13 +103,13 @@ where
 	fn unsubscribe(&mut self) {
 		if !self.closed {
 			self.closed = true;
-			self.teardown.unsubscribe();
+			// self.teardown.unsubscribe();
 			self.commands.entity(self.subscription_entity).despawn();
 		}
 	}
 
 	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
-		self.teardown.add(Teardown::Sub(subscription));
+		// self.teardown.add(Teardown::Sub(subscription));
 	}
 }
 
@@ -140,10 +139,9 @@ where
 
 	closed: bool,
 
-	#[derive_where(skip)]
-	#[reflect(ignore)]
-	teardown: InnerSubscription,
-
+	// #[derive_where(skip)]
+	// #[reflect(ignore)]
+	// teardown: InnerSubscription,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -158,7 +156,7 @@ where
 			subscriber_entity: entity_context.subscriber_entity,
 			subscription_entity: entity_context.subscription_entity,
 			closed: false,
-			teardown: InnerSubscription::new_empty(),
+			// teardown: InnerSubscription::new_empty(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -188,7 +186,7 @@ where
 			subscriber_entity: self.subscriber_entity,
 			subscription_entity: self.subscription_entity,
 			closed: self.closed,
-			teardown: InnerSubscription::new_empty(),
+			// teardown: InnerSubscription::new_empty(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -234,11 +232,11 @@ where
 	fn unsubscribe(&mut self) {
 		if !self.closed {
 			self.closed = true;
-			self.teardown.unsubscribe();
+			// self.teardown.unsubscribe();
 		}
 	}
 
 	fn add(&mut self, subscription: &'static mut dyn rx_bevy_observable::SubscriptionLike) {
-		self.teardown.add(Teardown::Sub(subscription));
+		//	self.teardown.add(Teardown::Sub(subscription));
 	}
 }

@@ -2,7 +2,7 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::CompositeSubscriber;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CompositeOperator<PrevOp, Op>
 where
 	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,

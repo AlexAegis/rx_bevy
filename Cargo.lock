@@ -4701,6 +4701,7 @@ dependencies = [
 name = "rx_bevy_operator_map"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_bevy",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
@@ -4801,6 +4802,7 @@ dependencies = [
  "bevy_time",
  "derive-where",
  "examples_common",
+ "rx_bevy",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_testing",
@@ -6486,9 +6488,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.7.11"
+version = "0.7.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74c7b26e3480b707944fc872477815d29a8e429d2f93a1ce000f5fa84a15cbcd"
+checksum = "f3edebf492c8125044983378ecb5766203ad3b4c2f7a922bd7dd207f6d443e95"
 dependencies = [
  "memchr",
 ]
@@ -6567,9 +6569,9 @@ checksum = "b9cc00251562a284751c9973bace760d86c0276c471b4be569fe6b068ee97a56"
 
 [[package]]
 name = "xml-rs"
-version = "0.8.26"
+version = "0.8.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a62ce76d9b56901b19a74f19431b0d8b3bc7ca4ad685a746dfd78ca8f4fc6bda"
+checksum = "6fd8403733700263c6eb89f192880191f1b83e332f7a20371ddcf421c4a337c7"
 
 [[package]]
 name = "yazi"

@@ -4,6 +4,7 @@ use rx_bevy_observable::{
 	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
 };
 
+#[derive(Debug)]
 pub struct TakeSubscriber<In, InError, Destination>
 where
 	Destination: Subscriber,

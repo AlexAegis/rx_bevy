@@ -64,5 +64,6 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
+rx_bevy = { workspace = true }
 rx_bevy_testing = { workspace = true }
 examples_common = { workspace = true }
