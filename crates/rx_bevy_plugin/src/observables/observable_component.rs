@@ -14,7 +14,8 @@ use rx_bevy_observable::ObservableOutput;
 use short_type_name::short_type_name;
 
 use crate::{
-	CommandSubscriber, DebugBound, ObservableSignalBound, ScheduledSubscription, on_subscribe,
+	CommandSubscriber, DebugBound, ObservableSignalBound, ObservableSocket, ScheduledSubscription,
+	on_subscribe,
 };
 
 /// Since the nature of a Subscription is very different in the context of an
@@ -87,6 +88,10 @@ where
 			short_type_name::<O>(),
 			observable_entity
 		);
+
+		commands
+			.entity(observable_entity)
+			.insert_if_new(ObservableSocket::<O::Out, O::OutError>::new());
 
 		commands
 			.spawn((
