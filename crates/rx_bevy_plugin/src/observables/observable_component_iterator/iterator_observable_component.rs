@@ -107,6 +107,7 @@ where
 			for item in self.iterator.clone().into_iter() {
 				subscriber.next(item);
 			}
+			subscriber.complete();
 		}
 
 		IteratorSubscription::new(self.iterator.clone())

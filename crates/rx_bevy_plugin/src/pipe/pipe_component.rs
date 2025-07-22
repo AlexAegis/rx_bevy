@@ -10,7 +10,7 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 use crate::{
 	CommandSubscriber, DebugBound, ObservableComponent, ObservableOnInsertContext,
 	ObservableSignalBound, PipeSubscription, RelativeEntity, RxSignal, Subscribe,
-	SubscriptionEntityContext, WithSubscribeObserverReference, observable_on_insert_hook,
+	SubscriberContext, WithSubscribeObserverReference, observable_on_insert_hook,
 	observable_on_remove_hook,
 };
 
@@ -30,7 +30,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	source: RelativeEntity,
 	subscribe_observer_entity: Option<Entity>,
@@ -46,7 +46,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	pub fn new(source: RelativeEntity, operator: Op) -> Self {
 		Self {
@@ -98,7 +98,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	const STORAGE_TYPE: StorageType = StorageType::Table;
 	type Mutability = Mutable;
@@ -116,7 +116,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type In = Op::In;
 	type InError = Op::InError;
@@ -129,7 +129,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type Out = Op::Out;
 	type OutError = Op::OutError;
@@ -142,7 +142,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
@@ -164,7 +164,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	/// A Subject is also an observer, so if subscriptions to itself were
 	/// allowed, an infinite loop would happen
@@ -176,7 +176,7 @@ where
 		let source_observable = self.source.this_or(context.observable_entity);
 		// TODO: FINISH, On insert, only setup should happen, the source subscription should happen on subscribe, so each
 		// TODO: subscription to the pipe has a new instance of it too.
-		let (event, subscription_entity) = Subscribe::<Self>::unscheduled(
+		let (event, subscription_entity) = Subscribe::<Self::Out, Self::OutError>::unscheduled(
 			RelativeEntity::Other(source_observable),
 			context.commands,
 		);
@@ -219,7 +219,7 @@ fn pipe_next_observer<O, Op>(
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	let Ok((pipe,)) = subject_query.get_mut(trigger.target()) else {
 		return;

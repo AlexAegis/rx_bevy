@@ -48,3 +48,11 @@ impl ScheduledSubscription for IntervalSubscription {
 		destination.unsubscribe();
 	}
 }
+/*
+impl SubscriptionLike for IntervalSubscription {
+	fn is_closed(&self) -> bool {}
+
+	fn unsubscribe(&mut self) {}
+	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {}
+}
+*/

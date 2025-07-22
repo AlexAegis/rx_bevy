@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_observable::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,

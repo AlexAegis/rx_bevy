@@ -1,8 +1,7 @@
 use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, SubscriptionLike};
 
 use crate::{
-	CommandSubscriber, DebugBound, ObservableSignalBound, ScheduledSubscription,
-	SubscriptionEntityContext,
+	CommandSubscriber, DebugBound, ObservableSignalBound, ScheduledSubscription, SubscriberContext,
 };
 
 #[cfg(feature = "debug")]
@@ -21,9 +20,9 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
-	operator: Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>,
+	operator: Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>,
 }
 
 impl<Op> PipeSubscription<Op>
@@ -33,9 +32,9 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
-	pub fn new(operator: Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>) -> Self {
+	pub fn new(operator: Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>) -> Self {
 		Self { operator }
 	}
 }
@@ -47,7 +46,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	const SCHEDULED: bool = true;
 
@@ -73,7 +72,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type In = Op::In;
 	type InError = Op::InError;
@@ -86,7 +85,7 @@ where
 	Op::InError: Send + Sync + ObservableSignalBound,
 	Op::Out: Send + Sync + ObservableSignalBound,
 	Op::OutError: Send + Sync + ObservableSignalBound,
-	Op::Subscriber<SubscriptionEntityContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type Out = Op::Out;
 	type OutError = Op::OutError;

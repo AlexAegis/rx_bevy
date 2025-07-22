@@ -97,13 +97,11 @@ fn setup(
 	));
 	let subject_entity = subject_entity_commands.observe(next_number_observer).id();
 
-	let _s = subject_entity_commands.subscribe_to_this_unscheduled::<SubjectComponent<i32, ()>>(
-		RelativeEntity::Other(observer_entity),
-	);
+	let _s = subject_entity_commands
+		.subscribe_to_this_unscheduled::<i32, ()>(RelativeEntity::Other(observer_entity));
 
-	let _s2 = subject_entity_commands.subscribe_to_this_unscheduled::<SubjectComponent<i32, ()>>(
-		RelativeEntity::Other(another_observer_entity),
-	);
+	let _s2 = subject_entity_commands
+		.subscribe_to_this_unscheduled::<i32, ()>(RelativeEntity::Other(another_observer_entity));
 
 	let mut iterator_observable_entity_commands = commands.spawn((
 		Name::new("IteratorObservable"),
@@ -113,11 +111,8 @@ fn setup(
 		IteratorObservableComponent::<RangeInclusive<i32>, true>::new(90..=99),
 	));
 
-	let _subjects_iterator_observable_subscription =
-		iterator_observable_entity_commands
-			.subscribe_to_this_scheduled::<IteratorObservableComponent<RangeInclusive<i32>, true>, Update>(
-				RelativeEntity::Other(subject_entity),
-			);
+	let _subjects_iterator_observable_subscription = iterator_observable_entity_commands
+		.subscribe_to_this_scheduled::<i32, (), Update>(RelativeEntity::Other(subject_entity));
 
 	// TODO: Add another interval, one should use a virtual clock an the other a real clock
 	let mut interval_observable_entity_commands = commands.spawn((
@@ -132,9 +127,7 @@ fn setup(
 	));
 	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
 	let subjects_interval_subscription = interval_observable_entity_commands
-		.subscribe_to_this_scheduled::<IntervalObservableComponent, Update>(
-		RelativeEntity::Other(subject_entity),
-	);
+		.subscribe_to_this_scheduled::<i32, (), Update>(RelativeEntity::Other(subject_entity));
 
 	println!("spawned");
 

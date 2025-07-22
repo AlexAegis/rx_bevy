@@ -12,7 +12,7 @@ use smallvec::{SmallVec, smallvec};
 
 use crate::{
 	CommandSubscriber, EntityContext, ObservableComponent, ObservableSignalBound, RxTick,
-	ScheduledSubscription, SubscriptionEntityContext,
+	ScheduledSubscription, SubscriberContext,
 };
 
 #[cfg(feature = "reflect")]
@@ -50,6 +50,10 @@ where
 
 	pub fn push(&mut self, subscription_entity: Entity) {
 		self.subscriptions.push(subscription_entity);
+	}
+
+	pub fn contains(&self, subscription: Entity) -> bool {
+		self.subscriptions.contains(&subscription)
 	}
 
 	pub fn get_subscriptions(&self) -> Vec<Entity> {
@@ -101,9 +105,9 @@ where
 				}) {
 			let mut commands = deferred_world.commands();
 
-			let context = SubscriptionEntityContext::new(EntityContext {
-				observable_entity,
-				subscriber_entity,
+			let context = SubscriberContext::new(EntityContext {
+				source_entity: observable_entity,
+				destination_entity: subscriber_entity,
 				subscription_entity,
 			});
 
@@ -122,6 +126,7 @@ where
 	O::Out: ObservableSignalBound,
 	O::OutError: ObservableSignalBound,
 {
+	// TODO This should hold a subscriber_context, even if it helds an id to itself
 	observable_entity: Entity,
 	subscriber_entity: Entity,
 	/// This is only an [Option] so it can be removed from the component while it's unsubscribing
@@ -160,10 +165,10 @@ where
 	pub fn get_subscription_entity_context(
 		&self,
 		subscription_entity: Entity,
-	) -> SubscriptionEntityContext<O::Out, O::OutError> {
-		SubscriptionEntityContext::new(EntityContext {
-			observable_entity: self.observable_entity,
-			subscriber_entity: self.subscriber_entity,
+	) -> SubscriberContext<O::Out, O::OutError> {
+		SubscriberContext::new(EntityContext {
+			source_entity: self.observable_entity,
+			destination_entity: self.subscriber_entity,
 			subscription_entity,
 		})
 	}

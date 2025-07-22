@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, system::Commands};
+use bevy_log::debug;
 use derive_where::derive_where;
-use rx_bevy_observable::{InnerSubscription, ObserverInput, SubscriptionLike, Teardown};
+use rx_bevy_observable::{ObserverInput, SubscriptionLike};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -19,9 +20,9 @@ where
 	#[derive_where(skip)]
 	commands: &'a mut Commands<'w, 's>,
 	/// "This" entity
-	observable_entity: Entity,
+	source_entity: Entity,
 	/// "Destination" entity
-	subscriber_entity: Entity,
+	destination_entity: Entity,
 
 	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
 	subscription_entity: Entity,
@@ -39,10 +40,10 @@ where
 	In: 'static + ObservableSignalBound,
 	InError: 'static + ObservableSignalBound,
 {
-	pub fn downgrade(self) -> SubscriptionEntityContext<In, InError> {
-		SubscriptionEntityContext {
-			observable_entity: self.observable_entity,
-			subscriber_entity: self.subscriber_entity,
+	pub fn downgrade(self) -> SubscriberContext<In, InError> {
+		SubscriberContext {
+			source_entity: self.source_entity,
+			destination_entity: self.destination_entity,
 			subscription_entity: self.subscription_entity,
 			closed: self.closed,
 			// teardown: self.teardown,
@@ -69,7 +70,7 @@ where
 	fn next(&mut self, next: Self::In) {
 		if !self.closed {
 			self.commands
-				.trigger_targets(RxSignal::<In, InError>::Next(next), self.subscriber_entity);
+				.trigger_targets(RxSignal::<In, InError>::Next(next), self.destination_entity);
 		}
 	}
 
@@ -77,7 +78,7 @@ where
 		if !self.closed {
 			self.commands.trigger_targets(
 				RxSignal::<In, InError>::Error(error),
-				self.subscriber_entity,
+				self.destination_entity,
 			);
 		}
 	}
@@ -85,7 +86,7 @@ where
 	fn complete(&mut self) {
 		if !self.closed {
 			self.commands
-				.trigger_targets(RxSignal::<In, InError>::Complete, self.subscriber_entity);
+				.trigger_targets(RxSignal::<In, InError>::Complete, self.destination_entity);
 			self.unsubscribe();
 		}
 	}
@@ -104,6 +105,7 @@ where
 		if !self.closed {
 			self.closed = true;
 			// self.teardown.unsubscribe();
+			debug!("CommandSubscriber unsubscribe");
 			self.commands.entity(self.subscription_entity).despawn();
 		}
 	}
@@ -115,25 +117,25 @@ where
 
 /// This intermediate struct is used to avoid mixing up the three entities
 pub struct EntityContext {
-	/// "This" entity
-	pub observable_entity: Entity,
+	/// "This" entity, usually an observable
+	pub source_entity: Entity,
 	/// "Destination" entity
-	pub subscriber_entity: Entity,
+	pub destination_entity: Entity,
 	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
 	pub subscription_entity: Entity,
 }
 
 #[cfg_attr(feature = "debug", derive_where(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscriptionEntityContext<In, InError>
+pub struct SubscriberContext<In, InError>
 where
 	In: 'static + Send + Sync + ObservableSignalBound,
 	InError: 'static + Send + Sync + ObservableSignalBound,
 {
 	/// "This" entity
-	observable_entity: Entity,
+	source_entity: Entity,
 	/// "Destination" entity
-	subscriber_entity: Entity,
+	destination_entity: Entity,
 	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
 	subscription_entity: Entity,
 
@@ -145,15 +147,15 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError> SubscriptionEntityContext<In, InError>
+impl<In, InError> SubscriberContext<In, InError>
 where
 	In: 'static + Send + Sync + ObservableSignalBound,
 	InError: 'static + Send + Sync + ObservableSignalBound,
 {
 	pub fn new(entity_context: EntityContext) -> Self {
 		Self {
-			observable_entity: entity_context.observable_entity,
-			subscriber_entity: entity_context.subscriber_entity,
+			source_entity: entity_context.source_entity,
+			destination_entity: entity_context.destination_entity,
 			subscription_entity: entity_context.subscription_entity,
 			closed: false,
 			// teardown: InnerSubscription::new_empty(),
@@ -163,11 +165,11 @@ where
 
 	#[inline]
 	pub fn get_observable_entity(&self) -> Entity {
-		self.observable_entity
+		self.source_entity
 	}
 }
 
-impl<In, InError> SubscriptionEntityContext<In, InError>
+impl<In, InError> SubscriberContext<In, InError>
 where
 	In: 'static + Send + Sync + ObservableSignalBound,
 	InError: 'static + Send + Sync + ObservableSignalBound,
@@ -182,8 +184,8 @@ where
 	{
 		CommandSubscriber::<'a, 'w, 's, In, InError> {
 			commands,
-			observable_entity: self.observable_entity,
-			subscriber_entity: self.subscriber_entity,
+			source_entity: self.source_entity,
+			destination_entity: self.destination_entity,
 			subscription_entity: self.subscription_entity,
 			closed: self.closed,
 			// teardown: InnerSubscription::new_empty(),
@@ -192,7 +194,7 @@ where
 	}
 }
 
-impl<In, InError> ObserverInput for SubscriptionEntityContext<In, InError>
+impl<In, InError> ObserverInput for SubscriberContext<In, InError>
 where
 	In: 'static + Send + Sync + ObservableSignalBound,
 	InError: 'static + Send + Sync + ObservableSignalBound,
@@ -201,7 +203,8 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> rx_bevy_observable::Observer for SubscriptionEntityContext<In, InError>
+// TODO: Maybe this impl should just be removed and accept that subscriber context is not a subscriber
+impl<In, InError> rx_bevy_observable::Observer for SubscriberContext<In, InError>
 where
 	In: 'static + Send + Sync + ObservableSignalBound,
 	InError: 'static + Send + Sync + ObservableSignalBound,
@@ -220,7 +223,7 @@ where
 	}
 }
 
-impl<In, InError> rx_bevy_observable::SubscriptionLike for SubscriptionEntityContext<In, InError>
+impl<In, InError> rx_bevy_observable::SubscriptionLike for SubscriberContext<In, InError>
 where
 	In: 'static + Send + Sync + ObservableSignalBound,
 	InError: 'static + Send + Sync + ObservableSignalBound,

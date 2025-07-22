@@ -8,6 +8,7 @@ use bevy_ecs::{
 	schedule::ScheduleLabel,
 	system::{Commands, Query, Res},
 };
+use bevy_log::trace;
 use bevy_time::Time;
 use derive_where::derive_where;
 
@@ -42,6 +43,11 @@ where
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
+		trace!(
+			"Build RxScheduler for Schedule: {}, Clock: {}",
+			short_type_name::short_type_name::<S>(),
+			short_type_name::short_type_name::<C>()
+		);
 		app.add_systems(self.schedule.clone(), tick_subscriptions_system::<S, C>);
 	}
 }
