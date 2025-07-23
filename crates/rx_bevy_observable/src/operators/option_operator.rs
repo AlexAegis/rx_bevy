@@ -103,7 +103,25 @@ where
 	Sub: OperationSubscriber<Destination = Destination>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
-	type Destination = Sub::Destination;
+	type Destination = Destination;
+
+	fn get_destination(&self) -> &Self::Destination {
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => {
+				internal_subscriber.get_destination()
+			}
+			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber,
+		}
+	}
+
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => {
+				internal_subscriber.get_destination_mut()
+			}
+			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber,
+		}
+	}
 }
 
 impl<Sub, Destination> SubscriptionLike for OptionOperatorSubscriber<Sub, Destination>

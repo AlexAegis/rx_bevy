@@ -1,4 +1,4 @@
-use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike};
+use crate::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 /// A helper subscriber that does not forward completion and unsubscribe signals.
 /// Creating a barrier for these lifecycle signals.
@@ -65,5 +65,22 @@ where
 	#[inline]
 	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
 		self.destination.add(subscription);
+	}
+}
+
+impl<Destination> Operation for DetachedSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	type Destination = Destination;
+
+	#[inline]
+	fn get_destination(&self) -> &Self::Destination {
+		&self.destination
+	}
+
+	#[inline]
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		&mut self.destination
 	}
 }

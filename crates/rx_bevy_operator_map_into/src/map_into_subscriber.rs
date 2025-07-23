@@ -131,4 +131,14 @@ where
 		>,
 {
 	type Destination = Destination;
+
+	#[inline]
+	fn get_destination(&self) -> &Self::Destination {
+		&self.destination
+	}
+
+	#[inline]
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		&mut self.destination
+	}
 }

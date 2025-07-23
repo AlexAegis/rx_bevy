@@ -130,6 +130,16 @@ where
 		>,
 {
 	type Destination = Destination;
+
+	#[inline]
+	fn get_destination(&self) -> &Self::Destination {
+		&self.destination
+	}
+
+	#[inline]
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		&mut self.destination
+	}
 }
 
 pub struct IntoVariant2of2Subscriber<O1, O2, Destination>
@@ -256,4 +266,14 @@ where
 		>,
 {
 	type Destination = Destination;
+
+	#[inline]
+	fn get_destination(&self) -> &Self::Destination {
+		&self.destination
+	}
+
+	#[inline]
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		&mut self.destination
+	}
 }

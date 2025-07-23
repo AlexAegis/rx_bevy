@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_observable::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
@@ -14,7 +14,7 @@ where
 
 impl<Inner, Destination> CompositeSubscriber<Inner, Destination>
 where
-	Inner: Subscriber,
+	Inner: Subscriber + Operation,
 	Destination: Observer,
 {
 	pub fn new(subscriber: Inner) -> Self {
@@ -78,10 +78,21 @@ where
 
 impl<Inner, Destination> Operation for CompositeSubscriber<Inner, Destination>
 where
-	Inner: Subscriber,
+	Inner: Subscriber + Operation,
+	<Inner as Operation>::Destination: Operation<Destination = Destination>,
 	Destination: Observer,
 {
 	type Destination = Destination;
+
+	#[inline]
+	fn get_destination(&self) -> &Self::Destination {
+		self.subscriber.get_destination().get_destination()
+	}
+
+	#[inline]
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		self.subscriber.get_destination_mut().get_destination_mut()
+	}
 }
 
 impl<Inner, Destination> Drop for CompositeSubscriber<Inner, Destination>

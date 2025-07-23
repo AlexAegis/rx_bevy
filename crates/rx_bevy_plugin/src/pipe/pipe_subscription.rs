@@ -1,4 +1,4 @@
-use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, SubscriptionLike};
+use rx_bevy_observable::{ObservableOutput, ObserverInput, Operation, Operator, SubscriptionLike};
 
 use crate::{
 	CommandSubscriber, DebugBound, ObservableSignalBound, ScheduledSubscription, SubscriberContext,
@@ -55,6 +55,7 @@ where
 		event: &crate::RxTick,
 		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) {
+		let destination = self.operator.get_destination_mut();
 		println!("pipe subscription ticked! {event:?}");
 		// TODO: Figure out how to tick a pipes subscription, upstream changes will be needed!
 	}

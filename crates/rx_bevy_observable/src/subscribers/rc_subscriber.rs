@@ -1,4 +1,7 @@
-use std::sync::{Arc, RwLock};
+use std::{
+	ops::{Deref, DerefMut},
+	sync::{Arc, RwLock},
+};
 
 use crate::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
@@ -47,6 +50,26 @@ where
 			self.closed = true;
 			self.destination.complete()
 		}
+	}
+}
+
+impl<Destination> Deref for RcDestination<Destination>
+where
+	Destination: Subscriber,
+{
+	type Target = Destination;
+
+	fn deref(&self) -> &Self::Target {
+		&self.destination
+	}
+}
+
+impl<Destination> DerefMut for RcDestination<Destination>
+where
+	Destination: Subscriber,
+{
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		&mut self.destination
 	}
 }
 
@@ -289,7 +312,17 @@ impl<Destination> Operation for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	type Destination = Destination;
+	type Destination = Arc<RwLock<RcDestination<Destination>>>;
+
+	#[inline]
+	fn get_destination(&self) -> &Self::Destination {
+		&self.destination
+	}
+
+	#[inline]
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		&mut self.destination
+	}
 }
 
 /// Acquired by calling `downgrade` on `RcSubscriber`
@@ -417,5 +450,15 @@ impl<Destination> Operation for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	type Destination = Destination;
+	type Destination = Arc<RwLock<RcDestination<Destination>>>;
+
+	#[inline]
+	fn get_destination(&self) -> &Self::Destination {
+		&self.destination
+	}
+
+	#[inline]
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		&mut self.destination
+	}
 }

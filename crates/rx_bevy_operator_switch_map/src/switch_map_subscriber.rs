@@ -1,4 +1,7 @@
-use std::marker::PhantomData;
+use std::{
+	marker::PhantomData,
+	sync::{Arc, RwLock},
+};
 
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
@@ -124,5 +127,15 @@ where
 	Switcher: Fn(In) -> InnerObservable,
 	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	type Destination = Destination;
+	type Destination = Arc<RwLock<Destination>>;
+
+	#[inline]
+	fn get_destination(&self) -> &Self::Destination {
+		self.destination.get_destination().get_destination()
+	}
+
+	#[inline]
+	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+		self.destination.get_destination_mut().get_destination_mut()
+	}
 }
