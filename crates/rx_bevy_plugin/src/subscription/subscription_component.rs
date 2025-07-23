@@ -8,10 +8,11 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use derive_where::derive_where;
+use rx_bevy_observable::Tick;
 use smallvec::{SmallVec, smallvec};
 
 use crate::{
-	CommandSubscriber, EntityContext, ObservableComponent, ObservableSignalBound, RxTick,
+	CommandSubscriber, EntityContext, ObservableComponent, ObservableSignalBound,
 	ScheduledSubscription, SubscriberContext,
 };
 
@@ -155,7 +156,7 @@ where
 		}
 	}
 
-	pub fn tick(&mut self, event: &RxTick, subscriber: CommandSubscriber<O::Out, O::OutError>) {
+	pub fn tick(&mut self, event: &Tick, subscriber: CommandSubscriber<O::Out, O::OutError>) {
 		self.scheduled_subscription
 			.as_mut()
 			.expect("subscriber should always be present when ticked")

@@ -1,7 +1,9 @@
-use rx_bevy_observable::{ObservableOutput, Observer, SubscriptionLike};
+use rx_bevy_common_bounds::DebugBound;
+use rx_bevy_observable::{ObservableOutput, Observer, SubscriptionLike, Tick};
 
-use crate::{CommandSubscriber, DebugBound, ObservableSignalBound, RxTick, ScheduledSubscription};
+use crate::{CommandSubscriber, ObservableSignalBound, ScheduledSubscription};
 
+#[cfg(feature = "debug")]
 use derive_where::derive_where;
 
 #[cfg(feature = "reflect")]
@@ -13,7 +15,7 @@ pub struct IteratorSubscription<Iterator, const EMIT_ON_TICK: bool>
 where
 	Iterator: IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	iterator: Iterator::IntoIter,
 }
@@ -22,7 +24,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> IteratorSubscription<Iterator, EMIT_ON_
 where
 	Iterator: IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	pub fn new(iterator: Iterator) -> Self {
 		Self {
@@ -36,7 +38,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> ObservableOutput
 where
 	Iterator: IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	type Out = Iterator::Item;
 	type OutError = ();
@@ -47,13 +49,13 @@ impl<Iterator, const EMIT_ON_TICK: bool> ScheduledSubscription
 where
 	Iterator: IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	const SCHEDULED: bool = EMIT_ON_TICK;
 
 	fn on_tick(
 		&mut self,
-		_event: &RxTick,
+		_event: &Tick,
 		mut destination: CommandSubscriber<Self::Out, Self::OutError>,
 	) {
 		if let Some(next) = self.iterator.next() {

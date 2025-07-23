@@ -65,16 +65,25 @@ where
 	In: 'static + Debug,
 	InError: 'static + Debug,
 {
+	#[inline]
 	fn next(&mut self, next: Self::In) {
 		println!("{}next: {:?}", self.get_prefix(), next);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		println!("{}error: {:?}", self.get_prefix(), error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		println!("{}completed", self.get_prefix());
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		println!("{}tick: {:?}", self.get_prefix(), tick);
 	}
 }
 

@@ -75,6 +75,14 @@ where
 			self.closed = true;
 		}
 	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick) {
+		if !self.is_closed() {
+			self.destination.tick(tick);
+			self.unsubscribe();
+		}
+	}
 }
 
 impl<InnerObservable, Destination> SubscriptionLike

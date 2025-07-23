@@ -64,6 +64,12 @@ where
 		self.destination.next(EitherOut2::CompleteO1);
 		self.destination.complete();
 	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.destination.tick(tick);
+	}
 }
 
 impl<O1, O2, Destination> SubscriptionLike for IntoVariant1of2Subscriber<O1, O2, Destination>
@@ -205,6 +211,12 @@ where
 	fn complete(&mut self) {
 		self.destination.next(EitherOut2::CompleteO2);
 		self.destination.complete();
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.destination.tick(tick);
 	}
 }
 

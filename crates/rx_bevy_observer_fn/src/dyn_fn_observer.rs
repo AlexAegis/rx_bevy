@@ -53,6 +53,9 @@ where
 			self.unsubscribe();
 		}
 	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {}
 }
 
 impl<In, InError> SubscriptionLike for DynFnObserver<In, InError>

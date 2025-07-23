@@ -16,11 +16,20 @@ pub use subscriber::*;
 pub use subscribers::*;
 pub use subscription::*;
 
+#[cfg(feature = "tick")]
+mod tick;
+
+#[cfg(feature = "tick")]
+pub use tick::*;
+
 pub mod prelude {
 	pub use super::observable::*;
 	pub use super::observer::*;
 	pub use super::subscribers::*;
 	pub use super::subscription::*;
+
+	#[cfg(feature = "tick")]
+	pub use super::tick::*;
 
 	pub use super::operators::prelude::*;
 }

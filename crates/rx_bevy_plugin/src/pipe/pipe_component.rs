@@ -5,13 +5,13 @@ use bevy_ecs::{
 	observer::Trigger,
 	system::{Commands, Query},
 };
+use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
-	CommandSubscriber, DebugBound, ObservableComponent, ObservableOnInsertContext,
-	ObservableSignalBound, PipeSubscription, RelativeEntity, RxSignal, Subscribe,
-	SubscriberContext, WithSubscribeObserverReference, observable_on_insert_hook,
-	observable_on_remove_hook,
+	CommandSubscriber, ObservableComponent, ObservableOnInsertContext, ObservableSignalBound,
+	PipeSubscription, RelativeEntity, RxSignal, Subscribe, SubscriberContext,
+	WithSubscribeObserverReference, observable_on_insert_hook, observable_on_remove_hook,
 };
 
 #[cfg(feature = "debug")]

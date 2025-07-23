@@ -24,7 +24,8 @@ use bevy_reflect::Reflect;
 
 /// A component that turns an entity into a multicast source, can observe
 /// multiple other observables, and other entities can subscribe to it.
-#[derive(Debug, Reflect)]
+#[derive(Debug)]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubjectComponent<In, InError>
 where
 	In: 'static + Send + Sync + Clone,
@@ -40,8 +41,8 @@ where
 
 impl<In, InError> Component for SubjectComponent<In, InError>
 where
-	In: 'static + Clone + ObservableSignalBound,
-	InError: 'static + Clone + ObservableSignalBound,
+	In: Clone + ObservableSignalBound,
+	InError: Clone + ObservableSignalBound,
 {
 	const STORAGE_TYPE: StorageType = StorageType::Table;
 	type Mutability = Mutable;
@@ -54,8 +55,8 @@ where
 
 impl<In, InError> SubjectComponent<In, InError>
 where
-	In: 'static + Clone + ObservableSignalBound,
-	InError: 'static + Clone + ObservableSignalBound,
+	In: Clone + ObservableSignalBound,
+	InError: Clone + ObservableSignalBound,
 {
 	pub fn new() -> Self {
 		Self {
@@ -68,8 +69,8 @@ where
 
 impl<In, InError> WithSubscribeObserverReference for SubjectComponent<In, InError>
 where
-	In: 'static + Clone + ObservableSignalBound,
-	InError: 'static + Clone + ObservableSignalBound,
+	In: Clone + ObservableSignalBound,
+	InError: Clone + ObservableSignalBound,
 {
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
@@ -86,8 +87,8 @@ where
 
 impl<In, InError> ObservableComponent for SubjectComponent<In, InError>
 where
-	In: 'static + Clone + ObservableSignalBound,
-	InError: 'static + Clone + ObservableSignalBound,
+	In: Clone + ObservableSignalBound,
+	InError: Clone + ObservableSignalBound,
 {
 	/// A Subject is also an observer, so if subscriptions to itself were
 	/// allowed, an infinite loop would happen

@@ -1,9 +1,5 @@
-use std::time::Duration;
-
-use bevy_ecs::{event::Event, system::Res};
-use bevy_time::Time;
-
-use crate::{Clock, DebugBound};
+use bevy_ecs::event::Event;
+use rx_bevy_common_bounds::DebugBound;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -19,22 +15,4 @@ where
 	Next(In),
 	Error(InError),
 	Complete,
-}
-
-/// Used for scheduling, the subscriptions are ticked with this event
-/// ? Could be generic over Schedule or something thats associated with the observer
-#[derive(Event, Debug, Clone)]
-pub struct RxTick {
-	pub now: Duration,
-	pub delta: Duration,
-}
-
-impl RxTick {
-	// Move this generic to Tick itself, and make the tick function generic
-	pub fn new<C: Clock>(time: &Res<Time<C>>) -> Self {
-		Self {
-			now: time.elapsed(),
-			delta: time.delta(),
-		}
-	}
 }

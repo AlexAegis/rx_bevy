@@ -49,6 +49,13 @@ where
 			self.unsubscribe();
 		}
 	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick) {
+		if !self.is_closed() {
+			self.destination.tick(tick);
+		}
+	}
 }
 
 impl<Destination> ObserverInput for ObserverSubscriber<Destination>

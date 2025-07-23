@@ -8,6 +8,9 @@ pub struct MockObserver<T, Error> {
 	pub values: Vec<T>,
 	pub errors: Vec<Error>,
 	pub completed: bool,
+
+	#[cfg(feature = "tick")]
+	pub ticks: Vec<rx_bevy_observable::Tick>,
 }
 
 impl<T, Error> ObserverInput for MockObserver<T, Error>
@@ -24,16 +27,25 @@ where
 	T: 'static,
 	Error: 'static,
 {
+	#[inline]
 	fn next(&mut self, next: T) {
 		self.values.push(next);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.errors.push(error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.completed = true;
+	}
+
+	#[inline]
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.ticks.push(tick);
 	}
 }
 
@@ -43,6 +55,8 @@ impl<T, Error> Default for MockObserver<T, Error> {
 			values: Vec::default(),
 			errors: Vec::default(),
 			completed: false,
+			#[cfg(feature = "tick")]
+			ticks: Vec::default(),
 		}
 	}
 }

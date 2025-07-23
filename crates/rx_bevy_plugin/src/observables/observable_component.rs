@@ -10,12 +10,13 @@ use bevy_ecs::{
 use bevy_log::{debug, error, trace, warn};
 use derive_where::derive_where;
 
-use rx_bevy_observable::{ObservableOutput, SubscriptionLike};
+use rx_bevy_common_bounds::DebugBound;
+use rx_bevy_observable::{ObservableOutput, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
-	CommandSubscriber, DebugBound, EntityContext, ObservableSignalBound, RxTick,
-	ScheduledSubscription, Subscribe, SubscriberContext, SubscriptionComponent, Subscriptions,
+	CommandSubscriber, EntityContext, ObservableSignalBound, ScheduledSubscription, Subscribe,
+	SubscriberContext, SubscriptionComponent, Subscriptions,
 };
 
 #[cfg(feature = "debug")]
@@ -275,7 +276,7 @@ pub struct SubscriptionMarker;
 /// query based on the Schedule but the Subscription itself does not have to be
 /// aware of the Schedule it runs on.
 fn subscription_tick_observer<O>(
-	trigger: Trigger<RxTick>,
+	trigger: Trigger<Tick>,
 	mut subscription_query: Query<&mut SubscriptionComponent<O>>,
 	mut commands: Commands,
 ) where

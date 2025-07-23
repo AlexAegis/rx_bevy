@@ -1,5 +1,5 @@
 use bevy_ecs::entity::Entity;
-use rx_bevy_observable::ObservableOutput;
+use rx_bevy_observable::{ObservableOutput, Tick};
 use std::marker::PhantomData;
 
 use crate::{ObservableSignalBound, ScheduledSubscription};
@@ -53,7 +53,7 @@ where
 
 	fn on_tick(
 		&mut self,
-		_event: &crate::RxTick,
+		_event: &Tick,
 		_subscriber: crate::CommandSubscriber<Self::Out, Self::OutError>,
 	) {
 		unreachable!()

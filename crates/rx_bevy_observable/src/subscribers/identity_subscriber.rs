@@ -51,6 +51,12 @@ where
 	fn complete(&mut self) {
 		self.destination.complete();
 	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: crate::Tick) {
+		self.destination.tick(tick);
+	}
 }
 
 impl<Destination> SubscriptionLike for IdentitySubscriber<Destination>

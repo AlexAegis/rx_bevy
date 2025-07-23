@@ -16,10 +16,11 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
+default = ["dev", "tick"]
 dev = []
 example = ["dev"]
 inline_subscribe = []
+tick = ["rx_bevy_observable/tick", "rx_bevy_emission_variants/tick"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }

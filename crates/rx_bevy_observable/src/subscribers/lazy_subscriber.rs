@@ -72,6 +72,15 @@ where
 			Self::Empty => panic!("complete called on an uninitialized lazy subscriber!"),
 		}
 	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: crate::Tick) {
+		match self {
+			Self::Initialized(destination) => destination.tick(tick),
+			Self::Empty => panic!("tick called on an uninitialized lazy subscriber!"),
+		}
+	}
 }
 
 impl<Destination> SubscriptionLike for LazySubscriber<Destination>

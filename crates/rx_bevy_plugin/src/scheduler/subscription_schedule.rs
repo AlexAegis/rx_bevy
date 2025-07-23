@@ -1,8 +1,10 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{component::Component, schedule::ScheduleLabel};
-use bevy_reflect::Reflect;
 use derive_where::derive_where;
+
+#[cfg(feature = "reflect")]
+use bevy_reflect::Reflect;
 
 /// Component to mark subscriptions with, to trigger `Tick` events without the
 /// knowledge of the actual [ObservableComponent]s type

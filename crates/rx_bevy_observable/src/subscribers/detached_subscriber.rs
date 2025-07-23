@@ -46,6 +46,12 @@ where
 	fn complete(&mut self) {
 		// Disconnected on purpose
 	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: crate::Tick) {
+		self.destination.tick(tick);
+	}
 }
 
 impl<Destination> SubscriptionLike for DetachedSubscriber<Destination>

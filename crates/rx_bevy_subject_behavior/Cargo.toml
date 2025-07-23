@@ -20,6 +20,7 @@ default = ["dev"]
 dev = []
 example = ["dev"]
 inline_subscribe = []
+tick = ["rx_bevy_observable/tick", "rx_bevy_subject/tick"]
 
 [dependencies]
 rx_bevy_subject = { workspace = true }

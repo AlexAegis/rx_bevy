@@ -53,16 +53,25 @@ where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 {
+	#[inline]
 	fn next(&mut self, next: Self::In) {
 		self.destination.next((self.switcher)(next));
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error.into());
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.destination.complete();
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.destination.tick(tick);
 	}
 }
 

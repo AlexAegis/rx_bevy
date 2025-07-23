@@ -18,16 +18,25 @@ impl<Destination> Observer for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
+	#[inline]
 	fn next(&mut self, next: Self::In) {
 		self.destination.next(next);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.destination.complete();
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.destination.tick(tick);
 	}
 }
 

@@ -50,12 +50,20 @@ where
 		self.subject.next(next);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.subject.error(error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.subject.complete();
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.subject.tick(tick);
 	}
 }
 

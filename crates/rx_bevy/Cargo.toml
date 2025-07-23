@@ -28,7 +28,32 @@ default = [
 dev = []
 example = ["dev"]
 # All Bevy specific features, Components, Schedulers. If not enabled, bevy is not used as a dependency.
-bevy = []
+bevy = ["tick", "rx_bevy_observable/bevy"]
+tick = [
+    "rx_bevy_observable/tick",
+    "rx_bevy_observable_combine_latest/tick",
+    "rx_bevy_observable_zip/tick",
+    "rx_bevy_observer_fn/tick",
+    "rx_bevy_observer_noop/tick",
+    "rx_bevy_observer_print/tick",
+    "rx_bevy_operator_composite/tick",
+    "rx_bevy_operator_enumerate/tick",
+    "rx_bevy_operator_filter/tick",
+    "rx_bevy_operator_filter_map/tick",
+    "rx_bevy_operator_finalize/tick",
+    "rx_bevy_operator_map_into/tick",
+    "rx_bevy_operator_lift_option/tick",
+    "rx_bevy_operator_lift_result/tick",
+    "rx_bevy_operator_map/tick",
+    "rx_bevy_operator_skip/tick",
+    "rx_bevy_operator_switch_map/tick",
+    "rx_bevy_operator_take/tick",
+    "rx_bevy_operator_tap/tick",
+    "rx_bevy_operator_try_capture/tick",
+    "rx_bevy_subject/tick",
+    "rx_bevy_subject_behavior/tick",
+    "rx_bevy_subject_replay/tick",
+]
 pipe = [
     "dep:rx_bevy_pipe",
     "rx_bevy_operator_composite/pipe",

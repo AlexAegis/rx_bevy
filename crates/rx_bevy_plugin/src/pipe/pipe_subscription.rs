@@ -1,9 +1,7 @@
-use rx_bevy::Observer;
-use rx_bevy_observable::{ObservableOutput, ObserverInput, Operation, Operator, SubscriptionLike};
+use rx_bevy_common_bounds::DebugBound;
+use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, SubscriptionLike, Tick};
 
-use crate::{
-	CommandSubscriber, DebugBound, ObservableSignalBound, ScheduledSubscription, SubscriberContext,
-};
+use crate::{CommandSubscriber, ObservableSignalBound, ScheduledSubscription, SubscriberContext};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -53,7 +51,7 @@ where
 
 	fn on_tick(
 		&mut self,
-		event: &crate::RxTick,
+		event: &Tick,
 		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) {
 		//let destination = self.operator.read(|destination| {
@@ -66,7 +64,7 @@ where
 	}
 
 	fn unsubscribe(&mut self, mut subscriber: CommandSubscriber<Self::Out, Self::OutError>) {
-		println!("pipe subscription unsubbed! {subscriber:?}");
+		println!("pipe subscription unsubbed!");
 		subscriber.unsubscribe();
 	}
 }

@@ -1,6 +1,7 @@
-use rx_bevy_observable::ObservableOutput;
+use rx_bevy_common_bounds::DebugBound;
+use rx_bevy_observable::{ObservableOutput, Tick};
 
-use crate::{CommandSubscriber, DebugBound, RxTick};
+use crate::CommandSubscriber;
 
 pub trait ScheduledSubscription: ObservableOutput + DebugBound
 where
@@ -11,7 +12,7 @@ where
 	/// When set to false, the subscription will not be ticked at all.
 	const SCHEDULED: bool = true;
 
-	fn on_tick(&mut self, event: &RxTick, subscriber: CommandSubscriber<Self::Out, Self::OutError>);
+	fn on_tick(&mut self, event: &Tick, subscriber: CommandSubscriber<Self::Out, Self::OutError>);
 
 	/// Happens when either the [Subscription] or its relation from [Subscriptions] is removed
 	///

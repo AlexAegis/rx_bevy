@@ -16,6 +16,13 @@ pub trait Observer: ObserverInput {
 	fn next(&mut self, next: Self::In);
 	fn error(&mut self, error: Self::InError);
 	fn complete(&mut self);
+
+	/// Special fourth channel to process ticks issued by the schedulers.
+	/// Some operators may produce other, new signals during a tick.
+	/// None of the regular operators do anything on a tick but notify it's
+	/// downstream of the tick.
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick);
 }
 
 pub trait UpgradeableObserver: Observer {
@@ -57,5 +64,10 @@ where
 
 	fn complete(&mut self) {
 		self.borrow_mut().complete();
+	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick) {
+		self.borrow_mut().tick(tick);
 	}
 }

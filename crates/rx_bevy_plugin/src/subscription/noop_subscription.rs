@@ -2,9 +2,10 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 
-use rx_bevy_observable::ObservableOutput;
+use rx_bevy_common_bounds::DebugBound;
+use rx_bevy_observable::{ObservableOutput, Tick};
 
-use crate::{CommandSubscriber, DebugBound, RxTick, ScheduledSubscription};
+use crate::{CommandSubscriber, ScheduledSubscription};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -40,7 +41,7 @@ where
 {
 	const SCHEDULED: bool = false;
 
-	fn on_tick(&mut self, _event: &RxTick, _context: CommandSubscriber<Self::Out, Self::OutError>) {
+	fn on_tick(&mut self, _event: &Tick, _context: CommandSubscriber<Self::Out, Self::OutError>) {
 		unreachable!()
 	}
 

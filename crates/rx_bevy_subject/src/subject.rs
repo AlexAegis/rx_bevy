@@ -132,6 +132,17 @@ where
 			}
 		}
 	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		if !self.is_closed() {
+			if let Ok(mut multicast) = self.multicast.write() {
+				for (_, destination) in multicast.slab.iter_mut() {
+					destination.tick(tick.clone());
+				}
+			}
+		}
+	}
 }
 
 impl<T, Error> SubscriptionLike for Subject<T, Error>

@@ -2,13 +2,17 @@ use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, system::Commands};
 use bevy_log::debug;
-use derive_where::derive_where;
+
+use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObserverInput, SubscriptionLike};
+
+use crate::{ObservableSignalBound, RxSignal};
+
+#[cfg(feature = "debug")]
+use derive_where::derive_where;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
-
-use crate::{DebugBound, ObservableSignalBound, RxSignal};
 
 #[cfg_attr(feature = "debug", derive_where(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
@@ -17,7 +21,7 @@ where
 	In: 'static + Send + Sync,
 	InError: 'static + Send + Sync,
 {
-	#[derive_where(skip)]
+	#[cfg_attr(feature = "debug", derive_where(skip))]
 	commands: &'a mut Commands<'w, 's>,
 	/// "This" entity
 	source_entity: Entity,
@@ -37,8 +41,8 @@ where
 
 impl<'a, 'w, 's, In, InError> CommandSubscriber<'a, 'w, 's, In, InError>
 where
-	In: 'static + ObservableSignalBound,
-	InError: 'static + ObservableSignalBound,
+	In: ObservableSignalBound,
+	InError: ObservableSignalBound,
 {
 	pub fn downgrade(self) -> SubscriberContext<In, InError> {
 		SubscriberContext {
@@ -90,6 +94,12 @@ where
 			self.unsubscribe();
 		}
 	}
+
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		if !self.closed {
+			self.commands.trigger_targets(tick, self.destination_entity);
+		}
+	}
 }
 
 impl<'a, 'w, 's, In, InError> SubscriptionLike for CommandSubscriber<'a, 'w, 's, In, InError>
@@ -129,8 +139,8 @@ pub struct EntityContext {
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscriberContext<In, InError>
 where
-	In: 'static + Send + Sync + ObservableSignalBound,
-	InError: 'static + Send + Sync + ObservableSignalBound,
+	In: Send + Sync + ObservableSignalBound,
+	InError: Send + Sync + ObservableSignalBound,
 {
 	/// "This" entity
 	source_entity: Entity,
@@ -149,8 +159,8 @@ where
 
 impl<In, InError> SubscriberContext<In, InError>
 where
-	In: 'static + Send + Sync + ObservableSignalBound,
-	InError: 'static + Send + Sync + ObservableSignalBound,
+	In: Send + Sync + ObservableSignalBound,
+	InError: Send + Sync + ObservableSignalBound,
 {
 	pub fn new(entity_context: EntityContext) -> Self {
 		Self {
@@ -171,8 +181,8 @@ where
 
 impl<In, InError> SubscriberContext<In, InError>
 where
-	In: 'static + Send + Sync + ObservableSignalBound,
-	InError: 'static + Send + Sync + ObservableSignalBound,
+	In: Send + Sync + ObservableSignalBound,
+	InError: Send + Sync + ObservableSignalBound,
 {
 	pub fn upgrade<'a, 'w, 's>(
 		self,
@@ -196,8 +206,8 @@ where
 
 impl<In, InError> ObserverInput for SubscriberContext<In, InError>
 where
-	In: 'static + Send + Sync + ObservableSignalBound,
-	InError: 'static + Send + Sync + ObservableSignalBound,
+	In: Send + Sync + ObservableSignalBound,
+	InError: Send + Sync + ObservableSignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -206,27 +216,31 @@ where
 // TODO: Maybe this impl should just be removed and accept that subscriber context is not a subscriber
 impl<In, InError> rx_bevy_observable::Observer for SubscriberContext<In, InError>
 where
-	In: 'static + Send + Sync + ObservableSignalBound,
-	InError: 'static + Send + Sync + ObservableSignalBound,
+	In: Send + Sync + ObservableSignalBound,
+	InError: Send + Sync + ObservableSignalBound,
 {
 	fn next(&mut self, next: Self::In) {
 		// TODO: Maybe collect in a buffer then drain on upgrade? Or panic if not supposed to receive anything un-upgraded
-		println!("SubscriptionEntityContext next {:?}", next);
+		println!("SubscriptionEntityContext next");
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		println!("SubscriptionEntityContext error {:?}", error);
+		println!("SubscriptionEntityContext error");
 	}
 
 	fn complete(&mut self) {
 		println!("SubscriptionEntityContext complete");
 	}
+
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		println!("SubscriptionEntityContext tick");
+	}
 }
 
 impl<In, InError> rx_bevy_observable::SubscriptionLike for SubscriberContext<In, InError>
 where
-	In: 'static + Send + Sync + ObservableSignalBound,
-	InError: 'static + Send + Sync + ObservableSignalBound,
+	In: Send + Sync + ObservableSignalBound,
+	InError: Send + Sync + ObservableSignalBound,
 {
 	fn is_closed(&self) -> bool {
 		self.closed

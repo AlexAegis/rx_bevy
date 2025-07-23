@@ -33,6 +33,9 @@ where
 	}
 
 	fn complete(&mut self) {}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {}
 }
 
 impl<In, InError> UpgradeableObserver for NoopObserver<In, InError>

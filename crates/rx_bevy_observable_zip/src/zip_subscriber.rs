@@ -114,8 +114,15 @@ where
 		}
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.check_if_can_complete();
+	}
+
+	// #[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.destination.tick(tick);
 	}
 }
 

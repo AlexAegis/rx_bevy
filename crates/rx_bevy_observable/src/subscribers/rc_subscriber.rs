@@ -104,6 +104,13 @@ where
 			self.complete_if_can();
 		}
 	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick) {
+		if !self.is_closed() {
+			self.destination.tick(tick);
+		}
+	}
 }
 
 impl<Destination> SubscriptionLike for RcDestination<Destination>
@@ -254,6 +261,16 @@ where
 			self.completed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
 			lock.complete();
+		}
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: crate::Tick) {
+		if !self.is_closed() {
+			self.completed = true;
+			let mut lock = self.destination.write().expect("lock is poisoned!");
+			lock.tick(tick);
 		}
 	}
 }
@@ -412,6 +429,16 @@ where
 				lock.complete();
 			}
 			self.unsubscribe();
+		}
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: crate::Tick) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.try_write() {
+				lock.tick(tick);
+			}
 		}
 	}
 }

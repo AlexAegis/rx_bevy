@@ -18,5 +18,5 @@ default = ["dev"]
 dev = ["bevy/dynamic_linking"]
 
 [dependencies]
-bevy = { workspace = true, default-features = false }
+bevy = { workspace = true }
 derive-where = { workspace = true }

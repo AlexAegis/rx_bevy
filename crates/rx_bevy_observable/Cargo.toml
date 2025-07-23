@@ -16,14 +16,21 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
+default = []
 dev = []
 example = ["dev"]
 inline_subscribe = []
-
+bevy = ["tick", "dep:bevy_ecs", "dep:bevy_time"]
+tick = []
+reflect = ["rx_bevy_common_bounds/reflect"]
+serialize = ["rx_bevy_common_bounds/serialize"]
+debug = ["rx_bevy_common_bounds/debug"]
 
 [dependencies]
+rx_bevy_common_bounds = { workspace = true }
 smallvec = { workspace = true }
+bevy_ecs = { workspace = true, optional = true }
+bevy_time = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

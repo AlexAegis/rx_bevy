@@ -51,6 +51,13 @@ where
 			destination.borrow_mut().complete();
 		}
 	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick) {
+		if let Some(destination) = self.destination.upgrade() {
+			destination.borrow_mut().tick(tick);
+		}
+	}
 }
 
 impl<Destination> SubscriptionLike for WeakSubscriber<Destination>

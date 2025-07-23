@@ -74,16 +74,25 @@ impl<Destination> Observer for SharedSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
+	#[inline]
 	fn next(&mut self, next: Self::In) {
 		self.destination.next(next);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.destination.complete();
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: crate::Tick) {
+		self.destination.tick(tick);
 	}
 }
 
@@ -91,14 +100,17 @@ impl<Destination> SubscriptionLike for SharedSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self) {
 		self.destination.unsubscribe();
 	}
 
+	#[inline]
 	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
 		self.destination.add(subscription);
 	}
@@ -165,6 +177,14 @@ where
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.complete();
+		}
+	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick) {
+		if !self.is_closed() {
+			let mut lock = self.write().expect("lock is poisoned!");
+			lock.tick(tick);
 		}
 	}
 }

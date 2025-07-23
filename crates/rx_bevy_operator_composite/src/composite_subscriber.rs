@@ -44,6 +44,12 @@ where
 	fn complete(&mut self) {
 		self.subscriber.complete();
 	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.subscriber.tick(tick);
+	}
 }
 
 impl<Inner, Destination> SubscriptionLike for CompositeSubscriber<Inner, Destination>

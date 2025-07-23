@@ -1,7 +1,4 @@
-use std::{
-	marker::PhantomData,
-	ops::{Deref, DerefMut},
-};
+use std::ops::{Deref, DerefMut};
 
 use crate::{ObservableOutput, Observer, ObserverInput, Subscriber};
 
@@ -64,9 +61,4 @@ where
 	{
 		self.deref_mut().write_destination(writer);
 	}
-}
-
-pub struct DestinationAccessor<DestinationContainer, Destination> {
-	container: DestinationContainer,
-	_phantom_data: PhantomData<Destination>,
 }

@@ -11,8 +11,10 @@ use bevy_ecs::{
 use bevy_log::trace;
 use bevy_time::Time;
 use derive_where::derive_where;
+use rx_bevy_common_bounds::Clock;
+use rx_bevy_observable::Tick;
 
-use crate::{Clock, RxTick, SubscriptionSchedule};
+use crate::SubscriptionSchedule;
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -65,5 +67,5 @@ pub fn tick_subscriptions_system<S: ScheduleLabel, C: Clock>(
 ) {
 	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
 
-	commands.trigger_targets(RxTick::new(&time), subscriptions);
+	commands.trigger_targets(Tick::new(&time), subscriptions);
 }

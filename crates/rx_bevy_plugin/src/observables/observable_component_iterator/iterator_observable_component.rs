@@ -1,5 +1,5 @@
 use crate::{
-	CommandSubscriber, DebugBound, IteratorSubscription, ObservableOnInsertContext,
+	CommandSubscriber, IteratorSubscription, ObservableOnInsertContext,
 	WithSubscribeObserverReference,
 };
 use crate::{
@@ -11,8 +11,12 @@ use bevy_ecs::{
 	component::{Component, ComponentHooks, Mutable, StorageType},
 	entity::Entity,
 };
-use derive_where::derive_where;
+
+use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Observer};
+
+#[cfg(feature = "debug")]
+use derive_where::derive_where;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -28,7 +32,7 @@ pub struct IteratorObservableComponent<Iterator, const EMIT_ON_TICK: bool>
 where
 	Iterator: 'static + IntoIterator + Send + Sync + Clone,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	iterator: Iterator,
 	/// One on One relationship, will spawn and despawn together
@@ -41,7 +45,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> Component
 where
 	Iterator: 'static + IntoIterator + Send + Sync + Clone,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	const STORAGE_TYPE: StorageType = StorageType::Table;
 	type Mutability = Mutable;
@@ -56,7 +60,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> IteratorObservableComponent<Iterator, E
 where
 	Iterator: 'static + IntoIterator + Send + Sync + Clone,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	pub fn new(iterator: Iterator) -> Self {
 		Self {
@@ -71,7 +75,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> WithSubscribeObserverReference
 where
 	Iterator: 'static + IntoIterator + Send + Sync + Clone,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
@@ -91,7 +95,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> ObservableComponent
 where
 	Iterator: 'static + IntoIterator + Send + Sync + Clone,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	const CAN_SELF_SUBSCRIBE: bool = true;
 
@@ -119,7 +123,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> ObservableOutput
 where
 	Iterator: 'static + IntoIterator + Send + Sync + Clone,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: 'static + ObservableSignalBound,
+	Iterator::Item: ObservableSignalBound,
 {
 	type Out = Iterator::Item;
 	type OutError = ();

@@ -96,6 +96,14 @@ where
 			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.complete(),
 		}
 	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick) {
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.tick(tick),
+			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.tick(tick),
+		}
+	}
 }
 
 impl<Sub, Destination> Operation for OptionOperatorSubscriber<Sub, Destination>

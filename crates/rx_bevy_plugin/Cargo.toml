@@ -18,10 +18,12 @@ workspace = true
 [features]
 default = ["dev", "reflect", "debug"]
 dev = ["bevy/dynamic_linking", "inspector"]
-debug = ["bevy/track_location"]
-serialize = []
+debug = ["bevy/track_location", "rx_bevy_common_bounds/debug"]
+serialize = ["rx_bevy_common_bounds/serialize"]
 example = [
     "dev",
+    "debug",
+    "reflect",
     "inspector",
     "bevy/bevy_scene",
     "bevy/bevy_core_pipeline",
@@ -40,12 +42,13 @@ inspector = [
     "dep:bevy_egui",
     "bevy-inspector-egui/bevy_render",
 ]
-reflect = ["dep:bevy_reflect"]
+reflect = ["dep:bevy_reflect", "rx_bevy_common_bounds/reflect"]
 
 [dependencies]
 # rx_bevy dependencies
-rx_bevy_observable = { workspace = true }
-rx_bevy_operator_composite = { workspace = true }
+rx_bevy_observable = { workspace = true, features = ["bevy"] }
+rx_bevy_operator_composite = { workspace = true, features = ["tick"] }
+rx_bevy_common_bounds = { workspace = true }
 # bevy dependencies
 bevy_app = { workspace = true }
 bevy_derive = { workspace = true }
@@ -64,6 +67,6 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
-rx_bevy = { workspace = true }
-rx_bevy_testing = { workspace = true }
+rx_bevy = { workspace = true, features = ["bevy"] }
+rx_bevy_testing = { workspace = true, features = ["tick"] }
 examples_common = { workspace = true }

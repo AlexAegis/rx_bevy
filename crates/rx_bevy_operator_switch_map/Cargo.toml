@@ -21,6 +21,7 @@ dev = []
 example = ["dev"]
 compose = ["dep:rx_bevy_operator_composite"]
 pipe = ["dep:rx_bevy_pipe"]
+tick = ["rx_bevy_observable/tick"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }

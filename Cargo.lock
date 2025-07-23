@@ -4488,6 +4488,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_common_bounds"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "serde",
+]
+
+[[package]]
 name = "rx_bevy_emission_variants"
 version = "0.1.0"
 dependencies = [
@@ -4501,7 +4509,10 @@ dependencies = [
 name = "rx_bevy_observable"
 version = "0.1.0"
 dependencies = [
+ "bevy_ecs",
+ "bevy_time",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_testing",
  "smallvec",
 ]
@@ -4802,6 +4813,7 @@ dependencies = [
  "derive-where",
  "examples_common",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_testing",

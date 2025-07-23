@@ -2,8 +2,10 @@ use bevy_ecs::{
 	component::{Component, ComponentHooks, Mutable, StorageType},
 	entity::Entity,
 };
-use bevy_reflect::Reflect;
 use rx_bevy_observable::{ObservableOutput, Observer};
+
+#[cfg(feature = "reflect")]
+use bevy_reflect::Reflect;
 
 use crate::{
 	CommandSubscriber, IntervalObservableOptions, IntervalSubscription, ObservableComponent,
