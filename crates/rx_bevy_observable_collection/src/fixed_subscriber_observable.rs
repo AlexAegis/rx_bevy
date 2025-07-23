@@ -5,7 +5,7 @@ pub trait FixedSubscriberObservable<Destination>: ObservableOutput
 where
 	Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
 {
-	#[must_use]
+	#[must_use = "If unused, the subscription will immediately unsubscribe."]
 	fn subscribe(&mut self, destination: Destination) -> Subscription;
 }
 

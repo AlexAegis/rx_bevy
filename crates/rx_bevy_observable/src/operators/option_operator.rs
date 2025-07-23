@@ -105,21 +105,29 @@ where
 {
 	type Destination = Destination;
 
-	fn get_destination(&self) -> &Self::Destination {
+	/// Let's you check the shared observer for the duration of the callback
+	fn read_destination<F>(&self, reader: F)
+	where
+		F: Fn(&Self::Destination),
+	{
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.get_destination()
+				internal_subscriber.read_destination(reader)
 			}
-			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber,
+			OptionOperatorSubscriber::None(fallback_subscriber) => reader(fallback_subscriber),
 		}
 	}
 
-	fn get_destination_mut(&mut self) -> &mut Self::Destination {
+	/// Let's you check the shared observer for the duration of the callback
+	fn write_destination<F>(&mut self, mut writer: F)
+	where
+		F: FnMut(&mut Self::Destination),
+	{
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.get_destination_mut()
+				internal_subscriber.write_destination(writer)
 			}
-			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber,
+			OptionOperatorSubscriber::None(fallback_subscriber) => writer(fallback_subscriber),
 		}
 	}
 }

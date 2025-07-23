@@ -75,24 +75,15 @@ where
 	Destination: Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() {
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.next(next);
-		}
+		self.destination.next(next);
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.error(error);
-		}
+		self.destination.error(error);
 	}
 
 	fn complete(&mut self) {
-		if !self.is_closed() {
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.complete();
-		}
+		self.destination.complete();
 	}
 }
 
@@ -101,18 +92,15 @@ where
 	Destination: Subscriber,
 {
 	fn is_closed(&self) -> bool {
-		let lock = self.destination.read().expect("lock is poisoned!");
-		lock.is_closed()
+		self.destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
-		let mut lock = self.destination.write().expect("lock is poisoned!");
-		lock.unsubscribe();
+		self.destination.unsubscribe();
 	}
 
 	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
-		let mut lock = self.destination.write().expect("lock is poisoned!");
-		lock.add(subscription);
+		self.destination.add(subscription);
 	}
 }
 
@@ -131,13 +119,19 @@ where
 	type Destination = Arc<RwLock<Destination>>;
 
 	#[inline]
-	fn get_destination(&self) -> &Self::Destination {
-		&self.destination
+	fn read_destination<F>(&self, reader: F)
+	where
+		F: Fn(&Self::Destination),
+	{
+		reader(&self.destination);
 	}
 
 	#[inline]
-	fn get_destination_mut(&mut self) -> &mut Self::Destination {
-		&mut self.destination
+	fn write_destination<F>(&mut self, mut writer: F)
+	where
+		F: FnMut(&mut Self::Destination),
+	{
+		writer(&mut self.destination);
 	}
 }
 

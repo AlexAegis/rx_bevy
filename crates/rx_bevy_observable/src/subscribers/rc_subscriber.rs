@@ -180,11 +180,11 @@ where
 	}
 
 	/// Let's you check the shared observer for the duration of the callback
-	pub fn read_mut<F>(&mut self, mut reader: F)
+	pub fn write<F>(&mut self, mut writer: F)
 	where
 		F: FnMut(&mut RcDestination<Destination>),
 	{
-		reader(&mut self.destination.write().expect("poisoned"))
+		writer(&mut self.destination.write().expect("poisoned"))
 	}
 
 	/// Acquire a clone to the same reference which will not interact with
@@ -315,13 +315,19 @@ where
 	type Destination = Arc<RwLock<RcDestination<Destination>>>;
 
 	#[inline]
-	fn get_destination(&self) -> &Self::Destination {
-		&self.destination
+	fn read_destination<F>(&self, reader: F)
+	where
+		F: Fn(&Self::Destination),
+	{
+		reader(&self.destination);
 	}
 
 	#[inline]
-	fn get_destination_mut(&mut self) -> &mut Self::Destination {
-		&mut self.destination
+	fn write_destination<F>(&mut self, mut writer: F)
+	where
+		F: FnMut(&mut Self::Destination),
+	{
+		writer(&mut self.destination);
 	}
 }
 
@@ -453,12 +459,18 @@ where
 	type Destination = Arc<RwLock<RcDestination<Destination>>>;
 
 	#[inline]
-	fn get_destination(&self) -> &Self::Destination {
-		&self.destination
+	fn read_destination<F>(&self, reader: F)
+	where
+		F: Fn(&Self::Destination),
+	{
+		reader(&self.destination);
 	}
 
 	#[inline]
-	fn get_destination_mut(&mut self) -> &mut Self::Destination {
-		&mut self.destination
+	fn write_destination<F>(&mut self, mut writer: F)
+	where
+		F: FnMut(&mut Self::Destination),
+	{
+		writer(&mut self.destination);
 	}
 }

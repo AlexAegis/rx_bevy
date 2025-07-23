@@ -127,15 +127,29 @@ where
 	Switcher: Fn(In) -> InnerObservable,
 	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	type Destination = Arc<RwLock<Destination>>;
+	type Destination = Destination;
 
-	#[inline]
-	fn get_destination(&self) -> &Self::Destination {
-		self.destination.get_destination().get_destination()
+	fn read_destination<F>(&self, reader: F)
+	where
+		F: Fn(&Self::Destination),
+	{
+		self.destination.read_destination(|shared_subscriber| {
+			shared_subscriber.read_destination(|shared_destination| {
+				let lock = shared_destination.read().expect("not be poisoned");
+				reader(&lock);
+			});
+		});
 	}
 
-	#[inline]
-	fn get_destination_mut(&mut self) -> &mut Self::Destination {
-		self.destination.get_destination_mut().get_destination_mut()
+	fn write_destination<F>(&mut self, mut writer: F)
+	where
+		F: FnMut(&mut Self::Destination),
+	{
+		self.destination.write_destination(|shared_subscriber| {
+			shared_subscriber.write_destination(|shared_destination| {
+				let mut lock = shared_destination.write().expect("not be poisoned");
+				writer(&mut lock);
+			});
+		});
 	}
 }

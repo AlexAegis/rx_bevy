@@ -29,7 +29,7 @@ where
 	InnerObservable: 'static + Observable,
 {
 	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>> =
-       SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>;
+		SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,

@@ -1,4 +1,7 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+	marker::PhantomData,
+	ops::{Deref, DerefMut},
+};
 
 use crate::{ObservableOutput, Observer, ObserverInput, Subscriber};
 
@@ -7,8 +10,9 @@ use crate::{ObservableOutput, Observer, ObserverInput, Subscriber};
 /// An [Operator] defines its own inputs and output, and a [OperationSubscriber]
 /// that defines how those input signals will produce output signals.
 pub trait Operator: ObserverInput + ObservableOutput + Clone {
-	// TODO:  where <Self as Operation>::Destination:  Deref<Target = Destination>; ??
-	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>: OperationSubscriber<Destination = Destination, In = Self::In, InError = Self::InError>;
+	type Subscriber<Destination>: OperationSubscriber<Destination = Destination, In = Self::In, InError = Self::InError>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
@@ -20,15 +24,20 @@ pub trait Operator: ObserverInput + ObservableOutput + Clone {
 /// used by [Operators]. It's a [Subscriber] that is aware of its Destination
 /// because it has constrains on its own outputs.
 pub trait OperationSubscriber: Subscriber + Operation {}
+
 impl<T> OperationSubscriber for T where T: Subscriber + Operation {}
 
 /// An operation is something that does something to its [`Self::Destination`]
 pub trait Operation {
 	type Destination: Observer;
 
-	fn get_destination(&self) -> &Self::Destination;
+	fn read_destination<F>(&self, reader: F)
+	where
+		F: Fn(&Self::Destination);
 
-	fn get_destination_mut(&mut self) -> &mut Self::Destination;
+	fn write_destination<F>(&mut self, writer: F)
+	where
+		F: FnMut(&mut Self::Destination);
 }
 
 impl<T, Target> Operation for T
@@ -38,13 +47,26 @@ where
 {
 	type Destination = Target::Destination;
 
+	/// Let's you check the shared observer for the duration of the callback
 	#[inline]
-	fn get_destination(&self) -> &Self::Destination {
-		self.deref().get_destination()
+	fn read_destination<F>(&self, reader: F)
+	where
+		F: Fn(&Self::Destination),
+	{
+		self.deref().read_destination(reader);
 	}
 
+	/// Let's you check the shared observer for the duration of the callback
 	#[inline]
-	fn get_destination_mut(&mut self) -> &mut Self::Destination {
-		self.deref_mut().get_destination_mut()
+	fn write_destination<F>(&mut self, writer: F)
+	where
+		F: FnMut(&mut Self::Destination),
+	{
+		self.deref_mut().write_destination(writer);
 	}
+}
+
+pub struct DestinationAccessor<DestinationContainer, Destination> {
+	container: DestinationContainer,
+	_phantom_data: PhantomData<Destination>,
 }

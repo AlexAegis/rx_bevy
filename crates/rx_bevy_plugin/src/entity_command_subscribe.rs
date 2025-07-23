@@ -21,7 +21,7 @@ pub trait EntityCommandSubscribeExtension {
 	/// Subscribes the observable on THIS entity, to an observer entity
 	/// Returns the entity of the subscription which you can despawn to unsubscribe it
 	/// TODO: Instead of O, it should be the Signal, OR create a single ObservableComponent that can house any kind of observables
-	#[must_use]
+	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
 	fn subscribe_to_this_scheduled<Out, OutError, S>(
 		&mut self,
 		subscriber_entity: RelativeEntity,
@@ -31,7 +31,7 @@ pub trait EntityCommandSubscribeExtension {
 		OutError: ObservableSignalBound,
 		S: ScheduleLabel;
 
-	#[must_use]
+	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
 	fn subscribe_to_this_unscheduled<Out, OutError>(
 		&mut self,
 		subscriber_entity: RelativeEntity,
@@ -40,7 +40,7 @@ pub trait EntityCommandSubscribeExtension {
 		Out: ObservableSignalBound,
 		OutError: ObservableSignalBound;
 
-	#[must_use]
+	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
 	fn subscribe_to_that_scheduled<Out, OutError, S>(
 		&mut self,
 		observable_entity: RelativeEntity,
@@ -50,7 +50,7 @@ pub trait EntityCommandSubscribeExtension {
 		OutError: ObservableSignalBound,
 		S: ScheduleLabel;
 
-	#[must_use]
+	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
 	fn subscribe_to_that_unscheduled<Out, OutError>(
 		&mut self,
 		observable_entity: RelativeEntity,

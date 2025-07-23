@@ -75,12 +75,18 @@ where
 	type Destination = Destination;
 
 	#[inline]
-	fn get_destination(&self) -> &Self::Destination {
-		&self.destination
+	fn read_destination<F>(&self, reader: F)
+	where
+		F: Fn(&Self::Destination),
+	{
+		reader(&self.destination);
 	}
 
 	#[inline]
-	fn get_destination_mut(&mut self) -> &mut Self::Destination {
-		&mut self.destination
+	fn write_destination<F>(&mut self, mut writer: F)
+	where
+		F: FnMut(&mut Self::Destination),
+	{
+		writer(&mut self.destination);
 	}
 }

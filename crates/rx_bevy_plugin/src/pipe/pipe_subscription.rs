@@ -1,3 +1,4 @@
+use rx_bevy::Observer;
 use rx_bevy_observable::{ObservableOutput, ObserverInput, Operation, Operator, SubscriptionLike};
 
 use crate::{
@@ -53,9 +54,13 @@ where
 	fn on_tick(
 		&mut self,
 		event: &crate::RxTick,
-		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) {
-		let destination = self.operator.get_destination_mut();
+		//let destination = self.operator.read(|destination| {
+		//	//destination.
+		//
+		//	subscriber.next();
+		//});
 		println!("pipe subscription ticked! {event:?}");
 		// TODO: Figure out how to tick a pipes subscription, upstream changes will be needed!
 	}
