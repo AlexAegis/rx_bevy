@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 
 use crate::{
 	CommandSubscriber, ObservableComponent, ObservableMirrorSubscription,
-	ObservableOnInsertContext, SignalBound, Subscribe, WithSubscribeObserverReference,
+	ObservableOnInsertContext, SignalBound, Subscribe,
 };
 
 #[cfg(feature = "debug")]
@@ -18,7 +18,6 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct MirrorObservableComponent<Out, OutError> {
 	upstream_source: Entity,
-	subscribe_observer_entity: Option<Entity>,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_pain: PhantomData<(Out, OutError)>,
 }
@@ -31,7 +30,6 @@ where
 	pub fn new(upstream_source: Entity) -> Self {
 		Self {
 			upstream_source,
-			subscribe_observer_entity: None,
 			_phantom_pain: PhantomData,
 		}
 	}
@@ -44,24 +42,6 @@ where
 {
 	type Out = Out;
 	type OutError = OutError;
-}
-
-impl<Out, OutError> WithSubscribeObserverReference for MirrorObservableComponent<Out, OutError>
-where
-	Out: SignalBound,
-	OutError: SignalBound,
-{
-	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
-		self.subscribe_observer_entity
-	}
-
-	fn set_subscribe_observer_entity(
-		&mut self,
-		subscribe_observer_entity: Entity,
-	) -> Option<Entity> {
-		self.subscribe_observer_entity
-			.replace(subscribe_observer_entity)
-	}
 }
 
 impl<Out, OutError> ObservableComponent for MirrorObservableComponent<Out, OutError>

@@ -29,6 +29,7 @@ fn main() -> AppExit {
 			(
 				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 				unsubscribe_from_interval.run_if(input_just_pressed(KeyCode::Space)),
+				despawn_observable.run_if(input_just_pressed(KeyCode::KeyD)),
 			),
 		)
 		.run()
@@ -48,6 +49,12 @@ fn next_number_observer(
 	);
 }
 
+fn despawn_observable(mut commands: Commands, example_entities: Res<ExampleEntities>) {
+	commands
+		.entity(example_entities.interval_observable)
+		.despawn();
+}
+
 fn unsubscribe_from_interval(mut commands: Commands, example_entities: Res<ExampleEntities>) {
 	println!("Unsubscribe subjects_interval_subscription!");
 	commands.unsubscribe(example_entities.subjects_interval_subscription);
@@ -55,6 +62,7 @@ fn unsubscribe_from_interval(mut commands: Commands, example_entities: Res<Examp
 
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
+	interval_observable: Entity,
 	subjects_interval_subscription: Entity,
 }
 
@@ -109,6 +117,7 @@ fn setup(
 		));
 
 	commands.insert_resource(ExampleEntities {
+		interval_observable: interval_observable_entity,
 		subjects_interval_subscription: subscription,
 	});
 }

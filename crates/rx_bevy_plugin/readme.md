@@ -99,9 +99,8 @@ a **`Subscription`**
 
    2. On insert, each `ObservableComponent` will spawn an `Subscribe Event Observer`
 
-      - As a child of this entity, purely for organizational purposes.
-      - A reference to this entity is stored inside the `ObservableComponent` using
-        the `WithSubscribeObserverReference` trait.
+      - A reference to this entity is stored alongside the `ObservableComponent` using
+        the `SubscribeObserverRef` relationship, generic over `ObservableComponent`.
       - An observer is used to avoid needing to register Plugins to have a system that processes these events
       - A custom `on_insert` hook is ran on the component, providing opportunity
         to a custom setup step for different `ObservableComponent`s

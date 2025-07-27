@@ -16,7 +16,8 @@ use short_type_name::short_type_name;
 
 use crate::{
 	CommandSubscriber, EntityContext, ScheduledSubscription, SignalBound, Subscribe,
-	SubscriberContext, SubscriptionComponent, Subscriptions,
+	SubscribeObserverOf, SubscribeObserverRef, SubscriberContext, SubscriptionComponent,
+	Subscriptions,
 };
 
 #[cfg(feature = "debug")]
@@ -32,7 +33,7 @@ use bevy_reflect::Reflect;
 /// Reflection: As many Operators are generic over their closures, which do not
 /// have a type_path it is impossible to require reflection over observables.
 pub trait ObservableComponent:
-	ObservableOutput + Component<Mutability = Mutable> + WithSubscribeObserverReference + DebugBound
+	ObservableOutput + Component<Mutability = Mutable> + DebugBound
 where
 	Self::Out: SignalBound,
 	Self::OutError: SignalBound,
@@ -62,24 +63,6 @@ where
 	) -> Self::Subscription;
 }
 
-/// TODO: While this is required for all ObservableComponents, it's a separate trait to be the auto-implementable by a macro.
-/// TODO: Maybe this should just be another component as a relationship?
-///
-/// This is technically a one-on-one relationship, each ObservableComponent has
-/// exactly one other entity listening for [Subscribe] events
-pub trait WithSubscribeObserverReference {
-	/// Should return the entity reference to the entity that observes [Subscribe]
-	/// events for this observable
-	fn get_subscribe_observer_entity(&self) -> Option<Entity>;
-
-	/// Returns the previous observer entity, if exists.
-	/// (Implement as `.replace` on the stored `Option<Entity>`)
-	fn set_subscribe_observer_entity(
-		&mut self,
-		subscribe_observer_entity: Entity,
-	) -> Option<Entity>;
-}
-
 #[derive_where(Debug)]
 pub struct ObservableOnInsertContext<'a, 'w, 's> {
 	#[derive_where(skip)]
@@ -102,7 +85,7 @@ where
 
 	// This is the observer that processes [Subscribe] events for this specific observable.
 	// It will be despawned when the observable is removed.
-	let subscribe_observer_entity = {
+	{
 		let mut commands = deferred_world.commands();
 		trace!(
 			"setting up subscribe observer for {}({})",
@@ -110,17 +93,17 @@ where
 			observable_entity
 		);
 
-		commands
-			.spawn((
-				ChildOf(observable_entity), // Purely for organizational purposes in debug views like WorldInspector
-				Name::new(format!(
-					"Observer (Observable Subscribe) - {}({}) ",
-					short_type_name::<O>(),
-					observable_entity
-				)),
-				Observer::new(on_subscribe::<O>).with_entity(observable_entity),
-			))
-			.id()
+		commands.spawn((
+			SubscribeObserverOf::<O>::new(observable_entity),
+			Observer::new(on_subscribe::<O>).with_entity(observable_entity),
+			// TODO: Having this here is unnecessary and is causing a warning on despawn because of the double relationship. I'll leave this here for now just so the inspector is a little more organized until that too has a convenient method to register relationships
+			ChildOf(observable_entity), // For organizational purposes in debug views like WorldInspector
+			Name::new(format!(
+				"Observer (Subscribe) - {}({}) ",
+				short_type_name::<O>(),
+				observable_entity
+			)),
+		));
 	};
 
 	// Calling the on_insert hook on the observable
@@ -129,7 +112,6 @@ where
 		let mut observable_entity_mut = entities.get_mut(observable_entity).unwrap();
 
 		let mut component = observable_entity_mut.get_mut::<O>().unwrap();
-		component.set_subscribe_observer_entity(subscribe_observer_entity);
 
 		component.on_insert(ObservableOnInsertContext {
 			observable_entity,
@@ -144,27 +126,13 @@ where
 	);
 }
 
-/// To achieve a one-on-one relationship, the observer that observes [Subscribe] events
-/// is despawned when the observable component is removed
-pub fn observable_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+pub fn observable_on_remove_hook<O>(mut _deferred_world: DeferredWorld, _hook_context: HookContext)
 where
 	O: ObservableComponent + Send + Sync,
 	O::Out: SignalBound,
 	O::OutError: SignalBound,
 {
-	let observable_entity = hook_context.entity;
-	let (mut entities, mut commands) = deferred_world.entities_and_commands();
-	let mut observable_entity_mut = entities.get_mut(observable_entity).unwrap();
-	let observable_component = observable_entity_mut.get_mut::<O>().unwrap();
-
-	if let Some(subscribe_observer_entity) = observable_component.get_subscribe_observer_entity() {
-		debug!(
-			"despawning subscribe observer for {}({})",
-			short_type_name::<O>(),
-			observable_entity
-		);
-		commands.entity(subscribe_observer_entity).despawn();
-	}
+	// TODO: Unsubscribe all subscriptions
 }
 
 fn on_subscribe<O>(

@@ -1,16 +1,10 @@
 use crate::Subscribe;
-use crate::{
-	CommandSubscriber, IteratorSubscription, ObservableOnInsertContext,
-	WithSubscribeObserverReference,
-};
+use crate::{CommandSubscriber, IteratorSubscription, ObservableOnInsertContext};
 use crate::{
 	ObservableComponent, SignalBound, observable_on_insert_hook, observable_on_remove_hook,
 };
 
-use bevy_ecs::{
-	component::{Component, ComponentHooks, Mutable, StorageType},
-	entity::Entity,
-};
+use bevy_ecs::component::{Component, ComponentHooks, Mutable, StorageType};
 
 use rx_bevy_common_bounds::{DebugBound, ReflectBound};
 use rx_bevy_observable::{ObservableOutput, Observer};
@@ -35,8 +29,6 @@ where
 	Iterator::Item: SignalBound,
 {
 	iterator: Iterator,
-	/// One on One relationship, will spawn and despawn together
-	subscribe_observer_entity: Option<Entity>,
 }
 
 /// TODO: Abstract this away, this is what makes an ObservableComponent Subscribable
@@ -63,30 +55,7 @@ where
 	Iterator::Item: SignalBound,
 {
 	pub fn new(iterator: Iterator) -> Self {
-		Self {
-			iterator,
-			subscribe_observer_entity: None,
-		}
-	}
-}
-
-impl<Iterator, const EMIT_ON_TICK: bool> WithSubscribeObserverReference
-	for IteratorObservableComponent<Iterator, EMIT_ON_TICK>
-where
-	Iterator: 'static + IntoIterator + Send + Sync + Clone,
-	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: SignalBound,
-{
-	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
-		self.subscribe_observer_entity
-	}
-
-	fn set_subscribe_observer_entity(
-		&mut self,
-		subscribe_observer_entity: Entity,
-	) -> Option<Entity> {
-		self.subscribe_observer_entity
-			.replace(subscribe_observer_entity)
+		Self { iterator }
 	}
 }
 

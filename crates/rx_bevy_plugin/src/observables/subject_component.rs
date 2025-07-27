@@ -1,7 +1,7 @@
 use crate::{
 	CommandSubscriber, NoopSubscription, ObservableComponent, ObservableOnInsertContext,
-	SignalBound, Subscribe, SubscriptionComponent, WithSubscribeObserverReference,
-	observable_on_insert_hook, observable_on_remove_hook,
+	SignalBound, Subscribe, SubscriptionComponent, observable_on_insert_hook,
+	observable_on_remove_hook,
 };
 use crate::{RxSignal, Subscriptions};
 
@@ -31,9 +31,8 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	/// The entity that observes [Subscribe] events for this entity
-	subscribe_observer_entity: Option<Entity>,
 	/// The entity that observes [Rx] events for this entity
+	// TODO: This too could be in another component using a relationship
 	subject_observer_entity: Option<Entity>,
 
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
@@ -61,28 +60,9 @@ where
 {
 	pub fn new() -> Self {
 		Self {
-			subscribe_observer_entity: None,
 			subject_observer_entity: None,
 			_phantom_data: PhantomData,
 		}
-	}
-}
-
-impl<In, InError> WithSubscribeObserverReference for SubjectComponent<In, InError>
-where
-	In: Clone + SignalBound,
-	InError: Clone + SignalBound,
-{
-	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
-		self.subscribe_observer_entity
-	}
-
-	fn set_subscribe_observer_entity(
-		&mut self,
-		subscribe_observer_entity: Entity,
-	) -> Option<Entity> {
-		self.subscribe_observer_entity
-			.replace(subscribe_observer_entity)
 	}
 }
 

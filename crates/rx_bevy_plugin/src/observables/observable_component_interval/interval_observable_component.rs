@@ -1,7 +1,4 @@
-use bevy_ecs::{
-	component::{Component, ComponentHooks, Mutable, StorageType},
-	entity::Entity,
-};
+use bevy_ecs::component::{Component, ComponentHooks, Mutable, StorageType};
 use rx_bevy_observable::{ObservableOutput, Observer};
 
 #[cfg(feature = "reflect")]
@@ -9,8 +6,7 @@ use bevy_reflect::Reflect;
 
 use crate::{
 	CommandSubscriber, IntervalObservableOptions, IntervalSubscription, ObservableComponent,
-	ObservableOnInsertContext, Subscribe, WithSubscribeObserverReference,
-	observable_on_insert_hook, observable_on_remove_hook,
+	ObservableOnInsertContext, Subscribe, observable_on_insert_hook, observable_on_remove_hook,
 };
 
 #[derive(Clone)]
@@ -18,15 +14,11 @@ use crate::{
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IntervalObservableComponent {
 	options: IntervalObservableOptions,
-	subscribe_observer: Option<Entity>,
 }
 
 impl IntervalObservableComponent {
 	pub fn new(options: IntervalObservableOptions) -> Self {
-		Self {
-			options,
-			subscribe_observer: None,
-		}
+		Self { options }
 	}
 }
 
@@ -42,19 +34,6 @@ impl Component for IntervalObservableComponent {
 	fn register_component_hooks(hooks: &mut ComponentHooks) {
 		hooks.on_insert(observable_on_insert_hook::<Self>);
 		hooks.on_remove(observable_on_remove_hook::<Self>);
-	}
-}
-
-impl WithSubscribeObserverReference for IntervalObservableComponent {
-	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
-		self.subscribe_observer
-	}
-
-	fn set_subscribe_observer_entity(
-		&mut self,
-		subscribe_observer_entity: Entity,
-	) -> Option<Entity> {
-		self.subscribe_observer.replace(subscribe_observer_entity)
 	}
 }
 

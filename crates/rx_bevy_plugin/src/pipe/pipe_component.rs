@@ -8,7 +8,7 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 use crate::{
 	CommandSubscribeExtension, CommandSubscriber, ObservableComponent, ObservableOnInsertContext,
 	PipeSubscription, RelativeEntity, SignalBound, Subscribe, SubscriberContext,
-	WithSubscribeObserverReference, observable_on_insert_hook, observable_on_remove_hook,
+	observable_on_insert_hook, observable_on_remove_hook,
 };
 
 #[cfg(feature = "debug")]
@@ -30,7 +30,6 @@ where
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	source: RelativeEntity,
-	subscribe_observer_entity: Option<Entity>,
 	pipe_source_observer_entity: Option<Entity>,
 	pipe_source_subscription_entity: Option<Entity>,
 	operator: Op,
@@ -51,7 +50,6 @@ where
 			operator,
 			pipe_source_subscription_entity: None,
 			pipe_source_observer_entity: None,
-			subscribe_observer_entity: None,
 		}
 	}
 
@@ -130,28 +128,6 @@ where
 {
 	type Out = Op::Out;
 	type OutError = Op::OutError;
-}
-
-impl<Op> WithSubscribeObserverReference for PipeComponent<Op>
-where
-	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: SignalBound,
-	Op::InError: SignalBound,
-	Op::Out: SignalBound,
-	Op::OutError: SignalBound,
-	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
-{
-	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
-		self.subscribe_observer_entity
-	}
-
-	fn set_subscribe_observer_entity(
-		&mut self,
-		subscribe_observer_entity: Entity,
-	) -> Option<Entity> {
-		self.subscribe_observer_entity
-			.replace(subscribe_observer_entity)
-	}
 }
 
 impl<Op> ObservableComponent for PipeComponent<Op>
