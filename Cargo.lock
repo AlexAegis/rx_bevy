@@ -4499,8 +4499,10 @@ dependencies = [
 name = "rx_bevy_emission_variants"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "derive-where",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4522,7 +4524,9 @@ dependencies = [
 name = "rx_bevy_observable_collection"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4531,7 +4535,9 @@ dependencies = [
 name = "rx_bevy_observable_combine_latest"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_emission_variants",
  "rx_bevy_observable",
  "rx_bevy_testing",
@@ -4541,7 +4547,9 @@ dependencies = [
 name = "rx_bevy_observable_connectable"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_observable_deferred",
  "rx_bevy_testing",
@@ -4551,7 +4559,9 @@ dependencies = [
 name = "rx_bevy_observable_deferred"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4560,7 +4570,9 @@ dependencies = [
 name = "rx_bevy_observable_iterator"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4569,7 +4581,9 @@ dependencies = [
 name = "rx_bevy_observable_merge"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_map_into",
  "rx_bevy_testing",
@@ -4579,7 +4593,9 @@ dependencies = [
 name = "rx_bevy_observable_of"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4588,7 +4604,9 @@ dependencies = [
 name = "rx_bevy_observable_throw"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4597,7 +4615,9 @@ dependencies = [
 name = "rx_bevy_observable_zip"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_emission_variants",
  "rx_bevy_observable",
  "rx_bevy_testing",
@@ -4607,7 +4627,9 @@ dependencies = [
 name = "rx_bevy_observer_fn"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4616,7 +4638,9 @@ dependencies = [
 name = "rx_bevy_observer_noop"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4625,7 +4649,9 @@ dependencies = [
 name = "rx_bevy_observer_print"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
 ]
@@ -4634,7 +4660,9 @@ dependencies = [
 name = "rx_bevy_operator_composite"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_pipe",
  "rx_bevy_testing",
@@ -4644,7 +4672,9 @@ dependencies = [
 name = "rx_bevy_operator_enumerate"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4655,7 +4685,9 @@ dependencies = [
 name = "rx_bevy_operator_filter"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4666,7 +4698,9 @@ dependencies = [
 name = "rx_bevy_operator_filter_map"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_operator_lift_option",
@@ -4679,7 +4713,9 @@ dependencies = [
 name = "rx_bevy_operator_finalize"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4690,7 +4726,9 @@ dependencies = [
 name = "rx_bevy_operator_lift_option"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4701,7 +4739,9 @@ dependencies = [
 name = "rx_bevy_operator_lift_result"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4712,8 +4752,10 @@ dependencies = [
 name = "rx_bevy_operator_map"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "derive-where",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4724,7 +4766,9 @@ dependencies = [
 name = "rx_bevy_operator_map_into"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4735,7 +4779,9 @@ dependencies = [
 name = "rx_bevy_operator_skip"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4746,7 +4792,9 @@ dependencies = [
 name = "rx_bevy_operator_switch_map"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_operator_finalize",
@@ -4759,7 +4807,9 @@ dependencies = [
 name = "rx_bevy_operator_take"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4770,7 +4820,9 @@ dependencies = [
 name = "rx_bevy_operator_tap"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4781,7 +4833,9 @@ dependencies = [
 name = "rx_bevy_operator_try_capture"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_operator_composite",
  "rx_bevy_pipe",
@@ -4792,7 +4846,9 @@ dependencies = [
 name = "rx_bevy_pipe"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_observer_fn",
  "rx_bevy_testing",
@@ -4827,7 +4883,9 @@ dependencies = [
 name = "rx_bevy_subject"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
  "slab",
@@ -4837,7 +4895,9 @@ dependencies = [
 name = "rx_bevy_subject_behavior"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_subject",
  "rx_bevy_testing",
@@ -4847,8 +4907,10 @@ dependencies = [
 name = "rx_bevy_subject_replay"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "ringbuffer",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_subject",
  "rx_bevy_testing",
@@ -4858,7 +4920,9 @@ dependencies = [
 name = "rx_bevy_testing"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
+ "rx_bevy_common_bounds",
  "rx_bevy_observable",
 ]
 

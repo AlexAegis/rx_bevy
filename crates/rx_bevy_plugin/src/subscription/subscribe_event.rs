@@ -1,18 +1,14 @@
 use std::{any::TypeId, marker::PhantomData};
 
-use bevy_ecs::{
-	bundle::Bundle,
-	component::{ComponentId, ComponentIdFor, Components},
-	entity::Entity,
-	event::Event,
-	schedule::ScheduleLabel,
-	system::Commands,
-};
+use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
 use bevy_log::error;
 
 use thiserror::Error;
 
-use crate::{FlushWorld, ObservableSignalBound, RelativeEntity, SubscriptionSchedule};
+use crate::{ObservableSignalBound, RelativeEntity, SubscriptionSchedule};
+
+#[cfg(feature = "debug")]
+use std::fmt::Debug;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -28,9 +24,9 @@ where
 	subscriber_entity: RelativeEntity,
 	/// This entity can only be spawned from this events constructors
 	subscription_entity: Entity,
-	/// Contains the [TypeId] of a `SubscriptionSchedule::<S>`` component, for
+	/// Contains the [TypeId] of a `SubscriptionSchedule::<S>` component, for
 	/// later component cloning while preserving scheduling
-	#[reflect(ignore)]
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	schedule: Option<TypeId>,
 	_phantom_data: PhantomData<(Out, OutError)>,
 }
@@ -96,7 +92,6 @@ where
 		let subscription_entity = if let Some(subscription_schedule_type_id) = self.schedule {
 			dbg!(subscription_schedule_type_id);
 			/// TODO: This doesen't work without flushing the world entities can be cloned even if their spawn commands weren't resolved.
-			commands.queue(FlushWorld);
 			commands
 				.entity(self.get_subscription_entity())
 				.clone_and_spawn_with(move |builder| {

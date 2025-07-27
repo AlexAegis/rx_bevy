@@ -61,7 +61,6 @@ where
 	T: 'static,
 	Error: 'static,
 {
-	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	>(

@@ -45,6 +45,7 @@ inspector = [
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy_common_bounds/reflect",
+    "rx_bevy_operator_composite/reflect",
     "rx_bevy_observable/reflect",
 ]
 
@@ -71,6 +72,6 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
-rx_bevy = { workspace = true, features = ["bevy"] }
+rx_bevy = { workspace = true, features = ["bevy", "reflect"] }
 rx_bevy_testing = { workspace = true, features = ["tick"] }
 examples_common = { workspace = true }

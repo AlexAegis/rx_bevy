@@ -9,7 +9,7 @@ fn truncate_type_name(name: &'static str) -> String {
 	};
 	let generics = untrimmed_generics.trim_end_matches(">").split(", ");
 	let truncated_generics = generics
-		.map(|generic| truncate_type_name(generic))
+		.map(truncate_type_name)
 		.collect::<Vec<_>>()
 		.join(", ");
 	remove_leading_path(base).to_owned() + "<" + &truncated_generics + ">"

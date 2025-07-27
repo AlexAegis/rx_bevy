@@ -7,9 +7,8 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
 	CommandSubscribeExtension, CommandSubscriber, ObservableComponent, ObservableOnInsertContext,
-	ObservableSignalBound, PipeSubscription, RelativeEntity, RxSignal, Subscribe,
-	SubscriberContext, WithSubscribeObserverReference, observable_on_insert_hook,
-	observable_on_remove_hook,
+	ObservableSignalBound, PipeSubscription, RelativeEntity, Subscribe, SubscriberContext,
+	WithSubscribeObserverReference, observable_on_insert_hook, observable_on_remove_hook,
 };
 
 #[cfg(feature = "debug")]

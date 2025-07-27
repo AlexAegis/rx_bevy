@@ -5,6 +5,7 @@ mod observable_mirror;
 mod observable_signal_bound;
 mod scheduled_subscription;
 mod subject_component;
+mod subscribe_observer_relationship;
 
 pub use observable_component::*;
 pub use observable_component_interval::*;
@@ -13,6 +14,7 @@ pub use observable_mirror::*;
 pub use observable_signal_bound::*;
 pub use scheduled_subscription::*;
 pub use subject_component::*;
+pub use subscribe_observer_relationship::*;
 
 pub mod prelude {
 	pub use super::observable_component_interval::prelude::*;

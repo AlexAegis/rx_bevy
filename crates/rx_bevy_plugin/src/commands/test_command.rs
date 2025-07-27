@@ -1,10 +1,57 @@
-use bevy_ecs::{system::Command, world::World};
+use bevy_ecs::{entity::Entity, system::Command, world::World};
+use bevy_log::info;
+use std::marker::PhantomData;
 
-pub struct FlushWorld;
+use crate::{ObservableComponent, ObservableSignalBound};
 
-impl Command for FlushWorld {
-	fn apply(self, world: &mut World) -> () {
-		println!("FLUSH");
+#[cfg(feature = "debug")]
+use std::fmt::Debug;
+
+#[cfg(feature = "reflect")]
+use bevy_reflect::Reflect;
+
+// TODO: Probably useless, maybe as a partial part of the subscribe mechanism, that can flush if needed
+#[derive(Clone)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+pub struct SubscribeCommand<O>
+where
+	O: ObservableComponent + Send + Sync,
+	O::Out: ObservableSignalBound,
+	O::OutError: ObservableSignalBound,
+{
+	observable: Entity,
+	destination: Entity,
+	_phantom_data: PhantomData<O>,
+}
+
+impl<O> SubscribeCommand<O>
+where
+	O: ObservableComponent + Send + Sync,
+	O::Out: ObservableSignalBound,
+	O::OutError: ObservableSignalBound,
+{
+	pub fn new(observable: Entity, destination: Entity) -> Self {
+		Self {
+			observable,
+			destination,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<O> Command<Entity> for SubscribeCommand<O>
+where
+	O: ObservableComponent + Send + Sync,
+	O::Out: ObservableSignalBound,
+	O::OutError: ObservableSignalBound,
+{
+	fn apply(self, world: &mut World) -> Entity {
+		#[cfg(feature = "debug")]
+		info!("Subscribe Command {:?}", self);
+
 		world.flush();
+
+		Entity::PLACEHOLDER // Return the subscription
 	}
 }

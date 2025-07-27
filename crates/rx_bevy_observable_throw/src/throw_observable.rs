@@ -22,7 +22,6 @@ impl<Error> Observable for ThrowObservable<Error>
 where
 	Error: 'static + Clone,
 {
-	#[cfg_attr(feature = "inline_subscribe", inline)]
 	fn subscribe<Destination: 'static + UpgradeableObserver<In = (), InError = Error>>(
 		&mut self,
 		destination: Destination,

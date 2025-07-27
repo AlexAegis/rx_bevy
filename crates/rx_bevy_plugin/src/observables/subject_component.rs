@@ -36,6 +36,7 @@ where
 	/// The entity that observes [Rx] events for this entity
 	subject_observer_entity: Option<Entity>,
 
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<(In, InError)>,
 }
 

@@ -6,7 +6,6 @@ pub trait ObservableOutput {
 }
 
 pub trait Observable: ObservableOutput {
-	#[cfg_attr(feature = "inline_subscribe", inline)]
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,

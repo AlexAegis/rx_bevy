@@ -1,4 +1,4 @@
-use bevy_ecs::{component::Component, entity::Entity};
+use bevy_ecs::{component::Component, entity::Entity, world::reflect};
 use rx_bevy_observable::ObservableOutput;
 use std::marker::PhantomData;
 
@@ -19,6 +19,7 @@ use bevy_reflect::Reflect;
 pub struct MirrorObservableComponent<Out, OutError> {
 	upstream_source: Entity,
 	subscribe_observer_entity: Option<Entity>,
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_pain: PhantomData<(Out, OutError)>,
 }
 

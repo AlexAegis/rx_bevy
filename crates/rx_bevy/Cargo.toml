@@ -29,6 +29,31 @@ dev = []
 example = ["dev"]
 # All Bevy specific features, Components, Schedulers. If not enabled, bevy is not used as a dependency.
 bevy = ["tick", "rx_bevy_observable/bevy"]
+reflect = [
+    "rx_bevy_observable/reflect",
+    "rx_bevy_observable_combine_latest/reflect",
+    "rx_bevy_observable_zip/reflect",
+    "rx_bevy_observer_fn/reflect",
+    "rx_bevy_observer_noop/reflect",
+    "rx_bevy_observer_print/reflect",
+    "rx_bevy_operator_composite/reflect",
+    "rx_bevy_operator_enumerate/reflect",
+    "rx_bevy_operator_filter/reflect",
+    "rx_bevy_operator_filter_map/reflect",
+    "rx_bevy_operator_finalize/reflect",
+    "rx_bevy_operator_map_into/reflect",
+    "rx_bevy_operator_lift_option/reflect",
+    "rx_bevy_operator_lift_result/reflect",
+    "rx_bevy_operator_map/reflect",
+    "rx_bevy_operator_skip/reflect",
+    "rx_bevy_operator_switch_map/reflect",
+    "rx_bevy_operator_take/reflect",
+    "rx_bevy_operator_tap/reflect",
+    "rx_bevy_operator_try_capture/reflect",
+    "rx_bevy_subject/reflect",
+    "rx_bevy_subject_behavior/reflect",
+    "rx_bevy_subject_replay/reflect",
+]
 tick = [
     "rx_bevy_observable/tick",
     "rx_bevy_observable_combine_latest/tick",
@@ -86,21 +111,6 @@ compose = [
     "rx_bevy_operator_take/compose",
     "rx_bevy_operator_tap/compose",
     "rx_bevy_operator_try_capture/compose",
-]
-# Observables and Subjects. Not sure if a good idea, so I'm keeping it behind a feature
-inline_subscribe = [
-    "rx_bevy_observable/inline_subscribe",
-    "rx_bevy_observable_combine_latest/inline_subscribe",
-    "rx_bevy_observable_connectable/inline_subscribe",
-    "rx_bevy_observable_deferred/inline_subscribe",
-    "rx_bevy_observable_iterator/inline_subscribe",
-    "rx_bevy_observable_merge/inline_subscribe",
-    "rx_bevy_observable_of/inline_subscribe",
-    "rx_bevy_observable_throw/inline_subscribe",
-    "rx_bevy_observable_zip/inline_subscribe",
-    "rx_bevy_subject/inline_subscribe",
-    "rx_bevy_subject_behavior/inline_subscribe",
-    "rx_bevy_subject_replay/inline_subscribe",
 ]
 # Observables
 all_observables = [

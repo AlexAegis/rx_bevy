@@ -1,6 +1,5 @@
-mod command_subscribe;
 mod commands;
-mod entity_command_subscribe;
+mod extensions;
 mod observables;
 mod observer_signal_push;
 mod pipe;
@@ -10,9 +9,8 @@ mod rx_signal;
 mod scheduler;
 mod subscription;
 
-pub use command_subscribe::*;
 pub use commands::*;
-pub use entity_command_subscribe::*;
+pub use extensions::*;
 pub use observables::*;
 pub use observer_signal_push::*;
 pub use pipe::*;
@@ -23,12 +21,11 @@ pub use scheduler::*;
 pub use subscription::*;
 
 pub mod prelude {
+	pub use super::extensions::prelude::*;
 	pub use super::observables::prelude::*;
 	pub use super::scheduler::prelude::*;
 	pub use super::subscription::prelude::*;
 
-	pub use super::command_subscribe::*;
-	pub use super::entity_command_subscribe::*;
 	pub use super::relative_entity::*;
 	pub use super::rx_plugin::*;
 	pub use super::rx_signal::*;

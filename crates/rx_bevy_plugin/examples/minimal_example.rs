@@ -1,4 +1,4 @@
-use std::{ops::RangeInclusive, time::Duration};
+use std::time::Duration;
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
@@ -7,7 +7,7 @@ use examples_common::send_event;
 
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, IntervalObservableComponent,
-	IntervalObservableOptions, IteratorObservableComponent, RelativeEntity, RxPlugin, RxSignal,
+	IntervalObservableOptions, RelativeEntity, RxPlugin, RxSignal,
 };
 
 /// This test showcases in what order observables execute their observers

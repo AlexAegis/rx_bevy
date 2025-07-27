@@ -98,9 +98,7 @@ fn setup(
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 		PipeComponent::new(
 			RelativeEntity::Other(interval_observable_entity),
-			IdentityOperator::<i32, ()>::default()
-				.pipe(map(|i| i * 2))
-				.pipe(map(|i| format!("mapped! {i}"))),
+			IdentityOperator::<i32, ()>::default().pipe(map(|i| i * 2)), //	.pipe(map(|i| format!("mapped! {i}"))),
 		),
 	));
 

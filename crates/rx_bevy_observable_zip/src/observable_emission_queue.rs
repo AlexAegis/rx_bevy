@@ -26,22 +26,32 @@ impl<O> ObservableEmissionQueue<O>
 where
 	O: Observable,
 {
+	#[inline]
 	pub fn is_completed(&self) -> bool {
-		self.completed && self.values.len() == 0
+		self.completed && self.is_empty()
 	}
 
+	#[inline]
+	pub fn is_empty(&self) -> bool {
+		self.values.is_empty()
+	}
+
+	#[inline]
 	pub fn len(&self) -> usize {
 		self.values.len()
 	}
 
+	#[inline]
 	pub fn push(&mut self, value: O::Out) {
 		self.values.push_back(value);
 	}
 
+	#[inline]
 	pub fn pop(&mut self) -> Option<O::Out> {
 		self.values.pop_front()
 	}
 
+	#[inline]
 	pub fn complete(&mut self) {
 		self.completed = true;
 	}

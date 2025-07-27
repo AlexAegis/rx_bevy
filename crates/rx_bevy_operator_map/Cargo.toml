@@ -22,11 +22,14 @@ example = ["dev"]
 compose = ["dep:rx_bevy_operator_composite"]
 pipe = ["dep:rx_bevy_pipe"]
 tick = ["rx_bevy_observable/tick"]
+reflect = ["dep:bevy_reflect", "rx_bevy_common_bounds/reflect"]
 
 [dependencies]
 rx_bevy_observable = { workspace = true }
 rx_bevy_pipe = { workspace = true, optional = true }
 rx_bevy_operator_composite = { workspace = true, optional = true }
+rx_bevy_common_bounds = { workspace = true }
+bevy_reflect = { workspace = true, optional = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]

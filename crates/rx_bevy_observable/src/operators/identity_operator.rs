@@ -2,12 +2,17 @@ use std::marker::PhantomData;
 
 use crate::{IdentitySubscriber, ObservableOutput, ObserverInput, Operator, Subscriber};
 
+#[cfg(feature = "reflect")]
+use bevy_reflect::Reflect;
+
 /// # [IdentityOperator]
 ///
 /// The [IdentityOperator] does nothing. It's only purpose is to let you
 /// easily define input types for a [CompositeOperator]
 #[derive(Debug)]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IdentityOperator<In, InError> {
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<(In, InError)>,
 }
 

@@ -13,7 +13,7 @@ use bevy_ecs::{
 	entity::Entity,
 };
 
-use rx_bevy_common_bounds::DebugBound;
+use rx_bevy_common_bounds::{DebugBound, ReflectBound};
 use rx_bevy_observable::{ObservableOutput, Observer};
 
 #[cfg(feature = "debug")]
@@ -44,7 +44,7 @@ where
 impl<Iterator, const EMIT_ON_TICK: bool> Component
 	for IteratorObservableComponent<Iterator, EMIT_ON_TICK>
 where
-	Iterator: 'static + IntoIterator + Send + Sync + Clone,
+	Iterator: 'static + IntoIterator + Send + Sync + Clone + ReflectBound,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: ObservableSignalBound,
 {
@@ -94,7 +94,7 @@ where
 impl<Iterator, const EMIT_ON_TICK: bool> ObservableComponent
 	for IteratorObservableComponent<Iterator, EMIT_ON_TICK>
 where
-	Iterator: 'static + IntoIterator + Send + Sync + Clone,
+	Iterator: 'static + IntoIterator + Send + Sync + Clone + ReflectBound,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: ObservableSignalBound,
 {

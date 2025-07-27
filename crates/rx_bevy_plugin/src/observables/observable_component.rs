@@ -28,6 +28,9 @@ use bevy_reflect::Reflect;
 /// Since the nature of a Subscription is very different in the context of an
 /// ECS, where there are no long term references, the nature of an Observable
 /// also changes.
+///
+/// Reflection: As many Operators are generic over their closures, which do not
+/// have a type_path it is impossible to require reflection over observables.
 pub trait ObservableComponent:
 	ObservableOutput + Component<Mutability = Mutable> + WithSubscribeObserverReference + DebugBound
 where
@@ -61,6 +64,7 @@ where
 }
 
 /// TODO: While this is required for all ObservableComponents, it's a separate trait to be the auto-implementable by a macro.
+/// TODO: Maybe this should just be another component as a relationship?
 ///
 /// This is technically a one-on-one relationship, each ObservableComponent has
 /// exactly one other entity listening for [Subscribe] events
@@ -87,6 +91,8 @@ pub struct ObservableOnInsertContext<'a, 'w, 's> {
 
 /// This on_insert hook sets up the observable so it can spawn new subscriptions
 /// upon receiving [Subscribe] events.
+/// This is key to decouple the request to create a subscription from the
+/// observable components actual type.
 pub fn observable_on_insert_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	O: ObservableComponent + Send + Sync,
@@ -118,6 +124,7 @@ where
 			.id()
 	};
 
+	// Calling the on_insert hook on the observable
 	{
 		let (mut entities, mut commands) = deferred_world.entities_and_commands();
 		let mut observable_entity_mut = entities.get_mut(observable_entity).unwrap();
@@ -172,7 +179,6 @@ fn on_subscribe<O>(
 	O::OutError: ObservableSignalBound,
 {
 	let observable_entity = trigger.target();
-	println!("ASDASDWD22");
 	debug!(
 		"on_subscribe {} {:?}",
 		observable_entity,
