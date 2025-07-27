@@ -1,6 +1,6 @@
 use crate::{
 	CommandSubscriber, NoopSubscription, ObservableComponent, ObservableOnInsertContext,
-	ObservableSignalBound, SubscriptionComponent, WithSubscribeObserverReference,
+	ObservableSignalBound, Subscribe, SubscriptionComponent, WithSubscribeObserverReference,
 	observable_on_insert_hook, observable_on_remove_hook,
 };
 use crate::{RxSignal, Subscriptions};
@@ -112,7 +112,11 @@ where
 		self.subject_observer_entity = Some(subject_observer_entity);
 	}
 
-	fn on_subscribe(&mut self, _subscriber: CommandSubscriber<In, InError>) -> Self::Subscription {
+	fn on_subscribe(
+		&mut self,
+		_subscriber: CommandSubscriber<In, InError>,
+		_subscribe_event: &Subscribe<Self::Out, Self::OutError>,
+	) -> Self::Subscription {
 		NoopSubscription::default()
 	}
 }

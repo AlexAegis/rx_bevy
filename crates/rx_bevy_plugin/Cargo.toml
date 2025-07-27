@@ -42,7 +42,11 @@ inspector = [
     "dep:bevy_egui",
     "bevy-inspector-egui/bevy_render",
 ]
-reflect = ["dep:bevy_reflect", "rx_bevy_common_bounds/reflect"]
+reflect = [
+    "dep:bevy_reflect",
+    "rx_bevy_common_bounds/reflect",
+    "rx_bevy_observable/reflect",
+]
 
 [dependencies]
 # rx_bevy dependencies

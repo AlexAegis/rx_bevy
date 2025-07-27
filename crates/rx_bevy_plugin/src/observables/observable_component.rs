@@ -31,8 +31,8 @@ use bevy_reflect::Reflect;
 pub trait ObservableComponent:
 	ObservableOutput + Component<Mutability = Mutable> + WithSubscribeObserverReference + DebugBound
 where
-	Self::Out: Send + Sync + DebugBound,
-	Self::OutError: Send + Sync + DebugBound,
+	Self::Out: ObservableSignalBound,
+	Self::OutError: ObservableSignalBound,
 {
 	const CAN_SELF_SUBSCRIBE: bool;
 
@@ -56,6 +56,7 @@ where
 	fn on_subscribe(
 		&mut self,
 		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		subscribe_event: &Subscribe<Self::Out, Self::OutError>,
 	) -> Self::Subscription;
 }
 
@@ -164,13 +165,19 @@ fn on_subscribe<O>(
 	trigger: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut observable_component_query: Query<(&mut O, Option<&mut Subscriptions<O>>)>,
 	mut commands: Commands,
+	name_query: Query<&Name>,
 ) where
 	O: ObservableComponent + Send + Sync,
 	O::Out: ObservableSignalBound,
 	O::OutError: ObservableSignalBound,
 {
 	let observable_entity = trigger.target();
-	debug!("on_subscribe {}", observable_entity);
+	println!("ASDASDWD22");
+	debug!(
+		"on_subscribe {} {:?}",
+		observable_entity,
+		name_query.get(observable_entity).unwrap()
+	);
 	let Ok((mut observable_component, existing_subscriptions_component)) =
 		observable_component_query.get_mut(observable_entity)
 	else {
@@ -236,11 +243,10 @@ fn on_subscribe<O>(
 		});
 
 		let scheduled_subscription =
-			observable_component.on_subscribe(context.upgrade(&mut commands));
+			observable_component.on_subscribe(context.upgrade(&mut commands), trigger.event());
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
-		// TODO: If we're subscribing to multiple Observables, completion requires some merge-like logic, count how many observables we have, to know how many completions we need.
 		subscription_entity_commands.insert_if_new((
 			Name::new(format!(
 				"Subscription<{}, {}> for [{}]",
@@ -254,6 +260,8 @@ fn on_subscribe<O>(
 				scheduled_subscription,
 			),
 		));
+
+		// TODO: Another child entity is needed for the subscriber that then can OBSERVE signals to form subscription chains, child because it needs to be despawned together. Probably will be used by switchmap
 
 		if O::Subscription::SCHEDULED {
 			subscription_entity_commands.insert_if_new((
@@ -291,6 +299,7 @@ fn subscription_tick_observer<O>(
 		let subscriber = subscription
 			.get_subscription_entity_context(trigger.target())
 			.upgrade(&mut commands);
-		subscription.tick(trigger.event(), subscriber);
+
+		subscription.tick(trigger.event().clone(), subscriber);
 	}
 }

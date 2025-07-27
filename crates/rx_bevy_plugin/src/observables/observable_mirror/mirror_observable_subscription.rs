@@ -53,7 +53,7 @@ where
 
 	fn on_tick(
 		&mut self,
-		_event: &Tick,
+		_tick: Tick,
 		_subscriber: crate::CommandSubscriber<Self::Out, Self::OutError>,
 	) {
 		unreachable!()

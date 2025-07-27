@@ -1,5 +1,8 @@
+use bevy_ecs::entity::Entity;
 use rx_bevy_common_bounds::DebugBound;
-use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, SubscriptionLike, Tick};
+use rx_bevy_observable::{
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, SubscriptionLike, Tick,
+};
 
 use crate::{CommandSubscriber, ObservableSignalBound, ScheduledSubscription, SubscriberContext};
 
@@ -15,67 +18,80 @@ use bevy_reflect::Reflect;
 pub struct PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: Send + Sync + ObservableSignalBound,
-	Op::InError: Send + Sync + ObservableSignalBound,
-	Op::Out: Send + Sync + ObservableSignalBound,
-	Op::OutError: Send + Sync + ObservableSignalBound,
+	Op::In: ObservableSignalBound,
+	Op::InError: ObservableSignalBound,
+	Op::Out: ObservableSignalBound,
+	Op::OutError: ObservableSignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
+	source_subscription: Entity,
 	operator: Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>,
 }
 
 impl<Op> PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: Send + Sync + ObservableSignalBound,
-	Op::InError: Send + Sync + ObservableSignalBound,
-	Op::Out: Send + Sync + ObservableSignalBound,
-	Op::OutError: Send + Sync + ObservableSignalBound,
+	Op::In: ObservableSignalBound,
+	Op::InError: ObservableSignalBound,
+	Op::Out: ObservableSignalBound,
+	Op::OutError: ObservableSignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
-	pub fn new(operator: Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>) -> Self {
-		Self { operator }
+	pub fn new(
+		source_subscription: Entity,
+		operator: Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>,
+	) -> Self {
+		Self {
+			source_subscription,
+			operator,
+		}
 	}
 }
 
 impl<Op> ScheduledSubscription for PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: Send + Sync + ObservableSignalBound,
-	Op::InError: Send + Sync + ObservableSignalBound,
-	Op::Out: Send + Sync + ObservableSignalBound,
-	Op::OutError: Send + Sync + ObservableSignalBound,
+	Op::In: ObservableSignalBound,
+	Op::InError: ObservableSignalBound,
+	Op::Out: ObservableSignalBound,
+	Op::OutError: ObservableSignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	const SCHEDULED: bool = true;
 
 	fn on_tick(
 		&mut self,
-		event: &Tick,
+		tick: Tick,
 		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) {
-		//let destination = self.operator.read(|destination| {
-		//	//destination.
-		//
-		//	subscriber.next();
-		//});
-		println!("pipe subscription ticked! {event:?}");
-		// TODO: Figure out how to tick a pipes subscription, upstream changes will be needed!
+		self.tick(tick.clone());
+		self.operator.write_destination(|destination| {
+			destination.forward_buffer(&mut subscriber);
+		});
+		subscriber.tick(tick);
 	}
 
 	fn unsubscribe(&mut self, mut subscriber: CommandSubscriber<Self::Out, Self::OutError>) {
-		println!("pipe subscription unsubbed!");
+		self.operator.unsubscribe();
+		// Drain the operator in case something produced something during teardown
+		self.operator.write_destination(|destination| {
+			destination.forward_buffer(&mut subscriber);
+		});
 		subscriber.unsubscribe();
+		subscriber
+			.commands()
+			.entity(self.source_subscription)
+			.despawn();
 	}
 }
 
 impl<Op> ObserverInput for PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: Send + Sync + ObservableSignalBound,
-	Op::InError: Send + Sync + ObservableSignalBound,
-	Op::Out: Send + Sync + ObservableSignalBound,
-	Op::OutError: Send + Sync + ObservableSignalBound,
+	Op::In: ObservableSignalBound,
+	Op::InError: ObservableSignalBound,
+	Op::Out: ObservableSignalBound,
+	Op::OutError: ObservableSignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type In = Op::In;
@@ -85,12 +101,43 @@ where
 impl<Op> ObservableOutput for PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: Send + Sync + ObservableSignalBound,
-	Op::InError: Send + Sync + ObservableSignalBound,
-	Op::Out: Send + Sync + ObservableSignalBound,
-	Op::OutError: Send + Sync + ObservableSignalBound,
+	Op::In: ObservableSignalBound,
+	Op::InError: ObservableSignalBound,
+	Op::Out: ObservableSignalBound,
+	Op::OutError: ObservableSignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type Out = Op::Out;
 	type OutError = Op::OutError;
+}
+
+impl<Op> Observer for PipeSubscription<Op>
+where
+	Op: 'static + Operator + Send + Sync + DebugBound,
+	Op::In: ObservableSignalBound,
+	Op::InError: ObservableSignalBound,
+	Op::Out: ObservableSignalBound,
+	Op::OutError: ObservableSignalBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+{
+	#[inline]
+	fn next(&mut self, next: Self::In) {
+		println!("NEXT PIPE");
+		self.operator.next(next);
+	}
+
+	#[inline]
+	fn error(&mut self, error: Self::InError) {
+		self.operator.error(error);
+	}
+
+	#[inline]
+	fn complete(&mut self) {
+		self.operator.complete();
+	}
+
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.operator.tick(tick);
+	}
 }

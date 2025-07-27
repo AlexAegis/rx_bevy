@@ -12,10 +12,10 @@ pub enum RelativeEntity {
 }
 
 impl RelativeEntity {
-	pub fn this_or(&self, observable_entity: Entity) -> Entity {
+	pub fn or_this(&self, this_entity: Entity) -> Entity {
 		match self {
 			Self::Other(entity) => *entity,
-			Self::This => observable_entity,
+			Self::This => this_entity,
 		}
 	}
 }

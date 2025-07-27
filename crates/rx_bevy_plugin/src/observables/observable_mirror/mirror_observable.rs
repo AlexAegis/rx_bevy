@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 
 use crate::{
 	CommandSubscriber, ObservableComponent, ObservableMirrorSubscription,
-	ObservableOnInsertContext, ObservableSignalBound, WithSubscribeObserverReference,
+	ObservableOnInsertContext, ObservableSignalBound, Subscribe, WithSubscribeObserverReference,
 };
 
 #[cfg(feature = "debug")]
@@ -78,6 +78,7 @@ where
 	fn on_subscribe(
 		&mut self,
 		_subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		_subscribe_event: &Subscribe<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		ObservableMirrorSubscription::new(self.upstream_source)
 	}

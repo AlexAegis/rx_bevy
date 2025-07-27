@@ -156,11 +156,11 @@ where
 		}
 	}
 
-	pub fn tick(&mut self, event: &Tick, subscriber: CommandSubscriber<O::Out, O::OutError>) {
+	pub fn tick(&mut self, tick: Tick, subscriber: CommandSubscriber<O::Out, O::OutError>) {
 		self.scheduled_subscription
 			.as_mut()
 			.expect("subscriber should always be present when ticked")
-			.on_tick(event, subscriber);
+			.on_tick(tick, subscriber);
 	}
 
 	pub fn get_subscription_entity_context(

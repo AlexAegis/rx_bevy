@@ -12,7 +12,7 @@ where
 	/// When set to false, the subscription will not be ticked at all.
 	const SCHEDULED: bool = true;
 
-	fn on_tick(&mut self, event: &Tick, subscriber: CommandSubscriber<Self::Out, Self::OutError>);
+	fn on_tick(&mut self, tick: Tick, subscriber: CommandSubscriber<Self::Out, Self::OutError>);
 
 	/// Happens when either the [Subscription] or its relation from [Subscriptions] is removed
 	///

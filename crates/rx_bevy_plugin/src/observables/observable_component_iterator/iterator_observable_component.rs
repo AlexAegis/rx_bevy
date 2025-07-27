@@ -1,3 +1,4 @@
+use crate::Subscribe;
 use crate::{
 	CommandSubscriber, IteratorSubscription, ObservableOnInsertContext,
 	WithSubscribeObserverReference,
@@ -106,6 +107,7 @@ where
 	fn on_subscribe(
 		&mut self,
 		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		_subscribe_event: &Subscribe<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		if !EMIT_ON_TICK {
 			for item in self.iterator.clone().into_iter() {

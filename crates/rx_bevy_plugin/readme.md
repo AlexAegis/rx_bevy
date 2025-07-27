@@ -8,7 +8,84 @@ cargo run -p rx_bevy_plugin --features example --example signal_example
 
 cargo run -p rx_bevy_plugin --features example --example double_source_subject
 
+## Concepts
+
+### Signal
+
+Any owned value that would represent the payload. Can be as simple as an `i32`,
+a `KeyCode`, or even something more complex. Must be `Send + Sync` and `Clone`
+as a single signal may need to be re-sent to multiple places.
+
+### Destination
+
+> These are good old **bevy** observers, signals are received through an `RxSignal`
+> event to differentiate them from any other event.
+
+A **`Destination`** is an **entity** that **observes** `RxSignal` events of **`signals`**.
+
+Example:
+
+```rs
+fn my_rx_signal_observer(
+ next: Trigger<RxSignal<String, ()>>,
+ name_query: Query<&Name>,
+ time: Res<Time>,
+) {}
+```
+
+### Observable
+
+An **`Observable`** is a component that defines a **`signal`** that can be **observed**. And how a **`Subscription`** of those **`signals`** is set up.
+
+> An entity with an **`Observable`** component can be considered
+> an **Observable Entity**, an entity you can **`Subscribe`** to.
+
+For example, the `IntervalObservable` defines a subscription, that emits an `i32`
+**`signal`** every time the duration you configured for it is elapsed, starting
+from the moment of the subscription.
+
+> TODO: Implement the KeyboardObservable
+
+Another example is the `KeyboardObservable` whose subscriber, the
+`KeyCodeSubscriber` forwards the `KeyCode`s as signals.
+
+### Subscribe
+
+> TODO: Revise this if Subscribe turns into a command.
+
+**`Subscribe`** is a generic event over a **`signal`**. If
+the recipient entity contains one or more **`Observables`** of
+that **`signal`** type, a **`Subscription`** will be set up.
+
+### Subscription
+
+> TODO: The Subscriber child thing is not yet true, may not be, but could be useful for nested subscriptions for pipes/mirrors
+
+A **`Subscription`** is an **entity** representing the active flow of
+**`signals`** between the **`Subscriber`** entity defined by the **`Observable`**
+(spawned as a child of the Subscription) and the **`Destination`**
+
+Despawning the Subscription terminates the flow of signal events, and runs any
+addition teardown logic associated with it.
+
+> TODO: Subscriptions should accept multiple destinations, and be extensible so you can add more destinations, making heavy multicasting more performant when you don't actually need any transformation or isolated context between signal flows.
+
+> TODO: Subscriptions should automatically terminate if all of it's destinations despawn
+
+### Subscriber
+
+A **`Subscriber`** is the "instance" of an **`Observable`** os an **`Operator`**.
+A **`Subscriber`** in principle is something that is simultaneously both a
+**`Subscription`**, thus has a **destination**, and an **`Observer`** of
+**`signals`**, to which it can react by sending events to its **destination**.
+
 ## Working Principle
+
+Observables define what can be observed, but they themselves do not handle **`signals`**,
+the only event they can handle is the **`Subscribe`** event, upon which they create
+a **`Subscription`**
+
+### Example Subscription
 
 1. Spawning Observable Entities
 
@@ -63,6 +140,8 @@ cargo run -p rx_bevy_plugin --features example --example double_source_subject
       For each of these signals, it will not be forwarded if the subscriber is
       already closed. Unsubscription closes the subscriber, and both error and
       completion will also trigger an unsubscription.
+
+   4. TODO: A Subscription may actually be a series of subscriptions.
 
 ## Subjects
 

@@ -55,7 +55,7 @@ where
 
 	fn on_tick(
 		&mut self,
-		_event: &Tick,
+		_tick: Tick,
 		mut destination: CommandSubscriber<Self::Out, Self::OutError>,
 	) {
 		if let Some(next) = self.iterator.next() {

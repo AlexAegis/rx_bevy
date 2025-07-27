@@ -4,7 +4,7 @@ use bevy_ecs::{
 	system::{Commands, EntityCommands},
 };
 
-use crate::{ObservableSignalBound, RelativeEntity, Subscribe};
+use crate::{CommandSubscribeExtension, ObservableSignalBound, RelativeEntity};
 
 /// TODO: Right now this is just a despawn alias, but it should be possible to unsubscribe from Subjects too, so this should be an Event! But the already contain observers? A command maybe?
 pub trait CommandsUnsubscribeExtension {
@@ -17,6 +17,7 @@ impl<'w, 's> CommandsUnsubscribeExtension for Commands<'w, 's> {
 	}
 }
 
+/// Provides commands for subscription relative to this entity
 pub trait EntityCommandSubscribeExtension {
 	/// Subscribes the observable on THIS entity, to an observer entity
 	/// Returns the entity of the subscription which you can despawn to unsubscribe it
@@ -71,13 +72,9 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		S: ScheduleLabel,
 	{
 		let observable_entity = self.id();
+		let subscriber_entity = subscriber_entity.or_this(observable_entity);
 		let commands = self.commands_mut();
-		let (event, subscription_entity) =
-			Subscribe::<Out, OutError>::scheduled::<S>(subscriber_entity, commands);
-
-		commands.trigger_targets(event, observable_entity);
-
-		subscription_entity
+		commands.subscribe_scheduled::<Out, OutError, S>(observable_entity, subscriber_entity)
 	}
 
 	fn subscribe_to_this_unscheduled<Out, OutError>(
@@ -89,13 +86,9 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		OutError: ObservableSignalBound,
 	{
 		let observable_entity = self.id();
+		let subscriber_entity = subscriber_entity.or_this(observable_entity);
 		let commands = self.commands_mut();
-		let (event, subscription_entity) =
-			Subscribe::<Out, OutError>::unscheduled(subscriber_entity, commands);
-
-		commands.trigger_targets(event, observable_entity);
-
-		subscription_entity
+		commands.subscribe_unscheduled::<Out, OutError>(observable_entity, subscriber_entity)
 	}
 
 	fn subscribe_to_that_scheduled<Out, OutError, S>(
@@ -108,15 +101,9 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		S: ScheduleLabel,
 	{
 		let subscriber_entity = self.id();
+		let observable_entity = observable_entity.or_this(subscriber_entity);
 		let commands = self.commands_mut();
-		let (event, subscription_entity) = Subscribe::<Out, OutError>::scheduled::<S>(
-			RelativeEntity::Other(subscriber_entity),
-			commands,
-		);
-
-		commands.trigger_targets(event, observable_entity.this_or(subscriber_entity));
-
-		subscription_entity
+		commands.subscribe_scheduled::<Out, OutError, S>(observable_entity, subscriber_entity)
 	}
 
 	fn subscribe_to_that_unscheduled<Out, OutError>(
@@ -128,14 +115,8 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		OutError: ObservableSignalBound,
 	{
 		let subscriber_entity = self.id();
+		let observable_entity = observable_entity.or_this(subscriber_entity);
 		let commands = self.commands_mut();
-		let (event, subscription_entity) = Subscribe::<Out, OutError>::unscheduled(
-			RelativeEntity::Other(subscriber_entity),
-			commands,
-		);
-
-		commands.trigger_targets(event, observable_entity.this_or(subscriber_entity));
-
-		subscription_entity
+		commands.subscribe_unscheduled::<Out, OutError>(observable_entity, subscriber_entity)
 	}
 }

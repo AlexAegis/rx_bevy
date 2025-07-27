@@ -34,11 +34,12 @@ impl ObservableOutput for IntervalSubscription {
 impl ScheduledSubscription for IntervalSubscription {
 	fn on_tick(
 		&mut self,
-		event: &Tick,
+		tick: Tick,
 		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) {
-		self.timer.tick(event.delta);
+		self.timer.tick(tick.delta);
 		if self.timer.just_finished() {
+			println!("interval tick");
 			subscriber.next(self.count);
 			self.count += 1;
 		}

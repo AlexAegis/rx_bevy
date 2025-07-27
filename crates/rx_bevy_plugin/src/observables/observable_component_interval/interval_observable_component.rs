@@ -9,8 +9,8 @@ use bevy_reflect::Reflect;
 
 use crate::{
 	CommandSubscriber, IntervalObservableOptions, IntervalSubscription, ObservableComponent,
-	ObservableOnInsertContext, WithSubscribeObserverReference, observable_on_insert_hook,
-	observable_on_remove_hook,
+	ObservableOnInsertContext, Subscribe, WithSubscribeObserverReference,
+	observable_on_insert_hook, observable_on_remove_hook,
 };
 
 #[derive(Clone)]
@@ -68,10 +68,12 @@ impl ObservableComponent for IntervalObservableComponent {
 	fn on_subscribe(
 		&mut self,
 		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		_subscribe_event: &Subscribe<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		if self.options.start_on_subscribe {
 			subscriber.next(0);
 		}
+		println!("interval observable onsub");
 		IntervalSubscription::new(self.options.clone())
 	}
 }

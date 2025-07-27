@@ -1,4 +1,4 @@
-use std::{ops::RangeInclusive, time::Duration};
+use std::time::Duration;
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
@@ -8,8 +8,7 @@ use examples_common::send_event;
 use rx_bevy::prelude::*;
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, IntervalObservableComponent,
-	IntervalObservableOptions, IteratorObservableComponent, PipeComponent, RelativeEntity,
-	RxPlugin, RxSignal, SubjectComponent,
+	IntervalObservableOptions, PipeComponent, RelativeEntity, RxPlugin, RxSignal,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -79,17 +78,26 @@ fn setup(
 		.observe(next_number_observer)
 		.id();
 
-	let mut interval_observable_entity_commands = commands.spawn((
-		Name::new("IntervalObservable"),
-		Transform::from_xyz(-1.0, 0.0, 0.0),
+	let interval_observable_entity = commands
+		.spawn((
+			Name::new("IntervalObservable"),
+			Transform::from_xyz(-1.0, 0.0, 0.0),
+			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
+			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
+			IntervalObservableComponent::new(IntervalObservableOptions {
+				duration: Duration::from_secs(1),
+				start_on_subscribe: true,
+			}),
+		))
+		.id();
+
+	let mut piped_observable_entity_commands = commands.spawn((
+		Name::new("PipeObservable"),
+		Transform::from_xyz(-2.0, 0.0, 0.0),
 		Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-		IntervalObservableComponent::new(IntervalObservableOptions {
-			duration: Duration::from_secs(1),
-			start_on_subscribe: true,
-		}),
 		PipeComponent::new(
-			RelativeEntity::This,
+			RelativeEntity::Other(interval_observable_entity),
 			IdentityOperator::<i32, ()>::default()
 				.pipe(map(|i| i * 2))
 				.pipe(map(|i| format!("mapped! {i}"))),
@@ -97,12 +105,12 @@ fn setup(
 	));
 
 	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
-	let subjects_interval_subscription = interval_observable_entity_commands
+	let subscription = piped_observable_entity_commands
 		.subscribe_to_this_scheduled::<String, (), Update>(RelativeEntity::Other(
 			string_printer_entity,
 		));
 
 	commands.insert_resource(ExampleEntities {
-		subjects_interval_subscription,
+		subjects_interval_subscription: subscription,
 	});
 }

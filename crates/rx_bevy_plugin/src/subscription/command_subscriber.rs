@@ -5,8 +5,9 @@ use bevy_log::debug;
 
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObserverInput, SubscriptionLike};
+use smallvec::SmallVec;
 
-use crate::{ObservableSignalBound, RxSignal};
+use crate::{ObservableSignalBound, ObserverSignalPush, RelativeEntity, RxSignal};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -50,9 +51,30 @@ where
 			destination_entity: self.destination_entity,
 			subscription_entity: self.subscription_entity,
 			closed: self.closed,
+			buffer: SmallVec::default(),
 			// teardown: self.teardown,
 			_phantom_data: PhantomData,
 		}
+	}
+
+	#[inline]
+	pub fn commands(&mut self) -> &mut Commands<'w, 's> {
+		self.commands
+	}
+
+	#[inline]
+	pub fn resolve_relative_entity(&self, relative_entity: &RelativeEntity) -> Entity {
+		relative_entity.or_this(self.source_entity)
+	}
+
+	#[inline]
+	pub fn get_destination_entity(&self) -> Entity {
+		self.destination_entity
+	}
+
+	#[inline]
+	pub fn get_subscription_entity(&self) -> Entity {
+		self.subscription_entity
 	}
 }
 
@@ -139,8 +161,8 @@ pub struct EntityContext {
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscriberContext<In, InError>
 where
-	In: Send + Sync + ObservableSignalBound,
-	InError: Send + Sync + ObservableSignalBound,
+	In: ObservableSignalBound,
+	InError: ObservableSignalBound,
 {
 	/// "This" entity
 	source_entity: Entity,
@@ -151,6 +173,8 @@ where
 
 	closed: bool,
 
+	buffer: SmallVec<[RxSignal<In, InError>; 2]>,
+	// connector: Option<Box<dyn Fn(RxSignal<In, InError>)>>,
 	// #[derive_where(skip)]
 	// #[reflect(ignore)]
 	// teardown: InnerSubscription,
@@ -159,8 +183,8 @@ where
 
 impl<In, InError> SubscriberContext<In, InError>
 where
-	In: Send + Sync + ObservableSignalBound,
-	InError: Send + Sync + ObservableSignalBound,
+	In: ObservableSignalBound,
+	InError: ObservableSignalBound,
 {
 	pub fn new(entity_context: EntityContext) -> Self {
 		Self {
@@ -168,6 +192,7 @@ where
 			destination_entity: entity_context.destination_entity,
 			subscription_entity: entity_context.subscription_entity,
 			closed: false,
+			buffer: SmallVec::default(),
 			// teardown: InnerSubscription::new_empty(),
 			_phantom_data: PhantomData,
 		}
@@ -177,12 +202,17 @@ where
 	pub fn get_observable_entity(&self) -> Entity {
 		self.source_entity
 	}
+
+	#[inline]
+	pub fn resolve_relative_entity(&self, relative_entity: &RelativeEntity) -> Entity {
+		relative_entity.or_this(self.source_entity)
+	}
 }
 
 impl<In, InError> SubscriberContext<In, InError>
 where
-	In: Send + Sync + ObservableSignalBound,
-	InError: Send + Sync + ObservableSignalBound,
+	In: ObservableSignalBound,
+	InError: ObservableSignalBound,
 {
 	pub fn upgrade<'a, 'w, 's>(
 		self,
@@ -202,12 +232,22 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
+
+	/// Drains the buffer into a [CommandSubscriber]
+	pub(crate) fn forward_buffer<'a, 'w, 's>(
+		&mut self,
+		command_subscriber: &mut CommandSubscriber<'a, 'w, 's, In, InError>,
+	) {
+		for signal in self.buffer.drain(..) {
+			command_subscriber.push(signal);
+		}
+	}
 }
 
 impl<In, InError> ObserverInput for SubscriberContext<In, InError>
 where
-	In: Send + Sync + ObservableSignalBound,
-	InError: Send + Sync + ObservableSignalBound,
+	In: ObservableSignalBound,
+	InError: ObservableSignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -216,31 +256,34 @@ where
 // TODO: Maybe this impl should just be removed and accept that subscriber context is not a subscriber
 impl<In, InError> rx_bevy_observable::Observer for SubscriberContext<In, InError>
 where
-	In: Send + Sync + ObservableSignalBound,
-	InError: Send + Sync + ObservableSignalBound,
+	In: ObservableSignalBound,
+	InError: ObservableSignalBound,
 {
 	fn next(&mut self, next: Self::In) {
 		// TODO: Maybe collect in a buffer then drain on upgrade? Or panic if not supposed to receive anything un-upgraded
-		println!("SubscriptionEntityContext next");
+		println!("SubscriptionEntityContext next into buffer");
+		self.buffer.push(RxSignal::Next(next));
 	}
 
 	fn error(&mut self, error: Self::InError) {
 		println!("SubscriptionEntityContext error");
+		self.buffer.push(RxSignal::Error(error));
 	}
 
 	fn complete(&mut self) {
 		println!("SubscriptionEntityContext complete");
+		self.buffer.push(RxSignal::Complete);
 	}
 
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
-		println!("SubscriptionEntityContext tick");
+	fn tick(&mut self, _tick: rx_bevy_observable::Tick) {
+		// Don't need to do anything with a tick here
 	}
 }
 
 impl<In, InError> rx_bevy_observable::SubscriptionLike for SubscriberContext<In, InError>
 where
-	In: Send + Sync + ObservableSignalBound,
-	InError: Send + Sync + ObservableSignalBound,
+	In: ObservableSignalBound,
+	InError: ObservableSignalBound,
 {
 	fn is_closed(&self) -> bool {
 		self.closed

@@ -41,7 +41,7 @@ where
 {
 	const SCHEDULED: bool = false;
 
-	fn on_tick(&mut self, _event: &Tick, _context: CommandSubscriber<Self::Out, Self::OutError>) {
+	fn on_tick(&mut self, _tick: Tick, _context: CommandSubscriber<Self::Out, Self::OutError>) {
 		unreachable!()
 	}
 

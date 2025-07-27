@@ -8,7 +8,7 @@ use bevy_reflect::Reflect;
 
 /// Component to mark subscriptions with, to trigger `Tick` events without the
 /// knowledge of the actual [ObservableComponent]s type
-#[derive(Component)]
+#[derive(Component, Clone)]
 #[derive_where(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
