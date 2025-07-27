@@ -15,7 +15,7 @@ use rx_bevy_observable::{ObservableOutput, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
-	CommandSubscriber, EntityContext, ObservableSignalBound, ScheduledSubscription, Subscribe,
+	CommandSubscriber, EntityContext, ScheduledSubscription, SignalBound, Subscribe,
 	SubscriberContext, SubscriptionComponent, Subscriptions,
 };
 
@@ -34,15 +34,14 @@ use bevy_reflect::Reflect;
 pub trait ObservableComponent:
 	ObservableOutput + Component<Mutability = Mutable> + WithSubscribeObserverReference + DebugBound
 where
-	Self::Out: ObservableSignalBound,
-	Self::OutError: ObservableSignalBound,
+	Self::Out: SignalBound,
+	Self::OutError: SignalBound,
 {
 	const CAN_SELF_SUBSCRIBE: bool;
 
 	/// If the Observable does not need any scheduling, use [NonScheduledSubscription]
 	/// Otherwise implement a [ScheduledSubscription] that can emit events when
 	/// ticked by an [RxScheduler].
-	///  TODO: This should really need SubscriptionLike but for that the command-less subscribercontext would also need to impl observer
 	type Subscription: ScheduledSubscription<Out = Self::Out, OutError = Self::OutError>
 		+ Send
 		+ Sync;
@@ -96,8 +95,8 @@ pub struct ObservableOnInsertContext<'a, 'w, 's> {
 pub fn observable_on_insert_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	let observable_entity = hook_context.entity;
 
@@ -150,8 +149,8 @@ where
 pub fn observable_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	let observable_entity = hook_context.entity;
 	let (mut entities, mut commands) = deferred_world.entities_and_commands();
@@ -175,8 +174,8 @@ fn on_subscribe<O>(
 	name_query: Query<&Name>,
 ) where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	let observable_entity = trigger.target();
 	debug!(
@@ -295,8 +294,8 @@ fn subscription_tick_observer<O>(
 	mut commands: Commands,
 ) where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound + Clone,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound + Clone,
+	O::OutError: SignalBound,
 {
 	#[cfg(feature = "debug")]
 	trace!("subscription_tick_observer {:?}", trigger.event());

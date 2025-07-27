@@ -2,10 +2,9 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 
-use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Tick};
 
-use crate::{CommandSubscriber, ScheduledSubscription};
+use crate::{CommandSubscriber, ScheduledSubscription, SignalBound};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -19,16 +18,16 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct NoopSubscription<Out, OutError>
 where
-	Out: 'static + Send + Sync + DebugBound,
-	OutError: 'static + Send + Sync + DebugBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	_phantom_data: PhantomData<(Out, OutError)>,
 }
 
 impl<Out, OutError> ObservableOutput for NoopSubscription<Out, OutError>
 where
-	Out: 'static + Send + Sync + DebugBound,
-	OutError: 'static + Send + Sync + DebugBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	type Out = Out;
 	type OutError = OutError;
@@ -36,8 +35,8 @@ where
 
 impl<Out, OutError> ScheduledSubscription for NoopSubscription<Out, OutError>
 where
-	Out: 'static + Send + Sync + DebugBound,
-	OutError: 'static + Send + Sync + DebugBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	const SCHEDULED: bool = false;
 

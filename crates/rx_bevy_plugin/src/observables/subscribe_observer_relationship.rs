@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{ObservableComponent, ObservableSignalBound};
+use crate::{ObservableComponent, SignalBound};
 
 #[derive(Component)]
 #[relationship_target(relationship=SubscribeObserverRef::<O>)]
@@ -16,8 +16,8 @@ use crate::{ObservableComponent, ObservableSignalBound};
 pub struct SubscribeObserverOf<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	#[relationship]
 	observable_ref: Entity,
@@ -34,8 +34,8 @@ where
 pub struct SubscribeObserverRef<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	#[relationship]
 	subscribe_observer_ref: Entity,

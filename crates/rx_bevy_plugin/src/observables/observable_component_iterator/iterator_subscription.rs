@@ -1,7 +1,7 @@
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Observer, SubscriptionLike, Tick};
 
-use crate::{CommandSubscriber, ObservableSignalBound, ScheduledSubscription};
+use crate::{CommandSubscriber, ScheduledSubscription, SignalBound};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -15,7 +15,7 @@ pub struct IteratorSubscription<Iterator, const EMIT_ON_TICK: bool>
 where
 	Iterator: IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: ObservableSignalBound,
+	Iterator::Item: SignalBound,
 {
 	iterator: Iterator::IntoIter,
 }
@@ -24,7 +24,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> IteratorSubscription<Iterator, EMIT_ON_
 where
 	Iterator: IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: ObservableSignalBound,
+	Iterator::Item: SignalBound,
 {
 	pub fn new(iterator: Iterator) -> Self {
 		Self {
@@ -38,7 +38,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> ObservableOutput
 where
 	Iterator: IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: ObservableSignalBound,
+	Iterator::Item: SignalBound,
 {
 	type Out = Iterator::Item;
 	type OutError = ();
@@ -49,7 +49,7 @@ impl<Iterator, const EMIT_ON_TICK: bool> ScheduledSubscription
 where
 	Iterator: IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: ObservableSignalBound,
+	Iterator::Item: SignalBound,
 {
 	const SCHEDULED: bool = EMIT_ON_TICK;
 

@@ -12,9 +12,12 @@ use rx_bevy_observable::Tick;
 use smallvec::{SmallVec, smallvec};
 
 use crate::{
-	CommandSubscriber, EntityContext, ObservableComponent, ObservableSignalBound,
-	ScheduledSubscription, SubscriberContext,
+	CommandSubscriber, EntityContext, ObservableComponent, ScheduledSubscription, SignalBound,
+	SubscriberContext,
 };
+
+#[cfg(feature = "debug")]
+use std::fmt::Debug;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -29,8 +32,8 @@ use bevy_reflect::Reflect;
 pub struct Subscriptions<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	subscriptions: SmallVec<[Entity; 1]>,
 	_phantom_data: PhantomData<O>,
@@ -39,8 +42,8 @@ where
 impl<O> Subscriptions<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	pub fn new(subscription: Entity) -> Self {
 		Self {
@@ -81,8 +84,8 @@ where
 fn subscriptions_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	let subscriptions = deferred_world
 		.get::<Subscriptions<O>>(hook_context.entity)
@@ -124,8 +127,8 @@ where
 pub struct SubscriptionComponent<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	// TODO This should hold a subscriber_context, even if it helds an id to itself
 	observable_entity: Entity,
@@ -140,8 +143,8 @@ where
 impl<O> SubscriptionComponent<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	pub fn new(
 		observable_entity: Entity,
@@ -178,8 +181,8 @@ where
 fn subscription_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	let subscription_entity = hook_context.entity;
 

@@ -1,6 +1,6 @@
 use crate::{
 	CommandSubscriber, NoopSubscription, ObservableComponent, ObservableOnInsertContext,
-	ObservableSignalBound, Subscribe, SubscriptionComponent, WithSubscribeObserverReference,
+	SignalBound, Subscribe, SubscriptionComponent, WithSubscribeObserverReference,
 	observable_on_insert_hook, observable_on_remove_hook,
 };
 use crate::{RxSignal, Subscriptions};
@@ -28,8 +28,8 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubjectComponent<In, InError>
 where
-	In: 'static + Send + Sync + Clone,
-	InError: 'static + Send + Sync + Clone,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	/// The entity that observes [Subscribe] events for this entity
 	subscribe_observer_entity: Option<Entity>,
@@ -42,8 +42,8 @@ where
 
 impl<In, InError> Component for SubjectComponent<In, InError>
 where
-	In: Clone + ObservableSignalBound,
-	InError: Clone + ObservableSignalBound,
+	In: Clone + SignalBound,
+	InError: Clone + SignalBound,
 {
 	const STORAGE_TYPE: StorageType = StorageType::Table;
 	type Mutability = Mutable;
@@ -56,8 +56,8 @@ where
 
 impl<In, InError> SubjectComponent<In, InError>
 where
-	In: Clone + ObservableSignalBound,
-	InError: Clone + ObservableSignalBound,
+	In: Clone + SignalBound,
+	InError: Clone + SignalBound,
 {
 	pub fn new() -> Self {
 		Self {
@@ -70,8 +70,8 @@ where
 
 impl<In, InError> WithSubscribeObserverReference for SubjectComponent<In, InError>
 where
-	In: Clone + ObservableSignalBound,
-	InError: Clone + ObservableSignalBound,
+	In: Clone + SignalBound,
+	InError: Clone + SignalBound,
 {
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
@@ -88,8 +88,8 @@ where
 
 impl<In, InError> ObservableComponent for SubjectComponent<In, InError>
 where
-	In: Clone + ObservableSignalBound,
-	InError: Clone + ObservableSignalBound,
+	In: Clone + SignalBound,
+	InError: Clone + SignalBound,
 {
 	/// A Subject is also an observer, so if subscriptions to itself were
 	/// allowed, an infinite loop would happen
@@ -130,8 +130,8 @@ pub fn forward_to_subscribers<O>(
 	mut commands: Commands,
 ) where
 	O: ObservableComponent + Send + Sync,
-	O::Out: Clone + ObservableSignalBound,
-	O::OutError: Clone + ObservableSignalBound,
+	O::Out: Clone + SignalBound,
+	O::OutError: Clone + SignalBound,
 {
 	let Ok(subscriptions) = observable_subscriptions_query.get_mut(trigger.target()) else {
 		return;
@@ -146,8 +146,8 @@ pub fn forward_to_subscribers<O>(
 
 impl<In, InError> ObserverInput for SubjectComponent<In, InError>
 where
-	In: 'static + Send + Sync + Clone,
-	InError: 'static + Send + Sync + Clone,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -155,8 +155,8 @@ where
 
 impl<In, InError> ObservableOutput for SubjectComponent<In, InError>
 where
-	In: 'static + Send + Sync + Clone,
-	InError: 'static + Send + Sync + Clone,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Out = In;
 	type OutError = InError;

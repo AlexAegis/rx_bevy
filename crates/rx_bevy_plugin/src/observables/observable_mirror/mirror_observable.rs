@@ -1,10 +1,10 @@
-use bevy_ecs::{component::Component, entity::Entity, world::reflect};
+use bevy_ecs::{component::Component, entity::Entity};
 use rx_bevy_observable::ObservableOutput;
 use std::marker::PhantomData;
 
 use crate::{
 	CommandSubscriber, ObservableComponent, ObservableMirrorSubscription,
-	ObservableOnInsertContext, ObservableSignalBound, Subscribe, WithSubscribeObserverReference,
+	ObservableOnInsertContext, SignalBound, Subscribe, WithSubscribeObserverReference,
 };
 
 #[cfg(feature = "debug")]
@@ -25,8 +25,8 @@ pub struct MirrorObservableComponent<Out, OutError> {
 
 impl<Out, OutError> MirrorObservableComponent<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	pub fn new(upstream_source: Entity) -> Self {
 		Self {
@@ -39,8 +39,8 @@ where
 
 impl<Out, OutError> ObservableOutput for MirrorObservableComponent<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	type Out = Out;
 	type OutError = OutError;
@@ -48,8 +48,8 @@ where
 
 impl<Out, OutError> WithSubscribeObserverReference for MirrorObservableComponent<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
 		self.subscribe_observer_entity
@@ -66,8 +66,8 @@ where
 
 impl<Out, OutError> ObservableComponent for MirrorObservableComponent<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	/// There is no point to mirror something from the same entity, it's already there
 	const CAN_SELF_SUBSCRIBE: bool = false;

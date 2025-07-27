@@ -7,7 +7,7 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
 	CommandSubscribeExtension, CommandSubscriber, ObservableComponent, ObservableOnInsertContext,
-	ObservableSignalBound, PipeSubscription, RelativeEntity, Subscribe, SubscriberContext,
+	PipeSubscription, RelativeEntity, SignalBound, Subscribe, SubscriberContext,
 	WithSubscribeObserverReference, observable_on_insert_hook, observable_on_remove_hook,
 };
 
@@ -23,10 +23,10 @@ use bevy_reflect::Reflect;
 pub struct PipeComponent<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	source: RelativeEntity,
@@ -39,10 +39,10 @@ where
 impl<Op> PipeComponent<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	pub fn new(source: RelativeEntity, operator: Op) -> Self {
@@ -91,10 +91,10 @@ where
 impl<Op> Component for PipeComponent<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	const STORAGE_TYPE: StorageType = StorageType::Table;
@@ -109,10 +109,10 @@ where
 impl<Op> ObserverInput for PipeComponent<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type In = Op::In;
@@ -122,10 +122,10 @@ where
 impl<Op> ObservableOutput for PipeComponent<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type Out = Op::Out;
@@ -135,10 +135,10 @@ where
 impl<Op> WithSubscribeObserverReference for PipeComponent<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	fn get_subscribe_observer_entity(&self) -> Option<Entity> {
@@ -157,10 +157,10 @@ where
 impl<Op> ObservableComponent for PipeComponent<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	/// A Subject is also an observer, so if subscriptions to itself were

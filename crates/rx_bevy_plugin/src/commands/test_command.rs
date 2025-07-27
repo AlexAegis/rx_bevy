@@ -2,7 +2,7 @@ use bevy_ecs::{entity::Entity, system::Command, world::World};
 use bevy_log::info;
 use std::marker::PhantomData;
 
-use crate::{ObservableComponent, ObservableSignalBound};
+use crate::{ObservableComponent, SignalBound};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -17,8 +17,8 @@ use bevy_reflect::Reflect;
 pub struct SubscribeCommand<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	observable: Entity,
 	destination: Entity,
@@ -28,8 +28,8 @@ where
 impl<O> SubscribeCommand<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	pub fn new(observable: Entity, destination: Entity) -> Self {
 		Self {
@@ -43,8 +43,8 @@ where
 impl<O> Command<Entity> for SubscribeCommand<O>
 where
 	O: ObservableComponent + Send + Sync,
-	O::Out: ObservableSignalBound,
-	O::OutError: ObservableSignalBound,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	fn apply(self, world: &mut World) -> Entity {
 		#[cfg(feature = "debug")]

@@ -4,7 +4,7 @@ use bevy_ecs::{
 	system::{Commands, EntityCommands},
 };
 
-use crate::{CommandSubscribeExtension, ObservableSignalBound, RelativeEntity};
+use crate::{CommandSubscribeExtension, RelativeEntity, SignalBound};
 
 /// TODO: Right now this is just a despawn alias, but it should be possible to unsubscribe from Subjects too, so this should be an Event! But the already contain observers? A command maybe?
 pub trait CommandsUnsubscribeExtension {
@@ -21,15 +21,14 @@ impl<'w, 's> CommandsUnsubscribeExtension for Commands<'w, 's> {
 pub trait EntityCommandSubscribeExtension {
 	/// Subscribes the observable on THIS entity, to an observer entity
 	/// Returns the entity of the subscription which you can despawn to unsubscribe it
-	/// TODO: Instead of O, it should be the Signal, OR create a single ObservableComponent that can house any kind of observables
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
 	fn subscribe_to_this_scheduled<Out, OutError, S>(
 		&mut self,
 		subscriber_entity: RelativeEntity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 		S: ScheduleLabel;
 
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
@@ -38,8 +37,8 @@ pub trait EntityCommandSubscribeExtension {
 		subscriber_entity: RelativeEntity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound;
+		Out: SignalBound,
+		OutError: SignalBound;
 
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
 	fn subscribe_to_that_scheduled<Out, OutError, S>(
@@ -47,8 +46,8 @@ pub trait EntityCommandSubscribeExtension {
 		observable_entity: RelativeEntity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 		S: ScheduleLabel;
 
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
@@ -57,8 +56,8 @@ pub trait EntityCommandSubscribeExtension {
 		observable_entity: RelativeEntity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound;
+		Out: SignalBound,
+		OutError: SignalBound;
 }
 
 impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
@@ -67,8 +66,8 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		subscriber_entity: RelativeEntity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 		S: ScheduleLabel,
 	{
 		let observable_entity = self.id();
@@ -82,8 +81,8 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		subscriber_entity: RelativeEntity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 	{
 		let observable_entity = self.id();
 		let subscriber_entity = subscriber_entity.or_this(observable_entity);
@@ -96,8 +95,8 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		observable_entity: RelativeEntity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 		S: ScheduleLabel,
 	{
 		let subscriber_entity = self.id();
@@ -111,8 +110,8 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		observable_entity: RelativeEntity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 	{
 		let subscriber_entity = self.id();
 		let observable_entity = observable_entity.or_this(subscriber_entity);

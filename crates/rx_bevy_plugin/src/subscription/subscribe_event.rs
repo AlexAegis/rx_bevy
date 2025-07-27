@@ -5,7 +5,7 @@ use bevy_log::error;
 
 use thiserror::Error;
 
-use crate::{ObservableSignalBound, RelativeEntity, SubscriptionSchedule};
+use crate::{RelativeEntity, SignalBound, SubscriptionSchedule};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -18,8 +18,8 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct Subscribe<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	subscriber_entity: RelativeEntity,
 	/// This entity can only be spawned from this events constructors
@@ -33,8 +33,8 @@ where
 
 impl<Out, OutError> Subscribe<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	pub fn get_subscriber_entity_or_this(&self, or_another: Entity) -> Entity {
 		self.subscriber_entity.or_this(or_another)
@@ -86,12 +86,12 @@ where
 		commands: &mut Commands,
 	) -> (Subscribe<NextOut, NextOutError>, Entity)
 	where
-		NextOut: ObservableSignalBound,
-		NextOutError: ObservableSignalBound,
+		NextOut: SignalBound,
+		NextOutError: SignalBound,
 	{
 		let subscription_entity = if let Some(subscription_schedule_type_id) = self.schedule {
 			dbg!(subscription_schedule_type_id);
-			/// TODO: This doesen't work without flushing the world entities can be cloned even if their spawn commands weren't resolved.
+			// TODO: This doesn't work in 0.16, but looks like it will in 0.17. Without flushing the world entities can't be cloned if their spawn commands weren't resolved.
 			commands
 				.entity(self.get_subscription_entity())
 				.clone_and_spawn_with(move |builder| {

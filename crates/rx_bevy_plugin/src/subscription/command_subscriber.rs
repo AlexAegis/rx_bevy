@@ -3,11 +3,10 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, system::Commands};
 use bevy_log::debug;
 
-use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObserverInput, SubscriptionLike};
 use smallvec::SmallVec;
 
-use crate::{ObservableSignalBound, ObserverSignalPush, RelativeEntity, RxSignal};
+use crate::{ObserverSignalPush, RelativeEntity, RxSignal, SignalBound};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -19,8 +18,8 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct CommandSubscriber<'a, 'w, 's, In, InError>
 where
-	In: 'static + Send + Sync,
-	InError: 'static + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	#[cfg_attr(feature = "debug", derive_where(skip))]
 	commands: &'a mut Commands<'w, 's>,
@@ -42,8 +41,8 @@ where
 
 impl<'a, 'w, 's, In, InError> CommandSubscriber<'a, 'w, 's, In, InError>
 where
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	pub fn downgrade(self) -> SubscriberContext<In, InError> {
 		SubscriberContext {
@@ -80,8 +79,8 @@ where
 
 impl<'a, 'w, 's, In, InError> ObserverInput for CommandSubscriber<'a, 'w, 's, In, InError>
 where
-	In: 'static + Send + Sync,
-	InError: 'static + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -90,8 +89,8 @@ where
 impl<'a, 'w, 's, In, InError> rx_bevy_observable::Observer
 	for CommandSubscriber<'a, 'w, 's, In, InError>
 where
-	In: 'static + Send + Sync + DebugBound,
-	InError: 'static + Send + Sync + DebugBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	fn next(&mut self, next: Self::In) {
 		if !self.closed {
@@ -126,8 +125,8 @@ where
 
 impl<'a, 'w, 's, In, InError> SubscriptionLike for CommandSubscriber<'a, 'w, 's, In, InError>
 where
-	In: 'static + Send + Sync,
-	InError: 'static + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	fn is_closed(&self) -> bool {
 		self.closed
@@ -161,8 +160,8 @@ pub struct EntityContext {
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscriberContext<In, InError>
 where
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	/// "This" entity
 	source_entity: Entity,
@@ -183,8 +182,8 @@ where
 
 impl<In, InError> SubscriberContext<In, InError>
 where
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	pub fn new(entity_context: EntityContext) -> Self {
 		Self {
@@ -211,16 +210,16 @@ where
 
 impl<In, InError> SubscriberContext<In, InError>
 where
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	pub fn upgrade<'a, 'w, 's>(
 		self,
 		commands: &'a mut Commands<'w, 's>,
 	) -> CommandSubscriber<'a, 'w, 's, In, InError>
 	where
-		In: 'static + Send + Sync,
-		InError: 'static + Send + Sync,
+		In: SignalBound,
+		InError: SignalBound,
 	{
 		CommandSubscriber::<'a, 'w, 's, In, InError> {
 			commands,
@@ -246,8 +245,8 @@ where
 
 impl<In, InError> ObserverInput for SubscriberContext<In, InError>
 where
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -256,8 +255,8 @@ where
 // TODO: Maybe this impl should just be removed and accept that subscriber context is not a subscriber
 impl<In, InError> rx_bevy_observable::Observer for SubscriberContext<In, InError>
 where
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	fn next(&mut self, next: Self::In) {
 		// TODO: Maybe collect in a buffer then drain on upgrade? Or panic if not supposed to receive anything un-upgraded
@@ -282,8 +281,8 @@ where
 
 impl<In, InError> rx_bevy_observable::SubscriptionLike for SubscriberContext<In, InError>
 where
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	fn is_closed(&self) -> bool {
 		self.closed

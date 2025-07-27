@@ -1,6 +1,6 @@
 use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::Commands};
 
-use crate::{ObservableSignalBound, RelativeEntity, Subscribe};
+use crate::{RelativeEntity, SignalBound, Subscribe};
 
 /// Provides functions to create subscriptions between two commands
 pub trait CommandSubscribeExtension {
@@ -11,8 +11,8 @@ pub trait CommandSubscribeExtension {
 		subscriber_entity: Entity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 		S: ScheduleLabel;
 
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
@@ -22,8 +22,8 @@ pub trait CommandSubscribeExtension {
 		subscriber_entity: Entity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound;
+		Out: SignalBound,
+		OutError: SignalBound;
 
 	/// Clones an existing subscription and updates it's source and destination entities.
 	/// Useful for preserving its scheduling without knowing what that schedule was.
@@ -35,10 +35,10 @@ pub trait CommandSubscribeExtension {
 		new_subscriber_entity: Entity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
-		NextOut: ObservableSignalBound,
-		NextOutError: ObservableSignalBound;
+		Out: SignalBound,
+		OutError: SignalBound,
+		NextOut: SignalBound,
+		NextOutError: SignalBound;
 }
 
 impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
@@ -48,8 +48,8 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		subscriber_entity: Entity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 		S: ScheduleLabel,
 	{
 		let (event, subscription_entity) = Subscribe::<Out, OutError>::scheduled::<S>(
@@ -68,8 +68,8 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		subscriber_entity: Entity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
 	{
 		let (event, subscription_entity) =
 			Subscribe::<Out, OutError>::unscheduled(RelativeEntity::Other(subscriber_entity), self);
@@ -79,6 +79,7 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		subscription_entity
 	}
 
+	/// TODO: Deprecate, can't work on the same frame, maybe it will in a later bevy version
 	fn clone_and_retarget_subscription<Out, OutError, NewOut, NewOutError>(
 		&mut self,
 		subscribe_event: &Subscribe<Out, OutError>,
@@ -86,10 +87,10 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		new_subscriber_entity: Entity,
 	) -> Entity
 	where
-		Out: ObservableSignalBound,
-		OutError: ObservableSignalBound,
-		NewOut: ObservableSignalBound,
-		NewOutError: ObservableSignalBound,
+		Out: SignalBound,
+		OutError: SignalBound,
+		NewOut: SignalBound,
+		NewOutError: SignalBound,
 	{
 		let (event, subscription_entity) =
 			subscribe_event.retarget_existing::<NewOut, NewOutError>(new_subscriber_entity, self);

@@ -2,7 +2,7 @@ use bevy_ecs::entity::Entity;
 use rx_bevy_observable::{ObservableOutput, Tick};
 use std::marker::PhantomData;
 
-use crate::{ObservableSignalBound, ScheduledSubscription};
+use crate::{ScheduledSubscription, SignalBound};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -14,8 +14,8 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct ObservableMirrorSubscription<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	upstream_source: Entity,
 	_phantom_pain: PhantomData<(Out, OutError)>,
@@ -23,8 +23,8 @@ where
 
 impl<Out, OutError> ObservableMirrorSubscription<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	pub fn new(upstream_source: Entity) -> Self {
 		Self {
@@ -36,8 +36,8 @@ where
 
 impl<Out, OutError> ObservableOutput for ObservableMirrorSubscription<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	type Out = Out;
 	type OutError = OutError;
@@ -45,8 +45,8 @@ where
 
 impl<Out, OutError> ScheduledSubscription for ObservableMirrorSubscription<Out, OutError>
 where
-	Out: ObservableSignalBound,
-	OutError: ObservableSignalBound,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	/// No need, just mirror whatever is coming in
 	const SCHEDULED: bool = false;

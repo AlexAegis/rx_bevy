@@ -1,13 +1,14 @@
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Tick};
 
-use crate::CommandSubscriber;
+use crate::{CommandSubscriber, SignalBound};
 
+// TODO: This may need an add method for other subscriptions to tear down unsubscribe, or not, and have that work with other components
 pub trait ScheduledSubscription: ObservableOutput + DebugBound
 where
 	Self: Send + Sync,
-	Self::Out: Send + Sync,
-	Self::OutError: Send + Sync,
+	Self::Out: SignalBound,
+	Self::OutError: SignalBound,
 {
 	/// When set to false, the subscription will not be ticked at all.
 	const SCHEDULED: bool = true;

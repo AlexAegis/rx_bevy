@@ -4,7 +4,7 @@ use rx_bevy_observable::{
 	ObservableOutput, Observer, ObserverInput, Operation, Operator, SubscriptionLike, Tick,
 };
 
-use crate::{CommandSubscriber, ObservableSignalBound, ScheduledSubscription, SubscriberContext};
+use crate::{CommandSubscriber, ScheduledSubscription, SignalBound, SubscriberContext};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -18,10 +18,10 @@ use bevy_reflect::Reflect;
 pub struct PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	source_subscription: Entity,
@@ -31,10 +31,10 @@ where
 impl<Op> PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	pub fn new(
@@ -51,10 +51,10 @@ where
 impl<Op> ScheduledSubscription for PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	const SCHEDULED: bool = true;
@@ -88,10 +88,10 @@ where
 impl<Op> ObserverInput for PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type In = Op::In;
@@ -101,10 +101,10 @@ where
 impl<Op> ObservableOutput for PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	type Out = Op::Out;
@@ -114,10 +114,10 @@ where
 impl<Op> Observer for PipeSubscription<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: ObservableSignalBound,
-	Op::InError: ObservableSignalBound,
-	Op::Out: ObservableSignalBound,
-	Op::OutError: ObservableSignalBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	#[inline]

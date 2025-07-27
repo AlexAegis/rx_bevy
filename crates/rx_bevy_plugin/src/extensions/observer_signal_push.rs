@@ -1,12 +1,12 @@
 use rx_bevy_observable::Observer;
 
-use crate::{ObservableSignalBound, RxSignal};
+use crate::{RxSignal, SignalBound};
 
 pub trait ObserverSignalPush<In, InError>
 where
 	Self: Observer<In = In, InError = InError>,
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	fn push(&mut self, signal: RxSignal<In, InError>) {
 		match signal {
@@ -20,7 +20,7 @@ where
 impl<T, In, InError> ObserverSignalPush<In, InError> for T
 where
 	T: Observer<In = In, InError = InError>,
-	In: ObservableSignalBound,
-	InError: ObservableSignalBound,
+	In: SignalBound,
+	InError: SignalBound,
 {
 }
