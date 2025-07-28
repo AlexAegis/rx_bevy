@@ -5,7 +5,7 @@ use bevy_reflect::Reflect;
 
 /// Used for EntityCommands, so the user could refer to the entity being
 /// constructed.
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub enum RelativeEntity {

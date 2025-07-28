@@ -47,7 +47,6 @@ impl ObservableComponent for IntervalObservableComponent {
 	fn on_subscribe(
 		&mut self,
 		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
-		_subscribe_event: &Subscribe<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		if self.options.start_on_subscribe {
 			subscriber.next(0);

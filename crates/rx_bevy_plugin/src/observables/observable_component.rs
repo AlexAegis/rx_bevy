@@ -4,6 +4,7 @@ use bevy_ecs::{
 	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
+	query::Without,
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
@@ -15,8 +16,8 @@ use rx_bevy_observable::{ObservableOutput, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
-	CommandSubscriber, EntityContext, ScheduledSubscription, SignalBound, Subscribe,
-	SubscribeObserverOf, SubscribeObserverRef, SubscriberContext, SubscriptionComponent,
+	CommandSubscriber, EntityContext, RxSubscription, SignalBound, Subscribe, SubscribeObserverOf,
+	SubscribeObserverRef, SubscriberContext, SubscriberSignalObserverRef, SubscriptionComponent,
 	Subscriptions,
 };
 
@@ -43,9 +44,7 @@ where
 	/// If the Observable does not need any scheduling, use [NonScheduledSubscription]
 	/// Otherwise implement a [ScheduledSubscription] that can emit events when
 	/// ticked by an [RxScheduler].
-	type Subscription: ScheduledSubscription<Out = Self::Out, OutError = Self::OutError>
-		+ Send
-		+ Sync;
+	type Subscription: RxSubscription<Out = Self::Out, OutError = Self::OutError> + Send + Sync;
 
 	fn on_insert(&mut self, context: ObservableOnInsertContext);
 
@@ -59,7 +58,6 @@ where
 	fn on_subscribe(
 		&mut self,
 		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
-		subscribe_event: &Subscribe<Self::Out, Self::OutError>,
 	) -> Self::Subscription;
 }
 
@@ -192,21 +190,26 @@ fn on_subscribe<O>(
 		return; // Err(SubscribeError::ScheduledSubscribeOnUnscheduledObservable.into());
 	}
 
-	// Get the pre-spawned scheduled Subscription entity
-	let subscription_entity = trigger.event().get_subscription_entity();
+	// Relationship management
+	let subscription_entity = {
+		// Get the pre-spawned scheduled Subscription entity
+		let subscription_entity = trigger.event().get_subscription_entity();
 
-	// Initialize the Subscriptions component on the observable
-	if let Some(mut subscriptions) = existing_subscriptions_component {
-		// In case the Entity contains more than one observable with the same signals
-		if !subscriptions.contains(subscription_entity) {
-			subscriptions.push(subscription_entity);
+		// Initialize the Subscriptions component on the observable
+		if let Some(mut subscriptions) = existing_subscriptions_component {
+			// In case the Entity contains more than one observable with the same signals
+			if !subscriptions.contains(subscription_entity) {
+				subscriptions.push(subscription_entity);
+			}
+		} else {
+			// Technically a required component, but [ObservableComponent] is a trait, so it's inserted lazily
+			commands
+				.entity(observable_entity)
+				.insert(Subscriptions::<O>::new(subscription_entity));
 		}
-	} else {
-		// Technically a required component, but [ObservableComponent] is a trait, so it's inserted lazily
-		commands
-			.entity(observable_entity)
-			.insert(Subscriptions::<O>::new(subscription_entity));
-	}
+
+		subscription_entity
+	};
 
 	{
 		let context = SubscriberContext::new(EntityContext {
@@ -216,7 +219,7 @@ fn on_subscribe<O>(
 		});
 
 		let scheduled_subscription =
-			observable_component.on_subscribe(context.upgrade(&mut commands), trigger.event());
+			observable_component.on_subscribe(context.upgrade(&mut commands));
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
@@ -238,17 +241,11 @@ fn on_subscribe<O>(
 
 		if O::Subscription::SCHEDULED {
 			subscription_entity_commands.insert_if_new((
-				SubscriptionMarker,
 				Observer::new(subscription_tick_observer::<O>).with_entity(subscription_entity), // It's observing itself!
 			));
 		};
 	}
 }
-
-#[derive(Component, Default)]
-#[cfg_attr(feature = "debug", derive(Debug))]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscriptionMarker;
 
 /// This is what would drive an "intervalObserver" ticking a subscriber,
 /// that will decide if it should next something to its subscribers or not
@@ -256,6 +253,10 @@ pub struct SubscriptionMarker;
 /// Notice how the schedule is not present. The [RxScheduler] plugin will
 /// query based on the Schedule but the Subscription itself does not have to be
 /// aware of the Schedule it runs on.
+///
+/// This only ticks direct subscriptions to observables, and not operators.
+/// These direct subscriptions will forward the tick to the operator subscribers
+/// to ensure correct event order.
 fn subscription_tick_observer<O>(
 	trigger: Trigger<Tick>,
 	mut subscription_query: Query<&mut SubscriptionComponent<O>>,

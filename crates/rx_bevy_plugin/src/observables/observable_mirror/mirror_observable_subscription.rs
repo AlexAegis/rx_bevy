@@ -2,7 +2,7 @@ use bevy_ecs::entity::Entity;
 use rx_bevy_observable::{ObservableOutput, Tick};
 use std::marker::PhantomData;
 
-use crate::{ScheduledSubscription, SignalBound};
+use crate::{RxSubscription, SignalBound};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -43,7 +43,7 @@ where
 	type OutError = OutError;
 }
 
-impl<Out, OutError> ScheduledSubscription for ObservableMirrorSubscription<Out, OutError>
+impl<Out, OutError> RxSubscription for ObservableMirrorSubscription<Out, OutError>
 where
 	Out: SignalBound,
 	OutError: SignalBound,

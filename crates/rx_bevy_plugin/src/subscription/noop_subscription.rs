@@ -4,7 +4,7 @@ use derive_where::derive_where;
 
 use rx_bevy_observable::{ObservableOutput, Tick};
 
-use crate::{CommandSubscriber, ScheduledSubscription, SignalBound};
+use crate::{CommandSubscriber, RxSubscription, SignalBound};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -33,7 +33,7 @@ where
 	type OutError = OutError;
 }
 
-impl<Out, OutError> ScheduledSubscription for NoopSubscription<Out, OutError>
+impl<Out, OutError> RxSubscription for NoopSubscription<Out, OutError>
 where
 	Out: SignalBound,
 	OutError: SignalBound,

@@ -93,11 +93,7 @@ where
 		self.subject_observer_entity = Some(subject_observer_entity);
 	}
 
-	fn on_subscribe(
-		&mut self,
-		_subscriber: CommandSubscriber<In, InError>,
-		_subscribe_event: &Subscribe<Self::Out, Self::OutError>,
-	) -> Self::Subscription {
+	fn on_subscribe(&mut self, _subscriber: CommandSubscriber<In, InError>) -> Self::Subscription {
 		NoopSubscription::default()
 	}
 }

@@ -59,7 +59,6 @@ where
 	fn on_subscribe(
 		&mut self,
 		_subscriber: CommandSubscriber<Self::Out, Self::OutError>,
-		_subscribe_event: &Subscribe<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		ObservableMirrorSubscription::new(self.upstream_source)
 	}

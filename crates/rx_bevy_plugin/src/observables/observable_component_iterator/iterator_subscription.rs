@@ -1,7 +1,7 @@
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Observer, SubscriptionLike, Tick};
 
-use crate::{CommandSubscriber, ScheduledSubscription, SignalBound};
+use crate::{CommandSubscriber, RxSubscription, SignalBound};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -44,7 +44,7 @@ where
 	type OutError = ();
 }
 
-impl<Iterator, const EMIT_ON_TICK: bool> ScheduledSubscription
+impl<Iterator, const EMIT_ON_TICK: bool> RxSubscription
 	for IteratorSubscription<Iterator, EMIT_ON_TICK>
 where
 	Iterator: IntoIterator,

@@ -1,7 +1,7 @@
 use bevy_time::{Timer, TimerMode};
 use rx_bevy_observable::{ObservableOutput, Observer, SubscriptionLike, Tick};
 
-use crate::{CommandSubscriber, IntervalObservableOptions, ScheduledSubscription};
+use crate::{CommandSubscriber, IntervalObservableOptions, RxSubscription};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -9,6 +9,7 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IntervalSubscription {
+	// TODO: Prolly needs an entity as owned Destination just like in regular rust
 	timer: Timer,
 	count: i32,
 }
@@ -31,7 +32,7 @@ impl ObservableOutput for IntervalSubscription {
 	type OutError = ();
 }
 
-impl ScheduledSubscription for IntervalSubscription {
+impl RxSubscription for IntervalSubscription {
 	fn on_tick(
 		&mut self,
 		tick: Tick,
