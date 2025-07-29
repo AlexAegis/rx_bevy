@@ -106,11 +106,13 @@ fn setup(
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 		PipeComponent::new(
 			RelativeEntity::Other(interval_observable_entity),
-			IdentityOperator::<i32, ()>::default().pipe(map(|i| i * 2)), //	.pipe(map(|i| format!("mapped! {i}"))),
+			IdentityOperator::<i32, ()>::default()
+				.pipe(map(|i| i * 2))
+				.pipe(map(|i| format!("mapped! {i}"))),
 		),
 	));
 
-	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
+	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4). Add a pipe extension to both commands and entitycommands, and have them return a struct that holds that operator, and also a method to further pipe it or create the subscription
 	let subscription = piped_observable_entity_commands
 		.subscribe_to_this_scheduled::<String, (), Update>(RelativeEntity::Other(
 			string_printer_entity,

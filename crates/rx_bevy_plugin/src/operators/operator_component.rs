@@ -14,10 +14,10 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
-	CommandSubscribeExtension, CommandSubscriber, EntityContext, ObservableOnInsertContext,
-	OperatorSubscribeObserverOf, OperatorSubscriptionComponent, OperatorSubscriptions,
-	RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe, SubscriberContext,
-	SubscriberSignalObserverRef,
+	CommandSubscribeExtension, CommandSubscriber, EntityContext, FlushCommand,
+	ObservableOnInsertContext, OperatorSubscribeObserverOf, OperatorSubscriptionComponent,
+	OperatorSubscriptions, RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe,
+	SubscriberContext, SubscriberSignalObserverRef,
 };
 
 use std::any::TypeId;
@@ -77,23 +77,25 @@ where
 	// It will be despawned when the observable is removed.
 	{
 		let mut commands = deferred_world.commands();
-		trace!(
+		debug!(
 			"setting up subscribe observer for {}({})",
 			short_type_name::<Op>(),
 			observable_entity
 		);
 
-		commands.spawn((
-			OperatorSubscribeObserverOf::<Op>::new(observable_entity),
-			Observer::new(on_operator_subscribe::<Op>).with_entity(observable_entity),
-			// TODO: Having this here is unnecessary and is causing a warning on despawn because of the double relationship. I'll leave this here for now just so the inspector is a little more organized until that too has a convenient method to register relationships
-			ChildOf(observable_entity), // For organizational purposes in debug views like WorldInspector
-			Name::new(format!(
-				"Observer (Subscribe) - {}({}) ",
-				short_type_name::<Op>(),
-				observable_entity
-			)),
-		));
+		let _ = commands
+			.spawn((
+				OperatorSubscribeObserverOf::<Op>::new(observable_entity),
+				Observer::new(on_operator_subscribe::<Op>).with_entity(observable_entity),
+				// TODO: Having this here is unnecessary and is causing a warning on despawn because of the double relationship. I'll leave this here for now just so the inspector is a little more organized until that too has a convenient method to register relationships
+				ChildOf(observable_entity), // For organizational purposes in debug views like WorldInspector
+				Name::new(format!(
+					"Observer (Subscribe) - {}({}) ",
+					short_type_name::<Op>(),
+					observable_entity
+				)),
+			))
+			.id();
 	};
 
 	// Calling the on_insert hook on the observable
@@ -109,7 +111,7 @@ where
 		});
 	}
 
-	trace!(
+	debug!(
 		"setting up subscribe observer for {}({}) finished",
 		short_type_name::<Op>(),
 		observable_entity
@@ -140,11 +142,12 @@ fn on_operator_subscribe<Op>(
 	Op::OutError: SignalBound,
 {
 	let observable_entity = trigger.target();
-	debug!(
+	println!(
 		"on_subscribe {} {:?}",
 		observable_entity,
 		name_query.get(observable_entity).unwrap()
 	);
+
 	let Ok((mut operator_component, existing_subscriptions_component)) =
 		observable_component_query.get_mut(observable_entity)
 	else {
@@ -223,9 +226,23 @@ fn on_operator_subscribe<Op>(
 		));
 	}
 
-	// TODO: OperatorSubscribe to source.
-	commands.subscribe_unscheduled::<Op::In, Op::InError>(observable_entity, subscription_entity);
+	let source_observable_entity = operator_component.get_source().or_this(observable_entity);
 
+	// TODO: OperatorSubscribe to source.
+	// commands.subscribe_unscheduled::<Op::In, Op::InError>(source_observable_entity, subscription_entity);
+
+	//
+	dbg!(source_observable_entity);
+	dbg!(subscription_entity);
+
+	let source_subscription_entity = commands
+		.clone_and_retarget_subscription::<Op::Out, Op::OutError, Op::In, Op::InError>(
+			trigger.event(),
+			source_observable_entity,
+			subscription_entity,
+		);
+
+	dbg!(source_subscription_entity);
 	// Setting up signal observer
 	{
 		commands.spawn((

@@ -3,9 +3,8 @@ use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
-	CommandSubscribeExtension, CommandSubscriber, ObservableComponent, ObservableOnInsertContext,
-	OperatorComponent, PipeSubscriber, RelativeEntity, SignalBound, Subscribe, SubscriberContext,
-	observable_on_insert_hook, observable_on_remove_hook, operator_on_insert_hook,
+	CommandSubscriber, ObservableOnInsertContext, OperatorComponent, PipeSubscriber,
+	RelativeEntity, SignalBound, SubscriberContext, operator_on_insert_hook,
 	operator_on_remove_hook,
 };
 
@@ -111,6 +110,7 @@ where
 		&mut self,
 		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscriber {
+		println!("pipe onsubb");
 		// let source_subscription = subscription_entity;
 		PipeSubscriber::<Op>::new(self.operator.operator_subscribe(subscriber.downgrade()))
 	}

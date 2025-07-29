@@ -1,20 +1,21 @@
 use std::marker::PhantomData;
 
-use bevy_app::{App, Plugin};
+use bevy_app::{App, Plugin, Startup};
 use bevy_ecs::{
 	entity::Entity,
 	observer::Observer,
 	query::With,
 	schedule::ScheduleLabel,
-	system::{Commands, Query, Res},
+	system::{Commands, Query, Res, ResMut},
 };
 use bevy_log::trace;
+use bevy_reflect::{GetTypeRegistration, Reflect, Reflectable};
 use bevy_time::Time;
 use derive_where::derive_where;
 use rx_bevy_common_bounds::Clock;
 use rx_bevy_observable::Tick;
 
-use crate::SubscriptionSchedule;
+use crate::{SubscriptionSchedule, SubscriptionScheduleRegistry};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -45,13 +46,27 @@ where
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
+		app.world_mut()
+			.register_component::<SubscriptionSchedule<S>>();
+
+		app.init_resource::<SubscriptionScheduleRegistry>();
+
 		trace!(
 			"Build RxScheduler for Schedule: {}, Clock: {}",
 			short_type_name::short_type_name::<S>(),
 			short_type_name::short_type_name::<C>()
 		);
+		app.add_systems(Startup, register_schedule::<S>);
 		app.add_systems(self.schedule.clone(), tick_subscriptions_system::<S, C>);
 	}
+}
+
+fn register_schedule<S>(mut registry: ResMut<SubscriptionScheduleRegistry>)
+where
+	S: ScheduleLabel + Default,
+{
+	println!("Register Schedule");
+	registry.register::<SubscriptionSchedule<S>>();
 }
 
 pub fn tick_subscriptions_system<S: ScheduleLabel, C: Clock>(

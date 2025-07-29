@@ -1,11 +1,20 @@
 use std::{any::TypeId, marker::PhantomData};
 
-use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
+use bevy_ecs::{
+	entity::Entity,
+	event::Event,
+	reflect::{self, ReflectCommandExt},
+	schedule::ScheduleLabel,
+	system::Commands,
+};
 use bevy_log::error;
 
 use thiserror::Error;
 
-use crate::{RelativeEntity, SignalBound, SubscriptionSchedule};
+use crate::{
+	EntityCloneFlushAndSpawnedWithExt, EntityCommandInsertDefaultComponentByTypeIdExt,
+	RelativeEntity, SignalBound, SubscriptionSchedule,
+};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -36,8 +45,8 @@ where
 	Out: SignalBound,
 	OutError: SignalBound,
 {
-	pub fn get_subscriber_entity_or_this(&self, or_another: Entity) -> Entity {
-		self.subscriber_entity.or_this(or_another)
+	pub fn get_subscriber_entity_or_this(&self, or_this: Entity) -> Entity {
+		self.subscriber_entity.or_this(or_this)
 	}
 
 	/// Be aware that if you can't subscribe to a scheduled observable
@@ -89,31 +98,48 @@ where
 		NextOut: SignalBound,
 		NextOutError: SignalBound,
 	{
-		let subscription_entity = if let Some(subscription_schedule_type_id) = self.schedule {
+		let new_subscription_entity = if let Some(subscription_schedule_type_id) = self.schedule {
 			dbg!(subscription_schedule_type_id);
+			dbg!(self.get_subscription_entity());
 			// TODO: This doesn't work in 0.16, but looks like it will in 0.17. Without flushing the world entities can't be cloned if their spawn commands weren't resolved.
-			commands
-				.entity(self.get_subscription_entity())
-				.clone_and_spawn_with(move |builder| {
-					builder.deny_all();
-					builder.allow_by_type_ids(vec![subscription_schedule_type_id]);
-				})
-				.id()
+
+			println!(
+				"insert_default_component_by_type_id {:?}",
+				subscription_schedule_type_id
+			);
+			let new_subscription_entity = commands
+				.spawn_empty()
+				.insert_default_component_by_type_id(subscription_schedule_type_id)
+				.id();
+
+			// !! simply isnert by typeid through reflection, it is DEFAULT, this whole retarget bs is not needed, if there is no cloning involved
+
+			//commands
+			//	.entity(self.get_subscription_entity())
+			//	.as_cloned_flushed_and_spawn_with(
+			//		new_subscription_entity,
+			//		move |builder: &mut bevy_ecs::entity::EntityClonerBuilder| {
+			//			//builder.deny_all();
+			//			//builder.allow_by_type_ids(vec![subscription_schedule_type_id]);
+			//		},
+			//	);
+			//
+			new_subscription_entity
 		} else {
 			commands.spawn_empty().id()
 		};
 
-		dbg!(subscription_entity);
+		dbg!(new_subscription_entity);
 		dbg!(new_subscriber_entity);
 
 		(
 			Subscribe::<NextOut, NextOutError> {
-				subscription_entity,
+				subscription_entity: new_subscription_entity,
 				subscriber_entity: RelativeEntity::Other(new_subscriber_entity),
 				schedule: self.schedule,
 				_phantom_data: PhantomData,
 			},
-			subscription_entity,
+			new_subscription_entity,
 		)
 	}
 

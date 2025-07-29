@@ -57,6 +57,8 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 			self,
 		);
 
+		println!("trig subscribe {:?} {:?}", event, observable_entity);
+
 		self.trigger_targets(event, observable_entity);
 
 		subscription_entity
@@ -82,7 +84,7 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 	/// TODO: Deprecate, can't work on the same frame, maybe it will in a later bevy version
 	fn clone_and_retarget_subscription<Out, OutError, NewOut, NewOutError>(
 		&mut self,
-		subscribe_event: &Subscribe<Out, OutError>,
+		original_subscribe_event: &Subscribe<Out, OutError>,
 		new_observable_entity: Entity,
 		new_subscriber_entity: Entity,
 	) -> Entity
@@ -92,8 +94,10 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		NewOut: SignalBound,
 		NewOutError: SignalBound,
 	{
-		let (event, subscription_entity) =
-			subscribe_event.retarget_existing::<NewOut, NewOutError>(new_subscriber_entity, self);
+		dbg!(original_subscribe_event.clone());
+
+		let (event, subscription_entity) = original_subscribe_event
+			.retarget_existing::<NewOut, NewOutError>(new_subscriber_entity, self);
 		dbg!(event.clone());
 		dbg!(new_observable_entity);
 		self.trigger_targets(event, new_observable_entity);

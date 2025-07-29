@@ -61,6 +61,8 @@ bevy_ecs = { workspace = true }
 bevy_log = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 bevy_time = { workspace = true }
+bevy_platform = { workspace = true }
+bevy_ptr = { workspace = true }
 # third party bevy dependencies
 bevy-inspector-egui = { workspace = true, optional = true, features = [] }
 bevy_egui = { workspace = true, optional = true }
