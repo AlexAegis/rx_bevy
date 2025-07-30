@@ -69,6 +69,7 @@ num-traits = { version = "0.2.19" }
 variadics_please = { version = "1.1.0" }
 either = { version = "1.15.0" }
 thiserror = { version = "2.0.12" }
+rand = { version = "0.9.2" }
 short_type_name = { path = "crates/short_type_name" }
 bevy_kit_action = { path = "crates/bevy_kit_action" }
 examples_common = { path = "crates/examples_common" }
@@ -78,6 +79,7 @@ rx_bevy_common_bounds = { path = "crates/rx_bevy_common_bounds" }
 rx_bevy_observable = { path = "crates/rx_bevy_observable" }
 rx_bevy_emission_variants = { path = "crates/rx_bevy_emission_variants" }
 rx_bevy_testing = { path = "crates/rx_bevy_testing" }
+bevy_kit_erased_component_registry = { path = "crates/bevy_kit_erased_component_registry" }
 # Observables
 rx_bevy_observable_connectable = { path = "crates/rx_bevy_observable_connectable" }
 rx_bevy_observable_combine_latest = { path = "crates/rx_bevy_observable_combine_latest" }

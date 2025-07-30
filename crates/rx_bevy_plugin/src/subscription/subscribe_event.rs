@@ -1,20 +1,12 @@
 use std::{any::TypeId, marker::PhantomData};
 
-use bevy_ecs::{
-	entity::Entity,
-	event::Event,
-	reflect::{self, ReflectCommandExt},
-	schedule::ScheduleLabel,
-	system::Commands,
-};
+use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
+use bevy_kit_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
 use bevy_log::error;
 
 use thiserror::Error;
 
-use crate::{
-	EntityCloneFlushAndSpawnedWithExt, EntityCommandInsertDefaultComponentByTypeIdExt,
-	RelativeEntity, SignalBound, SubscriptionSchedule,
-};
+use crate::{RelativeEntity, SignalBound, SubscriptionSchedule};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -99,38 +91,13 @@ where
 		NextOutError: SignalBound,
 	{
 		let new_subscription_entity = if let Some(subscription_schedule_type_id) = self.schedule {
-			dbg!(subscription_schedule_type_id);
-			dbg!(self.get_subscription_entity());
-			// TODO: This doesn't work in 0.16, but looks like it will in 0.17. Without flushing the world entities can't be cloned if their spawn commands weren't resolved.
-
-			println!(
-				"insert_default_component_by_type_id {:?}",
-				subscription_schedule_type_id
-			);
-			let new_subscription_entity = commands
+			commands
 				.spawn_empty()
-				.insert_default_component_by_type_id(subscription_schedule_type_id)
-				.id();
-
-			// !! simply isnert by typeid through reflection, it is DEFAULT, this whole retarget bs is not needed, if there is no cloning involved
-
-			//commands
-			//	.entity(self.get_subscription_entity())
-			//	.as_cloned_flushed_and_spawn_with(
-			//		new_subscription_entity,
-			//		move |builder: &mut bevy_ecs::entity::EntityClonerBuilder| {
-			//			//builder.deny_all();
-			//			//builder.allow_by_type_ids(vec![subscription_schedule_type_id]);
-			//		},
-			//	);
-			//
-			new_subscription_entity
+				.insert_erased_component_by_type_id(subscription_schedule_type_id)
+				.id()
 		} else {
 			commands.spawn_empty().id()
 		};
-
-		dbg!(new_subscription_entity);
-		dbg!(new_subscriber_entity);
 
 		(
 			Subscribe::<NextOut, NextOutError> {
