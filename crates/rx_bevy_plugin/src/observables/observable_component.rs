@@ -4,7 +4,6 @@ use bevy_ecs::{
 	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
-	query::Without,
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
@@ -17,15 +16,8 @@ use short_type_name::short_type_name;
 
 use crate::{
 	CommandSubscriber, EntityContext, RxSubscription, SignalBound, Subscribe, SubscribeObserverOf,
-	SubscribeObserverRef, SubscriberContext, SubscriberSignalObserverRef, SubscriptionComponent,
-	Subscriptions,
+	SubscriberContext, SubscriptionComponent, Subscriptions,
 };
-
-#[cfg(feature = "debug")]
-use std::fmt::Debug;
-
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
 
 /// Since the nature of a Subscription is very different in the context of an
 /// ECS, where there are no long term references, the nature of an Observable

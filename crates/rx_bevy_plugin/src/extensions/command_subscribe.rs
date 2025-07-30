@@ -25,14 +25,15 @@ pub trait CommandSubscribeExtension {
 		Out: SignalBound,
 		OutError: SignalBound;
 
-	/// Clones an existing subscription and updates it's source and destination entities.
-	/// Useful for preserving its scheduling without knowing what that schedule was.
+	/// Subscribes using the same schedule as an existing Subscribe event.
+	/// Subscribe events contain erased information about their schedule, which
+	/// is used to create a chain of subscriptions with the same schedule.
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
-	fn clone_and_retarget_subscription<Out, OutError, NextOut, NextOutError>(
+	fn subscribe_with_schedule_of<Out, OutError, NextOut, NextOutError>(
 		&mut self,
+		observable_entity: Entity,
+		subscriber_entity: Entity,
 		subscription_event: &Subscribe<Out, OutError>,
-		new_observable_entity: Entity,
-		new_subscriber_entity: Entity,
 	) -> Entity
 	where
 		Out: SignalBound,
@@ -81,12 +82,11 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		subscription_entity
 	}
 
-	/// TODO: Deprecate, can't work on the same frame, maybe it will in a later bevy version
-	fn clone_and_retarget_subscription<Out, OutError, NewOut, NewOutError>(
+	fn subscribe_with_schedule_of<Out, OutError, NewOut, NewOutError>(
 		&mut self,
-		original_subscribe_event: &Subscribe<Out, OutError>,
 		new_observable_entity: Entity,
 		new_subscriber_entity: Entity,
+		use_schedule_from: &Subscribe<Out, OutError>,
 	) -> Entity
 	where
 		Out: SignalBound,
@@ -94,12 +94,11 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		NewOut: SignalBound,
 		NewOutError: SignalBound,
 	{
-		dbg!(original_subscribe_event.clone());
-
-		let (event, subscription_entity) = original_subscribe_event
-			.retarget_existing::<NewOut, NewOutError>(new_subscriber_entity, self);
-		dbg!(event.clone());
-		dbg!(new_observable_entity);
+		let (event, subscription_entity) = Subscribe::<NewOut, NewOutError>::new_with_schedule_from(
+			new_subscriber_entity,
+			use_schedule_from,
+			self,
+		);
 		self.trigger_targets(event, new_observable_entity);
 
 		subscription_entity

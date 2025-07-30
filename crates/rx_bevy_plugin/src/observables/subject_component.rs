@@ -1,7 +1,6 @@
 use crate::{
 	CommandSubscriber, NoopSubscription, ObservableComponent, ObservableOnInsertContext,
-	SignalBound, Subscribe, SubscriptionComponent, observable_on_insert_hook,
-	observable_on_remove_hook,
+	SignalBound, SubscriptionComponent, observable_on_insert_hook, observable_on_remove_hook,
 };
 use crate::{RxSignal, Subscriptions};
 

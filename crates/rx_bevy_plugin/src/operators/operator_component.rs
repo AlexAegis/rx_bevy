@@ -14,10 +14,10 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
-	CommandSubscribeExtension, CommandSubscriber, EntityContext, FlushCommand,
-	ObservableOnInsertContext, OperatorSubscribeObserverOf, OperatorSubscriptionComponent,
-	OperatorSubscriptions, RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe,
-	SubscriberContext, SubscriberSignalObserverRef,
+	CommandSubscribeExtension, CommandSubscriber, EntityContext, ObservableOnInsertContext,
+	OperatorSubscribeObserverOf, OperatorSubscriptionComponent, OperatorSubscriptions,
+	RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe, SubscriberContext,
+	SubscriberSignalObserverRef,
 };
 
 use std::any::TypeId;
@@ -228,21 +228,16 @@ fn on_operator_subscribe<Op>(
 
 	let source_observable_entity = operator_component.get_source().or_this(observable_entity);
 
-	// TODO: OperatorSubscribe to source.
-	// commands.subscribe_unscheduled::<Op::In, Op::InError>(source_observable_entity, subscription_entity);
-
-	//
-	dbg!(source_observable_entity);
-	dbg!(subscription_entity);
-
+	// TODO: CONTINUE FROM HERE!!!!!!!!!!!!!
+	// TODO: This needs to be .add-ed to the current subscription to form a teardown chain. The subscriptions relation could do that, on remove that would despawn all anyway,
+	// TODO: that may require unifying collecting subscriptions on Out, OutError as now it's either an operator or a normal sub, and there isn't really a difference
 	let source_subscription_entity = commands
-		.clone_and_retarget_subscription::<Op::Out, Op::OutError, Op::In, Op::InError>(
-			trigger.event(),
+		.subscribe_with_schedule_of::<Op::Out, Op::OutError, Op::In, Op::InError>(
 			source_observable_entity,
 			subscription_entity,
+			trigger.event(),
 		);
 
-	dbg!(source_subscription_entity);
 	// Setting up signal observer
 	{
 		commands.spawn((

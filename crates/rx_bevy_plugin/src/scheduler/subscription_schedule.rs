@@ -7,7 +7,10 @@ use derive_where::derive_where;
 use bevy_reflect::Reflect;
 
 /// Component to mark subscriptions with, to trigger `Tick` events without the
-/// knowledge of the actual [ObservableComponent]s type
+/// knowledge of the actual [ObservableComponent]s type.
+///
+/// It is inserted by the `Subscribe` event, users do not need to manually
+/// insert this component anywhere.
 #[derive(Component, Clone, Reflect)]
 #[derive_where(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]

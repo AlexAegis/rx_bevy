@@ -6,7 +6,7 @@ use bevy_reflect::Reflect;
 
 use crate::{
 	CommandSubscriber, IntervalObservableOptions, IntervalSubscription, ObservableComponent,
-	ObservableOnInsertContext, Subscribe, observable_on_insert_hook, observable_on_remove_hook,
+	ObservableOnInsertContext, observable_on_insert_hook, observable_on_remove_hook,
 };
 
 #[derive(Clone)]

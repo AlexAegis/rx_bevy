@@ -1,4 +1,3 @@
-use crate::Subscribe;
 use crate::{CommandSubscriber, IteratorSubscription, ObservableOnInsertContext};
 use crate::{
 	ObservableComponent, SignalBound, observable_on_insert_hook, observable_on_remove_hook,

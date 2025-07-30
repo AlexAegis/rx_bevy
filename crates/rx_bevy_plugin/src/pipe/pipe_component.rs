@@ -110,8 +110,6 @@ where
 		&mut self,
 		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscriber {
-		println!("pipe onsubb");
-		// let source_subscription = subscription_entity;
 		PipeSubscriber::<Op>::new(self.operator.operator_subscribe(subscriber.downgrade()))
 	}
 }

@@ -80,34 +80,48 @@ where
 		)
 	}
 
-	/// Meant to keep the scheduling of an existing subscription.
-	pub fn retarget_existing<NextOut, NextOutError>(
-		&self,
-		new_subscriber_entity: Entity,
+	/// Creates a new Subscribe event and a new empty Subscription entity.
+	/// It is meant to keep the scheduling of an existing subscription.
+	/// The event does not need to be fired to be re-targeted.
+	///
+	/// While this could've been implemented a little bit simpler by requiring
+	/// only the TypeId as an argument, requiring an existing Subscribe event
+	/// ensures that only Subscribe events can only be created with correct
+	/// TypeId's that do actually refer to a `SubscriptionSchedule<S>`
+	pub fn new_with_schedule_from<OriginalOut, OriginalOutError>(
+		subscriber_entity: Entity,
+		use_schedule_from: &Subscribe<OriginalOut, OriginalOutError>,
 		commands: &mut Commands,
-	) -> (Subscribe<NextOut, NextOutError>, Entity)
+	) -> (Self, Entity)
 	where
-		NextOut: SignalBound,
-		NextOutError: SignalBound,
+		OriginalOut: SignalBound,
+		OriginalOutError: SignalBound,
 	{
-		let new_subscription_entity = if let Some(subscription_schedule_type_id) = self.schedule {
+		let new_subscription_entity = use_schedule_from.spawn_new_with_this_schedule(commands);
+
+		(
+			Self {
+				subscription_entity: new_subscription_entity,
+				subscriber_entity: RelativeEntity::Other(subscriber_entity),
+				schedule: use_schedule_from.schedule,
+				_phantom_data: PhantomData,
+			},
+			new_subscription_entity,
+		)
+	}
+
+	/// Spawns a new empty entity to be used to create another Subscription.
+	/// If this event was a scheduled subscription, the new event will have
+	/// the same [SubscriptionSchedule] component on it.
+	pub(crate) fn spawn_new_with_this_schedule(&self, commands: &mut Commands) -> Entity {
+		if let Some(subscription_schedule_type_id) = self.schedule {
 			commands
 				.spawn_empty()
 				.insert_erased_component_by_type_id(subscription_schedule_type_id)
 				.id()
 		} else {
 			commands.spawn_empty().id()
-		};
-
-		(
-			Subscribe::<NextOut, NextOutError> {
-				subscription_entity: new_subscription_entity,
-				subscriber_entity: RelativeEntity::Other(new_subscriber_entity),
-				schedule: self.schedule,
-				_phantom_data: PhantomData,
-			},
-			new_subscription_entity,
-		)
+		}
 	}
 
 	pub fn is_scheduled(&self) -> bool {

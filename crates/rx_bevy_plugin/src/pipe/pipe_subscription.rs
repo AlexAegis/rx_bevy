@@ -1,4 +1,3 @@
-use bevy_ecs::entity::Entity;
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{
 	ObservableOutput, Observer, ObserverInput, Operation, Operator, SubscriptionLike, Tick,
