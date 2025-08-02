@@ -5,7 +5,7 @@
   "rust-analyzer.testExplorer": true,
   "rust-analyzer.check.allTargets": true,
   "rust-analyzer.check.features": ["dev", "example"],
-  "rust-analyzer.check.noDefaultFeatures": true,
+  "rust-analyzer.check.noDefaultFeatures": false,
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },

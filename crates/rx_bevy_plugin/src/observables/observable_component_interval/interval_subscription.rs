@@ -1,5 +1,5 @@
 use bevy_time::{Timer, TimerMode};
-use rx_bevy_observable::{ObservableOutput, Observer, SubscriptionLike, Tick};
+use rx_bevy_observable::{ObservableOutput, Observer, Tick};
 
 use crate::{CommandSubscriber, IntervalObservableOptions, RxSubscription};
 
@@ -50,11 +50,3 @@ impl RxSubscription for IntervalSubscription {
 		destination.unsubscribe();
 	}
 }
-/*
-impl SubscriptionLike for IntervalSubscription {
-	fn is_closed(&self) -> bool {}
-
-	fn unsubscribe(&mut self) {}
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {}
-}
-*/

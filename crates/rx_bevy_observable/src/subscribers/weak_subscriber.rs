@@ -79,7 +79,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		if let Some(destination) = self.destination.upgrade() {
 			destination.borrow_mut().add(subscription);
 		}

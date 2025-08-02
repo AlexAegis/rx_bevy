@@ -101,7 +101,7 @@ where
 		}
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		match self {
 			Self::Initialized(destination) => destination.add(subscription),
 			Self::Empty => panic!("add called on an uninitialized lazy subscriber!"),

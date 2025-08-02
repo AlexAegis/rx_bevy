@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_observable::{
-	InnerSubscription, ObserverInput, Subscriber, SubscriptionLike, Teardown, UpgradeableObserver,
+	InnerSubscription, ObserverInput, Subscriber, SubscriptionLike, UpgradeableObserver,
 };
 use slab::Slab;
 
@@ -73,7 +73,7 @@ impl<In, InError> SubscriptionLike for MulticastDestination<In, InError> {
 		self.teardown.unsubscribe();
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
-		self.teardown.add(Teardown::Sub(subscription));
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+		self.teardown.add(subscription);
 	}
 }

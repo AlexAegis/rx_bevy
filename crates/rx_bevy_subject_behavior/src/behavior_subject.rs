@@ -120,7 +120,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		self.subject.add(subscription);
 	}
 }

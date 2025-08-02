@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_observable::{
-	Observable, ObservableOutput, RcSubscriber, Subscription, UpgradeableObserver,
+	Observable, ObservableOutput, RcSubscriber, Subscription, Teardown, UpgradeableObserver,
 };
 use rx_bevy_operator_map_into::MapIntoSubscriber;
 
@@ -100,12 +100,12 @@ where
 		let s1 = self
 			.observable_1
 			.subscribe(MapIntoSubscriber::new(rc_subscriber.clone()));
-		subscription.add(s1);
+		subscription.add(Teardown::Sub(Box::new(s1)));
 
 		let s2 = self
 			.observable_2
 			.subscribe(MapIntoSubscriber::new(rc_subscriber));
-		subscription.add(s2);
+		subscription.add(Teardown::Sub(Box::new(s2)));
 
 		subscription
 	}

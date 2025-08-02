@@ -128,7 +128,7 @@ where
 		}
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		self.destination.add(subscription);
 	}
 }
@@ -297,7 +297,7 @@ where
 		}
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		let mut lock = self.destination.write().expect("lock is poisoned!");
 		lock.add(subscription);
 	}
@@ -460,7 +460,7 @@ where
 		}
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		if let Ok(mut lock) = self.destination.try_write() {
 			lock.add(subscription);
 		}

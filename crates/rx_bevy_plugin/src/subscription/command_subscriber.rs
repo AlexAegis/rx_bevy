@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, system::Commands};
-use bevy_log::debug;
 
 use rx_bevy_observable::{ObserverInput, SubscriptionLike};
 use smallvec::SmallVec;
@@ -44,6 +43,13 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
+	pub fn unsubscribe(&mut self) {
+		if !self.closed {
+			self.closed = true;
+			self.commands.entity(self.subscription_entity).despawn();
+		}
+	}
+
 	pub fn downgrade(self) -> SubscriberContext<In, InError> {
 		SubscriberContext {
 			source_entity: self.source_entity,
@@ -120,29 +126,6 @@ where
 		if !self.closed {
 			self.commands.trigger_targets(tick, self.destination_entity);
 		}
-	}
-}
-
-impl<'a, 'w, 's, In, InError> SubscriptionLike for CommandSubscriber<'a, 'w, 's, In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	fn is_closed(&self) -> bool {
-		self.closed
-	}
-
-	fn unsubscribe(&mut self) {
-		if !self.closed {
-			self.closed = true;
-			// self.teardown.unsubscribe();
-			debug!("CommandSubscriber unsubscribe");
-			self.commands.entity(self.subscription_entity).despawn();
-		}
-	}
-
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
-		// self.teardown.add(Teardown::Sub(subscription));
 	}
 }
 
@@ -259,18 +242,14 @@ where
 	InError: SignalBound,
 {
 	fn next(&mut self, next: Self::In) {
-		// TODO: Maybe collect in a buffer then drain on upgrade? Or panic if not supposed to receive anything un-upgraded
-		println!("SubscriptionEntityContext next into buffer");
 		self.buffer.push(RxSignal::Next(next));
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		println!("SubscriptionEntityContext error");
 		self.buffer.push(RxSignal::Error(error));
 	}
 
 	fn complete(&mut self) {
-		println!("SubscriptionEntityContext complete");
 		self.buffer.push(RxSignal::Complete);
 	}
 
@@ -279,7 +258,7 @@ where
 	}
 }
 
-impl<In, InError> rx_bevy_observable::SubscriptionLike for SubscriberContext<In, InError>
+impl<In, InError> SubscriptionLike for SubscriberContext<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -291,11 +270,8 @@ where
 	fn unsubscribe(&mut self) {
 		if !self.closed {
 			self.closed = true;
-			// self.teardown.unsubscribe();
 		}
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn rx_bevy_observable::SubscriptionLike) {
-		//	self.teardown.add(Teardown::Sub(subscription));
-	}
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {}
 }

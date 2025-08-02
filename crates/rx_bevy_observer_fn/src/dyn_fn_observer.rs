@@ -1,4 +1,4 @@
-use rx_bevy_observable::{InnerSubscription, Observer, ObserverInput, SubscriptionLike, Teardown};
+use rx_bevy_observable::{InnerSubscription, Observer, ObserverInput, SubscriptionLike};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct DynFnObserver<In, Error> {
@@ -55,7 +55,7 @@ where
 	}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {}
+	fn tick(&mut self, _tick: rx_bevy_observable::Tick) {}
 }
 
 impl<In, InError> SubscriptionLike for DynFnObserver<In, InError>
@@ -74,8 +74,8 @@ where
 		self.inner_subscription.unsubscribe();
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
-		self.inner_subscription.add(Teardown::Sub(subscription));
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+		self.inner_subscription.add(subscription);
 	}
 }
 

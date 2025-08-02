@@ -1,6 +1,5 @@
 use crate::{
 	InnerSubscription, ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike,
-	Teardown,
 };
 
 /// A simple wrapper for a plain [Observer] to make it "closeable"
@@ -88,8 +87,8 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
-		self.teardown.add(Teardown::Sub(subscription));
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+		self.teardown.add(subscription);
 	}
 }
 

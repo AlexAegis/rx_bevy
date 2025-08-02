@@ -77,7 +77,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		let mut connector = self.connector.lock().expect("lockable");
 		connector.add(subscription);
 	}

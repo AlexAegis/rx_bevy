@@ -119,7 +119,7 @@ where
 		self.check_if_can_complete();
 	}
 
-	// #[cfg(feature = "tick")]
+	#[cfg(feature = "tick")]
 	#[inline]
 	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
 		self.destination.tick(tick);
@@ -142,7 +142,7 @@ where
 		self.destination.unsubscribe();
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		self.destination.add(subscription);
 	}
 }

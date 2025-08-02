@@ -75,7 +75,7 @@ where
 			.multicast_subscribe::<Destination>(subscriber, self.multicast.clone());
 
 		let multicast_ref = self.multicast.clone();
-		Subscription::new(Teardown::Fn(Box::new(move || {
+		Subscription::new(Teardown::new(Box::new(move || {
 			let subscriber = {
 				let mut write_multicast = multicast_ref.write().expect("blocked 1");
 				write_multicast.take(key)
@@ -164,7 +164,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		if let Ok(mut multicast) = self.multicast.write() {
 			multicast.add(subscription);
 		}

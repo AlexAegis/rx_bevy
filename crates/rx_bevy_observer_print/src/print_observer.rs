@@ -1,6 +1,6 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use rx_bevy_observable::{InnerSubscription, Observer, ObserverInput, SubscriptionLike, Teardown};
+use rx_bevy_observable::{InnerSubscription, Observer, ObserverInput, SubscriptionLike};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct PrintObserver<In, InError = ()>
@@ -104,7 +104,7 @@ where
 		}
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
-		self.teardown.add(Teardown::Sub(subscription));
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+		self.teardown.add(subscription);
 	}
 }

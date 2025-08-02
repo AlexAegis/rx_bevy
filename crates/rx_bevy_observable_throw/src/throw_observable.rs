@@ -1,5 +1,5 @@
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, Subscription, UpgradeableObserver,
+	Observable, ObservableOutput, Observer, Subscription, Teardown, UpgradeableObserver,
 };
 
 /// Observable creator for [ThrowObservable]
@@ -28,7 +28,7 @@ where
 	) -> Subscription {
 		let mut subscriber = destination.upgrade();
 		subscriber.error(self.error.clone());
-		Subscription::new(subscriber)
+		Subscription::new(Teardown::new_from_subscription(subscriber))
 	}
 }
 

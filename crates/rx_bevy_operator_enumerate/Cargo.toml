@@ -24,7 +24,7 @@ example = ["dev"]
 saturating_add = []
 compose = ["dep:rx_bevy_operator_composite"]
 pipe = ["dep:rx_bevy_pipe"]
-tick = ["rx_bevy_observable/tick"]
+tick = ["rx_bevy/tick", "rx_bevy_observable/tick"]
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy_observable/reflect",

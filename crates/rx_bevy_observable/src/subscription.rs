@@ -11,13 +11,12 @@ pub trait SubscriptionLike {
 
 	fn is_closed(&self) -> bool;
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike);
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>);
 }
 
 pub enum Teardown {
 	Fn(Box<dyn FnOnce()>),
-	Subscription(Box<dyn SubscriptionLike>),
-	Sub(&'static mut dyn SubscriptionLike),
+	Sub(Box<dyn SubscriptionLike>),
 }
 
 impl Teardown {
@@ -25,25 +24,30 @@ impl Teardown {
 		Self::Fn(Box::new(f))
 	}
 
+	pub fn new_from_subscription(f: impl SubscriptionLike + 'static) -> Self {
+		Self::Sub(Box::new(f))
+	}
+
 	pub(crate) fn call(self) {
 		match self {
 			Self::Fn(fun) => fun(),
-			Self::Subscription(mut subscription) => {
-				subscription.unsubscribe();
-			}
-			Self::Sub(sub) => {
-				sub.unsubscribe();
-			}
+			Self::Sub(mut sub) => sub.unsubscribe(),
 		}
 	}
 }
 
-impl<S> From<S> for Teardown
+impl From<Box<dyn SubscriptionLike>> for Teardown {
+	fn from(subscription: Box<dyn SubscriptionLike>) -> Self {
+		Self::Sub(subscription)
+	}
+}
+
+impl<F> From<F> for Teardown
 where
-	S: 'static + SubscriptionLike,
+	F: 'static + FnOnce(),
 {
-	fn from(value: S) -> Self {
-		Self::Subscription(Box::new(value))
+	fn from(teardown: F) -> Self {
+		Self::Fn(Box::new(teardown))
 	}
 }
 
@@ -102,34 +106,26 @@ impl SubscriptionLike for Subscription {
 		self.inner.write().expect("to not be locked").unsubscribe();
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, mut subscription: Box<dyn SubscriptionLike>) {
 		self.inner
 			.write()
 			.expect("to not be locked")
-			.add(Teardown::Sub(subscription));
+			.add(Teardown::new(move || subscription.unsubscribe()));
 	}
 }
 
 impl InnerSubscription {
 	pub fn new(finalizer: impl Into<Teardown>) -> Self {
 		let teardown = finalizer.into();
+		let is_closed = matches!(&teardown, Teardown::Sub(sub) if sub.is_closed());
 
-		let is_already_closed = match &teardown {
-			Teardown::Subscription(subscription) => subscription.is_closed(),
-			_ => false,
-		};
-
-		if is_already_closed {
-			teardown.call();
-			Self {
-				is_closed: true,
-				finalizers: SmallVec::new(),
-			}
-		} else {
-			Self {
-				is_closed: is_already_closed,
-				finalizers: smallvec::smallvec![teardown],
-			}
+		Self {
+			is_closed,
+			finalizers: if is_closed {
+				SmallVec::new()
+			} else {
+				smallvec::smallvec![teardown]
+			},
 		}
 	}
 
@@ -165,8 +161,8 @@ impl SubscriptionLike for InnerSubscription {
 		}
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
-		self.add(Teardown::Sub(subscription));
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+		self.add(subscription);
 	}
 }
 
@@ -183,5 +179,5 @@ impl SubscriptionLike for () {
 
 	fn unsubscribe(&mut self) {}
 
-	fn add(&mut self, _subscription: &'static mut dyn SubscriptionLike) {}
+	fn add(&mut self, _subscription: Box<dyn SubscriptionLike>) {}
 }

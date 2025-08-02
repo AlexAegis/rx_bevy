@@ -38,7 +38,7 @@ where
 	) -> Subscription {
 		let subscription = self.source.subscribe(destination);
 
-		Subscription::new(Teardown::Fn(Box::new(move || {
+		Subscription::new(Teardown::new(Box::new(move || {
 			let _s = subscription;
 		})))
 	}

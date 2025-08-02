@@ -53,6 +53,7 @@ reflect = [
     "rx_bevy_subject/reflect",
     "rx_bevy_subject_behavior/reflect",
     "rx_bevy_subject_replay/reflect",
+    "rx_bevy_testing/reflect",
 ]
 tick = [
     "rx_bevy_observable/tick",
@@ -78,6 +79,7 @@ tick = [
     "rx_bevy_subject/tick",
     "rx_bevy_subject_behavior/tick",
     "rx_bevy_subject_replay/tick",
+    "rx_bevy_testing/tick",
 ]
 pipe = [
     "dep:rx_bevy_pipe",

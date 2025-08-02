@@ -2,7 +2,7 @@ use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
 };
 use rx_bevy_observable::{
-	Observable, ObservableOutput, RcSubscriber, Subscription, UpgradeableObserver,
+	Observable, ObservableOutput, RcSubscriber, Subscription, Teardown, UpgradeableObserver,
 };
 
 use crate::{ZipSubscriber, ZipSubscriberOptions};
@@ -85,15 +85,15 @@ where
 				self.options.clone(),
 			));
 
-		subscription.add(
+		subscription.add(Teardown::new_from_subscription(
 			self.observable_1
 				.subscribe(IntoVariant1of2Subscriber::new(rc_subscriber.clone())),
-		);
+		));
 
-		subscription.add(
+		subscription.add(Teardown::new_from_subscription(
 			self.observable_2
 				.subscribe(IntoVariant2of2Subscriber::new(rc_subscriber.clone())),
-		);
+		));
 
 		subscription
 	}

@@ -1,10 +1,11 @@
-use rx_bevy_common_bounds::Clock;
 use std::time::Duration;
 
 #[cfg(feature = "bevy")]
 use bevy_ecs::{event::Event, system::Res};
 #[cfg(feature = "bevy")]
 use bevy_time::Time;
+#[cfg(feature = "bevy")]
+use rx_bevy_common_bounds::Clock;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;

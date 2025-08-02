@@ -111,13 +111,13 @@ where
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
 	fn connect(&mut self) -> Subscription {
-		let mut connection = self.get_active_connection().unwrap_or_else(|| {
+		self.get_active_connection().unwrap_or_else(|| {
 			let mut connector = self.get_connector().clone();
 
 			let mut connection = self.source.subscribe(connector.clone());
 
 			if self.options.unsubscribe_connector_on_disconnect {
-				connection.add(Teardown::Fn(Box::new(move || {
+				connection.add(Teardown::new(Box::new(move || {
 					connector.unsubscribe();
 				})));
 			}
@@ -125,11 +125,7 @@ where
 			self.connection.replace(connection.clone());
 
 			connection
-		});
-
-		Subscription::new(Teardown::Fn(Box::new(move || {
-			connection.unsubscribe();
-		})))
+		})
 	}
 }
 
@@ -151,7 +147,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		if let Some(connector) = &mut self.connector {
 			connector.add(subscription);
 		}

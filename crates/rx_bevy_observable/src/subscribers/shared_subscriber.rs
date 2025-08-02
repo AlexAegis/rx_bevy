@@ -111,7 +111,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		self.destination.add(subscription);
 	}
 }
@@ -203,7 +203,7 @@ where
 		lock.unsubscribe();
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		let mut lock = self.write().expect("lock is poisoned!");
 		lock.add(subscription);
 	}

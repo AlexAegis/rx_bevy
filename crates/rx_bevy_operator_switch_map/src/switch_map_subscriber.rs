@@ -1,7 +1,4 @@
-use std::{
-	marker::PhantomData,
-	sync::{Arc, RwLock},
-};
+use std::marker::PhantomData;
 
 use rx_bevy_observable::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
@@ -96,7 +93,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		self.destination.add(subscription);
 	}
 }

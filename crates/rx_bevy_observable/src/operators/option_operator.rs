@@ -165,7 +165,7 @@ where
 		}
 	}
 
-	fn add(&mut self, subscription: &'static mut dyn SubscriptionLike) {
+	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.add(subscription);

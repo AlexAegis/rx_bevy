@@ -1,5 +1,6 @@
 use rx_bevy_observable::{
-	Observable, ObservableOutput, Observer, Subscription, SubscriptionLike, UpgradeableObserver,
+	Observable, ObservableOutput, Observer, Subscription, SubscriptionLike, Teardown,
+	UpgradeableObserver,
 };
 
 /// Emits a single value then immediately completes
@@ -48,6 +49,6 @@ where
 			subscriber.next(item);
 		}
 		subscriber.complete();
-		Subscription::new(subscriber)
+		Subscription::new(Teardown::Sub(Box::new(subscriber)))
 	}
 }
