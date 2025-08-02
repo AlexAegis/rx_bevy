@@ -235,7 +235,6 @@ where
 	type InError = InError;
 }
 
-// TODO: Maybe this impl should just be removed and accept that subscriber context is not a subscriber
 impl<In, InError> rx_bevy_observable::Observer for SubscriberContext<In, InError>
 where
 	In: SignalBound,
@@ -254,6 +253,8 @@ where
 	}
 
 	fn tick(&mut self, _tick: rx_bevy_observable::Tick) {
+		// TODO: Should this be buffered?
+		// unreachable!("ticked the context")
 		// Don't need to do anything with a tick here
 	}
 }

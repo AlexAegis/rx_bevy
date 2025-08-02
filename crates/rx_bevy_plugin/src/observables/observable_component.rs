@@ -116,18 +116,23 @@ where
 	);
 }
 
-pub fn observable_on_remove_hook<O>(mut _deferred_world: DeferredWorld, _hook_context: HookContext)
+/// Removes the subscriptions for this observable or operators subscriber,
+/// causing them to unsubscribe
+pub fn observable_on_remove_hook<Sub>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
+	Sub: 'static + RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
 {
-	// TODO: Unsubscribe all subscriptions
+	deferred_world
+		.commands()
+		.entity(hook_context.entity)
+		.remove::<Subscriptions<Sub>>();
 }
 
 fn on_subscribe<O>(
 	trigger: Trigger<Subscribe<O::Out, O::OutError>>,
-	mut observable_component_query: Query<(&mut O, Option<&mut Subscriptions<O>>)>,
+	mut observable_component_query: Query<(&mut O, Option<&mut Subscriptions<O::Subscription>>)>,
 	mut commands: Commands,
 	name_query: Query<&Name>,
 ) where
@@ -197,7 +202,7 @@ fn on_subscribe<O>(
 			// Technically a required component, but [ObservableComponent] is a trait, so it's inserted lazily
 			commands
 				.entity(observable_entity)
-				.insert(Subscriptions::<O>::new(subscription_entity));
+				.insert(Subscriptions::<O::Subscription>::new(subscription_entity));
 		}
 
 		subscription_entity
@@ -222,7 +227,7 @@ fn on_subscribe<O>(
 				short_type_name::<O::OutError>(),
 				observable_entity
 			)),
-			SubscriptionComponent::<O>::new(
+			SubscriptionComponent::<O::Subscription>::new(
 				observable_entity,
 				destination_entity,
 				scheduled_subscription,
@@ -251,7 +256,7 @@ fn on_subscribe<O>(
 /// to ensure correct event order.
 fn subscription_tick_observer<O>(
 	trigger: Trigger<Tick>,
-	mut subscription_query: Query<&mut SubscriptionComponent<O>>,
+	mut subscription_query: Query<&mut SubscriptionComponent<O::Subscription>>,
 	mut commands: Commands,
 ) where
 	O: ObservableComponent + Send + Sync,

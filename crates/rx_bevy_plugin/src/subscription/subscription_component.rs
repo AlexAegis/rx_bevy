@@ -11,10 +11,7 @@ use derive_where::derive_where;
 use rx_bevy_observable::Tick;
 use smallvec::{SmallVec, smallvec};
 
-use crate::{
-	CommandSubscriber, EntityContext, ObservableComponent, RxSubscription, SignalBound,
-	SubscriberContext,
-};
+use crate::{CommandSubscriber, EntityContext, RxSubscription, SignalBound, SubscriberContext};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -25,25 +22,25 @@ use bevy_reflect::Reflect;
 /// This semantically is a relationship but that imposes too many restrictions,
 /// and subscriptions are managed uniquely anyways.
 #[derive(Component)]
-#[component(on_remove = subscriptions_on_remove_hook::<O>)]
+#[component(on_remove = subscriptions_on_remove_hook::<Sub>)]
 #[derive_where(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct Subscriptions<O>
+pub struct Subscriptions<Sub>
 where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
+	Sub: RxSubscription + 'static,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
 {
 	subscriptions: SmallVec<[Entity; 1]>,
-	_phantom_data: PhantomData<O>,
+	_phantom_data: PhantomData<Sub>,
 }
 
-impl<O> Subscriptions<O>
+impl<Sub> Subscriptions<Sub>
 where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
+	Sub: RxSubscription + 'static,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
 {
 	pub fn new(subscription: Entity) -> Self {
 		Self {
@@ -66,7 +63,7 @@ where
 
 	pub fn get_subscribers(
 		&self,
-		subscription_query: &Query<&SubscriptionComponent<O>>,
+		subscription_query: &Query<&SubscriptionComponent<Sub>>,
 	) -> Vec<Entity> {
 		self.subscriptions
 			.iter()
@@ -81,14 +78,14 @@ where
 }
 
 /// Replicating relationship behavior by removing it's reference from a subscription component
-fn subscriptions_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+fn subscriptions_on_remove_hook<Sub>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
+	Sub: RxSubscription + 'static,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
 {
 	let subscriptions = deferred_world
-		.get::<Subscriptions<O>>(hook_context.entity)
+		.get::<Subscriptions<Sub>>(hook_context.entity)
 		.expect("the component should be available as the hook is for this component")
 		.subscriptions
 		.clone();
@@ -96,7 +93,7 @@ where
 	for subscription_entity in subscriptions.into_iter() {
 		if let Some((mut scheduled_subscription, observable_entity, subscriber_entity)) =
 			deferred_world
-				.get_mut::<SubscriptionComponent<O>>(subscription_entity)
+				.get_mut::<SubscriptionComponent<Sub>>(subscription_entity)
 				.map(|mut subscription_component| {
 					(
 						subscription_component
@@ -121,34 +118,34 @@ where
 }
 
 #[derive(Component)]
-#[component(on_remove = subscription_on_remove_hook::<O>)]
+#[component(on_remove = subscription_on_remove_hook::<Sub>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscriptionComponent<O>
+pub struct SubscriptionComponent<Sub>
 where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
+	Sub: RxSubscription + 'static,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
 {
 	observable_entity: Entity,
 	subscriber_entity: Entity,
 	/// This is only an [Option] so it can be removed from the component while it's unsubscribing
 	/// Note that it is `None` already when the `unsubscribe` is running, not that you would need
 	/// to access it from here, since it's available as `self`
-	pub scheduled_subscription: Option<O::Subscription>,
-	_phantom_data: PhantomData<O>,
+	pub scheduled_subscription: Option<Sub>,
+	_phantom_data: PhantomData<Sub>,
 }
 
-impl<O> SubscriptionComponent<O>
+impl<Sub> SubscriptionComponent<Sub>
 where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
+	Sub: RxSubscription + 'static,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
 {
 	pub fn new(
 		observable_entity: Entity,
 		subscriber_entity: Entity,
-		scheduled_subscription: O::Subscription,
+		scheduled_subscription: Sub,
 	) -> Self {
 		Self {
 			observable_entity,
@@ -158,7 +155,7 @@ where
 		}
 	}
 
-	pub fn tick(&mut self, tick: Tick, subscriber: CommandSubscriber<O::Out, O::OutError>) {
+	pub fn tick(&mut self, tick: Tick, subscriber: CommandSubscriber<Sub::Out, Sub::OutError>) {
 		self.scheduled_subscription
 			.as_mut()
 			.expect("subscriber should always be present when ticked")
@@ -168,7 +165,7 @@ where
 	pub fn get_subscription_entity_context(
 		&self,
 		subscription_entity: Entity,
-	) -> SubscriberContext<O::Out, O::OutError> {
+	) -> SubscriberContext<Sub::Out, Sub::OutError> {
 		SubscriberContext::new(EntityContext {
 			source_entity: self.observable_entity,
 			destination_entity: self.subscriber_entity,
@@ -177,17 +174,17 @@ where
 	}
 }
 
-fn subscription_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+fn subscription_on_remove_hook<Sub>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
+	Sub: RxSubscription + 'static,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
 {
 	let subscription_entity = hook_context.entity;
 
 	let (mut scheduled_subscription, entity_context) = {
 		let mut subscription = deferred_world
-			.get_mut::<SubscriptionComponent<O>>(subscription_entity)
+			.get_mut::<SubscriptionComponent<Sub>>(subscription_entity)
 			.expect("the component should be available as the hook is for this component");
 
 		(
@@ -200,7 +197,7 @@ where
 	};
 
 	if let Some(mut subscriptions_component) =
-		deferred_world.get_mut::<Subscriptions<O>>(entity_context.get_observable_entity())
+		deferred_world.get_mut::<Subscriptions<Sub>>(entity_context.get_observable_entity())
 	{
 		subscriptions_component
 			.subscriptions

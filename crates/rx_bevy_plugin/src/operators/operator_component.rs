@@ -15,9 +15,8 @@ use short_type_name::short_type_name;
 
 use crate::{
 	CommandSubscribeExtension, CommandSubscriber, EntityContext, ObservableOnInsertContext,
-	OperatorSubscribeObserverOf, OperatorSubscriptionComponent, OperatorSubscriptions,
-	RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe, SubscriberContext,
-	SubscriberSignalObserverRef,
+	OperatorSubscribeObserverOf, RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe,
+	SubscriberContext, SubscriberSignalObserverRef, SubscriptionComponent, Subscriptions,
 };
 
 use std::any::TypeId;
@@ -118,20 +117,9 @@ where
 	);
 }
 
-pub fn operator_on_remove_hook<Op>(mut _deferred_world: DeferredWorld, _hook_context: HookContext)
-where
-	Op: OperatorComponent + Send + Sync,
-	Op::In: SignalBound,
-	Op::InError: SignalBound,
-	Op::Out: SignalBound,
-	Op::OutError: SignalBound,
-{
-	// TODO: Unsubscribe all subscriptions
-}
-
 fn on_operator_subscribe<Op>(
 	trigger: Trigger<Subscribe<Op::Out, Op::OutError>>,
-	mut observable_component_query: Query<(&mut Op, Option<&mut OperatorSubscriptions<Op>>)>,
+	mut observable_component_query: Query<(&mut Op, Option<&mut Subscriptions<Op::Subscriber>>)>,
 	mut commands: Commands,
 	name_query: Query<&Name>,
 ) where
@@ -187,7 +175,7 @@ fn on_operator_subscribe<Op>(
 			// Technically a required component, but [ObservableComponent] is a trait, so it's inserted lazily
 			commands
 				.entity(observable_entity)
-				.insert(OperatorSubscriptions::<Op>::new(subscription_entity));
+				.insert(Subscriptions::<Op::Subscriber>::new(subscription_entity));
 		}
 
 		subscription_entity
@@ -212,7 +200,7 @@ fn on_operator_subscribe<Op>(
 				short_type_name::<Op::OutError>(),
 				observable_entity
 			)),
-			OperatorSubscriptionComponent::<Op>::new(
+			SubscriptionComponent::<Op::Subscriber>::new(
 				observable_entity,
 				destination_entity,
 				scheduled_subscription,
@@ -226,17 +214,29 @@ fn on_operator_subscribe<Op>(
 		));
 	}
 
-	let source_observable_entity = operator_component.get_source().or_this(observable_entity);
+	// Operator Subscription Chain setup
+	{
+		let source_observable_entity = operator_component.get_source().or_this(observable_entity);
 
-	// TODO: CONTINUE FROM HERE!!!!!!!!!!!!!
-	// TODO: This needs to be .add-ed to the current subscription to form a teardown chain. The subscriptions relation could do that, on remove that would despawn all anyway,
-	// TODO: that may require unifying collecting subscriptions on Out, OutError as now it's either an operator or a normal sub, and there isn't really a difference
-	let source_subscription_entity = commands
-		.subscribe_with_schedule_of::<Op::Out, Op::OutError, Op::In, Op::InError>(
-			source_observable_entity,
-			subscription_entity,
-			trigger.event(),
+		// TODO: CONTINUE FROM HERE!!!!!!!!!!!!!
+		// TODO: This needs to be .add-ed to the current subscription to form a teardown chain. The subscriptions relation could do that, on remove that would despawn all anyway,
+		// TODO: that may require unifying collecting subscriptions on Out, OutError as now it's either an operator or a normal sub, and there isn't really a difference
+		let source_subscription_entity = commands
+			.subscribe_with_schedule_of::<Op::Out, Op::OutError, Op::In, Op::InError>(
+				source_observable_entity,
+				subscription_entity,
+				trigger.event(),
+			);
+		// TODO: Add a subscriptions to this subscription, and a subref to the
+
+		println!(
+			"op sub for chain sub {}",
+			short_type_name::<Op::Subscriber>()
 		);
+		commands.entity(source_observable_entity);
+
+		dbg!(source_subscription_entity);
+	}
 
 	// Setting up signal observer
 	{
@@ -258,7 +258,7 @@ fn on_operator_subscribe<Op>(
 fn operator_subscription_tick_observer<Op>(
 	trigger: Trigger<Tick>,
 	mut subscription_query: Query<
-		&mut OperatorSubscriptionComponent<Op>,
+		&mut SubscriptionComponent<Op::Subscriber>,
 		Without<SubscriberSignalObserverRef<Op>>, // Subscribers aren't directly ticked, they are ticked by other subscriptions
 	>,
 	mut commands: Commands,
@@ -284,7 +284,7 @@ fn operator_subscription_tick_observer<Op>(
 fn operator_subscription_signal_observer<Op>(
 	trigger: Trigger<RxSignal<Op::In, Op::InError>>,
 	mut subscription_query: Query<
-		&mut OperatorSubscriptionComponent<Op>,
+		&mut SubscriptionComponent<Op::Subscriber>,
 		Without<SubscriberSignalObserverRef<Op>>, // Subscribers aren't directly ticked, they are ticked by other subscriptions
 	>,
 	mut commands: Commands,
@@ -306,7 +306,7 @@ fn operator_subscription_signal_observer<Op>(
 			.get_subscription_entity_context(trigger.target())
 			.upgrade(&mut commands);
 
-		if let Some(s) = &mut subscription.subscriber {
+		if let Some(s) = &mut subscription.scheduled_subscription {
 			s.on_signal(trigger.event().clone(), subscriber);
 		};
 	}

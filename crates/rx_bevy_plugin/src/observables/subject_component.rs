@@ -48,7 +48,7 @@ where
 
 	fn register_component_hooks(hooks: &mut bevy_ecs::component::ComponentHooks) {
 		hooks.on_insert(observable_on_insert_hook::<Self>);
-		hooks.on_remove(observable_on_remove_hook::<Self>);
+		hooks.on_remove(observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>);
 	}
 }
 
@@ -100,8 +100,8 @@ where
 /// Manually triggered events should trigger all subscribers
 pub fn forward_to_subscribers<O>(
 	trigger: Trigger<RxSignal<O::Out, O::OutError>>,
-	mut observable_subscriptions_query: Query<&mut Subscriptions<O>, With<O>>,
-	subscription_query: Query<&SubscriptionComponent<O>>,
+	mut observable_subscriptions_query: Query<&mut Subscriptions<O::Subscription>, With<O>>,
+	subscription_query: Query<&SubscriptionComponent<O::Subscription>>,
 	mut commands: Commands,
 ) where
 	O: ObservableComponent + Send + Sync,

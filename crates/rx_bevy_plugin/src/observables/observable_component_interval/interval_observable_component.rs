@@ -33,7 +33,7 @@ impl Component for IntervalObservableComponent {
 
 	fn register_component_hooks(hooks: &mut ComponentHooks) {
 		hooks.on_insert(observable_on_insert_hook::<Self>);
-		hooks.on_remove(observable_on_remove_hook::<Self>);
+		hooks.on_remove(observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>);
 	}
 }
 

@@ -4,8 +4,8 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
 	CommandSubscriber, ObservableOnInsertContext, OperatorComponent, PipeSubscriber,
-	RelativeEntity, SignalBound, SubscriberContext, operator_on_insert_hook,
-	operator_on_remove_hook,
+	RelativeEntity, SignalBound, SubscriberContext, observable_on_remove_hook,
+	operator_on_insert_hook,
 };
 
 #[cfg(feature = "debug")]
@@ -58,7 +58,7 @@ where
 
 	fn register_component_hooks(hooks: &mut bevy_ecs::component::ComponentHooks) {
 		hooks.on_insert(operator_on_insert_hook::<Self>);
-		hooks.on_remove(operator_on_remove_hook::<Self>);
+		hooks.on_remove(observable_on_remove_hook::<<Self as OperatorComponent>::Subscriber>);
 	}
 }
 
