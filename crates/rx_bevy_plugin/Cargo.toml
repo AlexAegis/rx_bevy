@@ -18,7 +18,7 @@ workspace = true
 [features]
 default = ["dev", "reflect", "debug"]
 dev = ["bevy/dynamic_linking", "inspector"]
-debug = ["bevy/track_location", "rx_bevy_common_bounds/debug"]
+debug = ["bevy/track_location", "rx_bevy_common_bounds/debug", "dep:bevy_input"]
 serialize = ["rx_bevy_common_bounds/serialize"]
 example = [
     "dev",
@@ -64,6 +64,7 @@ bevy_reflect = { workspace = true, optional = true }
 bevy_time = { workspace = true }
 bevy_platform = { workspace = true }
 bevy_ptr = { workspace = true }
+bevy_input = { workspace = true, optional = true }
 # third party bevy dependencies
 bevy-inspector-egui = { workspace = true, optional = true, features = [] }
 bevy_egui = { workspace = true, optional = true }

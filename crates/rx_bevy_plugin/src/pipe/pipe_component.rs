@@ -1,4 +1,4 @@
-use bevy_ecs::component::{Component, Mutable, StorageType};
+use bevy_ecs::component::Component;
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
@@ -14,7 +14,8 @@ use std::fmt::Debug;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-#[derive(Clone)]
+#[derive(Component, Clone)]
+#[component(on_insert = operator_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<<Self as OperatorComponent>::Subscriber>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct PipeComponent<Op>
@@ -41,24 +42,6 @@ where
 {
 	pub fn new(source: RelativeEntity, operator: Op) -> Self {
 		Self { source, operator }
-	}
-}
-
-impl<Op> Component for PipeComponent<Op>
-where
-	Op: 'static + Operator + Send + Sync + DebugBound,
-	Op::In: SignalBound,
-	Op::InError: SignalBound,
-	Op::Out: SignalBound,
-	Op::OutError: SignalBound,
-	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
-{
-	const STORAGE_TYPE: StorageType = StorageType::Table;
-	type Mutability = Mutable;
-
-	fn register_component_hooks(hooks: &mut bevy_ecs::component::ComponentHooks) {
-		hooks.on_insert(operator_on_insert_hook::<Self>);
-		hooks.on_remove(observable_on_remove_hook::<<Self as OperatorComponent>::Subscriber>);
 	}
 }
 

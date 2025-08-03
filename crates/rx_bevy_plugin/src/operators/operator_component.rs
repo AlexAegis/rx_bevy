@@ -4,19 +4,21 @@ use bevy_ecs::{
 	name::Name,
 	observer::{Observer, Trigger},
 	query::Without,
+	reflect::AppTypeRegistry,
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
 use bevy_log::{debug, trace, warn};
 
 use rx_bevy_common_bounds::DebugBound;
-use rx_bevy_observable::{ObservableOutput, ObserverInput, Tick};
+use rx_bevy_observable::{ObservableOutput, ObserverInput};
 use short_type_name::short_type_name;
 
 use crate::{
 	CommandSubscribeExtension, CommandSubscriber, EntityContext, ObservableOnInsertContext,
 	OperatorSubscribeObserverOf, RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe,
-	SubscriberContext, SubscriberSignalObserverRef, SubscriptionComponent, Subscriptions,
+	SubscriberContext, SubscriberInstanceOf, SubscriberSignalObserverRef, Subscription,
+	SubscriptionSignalDestination, subscription_tick_observer,
 };
 
 use std::any::TypeId;
@@ -70,7 +72,21 @@ where
 	Op::Out: SignalBound,
 	Op::OutError: SignalBound,
 {
+	#[cfg(feature = "debug")]
+	crate::register_operator_debug_systems::<Op>(&mut deferred_world);
+
 	let observable_entity = hook_context.entity;
+
+	#[cfg(feature = "reflect")]
+	{
+		use crate::{SubscriberInstanceOf, SubscriberInstances};
+
+		let reg = deferred_world.resource_mut::<AppTypeRegistry>();
+		let mut registry_lock = reg.write();
+
+		registry_lock.register::<SubscriberInstanceOf<Op::Subscriber>>();
+		registry_lock.register::<SubscriberInstances<Op::Subscriber>>();
+	}
 
 	// This is the observer that processes [Subscribe] events for this specific observable.
 	// It will be despawned when the observable is removed.
@@ -119,7 +135,7 @@ where
 
 fn on_operator_subscribe<Op>(
 	trigger: Trigger<Subscribe<Op::Out, Op::OutError>>,
-	mut observable_component_query: Query<(&mut Op, Option<&mut Subscriptions<Op::Subscriber>>)>,
+	mut observable_component_query: Query<&mut Op>,
 	mut commands: Commands,
 	name_query: Query<&Name>,
 ) where
@@ -129,94 +145,97 @@ fn on_operator_subscribe<Op>(
 	Op::Out: SignalBound,
 	Op::OutError: SignalBound,
 {
-	let observable_entity = trigger.target();
+	let operator_definition_entity = trigger.target();
 	println!(
 		"on_subscribe {} {:?}",
-		observable_entity,
-		name_query.get(observable_entity).unwrap()
+		operator_definition_entity,
+		name_query.get(operator_definition_entity).unwrap()
 	);
 
-	let Ok((mut operator_component, existing_subscriptions_component)) =
-		observable_component_query.get_mut(observable_entity)
+	let Ok(mut operator_component) = observable_component_query.get_mut(operator_definition_entity)
 	else {
 		warn!(
 			"Tried to subscribe to {} but it does not exist on {}",
 			short_type_name::<Op>(),
-			observable_entity
+			operator_definition_entity
 		);
 		return; // Err(SubscribeError::NotAnObservable.into());
 	};
-	let destination_entity = trigger.get_subscriber_entity_or_this(observable_entity);
+	let destination_entity = trigger.get_destination_or_this(operator_definition_entity);
 
 	// Operators may not subscribe to the entity they are on if their input and
 	// output types match as that would just feed it into itself
-	if observable_entity == destination_entity && TypeId::of::<Op::In>() == TypeId::of::<Op::Out>()
+	if operator_definition_entity == destination_entity
+		&& TypeId::of::<Op::In>() == TypeId::of::<Op::Out>()
 	{
 		warn!(
 			"Tried to subscribe to itself when it is disallowed! {}({})",
 			short_type_name::<Op>(),
-			observable_entity
+			operator_definition_entity
 		);
 		return; // Err(SubscribeError::SelfSubscribeDisallowed.into());
 	}
 
-	// Relationship management
-	let subscription_entity = {
-		// Get the pre-spawned scheduled Subscription entity
-		let subscription_entity = trigger.event().get_subscription_entity();
+	let subscription_entity = trigger.event().get_subscription_entity();
 
-		// Initialize the Subscriptions component on the observable
-		if let Some(mut subscriptions) = existing_subscriptions_component {
-			// In case the Entity contains more than one observable with the same signals
-			if !subscriptions.contains(subscription_entity) {
-				subscriptions.push(subscription_entity);
-			}
-		} else {
-			// Technically a required component, but [ObservableComponent] is a trait, so it's inserted lazily
-			commands
-				.entity(observable_entity)
-				.insert(Subscriptions::<Op::Subscriber>::new(subscription_entity));
-		}
-
-		subscription_entity
-	};
-
+	// Setting up Subscription
 	{
 		let context = SubscriberContext::new(EntityContext {
-			source_entity: observable_entity,
 			destination_entity,
 			subscription_entity,
 		});
 
-		let scheduled_subscription =
-			operator_component.on_subscribe(context.upgrade(&mut commands));
+		let spawned_subscriber = operator_component.on_subscribe(context.upgrade(&mut commands));
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
-		subscription_entity_commands.insert_if_new((
+		subscription_entity_commands.insert((
 			Name::new(format!(
 				"Subscription<{}, {}> for [{}]",
 				short_type_name::<Op::Out>(),
 				short_type_name::<Op::OutError>(),
-				observable_entity
+				operator_definition_entity
 			)),
-			SubscriptionComponent::<Op::Subscriber>::new(
-				observable_entity,
-				destination_entity,
-				scheduled_subscription,
-			),
+			Subscription::<Op::Subscriber>::new(spawned_subscriber),
+			SubscriberInstanceOf::<Op::Subscriber>::new(operator_definition_entity),
+			SubscriptionSignalDestination::<Op::Subscriber>::new(destination_entity),
 		));
 
-		/// TODO: Check if this could also observe ticks here through an enum, as for regular observables that was only prevented by the scheduler
-		subscription_entity_commands.insert_if_new((
-			Observer::new(operator_subscription_tick_observer::<Op>)
+		#[cfg(feature = "debug")]
+		{
+			use crate::SubscriptionMarker;
+
+			subscription_entity_commands.insert(SubscriptionMarker);
+		}
+
+		subscription_entity_commands.insert((
+			Observer::new(subscription_tick_observer::<Op::Subscriber>)
 				.with_entity(subscription_entity), // It's observing itself!
+		));
+	}
+
+	// Setting up signal observer
+	{
+		commands.spawn((
+			Name::new(format!(
+				"Operator Signal Observer <{}, {}, {}, {}> for [{}]",
+				short_type_name::<Op::In>(),
+				short_type_name::<Op::InError>(),
+				short_type_name::<Op::Out>(),
+				short_type_name::<Op::OutError>(),
+				subscription_entity
+			)),
+			ChildOf(subscription_entity),
+			Observer::new(operator_subscription_signal_observer::<Op>)
+				.with_entity(subscription_entity),
 		));
 	}
 
 	// Operator Subscription Chain setup
 	{
-		let source_observable_entity = operator_component.get_source().or_this(observable_entity);
+		let source_observable_entity = operator_component
+			.get_source()
+			.or_this(operator_definition_entity);
 
 		// TODO: CONTINUE FROM HERE!!!!!!!!!!!!!
 		// TODO: This needs to be .add-ed to the current subscription to form a teardown chain. The subscriptions relation could do that, on remove that would despawn all anyway,
@@ -237,54 +256,15 @@ fn on_operator_subscribe<Op>(
 
 		dbg!(source_subscription_entity);
 	}
-
-	// Setting up signal observer
-	{
-		commands.spawn((
-			Name::new(format!(
-				"Operator Signal Observer <{}, {}, {}, {}> for [{}]",
-				short_type_name::<Op::In>(),
-				short_type_name::<Op::InError>(),
-				short_type_name::<Op::Out>(),
-				short_type_name::<Op::OutError>(),
-				subscription_entity
-			)),
-			Observer::new(operator_subscription_signal_observer::<Op>)
-				.with_entity(subscription_entity),
-		));
-	}
-}
-
-fn operator_subscription_tick_observer<Op>(
-	trigger: Trigger<Tick>,
-	mut subscription_query: Query<
-		&mut SubscriptionComponent<Op::Subscriber>,
-		Without<SubscriberSignalObserverRef<Op>>, // Subscribers aren't directly ticked, they are ticked by other subscriptions
-	>,
-	mut commands: Commands,
-) where
-	Op: OperatorComponent + Send + Sync,
-	Op::In: SignalBound,
-	Op::InError: SignalBound,
-	Op::Out: SignalBound,
-	Op::OutError: SignalBound,
-{
-	#[cfg(feature = "debug")]
-	trace!("subscription_tick_observer {:?}", trigger.event());
-
-	if let Ok(mut subscription) = subscription_query.get_mut(trigger.target()) {
-		let subscriber = subscription
-			.get_subscription_entity_context(trigger.target())
-			.upgrade(&mut commands);
-
-		subscription.tick(trigger.event().clone(), subscriber);
-	}
 }
 
 fn operator_subscription_signal_observer<Op>(
 	trigger: Trigger<RxSignal<Op::In, Op::InError>>,
 	mut subscription_query: Query<
-		&mut SubscriptionComponent<Op::Subscriber>,
+		(
+			&SubscriptionSignalDestination<Op::Subscriber>,
+			&mut Subscription<Op::Subscriber>,
+		),
 		Without<SubscriberSignalObserverRef<Op>>, // Subscribers aren't directly ticked, they are ticked by other subscriptions
 	>,
 	mut commands: Commands,
@@ -301,13 +281,12 @@ fn operator_subscription_signal_observer<Op>(
 		trigger.event()
 	);
 
-	if let Ok(mut subscription) = subscription_query.get_mut(trigger.target()) {
-		let subscriber = subscription
+	if let Ok((signal_destination, mut subscription)) = subscription_query.get_mut(trigger.target())
+	{
+		let subscriber = signal_destination
 			.get_subscription_entity_context(trigger.target())
 			.upgrade(&mut commands);
 
-		if let Some(s) = &mut subscription.scheduled_subscription {
-			s.on_signal(trigger.event().clone(), subscriber);
-		};
+		subscription.on_signal(trigger.event().clone(), subscriber);
 	}
 }

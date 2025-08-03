@@ -22,7 +22,7 @@ where
 	Out: SignalBound,
 	OutError: SignalBound,
 {
-	subscriber_entity: RelativeEntity,
+	destination: RelativeEntity,
 	/// This entity can only be spawned from this events constructors
 	subscription_entity: Entity,
 	/// Contains the [TypeId] of a `SubscriptionSchedule::<S>` component, for
@@ -37,8 +37,8 @@ where
 	Out: SignalBound,
 	OutError: SignalBound,
 {
-	pub fn get_subscriber_entity_or_this(&self, or_this: Entity) -> Entity {
-		self.subscriber_entity.or_this(or_this)
+	pub fn get_destination_or_this(&self, or_this: Entity) -> Entity {
+		self.destination.or_this(or_this)
 	}
 
 	/// Be aware that if you can't subscribe to a scheduled observable
@@ -51,7 +51,7 @@ where
 
 		(
 			Self {
-				subscriber_entity,
+				destination: subscriber_entity,
 				subscription_entity,
 				schedule: None,
 				_phantom_data: PhantomData,
@@ -71,7 +71,7 @@ where
 
 		(
 			Self {
-				subscriber_entity,
+				destination: subscriber_entity,
 				subscription_entity,
 				schedule: Some(TypeId::of::<SubscriptionSchedule<S>>()),
 				_phantom_data: PhantomData,
@@ -102,7 +102,7 @@ where
 		(
 			Self {
 				subscription_entity: new_subscription_entity,
-				subscriber_entity: RelativeEntity::Other(subscriber_entity),
+				destination: RelativeEntity::Other(subscriber_entity),
 				schedule: use_schedule_from.schedule,
 				_phantom_data: PhantomData,
 			},
@@ -128,6 +128,8 @@ where
 		self.schedule.is_some()
 	}
 
+	/// The pre-spawned entity that represents the [Subscription] created by this
+	/// event
 	pub fn get_subscription_entity(&self) -> Entity {
 		self.subscription_entity
 	}

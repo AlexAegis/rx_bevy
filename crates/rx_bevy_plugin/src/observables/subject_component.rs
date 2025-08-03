@@ -1,8 +1,9 @@
 use crate::{
 	CommandSubscriber, NoopSubscription, ObservableComponent, ObservableOnInsertContext,
-	SignalBound, SubscriptionComponent, observable_on_insert_hook, observable_on_remove_hook,
+	SignalBound, SubscriptionSignalDestination, observable_on_insert_hook,
+	observable_on_remove_hook,
 };
-use crate::{RxSignal, Subscriptions};
+use crate::{RxSignal, SubscriptionSignalSources};
 
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -100,8 +101,11 @@ where
 /// Manually triggered events should trigger all subscribers
 pub fn forward_to_subscribers<O>(
 	trigger: Trigger<RxSignal<O::Out, O::OutError>>,
-	mut observable_subscriptions_query: Query<&mut Subscriptions<O::Subscription>, With<O>>,
-	subscription_query: Query<&SubscriptionComponent<O::Subscription>>,
+	mut observable_subscriptions_query: Query<
+		&mut SubscriptionSignalSources<O::Subscription>,
+		With<O>,
+	>,
+	subscription_query: Query<&SubscriptionSignalDestination<O::Subscription>>,
 	mut commands: Commands,
 ) where
 	O: ObservableComponent + Send + Sync,

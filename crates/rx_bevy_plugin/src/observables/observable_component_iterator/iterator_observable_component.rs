@@ -3,7 +3,7 @@ use crate::{
 	ObservableComponent, SignalBound, observable_on_insert_hook, observable_on_remove_hook,
 };
 
-use bevy_ecs::component::{Component, ComponentHooks, Mutable, StorageType};
+use bevy_ecs::component::Component;
 
 use rx_bevy_common_bounds::{DebugBound, ReflectBound};
 use rx_bevy_observable::{ObservableOutput, Observer};
@@ -14,7 +14,8 @@ use derive_where::derive_where;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-#[derive(Clone)]
+#[derive(Component, Clone)]
+#[component(on_insert = observable_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>)]
 #[cfg_attr(
 	feature = "debug",
 	derive_where(Debug),
@@ -23,33 +24,16 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IteratorObservableComponent<Iterator, const EMIT_ON_TICK: bool>
 where
-	Iterator: 'static + IntoIterator + Send + Sync + Clone,
+	Iterator: 'static + IntoIterator + Send + Sync + Clone + ReflectBound,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: SignalBound,
 {
 	iterator: Iterator,
 }
 
-/// TODO: Abstract this away, this is what makes an ObservableComponent Subscribable
-impl<Iterator, const EMIT_ON_TICK: bool> Component
-	for IteratorObservableComponent<Iterator, EMIT_ON_TICK>
-where
-	Iterator: 'static + IntoIterator + Send + Sync + Clone + ReflectBound,
-	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
-	Iterator::Item: SignalBound,
-{
-	const STORAGE_TYPE: StorageType = StorageType::Table;
-	type Mutability = Mutable;
-
-	fn register_component_hooks(hooks: &mut ComponentHooks) {
-		hooks.on_insert(observable_on_insert_hook::<Self>);
-		hooks.on_remove(observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>);
-	}
-}
-
 impl<Iterator, const EMIT_ON_TICK: bool> IteratorObservableComponent<Iterator, EMIT_ON_TICK>
 where
-	Iterator: 'static + IntoIterator + Send + Sync + Clone,
+	Iterator: 'static + IntoIterator + Send + Sync + Clone + ReflectBound,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: SignalBound,
 {
@@ -89,7 +73,7 @@ where
 impl<Iterator, const EMIT_ON_TICK: bool> ObservableOutput
 	for IteratorObservableComponent<Iterator, EMIT_ON_TICK>
 where
-	Iterator: 'static + IntoIterator + Send + Sync + Clone,
+	Iterator: 'static + IntoIterator + Send + Sync + Clone + ReflectBound,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: SignalBound,
 {

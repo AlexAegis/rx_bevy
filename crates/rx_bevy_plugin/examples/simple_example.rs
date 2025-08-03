@@ -95,13 +95,14 @@ fn setup(
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
 		SubjectComponent::<i32, ()>::new(),
 	));
-	let subject_entity = subject_entity_commands.observe(next_number_observer).id();
 
 	let _s = subject_entity_commands
 		.subscribe_to_this_unscheduled::<i32, ()>(RelativeEntity::Other(observer_entity));
 
 	let _s2 = subject_entity_commands
 		.subscribe_to_this_unscheduled::<i32, ()>(RelativeEntity::Other(another_observer_entity));
+
+	let subject_entity = subject_entity_commands.id();
 
 	let mut iterator_observable_entity_commands = commands.spawn((
 		Name::new("IteratorObservable"),
@@ -128,8 +129,6 @@ fn setup(
 	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4)
 	let subjects_interval_subscription = interval_observable_entity_commands
 		.subscribe_to_this_scheduled::<i32, (), Update>(RelativeEntity::Other(subject_entity));
-
-	println!("spawned");
 
 	commands.insert_resource(ExampleEntities {
 		subjects_interval_subscription,

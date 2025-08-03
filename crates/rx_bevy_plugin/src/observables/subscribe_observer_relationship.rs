@@ -44,7 +44,7 @@ where
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref, DerefMut)]
-#[relationship_target(relationship=SubscribeObserverOf::<O>)]
+#[relationship_target(relationship=SubscribeObserverOf::<O>, linked_spawn)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscribeObserverRef<O>

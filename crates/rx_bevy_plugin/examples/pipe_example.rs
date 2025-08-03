@@ -29,7 +29,7 @@ fn main() -> AppExit {
 			(
 				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 				unsubscribe_from_interval.run_if(input_just_pressed(KeyCode::Space)),
-				despawn_observable.run_if(input_just_pressed(KeyCode::KeyD)),
+				despawn_observable.run_if(input_just_pressed(KeyCode::KeyI)),
 			),
 		)
 		.run()

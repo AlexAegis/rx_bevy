@@ -18,6 +18,12 @@ pub use scheduler::*;
 pub use signal::*;
 pub use subscription::*;
 
+#[cfg(feature = "debug")]
+mod debug_inspector;
+
+#[cfg(feature = "debug")]
+pub use debug_inspector::*;
+
 pub mod prelude {
 	pub use super::extensions::prelude::*;
 	pub use super::observables::prelude::*;

@@ -1,4 +1,4 @@
-use bevy_ecs::component::{Component, ComponentHooks, Mutable, StorageType};
+use bevy_ecs::component::Component;
 use rx_bevy_observable::{ObservableOutput, Observer};
 
 #[cfg(feature = "reflect")]
@@ -9,7 +9,8 @@ use crate::{
 	ObservableOnInsertContext, observable_on_insert_hook, observable_on_remove_hook,
 };
 
-#[derive(Clone)]
+#[derive(Component, Clone)]
+#[component(on_insert = observable_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IntervalObservableComponent {
@@ -25,16 +26,6 @@ impl IntervalObservableComponent {
 impl ObservableOutput for IntervalObservableComponent {
 	type Out = i32;
 	type OutError = ();
-}
-
-impl Component for IntervalObservableComponent {
-	const STORAGE_TYPE: StorageType = StorageType::Table;
-	type Mutability = Mutable;
-
-	fn register_component_hooks(hooks: &mut ComponentHooks) {
-		hooks.on_insert(observable_on_insert_hook::<Self>);
-		hooks.on_remove(observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>);
-	}
 }
 
 impl ObservableComponent for IntervalObservableComponent {

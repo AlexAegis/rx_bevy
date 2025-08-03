@@ -5,7 +5,7 @@ use bevy_ecs::{entity::Entity, system::Commands};
 use rx_bevy_observable::{ObserverInput, SubscriptionLike};
 use smallvec::SmallVec;
 
-use crate::{ObserverSignalPush, RelativeEntity, RxSignal, SignalBound};
+use crate::{ObserverSignalPush, RxSignal, SignalBound};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -22,8 +22,6 @@ where
 {
 	#[cfg_attr(feature = "debug", derive_where(skip))]
 	commands: &'a mut Commands<'w, 's>,
-	/// "This" entity
-	source_entity: Entity,
 	/// "Destination" entity
 	destination_entity: Entity,
 
@@ -32,9 +30,6 @@ where
 
 	closed: bool,
 
-	// #[derive_where(skip)]
-	// #[reflect(ignore)]
-	// teardown: InnerSubscription,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -52,12 +47,10 @@ where
 
 	pub fn downgrade(self) -> SubscriberContext<In, InError> {
 		SubscriberContext {
-			source_entity: self.source_entity,
 			destination_entity: self.destination_entity,
 			subscription_entity: self.subscription_entity,
 			closed: self.closed,
 			buffer: SmallVec::default(),
-			// teardown: self.teardown,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -65,11 +58,6 @@ where
 	#[inline]
 	pub fn commands(&mut self) -> &mut Commands<'w, 's> {
 		self.commands
-	}
-
-	#[inline]
-	pub fn resolve_relative_entity(&self, relative_entity: &RelativeEntity) -> Entity {
-		relative_entity.or_this(self.source_entity)
 	}
 
 	#[inline]
@@ -131,11 +119,10 @@ where
 
 /// This intermediate struct is used to avoid mixing up the three entities
 pub struct EntityContext {
-	/// "This" entity, usually an observable
-	pub source_entity: Entity,
-	/// "Destination" entity
+	/// The "destination" entity, where signals are sent.
 	pub destination_entity: Entity,
-	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
+	/// Despawning this stops the subscription, and is equivalent of an
+	/// unsubscribe.
 	pub subscription_entity: Entity,
 }
 
@@ -146,20 +133,15 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	/// "This" entity
-	source_entity: Entity,
-	/// "Destination" entity
+	/// The "destination" entity, where signals are sent.
 	destination_entity: Entity,
-	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
+	/// Despawning this stops the subscription, and is equivalent of an
+	/// unsubscribe.
 	subscription_entity: Entity,
-
 	closed: bool,
 
 	buffer: SmallVec<[RxSignal<In, InError>; 2]>,
-	// connector: Option<Box<dyn Fn(RxSignal<In, InError>)>>,
-	// #[derive_where(skip)]
-	// #[reflect(ignore)]
-	// teardown: InnerSubscription,
+
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -170,24 +152,12 @@ where
 {
 	pub fn new(entity_context: EntityContext) -> Self {
 		Self {
-			source_entity: entity_context.source_entity,
 			destination_entity: entity_context.destination_entity,
 			subscription_entity: entity_context.subscription_entity,
 			closed: false,
 			buffer: SmallVec::default(),
-			// teardown: InnerSubscription::new_empty(),
 			_phantom_data: PhantomData,
 		}
-	}
-
-	#[inline]
-	pub fn get_observable_entity(&self) -> Entity {
-		self.source_entity
-	}
-
-	#[inline]
-	pub fn resolve_relative_entity(&self, relative_entity: &RelativeEntity) -> Entity {
-		relative_entity.or_this(self.source_entity)
 	}
 }
 
@@ -206,11 +176,9 @@ where
 	{
 		CommandSubscriber::<'a, 'w, 's, In, InError> {
 			commands,
-			source_entity: self.source_entity,
 			destination_entity: self.destination_entity,
 			subscription_entity: self.subscription_entity,
 			closed: self.closed,
-			// teardown: InnerSubscription::new_empty(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -274,5 +242,8 @@ where
 		}
 	}
 
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {}
+	fn add(&mut self, _subscription: Box<dyn SubscriptionLike>) {
+		// TODO: Maybe buffer this too? Realistically this would only be an entity
+		unreachable!("Can't add subscriptionLikes to tear down")
+	}
 }

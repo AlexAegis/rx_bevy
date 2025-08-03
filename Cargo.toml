@@ -57,6 +57,7 @@ bevy_reflect = { version = "0.16.1", default-features = false }
 bevy_time = { version = "0.16.1", default-features = false }
 bevy_platform = { version = "0.16.1", default-features = false }
 bevy_ptr = { version = "0.16.1", default-features = false }
+bevy_input = { version = "0.16.1", default-features = false }
 bevy-inspector-egui = { version = "0.31.0", default-features = false }
 bevy_egui = { version = "0.34.1", features = ["immutable_ctx"] }
 derive-where = { version = "1.4.0" }
