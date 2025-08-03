@@ -3,9 +3,10 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Tick};
 
 use crate::{CommandSubscriber, RxSignal, SignalBound};
 
+// TODO: CONTINUE
 // TODO: This may need an add method for other subscriptions to tear down unsubscribe, or not, and have that work with other components
 /// This trait is the bevy equivalent of a SubscriptionLike and an Observer
-pub trait RxSubscription: ObservableOutput + DebugBound
+pub trait RxSubscription: 'static + ObservableOutput + DebugBound
 where
 	Self: Send + Sync,
 	Self::Out: SignalBound,

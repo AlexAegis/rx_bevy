@@ -10,37 +10,6 @@ use bevy_reflect::Reflect;
 
 use crate::{ObservableComponent, SignalBound};
 
-#[derive(Component, Deref, DerefMut)]
-#[relationship(relationship_target=SubscribeObserverRef::<O>)]
-#[cfg_attr(feature = "debug", derive(Debug))]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscribeObserverOf<O>
-where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
-{
-	#[relationship]
-	#[deref]
-	observable_entity: Entity,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data: PhantomData<O>,
-}
-
-impl<O> SubscribeObserverOf<O>
-where
-	O: ObservableComponent + Send + Sync,
-	O::Out: SignalBound,
-	O::OutError: SignalBound,
-{
-	pub fn new(observable_entity: Entity) -> Self {
-		Self {
-			observable_entity,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref, DerefMut)]
@@ -69,6 +38,37 @@ where
 	pub fn new(subscribe_observer_entity: Entity) -> Self {
 		Self {
 			subscribe_observer_entity,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+#[derive(Component, Deref, DerefMut)]
+#[relationship(relationship_target=SubscribeObserverRef::<O>)]
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
+pub struct SubscribeObserverOf<O>
+where
+	O: ObservableComponent + Send + Sync,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
+{
+	#[relationship]
+	#[deref]
+	observable_entity: Entity,
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
+	_phantom_data: PhantomData<O>,
+}
+
+impl<O> SubscribeObserverOf<O>
+where
+	O: ObservableComponent + Send + Sync,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
+{
+	pub fn new(observable_entity: Entity) -> Self {
+		Self {
+			observable_entity,
 			_phantom_data: PhantomData,
 		}
 	}

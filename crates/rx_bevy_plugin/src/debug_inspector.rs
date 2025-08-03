@@ -192,7 +192,7 @@ pub(crate) fn observable_entity_debug_print<O>(
 
 impl<Sub> Display for &SubscriptionSignalDestination<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -203,7 +203,7 @@ where
 
 impl<Sub> Display for &SubscriptionSignalSources<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -214,7 +214,7 @@ where
 
 impl<Sub> Display for &SubscriberInstanceOf<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -225,7 +225,7 @@ where
 
 impl<Sub> Display for &SubscriberInstances<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -256,7 +256,7 @@ pub(crate) fn subscription_entity_debug_print<Sub>(
 		With<SubscriptionMarker>,
 	>,
 ) where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {

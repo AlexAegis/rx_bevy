@@ -9,7 +9,6 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IntervalSubscription {
-	// TODO: Prolly needs an entity as owned Destination just like in regular rust
 	timer: Timer,
 	count: i32,
 }
@@ -40,7 +39,6 @@ impl RxSubscription for IntervalSubscription {
 	) {
 		self.timer.tick(tick.delta);
 		if self.timer.just_finished() {
-			println!("interval tick");
 			subscriber.next(self.count);
 			self.count += 1;
 		}

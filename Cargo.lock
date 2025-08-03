@@ -4409,9 +4409,9 @@ checksum = "0c6a884d2998352bb4daf0183589aec883f16a6da1f4dde84d8e2e9a5409a1ce"
 
 [[package]]
 name = "ringbuffer"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3df6368f71f205ff9c33c076d170dd56ebf68e8161c733c0caa07a7a5509ed53"
+checksum = "57b0b88a509053cbfd535726dcaaceee631313cef981266119527a1d110f6d2b"
 
 [[package]]
 name = "ron"
@@ -4620,6 +4620,35 @@ dependencies = [
  "rx_bevy_common_bounds",
  "rx_bevy_observable",
  "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_observable_keyboard"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_app",
+ "bevy_derive",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_input",
+ "bevy_kit_erased_component_registry",
+ "bevy_log",
+ "bevy_platform",
+ "bevy_ptr",
+ "bevy_reflect",
+ "bevy_time",
+ "derive-where",
+ "examples_common",
+ "rx_bevy",
+ "rx_bevy_common_bounds",
+ "rx_bevy_observable",
+ "rx_bevy_operator_composite",
+ "rx_bevy_testing",
+ "short_type_name",
+ "smallvec",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

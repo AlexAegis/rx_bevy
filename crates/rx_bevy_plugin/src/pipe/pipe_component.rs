@@ -3,9 +3,8 @@ use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
-	CommandSubscriber, ObservableOnInsertContext, OperatorComponent, PipeSubscriber,
-	RelativeEntity, SignalBound, SubscriberContext, observable_on_remove_hook,
-	operator_on_insert_hook,
+	CommandSubscriber, OnInsertSubHook, OperatorComponent, PipeSubscriber, RelativeEntity,
+	SignalBound, SubscriberContext, observable_on_remove_hook, operator_on_insert_hook,
 };
 
 #[cfg(feature = "debug")]
@@ -86,8 +85,6 @@ where
 
 	type Subscriber = PipeSubscriber<Op>;
 
-	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
-
 	/// The subscription creates a new observer entity, that entity should have the subscriber on it.
 	fn on_subscribe(
 		&mut self,
@@ -95,4 +92,16 @@ where
 	) -> Self::Subscriber {
 		PipeSubscriber::<Op>::new(self.operator.operator_subscribe(subscriber.downgrade()))
 	}
+}
+
+impl<Op> OnInsertSubHook for PipeComponent<Op>
+where
+	Op: 'static + Operator + Send + Sync + DebugBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+{
+	fn on_insert(&mut self, _context: crate::ObservableOnInsertContext) {}
 }

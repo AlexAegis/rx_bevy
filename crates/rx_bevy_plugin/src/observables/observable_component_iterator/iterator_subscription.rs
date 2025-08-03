@@ -13,7 +13,7 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IteratorSubscription<Iterator, const EMIT_ON_TICK: bool>
 where
-	Iterator: IntoIterator,
+	Iterator: 'static + IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: SignalBound,
 {
@@ -22,7 +22,7 @@ where
 
 impl<Iterator, const EMIT_ON_TICK: bool> IteratorSubscription<Iterator, EMIT_ON_TICK>
 where
-	Iterator: IntoIterator,
+	Iterator: 'static + IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: SignalBound,
 {
@@ -36,7 +36,7 @@ where
 impl<Iterator, const EMIT_ON_TICK: bool> ObservableOutput
 	for IteratorSubscription<Iterator, EMIT_ON_TICK>
 where
-	Iterator: IntoIterator,
+	Iterator: 'static + IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: SignalBound,
 {
@@ -47,7 +47,7 @@ where
 impl<Iterator, const EMIT_ON_TICK: bool> RxSubscription
 	for IteratorSubscription<Iterator, EMIT_ON_TICK>
 where
-	Iterator: IntoIterator,
+	Iterator: 'static + IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: SignalBound,
 {

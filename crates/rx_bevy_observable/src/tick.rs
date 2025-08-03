@@ -11,7 +11,6 @@ use rx_bevy_common_bounds::Clock;
 use bevy_reflect::Reflect;
 
 /// Used for scheduling, the subscriptions are ticked with this event
-/// ? Could be generic over Schedule or something thats associated with the observer
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "bevy", derive(Event))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]

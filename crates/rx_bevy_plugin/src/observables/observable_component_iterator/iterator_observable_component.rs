@@ -1,4 +1,4 @@
-use crate::{CommandSubscriber, IteratorSubscription, ObservableOnInsertContext};
+use crate::{CommandSubscriber, IteratorSubscription, OnInsertSubHook};
 use crate::{
 	ObservableComponent, SignalBound, observable_on_insert_hook, observable_on_remove_hook,
 };
@@ -53,8 +53,6 @@ where
 
 	type Subscription = IteratorSubscription<Iterator, EMIT_ON_TICK>;
 
-	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
-
 	fn on_subscribe(
 		&mut self,
 		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
@@ -68,6 +66,16 @@ where
 
 		IteratorSubscription::new(self.iterator.clone())
 	}
+}
+
+impl<Iterator, const EMIT_ON_TICK: bool> OnInsertSubHook
+	for IteratorObservableComponent<Iterator, EMIT_ON_TICK>
+where
+	Iterator: 'static + IntoIterator + Send + Sync + Clone + ReflectBound,
+	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
+	Iterator::Item: SignalBound,
+{
+	fn on_insert(&mut self, _context: crate::ObservableOnInsertContext) {}
 }
 
 impl<Iterator, const EMIT_ON_TICK: bool> ObservableOutput

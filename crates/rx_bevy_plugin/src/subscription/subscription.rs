@@ -26,7 +26,7 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct Subscription<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -36,7 +36,7 @@ where
 
 impl<Sub> Subscription<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -53,7 +53,7 @@ fn unsubscribe_subscription_on_remove<Sub>(
 	mut deferred_world: DeferredWorld,
 	hook_context: HookContext,
 ) where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -79,7 +79,7 @@ fn unsubscribe_subscription_on_remove<Sub>(
 
 impl<Sub> ObservableOutput for Subscription<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {

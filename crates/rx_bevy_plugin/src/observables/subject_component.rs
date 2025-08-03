@@ -1,6 +1,6 @@
 use crate::{
 	CommandSubscriber, NoopSubscription, ObservableComponent, ObservableOnInsertContext,
-	SignalBound, SubscriptionSignalDestination, observable_on_insert_hook,
+	OnInsertSubHook, SignalBound, SubscriptionSignalDestination, observable_on_insert_hook,
 	observable_on_remove_hook,
 };
 use crate::{RxSignal, SubscriptionSignalSources};
@@ -77,6 +77,16 @@ where
 
 	type Subscription = NoopSubscription<In, InError>;
 
+	fn on_subscribe(&mut self, _subscriber: CommandSubscriber<In, InError>) -> Self::Subscription {
+		NoopSubscription::default()
+	}
+}
+
+impl<In, InError> OnInsertSubHook for SubjectComponent<In, InError>
+where
+	In: Clone + SignalBound,
+	InError: Clone + SignalBound,
+{
 	fn on_insert(&mut self, context: ObservableOnInsertContext) {
 		let subject_observer_entity = context
 			.commands
@@ -91,10 +101,6 @@ where
 			.id();
 
 		self.subject_observer_entity = Some(subject_observer_entity);
-	}
-
-	fn on_subscribe(&mut self, _subscriber: CommandSubscriber<In, InError>) -> Self::Subscription {
-		NoopSubscription::default()
 	}
 }
 

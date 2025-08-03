@@ -1,27 +1,29 @@
 use bevy_ecs::{
 	component::{Component, HookContext, Mutable},
+	error::BevyError,
 	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
 	query::Without,
-	reflect::AppTypeRegistry,
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
-use bevy_log::{debug, trace, warn};
-
+use bevy_log::{trace, warn};
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, ObserverInput};
 use short_type_name::short_type_name;
+use std::any::TypeId;
 
 use crate::{
-	CommandSubscribeExtension, CommandSubscriber, EntityContext, ObservableOnInsertContext,
-	OperatorSubscribeObserverOf, RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe,
+	CommandSubscribeExtension, CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
+	DeferredWorldObservableSpawnOperatorSubscribeObserverExtension, EntityContext, OnInsertSubHook,
+	RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe, SubscribeError,
 	SubscriberContext, SubscriberInstanceOf, SubscriberSignalObserverRef, Subscription,
 	SubscriptionSignalDestination, subscription_tick_observer,
 };
 
-use std::any::TypeId;
+#[cfg(feature = "reflect")]
+use crate::DeferredWorldObservableRegisterSubscriptionTypesExtension;
 
 /// Unlike an [ObservableComponent], an [OperatorComponent] differs in what its
 /// "subscription" does. Upon subscribe, an operator returns an [RxSubscriber]
@@ -35,7 +37,7 @@ use std::any::TypeId;
 /// some signals upon subscription.
 ///
 pub trait OperatorComponent:
-	ObserverInput + ObservableOutput + Component<Mutability = Mutable> + DebugBound
+	ObserverInput + ObservableOutput + Component<Mutability = Mutable> + OnInsertSubHook + DebugBound
 where
 	Self::In: SignalBound,
 	Self::InError: SignalBound,
@@ -51,8 +53,6 @@ where
 		+ Sync;
 
 	fn get_source(&self) -> RelativeEntity;
-
-	fn on_insert(&mut self, context: ObservableOnInsertContext);
 
 	fn on_subscribe(
 		&mut self,
@@ -75,70 +75,23 @@ where
 	#[cfg(feature = "debug")]
 	crate::register_operator_debug_systems::<Op>(&mut deferred_world);
 
-	let observable_entity = hook_context.entity;
-
 	#[cfg(feature = "reflect")]
-	{
-		use crate::{SubscriberInstanceOf, SubscriberInstances};
-
-		let reg = deferred_world.resource_mut::<AppTypeRegistry>();
-		let mut registry_lock = reg.write();
-
-		registry_lock.register::<SubscriberInstanceOf<Op::Subscriber>>();
-		registry_lock.register::<SubscriberInstances<Op::Subscriber>>();
-	}
+	deferred_world.register_subscription_types::<Op::Subscriber>();
 
 	// This is the observer that processes [Subscribe] events for this specific observable.
 	// It will be despawned when the observable is removed.
-	{
-		let mut commands = deferred_world.commands();
-		debug!(
-			"setting up subscribe observer for {}({})",
-			short_type_name::<Op>(),
-			observable_entity
-		);
+	deferred_world.spawn_operator_subscribe_observer::<Op>(hook_context.entity);
 
-		let _ = commands
-			.spawn((
-				OperatorSubscribeObserverOf::<Op>::new(observable_entity),
-				Observer::new(on_operator_subscribe::<Op>).with_entity(observable_entity),
-				// TODO: Having this here is unnecessary and is causing a warning on despawn because of the double relationship. I'll leave this here for now just so the inspector is a little more organized until that too has a convenient method to register relationships
-				ChildOf(observable_entity), // For organizational purposes in debug views like WorldInspector
-				Name::new(format!(
-					"Observer (Subscribe) - {}({}) ",
-					short_type_name::<Op>(),
-					observable_entity
-				)),
-			))
-			.id();
-	};
-
-	// Calling the on_insert hook on the observable
-	{
-		let (mut entities, mut commands) = deferred_world.entities_and_commands();
-		let mut observable_entity_mut = entities.get_mut(observable_entity).unwrap();
-
-		let mut component = observable_entity_mut.get_mut::<Op>().unwrap();
-
-		component.on_insert(ObservableOnInsertContext {
-			observable_entity,
-			commands: &mut commands,
-		});
-	}
-
-	debug!(
-		"setting up subscribe observer for {}({}) finished",
-		short_type_name::<Op>(),
-		observable_entity
-	);
+	deferred_world.call_on_insert_hook::<Op>(hook_context.entity);
 }
 
-fn on_operator_subscribe<Op>(
+pub(crate) fn on_operator_subscribe<Op>(
 	trigger: Trigger<Subscribe<Op::Out, Op::OutError>>,
 	mut observable_component_query: Query<&mut Op>,
 	mut commands: Commands,
 	name_query: Query<&Name>,
-) where
+) -> Result<(), BevyError>
+where
 	Op: OperatorComponent + Send + Sync,
 	Op::In: SignalBound,
 	Op::InError: SignalBound,
@@ -159,7 +112,7 @@ fn on_operator_subscribe<Op>(
 			short_type_name::<Op>(),
 			operator_definition_entity
 		);
-		return; // Err(SubscribeError::NotAnObservable.into());
+		return Err(SubscribeError::NotAnObservable.into());
 	};
 	let destination_entity = trigger.get_destination_or_this(operator_definition_entity);
 
@@ -173,7 +126,7 @@ fn on_operator_subscribe<Op>(
 			short_type_name::<Op>(),
 			operator_definition_entity
 		);
-		return; // Err(SubscribeError::SelfSubscribeDisallowed.into());
+		return Err(SubscribeError::SelfSubscribeDisallowed.into());
 	}
 
 	let subscription_entity = trigger.event().get_subscription_entity();
@@ -237,25 +190,16 @@ fn on_operator_subscribe<Op>(
 			.get_source()
 			.or_this(operator_definition_entity);
 
-		// TODO: CONTINUE FROM HERE!!!!!!!!!!!!!
-		// TODO: This needs to be .add-ed to the current subscription to form a teardown chain. The subscriptions relation could do that, on remove that would despawn all anyway,
-		// TODO: that may require unifying collecting subscriptions on Out, OutError as now it's either an operator or a normal sub, and there isn't really a difference
-		let source_subscription_entity = commands
+		// TODO: Check if this needs to be added AND FORWARDED to the first subscription entity, or the linked_spawn attr is enough (works currently, needs some more testing)
+		let _source_subscription_entity = commands
 			.subscribe_with_schedule_of::<Op::Out, Op::OutError, Op::In, Op::InError>(
 				source_observable_entity,
 				subscription_entity,
 				trigger.event(),
 			);
-		// TODO: Add a subscriptions to this subscription, and a subref to the
-
-		println!(
-			"op sub for chain sub {}",
-			short_type_name::<Op::Subscriber>()
-		);
-		commands.entity(source_observable_entity);
-
-		dbg!(source_subscription_entity);
 	}
+
+	Ok(())
 }
 
 fn operator_subscription_signal_observer<Op>(

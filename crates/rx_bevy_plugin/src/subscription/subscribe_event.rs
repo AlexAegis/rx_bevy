@@ -135,7 +135,6 @@ where
 	}
 }
 
-/// TODO: Currently unused, could be used once bevy observers become fallible
 #[derive(Error, Debug)]
 pub enum SubscribeError {
 	#[error("Tried to subscribe to an entity that does not contain an ObservableComponent")]
@@ -146,4 +145,6 @@ pub enum SubscribeError {
 	SelfSubscribeDisallowed,
 	#[error("Tried to subscribe to a scheduled observable with an unscheduled Subscription!")]
 	UnscheduledSubscribeOnScheduledObservable,
+	#[error("Tried to subscribe to an unscheduled observable with a scheduled Subscription!")]
+	ScheduledSubscribeOnUnscheduledObservable,
 }

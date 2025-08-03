@@ -1,7 +1,7 @@
 use bevy_ecs::{
 	component::{Component, HookContext, Mutable},
 	entity::Entity,
-	hierarchy::ChildOf,
+	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
 	query::With,
@@ -10,16 +10,25 @@ use bevy_ecs::{
 };
 use bevy_log::{debug, error, trace, warn};
 use derive_where::derive_where;
-
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
-	CommandSubscriber, EntityContext, RxSubscription, SignalBound, Subscribe, SubscribeObserverOf,
-	SubscriberContext, SubscriberInstanceOf, SubscriberInstances, Subscription,
-	SubscriptionSignalDestination,
+	CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
+	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, EntityContext,
+	RxSubscription, SignalBound, Subscribe, SubscribeError, SubscriberContext,
+	SubscriberInstanceOf, SubscriberInstances, Subscription, SubscriptionSignalDestination,
 };
+
+#[cfg(feature = "reflect")]
+use crate::DeferredWorldObservableRegisterSubscriptionTypesExtension;
+
+/// TODO: CONTINUE Fix Subject, probably needs it's on on_subject_subscribe handler and SubjectComponent types
+/// TODO: Check if even needed, once SubjectComponent is fixed
+pub trait OnInsertSubHook {
+	fn on_insert(&mut self, context: ObservableOnInsertContext);
+}
 
 /// Since the nature of a Subscription is very different in the context of an
 /// ECS, where there are no long term references, the nature of an Observable
@@ -28,7 +37,7 @@ use crate::{
 /// Reflection: As many Operators are generic over their closures, which do not
 /// have a type_path it is impossible to require reflection over observables.
 pub trait ObservableComponent:
-	ObservableOutput + Component<Mutability = Mutable> + DebugBound
+	ObservableOutput + Component<Mutability = Mutable> + OnInsertSubHook + DebugBound
 where
 	Self::Out: SignalBound,
 	Self::OutError: SignalBound,
@@ -39,8 +48,6 @@ where
 	/// Otherwise implement a [ScheduledSubscription] that can emit events when
 	/// ticked by an [RxScheduler].
 	type Subscription: RxSubscription<Out = Self::Out, OutError = Self::OutError> + Send + Sync;
-
-	fn on_insert(&mut self, context: ObservableOnInsertContext);
 
 	/// The subscriber received can immediately be used to push events into
 	/// using it's Observer interface (`.next`, `.error`, `.complete`)
@@ -73,52 +80,14 @@ where
 	O::Out: SignalBound,
 	O::OutError: SignalBound,
 {
+	#[cfg(feature = "reflect")]
+	deferred_world.register_subscription_types::<O::Subscription>();
+
 	#[cfg(feature = "debug")]
 	crate::register_observable_debug_systems::<O>(&mut deferred_world);
 
-	let observable_entity = hook_context.entity;
-
-	// This is the observer that processes [Subscribe] events for this specific observable.
-	// It will be despawned when the observable is removed.
-	{
-		let mut commands = deferred_world.commands();
-		trace!(
-			"setting up subscribe observer for {}({})",
-			short_type_name::<O>(),
-			observable_entity
-		);
-
-		commands.spawn((
-			SubscribeObserverOf::<O>::new(observable_entity),
-			Observer::new(on_subscribe::<O>).with_entity(observable_entity),
-			// TODO: Having this here is unnecessary and is causing a warning on despawn because of the double relationship. I'll leave this here for now just so the inspector is a little more organized until that too has a convenient method to register relationships
-			ChildOf(observable_entity), // For organizational purposes in debug views like WorldInspector
-			Name::new(format!(
-				"Observer (Subscribe) - {}({}) ",
-				short_type_name::<O>(),
-				observable_entity
-			)),
-		));
-	};
-
-	// Calling the on_insert hook on the observable
-	{
-		let (mut entities, mut commands) = deferred_world.entities_and_commands();
-		let mut observable_entity_mut = entities.get_mut(observable_entity).unwrap();
-
-		let mut component = observable_entity_mut.get_mut::<O>().unwrap();
-
-		component.on_insert(ObservableOnInsertContext {
-			observable_entity,
-			commands: &mut commands,
-		});
-	}
-
-	trace!(
-		"setting up subscribe observer for {}({}) finished",
-		short_type_name::<O>(),
-		observable_entity
-	);
+	deferred_world.spawn_observable_subscribe_observer::<O>(hook_context.entity);
+	deferred_world.call_on_insert_hook::<O>(hook_context.entity);
 }
 
 /// Removes the subscriptions for this observable or operators subscriber,
@@ -135,12 +104,13 @@ where
 		.remove::<SubscriberInstances<Sub>>();
 }
 
-fn on_subscribe<O>(
+pub(crate) fn on_observable_subscribe<O>(
 	trigger: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut observable_component_query: Query<&mut O>,
 	mut commands: Commands,
 	name_query: Query<&Name>,
-) where
+) -> Result<(), BevyError>
+where
 	O: ObservableComponent + Send + Sync,
 	O::Out: SignalBound,
 	O::OutError: SignalBound,
@@ -157,7 +127,7 @@ fn on_subscribe<O>(
 			short_type_name::<O>(),
 			observable_entity
 		);
-		return; // Err(SubscribeError::NotAnObservable.into());
+		return Err(SubscribeError::NotAnObservable.into());
 	};
 	let destination_entity = trigger.get_destination_or_this(observable_entity);
 
@@ -169,7 +139,7 @@ fn on_subscribe<O>(
 			short_type_name::<O>(),
 			observable_entity
 		);
-		return; // Err(SubscribeError::SelfSubscribeDisallowed.into());
+		return Err(SubscribeError::SelfSubscribeDisallowed.into());
 	}
 
 	if O::Subscription::SCHEDULED && !trigger.event().is_scheduled() {
@@ -178,7 +148,7 @@ fn on_subscribe<O>(
 			short_type_name::<O>(),
 			observable_entity
 		);
-		return; // Err(SubscribeError::UnscheduledSubscribeOnScheduledObservable.into());
+		return Err(SubscribeError::UnscheduledSubscribeOnScheduledObservable.into());
 	}
 
 	if !O::Subscription::SCHEDULED && trigger.event().is_scheduled() {
@@ -187,7 +157,7 @@ fn on_subscribe<O>(
 			short_type_name::<O>(),
 			observable_entity
 		);
-		return; // Err(SubscribeError::ScheduledSubscribeOnUnscheduledObservable.into());
+		return Err(SubscribeError::ScheduledSubscribeOnUnscheduledObservable.into());
 	}
 
 	let subscription_entity = trigger.event().get_subscription_entity();
@@ -229,6 +199,8 @@ fn on_subscribe<O>(
 			));
 		};
 	}
+
+	Ok(())
 }
 
 /// This is what would drive an "intervalObserver" ticking a subscriber,

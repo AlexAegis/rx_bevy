@@ -17,10 +17,10 @@ use bevy_reflect::Reflect;
 #[derive(Component)]
 #[relationship(relationship_target=SubscriptionSignalSources::<Sub>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
+#[cfg_attr(feature = "reflect", derive(Reflect), reflect(type_path = false))]
 pub struct SubscriptionSignalDestination<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -32,7 +32,7 @@ where
 
 impl<Sub> SubscriptionSignalDestination<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -64,21 +64,22 @@ where
 #[relationship_target(relationship=SubscriptionSignalDestination::<Sub>, linked_spawn)]
 #[derive_where(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
+#[cfg_attr(feature = "reflect", derive(Reflect), reflect(type_path = false))]
 pub struct SubscriptionSignalSources<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
 	#[relationship]
 	subscriptions: SmallVec<[Entity; 1]>,
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<Sub>,
 }
 
 impl<Sub> SubscriptionSignalSources<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -114,5 +115,59 @@ where
 					.map(|subscription| subscription.destination)
 			})
 			.collect()
+	}
+}
+
+#[cfg(feature = "reflect")]
+impl<Sub> bevy_reflect::TypePath for SubscriptionSignalDestination<Sub>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	fn crate_name() -> Option<&'static str> {
+		Some("rx_bevy_plugin")
+	}
+
+	fn module_path() -> Option<&'static str> {
+		Some("rx_bevy_plugin")
+	}
+
+	fn short_type_path() -> &'static str {
+		"SubscriptionSignalDestination"
+	}
+
+	fn type_ident() -> Option<&'static str> {
+		Some("SubscriptionSignalDestination")
+	}
+	fn type_path() -> &'static str {
+		"rx_bevy_plugin::SubscriptionSignalDestination"
+	}
+}
+
+#[cfg(feature = "reflect")]
+impl<Sub> bevy_reflect::TypePath for SubscriptionSignalSources<Sub>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	fn crate_name() -> Option<&'static str> {
+		Some("rx_bevy_plugin")
+	}
+
+	fn module_path() -> Option<&'static str> {
+		Some("rx_bevy_plugin")
+	}
+
+	fn short_type_path() -> &'static str {
+		"SubscriptionSignalSources"
+	}
+
+	fn type_ident() -> Option<&'static str> {
+		Some("SubscriptionSignalSources")
+	}
+	fn type_path() -> &'static str {
+		"rx_bevy_plugin::SubscriptionSignalSources"
 	}
 }

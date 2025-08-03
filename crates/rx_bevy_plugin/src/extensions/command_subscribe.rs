@@ -58,8 +58,6 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 			self,
 		);
 
-		println!("trig subscribe {:?} {:?}", event, observable_entity);
-
 		self.trigger_targets(event, observable_entity);
 
 		subscription_entity

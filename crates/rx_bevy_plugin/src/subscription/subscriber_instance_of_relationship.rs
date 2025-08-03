@@ -21,7 +21,7 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(type_path = false))]
 pub struct SubscriberInstanceOf<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -36,7 +36,7 @@ where
 
 impl<Sub> SubscriberInstanceOf<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -63,7 +63,7 @@ where
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(type_path = false))]
 pub struct SubscriberInstances<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -75,7 +75,7 @@ where
 
 impl<Sub> SubscriberInstances<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -87,7 +87,7 @@ where
 #[cfg(feature = "reflect")]
 impl<Sub> TypePath for SubscriberInstanceOf<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
@@ -114,7 +114,7 @@ where
 #[cfg(feature = "reflect")]
 impl<Sub> TypePath for SubscriberInstances<Sub>
 where
-	Sub: RxSubscription + 'static,
+	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
