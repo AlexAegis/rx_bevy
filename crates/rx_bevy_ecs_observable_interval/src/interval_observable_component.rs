@@ -4,10 +4,12 @@ use rx_bevy_observable::{ObservableOutput, Observer};
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{
-	CommandSubscriber, IntervalObservableOptions, IntervalSubscription, ObservableComponent,
-	OnInsertSubHook, observable_on_insert_hook, observable_on_remove_hook,
+use rx_bevy_plugin::{
+	CommandSubscriber, ObservableComponent, ObservableOnInsertContext, OnInsertSubHook,
+	observable_on_insert_hook, observable_on_remove_hook,
 };
+
+use crate::{IntervalObservableOptions, IntervalSubscription};
 
 #[derive(Component, Clone)]
 #[component(on_insert = observable_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>)]
@@ -40,11 +42,10 @@ impl ObservableComponent for IntervalObservableComponent {
 		if self.options.start_on_subscribe {
 			subscriber.next(0);
 		}
-		println!("interval observable onsub");
 		IntervalSubscription::new(self.options.clone())
 	}
 }
 
 impl OnInsertSubHook for IntervalObservableComponent {
-	fn on_insert(&mut self, _context: crate::ObservableOnInsertContext) {}
+	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}
 }

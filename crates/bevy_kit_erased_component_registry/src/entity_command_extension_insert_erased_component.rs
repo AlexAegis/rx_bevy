@@ -23,8 +23,7 @@ impl EntityCommandInsertErasedComponentByTypeIdExtension for EntityCommands<'_> 
 fn insert_erased_component_by_type_id(type_id: TypeId) -> impl EntityCommand {
 	move |mut entity: EntityWorldMut| {
 		let type_may_not_be_registered_error_msg = format!(
-			"Have you forgot to register {:?} in a plugin using `.register_erased_component::<C>()`?",
-			type_id
+			"Have you forgot to register {type_id:?} in a plugin using `.register_erased_component::<C>()`?",
 		);
 
 		// SAFETY: `update_location` is called at the end, even though no other operations are done to this entity.
@@ -35,22 +34,19 @@ fn insert_erased_component_by_type_id(type_id: TypeId) -> impl EntityCommand {
 			world
 				.get_resource::<ErasedComponentRegistry>()
 				.expect(&format!(
-					"DefaultComponentRegistry is not found! {}",
-					type_may_not_be_registered_error_msg
+					"DefaultComponentRegistry is not found! {type_may_not_be_registered_error_msg}",
 				));
 
 		let erased_subscription_schedule_ctor = erased_component_registry
 			.get_constructor(type_id)
 			.expect(&format!(
-				"Component constructor not found in registry! {}",
-				type_may_not_be_registered_error_msg
+				"Component constructor not found in registry! {type_may_not_be_registered_error_msg}",
 			));
 
 		let erased_subscription_schedule = erased_subscription_schedule_ctor(world);
 
 		let component_id = world.components().get_id(type_id).expect(&format!(
-			"ComponentId not found for this TypeId! {}",
-			type_may_not_be_registered_error_msg
+			"ComponentId not found for this TypeId! {type_may_not_be_registered_error_msg}",
 		));
 
 		// SAFETY: ComponentId is extracted from this world, and we would panic earlier if it would not be found.

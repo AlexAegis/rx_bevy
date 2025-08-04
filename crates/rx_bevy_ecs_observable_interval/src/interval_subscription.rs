@@ -1,10 +1,12 @@
 use bevy_time::{Timer, TimerMode};
 use rx_bevy_observable::{ObservableOutput, Observer, Tick};
 
-use crate::{CommandSubscriber, IntervalObservableOptions, RxSubscription};
+use rx_bevy_plugin::{CommandSubscriber, RxSubscription};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
+
+use crate::IntervalObservableOptions;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]

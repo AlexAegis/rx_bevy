@@ -46,7 +46,7 @@ where
 	Error: Clone,
 {
 	fn next(&mut self, next: T) {
-		self.values.borrow_mut().push(next.clone());
+		self.values.borrow_mut().enqueue(next.clone());
 		self.subject.next(next);
 	}
 

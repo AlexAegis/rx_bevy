@@ -18,7 +18,12 @@ workspace = true
 [features]
 default = ["dev", "reflect", "debug"]
 dev = ["bevy/dynamic_linking", "inspector"]
-debug = ["bevy/track_location", "rx_bevy_common_bounds/debug", "dep:bevy_input"]
+debug = [
+    "bevy/track_location",
+    "rx_bevy_common_bounds/debug",
+    "dep:bevy_input",
+    "rx_bevy_ecs_observable_interval/debug",
+]
 serialize = ["rx_bevy_common_bounds/serialize"]
 example = [
     "dev",
@@ -47,6 +52,7 @@ reflect = [
     "rx_bevy_common_bounds/reflect",
     "rx_bevy_operator_composite/reflect",
     "rx_bevy_observable/reflect",
+    "rx_bevy_ecs_observable_interval/reflect",
 ]
 
 [dependencies]
@@ -79,3 +85,4 @@ bevy = { workspace = true }
 rx_bevy = { workspace = true, features = ["bevy", "reflect", "tick"] }
 rx_bevy_testing = { workspace = true, features = ["tick"] }
 examples_common = { workspace = true }
+rx_bevy_ecs_observable_interval = { workspace = true }

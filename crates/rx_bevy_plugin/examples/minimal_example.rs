@@ -4,10 +4,11 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
+use rx_bevy_ecs_observable_interval::{IntervalObservableComponent, IntervalObservableOptions};
 
 use rx_bevy_plugin::{
-	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, IntervalObservableComponent,
-	IntervalObservableOptions, RelativeEntity, RxPlugin, RxSignal,
+	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxPlugin,
+	RxSignal,
 };
 
 /// This test showcases in what order observables execute their observers

@@ -80,7 +80,6 @@ where
 	fn tick(&mut self, tick: crate::Tick) {
 		if !self.is_closed() {
 			self.destination.tick(tick);
-			self.unsubscribe();
 		}
 	}
 }

@@ -81,6 +81,9 @@ rx_bevy_observable = { path = "crates/rx_bevy_observable" }
 rx_bevy_emission_variants = { path = "crates/rx_bevy_emission_variants" }
 rx_bevy_testing = { path = "crates/rx_bevy_testing" }
 bevy_kit_erased_component_registry = { path = "crates/bevy_kit_erased_component_registry" }
+# ECS Observables
+rx_bevy_ecs_observable_interval = { path = "crates/rx_bevy_ecs_observable_interval" }
+rx_bevy_ecs_observable_keyboard = { path = "crates/rx_bevy_ecs_observable_keyboard" }
 # Observables
 rx_bevy_observable_connectable = { path = "crates/rx_bevy_observable_connectable" }
 rx_bevy_observable_combine_latest = { path = "crates/rx_bevy_observable_combine_latest" }
@@ -90,7 +93,6 @@ rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
 rx_bevy_observable_merge = { path = "crates/rx_bevy_observable_merge" }
 rx_bevy_observable_throw = { path = "crates/rx_bevy_observable_throw" }
 rx_bevy_observable_zip = { path = "crates/rx_bevy_observable_zip" }
-rx_bevy_observable_keyboard = { path = "crates/rx_bevy_observable_keyboard" }
 # Pipes
 rx_bevy_pipe = { path = "crates/rx_bevy_pipe" }
 # Observers
