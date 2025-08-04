@@ -52,7 +52,7 @@ where
 	}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {}
+	fn tick(&mut self, _tick: rx_bevy_observable::Tick) {}
 }
 
 impl<In, InError, OnPush, OnError, OnComplete> UpgradeableObserver

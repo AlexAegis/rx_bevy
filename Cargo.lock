@@ -4545,7 +4545,9 @@ name = "rx_bevy_ecs_observable_interval"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-inspector-egui",
  "bevy_ecs",
+ "bevy_egui",
  "bevy_reflect",
  "bevy_time",
  "examples_common",
@@ -4560,9 +4562,12 @@ name = "rx_bevy_ecs_observable_keyboard"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-inspector-egui",
+ "bevy_app",
  "bevy_ecs",
+ "bevy_egui",
+ "bevy_input",
  "bevy_reflect",
- "bevy_time",
  "examples_common",
  "rx_bevy",
  "rx_bevy_observable",
