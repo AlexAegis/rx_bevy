@@ -2,9 +2,6 @@ use std::{any::TypeId, marker::PhantomData};
 
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
 use bevy_kit_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
-use bevy_log::error;
-
-use thiserror::Error;
 
 use crate::{RelativeEntity, SignalBound, SubscriptionSchedule};
 
@@ -133,18 +130,4 @@ where
 	pub fn get_subscription_entity(&self) -> Entity {
 		self.subscription_entity
 	}
-}
-
-#[derive(Error, Debug)]
-pub enum SubscribeError {
-	#[error("Tried to subscribe to an entity that does not contain an ObservableComponent")]
-	NotAnObservable,
-	#[error(
-		"Tried to subscribe to an ObservableComponent which disallows subscriptions from the same entity"
-	)]
-	SelfSubscribeDisallowed,
-	#[error("Tried to subscribe to a scheduled observable with an unscheduled Subscription!")]
-	UnscheduledSubscribeOnScheduledObservable,
-	#[error("Tried to subscribe to an unscheduled observable with a scheduled Subscription!")]
-	ScheduledSubscribeOnUnscheduledObservable,
 }

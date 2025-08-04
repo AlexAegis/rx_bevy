@@ -8,7 +8,7 @@ use bevy_ecs::{
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
-use bevy_log::{debug, error, trace, warn};
+use bevy_log::{debug, trace};
 use derive_where::derive_where;
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Tick};
@@ -122,42 +122,36 @@ where
 		name_query.get(observable_entity).unwrap()
 	);
 	let Ok(mut observable_component) = observable_component_query.get_mut(observable_entity) else {
-		warn!(
-			"Tried to subscribe to {} but it does not exist on {}",
-			short_type_name::<O>(),
-			observable_entity
+		return Err(
+			SubscribeError::NotAnObservable(short_type_name::<O>(), observable_entity).into(),
 		);
-		return Err(SubscribeError::NotAnObservable.into());
 	};
 	let destination_entity = trigger.get_destination_or_this(observable_entity);
 
 	// Observables that re-emit everything they observe should not be able to
 	// subscribe to themselves as that would cause an infinite loop
 	if !O::CAN_SELF_SUBSCRIBE && observable_entity == destination_entity {
-		warn!(
-			"Tried to subscribe to itself when it is disallowed! {}({})",
+		return Err(SubscribeError::SelfSubscribeDisallowed(
 			short_type_name::<O>(),
-			observable_entity
-		);
-		return Err(SubscribeError::SelfSubscribeDisallowed.into());
+			observable_entity,
+		)
+		.into());
 	}
 
 	if O::Subscription::SCHEDULED && !trigger.event().is_scheduled() {
-		error!(
-			"Tried to subscribe to a scheduled observable with an unscheduled Subscription! {}({})",
+		return Err(SubscribeError::UnscheduledSubscribeOnScheduledObservable(
 			short_type_name::<O>(),
-			observable_entity
-		);
-		return Err(SubscribeError::UnscheduledSubscribeOnScheduledObservable.into());
+			observable_entity,
+		)
+		.into());
 	}
 
 	if !O::Subscription::SCHEDULED && trigger.event().is_scheduled() {
-		error!(
-			"Tried to subscribe to an unscheduled observable with a scheduled Subscription! {}({})",
+		return Err(SubscribeError::ScheduledSubscribeOnUnscheduledObservable(
 			short_type_name::<O>(),
-			observable_entity
-		);
-		return Err(SubscribeError::ScheduledSubscribeOnUnscheduledObservable.into());
+			observable_entity,
+		)
+		.into());
 	}
 
 	let subscription_entity = trigger.event().get_subscription_entity();

@@ -9,8 +9,8 @@ use bevy_ecs::{
 
 use crate::{
 	ObservableComponent, ObservableOnInsertContext, OnInsertSubHook, OperatorComponent,
-	OperatorSubscribeObserverOf, SignalBound, SubscribeObserverOf, on_observable_subscribe,
-	on_operator_subscribe,
+	OperatorSubscribeObserverOf, SignalBound, SubscribeObserverOf,
+	default_on_subscribe_error_handler, on_observable_subscribe, on_operator_subscribe,
 };
 use short_type_name::short_type_name;
 
@@ -92,7 +92,9 @@ impl DeferredWorldObservableSpawnObservableSubscribeObserverExtension for Deferr
 	{
 		self.commands().spawn((
 			SubscribeObserverOf::<O>::new(observable_entity),
-			Observer::new(on_observable_subscribe::<O>).with_entity(observable_entity),
+			Observer::new(on_observable_subscribe::<O>)
+				.with_entity(observable_entity)
+				.with_error_handler(default_on_subscribe_error_handler),
 			// TODO: Having this here is unnecessary and is causing a warning on despawn because of the double relationship. I'll leave this here for now just so the inspector is a little more organized until that too has a convenient method to register relationships
 			ChildOf(observable_entity), // For organizational purposes in debug views like WorldInspector
 			Name::new(format!(
@@ -115,7 +117,9 @@ impl DeferredWorldObservableSpawnOperatorSubscribeObserverExtension for Deferred
 	{
 		self.commands().spawn((
 			OperatorSubscribeObserverOf::<Op>::new(operator_entity),
-			Observer::new(on_operator_subscribe::<Op>).with_entity(operator_entity),
+			Observer::new(on_operator_subscribe::<Op>)
+				.with_entity(operator_entity)
+				.with_error_handler(default_on_subscribe_error_handler),
 			// TODO: Having this here is unnecessary and is causing a warning on despawn because of the double relationship. I'll leave this here for now just so the inspector is a little more organized until that too has a convenient method to register relationships
 			ChildOf(operator_entity), // For organizational purposes in debug views like WorldInspector
 			Name::new(format!(

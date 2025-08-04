@@ -1,5 +1,6 @@
 mod command_subscriber;
 mod noop_subscription;
+mod subscribe_error;
 mod subscribe_event;
 mod subscriber_instance_of_relationship;
 mod subscription;
@@ -7,6 +8,7 @@ mod subscription_signal_destination_relationship;
 
 pub use command_subscriber::*;
 pub use noop_subscription::*;
+pub use subscribe_error::*;
 pub use subscribe_event::*;
 pub use subscriber_instance_of_relationship::*;
 pub use subscription::*;

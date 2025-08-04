@@ -8,7 +8,7 @@ use bevy_ecs::{
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
-use bevy_log::{trace, warn};
+use bevy_log::trace;
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, ObserverInput};
 use short_type_name::short_type_name;
@@ -84,12 +84,10 @@ where
 
 	deferred_world.call_on_insert_hook::<Op>(hook_context.entity);
 }
-
 pub(crate) fn on_operator_subscribe<Op>(
 	trigger: Trigger<Subscribe<Op::Out, Op::OutError>>,
 	mut observable_component_query: Query<&mut Op>,
 	mut commands: Commands,
-	name_query: Query<&Name>,
 ) -> Result<(), BevyError>
 where
 	Op: OperatorComponent + Send + Sync,
@@ -99,20 +97,14 @@ where
 	Op::OutError: SignalBound,
 {
 	let operator_definition_entity = trigger.target();
-	println!(
-		"on_subscribe {} {:?}",
-		operator_definition_entity,
-		name_query.get(operator_definition_entity).unwrap()
-	);
 
 	let Ok(mut operator_component) = observable_component_query.get_mut(operator_definition_entity)
 	else {
-		warn!(
-			"Tried to subscribe to {} but it does not exist on {}",
+		return Err(SubscribeError::NotAnObservable(
 			short_type_name::<Op>(),
-			operator_definition_entity
-		);
-		return Err(SubscribeError::NotAnObservable.into());
+			operator_definition_entity,
+		)
+		.into());
 	};
 	let destination_entity = trigger.get_destination_or_this(operator_definition_entity);
 
@@ -121,12 +113,11 @@ where
 	if operator_definition_entity == destination_entity
 		&& TypeId::of::<Op::In>() == TypeId::of::<Op::Out>()
 	{
-		warn!(
-			"Tried to subscribe to itself when it is disallowed! {}({})",
+		return Err(SubscribeError::SelfSubscribeDisallowed(
 			short_type_name::<Op>(),
-			operator_definition_entity
-		);
-		return Err(SubscribeError::SelfSubscribeDisallowed.into());
+			operator_definition_entity,
+		)
+		.into());
 	}
 
 	let subscription_entity = trigger.event().get_subscription_entity();
