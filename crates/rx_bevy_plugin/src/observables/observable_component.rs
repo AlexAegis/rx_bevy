@@ -4,8 +4,7 @@ use bevy_ecs::{
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
-	query::With,
-	system::{Commands, Query},
+	system::{Commands, Query, SystemParam},
 	world::DeferredWorld,
 };
 use bevy_log::{debug, trace};
@@ -16,9 +15,11 @@ use short_type_name::short_type_name;
 
 use crate::{
 	CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
-	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, EntityContext,
-	RxSubscription, SignalBound, Subscribe, SubscribeError, SubscriberContext,
-	SubscriberInstanceOf, SubscriberInstances, Subscription, SubscriptionSignalDestination,
+	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, EntityContext, RxChannel,
+	RxSubscriberEvent, RxSubscription, RxTick, SignalBound, Subscribe, SubscribeError,
+	SubscriberContext, SubscriberInstanceOf, SubscriberInstances, Subscription,
+	SubscriptionChannelHandlerRef, SubscriptionHookRegistrationContext, SubscriptionMarker,
+	SubscriptionSignalDestination,
 };
 
 #[cfg(feature = "reflect")]
@@ -162,8 +163,14 @@ where
 			subscription_entity,
 		});
 
-		let spawned_subscription =
+		let mut spawned_subscription =
 			observable_component.on_subscribe(context.upgrade(&mut commands));
+
+		let mut subscription_hooks = SubscriptionHookRegistrationContext::<O::Subscription>::new(
+			subscription_entity,
+			&mut commands,
+		);
+		spawned_subscription.register_hooks(&mut subscription_hooks);
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
@@ -174,19 +181,14 @@ where
 				short_type_name::<O::OutError>(),
 				observable_entity
 			)),
+			SubscriptionMarker,
 			Subscription::<O::Subscription>::new(spawned_subscription),
 			SubscriberInstanceOf::<O::Subscription>::new(observable_entity),
 			SubscriptionSignalDestination::<O::Subscription>::new(destination_entity),
 		));
 
-		#[cfg(feature = "debug")]
-		{
-			use crate::SubscriptionMarker;
-
-			subscription_entity_commands.insert(SubscriptionMarker);
-		}
-
 		if O::Subscription::SCHEDULED {
+			// The [SubscriptionSchedule] component was already inserted into this entity
 			subscription_entity_commands.insert((
 				Observer::new(subscription_tick_observer::<O::Subscription>)
 					.with_entity(subscription_entity), // It's observing itself!
@@ -207,12 +209,10 @@ where
 /// This only ticks direct subscriptions to observables, and not operators.
 /// These direct subscriptions will forward the tick to the operator subscribers
 /// to ensure correct event order.
+/// TODO: Extend this so it observes all channels, next,error,complete,unsub,tick
 pub(crate) fn subscription_tick_observer<Sub>(
 	trigger: Trigger<Tick>,
-	mut subscription_query: Query<
-		(&SubscriptionSignalDestination<Sub>, &mut Subscription<Sub>),
-		With<Observer>, // Subscriptions that need to be ticked always have their tick observer right on them
-	>,
+	rx_context: RxChannelDestination<Sub, RxTick>,
 	mut commands: Commands,
 ) where
 	Sub: RxSubscription,
@@ -222,13 +222,59 @@ pub(crate) fn subscription_tick_observer<Sub>(
 	#[cfg(feature = "debug")]
 	trace!("subscription_tick_observer {:?}", trigger.event());
 
-	if let Ok((subscription_destination, mut subscription)) =
-		subscription_query.get_mut(trigger.target())
-	{
-		let subscriber = subscription_destination
-			.get_subscription_entity_context(trigger.target())
-			.upgrade(&mut commands);
+	let destination = rx_context.get_next_destination_with_on_tick_hook(trigger.target());
+	commands.trigger_targets(
+		RxSubscriberEvent::<Sub>::Tick(trigger.event().clone()),
+		destination,
+	);
+}
 
-		subscription.on_tick(trigger.event().clone(), subscriber);
+#[derive(SystemParam)]
+pub struct RxChannelDestination<'w, 's, Sub, Channel>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+	Channel: RxChannel,
+{
+	commands: Commands<'w, 's>,
+	subscription_query: Query<
+		'w,
+		's,
+		(
+			Entity,
+			&'static SubscriptionSignalDestination<Sub>,
+			Option<&'static SubscriptionChannelHandlerRef<Channel, Sub>>,
+		),
+	>,
+}
+
+impl<'w, 's, Sub, Channel> RxChannelDestination<'w, 's, Sub, Channel>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+	Channel: RxChannel,
+{
+	/// Returns the next entity in the destination chain with a hook for
+	/// the signal, or the final destination
+	pub fn get_next_destination_with_on_tick_hook(&self, from: Entity) -> Entity {
+		let mut cursor = from;
+		let target: Entity;
+
+		loop {
+			if let Ok((entity, destination, hook)) = self.subscription_query.get(cursor) {
+				cursor = destination.get_destination();
+				if hook.is_some() {
+					target = entity;
+					break;
+				}
+			} else {
+				target = cursor;
+				break;
+			}
+		}
+
+		target
 	}
 }

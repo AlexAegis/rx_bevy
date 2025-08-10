@@ -43,10 +43,6 @@ where
 	pub fn new(subscription: Sub) -> Self {
 		Self { subscription }
 	}
-
-	pub fn tick(&mut self, tick: Tick, subscriber: CommandSubscriber<Sub::Out, Sub::OutError>) {
-		self.subscription.on_tick(tick, subscriber);
-	}
 }
 
 fn unsubscribe_subscription_on_remove<Sub>(

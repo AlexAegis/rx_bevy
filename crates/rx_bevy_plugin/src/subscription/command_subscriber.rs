@@ -141,7 +141,7 @@ where
 	closed: bool,
 
 	buffer: SmallVec<[RxSignal<In, InError>; 2]>,
-
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<(In, InError)>,
 }
 

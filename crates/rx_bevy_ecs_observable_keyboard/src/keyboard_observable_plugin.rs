@@ -20,10 +20,10 @@ where
 	S: ScheduleLabel + Default,
 {
 	fn build(&self, app: &mut App) {
-		app.add_systems(S::default(), keyboard_subscriber_system);
+		//app.add_systems(S::default(), keyboard_subscriber_system);
 	}
 }
-
+/*
 pub(crate) fn keyboard_subscriber_system(
 	mut keyboard_input_events: EventReader<KeyboardInput>,
 	mut keyboard_subscriber_query: Query<&mut Subscription<KeyboardSubscription>>,
@@ -34,3 +34,4 @@ pub(crate) fn keyboard_subscriber_system(
 		}
 	}
 }
+*/

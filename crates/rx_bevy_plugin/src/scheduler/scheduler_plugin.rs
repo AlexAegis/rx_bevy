@@ -14,7 +14,7 @@ use derive_where::derive_where;
 use rx_bevy_common_bounds::Clock;
 use rx_bevy_observable::Tick;
 
-use crate::SubscriptionSchedule;
+use crate::{SubscriptionMarker, SubscriptionSchedule};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -50,12 +50,17 @@ where
 	}
 }
 
+/// Triggers all scheduled subscription that they can begin ticking. The
+/// scheduler does not know about the actual subscribers, so this events job
+/// is only to trigger a second event with the subscriptions own data to then
+/// do any operations
 pub fn tick_subscriptions_system<S: ScheduleLabel, C: Clock>(
 	mut commands: Commands,
 	time: Res<Time<C>>,
 	subscription_query: Query<
 		Entity,
 		(
+			With<SubscriptionMarker>,
 			With<SubscriptionSchedule<S>>,
 			With<Observer>, // The tick Observer, which is optional for non tickable Subscribers
 		),
@@ -63,5 +68,7 @@ pub fn tick_subscriptions_system<S: ScheduleLabel, C: Clock>(
 ) {
 	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
 
-	commands.trigger_targets(Tick::new(&time), subscriptions);
+	if subscriptions.len() != 0 {
+		commands.trigger_targets(Tick::new(&time), subscriptions);
+	}
 }

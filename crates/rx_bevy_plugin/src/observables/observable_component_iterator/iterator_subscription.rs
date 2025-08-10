@@ -1,7 +1,8 @@
+use bevy_ecs::observer::Trigger;
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Observer, Tick};
 
-use crate::{CommandSubscriber, RxSubscription, SignalBound};
+use crate::{CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick, SignalBound};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -53,19 +54,35 @@ where
 {
 	const SCHEDULED: bool = EMIT_ON_TICK;
 
-	fn on_tick(
+	fn register_hooks<'a, 'w, 's>(
 		&mut self,
-		_tick: Tick,
-		mut destination: CommandSubscriber<Self::Out, Self::OutError>,
+		hooks: &mut crate::SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		if let Some(next) = self.iterator.next() {
-			destination.next(next);
-		} else {
-			destination.complete();
+		if EMIT_ON_TICK {
+			hooks.register_hook(RxTick, iterator_subscriber_on_tick::<Iterator>);
 		}
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
 		destination.unsubscribe();
+	}
+}
+
+fn iterator_subscriber_on_tick<Iterator>(
+	trigger: Trigger<Tick>,
+	mut context: RxContextSub<IteratorSubscription<Iterator, true>>,
+	mut destination: RxDestination<IteratorSubscription<Iterator, true>>,
+) where
+	Iterator: 'static + IntoIterator,
+	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
+	Iterator::Item: SignalBound,
+{
+	let mut subscription = context.get_subscription(trigger.target());
+	let mut subscriber = destination.get_destination(trigger.target());
+
+	if let Some(next) = subscription.iterator.next() {
+		subscriber.next(next);
+	} else {
+		subscriber.complete();
 	}
 }

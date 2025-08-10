@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 
-use rx_bevy_observable::{ObservableOutput, Tick};
+use rx_bevy_observable::ObservableOutput;
 
 use crate::{CommandSubscriber, RxSubscription, SignalBound};
 
@@ -40,8 +40,11 @@ where
 {
 	const SCHEDULED: bool = false;
 
-	fn on_tick(&mut self, _tick: Tick, _context: CommandSubscriber<Self::Out, Self::OutError>) {
-		unreachable!()
+	fn register_hooks<'a, 'w, 's>(
+		&mut self,
+		_hooks: &mut super::SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
+	) {
+		// No hooks are registered
 	}
 
 	/// Still gets called, doesn't need to do anything

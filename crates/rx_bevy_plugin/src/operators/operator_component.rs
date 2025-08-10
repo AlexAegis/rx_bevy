@@ -18,8 +18,8 @@ use crate::{
 	CommandSubscribeExtension, CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
 	DeferredWorldObservableSpawnOperatorSubscribeObserverExtension, EntityContext, OnInsertSubHook,
 	RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe, SubscribeError,
-	SubscriberContext, SubscriberInstanceOf, SubscriberSignalObserverRef, Subscription,
-	SubscriptionSignalDestination, subscription_tick_observer,
+	SubscriberContext, SubscriberHooks, SubscriberInstanceOf, SubscriberSignalObserverRef,
+	Subscription, SubscriptionSignalDestination, subscription_tick_observer,
 };
 
 #[cfg(feature = "reflect")]
@@ -129,7 +129,13 @@ where
 			subscription_entity,
 		});
 
-		let spawned_subscriber = operator_component.on_subscribe(context.upgrade(&mut commands));
+		let mut spawned_subscriber =
+			operator_component.on_subscribe(context.upgrade(&mut commands));
+
+		let mut subscriber_hooks = SubscriberHooks::<Op::Subscriber>::default();
+		spawned_subscriber.register_hooks(&mut subscriber_hooks.upgrade(&mut commands));
+
+		dbg!(&subscriber_hooks);
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
@@ -141,16 +147,10 @@ where
 				operator_definition_entity
 			)),
 			Subscription::<Op::Subscriber>::new(spawned_subscriber),
+			subscriber_hooks,
 			SubscriberInstanceOf::<Op::Subscriber>::new(operator_definition_entity),
 			SubscriptionSignalDestination::<Op::Subscriber>::new(destination_entity),
 		));
-
-		#[cfg(feature = "debug")]
-		{
-			use crate::SubscriptionMarker;
-
-			subscription_entity_commands.insert(SubscriptionMarker);
-		}
 
 		subscription_entity_commands.insert((
 			Observer::new(subscription_tick_observer::<Op::Subscriber>)
@@ -158,22 +158,23 @@ where
 		));
 	}
 
-	// Setting up signal observer
-	{
-		commands.spawn((
-			Name::new(format!(
-				"Operator Signal Observer <{}, {}, {}, {}> for [{}]",
-				short_type_name::<Op::In>(),
-				short_type_name::<Op::InError>(),
-				short_type_name::<Op::Out>(),
-				short_type_name::<Op::OutError>(),
-				subscription_entity
-			)),
-			ChildOf(subscription_entity),
-			Observer::new(operator_subscription_signal_observer::<Op>)
-				.with_entity(subscription_entity),
-		));
-	}
+	// No longer needed, operator implementation spawns these through hook registrations
+	//// Setting up signal observer
+	//{
+	//	commands.spawn((
+	//		Name::new(format!(
+	//			"Operator Signal Observer <{}, {}, {}, {}> for [{}]",
+	//			short_type_name::<Op::In>(),
+	//			short_type_name::<Op::InError>(),
+	//			short_type_name::<Op::Out>(),
+	//			short_type_name::<Op::OutError>(),
+	//			subscription_entity
+	//		)),
+	//		ChildOf(subscription_entity),
+	//		Observer::new(operator_subscription_signal_observer::<Op>)
+	//			.with_entity(subscription_entity),
+	//	));
+	//}
 
 	// Operator Subscription Chain setup
 	{
@@ -193,35 +194,35 @@ where
 	Ok(())
 }
 
-fn operator_subscription_signal_observer<Op>(
-	trigger: Trigger<RxSignal<Op::In, Op::InError>>,
-	mut subscription_query: Query<
-		(
-			&SubscriptionSignalDestination<Op::Subscriber>,
-			&mut Subscription<Op::Subscriber>,
-		),
-		Without<SubscriberSignalObserverRef<Op>>, // Subscribers aren't directly ticked, they are ticked by other subscriptions
-	>,
-	mut commands: Commands,
-) where
-	Op: OperatorComponent + Send + Sync,
-	Op::In: SignalBound,
-	Op::InError: SignalBound,
-	Op::Out: SignalBound,
-	Op::OutError: SignalBound,
-{
-	#[cfg(feature = "debug")]
-	trace!(
-		"operator_subscription_signal_observer {:?}",
-		trigger.event()
-	);
-
-	if let Ok((signal_destination, mut subscription)) = subscription_query.get_mut(trigger.target())
-	{
-		let subscriber = signal_destination
-			.get_subscription_entity_context(trigger.target())
-			.upgrade(&mut commands);
-
-		subscription.on_signal(trigger.event().clone(), subscriber);
-	}
-}
+//fn operator_subscription_signal_observer<Op>(
+//	trigger: Trigger<RxSignal<Op::In, Op::InError>>,
+//	mut subscription_query: Query<
+//		(
+//			&SubscriptionSignalDestination<Op::Subscriber>,
+//			&mut Subscription<Op::Subscriber>,
+//		),
+//		Without<SubscriberSignalObserverRef<Op>>, // Subscribers aren't directly ticked, they are ticked by other subscriptions
+//	>,
+//	mut commands: Commands,
+//) where
+//	Op: OperatorComponent + Send + Sync,
+//	Op::In: SignalBound,
+//	Op::InError: SignalBound,
+//	Op::Out: SignalBound,
+//	Op::OutError: SignalBound,
+//{
+//	#[cfg(feature = "debug")]
+//	trace!(
+//		"operator_subscription_signal_observer {:?}",
+//		trigger.event()
+//	);
+//
+//	if let Ok((signal_destination, mut subscription)) = subscription_query.get_mut(trigger.target())
+//	{
+//		let subscriber = signal_destination
+//			.get_subscription_entity_context(trigger.target())
+//			.upgrade(&mut commands);
+//
+//		subscription.on_signal(trigger.event().clone(), subscriber);
+//	}
+//}

@@ -1,22 +1,24 @@
+use bevy_ecs::{
+	entity::Entity,
+	observer::Trigger,
+	system::{Commands, Query, SystemParam},
+	world::Mut,
+};
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{
 	ObservableOutput, Observer, ObserverInput, Operation, Operator, SubscriptionLike, Tick,
 };
 
 use crate::{
-	CommandSubscriber, ObserverSignalPush, RxSubscriber, RxSubscription, SignalBound,
-	SubscriberContext,
+	CommandSubscriber, ObserverSignalPush, RxNext, RxSignal, RxSubscriber, RxSubscription, RxTick,
+	SignalBound, SubscriberContext, Subscription, SubscriptionSignalDestination,
 };
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
 
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
-
 #[derive(Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct PipeSubscriber<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
@@ -54,6 +56,12 @@ where
 	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
+	fn register_hooks<'a, 'w, 's>(
+		&mut self,
+		_hooks: &mut crate::SubscriberHookRegistrationContext<'a, 'w, 's, Self>,
+	) {
+	}
+
 	fn on_signal(
 		&mut self,
 		signal: crate::RxSignal<Self::In, Self::InError>,
@@ -80,16 +88,13 @@ where
 {
 	const SCHEDULED: bool = true;
 
-	fn on_tick(
+	fn register_hooks<'a, 'w, 's>(
 		&mut self,
-		tick: Tick,
-		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		hooks: &mut crate::SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		self.operator_subscriber.tick(tick.clone());
-		self.operator_subscriber.write_destination(|destination| {
-			destination.forward_buffer(&mut subscriber);
-		});
-		subscriber.tick(tick);
+		hooks.register_hook(RxTick, pipe_on_tick_hook::<Op>);
+		//hooks.register_hook(RxNext, pipe_on_next_hook::<Op>);
+		// TODO: CONTINUE FROM HERE Add the other hooks
 	}
 
 	fn unsubscribe(&mut self, mut subscriber: CommandSubscriber<Self::Out, Self::OutError>) {
@@ -104,6 +109,144 @@ where
 		// 	.entity(self.source_subscription)
 		// 	.despawn();
 	}
+}
+
+#[derive(SystemParam)]
+pub struct RxDestination<'w, 's, Sub>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	commands: Commands<'w, 's>,
+	destination_query: Query<'w, 's, &'static SubscriptionSignalDestination<Sub>>,
+}
+
+impl<'w, 's, Sub> RxDestination<'w, 's, Sub>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	pub fn get_destination<'a>(
+		&'a mut self,
+		subscription_entity: Entity,
+	) -> CommandSubscriber<
+		'a,
+		'w,
+		's,
+		<Sub as ObservableOutput>::Out,
+		<Sub as ObservableOutput>::OutError,
+	> {
+		let destination = self
+			.destination_query
+			.get_mut(subscription_entity)
+			.expect(&format!(
+				"A subscription must have a destination, but was not found on {}",
+				subscription_entity
+			));
+		destination
+			.get_subscription_entity_context(subscription_entity)
+			.upgrade(&mut self.commands)
+	}
+}
+
+#[derive(SystemParam)]
+pub struct RxContextSub<'w, 's, Sub>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	commands: Commands<'w, 's>,
+	subscription_query: Query<'w, 's, &'static mut Subscription<Sub>>,
+	destination_query: Query<'w, 's, &'static SubscriptionSignalDestination<Sub>>,
+}
+
+impl<'w, 's, Sub> RxContextSub<'w, 's, Sub>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	pub fn get_subscription<'a>(
+		&'a mut self,
+		subscription_entity: Entity,
+	) -> Mut<'a, Subscription<Sub>> {
+		self.subscription_query
+			.get_mut(subscription_entity)
+			.expect(&format!(
+				"Subscription component {} was not found on {}",
+				short_type_name::short_type_name::<Sub>(),
+				subscription_entity
+			))
+	}
+
+	pub fn get_destination<'a>(
+		&'a mut self,
+		subscription_entity: Entity,
+	) -> CommandSubscriber<
+		'a,
+		'w,
+		's,
+		<Sub as ObservableOutput>::Out,
+		<Sub as ObservableOutput>::OutError,
+	> {
+		let destination = self.destination_query.get_mut(subscription_entity).unwrap();
+		destination
+			.get_subscription_entity_context(subscription_entity)
+			.upgrade(&mut self.commands)
+	}
+}
+
+fn pipe_on_tick_hook<Op>(
+	trigger: Trigger<Tick>,
+	mut context: RxContextSub<PipeSubscriber<Op>>,
+	mut destination: RxDestination<PipeSubscriber<Op>>,
+) where
+	Op: 'static + Operator + Send + Sync + DebugBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+{
+	let mut subscription = context.get_subscription(trigger.target());
+	let mut subscriber = destination.get_destination(trigger.target());
+	subscription
+		.operator_subscriber
+		.tick(trigger.event().clone());
+	subscription
+		.operator_subscriber
+		.write_destination(|destination| {
+			destination.forward_buffer(&mut subscriber);
+		});
+	// TODO: Decide if this is needed or not, the buffer should contain forwarded ticks
+	// subscriber.tick(trigger.event().clone());
+}
+
+fn pipe_on_next_hook<Op>(
+	trigger: Trigger<RxSignal<Op::In, Op::InError>>,
+	mut context: RxContextSub<PipeSubscriber<Op>>,
+	mut destination: RxDestination<PipeSubscriber<Op>>,
+) where
+	Op: 'static + Operator + Send + Sync + DebugBound,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
+	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
+{
+	let mut subscription = context.get_subscription(trigger.target());
+	let mut subscriber = destination.get_destination(trigger.target());
+	subscription
+		.operator_subscriber
+		.push(trigger.event().clone());
+	subscription
+		.operator_subscriber
+		.write_destination(|destination| {
+			destination.forward_buffer(&mut subscriber);
+		});
 }
 
 impl<Op> ObserverInput for PipeSubscriber<Op>

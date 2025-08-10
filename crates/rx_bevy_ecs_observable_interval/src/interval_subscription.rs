@@ -1,7 +1,11 @@
+use bevy_ecs::observer::Trigger;
 use bevy_time::{Timer, TimerMode};
 use rx_bevy_observable::{ObservableOutput, Observer, Tick};
 
-use rx_bevy_plugin::{CommandSubscriber, RxSubscription};
+use rx_bevy_plugin::{
+	CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick,
+	SubscriptionHookRegistrationContext,
+};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -34,19 +38,29 @@ impl ObservableOutput for IntervalSubscription {
 }
 
 impl RxSubscription for IntervalSubscription {
-	fn on_tick(
+	fn register_hooks<'a, 'w, 's>(
 		&mut self,
-		tick: Tick,
-		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		hooks: &mut SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		self.timer.tick(tick.delta);
-		if self.timer.just_finished() {
-			subscriber.next(self.count);
-			self.count += 1;
-		}
+		hooks.register_hook(RxTick, interval_subscription_on_tick_system);
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
 		destination.unsubscribe();
+	}
+}
+
+fn interval_subscription_on_tick_system(
+	trigger: Trigger<Tick>,
+	mut context: RxContextSub<IntervalSubscription>,
+	mut destination: RxDestination<IntervalSubscription>,
+) {
+	let mut subscription = context.get_subscription(trigger.target());
+	let mut subscriber = destination.get_destination(trigger.target());
+
+	subscription.timer.tick(trigger.event().delta);
+	if subscription.timer.just_finished() {
+		subscriber.next(subscription.count);
+		subscription.count += 1;
 	}
 }

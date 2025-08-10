@@ -1,7 +1,11 @@
+use bevy_ecs::{event::EventReader, observer::Trigger};
 use bevy_input::keyboard::KeyboardInput;
-use rx_bevy_observable::{ObservableOutput, Tick};
+use rx_bevy_observable::{ObservableOutput, Observer, Tick};
 
-use rx_bevy_plugin::{CommandSubscriber, ObserverSignalPush, RxSubscription};
+use rx_bevy_plugin::{
+	CommandSubscriber, RxContextSub, RxDestination, RxSignal, RxSubscription, RxTick,
+	SubscriptionHookRegistrationContext,
+};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -29,19 +33,31 @@ impl ObservableOutput for KeyboardSubscription {
 	type OutError = ();
 }
 
-// TODO: CONTINUE it would be nice to have a query here accessible, defined as an associated type maybe? and then the hooks would just populate it
 impl RxSubscription for KeyboardSubscription {
-	fn on_tick(
+	const SCHEDULED: bool = true;
+
+	fn register_hooks<'a, 'w, 's>(
 		&mut self,
-		_tick: Tick,
-		mut _subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		hooks: &mut SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		for event in self.buffer.drain(..) {
-			_subscriber.push(rx_bevy_plugin::RxSignal::Next(event));
-		}
+		hooks.register_hook(RxTick, keyboard_subscription_on_tick_system);
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
 		destination.unsubscribe();
+	}
+}
+
+fn keyboard_subscription_on_tick_system(
+	trigger: Trigger<Tick>,
+	// mut context: RxContextSub<KeyboardSubscription>,
+	mut destination: RxDestination<KeyboardSubscription>,
+	mut keyboard_input_events: EventReader<KeyboardInput>,
+) {
+	// let mut subscription = context.get_subscription(trigger.target());
+	let mut subscriber = destination.get_destination(trigger.target());
+
+	for keyboard_input in keyboard_input_events.read() {
+		subscriber.next(keyboard_input.clone());
 	}
 }
