@@ -40,9 +40,9 @@ where
 {
 	const SCHEDULED: bool = false;
 
-	fn register_hooks<'a, 'w, 's>(
+	fn register_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		_hooks: &mut super::SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
+		_hooks: &mut super::SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
 		// No hooks are registered
 	}

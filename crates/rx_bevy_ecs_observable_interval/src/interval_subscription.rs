@@ -3,8 +3,8 @@ use bevy_time::{Timer, TimerMode};
 use rx_bevy_observable::{ObservableOutput, Observer, Tick};
 
 use rx_bevy_plugin::{
-	CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick,
-	SubscriptionHookRegistrationContext,
+	CommandSubscriber, RxChannelTick, RxContextSub, RxDestination, RxSubscription,
+	SubscriptionChannelHandlerRegistrationContext,
 };
 
 #[cfg(feature = "reflect")]
@@ -38,11 +38,11 @@ impl ObservableOutput for IntervalSubscription {
 }
 
 impl RxSubscription for IntervalSubscription {
-	fn register_hooks<'a, 'w, 's>(
+	fn register_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		hooks: &mut SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
+		hooks: &mut SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		hooks.register_hook(RxTick, interval_subscription_on_tick_system);
+		hooks.register_hook(RxChannelTick, interval_subscription_on_tick_system);
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {

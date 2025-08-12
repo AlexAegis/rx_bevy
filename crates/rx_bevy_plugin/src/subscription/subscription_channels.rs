@@ -1,38 +1,41 @@
 use bevy_ecs::event::Event;
 use rx_bevy_observable::Tick;
 
-use crate::{RxSignal, RxSubscription, SignalBound};
+use crate::{
+	RxAdd, RxComplete, RxError, RxNext, RxSubscriberEvent, RxSubscription, RxTick, RxUnsubscribe,
+	SignalBound,
+};
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
 
-pub struct RxNext;
+pub struct RxChannelNext;
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
-pub struct RxError;
+pub struct RxChannelError;
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
-pub struct RxComplete;
+pub struct RxChannelComplete;
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
-pub struct RxUnsubscribe;
+pub struct RxChannelUnsubscribe;
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
-pub struct RxAdd;
+pub struct RxChannelAdd;
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
-pub struct RxTick;
+pub struct RxChannelTick;
 
 pub trait RxChannel: 'static + Send + Sync + sealed::Sealed {
 	type Event<Sub>: Event
@@ -42,54 +45,54 @@ pub trait RxChannel: 'static + Send + Sync + sealed::Sealed {
 		Sub::OutError: SignalBound;
 }
 
-impl RxChannel for RxNext {
+impl RxChannel for RxChannelNext {
 	type Event<Sub>
-		= RxSignal<Sub::Out, Sub::OutError>
+		= RxNext<Sub::Out>
 	where
 		Sub: RxSubscription,
 		Sub::Out: SignalBound,
 		Sub::OutError: SignalBound;
 }
 
-impl RxChannel for RxError {
+impl RxChannel for RxChannelError {
 	type Event<Sub>
-		= RxSignal<Sub::Out, Sub::OutError>
+		= RxError<Sub::OutError>
 	where
 		Sub: RxSubscription,
 		Sub::Out: SignalBound,
 		Sub::OutError: SignalBound;
 }
 
-impl RxChannel for RxComplete {
+impl RxChannel for RxChannelComplete {
 	type Event<Sub>
-		= RxSignal<Sub::Out, Sub::OutError>
+		= RxComplete
 	where
 		Sub: RxSubscription,
 		Sub::Out: SignalBound,
 		Sub::OutError: SignalBound;
 }
 
-impl RxChannel for RxUnsubscribe {
+impl RxChannel for RxChannelUnsubscribe {
 	type Event<Sub>
-		= RxSignal<Sub::Out, Sub::OutError>
+		= RxUnsubscribe
 	where
 		Sub: RxSubscription,
 		Sub::Out: SignalBound,
 		Sub::OutError: SignalBound;
 }
 
-impl RxChannel for RxAdd {
+impl RxChannel for RxChannelAdd {
 	type Event<Sub>
-		= RxSignal<Sub::Out, Sub::OutError>
+		= RxAdd
 	where
 		Sub: RxSubscription,
 		Sub::Out: SignalBound,
 		Sub::OutError: SignalBound;
 }
 
-impl RxChannel for RxTick {
+impl RxChannel for RxChannelTick {
 	type Event<Sub>
-		= Tick
+		= RxTick
 	where
 		Sub: RxSubscription,
 		Sub::Out: SignalBound,
@@ -100,10 +103,10 @@ impl RxChannel for RxTick {
 mod sealed {
 	pub trait Sealed {}
 
-	impl Sealed for super::RxNext {}
-	impl Sealed for super::RxError {}
-	impl Sealed for super::RxComplete {}
-	impl Sealed for super::RxUnsubscribe {}
-	impl Sealed for super::RxAdd {}
-	impl Sealed for super::RxTick {}
+	impl Sealed for super::RxChannelNext {}
+	impl Sealed for super::RxChannelError {}
+	impl Sealed for super::RxChannelComplete {}
+	impl Sealed for super::RxChannelUnsubscribe {}
+	impl Sealed for super::RxChannelAdd {}
+	impl Sealed for super::RxChannelTick {}
 }

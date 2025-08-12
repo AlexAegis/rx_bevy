@@ -2,8 +2,8 @@ use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, ObserverInput};
 
 use crate::{
-	CommandSubscriber, RxSignal, SignalBound, SubscriberHookRegistrationContext,
-	SubscriptionHookRegistrationContext,
+	CommandSubscriber, SignalBound, SubscriberChannelHandlerRegistrationContext,
+	SubscriptionChannelHandlerRegistrationContext,
 };
 
 // TODO: CONTINUE
@@ -18,12 +18,10 @@ where
 	/// When set to false, the subscription will not be ticked at all.
 	const SCHEDULED: bool = true;
 
-	fn register_hooks<'a, 'w, 's>(
+	fn register_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		hooks: &mut SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
+		handlers: &mut SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	);
-
-	// fn on_tick(&mut self, tick: Tick, subscriber: CommandSubscriber<Self::Out, Self::OutError>);
 
 	/// Happens when either the [Subscription] or its relation from [Subscriptions] is removed
 	///
@@ -44,14 +42,8 @@ where
 	Self::Out: SignalBound,
 	Self::OutError: SignalBound,
 {
-	fn register_hooks<'a, 'w, 's>(
+	fn register_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		hooks: &mut SubscriberHookRegistrationContext<'a, 'w, 's, Self>,
-	);
-
-	fn on_signal(
-		&mut self,
-		signal: RxSignal<Self::In, Self::InError>,
-		subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		handlers: &mut SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	);
 }

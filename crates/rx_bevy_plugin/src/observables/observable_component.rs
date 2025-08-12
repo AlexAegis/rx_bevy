@@ -16,10 +16,10 @@ use short_type_name::short_type_name;
 use crate::{
 	CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
 	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, EntityContext, RxChannel,
-	RxSubscriberEvent, RxSubscription, RxTick, SignalBound, Subscribe, SubscribeError,
+	RxChannelTick, RxSubscription, RxTick, SignalBound, Subscribe, SubscribeError,
 	SubscriberContext, SubscriberInstanceOf, SubscriberInstances, Subscription,
-	SubscriptionChannelHandlerRef, SubscriptionHookRegistrationContext, SubscriptionMarker,
-	SubscriptionSignalDestination,
+	SubscriptionChannelHandlerRef, SubscriptionChannelHandlerRegistrationContext,
+	SubscriptionMarker, SubscriptionSignalDestination,
 };
 
 #[cfg(feature = "reflect")]
@@ -166,11 +166,12 @@ where
 		let mut spawned_subscription =
 			observable_component.on_subscribe(context.upgrade(&mut commands));
 
-		let mut subscription_hooks = SubscriptionHookRegistrationContext::<O::Subscription>::new(
-			subscription_entity,
-			&mut commands,
-		);
-		spawned_subscription.register_hooks(&mut subscription_hooks);
+		let mut subscription_hooks =
+			SubscriptionChannelHandlerRegistrationContext::<O::Subscription>::new(
+				subscription_entity,
+				&mut commands,
+			);
+		spawned_subscription.register_channel_handlers(&mut subscription_hooks);
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
@@ -212,7 +213,7 @@ where
 /// TODO: Extend this so it observes all channels, next,error,complete,unsub,tick
 pub(crate) fn subscription_tick_observer<Sub>(
 	trigger: Trigger<Tick>,
-	rx_context: RxChannelDestination<Sub, RxTick>,
+	rx_context: RxChannelDestination<Sub, RxChannelTick>,
 	mut commands: Commands,
 ) where
 	Sub: RxSubscription,
@@ -223,10 +224,7 @@ pub(crate) fn subscription_tick_observer<Sub>(
 	trace!("subscription_tick_observer {:?}", trigger.event());
 
 	let destination = rx_context.get_next_destination_with_on_tick_hook(trigger.target());
-	commands.trigger_targets(
-		RxSubscriberEvent::<Sub>::Tick(trigger.event().clone()),
-		destination,
-	);
+	commands.trigger_targets(RxTick(trigger.event().clone()), destination);
 }
 
 #[derive(SystemParam)]

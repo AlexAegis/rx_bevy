@@ -6,11 +6,11 @@ use bevy_ecs::{
 };
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{
-	ObservableOutput, Observer, ObserverInput, Operation, Operator, SubscriptionLike, Tick,
+	ObservableOutput, Observer, ObserverInput, Operation, Operator, SubscriptionLike,
 };
 
 use crate::{
-	CommandSubscriber, ObserverSignalPush, RxNext, RxSignal, RxSubscriber, RxSubscription, RxTick,
+	CommandSubscriber, ObserverSignalPush, RxNext, RxSubscriber, RxSubscription, RxTick,
 	SignalBound, SubscriberContext, Subscription, SubscriptionSignalDestination,
 };
 
@@ -56,24 +56,11 @@ where
 	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
-	fn register_hooks<'a, 'w, 's>(
+	fn register_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		_hooks: &mut crate::SubscriberHookRegistrationContext<'a, 'w, 's, Self>,
+		handlers: &mut crate::SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
-	}
-
-	fn on_signal(
-		&mut self,
-		signal: crate::RxSignal<Self::In, Self::InError>,
-		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
-	) {
-		#[cfg(feature = "debug")]
-		dbg!(signal.clone());
-
-		self.operator_subscriber.push(signal);
-		self.operator_subscriber.write_destination(|destination| {
-			destination.forward_buffer(&mut subscriber);
-		});
+		handlers.register_next_handler(pipe_on_next_hook::<Op>);
 	}
 }
 
@@ -88,13 +75,11 @@ where
 {
 	const SCHEDULED: bool = true;
 
-	fn register_hooks<'a, 'w, 's>(
+	fn register_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		hooks: &mut crate::SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
+		handlers: &mut crate::SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		hooks.register_hook(RxTick, pipe_on_tick_hook::<Op>);
-		//hooks.register_hook(RxNext, pipe_on_next_hook::<Op>);
-		// TODO: CONTINUE FROM HERE Add the other hooks
+		handlers.register_tick_handler(pipe_on_tick_hook::<Op>);
 	}
 
 	fn unsubscribe(&mut self, mut subscriber: CommandSubscriber<Self::Out, Self::OutError>) {
@@ -200,7 +185,7 @@ where
 }
 
 fn pipe_on_tick_hook<Op>(
-	trigger: Trigger<Tick>,
+	trigger: Trigger<RxTick>,
 	mut context: RxContextSub<PipeSubscriber<Op>>,
 	mut destination: RxDestination<PipeSubscriber<Op>>,
 ) where
@@ -215,7 +200,7 @@ fn pipe_on_tick_hook<Op>(
 	let mut subscriber = destination.get_destination(trigger.target());
 	subscription
 		.operator_subscriber
-		.tick(trigger.event().clone());
+		.tick((**trigger.event()).clone());
 	subscription
 		.operator_subscriber
 		.write_destination(|destination| {
@@ -226,7 +211,7 @@ fn pipe_on_tick_hook<Op>(
 }
 
 fn pipe_on_next_hook<Op>(
-	trigger: Trigger<RxSignal<Op::In, Op::InError>>,
+	trigger: Trigger<RxNext<Op::In>>,
 	mut context: RxContextSub<PipeSubscriber<Op>>,
 	mut destination: RxDestination<PipeSubscriber<Op>>,
 ) where

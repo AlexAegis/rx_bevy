@@ -6,16 +6,47 @@ use bevy_ecs::{
 	hierarchy::ChildOf,
 	name::Name,
 	observer::Observer,
-	system::{Commands, IntoObserverSystem, SystemParam},
+	system::{Commands, IntoObserverSystem},
 };
 use short_type_name::short_type_name;
 
-use crate::{RxChannel, RxSubscription, SignalBound, SubscriptionChannelHandlerOf};
+use crate::{
+	RxChannel, RxChannelAdd, RxChannelComplete, RxChannelError, RxChannelNext, RxChannelTick,
+	RxChannelUnsubscribe, RxSubscriber, RxSubscription, SignalBound, SubscriptionChannelHandlerOf,
+};
 
 use derive_where::derive_where;
 
+pub trait ChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	fn get_commands<'c>(&'c mut self) -> &'c mut Commands<'w, 's>;
+
+	fn get_subscription_entity(&self) -> Entity;
+
+	fn register_channel_handler<C, B, M>(
+		&mut self,
+		#[allow(unused, reason = "It's for inference")] channel: C,
+		system: impl IntoObserverSystem<C::Event<Sub>, B, M> + 'static,
+	) where
+		C: RxChannel,
+		B: Bundle,
+	{
+		let subscription_entity = self.get_subscription_entity();
+		self.get_commands().spawn((
+			SubscriptionChannelHandlerOf::<C, Sub>::new(subscription_entity),
+			Name::new(format!("{:?} Handler", short_type_name::<C>())),
+			ChildOf(subscription_entity),
+			Observer::new(system),
+		));
+	}
+}
+
 #[cfg_attr(feature = "debug", derive_where(Debug))]
-pub struct SubscriptionHookRegistrationContext<'a, 'w, 's, Sub>
+pub struct SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
@@ -27,7 +58,7 @@ where
 	_phantom_data: PhantomData<Sub>,
 }
 
-impl<'a, 'w, 's, Sub> SubscriptionHookRegistrationContext<'a, 'w, 's, Sub>
+impl<'a, 'w, 's, Sub> SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
@@ -41,28 +72,123 @@ where
 		}
 	}
 
-	pub fn register_hook<C, B, M>(
+	pub fn register_tick_handler<B, M>(
 		&mut self,
-		#[allow(unused)] channel: C,
-		system: impl IntoObserverSystem<C::Event<Sub>, B, M> + 'static,
+		system: impl IntoObserverSystem<<RxChannelTick as RxChannel>::Event<Sub>, B, M> + 'static,
 	) where
-		C: RxChannel,
 		B: Bundle,
 	{
-		self.commands.spawn((
-			SubscriptionChannelHandlerOf::<C, Sub>::new(self.subscription),
-			Name::new(format!("{:?} Handler", short_type_name::<C>())),
-			ChildOf(self.subscription),
-			Observer::new(system),
-		));
+		self.register_channel_handler(RxChannelTick, system);
+	}
+
+	pub fn register_add_handler<B, M>(
+		&mut self,
+		system: impl IntoObserverSystem<<RxChannelAdd as RxChannel>::Event<Sub>, B, M> + 'static,
+	) where
+		B: Bundle,
+	{
+		self.register_channel_handler(RxChannelAdd, system);
+	}
+
+	pub fn register_unsubscribe_handler<B, M>(
+		&mut self,
+		system: impl IntoObserverSystem<<RxChannelUnsubscribe as RxChannel>::Event<Sub>, B, M> + 'static,
+	) where
+		B: Bundle,
+	{
+		self.register_channel_handler(RxChannelUnsubscribe, system);
 	}
 }
 
-/// TODO: Create a systemparam that could be used for system based signal handling with access to next/error/complete/unsubscribe? methods
-#[derive(SystemParam)]
+impl<'a, 'w, 's, Sub> ChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
+	for SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
+where
+	Sub: RxSubscription,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	fn get_commands<'c>(&'c mut self) -> &'c mut Commands<'w, 's> {
+		self.commands
+	}
 
-pub struct SubscriberSystemParam<'w, 's> {
-	commands: Commands<'w, 's>,
+	fn get_subscription_entity(&self) -> Entity {
+		self.subscription
+	}
 }
 
-impl<'w, 's> SubscriberSystemParam<'w, 's> {}
+#[cfg_attr(feature = "debug", derive_where(Debug))]
+pub struct SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
+where
+	Sub: RxSubscriber,
+	Sub::In: SignalBound,
+	Sub::InError: SignalBound,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	subscription: Entity,
+	#[cfg_attr(feature = "debug", derive_where(skip))]
+	commands: &'a mut Commands<'w, 's>,
+	_phantom_data: PhantomData<Sub>,
+}
+
+impl<'a, 'w, 's, Sub> ChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
+	for SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
+where
+	Sub: RxSubscriber,
+	Sub::In: SignalBound,
+	Sub::InError: SignalBound,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	fn get_commands<'c>(&'c mut self) -> &'c mut Commands<'w, 's> {
+		self.commands
+	}
+
+	fn get_subscription_entity(&self) -> Entity {
+		self.subscription
+	}
+}
+
+impl<'a, 'w, 's, Sub> SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Sub>
+where
+	Sub: RxSubscriber,
+	Sub::In: SignalBound,
+	Sub::InError: SignalBound,
+	Sub::Out: SignalBound,
+	Sub::OutError: SignalBound,
+{
+	pub fn new(subscription: Entity, commands: &'a mut Commands<'w, 's>) -> Self {
+		Self {
+			subscription,
+			commands,
+			_phantom_data: PhantomData,
+		}
+	}
+
+	pub fn register_next_handler<B, M>(
+		&mut self,
+		system: impl IntoObserverSystem<<RxChannelNext as RxChannel>::Event<Sub>, B, M> + 'static,
+	) where
+		B: Bundle,
+	{
+		self.register_channel_handler(RxChannelNext, system);
+	}
+
+	pub fn register_error_handler<B, M>(
+		&mut self,
+		system: impl IntoObserverSystem<<RxChannelError as RxChannel>::Event<Sub>, B, M> + 'static,
+	) where
+		B: Bundle,
+	{
+		self.register_channel_handler(RxChannelError, system);
+	}
+
+	pub fn register_complete_handler<B, M>(
+		&mut self,
+		system: impl IntoObserverSystem<<RxChannelComplete as RxChannel>::Event<Sub>, B, M> + 'static,
+	) where
+		B: Bundle,
+	{
+		self.register_channel_handler(RxChannelComplete, system);
+	}
+}

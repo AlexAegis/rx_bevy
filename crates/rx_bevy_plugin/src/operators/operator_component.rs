@@ -133,7 +133,7 @@ where
 			operator_component.on_subscribe(context.upgrade(&mut commands));
 
 		let mut subscriber_hooks = SubscriberHooks::<Op::Subscriber>::default();
-		spawned_subscriber.register_hooks(&mut subscriber_hooks.upgrade(&mut commands));
+		spawned_subscriber.register_channel_handlers(&mut subscriber_hooks.upgrade(&mut commands));
 
 		dbg!(&subscriber_hooks);
 

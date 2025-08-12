@@ -3,8 +3,8 @@ use bevy_input::keyboard::KeyboardInput;
 use rx_bevy_observable::{ObservableOutput, Observer, Tick};
 
 use rx_bevy_plugin::{
-	CommandSubscriber, RxContextSub, RxDestination, RxSignal, RxSubscription, RxTick,
-	SubscriptionHookRegistrationContext,
+	CommandSubscriber, RxChannelTick, RxContextSub, RxDestination, RxSignal, RxSubscription,
+	SubscriptionChannelHandlerRegistrationContext,
 };
 
 #[cfg(feature = "reflect")]
@@ -36,11 +36,11 @@ impl ObservableOutput for KeyboardSubscription {
 impl RxSubscription for KeyboardSubscription {
 	const SCHEDULED: bool = true;
 
-	fn register_hooks<'a, 'w, 's>(
+	fn register_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		hooks: &mut SubscriptionHookRegistrationContext<'a, 'w, 's, Self>,
+		hooks: &mut SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		hooks.register_hook(RxTick, keyboard_subscription_on_tick_system);
+		hooks.register_hook(RxChannelTick, keyboard_subscription_on_tick_system);
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
