@@ -27,10 +27,10 @@ pub struct RxChannelComplete;
 #[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
 pub struct RxChannelUnsubscribe;
 
-#[derive(Default)]
-#[cfg_attr(feature = "debug", derive(Debug))]
-#[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
-pub struct RxChannelAdd;
+//#[derive(Default)]
+//#[cfg_attr(feature = "debug", derive(Debug))]
+//#[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
+//pub struct RxChannelAdd;
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -81,14 +81,14 @@ impl RxChannel for RxChannelUnsubscribe {
 		Sub::OutError: SignalBound;
 }
 
-impl RxChannel for RxChannelAdd {
-	type Event<Sub>
-		= RxAdd
-	where
-		Sub: RxSubscription,
-		Sub::Out: SignalBound,
-		Sub::OutError: SignalBound;
-}
+//impl RxChannel for RxChannelAdd {
+//	type Event<Sub>
+//		= RxAdd
+//	where
+//		Sub: RxSubscription,
+//		Sub::Out: SignalBound,
+//		Sub::OutError: SignalBound;
+//}
 
 impl RxChannel for RxChannelTick {
 	type Event<Sub>
@@ -107,6 +107,6 @@ mod sealed {
 	impl Sealed for super::RxChannelError {}
 	impl Sealed for super::RxChannelComplete {}
 	impl Sealed for super::RxChannelUnsubscribe {}
-	impl Sealed for super::RxChannelAdd {}
+	// impl Sealed for super::RxChannelAdd {}
 	impl Sealed for super::RxChannelTick {}
 }
