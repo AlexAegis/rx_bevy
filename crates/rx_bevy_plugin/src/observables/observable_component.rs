@@ -223,7 +223,7 @@ pub(crate) fn subscription_tick_observer<Sub>(
 	#[cfg(feature = "debug")]
 	trace!("subscription_tick_observer {:?}", trigger.event());
 
-	let destination = rx_context.get_next_destination_with_on_tick_hook(trigger.target());
+	let destination = rx_context.get_next_destination_with_channel_handler(trigger.target());
 	commands.trigger_targets(RxTick(trigger.event().clone()), destination);
 }
 
@@ -256,7 +256,7 @@ where
 {
 	/// Returns the next entity in the destination chain with a hook for
 	/// the signal, or the final destination
-	pub fn get_next_destination_with_on_tick_hook(&self, from: Entity) -> Entity {
+	pub fn get_next_destination_with_channel_handler(&self, from: Entity) -> Entity {
 		let mut cursor = from;
 		let target: Entity;
 

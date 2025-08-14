@@ -3,13 +3,10 @@ use bevy_egui::EguiPlugin;
 use bevy_input::keyboard::KeyboardInput;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
-use rx_bevy_ecs_observable_keyboard::{
-	KeyboardObservableComponent, KeyboardObservableOptions, KeyboardObservablePlugin,
-};
+use rx_bevy_ecs_observable_keyboard::{KeyboardObservableComponent, KeyboardObservableOptions};
 
 use rx_bevy_plugin::{
-	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxPlugin,
-	RxSignal,
+	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxNext, RxPlugin,
 };
 
 fn main() -> AppExit {
@@ -21,7 +18,6 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 			RxPlugin,
-			KeyboardObservablePlugin::<Update>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -36,7 +32,7 @@ fn main() -> AppExit {
 }
 
 fn next_number_observer(
-	next: Trigger<RxSignal<KeyboardInput, ()>>,
+	next: Trigger<RxNext<KeyboardInput>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) {

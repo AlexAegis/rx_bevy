@@ -8,20 +8,7 @@ use std::fmt::Debug;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{RxSubscription, SignalBound};
-
-// #[derive(Event, Clone)]
-// #[cfg_attr(feature = "debug", derive(Debug))]
-// #[cfg_attr(feature = "reflect", derive(Reflect))]
-// pub enum RxSignal<In, InError>
-// where
-// 	In: SignalBound,
-// 	InError: SignalBound,
-// {
-// 	Next(In),
-// 	Error(InError),
-// 	Complete,
-// }
+use crate::SignalBound;
 
 #[derive(Event, Clone, Deref, DerefMut)]
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -61,16 +48,75 @@ pub struct RxAdd(pub Entity);
 #[derive(Event, Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub enum RxSubscriberEvent<Sub>
+pub enum RxSubscriberEvent<In, InError>
 where
-	Sub: RxSubscription,
-	Sub::Out: SignalBound + 'static,
-	Sub::OutError: SignalBound + 'static,
+	In: SignalBound + 'static,
+	InError: SignalBound + 'static,
 {
-	Next(Sub::Out),
-	Error(Sub::OutError),
+	Next(In),
+	Error(InError),
 	Complete,
 	Unsubscribe,
 	Tick(Tick),
 	Add(Entity),
+}
+
+impl<In, InError> From<RxNext<In>> for RxSubscriberEvent<In, InError>
+where
+	In: SignalBound + 'static,
+	InError: SignalBound + 'static,
+{
+	fn from(value: RxNext<In>) -> Self {
+		RxSubscriberEvent::Next(value.0)
+	}
+}
+
+impl<In, InError> From<RxError<InError>> for RxSubscriberEvent<In, InError>
+where
+	In: SignalBound + 'static,
+	InError: SignalBound + 'static,
+{
+	fn from(value: RxError<InError>) -> Self {
+		RxSubscriberEvent::Error(value.0)
+	}
+}
+
+impl<In, InError> From<RxComplete> for RxSubscriberEvent<In, InError>
+where
+	In: SignalBound + 'static,
+	InError: SignalBound + 'static,
+{
+	fn from(_value: RxComplete) -> Self {
+		RxSubscriberEvent::Complete
+	}
+}
+
+impl<In, InError> From<RxUnsubscribe> for RxSubscriberEvent<In, InError>
+where
+	In: SignalBound + 'static,
+	InError: SignalBound + 'static,
+{
+	fn from(_value: RxUnsubscribe) -> Self {
+		RxSubscriberEvent::Unsubscribe
+	}
+}
+
+impl<In, InError> From<RxTick> for RxSubscriberEvent<In, InError>
+where
+	In: SignalBound + 'static,
+	InError: SignalBound + 'static,
+{
+	fn from(value: RxTick) -> Self {
+		RxSubscriberEvent::Tick(value.0)
+	}
+}
+
+impl<In, InError> From<RxAdd> for RxSubscriberEvent<In, InError>
+where
+	In: SignalBound + 'static,
+	InError: SignalBound + 'static,
+{
+	fn from(value: RxAdd) -> Self {
+		RxSubscriberEvent::Add(value.0)
+	}
 }

@@ -1,10 +1,8 @@
 use bevy_ecs::observer::Trigger;
 use rx_bevy_common_bounds::DebugBound;
-use rx_bevy_observable::{ObservableOutput, Observer, Tick};
+use rx_bevy_observable::{ObservableOutput, Observer};
 
-use crate::{
-	CommandSubscriber, RxChannelTick, RxContextSub, RxDestination, RxSubscription, SignalBound,
-};
+use crate::{CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick, SignalBound};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -61,7 +59,7 @@ where
 		hooks: &mut crate::SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
 		if EMIT_ON_TICK {
-			hooks.register_hook(RxChannelTick, iterator_subscriber_on_tick::<Iterator>);
+			hooks.register_tick_handler(iterator_subscriber_on_tick::<Iterator>);
 		}
 	}
 
@@ -71,7 +69,7 @@ where
 }
 
 fn iterator_subscriber_on_tick<Iterator>(
-	trigger: Trigger<Tick>,
+	trigger: Trigger<RxTick>,
 	mut context: RxContextSub<IteratorSubscription<Iterator, true>>,
 	mut destination: RxDestination<IteratorSubscription<Iterator, true>>,
 ) where

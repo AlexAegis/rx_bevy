@@ -7,8 +7,7 @@ use examples_common::send_event;
 
 use rx_bevy_ecs_observable_interval::{IntervalObservableComponent, IntervalObservableOptions};
 use rx_bevy_plugin::{
-	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxPlugin,
-	RxSignal,
+	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxNext, RxPlugin,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -34,11 +33,7 @@ fn main() -> AppExit {
 		.run()
 }
 
-fn next_number_observer(
-	next: Trigger<RxSignal<i32, ()>>,
-	name_query: Query<&Name>,
-	time: Res<Time>,
-) {
+fn next_number_observer(next: Trigger<RxNext<i32>>, name_query: Query<&Name>, time: Res<Time>) {
 	println!(
 		"value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
 		next.event(),

@@ -1,14 +1,11 @@
 use bevy_ecs::{
 	component::{Component, HookContext, Mutable},
 	error::BevyError,
-	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
-	query::Without,
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
-use bevy_log::trace;
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, ObserverInput};
 use short_type_name::short_type_name;
@@ -17,8 +14,8 @@ use std::any::TypeId;
 use crate::{
 	CommandSubscribeExtension, CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
 	DeferredWorldObservableSpawnOperatorSubscribeObserverExtension, EntityContext, OnInsertSubHook,
-	RelativeEntity, RxSignal, RxSubscriber, SignalBound, Subscribe, SubscribeError,
-	SubscriberContext, SubscriberHooks, SubscriberInstanceOf, SubscriberSignalObserverRef,
+	RelativeEntity, RxSubscriber, SignalBound, Subscribe, SubscribeError,
+	SubscriberChannelHandlerRegistrationContext, SubscriberContext, SubscriberInstanceOf,
 	Subscription, SubscriptionSignalDestination, subscription_tick_observer,
 };
 
@@ -132,10 +129,12 @@ where
 		let mut spawned_subscriber =
 			operator_component.on_subscribe(context.upgrade(&mut commands));
 
-		let mut subscriber_hooks = SubscriberHooks::<Op::Subscriber>::default();
-		spawned_subscriber.register_channel_handlers(&mut subscriber_hooks.upgrade(&mut commands));
-
-		dbg!(&subscriber_hooks);
+		spawned_subscriber.register_channel_handlers(
+			&mut SubscriberChannelHandlerRegistrationContext::new(
+				subscription_entity,
+				&mut commands,
+			),
+		);
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
@@ -147,7 +146,6 @@ where
 				operator_definition_entity
 			)),
 			Subscription::<Op::Subscriber>::new(spawned_subscriber),
-			subscriber_hooks,
 			SubscriberInstanceOf::<Op::Subscriber>::new(operator_definition_entity),
 			SubscriptionSignalDestination::<Op::Subscriber>::new(destination_entity),
 		));

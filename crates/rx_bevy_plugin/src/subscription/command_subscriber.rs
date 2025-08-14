@@ -5,7 +5,9 @@ use bevy_ecs::{entity::Entity, system::Commands};
 use rx_bevy_observable::{ObserverInput, SubscriptionLike};
 use smallvec::SmallVec;
 
-use crate::{ObserverSignalPush, RxSignal, SignalBound};
+use crate::{
+	ObserverSignalPush, RxComplete, RxError, RxNext, RxSubscriberEvent, RxTick, SignalBound,
+};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -89,23 +91,21 @@ where
 	fn next(&mut self, next: Self::In) {
 		if !self.closed {
 			self.commands
-				.trigger_targets(RxSignal::<In, InError>::Next(next), self.destination_entity);
+				.trigger_targets(RxNext::<In>(next), self.destination_entity);
 		}
 	}
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.closed {
-			self.commands.trigger_targets(
-				RxSignal::<In, InError>::Error(error),
-				self.destination_entity,
-			);
+			self.commands
+				.trigger_targets(RxError::<InError>(error), self.destination_entity);
 		}
 	}
 
 	fn complete(&mut self) {
 		if !self.closed {
 			self.commands
-				.trigger_targets(RxSignal::<In, InError>::Complete, self.destination_entity);
+				.trigger_targets(RxComplete, self.destination_entity);
 			self.unsubscribe();
 		}
 	}
@@ -140,7 +140,7 @@ where
 	subscription_entity: Entity,
 	closed: bool,
 
-	buffer: SmallVec<[RxSignal<In, InError>; 2]>,
+	buffer: SmallVec<[RxSubscriberEvent<In, InError>; 2]>,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<(In, InError)>,
 }
@@ -183,6 +183,10 @@ where
 		}
 	}
 
+	pub(crate) fn push(&mut self, event: impl Into<RxSubscriberEvent<In, InError>>) {
+		self.buffer.push(event.into())
+	}
+
 	/// Drains the buffer into a [CommandSubscriber]
 	pub(crate) fn forward_buffer<'a, 'w, 's>(
 		&mut self,
@@ -209,21 +213,19 @@ where
 	InError: SignalBound,
 {
 	fn next(&mut self, next: Self::In) {
-		self.buffer.push(RxSignal::Next(next));
+		self.push(RxNext(next));
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		self.buffer.push(RxSignal::Error(error));
+		self.push(RxError(error));
 	}
 
 	fn complete(&mut self) {
-		self.buffer.push(RxSignal::Complete);
+		self.push(RxComplete);
 	}
 
-	fn tick(&mut self, _tick: rx_bevy_observable::Tick) {
-		// TODO: Should this be buffered?
-		// unreachable!("ticked the context")
-		// Don't need to do anything with a tick here
+	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+		self.push(RxTick(tick));
 	}
 }
 

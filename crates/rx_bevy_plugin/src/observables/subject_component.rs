@@ -3,7 +3,7 @@ use crate::{
 	OnInsertSubHook, SignalBound, SubscriptionSignalDestination, observable_on_insert_hook,
 	observable_on_remove_hook,
 };
-use crate::{RxSignal, SubscriptionSignalSources};
+use crate::{RxSubscriberEvent, SubscriptionSignalSources};
 
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -106,7 +106,7 @@ where
 
 /// Manually triggered events should trigger all subscribers
 pub fn forward_to_subscribers<O>(
-	trigger: Trigger<RxSignal<O::Out, O::OutError>>,
+	trigger: Trigger<RxSubscriberEvent<O::Out, O::OutError>>,
 	mut observable_subscriptions_query: Query<
 		&mut SubscriptionSignalSources<O::Subscription>,
 		With<O>,

@@ -1,9 +1,9 @@
 use bevy_ecs::{event::EventReader, observer::Trigger};
 use bevy_input::keyboard::KeyboardInput;
-use rx_bevy_observable::{ObservableOutput, Observer, Tick};
+use rx_bevy_observable::{ObservableOutput, Observer};
 
 use rx_bevy_plugin::{
-	CommandSubscriber, RxChannelTick, RxContextSub, RxDestination, RxSignal, RxSubscription,
+	CommandSubscriber, RxDestination, RxSubscription, RxTick,
 	SubscriptionChannelHandlerRegistrationContext,
 };
 
@@ -14,17 +14,11 @@ use crate::KeyboardObservableOptions;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct KeyboardSubscription {
-	buffer: Vec<KeyboardInput>,
-}
+pub struct KeyboardSubscription;
 
 impl KeyboardSubscription {
 	pub fn new(_keyboard_observable_options: KeyboardObservableOptions) -> Self {
-		Self { buffer: Vec::new() }
-	}
-
-	pub(crate) fn write(&mut self, event: KeyboardInput) {
-		self.buffer.push(event);
+		Self
 	}
 }
 
@@ -40,7 +34,7 @@ impl RxSubscription for KeyboardSubscription {
 		&mut self,
 		hooks: &mut SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		hooks.register_hook(RxChannelTick, keyboard_subscription_on_tick_system);
+		hooks.register_tick_handler(keyboard_subscription_on_tick_system);
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
@@ -49,12 +43,14 @@ impl RxSubscription for KeyboardSubscription {
 }
 
 fn keyboard_subscription_on_tick_system(
-	trigger: Trigger<Tick>,
-	// mut context: RxContextSub<KeyboardSubscription>,
+	trigger: Trigger<RxTick>,
 	mut destination: RxDestination<KeyboardSubscription>,
 	mut keyboard_input_events: EventReader<KeyboardInput>,
 ) {
-	// let mut subscription = context.get_subscription(trigger.target());
+	if keyboard_input_events.is_empty() {
+		return;
+	}
+
 	let mut subscriber = destination.get_destination(trigger.target());
 
 	for keyboard_input in keyboard_input_events.read() {

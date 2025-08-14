@@ -1,9 +1,9 @@
 use bevy_ecs::observer::Trigger;
 use bevy_time::{Timer, TimerMode};
-use rx_bevy_observable::{ObservableOutput, Observer, Tick};
+use rx_bevy_observable::{ObservableOutput, Observer};
 
 use rx_bevy_plugin::{
-	CommandSubscriber, RxChannelTick, RxContextSub, RxDestination, RxSubscription,
+	CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick,
 	SubscriptionChannelHandlerRegistrationContext,
 };
 
@@ -42,7 +42,7 @@ impl RxSubscription for IntervalSubscription {
 		&mut self,
 		hooks: &mut SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		hooks.register_hook(RxChannelTick, interval_subscription_on_tick_system);
+		hooks.register_tick_handler(interval_subscription_on_tick_system);
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
@@ -51,7 +51,7 @@ impl RxSubscription for IntervalSubscription {
 }
 
 fn interval_subscription_on_tick_system(
-	trigger: Trigger<Tick>,
+	trigger: Trigger<RxTick>,
 	mut context: RxContextSub<IntervalSubscription>,
 	mut destination: RxDestination<IntervalSubscription>,
 ) {
