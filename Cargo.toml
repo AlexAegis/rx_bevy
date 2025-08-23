@@ -82,6 +82,7 @@ rx_bevy_emission_variants = { path = "crates/rx_bevy_emission_variants" }
 rx_bevy_testing = { path = "crates/rx_bevy_testing" }
 bevy_kit_erased_component_registry = { path = "crates/bevy_kit_erased_component_registry" }
 # ECS Observables
+rx_bevy_ecs_observable_iterator = { path = "crates/rx_bevy_ecs_observable_iterator" }
 rx_bevy_ecs_observable_interval = { path = "crates/rx_bevy_ecs_observable_interval" }
 rx_bevy_ecs_observable_keyboard = { path = "crates/rx_bevy_ecs_observable_keyboard" }
 # Observables

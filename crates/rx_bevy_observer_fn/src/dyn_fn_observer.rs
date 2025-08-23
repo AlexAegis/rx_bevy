@@ -25,10 +25,10 @@ where
 	InError: 'static,
 {
 	fn next(&mut self, next: In) {
-		if !self.is_closed() {
-			if let Some(on_next) = &mut self.on_next {
-				(on_next)(next);
-			}
+		if !self.is_closed()
+			&& let Some(on_next) = &mut self.on_next
+		{
+			(on_next)(next);
 		}
 	}
 

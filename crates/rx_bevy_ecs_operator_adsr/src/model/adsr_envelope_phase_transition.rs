@@ -8,6 +8,9 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "reflect")]
 use bevy_reflect::prelude::ReflectDefault;
 
+#[cfg(all(feature = "serialize", feature = "reflect"))]
+use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
+
 use crate::{AdsrEnvelopePhase, AdsrSignalEvent};
 
 /// Describes what happened between this and the last frame, aside from None

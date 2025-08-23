@@ -5,6 +5,9 @@ use super::{AdsrEnvelopePhase, AdsrEnvelopePhaseTransition};
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
+#[cfg(all(feature = "serialize", feature = "reflect"))]
+use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
+
 use bevy_reflect::prelude::ReflectDefault;
 
 #[derive(Debug, Copy, Clone, Default)]

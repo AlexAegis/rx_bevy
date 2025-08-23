@@ -12,7 +12,7 @@ use bevy_reflect::Reflect;
 pub struct FlushCommand;
 
 impl Command for FlushCommand {
-	fn apply(self, world: &mut World) -> () {
+	fn apply(self, world: &mut World) {
 		world.flush();
 	}
 }

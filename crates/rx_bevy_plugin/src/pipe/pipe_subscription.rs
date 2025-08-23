@@ -127,10 +127,12 @@ where
 		let destination = self
 			.destination_query
 			.get_mut(subscription_entity)
-			.expect(&format!(
-				"A subscription must have a destination, but was not found on {}",
-				subscription_entity
-			));
+			.unwrap_or_else(|_| {
+				panic!(
+					"A subscription must have a destination, but was not found on {}",
+					subscription_entity
+				)
+			});
 		destination
 			.get_subscription_entity_context(subscription_entity)
 			.upgrade(&mut self.commands)
@@ -161,11 +163,13 @@ where
 	) -> Mut<'a, Subscription<Sub>> {
 		self.subscription_query
 			.get_mut(subscription_entity)
-			.expect(&format!(
-				"Subscription component {} was not found on {}",
-				short_type_name::short_type_name::<Sub>(),
-				subscription_entity
-			))
+			.unwrap_or_else(|_| {
+				panic!(
+					"Subscription component {} was not found on {}",
+					short_type_name::short_type_name::<Sub>(),
+					subscription_entity
+				)
+			})
 	}
 
 	pub fn get_destination<'a>(

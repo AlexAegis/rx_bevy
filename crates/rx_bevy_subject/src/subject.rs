@@ -103,22 +103,22 @@ where
 	Error: 'static + Clone,
 {
 	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() {
-			if let Ok(mut multicast) = self.multicast.write() {
-				for (_, destination) in multicast.slab.iter_mut() {
-					destination.next(next.clone());
-				}
+		if !self.is_closed()
+			&& let Ok(mut multicast) = self.multicast.write()
+		{
+			for (_, destination) in multicast.slab.iter_mut() {
+				destination.next(next.clone());
 			}
 		}
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			if let Ok(mut multicast) = self.multicast.write() {
-				multicast.closed = true;
-				for (_, destination) in multicast.slab.iter_mut() {
-					destination.error(error.clone());
-				}
+		if !self.is_closed()
+			&& let Ok(mut multicast) = self.multicast.write()
+		{
+			multicast.closed = true;
+			for (_, destination) in multicast.slab.iter_mut() {
+				destination.error(error.clone());
 			}
 		}
 	}
@@ -134,11 +134,11 @@ where
 
 	#[cfg(feature = "tick")]
 	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
-		if !self.is_closed() {
-			if let Ok(mut multicast) = self.multicast.write() {
-				for (_, destination) in multicast.slab.iter_mut() {
-					destination.tick(tick.clone());
-				}
+		if !self.is_closed()
+			&& let Ok(mut multicast) = self.multicast.write()
+		{
+			for (_, destination) in multicast.slab.iter_mut() {
+				destination.tick(tick.clone());
 			}
 		}
 	}

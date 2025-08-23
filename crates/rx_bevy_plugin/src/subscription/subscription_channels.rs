@@ -5,7 +5,6 @@ use crate::{RxComplete, RxError, RxNext, RxSubscription, RxTick, RxUnsubscribe, 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(bevy_reflect::Reflect))]
-
 pub struct RxChannelNext;
 
 #[derive(Default)]

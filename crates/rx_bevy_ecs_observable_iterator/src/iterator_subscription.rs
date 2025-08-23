@@ -2,7 +2,7 @@ use bevy_ecs::observer::Trigger;
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_observable::{ObservableOutput, Observer};
 
-use crate::{
+use rx_bevy_plugin::{
 	CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick, SignalBound,
 	SubscriptionChannelHandlerRegistrationContext,
 };

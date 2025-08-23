@@ -10,6 +10,9 @@ use bevy_math::{
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
+#[cfg(all(feature = "serialize", feature = "reflect"))]
+use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
+
 // TODO: Maybe this could actually be a DAHDSR (delay, attack, hold, decay, sustain, release) envelope. (But keep the name Adsr, it's more known)
 #[derive(Debug, Clone, Copy, Default)]
 #[cfg_attr(

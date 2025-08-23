@@ -30,24 +30,27 @@ fn insert_erased_component_by_type_id(type_id: TypeId) -> impl EntityCommand {
 		// This command always inserts a new component into an entity, but is is also only used on freshly spawned entities.
 		let world = unsafe { entity.world_mut() };
 
-		let erased_component_registry =
-			world
-				.get_resource::<ErasedComponentRegistry>()
-				.expect(&format!(
+		let erased_component_registry = world
+			.get_resource::<ErasedComponentRegistry>()
+			.unwrap_or_else(|| {
+				panic!(
 					"DefaultComponentRegistry is not found! {type_may_not_be_registered_error_msg}",
-				));
+				)
+			});
 
 		let erased_subscription_schedule_ctor = erased_component_registry
 			.get_constructor(type_id)
-			.expect(&format!(
-				"Component constructor not found in registry! {type_may_not_be_registered_error_msg}",
-			));
+			.unwrap_or_else(|| {
+				panic!(
+					"Component constructor not found in registry! {type_may_not_be_registered_error_msg}",
+				)
+			});
 
 		let erased_subscription_schedule = erased_subscription_schedule_ctor(world);
 
-		let component_id = world.components().get_id(type_id).expect(&format!(
-			"ComponentId not found for this TypeId! {type_may_not_be_registered_error_msg}",
-		));
+		let component_id = world.components().get_id(type_id).unwrap_or_else(|| {
+			panic!("ComponentId not found for this TypeId! {type_may_not_be_registered_error_msg}",)
+		});
 
 		// SAFETY: ComponentId is extracted from this world, and we would panic earlier if it would not be found.
 		// SAFETY: The constructor that creates this component can only be created with the actual type of this component.

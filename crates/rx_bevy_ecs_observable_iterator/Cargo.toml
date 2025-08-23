@@ -1,6 +1,6 @@
 [package]
-name = "rx_bevy_ecs_operator_adsr"
-description = "rx_bevy adsr operator"
+name = "rx_bevy_ecs_observable_iterator"
+description = "rx_bevy iterator observable"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -39,19 +39,15 @@ reflect = [
     "rx_bevy_plugin/reflect",
     "rx_bevy_observable/reflect",
 ]
-serialize = ["dep:serde", "bevy_time/serialize"]
 
 [dependencies]
 rx_bevy_plugin = { workspace = true }
-rx_bevy_observable = { workspace = true, features = ["bevy"] }
+rx_bevy_observable = { workspace = true }
+rx_bevy_common_bounds = { workspace = true }
 bevy_time = { workspace = true }
 bevy_ecs = { workspace = true }
-bevy_log = { workspace = true }
-bevy_math = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
-serde = { workspace = true, optional = true }
-bitflags = { workspace = true }
-smallvec = { workspace = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
@@ -60,5 +56,3 @@ rx_bevy_testing = { workspace = true, features = ["tick"] }
 examples_common = { workspace = true }
 bevy-inspector-egui = { workspace = true }
 bevy_egui = { workspace = true }
-rx_bevy_ecs_observable_keyboard = { workspace = true }
-rx_bevy_plugin = { workspace = true }

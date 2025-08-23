@@ -1,6 +1,9 @@
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
+#[cfg(all(feature = "serialize", feature = "reflect"))]
+use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
+
 /// AdsrEnvelopePhase mimics an ADSR envelope, where actions don't necessarily
 /// Fire the moment they start, it needs to be activated for an `attackTime`
 /// time to do that.

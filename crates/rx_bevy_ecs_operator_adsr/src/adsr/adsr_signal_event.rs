@@ -1,6 +1,10 @@
 use bevy_ecs::event::Event;
+
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
+
+#[cfg(all(feature = "serialize", feature = "reflect"))]
+use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
 
 #[derive(Event, Clone, Debug)]
 #[cfg_attr(

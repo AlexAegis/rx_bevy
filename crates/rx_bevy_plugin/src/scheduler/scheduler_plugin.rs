@@ -68,7 +68,7 @@ pub fn tick_subscriptions_system<S: ScheduleLabel, C: Clock>(
 ) {
 	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
 
-	if subscriptions.len() != 0 {
+	if !subscriptions.is_empty() {
 		commands.trigger_targets(Tick::new(&time), subscriptions);
 	}
 }

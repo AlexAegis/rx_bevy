@@ -24,7 +24,7 @@ use bevy_reflect::Reflect;
 
 /// A component that turns an entity into a multicast source, can observe
 /// multiple other observables, and other entities can subscribe to it.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubjectComponent<In, InError>
 where
@@ -50,19 +50,6 @@ where
 	fn register_component_hooks(hooks: &mut bevy_ecs::component::ComponentHooks) {
 		hooks.on_insert(observable_on_insert_hook::<Self>);
 		hooks.on_remove(observable_on_remove_hook::<Self>);
-	}
-}
-
-impl<In, InError> SubjectComponent<In, InError>
-where
-	In: Clone + SignalBound,
-	InError: Clone + SignalBound,
-{
-	pub fn new() -> Self {
-		Self {
-			subject_observer_entity: None,
-			_phantom_data: PhantomData,
-		}
 	}
 }
 

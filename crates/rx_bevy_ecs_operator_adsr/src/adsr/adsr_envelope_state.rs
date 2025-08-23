@@ -6,6 +6,9 @@ use rx_bevy_observable::Tick;
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
+#[cfg(all(feature = "serialize", feature = "reflect"))]
+use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
+
 use crate::{
 	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, AdsrSignal,
 	determine_phase_transition,

@@ -407,10 +407,10 @@ where
 	Destination: Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() {
-			if let Ok(mut lock) = self.destination.try_write() {
-				lock.next(next);
-			}
+		if !self.is_closed()
+			&& let Ok(mut lock) = self.destination.try_write()
+		{
+			lock.next(next);
 		}
 	}
 
@@ -435,10 +435,10 @@ where
 	#[cfg(feature = "tick")]
 	#[inline]
 	fn tick(&mut self, tick: crate::Tick) {
-		if !self.is_closed() {
-			if let Ok(mut lock) = self.destination.try_write() {
-				lock.tick(tick);
-			}
+		if !self.is_closed()
+			&& let Ok(mut lock) = self.destination.try_write()
+		{
+			lock.tick(tick);
 		}
 	}
 }

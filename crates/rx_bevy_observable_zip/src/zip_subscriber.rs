@@ -98,10 +98,11 @@ where
 			}
 		}
 
-		if self.o1_queue.len() > 0 && self.o2_queue.len() > 0 {
-			if let Some((o1_val, o2_val)) = self.o1_queue.pop().zip(self.o2_queue.pop()) {
-				self.destination.next((o1_val.clone(), o2_val.clone()));
-			}
+		if !self.o1_queue.is_empty()
+			&& !self.o2_queue.is_empty()
+			&& let Some((o1_val, o2_val)) = self.o1_queue.pop().zip(self.o2_queue.pop())
+		{
+			self.destination.next((o1_val.clone(), o2_val.clone()));
 		}
 
 		self.check_if_can_complete();
