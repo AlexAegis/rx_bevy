@@ -3,9 +3,9 @@ use bevy_ecs::{
 	component::{Component, HookContext},
 	world::DeferredWorld,
 };
-use rx_bevy_observable::{ObservableOutput, Tick};
+use rx_bevy_observable::ObservableOutput;
 
-use crate::{CommandSubscriber, RxSubscription, SignalBound, SubscriptionSignalDestination};
+use crate::{RxSubscription, SignalBound, SubscriptionSignalDestination};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;

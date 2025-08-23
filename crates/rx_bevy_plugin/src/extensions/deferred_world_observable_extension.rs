@@ -77,8 +77,8 @@ impl DeferredWorldObservableRegisterSubscriptionTypesExtension for DeferredWorld
 		let reg = self.resource_mut::<AppTypeRegistry>();
 		let mut registry_lock = reg.write();
 
-		registry_lock.register::<crate::SubscriberInstanceOf<Sub>>();
-		registry_lock.register::<crate::SubscriberInstances<Sub>>();
+		registry_lock.register::<crate::SubscriptionOf<Sub>>();
+		registry_lock.register::<crate::Subscriptions<Sub>>();
 		registry_lock.register::<crate::SubscriptionSignalDestination<Sub>>();
 		registry_lock.register::<crate::SubscriptionSignalSources<Sub>>();
 	}

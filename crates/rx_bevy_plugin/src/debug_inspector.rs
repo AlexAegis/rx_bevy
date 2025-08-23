@@ -13,9 +13,9 @@ use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
 use short_type_name::short_type_name;
 
 use crate::{
-	ObservableComponent, OperatorComponent, RxSubscription, SignalBound, SubscriberInstanceOf,
-	SubscriberInstances, SubscriptionMarker, SubscriptionSchedule, SubscriptionSignalDestination,
-	SubscriptionSignalSources,
+	ObservableComponent, OperatorComponent, RxSubscription, SignalBound, SubscriptionMarker,
+	SubscriptionOf, SubscriptionSchedule, SubscriptionSignalDestination, SubscriptionSignalSources,
+	Subscriptions,
 };
 
 pub struct DebugInspectorPlugin;
@@ -102,8 +102,8 @@ pub(crate) fn operator_entity_debug_print<Op>(
 			Entity,
 			Option<&SubscriptionSignalDestination<Op::Subscriber>>,
 			Option<&SubscriptionSignalSources<Op::Subscriber>>,
-			Option<&SubscriberInstanceOf<Op::Subscriber>>,
-			Option<&SubscriberInstances<Op::Subscriber>>,
+			Option<&SubscriptionOf<Op::Subscriber>>,
+			Option<&Subscriptions<Op::Subscriber>>,
 			Option<&SubscriptionSchedule<Update>>,
 		),
 		With<Op>,
@@ -150,8 +150,8 @@ pub(crate) fn observable_entity_debug_print<O>(
 			Entity,
 			Option<&SubscriptionSignalDestination<O::Subscription>>,
 			Option<&SubscriptionSignalSources<O::Subscription>>,
-			Option<&SubscriberInstanceOf<O::Subscription>>,
-			Option<&SubscriberInstances<O::Subscription>>,
+			Option<&SubscriptionOf<O::Subscription>>,
+			Option<&Subscriptions<O::Subscription>>,
 			Option<&SubscriptionSchedule<Update>>,
 		),
 		With<O>,
@@ -212,25 +212,25 @@ where
 	}
 }
 
-impl<Sub> Display for &SubscriberInstanceOf<Sub>
+impl<Sub> Display for &SubscriptionOf<Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "\tSignal Instance Of: {}", self.get_instance_of())
+		write!(f, "\tSubscription of: {}", self.get_instance_of())
 	}
 }
 
-impl<Sub> Display for &SubscriberInstances<Sub>
+impl<Sub> Display for &Subscriptions<Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "\tSignal Instances: {:?}", self.get_instances())
+		write!(f, "\tSubscriptions: {:?}", self.get_instances())
 	}
 }
 
@@ -249,8 +249,8 @@ pub(crate) fn subscription_entity_debug_print<Sub>(
 			Entity,
 			Option<&SubscriptionSignalDestination<Sub>>,
 			Option<&SubscriptionSignalSources<Sub>>,
-			Option<&SubscriberInstanceOf<Sub>>,
-			Option<&SubscriberInstances<Sub>>,
+			Option<&SubscriptionOf<Sub>>,
+			Option<&Subscriptions<Sub>>,
 			Option<&SubscriptionSchedule<Update>>,
 		),
 		With<SubscriptionMarker>,

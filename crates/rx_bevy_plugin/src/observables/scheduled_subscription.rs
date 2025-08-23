@@ -18,9 +18,9 @@ where
 	/// When set to false, the subscription will not be ticked at all.
 	const SCHEDULED: bool = true;
 
-	fn register_channel_handlers<'a, 'w, 's>(
+	fn register_subscription_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		handlers: &mut SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		handlers: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	);
 
 	/// Happens when either the [Subscription] or its relation from [Subscriptions] is removed
@@ -42,8 +42,8 @@ where
 	Self::Out: SignalBound,
 	Self::OutError: SignalBound,
 {
-	fn register_channel_handlers<'a, 'w, 's>(
+	fn register_subscriber_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		handlers: &mut SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		handlers: SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	);
 }

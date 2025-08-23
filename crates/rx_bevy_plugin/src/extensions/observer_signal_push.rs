@@ -13,6 +13,7 @@ where
 			RxSubscriberEvent::Next(next) => self.next(next),
 			RxSubscriberEvent::Error(error) => self.error(error),
 			RxSubscriberEvent::Complete => self.complete(),
+			RxSubscriberEvent::Tick(tick) => self.tick(tick),
 			_ => {}
 		}
 	}

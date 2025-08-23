@@ -119,7 +119,11 @@ where
 		let subscriber_entity = self.subscription;
 		self.commands.spawn((
 			SubscriptionChannelHandlerOf::<RxChannelNext, Sub>::new(subscriber_entity),
-			Name::new(format!("Next Handler - {}", short_type_name::<Sub>())),
+			Name::new(format!(
+				"Next({}) Handler - {}",
+				short_type_name::<Sub::In>(),
+				short_type_name::<Sub>()
+			)),
 			ChildOf(subscriber_entity),
 			Observer::new(system).with_entity(subscriber_entity),
 		));
@@ -134,7 +138,11 @@ where
 		let subscriber_entity = self.subscription;
 		self.commands.spawn((
 			SubscriptionChannelHandlerOf::<RxChannelError, Sub>::new(subscriber_entity),
-			Name::new(format!("Error Handler - {}", short_type_name::<Sub>())),
+			Name::new(format!(
+				"Error({}) Handler - {}",
+				short_type_name::<Sub::InError>(),
+				short_type_name::<Sub>()
+			)),
 			ChildOf(subscriber_entity),
 			Observer::new(system).with_entity(subscriber_entity),
 		));

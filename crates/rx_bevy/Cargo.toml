@@ -125,6 +125,7 @@ all_observables = [
     "observable_throw",
     "observable_zip",
 ]
+
 observable_combine_latest = ["dep:rx_bevy_observable_combine_latest"]
 observable_connectable = ["dep:rx_bevy_observable_connectable"]
 observable_deferred = ["dep:rx_bevy_observable_deferred"]
@@ -178,6 +179,8 @@ subject_replay = ["dep:rx_bevy_subject_replay"]
 [dependencies]
 rx_bevy_observable = { workspace = true }
 # Observables
+rx_bevy_ecs_observable_interval = { workspace = true, optional = true }
+rx_bevy_ecs_observable_keyboard = { workspace = true, optional = true }
 rx_bevy_observable_combine_latest = { workspace = true, optional = true }
 rx_bevy_observable_connectable = { workspace = true, optional = true }
 rx_bevy_observable_deferred = { workspace = true, optional = true }
@@ -193,6 +196,7 @@ rx_bevy_observer_fn = { workspace = true, optional = true }
 rx_bevy_observer_noop = { workspace = true, optional = true }
 rx_bevy_observer_print = { workspace = true, optional = true }
 # Operators
+rx_bevy_ecs_operator_adsr = { workspace = true, optional = true }
 rx_bevy_operator_composite = { workspace = true, optional = true }
 rx_bevy_operator_enumerate = { workspace = true, optional = true }
 rx_bevy_operator_filter = { workspace = true, optional = true }

@@ -38,9 +38,9 @@ impl ObservableOutput for IntervalSubscription {
 }
 
 impl RxSubscription for IntervalSubscription {
-	fn register_channel_handlers<'a, 'w, 's>(
+	fn register_subscription_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		hooks: &mut SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		mut hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
 		hooks.register_tick_handler(interval_subscription_on_tick_system);
 	}
@@ -56,7 +56,7 @@ fn interval_subscription_on_tick_system(
 	mut destination: RxDestination<IntervalSubscription>,
 ) {
 	let mut subscription = context.get_subscription(trigger.target());
-	let mut subscriber = destination.get_destination(trigger.target());
+	let mut subscriber = destination.get_subscriber_of(trigger.target());
 
 	subscription.timer.tick(trigger.event().delta);
 	if subscription.timer.just_finished() {

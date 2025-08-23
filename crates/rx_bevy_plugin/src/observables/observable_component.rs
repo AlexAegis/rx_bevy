@@ -17,9 +17,9 @@ use crate::{
 	CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
 	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, EntityContext, RxChannel,
 	RxChannelTick, RxSubscription, RxTick, SignalBound, Subscribe, SubscribeError,
-	SubscriberContext, SubscriberInstanceOf, SubscriberInstances, Subscription,
-	SubscriptionChannelHandlerRef, SubscriptionChannelHandlerRegistrationContext,
-	SubscriptionMarker, SubscriptionSignalDestination,
+	SubscribeObserverRef, SubscriberContext, Subscription, SubscriptionChannelHandlerRef,
+	SubscriptionChannelHandlerRegistrationContext, SubscriptionMarker, SubscriptionOf,
+	SubscriptionSignalDestination, Subscriptions,
 };
 
 #[cfg(feature = "reflect")]
@@ -91,18 +91,19 @@ where
 	deferred_world.call_on_insert_hook::<O>(hook_context.entity);
 }
 
-/// Removes the subscriptions for this observable or operators subscriber,
+/// Removes the subscriptions for this observable
 /// causing them to unsubscribe
-pub fn observable_on_remove_hook<Sub>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+pub fn observable_on_remove_hook<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
-	Sub: 'static + RxSubscription,
-	Sub::Out: SignalBound,
-	Sub::OutError: SignalBound,
+	O: ObservableComponent + Send + Sync,
+	O::Out: SignalBound,
+	O::OutError: SignalBound,
 {
 	deferred_world
 		.commands()
 		.entity(hook_context.entity)
-		.remove::<SubscriberInstances<Sub>>();
+		.remove::<Subscriptions<O::Subscription>>()
+		.remove::<SubscribeObserverRef<O>>();
 }
 
 pub(crate) fn on_observable_subscribe<O>(
@@ -166,12 +167,12 @@ where
 		let mut spawned_subscription =
 			observable_component.on_subscribe(context.upgrade(&mut commands));
 
-		let mut subscription_hooks =
+		spawned_subscription.register_subscription_channel_handlers(
 			SubscriptionChannelHandlerRegistrationContext::<O::Subscription>::new(
 				subscription_entity,
 				&mut commands,
-			);
-		spawned_subscription.register_channel_handlers(&mut subscription_hooks);
+			),
+		);
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
@@ -184,7 +185,7 @@ where
 			)),
 			SubscriptionMarker,
 			Subscription::<O::Subscription>::new(spawned_subscription),
-			SubscriberInstanceOf::<O::Subscription>::new(observable_entity),
+			SubscriptionOf::<O::Subscription>::new(observable_entity),
 			SubscriptionSignalDestination::<O::Subscription>::new(destination_entity),
 		));
 
@@ -235,7 +236,6 @@ where
 	Sub::OutError: SignalBound,
 	Channel: RxChannel,
 {
-	commands: Commands<'w, 's>,
 	subscription_query: Query<
 		'w,
 		's,

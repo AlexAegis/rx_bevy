@@ -1,14 +1,22 @@
-use bevy::prelude::*;
 use std::time::Duration;
 
-use super::AdsrEnvelopePhase;
+use crate::AdsrEnvelopePhase;
+
+use bevy_math::{
+	Curve,
+	curve::{EaseFunction, EasingCurve},
+};
 
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
 // TODO: Maybe this could actually be a DAHDSR (delay, attack, hold, decay, sustain, release) envelope. (But keep the name Adsr, it's more known)
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
+#[cfg_attr(
+	feature = "reflect",
+	derive(bevy_reflect::Reflect),
+	reflect(Debug, Clone)
+)]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 #[cfg_attr(
 	all(feature = "serialize", feature = "reflect"),
@@ -144,7 +152,12 @@ impl AdsrEnvelope {
 }
 
 /// TODO: Impl, this is for connecting adsr envelopes back to booleans so it will need something else like a connector thing
-#[derive(Debug, Clone, Copy, Default, Reflect)]
+#[derive(Debug, Clone, Copy, Default)]
+#[cfg_attr(
+	feature = "reflect",
+	derive(bevy_reflect::Reflect),
+	reflect(Debug, Clone)
+)]
 pub struct ActionActuationPreferences {
 	trigger_rule: ActionTriggerRule,
 	release_rule: ActionReleaseRule,
@@ -158,7 +171,12 @@ pub struct ActionActuationPreferences {
 /// By `default` these rules map the source's activation directly.
 ///
 /// Synonyms: `Rising Edge` | `Gate On` | `Trigger`
-#[derive(Debug, Clone, Copy, Default, Reflect)]
+#[derive(Debug, Clone, Copy, Default)]
+#[cfg_attr(
+	feature = "reflect",
+	derive(bevy_reflect::Reflect),
+	reflect(Debug, Clone)
+)]
 pub enum ActionTriggerRule {
 	/// Immediately when the source actions gate is opened, this action also
 	/// starts getting activated without having to wait until the source action's
@@ -190,7 +208,12 @@ pub enum ActionTriggerRule {
 ///
 /// By `default` these rules map the source's activation directly.
 /// Synonyms: `Falling Edge` | `Gate Off`
-#[derive(Debug, Clone, Copy, Default, Reflect)]
+#[derive(Debug, Clone, Copy, Default)]
+#[cfg_attr(
+	feature = "reflect",
+	derive(bevy_reflect::Reflect),
+	reflect(Debug, Clone)
+)]
 pub enum ActionReleaseRule {
 	/// Stop this action from getting activated when the source has also
 	/// stopped getting activated

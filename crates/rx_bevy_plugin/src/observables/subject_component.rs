@@ -49,7 +49,7 @@ where
 
 	fn register_component_hooks(hooks: &mut bevy_ecs::component::ComponentHooks) {
 		hooks.on_insert(observable_on_insert_hook::<Self>);
-		hooks.on_remove(observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>);
+		hooks.on_remove(observable_on_remove_hook::<Self>);
 	}
 }
 

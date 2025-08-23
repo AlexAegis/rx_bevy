@@ -15,7 +15,7 @@ use derive_where::derive_where;
 use bevy_reflect::Reflect;
 
 #[derive(Component, Clone)]
-#[component(on_insert = observable_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>)]
+#[component(on_insert = observable_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<Self>)]
 #[cfg_attr(
 	feature = "debug",
 	derive_where(Debug),

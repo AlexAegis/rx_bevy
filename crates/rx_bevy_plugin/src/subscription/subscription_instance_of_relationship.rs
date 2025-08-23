@@ -16,10 +16,10 @@ use bevy_reflect::Reflect;
 /// [OperatorComponent] where it was spawned from.
 ///
 #[derive(Component)]
-#[relationship(relationship_target=SubscriberInstances<Sub>)]
+#[relationship(relationship_target=Subscriptions<Sub>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(type_path = false))]
-pub struct SubscriberInstanceOf<Sub>
+pub struct SubscriptionOf<Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
@@ -34,7 +34,7 @@ where
 	_phantom_data: PhantomData<Sub>,
 }
 
-impl<Sub> SubscriberInstanceOf<Sub>
+impl<Sub> SubscriptionOf<Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
@@ -58,10 +58,10 @@ where
 /// referenced here, unsubscribing, and tearing down any subscription pipelines
 /// it was part of.
 #[derive(Component)]
-#[relationship_target(relationship=SubscriberInstanceOf<Sub>, linked_spawn)]
+#[relationship_target(relationship=SubscriptionOf<Sub>, linked_spawn)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect), reflect(type_path = false))]
-pub struct SubscriberInstances<Sub>
+pub struct Subscriptions<Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
@@ -73,7 +73,7 @@ where
 	_phantom_data: PhantomData<Sub>,
 }
 
-impl<Sub> SubscriberInstances<Sub>
+impl<Sub> Subscriptions<Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
@@ -85,7 +85,7 @@ where
 }
 
 #[cfg(feature = "reflect")]
-impl<Sub> TypePath for SubscriberInstanceOf<Sub>
+impl<Sub> TypePath for SubscriptionOf<Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,
@@ -112,7 +112,7 @@ where
 }
 
 #[cfg(feature = "reflect")]
-impl<Sub> TypePath for SubscriberInstances<Sub>
+impl<Sub> TypePath for Subscriptions<Sub>
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound,

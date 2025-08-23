@@ -1,6 +1,3 @@
-#[cfg(feature = "reflect")]
-use bevy::prelude::*;
-
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
@@ -10,7 +7,11 @@ use serde::{Deserialize, Serialize};
 /// After firing, it may still getting activated, as long as this happens
 /// the phase is sustained and once it stops it enters the release phase
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Debug)]
-#[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
+#[cfg_attr(
+	feature = "reflect",
+	derive(bevy_reflect::Reflect),
+	reflect(Debug, Clone)
+)]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 #[cfg_attr(
 	all(feature = "serialize", feature = "reflect"),

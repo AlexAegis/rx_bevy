@@ -13,7 +13,7 @@ use rx_bevy_plugin::{
 use crate::{KeyboardObservableOptions, KeyboardSubscription};
 
 #[derive(Component, Clone)]
-#[component(on_insert = observable_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<<Self as ObservableComponent>::Subscription>)]
+#[component(on_insert = observable_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<Self>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct KeyboardObservableComponent {

@@ -4,7 +4,7 @@ use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
 	CommandSubscriber, OnInsertSubHook, OperatorComponent, PipeSubscriber, RelativeEntity,
-	SignalBound, SubscriberContext, observable_on_remove_hook, operator_on_insert_hook,
+	SignalBound, SubscriberContext, operator_on_insert_hook, operator_on_remove_hook,
 };
 
 #[cfg(feature = "debug")]
@@ -14,7 +14,7 @@ use std::fmt::Debug;
 use bevy_reflect::Reflect;
 
 #[derive(Component, Clone)]
-#[component(on_insert = operator_on_insert_hook::<Self>, on_remove = observable_on_remove_hook::<<Self as OperatorComponent>::Subscriber>)]
+#[component(on_insert = operator_on_insert_hook::<Self>, on_remove = operator_on_remove_hook::<Self>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct PipeComponent<Op>

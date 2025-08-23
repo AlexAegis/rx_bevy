@@ -30,9 +30,9 @@ impl ObservableOutput for KeyboardSubscription {
 impl RxSubscription for KeyboardSubscription {
 	const SCHEDULED: bool = true;
 
-	fn register_channel_handlers<'a, 'w, 's>(
+	fn register_subscription_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		hooks: &mut SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		mut hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
 		hooks.register_tick_handler(keyboard_subscription_on_tick_system);
 	}
@@ -47,13 +47,11 @@ fn keyboard_subscription_on_tick_system(
 	mut destination: RxDestination<KeyboardSubscription>,
 	mut keyboard_input_events: EventReader<KeyboardInput>,
 ) {
-	if keyboard_input_events.is_empty() {
-		return;
-	}
-
-	let mut subscriber = destination.get_destination(trigger.target());
+	let mut subscriber = destination.get_subscriber_of(trigger.target());
 
 	for keyboard_input in keyboard_input_events.read() {
 		subscriber.next(keyboard_input.clone());
 	}
+
+	subscriber.tick(trigger.0.clone());
 }

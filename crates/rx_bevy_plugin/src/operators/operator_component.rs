@@ -14,9 +14,10 @@ use std::any::TypeId;
 use crate::{
 	CommandSubscribeExtension, CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
 	DeferredWorldObservableSpawnOperatorSubscribeObserverExtension, EntityContext, OnInsertSubHook,
-	RelativeEntity, RxSubscriber, SignalBound, Subscribe, SubscribeError,
-	SubscriberChannelHandlerRegistrationContext, SubscriberContext, SubscriberInstanceOf,
-	Subscription, SubscriptionSignalDestination, subscription_tick_observer,
+	OperatorSubscribeObserverRef, RelativeEntity, RxSubscriber, RxSubscription, SignalBound,
+	Subscribe, SubscribeError, SubscriberChannelHandlerRegistrationContext, SubscriberContext,
+	Subscription, SubscriptionChannelHandlerRegistrationContext, SubscriptionOf,
+	SubscriptionSignalDestination, Subscriptions, subscription_tick_observer,
 };
 
 #[cfg(feature = "reflect")]
@@ -81,6 +82,24 @@ where
 
 	deferred_world.call_on_insert_hook::<Op>(hook_context.entity);
 }
+
+/// Removes the subscriptions for this operator
+/// causing them to unsubscribe
+pub fn operator_on_remove_hook<Op>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+where
+	Op: OperatorComponent + Send + Sync,
+	Op::In: SignalBound,
+	Op::InError: SignalBound,
+	Op::Out: SignalBound,
+	Op::OutError: SignalBound,
+{
+	deferred_world
+		.commands()
+		.entity(hook_context.entity)
+		.remove::<Subscriptions<Op::Subscriber>>()
+		.remove::<OperatorSubscribeObserverRef<Op>>();
+}
+
 pub(crate) fn on_operator_subscribe<Op>(
 	trigger: Trigger<Subscribe<Op::Out, Op::OutError>>,
 	mut observable_component_query: Query<&mut Op>,
@@ -129,11 +148,11 @@ where
 		let mut spawned_subscriber =
 			operator_component.on_subscribe(context.upgrade(&mut commands));
 
-		spawned_subscriber.register_channel_handlers(
-			&mut SubscriberChannelHandlerRegistrationContext::new(
-				subscription_entity,
-				&mut commands,
-			),
+		spawned_subscriber.register_subscription_channel_handlers(
+			SubscriptionChannelHandlerRegistrationContext::new(subscription_entity, &mut commands),
+		);
+		spawned_subscriber.register_subscriber_channel_handlers(
+			SubscriberChannelHandlerRegistrationContext::new(subscription_entity, &mut commands),
 		);
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
@@ -146,7 +165,7 @@ where
 				operator_definition_entity
 			)),
 			Subscription::<Op::Subscriber>::new(spawned_subscriber),
-			SubscriberInstanceOf::<Op::Subscriber>::new(operator_definition_entity),
+			SubscriptionOf::<Op::Subscriber>::new(operator_definition_entity),
 			SubscriptionSignalDestination::<Op::Subscriber>::new(destination_entity),
 		));
 
@@ -155,24 +174,6 @@ where
 				.with_entity(subscription_entity), // It's observing itself!
 		));
 	}
-
-	// No longer needed, operator implementation spawns these through hook registrations
-	//// Setting up signal observer
-	//{
-	//	commands.spawn((
-	//		Name::new(format!(
-	//			"Operator Signal Observer <{}, {}, {}, {}> for [{}]",
-	//			short_type_name::<Op::In>(),
-	//			short_type_name::<Op::InError>(),
-	//			short_type_name::<Op::Out>(),
-	//			short_type_name::<Op::OutError>(),
-	//			subscription_entity
-	//		)),
-	//		ChildOf(subscription_entity),
-	//		Observer::new(operator_subscription_signal_observer::<Op>)
-	//			.with_entity(subscription_entity),
-	//	));
-	//}
 
 	// Operator Subscription Chain setup
 	{
@@ -191,36 +192,3 @@ where
 
 	Ok(())
 }
-
-//fn operator_subscription_signal_observer<Op>(
-//	trigger: Trigger<RxSignal<Op::In, Op::InError>>,
-//	mut subscription_query: Query<
-//		(
-//			&SubscriptionSignalDestination<Op::Subscriber>,
-//			&mut Subscription<Op::Subscriber>,
-//		),
-//		Without<SubscriberSignalObserverRef<Op>>, // Subscribers aren't directly ticked, they are ticked by other subscriptions
-//	>,
-//	mut commands: Commands,
-//) where
-//	Op: OperatorComponent + Send + Sync,
-//	Op::In: SignalBound,
-//	Op::InError: SignalBound,
-//	Op::Out: SignalBound,
-//	Op::OutError: SignalBound,
-//{
-//	#[cfg(feature = "debug")]
-//	trace!(
-//		"operator_subscription_signal_observer {:?}",
-//		trigger.event()
-//	);
-//
-//	if let Ok((signal_destination, mut subscription)) = subscription_query.get_mut(trigger.target())
-//	{
-//		let subscriber = signal_destination
-//			.get_subscription_entity_context(trigger.target())
-//			.upgrade(&mut commands);
-//
-//		subscription.on_signal(trigger.event().clone(), subscriber);
-//	}
-//}

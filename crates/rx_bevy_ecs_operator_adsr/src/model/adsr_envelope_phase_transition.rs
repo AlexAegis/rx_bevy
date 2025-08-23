@@ -1,17 +1,24 @@
-use bevy::prelude::*;
+use bevy_log::trace;
 use bitflags::{bitflags, bitflags_match};
 use smallvec::SmallVec;
 
-use super::{AdsrEnvelopePhase, AdsrSignalEvent};
-
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "reflect")]
+use bevy_reflect::prelude::ReflectDefault;
+
+use crate::{AdsrEnvelopePhase, AdsrSignalEvent};
 
 /// Describes what happened between this and the last frame, aside from None
 /// other transitions are only present for a single frame, and can be used
 /// in the same fashion as `just_pressed`
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone, Default))]
+#[cfg_attr(
+	feature = "reflect",
+	derive(bevy_reflect::Reflect),
+	reflect(Debug, Clone, Default)
+)]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 #[cfg_attr(
 	all(feature = "serialize", feature = "reflect"),
@@ -23,8 +30,6 @@ bitflags! {
 	impl AdsrEnvelopePhaseTransition: u8 {
 		/// [ActionEnvelopeState::empty()] -> [ActionEnvelopeState::Attack]
 		/// The action has started getting activated.
-		/// ! Only present if the action has an attackTime other than 0, otherwise
-		/// ! will only observe the Fire transition (re-trigger)
 		const Start = 0b00000001;
 		/// [ActionEnvelopeState::Attack] -> [ActionEnvelopeState::Decay]
 		/// The action is now fully activated and `attackTime` has passed.
@@ -143,7 +148,9 @@ mod test {
 
 	use bevy::time::Stopwatch;
 
-	use crate::{AdsrEnvelope, transformers::adsr::adsr_envelope_phase_transition::*};
+	use crate::{
+		AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, determine_phase_transition,
+	};
 
 	fn _get_test_stopwatch_for_nonzero_duration_envelope_during_attack() -> Stopwatch {
 		let mut stopwatch = Stopwatch::new();

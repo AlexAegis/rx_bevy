@@ -11,7 +11,8 @@ use rx_bevy_observable::{
 
 use crate::{
 	CommandSubscriber, ObserverSignalPush, RxNext, RxSubscriber, RxSubscription, RxTick,
-	SignalBound, SubscriberContext, Subscription, SubscriptionSignalDestination,
+	SignalBound, SubscriberContext, Subscription, SubscriptionChannelHandlerRegistrationContext,
+	SubscriptionSignalDestination,
 };
 
 #[cfg(feature = "debug")]
@@ -56,9 +57,9 @@ where
 	Op::OutError: SignalBound,
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
-	fn register_channel_handlers<'a, 'w, 's>(
+	fn register_subscriber_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		handlers: &mut crate::SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		mut handlers: crate::SubscriberChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
 		handlers.register_next_handler(pipe_on_next_hook::<Op>);
 	}
@@ -75,9 +76,9 @@ where
 {
 	const SCHEDULED: bool = true;
 
-	fn register_channel_handlers<'a, 'w, 's>(
+	fn register_subscription_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		handlers: &mut crate::SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		mut handlers: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
 		handlers.register_tick_handler(pipe_on_tick_hook::<Op>);
 	}
@@ -113,7 +114,7 @@ where
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
-	pub fn get_destination<'a>(
+	pub fn get_subscriber_of<'a>(
 		&'a mut self,
 		subscription_entity: Entity,
 	) -> CommandSubscriber<
@@ -197,7 +198,7 @@ fn pipe_on_tick_hook<Op>(
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	let mut subscription = context.get_subscription(trigger.target());
-	let mut subscriber = destination.get_destination(trigger.target());
+	let mut subscriber = destination.get_subscriber_of(trigger.target());
 	subscription
 		.operator_subscriber
 		.tick((**trigger.event()).clone());
@@ -206,8 +207,6 @@ fn pipe_on_tick_hook<Op>(
 		.write_destination(|destination| {
 			destination.forward_buffer(&mut subscriber);
 		});
-	// TODO: Decide if this is needed or not, the buffer should contain forwarded ticks
-	// subscriber.tick(trigger.event().clone());
 }
 
 fn pipe_on_next_hook<Op>(
@@ -223,7 +222,7 @@ fn pipe_on_next_hook<Op>(
 	Op::Subscriber<SubscriberContext<Op::Out, Op::OutError>>: Send + Sync + DebugBound,
 {
 	let mut subscription = context.get_subscription(trigger.target());
-	let mut subscriber = destination.get_destination(trigger.target());
+	let mut subscriber = destination.get_subscriber_of(trigger.target());
 	subscription
 		.operator_subscriber
 		.push(trigger.event().clone());

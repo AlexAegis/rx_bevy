@@ -4,7 +4,9 @@ use derive_where::derive_where;
 
 use rx_bevy_observable::ObservableOutput;
 
-use crate::{CommandSubscriber, RxSubscription, SignalBound};
+use crate::{
+	CommandSubscriber, RxSubscription, SignalBound, SubscriptionChannelHandlerRegistrationContext,
+};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -40,9 +42,9 @@ where
 {
 	const SCHEDULED: bool = false;
 
-	fn register_channel_handlers<'a, 'w, 's>(
+	fn register_subscription_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		_hooks: &mut super::SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		_hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
 		// No hooks are registered
 	}

@@ -1,45 +1,41 @@
 use std::time::Duration;
 
-use bevy::{prelude::*, time::Stopwatch};
-
-use crate::{Clock, SignalTransformer};
-
-use super::{
-	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, AdsrSignal,
-	determine_phase_transition,
-};
+use bevy_time::Stopwatch;
+use rx_bevy_observable::Tick;
 
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
+use crate::{
+	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, AdsrSignal,
+	determine_phase_transition,
+};
+
 /// An AdsrSignalTransformer takes in a [bool] input and over time turns it
 /// into an AdsrSignal
 #[derive(Default, Debug, Clone)]
-#[cfg_attr(feature = "reflect", derive(Reflect), reflect(Debug, Clone))]
+#[cfg_attr(
+	feature = "reflect",
+	derive(bevy_reflect::Reflect),
+	reflect(Debug, Clone)
+)]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 #[cfg_attr(
 	all(feature = "serialize", feature = "reflect"),
 	reflect(Serialize, Deserialize)
 )]
-pub struct AdsrSignalTransformer {
+pub struct AdsrEnvelopeState {
 	adsr_envelope_phase: AdsrEnvelopePhase,
 	activation_time_absolute: Option<Duration>,
 	deactivation_time_relative: Option<Duration>,
 	deactivation_value: Option<f32>,
 	adsr_phase_transition: AdsrEnvelopePhaseTransition,
 	t_relative: Stopwatch,
+	last_frame_input_signal: bool,
 	last_frame_output_signal: AdsrSignal,
-	pub envelope: AdsrEnvelope,
 }
 
-impl AdsrSignalTransformer {
-	pub fn new(envelope: AdsrEnvelope) -> Self {
-		Self {
-			envelope,
-			..Default::default()
-		}
-	}
-
+impl AdsrEnvelopeState {
 	pub fn reset(&mut self) {
 		self.t_relative.reset();
 		self.deactivation_time_relative = None;
@@ -49,29 +45,27 @@ impl AdsrSignalTransformer {
 	}
 }
 
-impl SignalTransformer for AdsrSignalTransformer {
-	type InputSignal = bool;
-	type OutputSignal = AdsrSignal;
-
-	fn transform<C: Clock>(
+impl AdsrEnvelopeState {
+	pub fn calculate_output(
 		&mut self,
-		signal: &Self::InputSignal,
-		context: crate::SignalTransformContext<'_, C, Self::InputSignal>,
-	) -> Self::OutputSignal {
-		if !context.last_frame_input_signal && *signal {
+		envelope: AdsrEnvelope,
+		is_getting_activated: bool,
+		tick: Tick,
+	) -> AdsrSignal {
+		if !self.last_frame_input_signal && is_getting_activated {
 			self.reset();
-			self.activation_time_absolute = Some(context.time.elapsed());
-		} else if *context.last_frame_input_signal && !signal {
+			self.activation_time_absolute = Some(tick.now);
+		} else if self.last_frame_input_signal && !is_getting_activated {
 			self.deactivation_value = Some(self.last_frame_output_signal.value);
 			self.deactivation_time_relative = Some(self.t_relative.elapsed());
 		}
 
 		if self.adsr_envelope_phase != AdsrEnvelopePhase::None {
-			self.t_relative.tick(context.time.delta());
+			self.t_relative.tick(tick.delta);
 		}
 
-		let (value, adsr_envelope_phase) = self.envelope.evaluate(
-			*signal,
+		let (value, adsr_envelope_phase) = envelope.evaluate(
+			is_getting_activated,
 			self.t_relative.elapsed(),
 			self.deactivation_value,
 			self.deactivation_time_relative,
@@ -90,13 +84,6 @@ impl SignalTransformer for AdsrSignalTransformer {
 			self.reset();
 		}
 
-		if !self.adsr_phase_transition.is_empty() {
-			println!(
-				"adsr_phase_transition {:?}",
-				self.adsr_phase_transition.iter_names().collect::<Vec<_>>()
-			);
-		}
-
 		let result = AdsrSignal {
 			adsr_envelope_phase,
 			phase_transition: self.adsr_phase_transition,
@@ -104,6 +91,7 @@ impl SignalTransformer for AdsrSignalTransformer {
 			t: self.t_relative.elapsed(),
 		};
 
+		self.last_frame_input_signal = is_getting_activated;
 		self.last_frame_output_signal = result;
 
 		result
