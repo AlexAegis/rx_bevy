@@ -73,7 +73,6 @@ either = { version = "1.15.0" }
 thiserror = { version = "2.0.16" }
 rand = { version = "0.9.2" }
 short_type_name = { path = "crates/short_type_name" }
-bevy_kit_action = { path = "crates/bevy_kit_action" }
 examples_common = { path = "crates/examples_common" }
 # Core
 rx_bevy = { path = "crates/rx_bevy" }

@@ -917,21 +917,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_kit_action"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_egui",
- "bitflags 2.9.3",
- "derive-where",
- "examples_common",
- "num-traits",
- "serde",
- "smallvec",
-]
-
-[[package]]
 name = "bevy_kit_erased_component_registry"
 version = "0.1.0"
 dependencies = [
