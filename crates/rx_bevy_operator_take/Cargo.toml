@@ -46,9 +46,7 @@ bevy = [
 tick = [
     "rx_bevy/tick",
     "rx_bevy_core/tick",
-    "rx_bevy_operator_composite/tick",
     "rx_bevy_operator_composite?/tick",
-    "rx_bevy_pipe/tick",
     "rx_bevy_pipe?/tick",
     "rx_bevy_testing/tick",
 ]

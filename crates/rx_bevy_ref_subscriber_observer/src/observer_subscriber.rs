@@ -1,4 +1,4 @@
-use crate::{
+use rx_bevy_core::{
 	InnerSubscription, ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike,
 };
 
@@ -50,7 +50,7 @@ where
 	}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: crate::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		if !self.is_closed() {
 			self.destination.tick(tick);
 		}

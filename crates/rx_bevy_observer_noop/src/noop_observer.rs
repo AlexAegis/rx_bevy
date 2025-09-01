@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber};
+use rx_bevy_core::{Observer, ObserverInput, UpgradeableObserver};
+use rx_bevy_ref_subscriber_observer::ObserverSubscriber;
 
 #[derive(Debug)]
 pub struct NoopObserver<In, InError> {

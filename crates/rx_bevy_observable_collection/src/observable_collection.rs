@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observable, ObservableOutput, SharedSubscriber, Subscriber};
+use rx_bevy_core::{Observable, ObservableOutput, Subscriber};
+use rx_bevy_ref_subscriber_shared::SharedSubscriber;
 
 use crate::{FixedSubscriberObservable, IntoFixedSubscriberObservable};
 

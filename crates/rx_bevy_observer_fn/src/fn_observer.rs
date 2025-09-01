@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber};
+use rx_bevy_core::{Observer, ObserverInput, UpgradeableObserver};
+use rx_bevy_ref_subscriber_observer::ObserverSubscriber;
 
 /// An [FnObserver] requires you to define a callback for all three notifications
 pub struct FnObserver<In, InError, OnPush, OnError, OnComplete>

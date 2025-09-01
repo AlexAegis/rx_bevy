@@ -17,20 +17,48 @@ workspace = true
 
 [features]
 default = []
-dev = ["rx_bevy/dev", "rx_bevy_common_bounds/dev", "rx_bevy_core/dev"]
-example = ["dev", "bevy", "rx_bevy/example", "rx_bevy_core/example"]
-bevy = ["tick", "rx_bevy/bevy", "rx_bevy_core/bevy"]
-tick = ["rx_bevy/tick", "rx_bevy_core/tick"]
+dev = [
+    "rx_bevy/dev",
+    "rx_bevy_common_bounds/dev",
+    "rx_bevy_core/dev",
+    "rx_bevy_ref_subscriber_observer/dev",
+    "rx_bevy_ref_subscriber_shared/dev",
+]
+example = [
+    "bevy",
+    "dev",
+    "rx_bevy/example",
+    "rx_bevy_core/example",
+    "rx_bevy_ref_subscriber_observer/example",
+    "rx_bevy_ref_subscriber_shared/example",
+]
+bevy = [
+    "rx_bevy/bevy",
+    "rx_bevy_core/bevy",
+    "rx_bevy_ref_subscriber_observer/bevy",
+    "rx_bevy_ref_subscriber_shared/bevy",
+    "tick",
+]
+tick = [
+    "rx_bevy/tick",
+    "rx_bevy_core/tick",
+    "rx_bevy_ref_subscriber_observer/tick",
+    "rx_bevy_ref_subscriber_shared/tick",
+]
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
     "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
+    "rx_bevy_ref_subscriber_observer/reflect",
+    "rx_bevy_ref_subscriber_shared/reflect",
 ]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
 rx_bevy_common_bounds = { workspace = true }
+rx_bevy_ref_subscriber_observer = { workspace = true }
+rx_bevy_ref_subscriber_shared = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]

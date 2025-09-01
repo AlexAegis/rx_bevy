@@ -4684,6 +4684,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
+ "rx_bevy_ref_subscriber_shared",
  "rx_bevy_testing",
 ]
 
@@ -4696,6 +4697,7 @@ dependencies = [
  "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_emission_variants",
+ "rx_bevy_ref_subscriber_rc",
  "rx_bevy_testing",
 ]
 
@@ -4742,6 +4744,7 @@ dependencies = [
  "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_map_into",
+ "rx_bevy_ref_subscriber_rc",
  "rx_bevy_testing",
 ]
 
@@ -4776,6 +4779,7 @@ dependencies = [
  "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_emission_variants",
+ "rx_bevy_ref_subscriber_rc",
  "rx_bevy_testing",
 ]
 
@@ -4787,6 +4791,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
+ "rx_bevy_ref_subscriber_observer",
  "rx_bevy_testing",
 ]
 
@@ -4798,6 +4803,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
+ "rx_bevy_ref_subscriber_observer",
  "rx_bevy_testing",
 ]
 
@@ -4909,8 +4915,6 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
- "rx_bevy_operator_composite",
- "rx_bevy_pipe",
  "rx_bevy_testing",
 ]
 
@@ -4992,6 +4996,7 @@ dependencies = [
  "rx_bevy_operator_finalize",
  "rx_bevy_operator_map",
  "rx_bevy_pipe",
+ "rx_bevy_ref_subscriber_switch",
  "rx_bevy_testing",
 ]
 
@@ -5077,6 +5082,64 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_ref_subscriber_detached"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_bevy_common_bounds",
+ "rx_bevy_core",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_ref_subscriber_observer"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_bevy_common_bounds",
+ "rx_bevy_core",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_ref_subscriber_rc"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_bevy_common_bounds",
+ "rx_bevy_core",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_ref_subscriber_shared"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_bevy_common_bounds",
+ "rx_bevy_core",
+ "rx_bevy_ref_subscriber_observer",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_ref_subscriber_switch"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_bevy_common_bounds",
+ "rx_bevy_core",
+ "rx_bevy_ref_subscriber_detached",
+ "rx_bevy_ref_subscriber_shared",
+ "rx_bevy_testing",
+]
+
+[[package]]
 name = "rx_bevy_subject"
 version = "0.1.0"
 dependencies = [
@@ -5121,6 +5184,8 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
+ "rx_bevy_ref_subscriber_observer",
+ "rx_bevy_ref_subscriber_shared",
 ]
 
 [[package]]

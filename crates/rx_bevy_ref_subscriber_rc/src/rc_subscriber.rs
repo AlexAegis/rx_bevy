@@ -3,7 +3,7 @@ use std::{
 	sync::{Arc, RwLock},
 };
 
-use crate::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 /// Internal to [RcSubscriber]
 #[doc(hidden)]
@@ -106,7 +106,7 @@ where
 	}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: crate::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		if !self.is_closed() {
 			self.destination.tick(tick);
 		}
@@ -266,7 +266,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: crate::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		if !self.is_closed() {
 			self.completed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
@@ -434,7 +434,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: crate::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		if !self.is_closed()
 			&& let Ok(mut lock) = self.destination.try_write()
 		{

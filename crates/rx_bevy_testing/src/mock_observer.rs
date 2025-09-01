@@ -1,7 +1,6 @@
-use rx_bevy_core::{
-	Observer, ObserverInput,
-	prelude::{ObserverSubscriber, SharedSubscriber},
-};
+use rx_bevy_core::{Observer, ObserverInput};
+use rx_bevy_ref_subscriber_observer::ObserverSubscriber;
+use rx_bevy_ref_subscriber_shared::SharedSubscriber;
 
 #[derive(Debug)]
 pub struct MockObserver<T, Error> {

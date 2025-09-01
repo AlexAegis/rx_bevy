@@ -47,9 +47,7 @@ bevy = [
 tick = [
     "rx_bevy/tick",
     "rx_bevy_core/tick",
-    "rx_bevy_operator_composite/tick",
     "rx_bevy_operator_composite?/tick",
-    "rx_bevy_pipe/tick",
     "rx_bevy_pipe?/tick",
     "rx_bevy_testing/tick",
 ]
@@ -58,9 +56,7 @@ reflect = [
     "rx_bevy/reflect",
     "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
-    "rx_bevy_operator_composite/reflect",
     "rx_bevy_operator_composite?/reflect",
-    "rx_bevy_pipe/reflect",
     "rx_bevy_pipe?/reflect",
     "rx_bevy_testing/reflect",
 ]

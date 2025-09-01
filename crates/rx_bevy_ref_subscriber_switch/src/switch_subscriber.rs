@@ -1,9 +1,10 @@
 use std::marker::PhantomData;
 
-use crate::{
-	DetachedSubscriber, Observable, Observer, ObserverInput, Operation, SharedSubscriber,
-	Subscriber, Subscription, SubscriptionLike,
+use rx_bevy_core::{
+	Observable, Observer, ObserverInput, Operation, Subscriber, Subscription, SubscriptionLike,
 };
+use rx_bevy_ref_subscriber_detached::DetachedSubscriber;
+use rx_bevy_ref_subscriber_shared::SharedSubscriber;
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
 pub struct SwitchSubscriber<InnerObservable, Destination>
@@ -77,7 +78,7 @@ where
 	}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: crate::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		if !self.is_closed() {
 			self.destination.tick(tick);
 		}

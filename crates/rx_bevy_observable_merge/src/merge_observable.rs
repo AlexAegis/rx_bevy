@@ -1,9 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	Observable, ObservableOutput, RcSubscriber, Subscription, Teardown, UpgradeableObserver,
-};
+use rx_bevy_core::{Observable, ObservableOutput, Subscription, Teardown, UpgradeableObserver};
 use rx_bevy_operator_map_into::MapIntoSubscriber;
+use rx_bevy_ref_subscriber_rc::RcSubscriber;
 
 pub fn merge<Out, OutError, O1, O2>(
 	observable_1: O1,

@@ -1,6 +1,6 @@
 [package]
-name = "rx_bevy_observable_combine_latest"
-description = "combine_latest observable for rx_bevy"
+name = "rx_bevy_ref_subscriber_detached"
+description = "Non bevy compatible, reference implementation of a detached subscriber"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -16,45 +16,33 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
+default = []
 dev = [
     "rx_bevy/dev",
     "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
-    "rx_bevy_emission_variants/dev",
-    "rx_bevy_ref_subscriber_rc/dev",
     "rx_bevy_testing/dev",
 ]
 example = [
+    "bevy",
     "dev",
     "rx_bevy/example",
     "rx_bevy_core/example",
-    "rx_bevy_emission_variants/example",
-    "rx_bevy_ref_subscriber_rc/example",
     "rx_bevy_testing/example",
 ]
-tick = [
-    "rx_bevy/tick",
-    "rx_bevy_core/tick",
-    "rx_bevy_emission_variants/tick",
-    "rx_bevy_ref_subscriber_rc/tick",
-    "rx_bevy_testing/tick",
-]
+bevy = ["rx_bevy/bevy", "rx_bevy_core/bevy", "rx_bevy_testing/bevy", "tick"]
+tick = ["rx_bevy/tick", "rx_bevy_core/tick", "rx_bevy_testing/tick"]
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
     "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
-    "rx_bevy_emission_variants/reflect",
-    "rx_bevy_ref_subscriber_rc/reflect",
     "rx_bevy_testing/reflect",
 ]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
-rx_bevy_emission_variants = { workspace = true }
 rx_bevy_common_bounds = { workspace = true }
-rx_bevy_ref_subscriber_rc = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]

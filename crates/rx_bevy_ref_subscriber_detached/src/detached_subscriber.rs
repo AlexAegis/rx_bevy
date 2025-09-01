@@ -1,4 +1,4 @@
-use crate::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 /// A helper subscriber that does not forward completion and unsubscribe signals.
 /// Creating a barrier for these lifecycle signals.
@@ -49,7 +49,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: crate::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		self.destination.tick(tick);
 	}
 }
