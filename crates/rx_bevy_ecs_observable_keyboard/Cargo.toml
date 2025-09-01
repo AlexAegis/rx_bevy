@@ -17,32 +17,45 @@ workspace = true
 
 [features]
 default = ["dev", "reflect", "debug"]
-dev = ["bevy/dynamic_linking"]
-debug = ["bevy/track_location"]
+dev = [
+    "bevy/dynamic_linking",
+    "examples_common/dev",
+    "rx_bevy/dev",
+    "rx_bevy_core/dev",
+    "rx_bevy_plugin/dev",
+    "rx_bevy_testing/dev",
+]
+debug = ["bevy/track_location", "rx_bevy_core/debug", "rx_bevy_plugin/debug"]
 example = [
-    "dev",
-    "debug",
-    "reflect",
-    "bevy/bevy_scene",
-    "bevy/bevy_core_pipeline",
-    "bevy/bevy_pbr",
     "bevy/bevy_asset",
-    "bevy/bevy_render",
+    "bevy/bevy_core_pipeline",
     "bevy/bevy_gltf",
-    "bevy/bevy_winit",
+    "bevy/bevy_pbr",
     "bevy/bevy_picking",
-    "bevy/x11",
+    "bevy/bevy_render",
+    "bevy/bevy_scene",
+    "bevy/bevy_winit",
     "bevy/tonemapping_luts",
+    "bevy/x11",
+    "debug",
+    "dev",
+    "reflect",
+    "rx_bevy/example",
+    "rx_bevy_core/example",
+    "rx_bevy_plugin/example",
+    "rx_bevy_testing/example",
 ]
 reflect = [
     "dep:bevy_reflect",
+    "rx_bevy/reflect",
+    "rx_bevy_core/reflect",
     "rx_bevy_plugin/reflect",
-    "rx_bevy_observable/reflect",
+    "rx_bevy_testing/reflect",
 ]
 
 [dependencies]
 rx_bevy_plugin = { workspace = true }
-rx_bevy_observable = { workspace = true }
+rx_bevy_core = { workspace = true, features = ["bevy"] }
 bevy_app = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_input = { workspace = true }
@@ -50,8 +63,8 @@ bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
-rx_bevy = { workspace = true, features = ["bevy", "reflect", "tick"] }
-rx_bevy_testing = { workspace = true, features = ["tick"] }
+rx_bevy = { workspace = true, features = ["bevy"] }
+rx_bevy_testing = { workspace = true, features = ["bevy"] }
 examples_common = { workspace = true }
 bevy-inspector-egui = { workspace = true }
 bevy_egui = { workspace = true }

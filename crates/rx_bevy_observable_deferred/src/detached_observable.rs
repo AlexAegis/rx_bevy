@@ -1,6 +1,4 @@
-use rx_bevy_observable::{
-	Observable, ObservableOutput, Subscription, Teardown, UpgradeableObserver,
-};
+use rx_bevy_core::{Observable, ObservableOutput, Subscription, Teardown, UpgradeableObserver};
 
 pub fn detached_observable<'s, Source>(source: &'s mut Source) -> DetachedObservable<'s, Source>
 where

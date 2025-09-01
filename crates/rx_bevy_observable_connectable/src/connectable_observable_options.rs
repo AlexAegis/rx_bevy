@@ -1,4 +1,4 @@
-use rx_bevy_observable::SubjectLike;
+use rx_bevy_core::SubjectLike;
 
 #[derive(Clone)]
 pub struct ConnectableOptions<ConnectorCreator, Connector>

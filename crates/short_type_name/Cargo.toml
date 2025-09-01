@@ -16,5 +16,5 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
+default = []
 dev = []

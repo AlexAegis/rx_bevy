@@ -15,7 +15,7 @@ workspace = true
 
 [features]
 default = []
-dev = ["bevy/dynamic_linking"]
+dev = ["bevy/dynamic_linking", "examples_common/dev"]
 example = [
     "dev",
     "bevy/bevy_scene",

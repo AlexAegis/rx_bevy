@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
-	Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber,
-};
+use rx_bevy_core::{Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber};
 
 #[derive(Debug)]
 pub struct NoopObserver<In, InError> {
@@ -35,7 +33,7 @@ where
 	fn complete(&mut self) {}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, _tick: rx_bevy_observable::Tick) {}
+	fn tick(&mut self, _tick: rx_bevy_core::Tick) {}
 }
 
 impl<In, InError> UpgradeableObserver for NoopObserver<In, InError>

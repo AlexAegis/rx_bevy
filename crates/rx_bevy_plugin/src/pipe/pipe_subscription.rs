@@ -5,7 +5,7 @@ use bevy_ecs::{
 	world::Mut,
 };
 use rx_bevy_common_bounds::DebugBound;
-use rx_bevy_observable::{
+use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Operation, Operator, SubscriptionLike,
 };
 
@@ -15,11 +15,9 @@ use crate::{
 	SubscriptionSignalDestination,
 };
 
-#[cfg(feature = "debug")]
 use std::fmt::Debug;
 
-#[derive(Clone)]
-#[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Clone, Debug)]
 pub struct PipeSubscriber<Op>
 where
 	Op: 'static + Operator + Send + Sync + DebugBound,
@@ -203,6 +201,7 @@ fn pipe_on_tick_hook<Op>(
 {
 	let mut subscription = context.get_subscription(trigger.target());
 	let mut subscriber = destination.get_subscriber_of(trigger.target());
+
 	subscription
 		.operator_subscriber
 		.tick((**trigger.event()).clone());

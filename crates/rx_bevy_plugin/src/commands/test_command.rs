@@ -1,5 +1,4 @@
 use bevy_ecs::{entity::Entity, system::Command, world::World};
-use bevy_log::info;
 use std::marker::PhantomData;
 
 use crate::{ObservableComponent, SignalBound};
@@ -47,9 +46,6 @@ where
 	O::OutError: SignalBound,
 {
 	fn apply(self, world: &mut World) -> Entity {
-		#[cfg(feature = "debug")]
-		info!("Subscribe Command {:?}", self);
-
 		world.flush();
 
 		Entity::PLACEHOLDER // Return the subscription

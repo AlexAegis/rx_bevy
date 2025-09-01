@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observable, ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{Observable, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::SwitchMapSubscriber;
 

@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use bevy_time::Stopwatch;
-use rx_bevy_observable::Tick;
+use rx_bevy_core::Tick;
 
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};

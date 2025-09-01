@@ -17,18 +17,31 @@ workspace = true
 
 [features]
 default = ["dev"]
-dev = []
-example = ["dev"]
-tick = ["rx_bevy/tick", "rx_bevy_observable/tick"]
+dev = [
+    "rx_bevy/dev",
+    "rx_bevy_common_bounds/dev",
+    "rx_bevy_core/dev",
+    "rx_bevy_testing/dev",
+]
+example = [
+    "dev",
+    "rx_bevy/example",
+    "rx_bevy_core/example",
+    "rx_bevy_testing/example",
+]
+bevy = ["tick", "rx_bevy_core/bevy", "rx_bevy/bevy", "rx_bevy_testing/bevy"]
+tick = ["rx_bevy_core/tick", "rx_bevy/tick", "rx_bevy_testing/tick"]
 reflect = [
     "dep:bevy_reflect",
-    "rx_bevy_observable/reflect",
+    "rx_bevy/reflect",
     "rx_bevy_common_bounds/reflect",
+    "rx_bevy_core/reflect",
+    "rx_bevy_testing/reflect",
 ]
 
 [dependencies]
 derive-where = { workspace = true }
-rx_bevy_observable = { workspace = true }
+rx_bevy_core = { workspace = true }
 rx_bevy_common_bounds = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 

@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use rx_bevy_observable::{
+use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, Subscription,
 	SubscriptionLike, Teardown, UpgradeableObserver,
 };
@@ -133,7 +133,7 @@ where
 	}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{

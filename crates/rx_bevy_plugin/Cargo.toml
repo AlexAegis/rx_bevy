@@ -16,30 +16,58 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["dev", "reflect", "debug"]
-dev = ["bevy/dynamic_linking", "inspector"]
+default = []
+dev = [
+    "bevy/dynamic_linking",
+    "bevy_kit_erased_component_registry/dev",
+    "examples_common/dev",
+    "inspector",
+    "rx_bevy/dev",
+    "rx_bevy_common_bounds/dev",
+    "rx_bevy_core/dev",
+    "rx_bevy_ecs_observable_interval/dev",
+    "rx_bevy_operator_composite/dev",
+    "rx_bevy_testing/dev",
+    "short_type_name/dev",
+]
 debug = [
     "bevy/track_location",
-    "rx_bevy_common_bounds/debug",
+    "bevy_reflect/debug",
     "dep:bevy_input",
+    "rx_bevy_common_bounds/debug",
+    "rx_bevy_core/debug",
     "rx_bevy_ecs_observable_interval/debug",
 ]
-serialize = ["rx_bevy_common_bounds/serialize"]
+serialize = [
+    "bevy/serialize",
+    "bevy_ecs/serialize",
+    "bevy_input/serialize",
+    "bevy_platform/serialize",
+    "bevy_time/serialize",
+    "rx_bevy_common_bounds/serialize",
+    "rx_bevy_core/serialize",
+]
 example = [
-    "dev",
-    "debug",
-    "reflect",
-    "inspector",
-    "bevy/bevy_scene",
-    "bevy/bevy_core_pipeline",
-    "bevy/bevy_pbr",
     "bevy/bevy_asset",
-    "bevy/bevy_render",
+    "bevy/bevy_core_pipeline",
     "bevy/bevy_gltf",
-    "bevy/bevy_winit",
+    "bevy/bevy_pbr",
     "bevy/bevy_picking",
-    "bevy/x11",
+    "bevy/bevy_render",
+    "bevy/bevy_scene",
+    "bevy/bevy_winit",
     "bevy/tonemapping_luts",
+    "bevy/x11",
+    "bevy_kit_erased_component_registry/example",
+    "debug",
+    "dev",
+    "inspector",
+    "reflect",
+    "rx_bevy/example",
+    "rx_bevy_core/example",
+    "rx_bevy_ecs_observable_interval/example",
+    "rx_bevy_operator_composite/example",
+    "rx_bevy_testing/example",
 ]
 inspector = [
     "reflect",
@@ -49,17 +77,19 @@ inspector = [
 ]
 reflect = [
     "dep:bevy_reflect",
+    "rx_bevy/reflect",
     "rx_bevy_common_bounds/reflect",
-    "rx_bevy_operator_composite/reflect",
-    "rx_bevy_observable/reflect",
+    "rx_bevy_core/reflect",
     "rx_bevy_ecs_observable_interval/reflect",
+    "rx_bevy_operator_composite/reflect",
+    "rx_bevy_testing/reflect",
 ]
 
 [dependencies]
 bevy_kit_erased_component_registry = { workspace = true }
 # rx_bevy dependencies
-rx_bevy_observable = { workspace = true, features = ["bevy"] }
-rx_bevy_operator_composite = { workspace = true, features = ["tick"] }
+rx_bevy_core = { workspace = true, features = ["bevy"] }
+rx_bevy_operator_composite = { workspace = true, features = ["bevy"] }
 rx_bevy_common_bounds = { workspace = true }
 # bevy dependencies
 bevy_app = { workspace = true }
@@ -72,7 +102,7 @@ bevy_platform = { workspace = true }
 bevy_ptr = { workspace = true }
 bevy_input = { workspace = true, optional = true }
 # third party bevy dependencies
-bevy-inspector-egui = { workspace = true, optional = true, features = [] }
+bevy-inspector-egui = { workspace = true, optional = true }
 bevy_egui = { workspace = true, optional = true }
 # misc
 derive-where = { workspace = true }
@@ -82,7 +112,7 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
-rx_bevy = { workspace = true, features = ["bevy", "reflect", "tick"] }
-rx_bevy_testing = { workspace = true, features = ["tick"] }
+rx_bevy = { workspace = true, features = ["bevy"] }
+rx_bevy_testing = { workspace = true, features = ["bevy"] }
 examples_common = { workspace = true }
 rx_bevy_ecs_observable_interval = { workspace = true }

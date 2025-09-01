@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, Subscriber};
+use rx_bevy_core::{Observable, Subscriber};
 
 use crate::{EitherOut2, EitherOutError2};
 

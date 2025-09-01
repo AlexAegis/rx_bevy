@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, ObservableOutput, Subscriber, Subscription};
+use rx_bevy_core::{Observable, ObservableOutput, Subscriber, Subscription};
 
 /// Dyn compatible Observable for internal cases where the destination is known
 pub trait FixedSubscriberObservable<Destination>: ObservableOutput

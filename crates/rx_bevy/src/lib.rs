@@ -1,4 +1,4 @@
-pub use rx_bevy_observable::*;
+pub use rx_bevy_core::*;
 
 // Observables
 #[cfg(feature = "observable_combine_latest")]
@@ -63,7 +63,7 @@ pub use rx_bevy_subject_behavior::*;
 pub use rx_bevy_subject_replay::*;
 
 pub mod prelude {
-	pub use rx_bevy_observable::prelude::*;
+	pub use rx_bevy_core::prelude::*;
 
 	// Observables
 	#[cfg(feature = "observable_combine_latest")]

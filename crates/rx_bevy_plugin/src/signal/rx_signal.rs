@@ -1,6 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{entity::Entity, event::Event};
-use rx_bevy_observable::Tick;
+use rx_bevy_core::Tick;
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;

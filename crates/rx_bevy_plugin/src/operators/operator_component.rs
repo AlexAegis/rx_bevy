@@ -7,7 +7,7 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use rx_bevy_common_bounds::DebugBound;
-use rx_bevy_observable::{ObservableOutput, ObserverInput};
+use rx_bevy_core::{ObservableOutput, ObserverInput};
 use short_type_name::short_type_name;
 use std::any::TypeId;
 

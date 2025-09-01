@@ -22,7 +22,6 @@ debug = []
 serialize = ["dep:serde"]
 reflect = ["dep:bevy_reflect"]
 
-
 [dependencies]
 serde = { workspace = true, optional = true }
 # bevy dependencies

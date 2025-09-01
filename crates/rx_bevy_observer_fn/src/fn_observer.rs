@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
-	Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber,
-};
+use rx_bevy_core::{Observer, ObserverInput, UpgradeableObserver, prelude::ObserverSubscriber};
 
 /// An [FnObserver] requires you to define a callback for all three notifications
 pub struct FnObserver<In, InError, OnPush, OnError, OnComplete>
@@ -52,7 +50,7 @@ where
 	}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, _tick: rx_bevy_observable::Tick) {}
+	fn tick(&mut self, _tick: rx_bevy_core::Tick) {}
 }
 
 impl<In, InError, OnPush, OnError, OnComplete> UpgradeableObserver

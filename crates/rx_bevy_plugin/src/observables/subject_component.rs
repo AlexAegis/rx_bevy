@@ -17,7 +17,7 @@ use bevy_ecs::{
 	system::{Commands, Query},
 };
 
-use rx_bevy_observable::{ObservableOutput, ObserverInput};
+use rx_bevy_core::{ObservableOutput, ObserverInput};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;

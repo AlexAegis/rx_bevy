@@ -7,10 +7,11 @@ use bevy_ecs::{
 	system::{Commands, Query, SystemParam},
 	world::DeferredWorld,
 };
+#[cfg(feature = "debug")]
 use bevy_log::{debug, trace};
 use derive_where::derive_where;
 use rx_bevy_common_bounds::DebugBound;
-use rx_bevy_observable::{ObservableOutput, Tick};
+use rx_bevy_core::{ObservableOutput, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
@@ -118,6 +119,7 @@ where
 	O::OutError: SignalBound,
 {
 	let observable_entity = trigger.target();
+	#[cfg(feature = "debug")]
 	debug!(
 		"on_subscribe {} {:?}",
 		observable_entity,

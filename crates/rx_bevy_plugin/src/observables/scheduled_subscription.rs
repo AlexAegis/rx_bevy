@@ -1,5 +1,5 @@
 use rx_bevy_common_bounds::DebugBound;
-use rx_bevy_observable::{ObservableOutput, ObserverInput};
+use rx_bevy_core::{ObservableOutput, ObserverInput};
 
 use crate::{
 	CommandSubscriber, SignalBound, SubscriberChannelHandlerRegistrationContext,

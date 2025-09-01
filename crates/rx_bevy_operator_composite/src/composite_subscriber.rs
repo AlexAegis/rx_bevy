@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 #[derive(Debug)]
 pub struct CompositeSubscriber<Inner, Destination>
@@ -47,7 +47,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		self.subscriber.tick(tick);
 	}
 }

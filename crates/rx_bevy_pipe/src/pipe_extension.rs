@@ -1,4 +1,4 @@
-use rx_bevy_observable::{Observable, Operator};
+use rx_bevy_core::{Observable, Operator};
 
 use crate::Pipe;
 

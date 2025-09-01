@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
 use rx_bevy_operator_composite::CompositeSubscriber;
 use rx_bevy_operator_lift_option::LiftOptionSubscriber;
 use rx_bevy_operator_map::MapSubscriber;

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, system::Commands};
 
-use rx_bevy_observable::{ObserverInput, SubscriptionLike};
+use rx_bevy_core::{Observer, ObserverInput, SubscriptionLike};
 use smallvec::SmallVec;
 
 use crate::{
@@ -82,8 +82,7 @@ where
 	type InError = InError;
 }
 
-impl<'a, 'w, 's, In, InError> rx_bevy_observable::Observer
-	for CommandSubscriber<'a, 'w, 's, In, InError>
+impl<'a, 'w, 's, In, InError> Observer for CommandSubscriber<'a, 'w, 's, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -110,7 +109,7 @@ where
 		}
 	}
 
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		if !self.closed {
 			self.commands.trigger_targets(tick, self.destination_entity);
 		}
@@ -207,7 +206,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> rx_bevy_observable::Observer for SubscriberContext<In, InError>
+impl<In, InError> Observer for SubscriberContext<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -224,7 +223,7 @@ where
 		self.push(RxComplete);
 	}
 
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		self.push(RxTick(tick));
 	}
 }

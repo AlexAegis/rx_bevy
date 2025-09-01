@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use rx_bevy_observable::Observable;
+use rx_bevy_core::Observable;
 
 pub struct ObservableEmissionQueue<O>
 where

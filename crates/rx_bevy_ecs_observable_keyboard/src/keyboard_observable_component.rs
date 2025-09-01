@@ -1,6 +1,6 @@
 use bevy_ecs::component::Component;
 use bevy_input::keyboard::KeyboardInput;
-use rx_bevy_observable::ObservableOutput;
+use rx_bevy_core::ObservableOutput;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;

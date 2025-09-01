@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use rx_bevy_observable::{
+use rx_bevy_core::{
 	InnerSubscription, ObserverInput, Subscriber, SubscriptionLike, UpgradeableObserver,
 };
 use slab::Slab;

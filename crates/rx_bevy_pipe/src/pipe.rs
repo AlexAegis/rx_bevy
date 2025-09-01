@@ -1,6 +1,4 @@
-use rx_bevy_observable::{
-	Observable, ObservableOutput, Operator, Subscription, UpgradeableObserver,
-};
+use rx_bevy_core::{Observable, ObservableOutput, Operator, Subscription, UpgradeableObserver};
 
 pub struct Pipe<Source, Op>
 where

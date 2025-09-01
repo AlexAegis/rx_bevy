@@ -1,4 +1,4 @@
-use rx_bevy_observable::Observer;
+use rx_bevy_core::Observer;
 
 use crate::{RxSubscriberEvent, SignalBound};
 

@@ -17,21 +17,72 @@ workspace = true
 
 [features]
 default = ["compose", "pipe"]
-dev = []
-example = ["dev"]
-compose = ["dep:rx_bevy_operator_composite"]
-pipe = ["dep:rx_bevy_pipe"]
-tick = ["rx_bevy/tick", "rx_bevy_observable/tick"]
+dev = [
+    "rx_bevy/dev",
+    "rx_bevy_common_bounds/dev",
+    "rx_bevy_core/dev",
+    "rx_bevy_operator_composite?/dev",
+    "rx_bevy_operator_finalize/dev",
+    "rx_bevy_operator_map/dev",
+    "rx_bevy_pipe?/dev",
+    "rx_bevy_testing/dev",
+]
+example = [
+    "dev",
+    "rx_bevy/example",
+    "rx_bevy_core/example",
+    "rx_bevy_operator_composite?/example",
+    "rx_bevy_operator_finalize/example",
+    "rx_bevy_operator_map/example",
+    "rx_bevy_pipe?/example",
+    "rx_bevy_testing/example",
+]
+compose = [
+    "dep:rx_bevy_operator_composite",
+    "rx_bevy/compose",
+    "rx_bevy_operator_finalize/compose",
+    "rx_bevy_operator_map/compose",
+]
+pipe = [
+    "dep:rx_bevy_pipe",
+    "rx_bevy/pipe",
+    "rx_bevy_operator_composite?/pipe",
+    "rx_bevy_operator_finalize/pipe",
+    "rx_bevy_operator_map/pipe",
+]
+bevy = [
+    "rx_bevy/bevy",
+    "rx_bevy_core/bevy",
+    "rx_bevy_operator_composite?/bevy",
+    "rx_bevy_operator_finalize/bevy",
+    "rx_bevy_operator_map/bevy",
+    "rx_bevy_pipe?/bevy",
+    "rx_bevy_testing/bevy",
+    "tick",
+]
+tick = [
+    "rx_bevy/tick",
+    "rx_bevy_core/tick",
+    "rx_bevy_operator_composite?/tick",
+    "rx_bevy_operator_finalize/tick",
+    "rx_bevy_operator_map/tick",
+    "rx_bevy_pipe?/tick",
+    "rx_bevy_testing/tick",
+]
 reflect = [
     "dep:bevy_reflect",
-    "rx_bevy_observable/reflect",
-    "rx_bevy_pipe?/reflect",
-    "rx_bevy_operator_composite?/reflect",
+    "rx_bevy/reflect",
     "rx_bevy_common_bounds/reflect",
+    "rx_bevy_core/reflect",
+    "rx_bevy_operator_composite?/reflect",
+    "rx_bevy_operator_finalize/reflect",
+    "rx_bevy_operator_map/reflect",
+    "rx_bevy_pipe?/reflect",
+    "rx_bevy_testing/reflect",
 ]
 
 [dependencies]
-rx_bevy_observable = { workspace = true }
+rx_bevy_core = { workspace = true }
 rx_bevy_pipe = { workspace = true, optional = true }
 rx_bevy_operator_composite = { workspace = true, optional = true }
 rx_bevy_common_bounds = { workspace = true }

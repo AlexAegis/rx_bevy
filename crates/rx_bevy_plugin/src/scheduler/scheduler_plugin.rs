@@ -12,7 +12,7 @@ use bevy_kit_erased_component_registry::AppRegisterErasedComponentExtension;
 use bevy_time::Time;
 use derive_where::derive_where;
 use rx_bevy_common_bounds::Clock;
-use rx_bevy_observable::Tick;
+use rx_bevy_core::Tick;
 
 use crate::{SubscriptionMarker, SubscriptionSchedule};
 

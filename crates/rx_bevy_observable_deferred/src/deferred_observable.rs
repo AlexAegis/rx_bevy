@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{Observable, ObservableOutput, Subscription, UpgradeableObserver};
+use rx_bevy_core::{Observable, ObservableOutput, Subscription, UpgradeableObserver};
 
 pub fn deferred_observable<F, Source>(observable_creator: F) -> DeferredObservable<F, Source>
 where

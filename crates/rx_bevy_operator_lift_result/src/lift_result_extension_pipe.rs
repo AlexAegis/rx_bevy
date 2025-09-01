@@ -1,4 +1,4 @@
-use rx_bevy_observable::Observable;
+use rx_bevy_core::Observable;
 use rx_bevy_pipe::Pipe;
 
 use crate::LiftResultOperator;

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
+use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike, Tick,
 };
 

@@ -1,8 +1,8 @@
+use rx_bevy_core::{
+	Observable, ObservableOutput, RcSubscriber, Subscription, Teardown, UpgradeableObserver,
+};
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
-};
-use rx_bevy_observable::{
-	Observable, ObservableOutput, RcSubscriber, Subscription, Teardown, UpgradeableObserver,
 };
 
 use crate::{ZipSubscriber, ZipSubscriberOptions};

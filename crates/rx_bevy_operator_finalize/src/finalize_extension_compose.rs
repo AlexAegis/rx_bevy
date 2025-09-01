@@ -1,4 +1,4 @@
-use rx_bevy_observable::Operator;
+use rx_bevy_core::Operator;
 use rx_bevy_operator_composite::CompositeOperator;
 
 use crate::FinalizeOperator;

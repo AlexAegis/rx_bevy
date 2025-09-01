@@ -1,5 +1,5 @@
 use bevy_ecs::component::Component;
-use rx_bevy_observable::{ObservableOutput, Observer};
+use rx_bevy_core::{ObservableOutput, Observer};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;

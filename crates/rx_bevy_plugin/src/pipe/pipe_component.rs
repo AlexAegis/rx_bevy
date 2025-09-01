@@ -1,6 +1,6 @@
 use bevy_ecs::component::Component;
 use rx_bevy_common_bounds::DebugBound;
-use rx_bevy_observable::{ObservableOutput, ObserverInput, Operator};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator};
 
 use crate::{
 	CommandSubscriber, OnInsertSubHook, OperatorComponent, PipeSubscriber, RelativeEntity,

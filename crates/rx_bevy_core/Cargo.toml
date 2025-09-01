@@ -1,5 +1,5 @@
 [package]
-name = "rx_bevy_observable"
+name = "rx_bevy_core"
 version = "0.1.0"
 description = "rx_bevy's core observable implementation"
 readme = "readme.md"
@@ -17,13 +17,24 @@ workspace = true
 
 [features]
 default = []
-dev = []
-example = ["dev"]
-bevy = ["tick", "dep:bevy_ecs", "dep:bevy_time"]
-tick = ["rx_bevy/tick"]
+dev = ["rx_bevy/dev", "rx_bevy_common_bounds/dev", "rx_bevy_testing/dev"]
+example = ["dev", "rx_bevy/example", "rx_bevy_testing/example"]
+bevy = [
+    "tick",
+    "dep:bevy_ecs",
+    "dep:bevy_time",
+    "rx_bevy/bevy",
+    "rx_bevy_testing/bevy",
+]
+tick = ["rx_bevy/tick", "rx_bevy_testing/tick"]
 serialize = ["rx_bevy_common_bounds/serialize"]
 debug = ["rx_bevy_common_bounds/debug"]
-reflect = ["dep:bevy_reflect", "rx_bevy_common_bounds/reflect"]
+reflect = [
+    "dep:bevy_reflect",
+    "rx_bevy/reflect",
+    "rx_bevy_common_bounds/reflect",
+    "rx_bevy_testing/reflect",
+]
 
 [dependencies]
 smallvec = { workspace = true }

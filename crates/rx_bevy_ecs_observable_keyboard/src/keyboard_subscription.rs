@@ -1,6 +1,6 @@
 use bevy_ecs::{event::EventReader, observer::Trigger};
 use bevy_input::keyboard::KeyboardInput;
-use rx_bevy_observable::{ObservableOutput, Observer};
+use rx_bevy_core::{ObservableOutput, Observer};
 
 use rx_bevy_plugin::{
 	CommandSubscriber, RxDestination, RxSubscription, RxTick,

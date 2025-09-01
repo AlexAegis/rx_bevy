@@ -1,6 +1,6 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use rx_bevy_observable::{InnerSubscription, Observer, ObserverInput, SubscriptionLike};
+use rx_bevy_core::{InnerSubscription, Observer, ObserverInput, SubscriptionLike};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct PrintObserver<In, InError = ()>
@@ -82,7 +82,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		println!("{}tick: {:?}", self.get_prefix(), tick);
 	}
 }

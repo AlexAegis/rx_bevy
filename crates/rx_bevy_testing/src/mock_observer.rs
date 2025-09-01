@@ -1,4 +1,4 @@
-use rx_bevy_observable::{
+use rx_bevy_core::{
 	Observer, ObserverInput,
 	prelude::{ObserverSubscriber, SharedSubscriber},
 };
@@ -9,8 +9,8 @@ pub struct MockObserver<T, Error> {
 	pub errors: Vec<Error>,
 	pub completed: bool,
 
-	#[cfg(feature = "tick")]
-	pub ticks: Vec<rx_bevy_observable::Tick>,
+	// #[cfg(feature = "tick")]
+	pub ticks: Vec<rx_bevy_core::Tick>,
 }
 
 impl<T, Error> ObserverInput for MockObserver<T, Error>
@@ -43,8 +43,8 @@ where
 	}
 
 	#[inline]
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	// #[cfg(feature = "tick")]
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		self.ticks.push(tick);
 	}
 }
@@ -55,7 +55,7 @@ impl<T, Error> Default for MockObserver<T, Error> {
 			values: Vec::default(),
 			errors: Vec::default(),
 			completed: false,
-			#[cfg(feature = "tick")]
+			// #[cfg(feature = "tick")]
 			ticks: Vec::default(),
 		}
 	}

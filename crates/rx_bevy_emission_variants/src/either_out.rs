@@ -1,4 +1,4 @@
-use rx_bevy_observable::Observable;
+use rx_bevy_core::Observable;
 
 #[derive(Debug)]
 pub enum EitherOut2<O1, O2>

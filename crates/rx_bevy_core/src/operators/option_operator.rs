@@ -73,7 +73,6 @@ where
 	Sub::In: 'static,
 	Sub::InError: 'static,
 {
-	#[inline]
 	fn next(&mut self, next: Self::In) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.next(next),
@@ -81,7 +80,6 @@ where
 		}
 	}
 
-	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.error(error),
@@ -89,7 +87,6 @@ where
 		}
 	}
 
-	#[inline]
 	fn complete(&mut self) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.complete(),

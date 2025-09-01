@@ -1,6 +1,6 @@
 use bevy_ecs::observer::Trigger;
 use bevy_time::{Timer, TimerMode};
-use rx_bevy_observable::{ObservableOutput, Observer};
+use rx_bevy_core::{ObservableOutput, Observer};
 
 use rx_bevy_plugin::{
 	CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick,

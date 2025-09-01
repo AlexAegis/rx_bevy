@@ -16,6 +16,7 @@ use crate::{
 	SubscriptionChannelHandlerOf,
 };
 
+#[cfg(feature = "debug")]
 use derive_where::derive_where;
 
 #[cfg_attr(feature = "debug", derive_where(Debug))]

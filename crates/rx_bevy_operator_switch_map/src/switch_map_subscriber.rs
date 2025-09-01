@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_observable::{
+use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
 	prelude::SwitchSubscriber,
 };
@@ -67,7 +67,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		self.destination.tick(tick);
 	}
 }

@@ -1,7 +1,5 @@
+use rx_bevy_core::{Observable, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
-use rx_bevy_observable::{
-	Observable, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
-};
 
 use crate::{ObservableEmissionQueue, QueueOverflowBehavior, ZipSubscriberOptions};
 
@@ -122,7 +120,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		self.destination.tick(tick);
 	}
 }

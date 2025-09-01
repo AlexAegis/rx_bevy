@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use rx_bevy_observable::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 use crate::MulticastDestination;
 
@@ -35,7 +35,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_observable::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		self.destination.tick(tick);
 	}
 }

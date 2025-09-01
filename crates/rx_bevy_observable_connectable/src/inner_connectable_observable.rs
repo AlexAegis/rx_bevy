@@ -1,4 +1,4 @@
-use rx_bevy_observable::{
+use rx_bevy_core::{
 	Observable, ObservableOutput, SubjectLike, Subscription, SubscriptionLike, Teardown,
 	UpgradeableObserver,
 };
