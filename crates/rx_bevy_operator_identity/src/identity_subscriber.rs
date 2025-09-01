@@ -1,4 +1,6 @@
-use crate::{ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{
+	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+};
 
 #[derive(Debug)]
 pub struct IdentitySubscriber<Destination>
@@ -54,7 +56,7 @@ where
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: crate::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick) {
 		self.destination.tick(tick);
 	}
 }

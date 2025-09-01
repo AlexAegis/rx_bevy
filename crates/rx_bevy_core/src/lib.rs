@@ -1,7 +1,7 @@
 mod observable;
 mod observer;
 mod operator;
-mod operators;
+mod option_operator;
 mod subject;
 mod subscriber;
 mod subscribers;
@@ -10,7 +10,7 @@ mod subscription;
 pub use observable::*;
 pub use observer::*;
 pub use operator::*;
-pub use operators::*;
+pub use option_operator::*;
 pub use subject::*;
 pub use subscriber::*;
 pub use subscribers::*;
@@ -25,11 +25,10 @@ pub use tick::*;
 pub mod prelude {
 	pub use super::observable::*;
 	pub use super::observer::*;
+	pub use super::option_operator::*;
 	pub use super::subscribers::*;
 	pub use super::subscription::*;
 
 	#[cfg(feature = "tick")]
 	pub use super::tick::*;
-
-	pub use super::operators::prelude::*;
 }

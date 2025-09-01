@@ -6,7 +6,8 @@ use rx_bevy_plugin::SignalBound;
 use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
 
 // TODO: Currently this is a regular operator, not an operatorComponent, which would make it hard to control it from bevy
-#[derive(Debug, Clone)]
+#[derive(Clone)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub struct AdsrOperator<InError> {
 	options: AdsrOperatorOptions,
 	_phantom_data: PhantomData<InError>,

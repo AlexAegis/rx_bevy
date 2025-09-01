@@ -7,7 +7,7 @@ use rx_bevy_core::{
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
 
 // TODO: It'd be nice to control the envelope live, I guess that could be done by querying the subscriber itself, but it would be nicer to control the operator itself, in case there are many observers
-#[derive(Debug)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub struct AdsrSubscriber<InError, Destination>
 where
 	Destination: Observer<In = AdsrSignal, InError = InError>,

@@ -11,13 +11,14 @@ use bevy_reflect::Reflect;
 ///
 /// It is inserted by the `Subscribe` event, users do not need to manually
 /// insert this component anywhere.
-#[derive(Component, Clone, Reflect)]
+#[derive(Component, Clone)]
 #[derive_where(Default)]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub struct SubscriptionSchedule<S>
 where
 	S: ScheduleLabel,
 {
-	#[reflect(ignore)]
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<S>,
 }

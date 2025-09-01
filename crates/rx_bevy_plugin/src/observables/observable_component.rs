@@ -8,7 +8,7 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 #[cfg(feature = "debug")]
-use bevy_log::{debug, trace};
+use bevy_log::trace;
 use derive_where::derive_where;
 use rx_bevy_common_bounds::DebugBound;
 use rx_bevy_core::{ObservableOutput, Tick};
@@ -111,7 +111,6 @@ pub(crate) fn on_observable_subscribe<O>(
 	trigger: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut observable_component_query: Query<&mut O>,
 	mut commands: Commands,
-	name_query: Query<&Name>,
 ) -> Result<(), BevyError>
 where
 	O: ObservableComponent + Send + Sync,
@@ -119,12 +118,7 @@ where
 	O::OutError: SignalBound,
 {
 	let observable_entity = trigger.target();
-	#[cfg(feature = "debug")]
-	debug!(
-		"on_subscribe {} {:?}",
-		observable_entity,
-		name_query.get(observable_entity).unwrap()
-	);
+
 	let Ok(mut observable_component) = observable_component_query.get_mut(observable_entity) else {
 		return Err(
 			SubscribeError::NotAnObservable(short_type_name::<O>(), observable_entity).into(),

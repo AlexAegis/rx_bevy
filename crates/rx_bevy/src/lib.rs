@@ -28,6 +28,8 @@ pub use rx_bevy_observer_noop::*;
 #[cfg(feature = "observer_print")]
 pub use rx_bevy_observer_print::*;
 // Operators
+#[cfg(feature = "operator_adsr")]
+pub use rx_bevy_operator_adsr::*;
 #[cfg(feature = "operator_composite")]
 pub use rx_bevy_operator_composite::*;
 #[cfg(feature = "operator_enumerate")]
@@ -38,6 +40,8 @@ pub use rx_bevy_operator_filter::*;
 pub use rx_bevy_operator_filter_map::*;
 #[cfg(feature = "operator_finalize")]
 pub use rx_bevy_operator_finalize::*;
+#[cfg(feature = "operator_identity")]
+pub use rx_bevy_operator_identity::*;
 #[cfg(feature = "operator_lift_option")]
 pub use rx_bevy_operator_lift_option::*;
 #[cfg(feature = "operator_lift_result")]
@@ -93,6 +97,8 @@ pub mod prelude {
 	#[cfg(feature = "observer_print")]
 	pub use rx_bevy_observer_print::prelude::*;
 	// Operators
+	#[cfg(feature = "operator_adsr")]
+	pub use rx_bevy_operator_adsr::prelude::*;
 	#[cfg(feature = "operator_composite")]
 	pub use rx_bevy_operator_composite::prelude::*;
 	#[cfg(feature = "operator_enumerate")]
@@ -103,6 +109,8 @@ pub mod prelude {
 	pub use rx_bevy_operator_filter_map::prelude::*;
 	#[cfg(feature = "operator_finalize")]
 	pub use rx_bevy_operator_finalize::prelude::*;
+	#[cfg(feature = "operator_identity")]
+	pub use rx_bevy_operator_identity::prelude::*;
 	#[cfg(feature = "operator_lift_option")]
 	pub use rx_bevy_operator_lift_option::prelude::*;
 	#[cfg(feature = "operator_lift_result")]

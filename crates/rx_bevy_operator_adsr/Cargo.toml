@@ -1,5 +1,5 @@
 [package]
-name = "rx_bevy_ecs_operator_adsr"
+name = "rx_bevy_operator_adsr"
 description = "rx_bevy adsr operator"
 version = "0.1.0"
 readme = "readme.md"

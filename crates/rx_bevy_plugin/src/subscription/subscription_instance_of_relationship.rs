@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{component::Component, entity::Entity};
-use bevy_reflect::TypePath;
 use smallvec::SmallVec;
 
 use crate::{RxSubscription, SignalBound};
@@ -11,6 +10,9 @@ use std::fmt::Debug;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
+
+#[cfg(feature = "reflect")]
+use bevy_reflect::TypePath;
 
 /// Part of a Subscription, tracking the [ObservableComponent] or
 /// [OperatorComponent] where it was spawned from.

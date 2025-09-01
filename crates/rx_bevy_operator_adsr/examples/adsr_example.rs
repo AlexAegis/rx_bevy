@@ -11,7 +11,7 @@ use examples_common::send_event;
 use rx_bevy::MapOperator;
 use rx_bevy_ecs_observable_keyboard::{KeyboardObservableComponent, KeyboardObservableOptions};
 
-use rx_bevy_ecs_operator_adsr::{AdsrEnvelope, AdsrOperator, AdsrOperatorOptions, AdsrSignal};
+use rx_bevy_operator_adsr::{AdsrEnvelope, AdsrOperator, AdsrOperatorOptions, AdsrSignal};
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, PipeComponent, RelativeEntity,
 	RxNext, RxPlugin,

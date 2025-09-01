@@ -154,6 +154,7 @@ impl AdsrEnvelope {
 	}
 }
 
+/*
 /// TODO: Impl, this is for connecting adsr envelopes back to booleans so it will need something else like a connector thing
 #[derive(Debug, Clone, Copy, Default)]
 #[cfg_attr(
@@ -165,6 +166,7 @@ pub struct ActionActuationPreferences {
 	trigger_rule: ActionTriggerRule,
 	release_rule: ActionReleaseRule,
 }
+*/
 
 /// Describe at what stage the source action must be at for this action to
 /// also be activated.

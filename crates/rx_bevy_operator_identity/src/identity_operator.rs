@@ -1,9 +1,11 @@
 use std::marker::PhantomData;
 
-use crate::{IdentitySubscriber, ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
+
+use crate::IdentitySubscriber;
 
 /// # [IdentityOperator]
 ///

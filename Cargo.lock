@@ -4555,7 +4555,6 @@ dependencies = [
  "rx_bevy_core",
  "rx_bevy_ecs_observable_interval",
  "rx_bevy_ecs_observable_keyboard",
- "rx_bevy_ecs_operator_adsr",
  "rx_bevy_observable_combine_latest",
  "rx_bevy_observable_connectable",
  "rx_bevy_observable_deferred",
@@ -4567,11 +4566,13 @@ dependencies = [
  "rx_bevy_observer_fn",
  "rx_bevy_observer_noop",
  "rx_bevy_observer_print",
+ "rx_bevy_operator_adsr",
  "rx_bevy_operator_composite",
  "rx_bevy_operator_enumerate",
  "rx_bevy_operator_filter",
  "rx_bevy_operator_filter_map",
  "rx_bevy_operator_finalize",
+ "rx_bevy_operator_identity",
  "rx_bevy_operator_lift_option",
  "rx_bevy_operator_lift_result",
  "rx_bevy_operator_map",
@@ -4661,29 +4662,6 @@ dependencies = [
  "rx_bevy_core",
  "rx_bevy_plugin",
  "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_ecs_operator_adsr"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_ecs",
- "bevy_egui",
- "bevy_log",
- "bevy_math",
- "bevy_reflect",
- "bevy_time",
- "bitflags 2.9.3",
- "examples_common",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_ecs_observable_keyboard",
- "rx_bevy_plugin",
- "rx_bevy_testing",
- "serde",
- "smallvec",
 ]
 
 [[package]]
@@ -4835,6 +4813,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_operator_adsr"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_log",
+ "bevy_math",
+ "bevy_reflect",
+ "bevy_time",
+ "bitflags 2.9.3",
+ "examples_common",
+ "rx_bevy",
+ "rx_bevy_core",
+ "rx_bevy_ecs_observable_keyboard",
+ "rx_bevy_plugin",
+ "rx_bevy_testing",
+ "serde",
+ "smallvec",
+]
+
+[[package]]
 name = "rx_bevy_operator_composite"
 version = "0.1.0"
 dependencies = [
@@ -4889,6 +4890,19 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_operator_finalize"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_bevy_common_bounds",
+ "rx_bevy_core",
+ "rx_bevy_operator_composite",
+ "rx_bevy_pipe",
+ "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_operator_identity"
 version = "0.1.0"
 dependencies = [
  "bevy_reflect",

@@ -1,10 +1,9 @@
 mod identity_operator;
-mod option_operator;
+mod identity_subscriber;
 
 pub use identity_operator::*;
-pub use option_operator::*;
+pub use identity_subscriber::*;
 
 pub mod prelude {
 	pub use super::identity_operator::*;
-	pub use super::option_operator::*;
 }
