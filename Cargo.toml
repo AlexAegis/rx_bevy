@@ -87,16 +87,16 @@ rx_bevy_ecs_observable_iterator = { path = "crates/rx_bevy_ecs_observable_iterat
 rx_bevy_ecs_observable_interval = { path = "crates/rx_bevy_ecs_observable_interval" }
 rx_bevy_ecs_observable_keyboard = { path = "crates/rx_bevy_ecs_observable_keyboard" }
 # Observables
-rx_bevy_observable_connectable = { path = "crates/rx_bevy_observable_connectable" }
-rx_bevy_observable_combine_latest = { path = "crates/rx_bevy_observable_combine_latest" }
+rx_bevy_ref_observable_connectable = { path = "crates/rx_bevy_ref_observable_connectable" }
+rx_bevy_ref_observable_combine_latest = { path = "crates/rx_bevy_ref_observable_combine_latest" }
 rx_bevy_observable_deferred = { path = "crates/rx_bevy_observable_deferred" }
 rx_bevy_observable_iterator = { path = "crates/rx_bevy_observable_iterator" }
 rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
-rx_bevy_observable_merge = { path = "crates/rx_bevy_observable_merge" }
+rx_bevy_ref_observable_merge = { path = "crates/rx_bevy_ref_observable_merge" }
 rx_bevy_observable_throw = { path = "crates/rx_bevy_observable_throw" }
-rx_bevy_observable_zip = { path = "crates/rx_bevy_observable_zip" }
+rx_bevy_ref_observable_zip = { path = "crates/rx_bevy_ref_observable_zip" }
 # Pipes
-rx_bevy_pipe = { path = "crates/rx_bevy_pipe" }
+rx_bevy_ref_pipe = { path = "crates/rx_bevy_ref_pipe" }
 # Observers
 rx_bevy_observer_fn = { path = "crates/rx_bevy_observer_fn" }
 rx_bevy_observer_noop = { path = "crates/rx_bevy_observer_noop" }
@@ -125,8 +125,8 @@ rx_bevy_ref_subscriber_rc = { path = "crates/rx_bevy_ref_subscriber_rc" }
 rx_bevy_ref_subscriber_shared = { path = "crates/rx_bevy_ref_subscriber_shared" }
 rx_bevy_ref_subscriber_switch = { path = "crates/rx_bevy_ref_subscriber_switch" }
 # Subjects
-rx_bevy_subject = { path = "crates/rx_bevy_subject" }
-rx_bevy_subject_behavior = { path = "crates/rx_bevy_subject_behavior" }
-rx_bevy_subject_replay = { path = "crates/rx_bevy_subject_replay" }
+rx_bevy_ref_subject = { path = "crates/rx_bevy_ref_subject" }
+rx_bevy_ref_subject_behavior = { path = "crates/rx_bevy_ref_subject_behavior" }
+rx_bevy_ref_subject_replay = { path = "crates/rx_bevy_ref_subject_replay" }
 # Bevy
 rx_bevy_plugin = { path = "crates/rx_bevy_plugin" }

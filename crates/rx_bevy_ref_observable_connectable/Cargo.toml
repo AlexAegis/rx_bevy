@@ -1,0 +1,64 @@
+[package]
+name = "rx_bevy_ref_observable_connectable"
+description = "connectable observable for rx_bevy"
+version = "0.1.0"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev"]
+dev = [
+    "rx_bevy/dev",
+    "rx_bevy_common_bounds/dev",
+    "rx_bevy_core/dev",
+    "rx_bevy_observable_deferred/dev",
+    "rx_bevy_testing/dev",
+]
+example = [
+    "dev",
+    "rx_bevy/example",
+    "rx_bevy_core/example",
+    "rx_bevy_observable_deferred/example",
+    "rx_bevy_testing/example",
+]
+reflect = [
+    "dep:bevy_reflect",
+    "rx_bevy/reflect",
+    "rx_bevy_common_bounds/reflect",
+    "rx_bevy_core/reflect",
+    "rx_bevy_observable_deferred/reflect",
+    "rx_bevy_testing/reflect",
+]
+bevy = [
+    "tick",
+    "rx_bevy_core/bevy",
+    "rx_bevy/bevy",
+    "rx_bevy_testing/bevy",
+    "rx_bevy_observable_deferred/bevy",
+]
+tick = [
+    "rx_bevy_core/tick",
+    "rx_bevy/tick",
+    "rx_bevy_testing/tick",
+    "rx_bevy_observable_deferred/tick",
+]
+
+[dependencies]
+rx_bevy_core = { workspace = true }
+rx_bevy_observable_deferred = { workspace = true }
+rx_bevy_common_bounds = { workspace = true }
+bevy_reflect = { workspace = true, optional = true }
+
+[dev-dependencies]
+rx_bevy = { workspace = true }
+rx_bevy_testing = { workspace = true }

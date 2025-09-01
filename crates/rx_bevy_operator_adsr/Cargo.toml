@@ -72,7 +72,7 @@ serialize = [
 
 [dependencies]
 rx_bevy_plugin = { workspace = true }
-rx_bevy_core = { workspace = true, features = ["bevy"] }
+rx_bevy_core = { workspace = true, features = ["tick"] }
 bevy_time = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_log = { workspace = true }

@@ -14,6 +14,7 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
+	// TODO: Check if it would be enough to use this in a bevy context by just swapping the SwitchSubscriber impl to an ECS based one.
 	destination: SwitchSubscriber<InnerObservable, Destination>,
 	switcher: Switcher,
 	_phantom_data: PhantomData<(In, InError)>,

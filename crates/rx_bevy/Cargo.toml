@@ -29,14 +29,14 @@ dev = [
     "rx_bevy_core/dev",
     "rx_bevy_ecs_observable_interval?/dev",
     "rx_bevy_ecs_observable_keyboard?/dev",
-    "rx_bevy_observable_combine_latest?/dev",
-    "rx_bevy_observable_connectable?/dev",
+    "rx_bevy_ref_observable_combine_latest?/dev",
+    "rx_bevy_ref_observable_connectable?/dev",
     "rx_bevy_observable_deferred?/dev",
     "rx_bevy_observable_iterator?/dev",
-    "rx_bevy_observable_merge?/dev",
+    "rx_bevy_ref_observable_merge?/dev",
     "rx_bevy_observable_of?/dev",
     "rx_bevy_observable_throw?/dev",
-    "rx_bevy_observable_zip?/dev",
+    "rx_bevy_ref_observable_zip?/dev",
     "rx_bevy_observer_fn?/dev",
     "rx_bevy_observer_noop?/dev",
     "rx_bevy_observer_print?/dev",
@@ -56,10 +56,10 @@ dev = [
     "rx_bevy_operator_take?/dev",
     "rx_bevy_operator_tap?/dev",
     "rx_bevy_operator_try_capture?/dev",
-    "rx_bevy_pipe?/dev",
-    "rx_bevy_subject?/dev",
-    "rx_bevy_subject_behavior?/dev",
-    "rx_bevy_subject_replay?/dev",
+    "rx_bevy_ref_pipe?/dev",
+    "rx_bevy_ref_subject?/dev",
+    "rx_bevy_ref_subject_behavior?/dev",
+    "rx_bevy_ref_subject_replay?/dev",
     "rx_bevy_testing/dev",
 ]
 example = [
@@ -67,14 +67,14 @@ example = [
     "rx_bevy_core/example",
     "rx_bevy_ecs_observable_interval?/example",
     "rx_bevy_ecs_observable_keyboard?/example",
-    "rx_bevy_observable_combine_latest?/example",
-    "rx_bevy_observable_connectable?/example",
+    "rx_bevy_ref_observable_combine_latest?/example",
+    "rx_bevy_ref_observable_connectable?/example",
     "rx_bevy_observable_deferred?/example",
     "rx_bevy_observable_iterator?/example",
-    "rx_bevy_observable_merge?/example",
+    "rx_bevy_ref_observable_merge?/example",
     "rx_bevy_observable_of?/example",
     "rx_bevy_observable_throw?/example",
-    "rx_bevy_observable_zip?/example",
+    "rx_bevy_ref_observable_zip?/example",
     "rx_bevy_observer_fn?/example",
     "rx_bevy_observer_noop?/example",
     "rx_bevy_observer_print?/example",
@@ -94,21 +94,21 @@ example = [
     "rx_bevy_operator_take?/example",
     "rx_bevy_operator_tap?/example",
     "rx_bevy_operator_try_capture?/example",
-    "rx_bevy_pipe?/example",
-    "rx_bevy_subject?/example",
-    "rx_bevy_subject_behavior?/example",
-    "rx_bevy_subject_replay?/example",
+    "rx_bevy_ref_pipe?/example",
+    "rx_bevy_ref_subject?/example",
+    "rx_bevy_ref_subject_behavior?/example",
+    "rx_bevy_ref_subject_replay?/example",
     "rx_bevy_testing/example",
 ]
 bevy = [
     "rx_bevy_core/bevy",
-    "rx_bevy_observable_connectable?/bevy",
+    "rx_bevy_ref_observable_connectable?/bevy",
     "rx_bevy_observable_deferred?/bevy",
     "rx_bevy_observable_iterator?/bevy",
-    "rx_bevy_observable_merge?/bevy",
+    "rx_bevy_ref_observable_merge?/bevy",
     "rx_bevy_observable_of?/bevy",
     "rx_bevy_observable_throw?/bevy",
-    "rx_bevy_observable_zip?/bevy",
+    "rx_bevy_ref_observable_zip?/bevy",
     "rx_bevy_observer_fn?/bevy",
     "rx_bevy_observer_noop?/bevy",
     "rx_bevy_observer_print?/bevy",
@@ -127,10 +127,10 @@ bevy = [
     "rx_bevy_operator_take?/bevy",
     "rx_bevy_operator_tap?/bevy",
     "rx_bevy_operator_try_capture?/bevy",
-    "rx_bevy_pipe?/bevy",
-    "rx_bevy_subject?/bevy",
-    "rx_bevy_subject_behavior?/bevy",
-    "rx_bevy_subject_replay?/bevy",
+    "rx_bevy_ref_pipe?/bevy",
+    "rx_bevy_ref_subject?/bevy",
+    "rx_bevy_ref_subject_behavior?/bevy",
+    "rx_bevy_ref_subject_replay?/bevy",
     "rx_bevy_testing/bevy",
     "tick",
 ]
@@ -139,14 +139,14 @@ reflect = [
     "rx_bevy_core/reflect",
     "rx_bevy_ecs_observable_interval?/reflect",
     "rx_bevy_ecs_observable_keyboard?/reflect",
-    "rx_bevy_observable_combine_latest/reflect",
-    "rx_bevy_observable_connectable?/reflect",
+    "rx_bevy_ref_observable_combine_latest/reflect",
+    "rx_bevy_ref_observable_connectable?/reflect",
     "rx_bevy_observable_deferred?/reflect",
     "rx_bevy_observable_iterator?/reflect",
-    "rx_bevy_observable_merge?/reflect",
+    "rx_bevy_ref_observable_merge?/reflect",
     "rx_bevy_observable_of?/reflect",
     "rx_bevy_observable_throw?/reflect",
-    "rx_bevy_observable_zip?/reflect",
+    "rx_bevy_ref_observable_zip?/reflect",
     "rx_bevy_observer_fn?/reflect",
     "rx_bevy_observer_noop?/reflect",
     "rx_bevy_observer_print?/reflect",
@@ -166,22 +166,22 @@ reflect = [
     "rx_bevy_operator_take?/reflect",
     "rx_bevy_operator_tap?/reflect",
     "rx_bevy_operator_try_capture?/reflect",
-    "rx_bevy_pipe?/reflect",
-    "rx_bevy_subject?/reflect",
-    "rx_bevy_subject_behavior?/reflect",
-    "rx_bevy_subject_replay?/reflect",
+    "rx_bevy_ref_pipe?/reflect",
+    "rx_bevy_ref_subject?/reflect",
+    "rx_bevy_ref_subject_behavior?/reflect",
+    "rx_bevy_ref_subject_replay?/reflect",
     "rx_bevy_testing/reflect",
 ]
 tick = [
     "rx_bevy_core/tick",
-    "rx_bevy_observable_combine_latest?/tick",
-    "rx_bevy_observable_connectable?/tick",
+    "rx_bevy_ref_observable_combine_latest?/tick",
+    "rx_bevy_ref_observable_connectable?/tick",
     "rx_bevy_observable_deferred?/tick",
     "rx_bevy_observable_iterator?/tick",
-    "rx_bevy_observable_merge?/tick",
+    "rx_bevy_ref_observable_merge?/tick",
     "rx_bevy_observable_of?/tick",
     "rx_bevy_observable_throw?/tick",
-    "rx_bevy_observable_zip?/tick",
+    "rx_bevy_ref_observable_zip?/tick",
     "rx_bevy_observer_fn?/tick",
     "rx_bevy_observer_noop?/tick",
     "rx_bevy_observer_print?/tick",
@@ -200,14 +200,14 @@ tick = [
     "rx_bevy_operator_take?/tick",
     "rx_bevy_operator_tap?/tick",
     "rx_bevy_operator_try_capture?/tick",
-    "rx_bevy_pipe?/tick",
-    "rx_bevy_subject?/tick",
-    "rx_bevy_subject_behavior?/tick",
-    "rx_bevy_subject_replay?/tick",
+    "rx_bevy_ref_pipe?/tick",
+    "rx_bevy_ref_subject?/tick",
+    "rx_bevy_ref_subject_behavior?/tick",
+    "rx_bevy_ref_subject_replay?/tick",
     "rx_bevy_testing/tick",
 ]
 pipe = [
-    "dep:rx_bevy_pipe",
+    "dep:rx_bevy_ref_pipe",
     "rx_bevy_operator_composite?/pipe",
     "rx_bevy_operator_enumerate?/pipe",
     "rx_bevy_operator_filter?/pipe",
@@ -251,14 +251,14 @@ all_observables = [
     "observable_zip",
 ]
 
-observable_combine_latest = ["dep:rx_bevy_observable_combine_latest"]
-observable_connectable = ["dep:rx_bevy_observable_connectable"]
+observable_combine_latest = ["dep:rx_bevy_ref_observable_combine_latest"]
+observable_connectable = ["dep:rx_bevy_ref_observable_connectable"]
 observable_deferred = ["dep:rx_bevy_observable_deferred"]
 observable_iterator = ["dep:rx_bevy_observable_iterator"]
-observable_merge = ["dep:rx_bevy_observable_merge"]
+observable_merge = ["dep:rx_bevy_ref_observable_merge"]
 observable_of = ["dep:rx_bevy_observable_of"]
 observable_throw = ["dep:rx_bevy_observable_throw"]
-observable_zip = ["dep:rx_bevy_observable_zip"]
+observable_zip = ["dep:rx_bevy_ref_observable_zip"]
 # Observers
 all_observers = ["observer_noop", "observer_print", "observer_fn"]
 observer_fn = ["dep:rx_bevy_observer_fn"]
@@ -301,25 +301,25 @@ operator_tap = ["dep:rx_bevy_operator_tap"]
 operator_try_capture = ["dep:rx_bevy_operator_try_capture"]
 # Subjects
 all_subjects = ["subject", "subject_behavior", "subject_replay"]
-subject = ["dep:rx_bevy_subject"]
-subject_behavior = ["dep:rx_bevy_subject_behavior"]
-subject_replay = ["dep:rx_bevy_subject_replay"]
+subject = ["dep:rx_bevy_ref_subject"]
+subject_behavior = ["dep:rx_bevy_ref_subject_behavior"]
+subject_replay = ["dep:rx_bevy_ref_subject_replay"]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
 # Observables
 rx_bevy_ecs_observable_interval = { workspace = true, optional = true }
 rx_bevy_ecs_observable_keyboard = { workspace = true, optional = true }
-rx_bevy_observable_combine_latest = { workspace = true, optional = true }
-rx_bevy_observable_connectable = { workspace = true, optional = true }
+rx_bevy_ref_observable_combine_latest = { workspace = true, optional = true }
+rx_bevy_ref_observable_connectable = { workspace = true, optional = true }
 rx_bevy_observable_deferred = { workspace = true, optional = true }
 rx_bevy_observable_iterator = { workspace = true, optional = true }
-rx_bevy_observable_merge = { workspace = true, optional = true }
+rx_bevy_ref_observable_merge = { workspace = true, optional = true }
 rx_bevy_observable_of = { workspace = true, optional = true }
 rx_bevy_observable_throw = { workspace = true, optional = true }
-rx_bevy_observable_zip = { workspace = true, optional = true }
+rx_bevy_ref_observable_zip = { workspace = true, optional = true }
 # Pipe
-rx_bevy_pipe = { workspace = true, optional = true }
+rx_bevy_ref_pipe = { workspace = true, optional = true }
 # Observers
 rx_bevy_observer_fn = { workspace = true, optional = true }
 rx_bevy_observer_noop = { workspace = true, optional = true }
@@ -342,9 +342,9 @@ rx_bevy_operator_take = { workspace = true, optional = true }
 rx_bevy_operator_tap = { workspace = true, optional = true }
 rx_bevy_operator_try_capture = { workspace = true, optional = true }
 # Subjects
-rx_bevy_subject = { workspace = true, optional = true }
-rx_bevy_subject_behavior = { workspace = true, optional = true }
-rx_bevy_subject_replay = { workspace = true, optional = true }
+rx_bevy_ref_subject = { workspace = true, optional = true }
+rx_bevy_ref_subject_behavior = { workspace = true, optional = true }
+rx_bevy_ref_subject_replay = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_bevy_testing = { workspace = true }

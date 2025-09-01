@@ -22,7 +22,7 @@ dev = [
     "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
     "rx_bevy_operator_composite?/dev",
-    "rx_bevy_pipe?/dev",
+    "rx_bevy_ref_pipe?/dev",
     "rx_bevy_testing/dev",
 ]
 example = [
@@ -30,23 +30,27 @@ example = [
     "rx_bevy/example",
     "rx_bevy_core/example",
     "rx_bevy_operator_composite?/example",
-    "rx_bevy_pipe?/example",
+    "rx_bevy_ref_pipe?/example",
     "rx_bevy_testing/example",
 ]
 compose = ["dep:rx_bevy_operator_composite", "rx_bevy/compose"]
-pipe = ["dep:rx_bevy_pipe", "rx_bevy/pipe", "rx_bevy_operator_composite?/pipe"]
+pipe = [
+    "dep:rx_bevy_ref_pipe",
+    "rx_bevy/pipe",
+    "rx_bevy_operator_composite?/pipe",
+]
 bevy = [
     "rx_bevy/bevy",
     "rx_bevy_testing/bevy",
     "rx_bevy_core/bevy",
-    "rx_bevy_pipe?/bevy",
+    "rx_bevy_ref_pipe?/bevy",
     "rx_bevy_operator_composite?/bevy",
 ]
 tick = [
     "rx_bevy/tick",
     "rx_bevy_testing/tick",
     "rx_bevy_core/tick",
-    "rx_bevy_pipe?/tick",
+    "rx_bevy_ref_pipe?/tick",
     "rx_bevy_operator_composite?/tick",
 ]
 reflect = [
@@ -55,13 +59,13 @@ reflect = [
     "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
     "rx_bevy_operator_composite?/reflect",
-    "rx_bevy_pipe?/reflect",
+    "rx_bevy_ref_pipe?/reflect",
     "rx_bevy_testing/reflect",
 ]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
-rx_bevy_pipe = { workspace = true, optional = true }
+rx_bevy_ref_pipe = { workspace = true, optional = true }
 rx_bevy_operator_composite = { workspace = true, optional = true }
 rx_bevy_common_bounds = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
