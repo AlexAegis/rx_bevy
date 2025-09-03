@@ -10,11 +10,11 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
+use rx_bevy_common_bounds::SignalBound;
 use short_type_name::short_type_name;
 
 use crate::{
-	ObservableComponent, OperatorComponent, RxSubscription, SignalBound, SubscriptionMarker,
-	SubscriptionOf, SubscriptionSchedule, SubscriptionSignalDestination, SubscriptionSignalSources,
+	ObservableComponent, RxSubscription, SubscriptionMarker, SubscriptionOf, SubscriptionSchedule,
 	Subscriptions,
 };
 
@@ -70,86 +70,10 @@ where
 		.push(subscription_debug_system_id);
 }
 
-pub(crate) fn register_operator_debug_systems<Op>(deferred_world: &mut DeferredWorld)
-where
-	Op: OperatorComponent + Send + Sync,
-	Op::In: SignalBound,
-	Op::InError: SignalBound,
-	Op::Out: SignalBound,
-	Op::OutError: SignalBound,
-{
-	let operator_debug_system_id = deferred_world
-		.commands()
-		.register_system(operator_entity_debug_print::<Op>);
-
-	let subscription_debug_system_id = deferred_world
-		.commands()
-		.register_system(subscription_entity_debug_print::<Op::Subscriber>);
-
-	let mut debug_registry = deferred_world
-		.get_resource_mut::<DebugSystemRegistry>()
-		.unwrap();
-
-	debug_registry.debug_systems.push(operator_debug_system_id);
-	debug_registry
-		.debug_systems
-		.push(subscription_debug_system_id);
-}
-
-pub(crate) fn operator_entity_debug_print<Op>(
-	operator_query: Query<
-		(
-			Entity,
-			Option<&SubscriptionSignalDestination<Op::Subscriber>>,
-			Option<&SubscriptionSignalSources<Op::Subscriber>>,
-			Option<&SubscriptionOf<Op::Subscriber>>,
-			Option<&Subscriptions<Op::Subscriber>>,
-			Option<&SubscriptionSchedule<Update>>,
-		),
-		With<Op>,
-	>,
-) where
-	Op: OperatorComponent + 'static,
-	Op::In: SignalBound,
-	Op::InError: SignalBound,
-	Op::Out: SignalBound,
-	Op::OutError: SignalBound,
-{
-	for (
-		entity,
-		subscription_signal_destination,
-		subscription_signal_sources,
-		subscriber_instance_of,
-		subscriber_instances,
-		subscription_schedule,
-	) in operator_query.iter()
-	{
-		println!("Operator Entity {entity:?} {}", short_type_name::<Op>());
-
-		if let Some(d) = subscription_signal_destination {
-			println!("{}", d);
-		}
-		if let Some(d) = subscription_signal_sources {
-			println!("{}", d);
-		}
-		if let Some(d) = subscriber_instance_of {
-			println!("{}", d);
-		}
-		if let Some(d) = subscriber_instances {
-			println!("{}", d);
-		}
-		if let Some(d) = subscription_schedule {
-			println!("{}", d);
-		}
-	}
-}
-
 pub(crate) fn observable_entity_debug_print<O>(
 	observable_query: Query<
 		(
 			Entity,
-			Option<&SubscriptionSignalDestination<O::Subscription>>,
-			Option<&SubscriptionSignalSources<O::Subscription>>,
 			Option<&SubscriptionOf<O::Subscription>>,
 			Option<&Subscriptions<O::Subscription>>,
 			Option<&SubscriptionSchedule<Update>>,
@@ -161,23 +85,11 @@ pub(crate) fn observable_entity_debug_print<O>(
 	O::Out: SignalBound,
 	O::OutError: SignalBound,
 {
-	for (
-		entity,
-		subscription_signal_destination,
-		subscription_signal_sources,
-		subscriber_instance_of,
-		subscriber_instances,
-		subscription_schedule,
-	) in observable_query.iter()
+	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
+		observable_query.iter()
 	{
 		println!("Observable Entity {entity:?} {}", short_type_name::<O>());
 
-		if let Some(d) = subscription_signal_destination {
-			println!("{}", d);
-		}
-		if let Some(d) = subscription_signal_sources {
-			println!("{}", d);
-		}
 		if let Some(d) = subscriber_instance_of {
 			println!("{}", d);
 		}
@@ -187,28 +99,6 @@ pub(crate) fn observable_entity_debug_print<O>(
 		if let Some(d) = subscription_schedule {
 			println!("{}", d);
 		}
-	}
-}
-
-impl<Sub> Display for &SubscriptionSignalDestination<Sub>
-where
-	Sub: RxSubscription,
-	Sub::Out: SignalBound,
-	Sub::OutError: SignalBound,
-{
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "\tSignal Destination: {}", self.get_destination())
-	}
-}
-
-impl<Sub> Display for &SubscriptionSignalSources<Sub>
-where
-	Sub: RxSubscription,
-	Sub::Out: SignalBound,
-	Sub::OutError: SignalBound,
-{
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "\tSignal Sources: {:?}", self.get_subscriptions())
 	}
 }
 
@@ -247,8 +137,6 @@ pub(crate) fn subscription_entity_debug_print<Sub>(
 	subscription_query: Query<
 		(
 			Entity,
-			Option<&SubscriptionSignalDestination<Sub>>,
-			Option<&SubscriptionSignalSources<Sub>>,
 			Option<&SubscriptionOf<Sub>>,
 			Option<&Subscriptions<Sub>>,
 			Option<&SubscriptionSchedule<Update>>,
@@ -260,26 +148,14 @@ pub(crate) fn subscription_entity_debug_print<Sub>(
 	Sub::Out: SignalBound,
 	Sub::OutError: SignalBound,
 {
-	for (
-		entity,
-		subscription_signal_destination,
-		subscription_signal_sources,
-		subscriber_instance_of,
-		subscriber_instances,
-		subscription_schedule,
-	) in subscription_query.iter()
+	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
+		subscription_query.iter()
 	{
 		println!(
 			"Subscription Entity {entity:?} {}",
 			short_type_name::<Sub>()
 		);
 
-		if let Some(d) = subscription_signal_destination {
-			println!("{}", d);
-		}
-		if let Some(d) = subscription_signal_sources {
-			println!("{}", d);
-		}
 		if let Some(d) = subscriber_instance_of {
 			println!("{}", d);
 		}

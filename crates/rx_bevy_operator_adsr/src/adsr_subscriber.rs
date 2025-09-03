@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+#[cfg(feature = "channel_context")]
+use rx_bevy_core::ChannelContext;
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike, Tick,
 };
@@ -40,27 +42,49 @@ where
 	InError: 'static,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
+	) {
 		self.is_getting_activated = next;
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
+		#[cfg(feature = "channel_context")]
+		self.destination.error(error, context);
+		#[cfg(not(feature = "channel_context"))]
 		self.destination.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
+	fn complete(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
+		#[cfg(feature = "channel_context")]
+		self.destination.complete(context);
+		#[cfg(not(feature = "channel_context"))]
 		self.destination.complete();
 	}
 
 	#[inline]
-	fn tick(&mut self, tick: Tick) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
 		let next =
 			self.state
 				.calculate_output(self.options.envelope, self.is_getting_activated, tick);
 
 		if !matches!(next.adsr_envelope_phase, AdsrEnvelopePhase::None) {
+			#[cfg(feature = "channel_context")]
+			self.destination.next(next, context);
+
+			#[cfg(not(feature = "channel_context"))]
 			self.destination.next(next);
 		}
 	}
@@ -76,7 +100,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
 		self.destination.unsubscribe();
 	}
 

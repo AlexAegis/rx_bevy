@@ -1,6 +1,7 @@
 use bevy_ecs::event::Event;
+use rx_bevy_common_bounds::SignalBound;
 
-use crate::{RxComplete, RxError, RxNext, RxSubscription, RxTick, RxUnsubscribe, SignalBound};
+use crate::{RxComplete, RxError, RxNext, RxSubscription, RxTick, RxUnsubscribe};
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]

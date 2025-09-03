@@ -1,6 +1,6 @@
 use rx_bevy::prelude::*;
-use rx_bevy_ref_subscriber_observer::ObserverSubscriber;
 use rx_bevy_ref_subscriber_shared::SharedSubscriber;
+use rx_bevy_subscriber_observer::ObserverSubscriber;
 
 fn main() {
 	let observer = PrintObserver::<i32>::new("shared_subscriber");

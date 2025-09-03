@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+#[cfg(feature = "channel_context")]
+use rx_bevy_core::ChannelContext;
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
 };
@@ -43,8 +45,16 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
+		#[cfg(feature = "channel_context")]
+		self.destination.next((next, self.counter), context);
+		#[cfg(not(feature = "channel_context"))]
 		self.destination.next((next, self.counter));
+
 		// Increment after emission, so the first value could be 0
 		#[cfg(feature = "saturating_add")]
 		{
@@ -57,18 +67,35 @@ where
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
+		#[cfg(feature = "channel_context")]
+		self.destination.error(error, context);
+		#[cfg(not(feature = "channel_context"))]
 		self.destination.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
+	fn complete(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
+		#[cfg(feature = "channel_context")]
+		self.destination.complete(context);
+		#[cfg(not(feature = "channel_context"))]
 		self.destination.complete();
 	}
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(
+		&mut self,
+		tick: rx_bevy_core::Tick,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
+		#[cfg(feature = "channel_context")]
+		self.destination.tick(tick, context);
+		#[cfg(not(feature = "channel_context"))]
 		self.destination.tick(tick);
 	}
 }

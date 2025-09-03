@@ -1,4 +1,4 @@
-use rx_bevy_common_bounds::DebugBound;
+use crate::DebugBound;
 
 pub trait SignalBound: 'static + Send + Sync + Clone + DebugBound {}
 

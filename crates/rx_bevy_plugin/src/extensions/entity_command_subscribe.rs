@@ -3,8 +3,9 @@ use bevy_ecs::{
 	schedule::ScheduleLabel,
 	system::{Commands, EntityCommands},
 };
+use rx_bevy_common_bounds::SignalBound;
 
-use crate::{CommandSubscribeExtension, RelativeEntity, SignalBound};
+use crate::{CommandSubscribeExtension, RelativeEntity};
 
 /// TODO: Right now this is just a despawn alias, but it should be possible to unsubscribe from Subjects too, so this should be an Event! But the already contain observers? A command maybe?
 pub trait CommandsUnsubscribeExtension {

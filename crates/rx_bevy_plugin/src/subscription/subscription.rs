@@ -3,9 +3,10 @@ use bevy_ecs::{
 	component::{Component, HookContext},
 	world::DeferredWorld,
 };
+use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_core::ObservableOutput;
 
-use crate::{RxSubscription, SignalBound, SubscriptionSignalDestination};
+use crate::RxSubscription;
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -57,20 +58,15 @@ fn unsubscribe_subscription_on_remove<Sub>(
 
 	let (mut entities, mut commands) = deferred_world.entities_and_commands();
 
-	let subscription_destination = entities
-		.get(subscription_entity)
-		.ok()
-		.and_then(|e| e.get::<SubscriptionSignalDestination<Sub>>())
-		.expect("the component should be available")
-		.get_subscription_entity_context(subscription_entity);
-
 	let mut subscription_entity = entities.get_mut(subscription_entity).ok();
 	let mut subscription = subscription_entity
 		.as_mut()
 		.and_then(|e| e.get_mut::<Subscription<Sub>>())
 		.expect("the component should be available");
-
-	subscription.unsubscribe(subscription_destination.upgrade(&mut commands));
+	// TODO: Once it looks like this
+	// subscription.unsubscribe(ChannelContext {
+	// 	commands: &mut commands,
+	// });
 }
 
 impl<Sub> ObservableOutput for Subscription<Sub>

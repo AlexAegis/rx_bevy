@@ -2,6 +2,9 @@ use rx_bevy_core::{
 	InnerSubscription, ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike,
 };
 
+#[cfg(feature = "channel_context")]
+use rx_bevy_core::ChannelContext;
+
 /// A simple wrapper for a plain [Observer] to make it "closeable"
 pub struct ObserverSubscriber<Destination>
 where
@@ -25,6 +28,40 @@ where
 	}
 }
 
+#[cfg(feature = "channel_context")]
+impl<Destination> Observer for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+		if !self.is_closed() {
+			self.destination.next(next, context);
+		}
+	}
+
+	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+		if !self.is_closed() {
+			self.destination.error(error, context);
+			self.unsubscribe();
+		}
+	}
+
+	fn complete(&mut self, context: &mut ChannelContext) {
+		if !self.is_closed() {
+			self.destination.complete(context);
+			self.unsubscribe();
+		}
+	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
+		if !self.is_closed() {
+			self.destination.tick(tick, context);
+		}
+	}
+}
+
+#[cfg(not(feature = "channel_context"))]
 impl<Destination> Observer for ObserverSubscriber<Destination>
 where
 	Destination: Observer,

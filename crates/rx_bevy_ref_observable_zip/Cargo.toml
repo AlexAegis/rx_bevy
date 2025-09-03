@@ -33,14 +33,6 @@ example = [
     "rx_bevy_ref_subscriber_rc/example",
     "rx_bevy_testing/example",
 ]
-bevy = [
-    "rx_bevy/bevy",
-    "rx_bevy_core/bevy",
-    "rx_bevy_emission_variants/bevy",
-    "rx_bevy_ref_subscriber_rc/bevy",
-    "rx_bevy_testing/bevy",
-    "tick",
-]
 tick = [
     "rx_bevy/tick",
     "rx_bevy_core/tick",
@@ -48,22 +40,12 @@ tick = [
     "rx_bevy_ref_subscriber_rc/tick",
     "rx_bevy_testing/tick",
 ]
-reflect = [
-    "dep:bevy_reflect",
-    "rx_bevy/reflect",
-    "rx_bevy_common_bounds/reflect",
-    "rx_bevy_core/reflect",
-    "rx_bevy_emission_variants/reflect",
-    "rx_bevy_ref_subscriber_rc/reflect",
-    "rx_bevy_testing/reflect",
-]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
 rx_bevy_emission_variants = { workspace = true }
 rx_bevy_common_bounds = { workspace = true }
 rx_bevy_ref_subscriber_rc = { workspace = true }
-bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

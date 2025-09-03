@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, Subscription, SubscriptionLike, Teardown,
-	UpgradeableObserver,
+	ChannelContext, Observable, ObservableOutput, Observer, Subscription, SubscriptionLike,
+	Teardown, UpgradeableObserver,
 };
 
 /// Emits a single value then immediately completes
@@ -40,13 +40,14 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
 	) -> Subscription {
 		let mut subscriber = destination.upgrade();
 		for item in self.iterator.clone().into_iter() {
 			if subscriber.is_closed() {
 				break;
 			}
-			subscriber.next(item);
+			subscriber.next(item, context);
 		}
 		subscriber.complete();
 		Subscription::new(Teardown::Sub(Box::new(subscriber)))

@@ -1,5 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{entity::Entity, event::Event};
+use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_core::Tick;
 
 #[cfg(feature = "debug")]
@@ -7,8 +8,6 @@ use std::fmt::Debug;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
-
-use crate::SignalBound;
 
 #[derive(Event, Clone, Deref, DerefMut)]
 #[cfg_attr(feature = "debug", derive(Debug))]

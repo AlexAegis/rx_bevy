@@ -25,9 +25,14 @@ where
 	fn subscribe<Destination: 'static + UpgradeableObserver<In = (), InError = Error>>(
 		&mut self,
 		destination: Destination,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
 	) -> Subscription {
 		let mut subscriber = destination.upgrade();
+		#[cfg(feature = "channel_context")]
+		subscriber.error(self.error.clone(), context);
+		#[cfg(not(feature = "channel_context"))]
 		subscriber.error(self.error.clone());
+
 		Subscription::new(Teardown::new_from_subscription(subscriber))
 	}
 }

@@ -1,7 +1,8 @@
 use bevy_ecs::{entity::Entity, system::Command, world::World};
+use rx_bevy_common_bounds::SignalBound;
 use std::marker::PhantomData;
 
-use crate::{ObservableComponent, SignalBound};
+use crate::ObservableComponent;
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;

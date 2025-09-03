@@ -2,8 +2,9 @@ use std::{any::TypeId, marker::PhantomData};
 
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
 use bevy_kit_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
+use rx_bevy_common_bounds::SignalBound;
 
-use crate::{RelativeEntity, SignalBound, SubscriptionSchedule};
+use crate::{RelativeEntity, SubscriptionSchedule};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;

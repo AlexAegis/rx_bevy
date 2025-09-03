@@ -8,11 +8,12 @@ use bevy_ecs::{
 	observer::Observer,
 	system::{Commands, IntoObserverSystem},
 };
+use rx_bevy_common_bounds::SignalBound;
 use short_type_name::short_type_name;
 
 use crate::{
 	RxChannelComplete, RxChannelError, RxChannelNext, RxChannelTick, RxChannelUnsubscribe,
-	RxComplete, RxError, RxNext, RxSubscriber, RxSubscription, RxTick, RxUnsubscribe, SignalBound,
+	RxComplete, RxError, RxNext, RxSubscriber, RxSubscription, RxTick, RxUnsubscribe,
 	SubscriptionChannelHandlerOf,
 };
 

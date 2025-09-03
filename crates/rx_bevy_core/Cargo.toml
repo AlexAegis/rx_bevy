@@ -21,11 +21,13 @@ dev = ["rx_bevy/dev", "rx_bevy_common_bounds/dev", "rx_bevy_testing/dev"]
 example = ["dev", "rx_bevy/example", "rx_bevy_testing/example"]
 bevy = [
     "tick",
+    "channel_context",
     "dep:bevy_ecs",
     "dep:bevy_time",
     "rx_bevy/bevy",
     "rx_bevy_testing/bevy",
 ]
+channel_context = ["rx_bevy/channel_context", "rx_bevy_testing/channel_context"]
 tick = ["rx_bevy/tick", "rx_bevy_testing/tick"]
 serialize = ["rx_bevy_common_bounds/serialize"]
 debug = ["rx_bevy_common_bounds/debug"]
@@ -42,6 +44,7 @@ rx_bevy_common_bounds = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 bevy_ecs = { workspace = true, optional = true }
 bevy_time = { workspace = true, optional = true }
+short_type_name = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

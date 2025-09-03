@@ -1,5 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{component::Component, entity::Entity};
+use rx_bevy_common_bounds::SignalBound;
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
@@ -8,7 +9,7 @@ use std::marker::PhantomData;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{ObservableComponent, SignalBound};
+use crate::ObservableComponent;
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity

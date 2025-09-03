@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{component::Component, entity::Entity};
+use rx_bevy_common_bounds::SignalBound;
 
-use crate::{RxChannel, RxSubscription, SignalBound};
+use crate::{RxChannel, RxSubscription};
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;

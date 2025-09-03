@@ -10,17 +10,16 @@ use bevy_ecs::{
 #[cfg(feature = "debug")]
 use bevy_log::trace;
 use derive_where::derive_where;
-use rx_bevy_common_bounds::DebugBound;
+use rx_bevy_common_bounds::{DebugBound, SignalBound};
 use rx_bevy_core::{ObservableOutput, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
 	CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
 	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, EntityContext, RxChannel,
-	RxChannelTick, RxSubscription, RxTick, SignalBound, Subscribe, SubscribeError,
-	SubscribeObserverRef, SubscriberContext, Subscription, SubscriptionChannelHandlerRef,
-	SubscriptionChannelHandlerRegistrationContext, SubscriptionMarker, SubscriptionOf,
-	SubscriptionSignalDestination, Subscriptions,
+	RxChannelTick, RxSubscription, RxTick, Subscribe, SubscribeError, SubscribeObserverRef,
+	Subscription, SubscriptionChannelHandlerRef, SubscriptionChannelHandlerRegistrationContext,
+	SubscriptionMarker, SubscriptionOf, Subscriptions,
 };
 
 #[cfg(feature = "reflect")]
@@ -182,7 +181,6 @@ where
 			SubscriptionMarker,
 			Subscription::<O::Subscription>::new(spawned_subscription),
 			SubscriptionOf::<O::Subscription>::new(observable_entity),
-			SubscriptionSignalDestination::<O::Subscription>::new(destination_entity),
 		));
 
 		if O::Subscription::SCHEDULED {
@@ -208,11 +206,8 @@ where
 /// These direct subscriptions will forward the tick to the operator subscribers
 /// to ensure correct event order.
 /// TODO: Extend this so it observes all channels, next,error,complete,unsub,tick
-pub(crate) fn subscription_tick_observer<Sub>(
-	trigger: Trigger<Tick>,
-	rx_context: RxChannelDestination<Sub, RxChannelTick>,
-	mut commands: Commands,
-) where
+pub(crate) fn subscription_tick_observer<Sub>(trigger: Trigger<Tick>, mut commands: Commands)
+where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound + Clone,
 	Sub::OutError: SignalBound,
@@ -220,55 +215,6 @@ pub(crate) fn subscription_tick_observer<Sub>(
 	#[cfg(feature = "debug")]
 	trace!("subscription_tick_observer {:?}", trigger.event());
 
-	let destination = rx_context.get_next_destination_with_channel_handler(trigger.target());
-	commands.trigger_targets(RxTick(trigger.event().clone()), destination);
-}
-
-#[derive(SystemParam)]
-pub struct RxChannelDestination<'w, 's, Sub, Channel>
-where
-	Sub: RxSubscription,
-	Sub::Out: SignalBound,
-	Sub::OutError: SignalBound,
-	Channel: RxChannel,
-{
-	subscription_query: Query<
-		'w,
-		's,
-		(
-			Entity,
-			&'static SubscriptionSignalDestination<Sub>,
-			Option<&'static SubscriptionChannelHandlerRef<Channel, Sub>>,
-		),
-	>,
-}
-
-impl<'w, 's, Sub, Channel> RxChannelDestination<'w, 's, Sub, Channel>
-where
-	Sub: RxSubscription,
-	Sub::Out: SignalBound,
-	Sub::OutError: SignalBound,
-	Channel: RxChannel,
-{
-	/// Returns the next entity in the destination chain with a hook for
-	/// the signal, or the final destination
-	pub fn get_next_destination_with_channel_handler(&self, from: Entity) -> Entity {
-		let mut cursor = from;
-		let target: Entity;
-
-		loop {
-			if let Ok((entity, destination, hook)) = self.subscription_query.get(cursor) {
-				cursor = destination.get_destination();
-				if hook.is_some() {
-					target = entity;
-					break;
-				}
-			} else {
-				target = cursor;
-				break;
-			}
-		}
-
-		target
-	}
+	// let destination = rx_context.get_next_destination_with_channel_handler(trigger.target());
+	// commands.trigger_targets(RxTick(trigger.event().clone()), destination);
 }

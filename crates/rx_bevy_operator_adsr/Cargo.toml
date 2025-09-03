@@ -21,16 +21,27 @@ dev = [
     "bevy/dynamic_linking",
     "examples_common/dev",
     "rx_bevy/dev",
+    "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
     "rx_bevy_ecs_observable_keyboard/dev",
-    "rx_bevy_plugin/dev",
     "rx_bevy_testing/dev",
 ]
 debug = [
     "bevy/track_location",
+    "rx_bevy_common_bounds/debug",
     "rx_bevy_core/debug",
     "rx_bevy_ecs_observable_keyboard/debug",
-    "rx_bevy_plugin/debug",
+]
+bevy = [
+    "channel_context",
+    "rx_bevy/bevy",
+    "rx_bevy_core/bevy",
+    "rx_bevy_testing/bevy",
+]
+channel_context = [
+    "rx_bevy/channel_context",
+    "rx_bevy_core/channel_context",
+    "rx_bevy_testing/channel_context",
 ]
 example = [
     "bevy/bevy_asset",
@@ -49,15 +60,14 @@ example = [
     "rx_bevy/example",
     "rx_bevy_core/example",
     "rx_bevy_ecs_observable_keyboard/example",
-    "rx_bevy_plugin/example",
     "rx_bevy_testing/example",
 ]
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
+    "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
     "rx_bevy_ecs_observable_keyboard/reflect",
-    "rx_bevy_plugin/reflect",
     "rx_bevy_testing/reflect",
 ]
 serialize = [
@@ -66,12 +76,12 @@ serialize = [
     "bevy_math/serialize",
     "bevy_time/serialize",
     "dep:serde",
+    "rx_bevy_common_bounds/serialize",
     "rx_bevy_core/serialize",
-    "rx_bevy_plugin/serialize",
 ]
 
 [dependencies]
-rx_bevy_plugin = { workspace = true }
+rx_bevy_common_bounds = { workspace = true }
 rx_bevy_core = { workspace = true, features = ["tick"] }
 bevy_time = { workspace = true }
 bevy_ecs = { workspace = true }

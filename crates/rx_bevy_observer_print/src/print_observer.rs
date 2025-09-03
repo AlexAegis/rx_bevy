@@ -1,5 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
+#[cfg(feature = "tick")]
+#[cfg(feature = "channel_context")]
+use rx_bevy_core::ChannelContext;
 use rx_bevy_core::{InnerSubscription, Observer, ObserverInput, SubscriptionLike};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -66,23 +69,35 @@ where
 	InError: 'static + Debug,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
+	) {
 		println!("{}next: {:?}", self.get_prefix(), next);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
+	) {
 		println!("{}error: {:?}", self.get_prefix(), error);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
+	fn complete(&mut self, #[cfg(feature = "channel_context")] _context: &mut ChannelContext) {
 		println!("{}completed", self.get_prefix());
 	}
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(
+		&mut self,
+		tick: rx_bevy_core::Tick,
+		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
+	) {
 		println!("{}tick: {:?}", self.get_prefix(), tick);
 	}
 }
@@ -96,15 +111,25 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
 		if !self.closed {
 			self.closed = true;
+			#[cfg(feature = "channel_context")]
+			self.teardown.unsubscribe(context);
+			#[cfg(not(feature = "channel_context"))]
 			self.teardown.unsubscribe();
 			println!("{}unsubscribed", self.get_prefix());
 		}
 	}
 
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+	fn add(
+		&mut self,
+		subscription: Box<dyn SubscriptionLike>,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
+		#[cfg(feature = "channel_context")]
+		self.teardown.add(subscription, context);
+		#[cfg(not(feature = "channel_context"))]
 		self.teardown.add(subscription);
 	}
 }

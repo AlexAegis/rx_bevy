@@ -1,5 +1,8 @@
 use std::marker::PhantomData;
 
+#[cfg(feature = "channel_context")]
+#[cfg(feature = "tick")]
+use rx_bevy_core::ChannelContext;
 use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 #[derive(Debug)]
@@ -25,6 +28,35 @@ where
 	}
 }
 
+#[cfg(feature = "channel_context")]
+impl<Inner, Destination> Observer for CompositeSubscriber<Inner, Destination>
+where
+	Inner: Subscriber,
+	Destination: Observer,
+{
+	#[inline]
+	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+		self.subscriber.next(next, context);
+	}
+
+	#[inline]
+	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+		self.subscriber.error(error, context);
+	}
+
+	#[inline]
+	fn complete(&mut self, context: &mut ChannelContext) {
+		self.subscriber.complete(context);
+	}
+
+	#[cfg(feature = "tick")]
+	#[inline]
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
+		self.subscriber.tick(tick, context);
+	}
+}
+
+#[cfg(not(feature = "channel_context"))]
 impl<Inner, Destination> Observer for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,

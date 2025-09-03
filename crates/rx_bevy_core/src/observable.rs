@@ -1,3 +1,5 @@
+#[cfg(feature = "channel_context")]
+use crate::ChannelContext;
 use crate::{Subscription, UpgradeableObserver};
 
 pub trait ObservableOutput {
@@ -12,6 +14,7 @@ pub trait Observable: ObservableOutput {
 	>(
 		&mut self,
 		destination: Destination,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
 	) -> Subscription;
 }
 

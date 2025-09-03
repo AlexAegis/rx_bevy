@@ -10,6 +10,45 @@ where
 	type InError = Destination::InError;
 }
 
+#[cfg(feature = "channel_context")]
+use crate::ChannelContext;
+
+#[cfg(feature = "channel_context")]
+impl<Destination> Observer for Arc<RwLock<Destination>>
+where
+	Destination: Subscriber,
+{
+	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+		if !self.is_closed() {
+			let mut lock = self.write().expect("lock is poisoned!");
+			lock.next(next, context);
+		}
+	}
+
+	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+		if !self.is_closed() {
+			let mut lock = self.write().expect("lock is poisoned!");
+			lock.error(error, context);
+		}
+	}
+
+	fn complete(&mut self, context: &mut ChannelContext) {
+		if !self.is_closed() {
+			let mut lock = self.write().expect("lock is poisoned!");
+			lock.complete(context);
+		}
+	}
+
+	#[cfg(feature = "tick")]
+	fn tick(&mut self, tick: crate::Tick, context: &mut ChannelContext) {
+		if !self.is_closed() {
+			let mut lock = self.write().expect("lock is poisoned!");
+			lock.tick(tick, context);
+		}
+	}
+}
+
+#[cfg(not(feature = "channel_context"))]
 impl<Destination> Observer for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
@@ -53,13 +92,23 @@ where
 		lock.is_closed()
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
 		let mut lock = self.write().expect("lock is poisoned!");
+		#[cfg(feature = "channel_context")]
+		lock.unsubscribe(context);
+		#[cfg(not(feature = "channel_context"))]
 		lock.unsubscribe();
 	}
 
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+	fn add(
+		&mut self,
+		subscription: Box<dyn SubscriptionLike>,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
 		let mut lock = self.write().expect("lock is poisoned!");
+		#[cfg(feature = "channel_context")]
+		lock.add(subscription, context);
+		#[cfg(not(feature = "channel_context"))]
 		lock.add(subscription);
 	}
 }

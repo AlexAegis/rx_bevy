@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
+use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
-use rx_bevy_plugin::SignalBound;
 
 use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
 

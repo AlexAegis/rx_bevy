@@ -39,13 +39,6 @@ reflect = [
     "rx_bevy_observable_deferred/reflect",
     "rx_bevy_testing/reflect",
 ]
-bevy = [
-    "tick",
-    "rx_bevy_core/bevy",
-    "rx_bevy/bevy",
-    "rx_bevy_testing/bevy",
-    "rx_bevy_observable_deferred/bevy",
-]
 tick = [
     "rx_bevy_core/tick",
     "rx_bevy/tick",

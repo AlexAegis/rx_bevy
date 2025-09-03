@@ -2,11 +2,10 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 
+use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_core::ObservableOutput;
 
-use crate::{
-	CommandSubscriber, RxSubscription, SignalBound, SubscriptionChannelHandlerRegistrationContext,
-};
+use crate::{CommandSubscriber, RxSubscription, SubscriptionChannelHandlerRegistrationContext};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;

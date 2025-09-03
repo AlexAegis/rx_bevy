@@ -3,8 +3,8 @@ use std::marker::PhantomData;
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, Operation, Subscriber, Subscription, SubscriptionLike,
 };
-use rx_bevy_ref_subscriber_detached::DetachedSubscriber;
 use rx_bevy_ref_subscriber_shared::SharedSubscriber;
+use rx_bevy_subscriber_detached::DetachedSubscriber;
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
 pub struct SwitchSubscriber<InnerObservable, Destination>

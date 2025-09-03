@@ -19,52 +19,31 @@ workspace = true
 default = []
 dev = [
     "rx_bevy/dev",
-    "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
-    "rx_bevy_ref_subscriber_detached/dev",
+    "rx_bevy_subscriber_detached/dev",
     "rx_bevy_ref_subscriber_shared/dev",
     "rx_bevy_testing/dev",
 ]
 example = [
-    "bevy",
     "dev",
     "rx_bevy/example",
     "rx_bevy_core/example",
-    "rx_bevy_ref_subscriber_detached/example",
+    "rx_bevy_subscriber_detached/example",
     "rx_bevy_ref_subscriber_shared/example",
     "rx_bevy_testing/example",
-]
-bevy = [
-    "rx_bevy/bevy",
-    "rx_bevy_core/bevy",
-    "rx_bevy_ref_subscriber_detached/bevy",
-    "rx_bevy_ref_subscriber_shared/bevy",
-    "rx_bevy_testing/bevy",
-    "tick",
 ]
 tick = [
     "rx_bevy/tick",
     "rx_bevy_core/tick",
-    "rx_bevy_ref_subscriber_detached/tick",
+    "rx_bevy_subscriber_detached/tick",
     "rx_bevy_ref_subscriber_shared/tick",
     "rx_bevy_testing/tick",
-]
-reflect = [
-    "dep:bevy_reflect",
-    "rx_bevy/reflect",
-    "rx_bevy_common_bounds/reflect",
-    "rx_bevy_core/reflect",
-    "rx_bevy_ref_subscriber_detached/reflect",
-    "rx_bevy_ref_subscriber_shared/reflect",
-    "rx_bevy_testing/reflect",
 ]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
-rx_bevy_common_bounds = { workspace = true }
-rx_bevy_ref_subscriber_detached = { workspace = true }
+rx_bevy_subscriber_detached = { workspace = true }
 rx_bevy_ref_subscriber_shared = { workspace = true }
-bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

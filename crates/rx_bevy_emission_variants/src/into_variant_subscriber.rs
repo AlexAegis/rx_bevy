@@ -50,24 +50,39 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
+		#[cfg(feature = "channel_context")]
+		self.destination.next(EitherOut2::O1(next), context);
+		#[cfg(not(feature = "channel_context"))]
 		self.destination.next(EitherOut2::O1(next));
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
 		self.destination.error(EitherOutError2::O1Error(error));
 	}
 
 	#[inline]
-	fn complete(&mut self) {
+	fn complete(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
 		self.destination.next(EitherOut2::CompleteO1);
 		self.destination.complete();
 	}
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(
+		&mut self,
+		tick: rx_bevy_core::Tick,
+		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+	) {
 		self.destination.tick(tick);
 	}
 }

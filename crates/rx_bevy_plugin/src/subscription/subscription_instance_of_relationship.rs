@@ -1,9 +1,10 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{component::Component, entity::Entity};
+use rx_bevy_common_bounds::SignalBound;
 use smallvec::SmallVec;
 
-use crate::{RxSubscription, SignalBound};
+use crate::RxSubscription;
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;

@@ -1,8 +1,6 @@
 mod commands;
 mod extensions;
 mod observables;
-mod operators;
-mod pipe;
 mod rx_plugin;
 mod scheduler;
 mod signal;
@@ -11,8 +9,6 @@ mod subscription;
 pub use commands::*;
 pub use extensions::*;
 pub use observables::*;
-pub use operators::*;
-pub use pipe::*;
 pub use rx_plugin::*;
 pub use scheduler::*;
 pub use signal::*;

@@ -1,6 +1,7 @@
 use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::Commands};
+use rx_bevy_common_bounds::SignalBound;
 
-use crate::{RelativeEntity, SignalBound, Subscribe};
+use crate::{RelativeEntity, Subscribe};
 
 /// Provides functions to create subscriptions between two commands
 pub trait CommandSubscribeExtension {
