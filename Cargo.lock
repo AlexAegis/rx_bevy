@@ -5178,11 +5178,8 @@ dependencies = [
 name = "rx_bevy_testing"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
  "rx_bevy",
  "rx_bevy_core",
- "rx_bevy_ref_subscriber_shared",
- "rx_bevy_subscriber_observer",
 ]
 
 [[package]]

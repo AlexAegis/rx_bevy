@@ -1,5 +1,5 @@
-use rx_bevy_core::{Observable, Subscription};
+use rx_bevy_core::{DropSubscription, Observable};
 
 pub trait Connectable: Observable {
-	fn connect(&mut self) -> Subscription;
+	fn connect(&mut self) -> DropSubscription;
 }

@@ -1,8 +1,8 @@
 use short_type_name::short_type_name;
 
 use crate::{
-	ExpandableSubscriptionLike, ObservableOutput, Observer, ObserverInput, Operation,
-	OperationSubscriber, Operator, Subscriber, SubscriptionLike,
+	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
+	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
 };
 
 /// [Operator]s with the same outputs as its inputs can be made optional.
@@ -22,10 +22,11 @@ where
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
+		context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
 	) -> Self::Subscriber<Destination> {
 		match self {
 			Some(operator) => {
-				OptionOperatorSubscriber::Some(operator.operator_subscribe(destination))
+				OptionOperatorSubscriber::Some(operator.operator_subscribe(destination, context))
 			}
 			None => OptionOperatorSubscriber::None(destination),
 		}
@@ -54,7 +55,10 @@ where
 
 pub enum OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
+	Sub: OperationSubscriber<
+			Destination = Destination,
+			Context = <Destination as SignalContext>::Context,
+		>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	Some(Sub),
@@ -63,22 +67,39 @@ where
 
 impl<Sub, Destination> ObserverInput for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
+	Sub: OperationSubscriber<
+			Destination = Destination,
+			Context = <Destination as SignalContext>::Context,
+		>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	type In = Sub::In;
 	type InError = Sub::InError;
 }
 
-impl<Sub, Destination> Observer for OptionOperatorSubscriber<Sub, Destination>
+impl<Sub, Destination> SignalContext for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Context = <Destination as Observer>::Context, Destination = Destination>,
+	Sub: OperationSubscriber<
+			Context = <Destination as SignalContext>::Context,
+			Destination = Destination,
+		>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
 {
-	type Context = <Destination as Observer>::Context;
+	type Context = <Destination as SignalContext>::Context;
+}
 
+impl<Sub, Destination> Observer for OptionOperatorSubscriber<Sub, Destination>
+where
+	Sub: OperationSubscriber<
+			Context = <Destination as SignalContext>::Context,
+			Destination = Destination,
+		>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
+	Sub::In: 'static,
+	Sub::InError: 'static,
+{
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
@@ -126,7 +147,10 @@ where
 
 impl<Sub, Destination> Operation for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Context = <Destination as Observer>::Context, Destination = Destination>,
+	Sub: OperationSubscriber<
+			Context = <Destination as SignalContext>::Context,
+			Destination = Destination,
+		>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	type Destination = Destination;
@@ -158,10 +182,12 @@ where
 	}
 }
 
-impl<Sub, Destination> SubscriptionLike<<Destination as Observer>::Context>
-	for OptionOperatorSubscriber<Sub, Destination>
+impl<Sub, Destination> SubscriptionLike for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
+	Sub: OperationSubscriber<
+			Destination = Destination,
+			Context = <Destination as SignalContext>::Context,
+		>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
@@ -173,7 +199,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
+	fn unsubscribe(&mut self, context: &mut <Destination as SignalContext>::Context) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.unsubscribe(context);
@@ -185,18 +211,22 @@ where
 	}
 }
 
-impl<Sub, Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
-	for OptionOperatorSubscriber<Sub, Destination>
+impl<Sub, Destination> SubscriptionCollection for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
+	Sub: OperationSubscriber<
+			Destination = Destination,
+			Context = <Destination as SignalContext>::Context,
+		>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
+	Sub: SubscriptionCollection,
+	Destination: SubscriptionCollection,
 {
 	fn add(
 		&mut self,
-		subscription: impl Into<crate::Teardown<<Sub as Observer>::Context>>,
-		context: &mut <Sub as Observer>::Context,
+		subscription: impl Into<crate::Teardown<<Sub as SignalContext>::Context>>,
+		context: &mut <Sub as SignalContext>::Context,
 	) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
@@ -211,7 +241,10 @@ where
 
 impl<Sub, Destination> Drop for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
+	Sub: OperationSubscriber<
+			Destination = Destination,
+			Context = <Destination as SignalContext>::Context,
+		>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,

@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, Subscription,
+	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, DropSubscription,
 	SubscriptionLike, Teardown, UpgradeableObserver,
 };
 
@@ -66,7 +66,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription {
+	) -> DropSubscription {
 		let subscriber = destination.upgrade();
 
 		let mut multicast_destination = self.multicast.write().expect("Poisoned!");
@@ -75,7 +75,7 @@ where
 			.multicast_subscribe::<Destination>(subscriber, self.multicast.clone());
 
 		let multicast_ref = self.multicast.clone();
-		Subscription::new(Teardown::new(Box::new(move || {
+		DropSubscription::new(Teardown::new(Box::new(move || {
 			let subscriber = {
 				let mut write_multicast = multicast_ref.write().expect("blocked 1");
 				write_multicast.take(key)

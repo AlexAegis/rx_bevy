@@ -1,7 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use crate::{
-	ExpandableSubscriptionLike, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
+	SubscriptionCollection, Observer, ObserverInput, SignalContext, Subscriber,
+	SubscriptionLike, Teardown,
 };
 
 impl<Destination> ObserverInput for Arc<RwLock<Destination>>
@@ -16,8 +17,6 @@ impl<Destination> Observer for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
 {
-	type Context = <Destination as Observer>::Context;
-
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
@@ -47,7 +46,14 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike<<Destination as Observer>::Context> for Arc<RwLock<Destination>>
+impl<Destination> SignalContext for Arc<RwLock<Destination>>
+where
+	Destination: Subscriber,
+{
+	type Context = Destination::Context;
+}
+
+impl<Destination> SubscriptionLike for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
 {
@@ -56,21 +62,21 @@ where
 		lock.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
+	fn unsubscribe(&mut self, context: &mut Destination::Context) {
 		let mut lock = self.write().expect("lock is poisoned!");
 		lock.unsubscribe(context);
 	}
 }
 
-impl<Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
-	for Arc<RwLock<Destination>>
+impl<Destination> SubscriptionCollection for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
+	Destination: SubscriptionCollection,
 {
 	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<<Destination as Observer>::Context>>,
-		context: &mut <Destination as Observer>::Context,
+		subscription: impl Into<Teardown<Destination::Context>>,
+		context: &mut Destination::Context,
 	) {
 		let mut lock = self.write().expect("lock is poisoned!");
 		lock.add(subscription, context);

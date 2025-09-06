@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, Subscription, Teardown, UpgradeableObserver,
+	DropSubscription, Observable, ObservableOutput, Observer, Teardown, UpgradeableObserver,
 };
 
 /// Observable creator for [ThrowObservable]
@@ -26,11 +26,11 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut <Destination as Observer>::Context,
-	) -> Subscription {
+	) -> DropSubscription {
 		let mut subscriber = destination.upgrade();
 		subscriber.error(self.error.clone(), context);
 
-		Subscription::new(Teardown::new_from_subscription(subscriber))
+		DropSubscription::new(Teardown::new_from_subscription(subscriber))
 	}
 }
 

@@ -3,7 +3,10 @@ use std::marker::PhantomData;
 #[cfg(feature = "channel_context")]
 #[cfg(feature = "tick")]
 use rx_bevy_core::ChannelContext;
-use rx_bevy_core::{ExpandableSubscriptionLike, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{
+	SubscriptionCollection, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionLike,
+};
 
 #[derive(Debug)]
 pub struct CompositeSubscriber<Inner, Destination>
@@ -28,29 +31,36 @@ where
 	}
 }
 
+impl<Inner, Destination> SignalContext for CompositeSubscriber<Inner, Destination>
+where
+	Inner: Subscriber,
+	Destination: Observer,
+{
+	type Context = Destination::Context;
+}
+
 impl<Inner, Destination> Observer for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
 	Destination: Observer,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.subscriber.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.subscriber.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut ChannelContext) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.subscriber.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
 		self.subscriber.tick(tick, context);
 	}
 }
@@ -70,19 +80,20 @@ where
 	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
 		self.subscriber.unsubscribe(context);
 	}
-
 }
 
-
-impl<Inner, Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
+impl<Inner, Destination> SubscriptionCollection<<Destination as Observer>::Context>
 	for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
 	Destination: Observer,
 {
-
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown<<Destination as Observer>::Context>, context: &mut <Destination as Observer>::Context>) {
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<<Destination as Observer>::Context>>,
+		context: &mut <Destination as Observer>::Context,
+	) {
 		self.subscriber.add(subscription, context);
 	}
 }
@@ -131,6 +142,6 @@ where
 	Destination: Observer,
 {
 	fn drop(&mut self) {
-		self.unsubscribe();
+		self.unsubscribe(());
 	}
 }

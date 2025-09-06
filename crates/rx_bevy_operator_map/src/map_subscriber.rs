@@ -2,7 +2,8 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	SubscriptionCollection, ObservableOutput, Observer, ObserverInput, Operation,
+	SignalContext, Subscriber, SubscriptionLike,
 };
 
 #[derive_where(Debug)]
@@ -40,6 +41,21 @@ where
 	}
 }
 
+impl<In, InError, Mapper, Out, Destination> SignalContext
+	for MapSubscriber<In, InError, Mapper, Out, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Mapper: Fn(In) -> Out,
+	Out: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Context = Destination::Context;
+}
+
 impl<In, InError, Mapper, Out, Destination> Observer
 	for MapSubscriber<In, InError, Mapper, Out, Destination>
 where
@@ -53,25 +69,24 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		let mapped = (self.mapper)(next);
-		self.destination.next(mapped);
+		self.destination.next(mapped, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -93,13 +108,30 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Mapper, Out, Destination> SubscriptionCollection
+	for MapSubscriber<In, InError, Mapper, Out, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Mapper: Fn(In) -> Out,
+	Out: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		> + SubscriptionCollection,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

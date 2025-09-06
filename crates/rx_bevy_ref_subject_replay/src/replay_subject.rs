@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, Subscription, SubscriptionLike,
+	DropSubscription, Observable, ObservableOutput, Observer, ObserverInput, SubscriptionLike,
 	UpgradeableObserver,
 };
 use rx_bevy_ref_subject::Subject;
@@ -86,7 +86,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription {
+	) -> DropSubscription {
 		let mut subscriber = destination.upgrade();
 
 		for value in self.values.borrow().iter() {

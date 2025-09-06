@@ -1,4 +1,7 @@
-use rx_bevy_core::{Observable, ObservableOutput, Subscription, Teardown, UpgradeableObserver};
+use rx_bevy_core::{
+	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Teardown,
+	UpgradeableObserver,
+};
 
 pub fn detached_observable<'s, Source>(source: &'s mut Source) -> DetachedObservable<'s, Source>
 where
@@ -27,16 +30,28 @@ where
 impl<'s, Source> Observable for DetachedObservable<'s, Source>
 where
 	Source: Observable,
+	<Source::Subscription as SignalContext>::Context: DropContext,
 {
+	type Subscription = DropSubscription<<Source::Subscription as SignalContext>::Context>;
+
 	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+		Destination: 'static
+			+ UpgradeableObserver<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Source::Subscription as SignalContext>::Context,
+			>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription {
-		let subscription = self.source.subscribe(destination);
+		context: &mut Destination::Context,
+	) -> DropSubscription<Destination::Context>
+	where
+		Destination::Context: DropContext,
+	{
+		let subscription = self.source.subscribe(destination, context);
 
-		Subscription::new(Teardown::new(Box::new(move || {
+		DropSubscription::new(Teardown::new(Box::new(move || {
 			let _s = subscription;
 		})))
 	}

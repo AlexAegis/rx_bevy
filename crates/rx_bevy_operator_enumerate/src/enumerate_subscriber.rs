@@ -3,7 +3,8 @@ use std::marker::PhantomData;
 #[cfg(feature = "channel_context")]
 use rx_bevy_core::ChannelContext;
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike,
 };
 
 pub struct EnumerateSubscriber<In, InError, Destination>
@@ -35,6 +36,18 @@ where
 	}
 }
 
+impl<In, InError, Destination> SignalContext for EnumerateSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Context = Destination::Context;
+}
+
 impl<In, InError, Destination> Observer for EnumerateSubscriber<In, InError, Destination>
 where
 	In: 'static,
@@ -45,15 +58,8 @@ where
 		>,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		#[cfg(feature = "channel_context")]
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.destination.next((next, self.counter), context);
-		#[cfg(not(feature = "channel_context"))]
-		self.destination.next((next, self.counter));
 
 		// Increment after emission, so the first value could be 0
 		#[cfg(feature = "saturating_add")]
@@ -67,36 +73,18 @@ where
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		#[cfg(feature = "channel_context")]
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination.error(error, context);
-		#[cfg(not(feature = "channel_context"))]
-		self.destination.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
-		#[cfg(feature = "channel_context")]
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
-		#[cfg(not(feature = "channel_context"))]
-		self.destination.complete();
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(
-		&mut self,
-		tick: rx_bevy_core::Tick,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		#[cfg(feature = "channel_context")]
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
-		#[cfg(not(feature = "channel_context"))]
-		self.destination.tick(tick);
 	}
 }
 
@@ -115,13 +103,24 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut Destination::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Destination> SubscriptionCollection
+	for EnumerateSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut Destination::Context) {
+		self.destination.add(subscription, context);
 	}
 }
 

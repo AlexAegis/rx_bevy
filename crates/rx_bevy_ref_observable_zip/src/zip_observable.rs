@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, ObservableOutput, Subscription, Teardown, UpgradeableObserver};
+use rx_bevy_core::{DropSubscription, Observable, ObservableOutput, Teardown, UpgradeableObserver};
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
 };
@@ -72,11 +72,11 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription
+	) -> DropSubscription
 	where
 		Self: Sized,
 	{
-		let mut subscription = Subscription::new_empty();
+		let mut subscription = DropSubscription::new_empty();
 
 		let rc_subscriber =
 			RcSubscriber::new(ZipSubscriber::<Destination::Subscriber, O1, O2>::new(

@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, ObservableOutput, Subscriber, Subscription};
+use rx_bevy_core::{DropSubscription, Observable, ObservableOutput, Subscriber};
 
 /// Dyn compatible Observable for internal cases where the destination is known
 pub trait FixedSubscriberObservable<Destination>: ObservableOutput
@@ -6,7 +6,7 @@ where
 	Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
 {
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
-	fn subscribe(&mut self, destination: Destination) -> Subscription;
+	fn subscribe(&mut self, destination: Destination) -> DropSubscription;
 }
 
 impl<O, Destination> FixedSubscriberObservable<Destination> for O
@@ -14,7 +14,7 @@ where
 	O: Observable,
 	Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
 {
-	fn subscribe(&mut self, destination: Destination) -> Subscription {
+	fn subscribe(&mut self, destination: Destination) -> DropSubscription {
 		Observable::subscribe(self, destination)
 	}
 }

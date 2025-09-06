@@ -157,7 +157,6 @@ reflect = [
     "rx_bevy_operator_try_capture?/reflect",
     "rx_bevy_ref_observable_combine_latest?/reflect",
     "rx_bevy_ref_observable_connectable?/reflect",
-    "rx_bevy_testing/reflect",
 ]
 channel_context = [
     "rx_bevy_core/channel_context",

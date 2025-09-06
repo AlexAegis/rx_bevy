@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ExpandableSubscriptionLike, ObservableOutput, Observer, ObserverInput, Operation, Subscriber,
-	SubscriptionLike, Teardown, Tick,
+	SubscriptionCollection, ObservableOutput, Observer, ObserverInput, Operation,
+	SignalContext, Subscriber, SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -35,13 +35,19 @@ where
 	}
 }
 
+impl<InError, Destination> SignalContext for AdsrSubscriber<InError, Destination>
+where
+	Destination: Observer<In = AdsrSignal, InError = InError>,
+	InError: 'static,
+{
+	type Context = Destination::Context;
+}
+
 impl<InError, Destination> Observer for AdsrSubscriber<InError, Destination>
 where
 	Destination: Observer<In = AdsrSignal, InError = InError>,
 	InError: 'static,
 {
-	type Context = <Destination as Observer>::Context;
-
 	#[inline]
 	fn next(&mut self, next: Self::In, _context: &mut Self::Context) {
 		self.is_getting_activated = next;
@@ -69,10 +75,10 @@ where
 	}
 }
 
-impl<InError, Destination> SubscriptionLike<<Destination as Observer>::Context>
-	for AdsrSubscriber<InError, Destination>
+impl<InError, Destination> SubscriptionLike for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	InError: 'static,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -80,21 +86,22 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
 }
 
-impl<InError, Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
-	for AdsrSubscriber<InError, Destination>
+impl<InError, Destination> SubscriptionCollection for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	Destination: SubscriptionCollection,
+	InError: 'static,
 {
 	#[inline]
 	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<<Destination as Observer>::Context>>,
-		context: &mut <Destination as Observer>::Context,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
 	}

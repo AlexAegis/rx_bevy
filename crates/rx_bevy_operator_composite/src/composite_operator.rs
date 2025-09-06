@@ -55,10 +55,11 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		CompositeSubscriber::new(
 			self.prev_op
-				.operator_subscribe(self.op.operator_subscribe(destination)),
+				.operator_subscribe(self.op.operator_subscribe(destination, context), context),
 		)
 	}
 }

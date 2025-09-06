@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SubjectLike, Subscription, SubscriptionLike, UpgradeableObserver,
+	Observable, ObservableOutput, SubjectLike, DropSubscription, SubscriptionLike, UpgradeableObserver,
 };
 
 use crate::{
@@ -53,7 +53,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription {
+	) -> DropSubscription {
 		let mut connector = self.connector.lock().expect("cant lock");
 		connector.subscribe(destination)
 	}
@@ -90,7 +90,7 @@ where
 	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
-	fn connect(&mut self) -> Subscription {
+	fn connect(&mut self) -> DropSubscription {
 		let mut connector = self.connector.lock().expect("cant lock");
 		connector.connect()
 	}

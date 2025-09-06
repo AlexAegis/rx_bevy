@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use bevy_ecs::system::Commands;
 
-use crate::Subscriber;
+use crate::{SignalContext, Subscriber};
 
 pub trait ObserverInput {
 	type In: 'static;
@@ -24,9 +24,7 @@ pub struct ChannelContext<'a, 'w, 's> {
 
 impl<'a, 'w, 's> ChannelContext<'a, 'w, 's> {}
 
-pub trait Observer: ObserverInput {
-	type Context;
-
+pub trait Observer: ObserverInput + SignalContext {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context);
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context);
 	fn complete(&mut self, context: &mut Self::Context);
@@ -35,7 +33,6 @@ pub trait Observer: ObserverInput {
 	/// Some operators may produce other, new signals during a tick.
 	/// None of the regular operators do anything on a tick but notify it's
 	/// downstream of the tick.
-	#[cfg(feature = "tick")]
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context);
 }
 
@@ -65,12 +62,17 @@ where
 	type InError = T::InError;
 }
 
-impl<T> Observer for RefCell<T>
+impl<T> SignalContext for RefCell<T>
 where
 	T: Observer,
 {
 	type Context = T::Context;
+}
 
+impl<T> Observer for RefCell<T>
+where
+	T: Observer,
+{
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.borrow_mut().next(next, context);
 	}

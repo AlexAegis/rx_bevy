@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, Subscription, Teardown, UpgradeableObserver,
+	Observable, ObservableOutput, Observer, DropSubscription, Teardown, UpgradeableObserver,
 };
 
 /// Observable creator for [OfObservable]
@@ -38,11 +38,11 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut <Destination as Observer>::Context,
-	) -> Subscription {
+	) -> DropSubscription {
 		let mut subscriber = destination.upgrade();
 		subscriber.next(self.value.clone(), context);
 		subscriber.complete(context);
-		Subscription::new(Teardown::new_from_subscription(subscriber))
+		DropSubscription::new(Teardown::new_from_subscription(subscriber))
 	}
 }
 
@@ -64,7 +64,7 @@ mod tests {
 	fn should_emit_single_value() {
 		let value = 4;
 		let mut observable = OfObservable::new(value);
-		let mut mock_observer = MockObserver::new_shared();
+		let mut mock_observer = MockObserver::new();
 
 		let _s = observable.subscribe(mock_observer.clone());
 

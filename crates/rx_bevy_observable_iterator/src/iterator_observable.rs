@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ChannelContext, Observable, ObservableOutput, Observer, Subscription, SubscriptionLike,
-	Teardown, UpgradeableObserver,
+	ChannelContext, DropContext, DropSubscription, Observable, ObservableOutput, Observer,
+	SubscriptionLike, Teardown, UpgradeableObserver,
 };
 
 /// Emits a single value then immediately completes
@@ -30,18 +30,21 @@ where
 	type OutError = ();
 }
 
-impl<Iterator> Observable for IteratorObservable<Iterator>
+impl<Iterator, Context> Observable for IteratorObservable<Iterator>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
+	Context: DropContext,
 {
+	type Subscription = DropSubscription<Context>;
+
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
 		context: &mut <Destination as Observer>::Context,
-	) -> Subscription {
+	) -> DropSubscription<Context> {
 		let mut subscriber = destination.upgrade();
 		for item in self.iterator.clone().into_iter() {
 			if subscriber.is_closed() {
@@ -50,6 +53,6 @@ where
 			subscriber.next(item, context);
 		}
 		subscriber.complete(context);
-		Subscription::new(Teardown::Sub(Box::new(subscriber)))
+		DropSubscription::new(Teardown::Sub(Box::new(subscriber)))
 	}
 }

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observable, ObservableOutput, Subscription, Teardown, UpgradeableObserver};
+use rx_bevy_core::{Observable, ObservableOutput, DropSubscription, Teardown, UpgradeableObserver};
 use rx_bevy_operator_map_into::MapIntoSubscriber;
 use rx_bevy_ref_subscriber_rc::RcSubscriber;
 
@@ -88,11 +88,11 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription
+	) -> DropSubscription
 	where
 		Self: Sized,
 	{
-		let mut subscription = Subscription::new_empty();
+		let mut subscription = DropSubscription::new_empty();
 
 		let rc_subscriber = RcSubscriber::new(destination.upgrade());
 

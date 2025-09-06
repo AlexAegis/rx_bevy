@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, Operation, Subscriber, Subscription, SubscriptionLike,
+	Observable, Observer, ObserverInput, Operation, Subscriber, DropSubscription, SubscriptionLike,
 };
 use rx_bevy_ref_subscriber_shared::SharedSubscriber;
 use rx_bevy_subscriber_detached::DetachedSubscriber;
@@ -14,7 +14,7 @@ where
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	destination: SharedSubscriber<Destination>,
-	inner_subscription: Option<Subscription>,
+	inner_subscription: Option<DropSubscription>,
 	closed: bool,
 	_phantom_data: PhantomData<InnerObservable>,
 }

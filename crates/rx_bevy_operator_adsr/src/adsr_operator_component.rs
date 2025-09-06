@@ -34,6 +34,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		_context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		AdsrSubscriber::new(destination, self.options.clone())
 	}

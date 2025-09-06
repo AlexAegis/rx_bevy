@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, ObservableOutput, Operator, Subscription, UpgradeableObserver};
+use rx_bevy_core::{Observable, ObservableOutput, Operator, DropSubscription, UpgradeableObserver};
 
 pub struct Pipe<Source, Op>
 where
@@ -73,7 +73,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription {
+	) -> DropSubscription {
 		let subscriber = destination.upgrade();
 		let operator_subscriber = self.operator.operator_subscribe(subscriber);
 		self.source_observable.subscribe(operator_subscriber)

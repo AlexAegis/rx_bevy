@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, SubjectLike, Subscription, SubscriptionLike, Teardown,
+	Observable, ObservableOutput, SubjectLike, DropSubscription, SubscriptionLike, Teardown,
 	UpgradeableObserver,
 };
 
@@ -19,7 +19,7 @@ where
 	/// source
 	connector: Option<Connector>,
 
-	connection: Option<Subscription>,
+	connection: Option<DropSubscription>,
 
 	options: ConnectableOptions<ConnectorCreator, Connector>,
 }
@@ -59,7 +59,7 @@ where
 		self.get_connector()
 	}
 
-	fn get_active_connection(&mut self) -> Option<Subscription> {
+	fn get_active_connection(&mut self) -> Option<DropSubscription> {
 		self.connection
 			.as_ref()
 			.filter(|connection| !connection.is_closed())
@@ -97,7 +97,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription {
+	) -> DropSubscription {
 		let connector = self.get_active_connector();
 		connector.subscribe(destination)
 	}
@@ -110,7 +110,7 @@ where
 	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
-	fn connect(&mut self) -> Subscription {
+	fn connect(&mut self) -> DropSubscription {
 		self.get_active_connection().unwrap_or_else(|| {
 			let mut connector = self.get_connector().clone();
 

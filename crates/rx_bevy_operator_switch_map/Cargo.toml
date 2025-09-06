@@ -88,7 +88,6 @@ reflect = [
     "rx_bevy_operator_composite?/reflect",
     "rx_bevy_operator_finalize/reflect",
     "rx_bevy_operator_map/reflect",
-    "rx_bevy_testing/reflect",
 ]
 
 [dependencies]

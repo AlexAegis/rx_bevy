@@ -35,7 +35,6 @@ reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
     "rx_bevy_common_bounds/reflect",
-    "rx_bevy_testing/reflect",
 ]
 
 [dependencies]

@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, Subscription, SubscriptionLike,
+	Observable, ObservableOutput, Observer, ObserverInput, DropSubscription, SubscriptionLike,
 	UpgradeableObserver,
 };
 use rx_bevy_ref_subject::Subject;
@@ -96,7 +96,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-	) -> Subscription {
+	) -> DropSubscription {
 		let mut subscriber = destination.upgrade();
 
 		subscriber.next(self.value.borrow().clone());

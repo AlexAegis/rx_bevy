@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ExpandableSubscriptionLike, InnerSubscription, Observer, ObserverInput, SubscriptionLike, Tick,
+	SubscriptionCollection, InnerDropSubscription, Observer, ObserverInput, SubscriptionLike,
+	Tick,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -13,7 +14,7 @@ pub struct DynFnObserver<In, Error, Context> {
 
 	on_unsubscribe: Option<Box<dyn FnOnce()>>,
 
-	inner_subscription: InnerSubscription,
+	inner_subscription: InnerDropSubscription,
 
 	_phantom_data: PhantomData<Context>,
 }
@@ -90,7 +91,7 @@ where
 	}
 }
 
-impl<In, InError, Context> ExpandableSubscriptionLike<Context>
+impl<In, InError, Context> SubscriptionCollection<Context>
 	for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
@@ -109,7 +110,7 @@ impl<In, InError> Default for DynFnObserver<In, InError> {
 			on_complete: None,
 			on_tick: None,
 			on_unsubscribe: None,
-			inner_subscription: InnerSubscription::new_empty(),
+			inner_subscription: InnerDropSubscription::new_empty(),
 			_phantom_data: PhantomData,
 		}
 	}

@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	InnerSubscription, ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike,
+	InnerDropSubscription, ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike,
 };
 
 #[cfg(feature = "channel_context")]
@@ -12,7 +12,7 @@ where
 {
 	pub destination: Destination,
 	pub closed: bool,
-	pub teardown: InnerSubscription,
+	pub teardown: InnerDropSubscription,
 }
 
 impl<Destination> ObserverSubscriber<Destination>
@@ -23,7 +23,7 @@ where
 		Self {
 			destination,
 			closed: false,
-			teardown: InnerSubscription::new_empty(),
+			teardown: InnerDropSubscription::new_empty(),
 		}
 	}
 }
@@ -160,7 +160,7 @@ where
 		Self {
 			destination,
 			closed: false,
-			teardown: InnerSubscription::new_empty(),
+			teardown: InnerDropSubscription::new_empty(),
 		}
 	}
 }

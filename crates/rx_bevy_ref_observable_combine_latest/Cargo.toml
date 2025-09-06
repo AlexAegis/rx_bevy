@@ -46,7 +46,6 @@ reflect = [
     "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
     "rx_bevy_emission_variants/reflect",
-    "rx_bevy_testing/reflect",
 ]
 
 [dependencies]

@@ -1,4 +1,5 @@
 mod arc_subscriber;
+mod drop_subscription;
 mod observable;
 mod observer;
 mod operator;
@@ -7,6 +8,7 @@ mod subject;
 mod subscriber;
 mod subscription;
 
+pub use drop_subscription::*;
 pub use observable::*;
 pub use observer::*;
 pub use operator::*;

@@ -1,4 +1,4 @@
-use crate::{ExpandableSubscriptionLike, Observer, SubscriptionLike};
+use crate::{Observer, SubscriptionLike};
 
 /// # [Subscriber]
 ///
@@ -20,18 +20,12 @@ use crate::{ExpandableSubscriptionLike, Observer, SubscriptionLike};
 /// a long chain of operators that do not interact with the error signal, the
 /// error will go straight to the destination observer with a single `error`
 /// call.
-pub trait Subscriber:
-	'static
-	+ Observer
-	+ SubscriptionLike<<Self as Observer>::Context>
-	+ ExpandableSubscriptionLike<<Self as Observer>::Context>
+pub trait Subscriber: 'static + Observer + SubscriptionLike
+// + ExpandableSubscriptionLike<<Self as Observer>::Context>
 {
 }
 
 impl<T> Subscriber for T where
-	T: 'static
-		+ Observer
-		+ SubscriptionLike<<Self as Observer>::Context>
-		+ ExpandableSubscriptionLike<<Self as Observer>::Context>
+	T: 'static + Observer + SubscriptionLike // + ExpandableSubscriptionLike<<Self as Observer>::Context>
 {
 }

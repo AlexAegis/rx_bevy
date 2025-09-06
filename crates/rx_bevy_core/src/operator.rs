@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::{ObservableOutput, Observer, ObserverInput, Subscriber};
+use crate::{ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber};
 
 /// # [Operator]
 ///
@@ -12,7 +12,7 @@ pub trait Operator: ObserverInput + ObservableOutput + Clone {
 			Destination = Destination,
 			In = Self::In,
 			InError = Self::InError,
-			Context = <Destination as Observer>::Context,
+			Context = Destination::Context,
 		>
 	where
 		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
@@ -20,6 +20,7 @@ pub trait Operator: ObserverInput + ObservableOutput + Clone {
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
+		context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
 	) -> Self::Subscriber<Destination>;
 }
 

@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	InnerSubscription, ObserverInput, Subscriber, SubscriptionLike, UpgradeableObserver,
+	InnerDropSubscription, ObserverInput, Subscriber, SubscriptionLike, UpgradeableObserver,
 };
 use slab::Slab;
 
@@ -10,7 +10,7 @@ use crate::MulticastSubscriber;
 pub struct MulticastDestination<In, InError> {
 	pub(crate) slab: Slab<Box<dyn Subscriber<In = In, InError = InError>>>,
 	pub(crate) closed: bool,
-	pub(crate) teardown: InnerSubscription,
+	pub(crate) teardown: InnerDropSubscription,
 }
 
 impl<In, InError> ObserverInput for MulticastDestination<In, InError>
@@ -59,7 +59,7 @@ impl<In, InError> Default for MulticastDestination<In, InError> {
 		Self {
 			slab: Slab::with_capacity(1),
 			closed: false,
-			teardown: InnerSubscription::new_empty(),
+			teardown: InnerDropSubscription::new_empty(),
 		}
 	}
 }
