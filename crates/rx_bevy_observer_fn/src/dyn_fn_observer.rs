@@ -1,13 +1,21 @@
-use rx_bevy_core::{InnerSubscription, Observer, ObserverInput, SubscriptionLike};
+use std::marker::PhantomData;
+
+use rx_bevy_core::{
+	ExpandableSubscriptionLike, InnerSubscription, Observer, ObserverInput, SubscriptionLike, Tick,
+};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
-pub struct DynFnObserver<In, Error> {
+pub struct DynFnObserver<In, Error, Context> {
 	on_next: Option<Box<dyn FnMut(In)>>,
 	on_error: Option<Box<dyn FnMut(Error)>>,
 	on_complete: Option<Box<dyn FnOnce()>>,
+	on_tick: Option<Box<dyn FnMut(Tick)>>,
+
 	on_unsubscribe: Option<Box<dyn FnOnce()>>,
 
 	inner_subscription: InnerSubscription,
+
+	_phantom_data: PhantomData<Context>,
 }
 
 impl<In, InError> ObserverInput for DynFnObserver<In, InError>
@@ -19,12 +27,14 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> Observer for DynFnObserver<In, InError>
+impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
 {
-	fn next(&mut self, next: In) {
+	type Context = Context;
+
+	fn next(&mut self, next: In, _context: &mut Self::Context) {
 		if !self.is_closed()
 			&& let Some(on_next) = &mut self.on_next
 		{
@@ -32,7 +42,7 @@ where
 		}
 	}
 
-	fn error(&mut self, error: InError) {
+	fn error(&mut self, error: InError, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Some(on_error) = &mut self.on_error {
 				(on_error)(error);
@@ -40,25 +50,30 @@ where
 				panic!("DynFnObserver without an error observer encountered an error!");
 			}
 
-			self.unsubscribe();
+			self.unsubscribe(context);
 		}
 	}
 
-	fn complete(&mut self) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Some(on_complete) = self.on_complete.take() {
 				(on_complete)();
 			}
 
-			self.unsubscribe();
+			self.unsubscribe(context);
 		}
 	}
 
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, _tick: rx_bevy_core::Tick) {}
+	fn tick(&mut self, tick: rx_bevy_core::Tick, _context: &mut Self::Context) {
+		if !self.is_closed()
+			&& let Some(on_tick) = &mut self.on_tick
+		{
+			(on_tick)(tick);
+		}
+	}
 }
 
-impl<In, InError> SubscriptionLike for DynFnObserver<In, InError>
+impl<In, InError, Context> SubscriptionLike<Context> for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -67,15 +82,22 @@ where
 		self.inner_subscription.is_closed()
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, context: &mut Context) {
 		if let Some(on_unsubscribe) = self.on_unsubscribe.take() {
 			(on_unsubscribe)();
 		}
-		self.inner_subscription.unsubscribe();
+		self.inner_subscription.unsubscribe(context);
 	}
+}
 
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.inner_subscription.add(subscription);
+impl<In, InError, Context> ExpandableSubscriptionLike<Context>
+	for DynFnObserver<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+{
+	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut Context) {
+		self.inner_subscription.add_finalizer(subscription, context);
 	}
 }
 
@@ -85,8 +107,10 @@ impl<In, InError> Default for DynFnObserver<In, InError> {
 			on_next: None,
 			on_error: None,
 			on_complete: None,
+			on_tick: None,
 			on_unsubscribe: None,
 			inner_subscription: InnerSubscription::new_empty(),
+			_phantom_data: PhantomData,
 		}
 	}
 }

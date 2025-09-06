@@ -40,7 +40,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+		context: &mut <Destination as Observer>::Context,
 	) -> Subscription {
 		let mut subscriber = destination.upgrade();
 		for item in self.iterator.clone().into_iter() {
@@ -49,7 +49,7 @@ where
 			}
 			subscriber.next(item, context);
 		}
-		subscriber.complete();
+		subscriber.complete(context);
 		Subscription::new(Teardown::Sub(Box::new(subscriber)))
 	}
 }

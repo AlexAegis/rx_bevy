@@ -7,7 +7,13 @@ use crate::{ObservableOutput, Observer, ObserverInput, Subscriber};
 /// An [Operator] defines its own inputs and output, and a [OperationSubscriber]
 /// that defines how those input signals will produce output signals.
 pub trait Operator: ObserverInput + ObservableOutput + Clone {
-	type Subscriber<Destination>: OperationSubscriber<Destination = Destination, In = Self::In, InError = Self::InError>
+	// TODO: Should be into destination context so the context can be downgraded along the operators
+	type Subscriber<Destination>: OperationSubscriber<
+			Destination = Destination,
+			In = Self::In,
+			InError = Self::InError,
+			Context = <Destination as Observer>::Context,
+		>
 	where
 		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 

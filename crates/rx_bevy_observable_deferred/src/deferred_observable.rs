@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observable, ObservableOutput, Subscription, UpgradeableObserver};
+use rx_bevy_core::{Observable, ObservableOutput, Observer, Subscription, UpgradeableObserver};
 
 pub fn deferred_observable<F, Source>(observable_creator: F) -> DeferredObservable<F, Source>
 where
@@ -44,10 +44,11 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		context: &mut <Destination as Observer>::Context,
 	) -> Subscription {
 		let subscriber = destination.upgrade();
 		let mut source = (self.observable_creator)();
-		source.subscribe(subscriber)
+		source.subscribe(subscriber, context)
 	}
 }
 

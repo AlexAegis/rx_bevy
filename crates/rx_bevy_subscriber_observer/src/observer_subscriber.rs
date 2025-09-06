@@ -124,8 +124,8 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.teardown.add(subscription);
+	fn add(&mut self, subscription: impl Into<Teardown>) {
+		self.teardown.add_finalizer(subscription);
 	}
 }
 

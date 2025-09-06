@@ -147,7 +147,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+	fn add(&mut self, subscription: impl Into<Teardown>) {
 		if let Some(connector) = &mut self.connector {
 			connector.add(subscription);
 		}

@@ -79,7 +79,7 @@ where
 		self.destination.unsubscribe();
 	}
 
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+	fn add(&mut self, subscription: impl Into<Teardown>) {
 		self.destination.add(subscription);
 	}
 }

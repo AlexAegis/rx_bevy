@@ -25,33 +25,23 @@ pub struct ChannelContext<'a, 'w, 's> {
 impl<'a, 'w, 's> ChannelContext<'a, 'w, 's> {}
 
 pub trait Observer: ObserverInput {
-	fn next(
-		&mut self,
-		next: Self::In,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	);
-	fn error(
-		&mut self,
-		error: Self::InError,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	);
-	fn complete(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext);
+	type Context;
+
+	fn next(&mut self, next: Self::In, context: &mut Self::Context);
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context);
+	fn complete(&mut self, context: &mut Self::Context);
 
 	/// Special fourth channel to process ticks issued by the schedulers.
 	/// Some operators may produce other, new signals during a tick.
 	/// None of the regular operators do anything on a tick but notify it's
 	/// downstream of the tick.
 	#[cfg(feature = "tick")]
-	fn tick(
-		&mut self,
-		tick: crate::Tick,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	);
+	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context);
 }
 
 /// TODO: CONSIDER turning, wherever this is needed this into simply a Into<Observer>
 pub trait UpgradeableObserver: Observer {
-	type Subscriber: Subscriber<In = Self::In, InError = Self::InError>;
+	type Subscriber: Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 	fn upgrade(self) -> Self::Subscriber;
 }
 
@@ -75,48 +65,26 @@ where
 	type InError = T::InError;
 }
 
-#[cfg(feature = "channel_context")]
 impl<T> Observer for RefCell<T>
 where
 	T: Observer,
 {
-	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+	type Context = T::Context;
+
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.borrow_mut().next(next, context);
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.borrow_mut().error(error, context);
 	}
 
-	fn complete(&mut self, context: &mut ChannelContext) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.borrow_mut().complete(context);
 	}
 
 	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: crate::Tick, context: &mut ChannelContext) {
+	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		self.borrow_mut().tick(tick, context);
-	}
-}
-
-#[cfg(not(feature = "channel_context"))]
-impl<T> Observer for RefCell<T>
-where
-	T: Observer,
-{
-	fn next(&mut self, next: Self::In) {
-		self.borrow_mut().next(next);
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		self.borrow_mut().error(error);
-	}
-
-	fn complete(&mut self) {
-		self.borrow_mut().complete();
-	}
-
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: crate::Tick) {
-		self.borrow_mut().tick(tick);
 	}
 }

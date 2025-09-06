@@ -3,10 +3,13 @@ use std::{fmt::Debug, marker::PhantomData};
 #[cfg(feature = "tick")]
 #[cfg(feature = "channel_context")]
 use rx_bevy_core::ChannelContext;
-use rx_bevy_core::{InnerSubscription, Observer, ObserverInput, SubscriptionLike};
+use rx_bevy_core::{
+	ExpandableSubscriptionLike, InnerSubscription, Observer, ObserverInput, SubscriptionLike,
+	Teardown,
+};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
-pub struct PrintObserver<In, InError = ()>
+pub struct PrintObserver<In, InError = (), Context = ()>
 where
 	In: Debug,
 	InError: Debug,
@@ -15,10 +18,10 @@ where
 
 	closed: bool,
 	teardown: InnerSubscription,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError> PrintObserver<In, InError>
+impl<In, InError, Context> PrintObserver<In, InError, Context>
 where
 	In: Debug,
 	InError: Debug,
@@ -39,7 +42,7 @@ where
 	}
 }
 
-impl<In, InError> Default for PrintObserver<In, InError>
+impl<In, InError, Context> Default for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
@@ -54,7 +57,7 @@ where
 	}
 }
 
-impl<In, InError> ObserverInput for PrintObserver<In, InError>
+impl<In, InError, Context> ObserverInput for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
@@ -63,46 +66,36 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> Observer for PrintObserver<In, InError>
+impl<In, InError, Context> Observer for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
 {
+	type Context = Context;
+
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
-	) {
+	fn next(&mut self, next: Self::In, _context: &mut Self::Context) {
 		println!("{}next: {:?}", self.get_prefix(), next);
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
-	) {
+	fn error(&mut self, error: Self::InError, _context: &mut Self::Context) {
 		println!("{}error: {:?}", self.get_prefix(), error);
 	}
 
 	#[inline]
-	fn complete(&mut self, #[cfg(feature = "channel_context")] _context: &mut ChannelContext) {
+	fn complete(&mut self, _context: &mut Self::Context) {
 		println!("{}completed", self.get_prefix());
 	}
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(
-		&mut self,
-		tick: rx_bevy_core::Tick,
-		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
-	) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick, _context: &mut Self::Context) {
 		println!("{}tick: {:?}", self.get_prefix(), tick);
 	}
 }
 
-impl<In, InError> SubscriptionLike for PrintObserver<In, InError>
+impl<In, InError, Context> SubscriptionLike<Context> for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
@@ -111,25 +104,24 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
+	fn unsubscribe(&mut self, context: &mut Context) {
 		if !self.closed {
 			self.closed = true;
-			#[cfg(feature = "channel_context")]
 			self.teardown.unsubscribe(context);
 			#[cfg(not(feature = "channel_context"))]
 			self.teardown.unsubscribe();
 			println!("{}unsubscribed", self.get_prefix());
 		}
 	}
+}
 
-	fn add(
-		&mut self,
-		subscription: Box<dyn SubscriptionLike>,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		#[cfg(feature = "channel_context")]
+impl<In, InError, Context> ExpandableSubscriptionLike<Context>
+	for PrintObserver<In, InError, Context>
+where
+	In: 'static + Debug,
+	InError: 'static + Debug,
+{
+	fn add(&mut self, subscription: impl Into<Teardown<Context>>, context: &mut Context) {
 		self.teardown.add(subscription, context);
-		#[cfg(not(feature = "channel_context"))]
-		self.teardown.add(subscription);
 	}
 }

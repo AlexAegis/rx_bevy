@@ -2,59 +2,45 @@ use std::sync::{Arc, RwLock};
 
 use smallvec::SmallVec;
 
-#[cfg(feature = "channel_context")]
-use crate::ChannelContext;
-
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational, and safe to drop
 /// but it doesn't actually execute any teardown logic beyond its own, it is
 /// primarily used by operators.
-pub trait SubscriptionLike {
-	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext);
+pub trait SubscriptionLike<Context> {
+	fn unsubscribe(&mut self, context: &mut Context);
 
 	fn is_closed(&self) -> bool;
-
-	fn add(
-		&mut self,
-		subscription: Box<dyn SubscriptionLike>,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	);
 }
 
-pub enum Teardown {
+pub trait ExpandableSubscriptionLike<Context>: SubscriptionLike<Context> {
+	fn add(&mut self, subscription: impl Into<Teardown<Context>>, context: &mut Context);
+}
+
+pub enum Teardown<Context> {
 	Fn(Box<dyn FnOnce()>),
-	Sub(Box<dyn SubscriptionLike>),
+	Sub(Box<dyn SubscriptionLike<Context>>),
 }
 
-impl Teardown {
+impl<Context> Teardown<Context> {
 	pub fn new<F: 'static + FnOnce()>(f: F) -> Self {
 		Self::Fn(Box::new(f))
 	}
 
-	pub fn new_from_subscription(f: impl SubscriptionLike + 'static) -> Self {
+	pub fn new_from_subscription(f: impl SubscriptionLike<Context> + 'static) -> Self {
 		Self::Sub(Box::new(f))
 	}
 
-	pub(crate) fn call(self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
+	pub(crate) fn call(self, context: &mut Context) {
 		match self {
 			Self::Fn(fun) => fun(),
 			Self::Sub(mut sub) => {
-				#[cfg(feature = "channel_context")]
 				sub.unsubscribe(context);
-				#[cfg(not(feature = "channel_context"))]
-				sub.unsubscribe();
 			}
 		}
 	}
 }
 
-impl From<Box<dyn SubscriptionLike>> for Teardown {
-	fn from(subscription: Box<dyn SubscriptionLike>) -> Self {
-		Self::Sub(subscription)
-	}
-}
-
-impl<F> From<F> for Teardown
+impl<F, Context> From<F> for Teardown<Context>
 where
 	F: 'static + FnOnce(),
 {
@@ -65,7 +51,7 @@ where
 
 pub struct InnerSubscription {
 	is_closed: bool,
-	finalizers: SmallVec<[Teardown; 1]>,
+	finalizers: SmallVec<[Teardown<()>; 1]>,
 }
 
 impl Default for InnerSubscription {
@@ -83,7 +69,7 @@ pub struct Subscription {
 }
 
 impl Subscription {
-	pub fn new(finalizer: impl Into<Teardown>) -> Self {
+	pub fn new(finalizer: impl Into<Teardown<()>>) -> Self {
 		Self {
 			inner: Arc::new(RwLock::new(InnerSubscription::new(finalizer))),
 		}
@@ -95,17 +81,10 @@ impl Subscription {
 		}
 	}
 
-	pub fn add(
-		&mut self,
-		finalizer: impl Into<Teardown>,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
+	pub fn add(&mut self, finalizer: impl Into<Teardown<()>>, context: &mut ()) {
 		if self.is_closed() {
 			// If the subscription is already closed, the finalizer is called immediately
-			#[cfg(feature = "channel_context")]
 			finalizer.into().call(context);
-			#[cfg(not(feature = "channel_context"))]
-			finalizer.into().call();
 		} else {
 			self.inner
 				.write()
@@ -116,37 +95,28 @@ impl Subscription {
 	}
 }
 
-impl SubscriptionLike for Subscription {
+impl SubscriptionLike<()> for Subscription {
 	fn is_closed(&self) -> bool {
 		self.inner.read().expect("to not be locked").is_closed
 	}
 
-	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
+	fn unsubscribe(&mut self, context: &mut ()) {
 		let mut lock = self.inner.write().expect("to not be locked");
 
-		#[cfg(feature = "channel_context")]
 		lock.unsubscribe(context);
-
-		#[cfg(not(feature = "channel_context"))]
-		lock.unsubscribe();
 	}
+}
 
-	fn add(
-		&mut self,
-		subscription: Box<dyn SubscriptionLike>,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
+impl ExpandableSubscriptionLike<()> for Subscription {
+	fn add(&mut self, subscription: impl Into<Teardown<()>>, context: &mut ()) {
 		let mut lock = self.inner.write().expect("to not be locked");
 
-		#[cfg(feature = "channel_context")]
-		lock.add(subscription, context);
-		#[cfg(not(feature = "channel_context"))]
-		lock.add(subscription);
+		lock.add_finalizer(subscription, context);
 	}
 }
 
 impl InnerSubscription {
-	pub fn new(finalizer: impl Into<Teardown>) -> Self {
+	pub fn new(finalizer: impl Into<Teardown<()>>) -> Self {
 		let teardown = finalizer.into();
 		let is_closed = matches!(&teardown, Teardown::Sub(sub) if sub.is_closed());
 
@@ -167,11 +137,7 @@ impl InnerSubscription {
 		}
 	}
 
-	pub fn add(
-		&mut self,
-		finalizer: impl Into<Teardown>,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
+	pub fn add_finalizer(&mut self, finalizer: impl Into<Teardown<()>>, context: &mut ()) {
 		if self.is_closed() {
 			// If the subscription is already closed, the finalizer is called immediately
 			finalizer.into().call(context);
@@ -181,59 +147,45 @@ impl InnerSubscription {
 	}
 }
 
-impl SubscriptionLike for InnerSubscription {
+impl SubscriptionLike<()> for InnerSubscription {
 	fn is_closed(&self) -> bool {
 		self.is_closed
 	}
 
-	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
+	fn unsubscribe(&mut self, context: &mut ()) {
 		if !self.is_closed {
 			self.is_closed = true;
 
 			for teardown in self.finalizers.drain(..) {
-				#[cfg(feature = "channel_context")]
 				teardown.call(context);
-				#[cfg(not(feature = "channel_context"))]
-				teardown.call();
 			}
 		}
 	}
+}
 
-	fn add(
-		&mut self,
-		subscription: Box<dyn SubscriptionLike>,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		self.add(subscription, context);
+impl ExpandableSubscriptionLike<()> for InnerSubscription {
+	fn add(&mut self, subscription: impl Into<Teardown<()>>, context: &mut ()) {
+		self.add_finalizer(subscription, context);
 	}
 }
 
 impl Drop for InnerSubscription {
 	fn drop(&mut self) {
-		#[cfg(not(feature = "channel_context"))]
-		self.unsubscribe();
-
-		#[cfg(feature = "channel_context")]
-		if !self.is_closed() {
-			panic!(
-				"Dropped {} without unsubscribing first while feature 'channel_context' is enabled!",
-				short_type_name::short_type_name::<Self>()
-			)
-		}
+		self.unsubscribe(&mut ());
 	}
 }
 
-impl SubscriptionLike for () {
+impl<Context> SubscriptionLike<Context> for () {
 	fn is_closed(&self) -> bool {
 		true
 	}
 
-	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] _context: &mut ChannelContext) {}
+	fn unsubscribe(&mut self, _context: &mut Context) {}
+}
 
-	fn add(
-		&mut self,
-		_subscription: Box<dyn SubscriptionLike>,
-		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
-	) {
+impl<Context> ExpandableSubscriptionLike<Context> for () {
+	fn add(&mut self, subscription: impl Into<Teardown<Context>>, context: &mut Context) {
+		let teardown: Teardown<Context> = subscription.into();
+		teardown.call(context);
 	}
 }

@@ -37,10 +37,11 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		context: &mut <Destination as Observer>::Context,
 	) -> Subscription {
 		let mut subscriber = destination.upgrade();
-		subscriber.next(self.value.clone());
-		subscriber.complete();
+		subscriber.next(self.value.clone(), context);
+		subscriber.complete(context);
 		Subscription::new(Teardown::new_from_subscription(subscriber))
 	}
 }

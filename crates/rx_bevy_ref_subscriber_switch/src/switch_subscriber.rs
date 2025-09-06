@@ -50,10 +50,10 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	fn next(&mut self, mut next: Self::In) {
+	fn next(&mut self, mut next: Self::In, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			if let Some(mut inner_subscription) = self.inner_subscription.take() {
-				inner_subscription.unsubscribe();
+				inner_subscription.unsubscribe(context);
 			}
 
 			let subscription = next.subscribe(DetachedSubscriber::new(self.destination.clone()));
@@ -61,26 +61,25 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError) {
+	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			self.destination.error(error);
-			self.unsubscribe();
+			self.unsubscribe(context);
 		}
 	}
 
-	fn complete(&mut self) {
+	fn complete(&mut self, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			if self.inner_subscription.is_none() {
-				self.destination.complete();
+				self.destination.complete(context);
 			}
 			self.closed = true;
 		}
 	}
 
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
 		if !self.is_closed() {
-			self.destination.tick(tick);
+			self.destination.tick(tick, context);
 		}
 	}
 }
@@ -99,17 +98,17 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, context: &mut ChannelContext) {
 		self.closed = true;
 		if let Some(mut inner_subscription) = self.inner_subscription.take() {
-			inner_subscription.unsubscribe();
+			inner_subscription.unsubscribe(context);
 		}
-		self.destination.unsubscribe();
+		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.destination.add(subscription);
+	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut ChannelContext) {
+		self.destination.add(subscription, context);
 	}
 }
 
@@ -121,7 +120,7 @@ where
 {
 	#[inline]
 	fn drop(&mut self) {
-		self.unsubscribe();
+		// self.unsubscribe();
 	}
 }
 

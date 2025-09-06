@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 #[cfg(feature = "channel_context")]
 #[cfg(feature = "tick")]
 use rx_bevy_core::ChannelContext;
-use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{ExpandableSubscriptionLike, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
 
 #[derive(Debug)]
 pub struct CompositeSubscriber<Inner, Destination>
@@ -28,7 +28,6 @@ where
 	}
 }
 
-#[cfg(feature = "channel_context")]
 impl<Inner, Destination> Observer for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
@@ -56,35 +55,8 @@ where
 	}
 }
 
-#[cfg(not(feature = "channel_context"))]
-impl<Inner, Destination> Observer for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.subscriber.next(next);
-	}
-
-	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.subscriber.error(error);
-	}
-
-	#[inline]
-	fn complete(&mut self) {
-		self.subscriber.complete();
-	}
-
-	#[cfg(feature = "tick")]
-	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.subscriber.tick(tick);
-	}
-}
-
-impl<Inner, Destination> SubscriptionLike for CompositeSubscriber<Inner, Destination>
+impl<Inner, Destination> SubscriptionLike<<Destination as Observer>::Context>
+	for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
 	Destination: Observer,
@@ -95,13 +67,23 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.subscriber.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
+		self.subscriber.unsubscribe(context);
 	}
 
+}
+
+
+impl<Inner, Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
+	for CompositeSubscriber<Inner, Destination>
+where
+	Inner: Subscriber,
+	Destination: Observer,
+{
+
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.subscriber.add(subscription);
+	fn add(&mut self, subscription: impl Into<Teardown<<Destination as Observer>::Context>, context: &mut <Destination as Observer>::Context>) {
+		self.subscriber.add(subscription, context);
 	}
 }
 

@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	ExpandableSubscriptionLike, Observable, ObservableOutput, Observer, ObserverInput, Operation,
+	Subscriber, SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -49,45 +50,33 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
+	type Context = <Destination as Observer>::Context;
+
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		#[cfg(feature = "channel_context")]
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.destination.next(EitherOut2::O1(next), context);
-		#[cfg(not(feature = "channel_context"))]
-		self.destination.next(EitherOut2::O1(next));
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		self.destination.error(EitherOutError2::O1Error(error));
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination
+			.error(EitherOutError2::O1Error(error), context);
 	}
 
 	#[inline]
-	fn complete(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
-		self.destination.next(EitherOut2::CompleteO1);
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.next(EitherOut2::CompleteO1, context);
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(
-		&mut self,
-		tick: rx_bevy_core::Tick,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
-impl<O1, O2, Destination> SubscriptionLike for IntoVariant1of2Subscriber<O1, O2, Destination>
+impl<O1, O2, Destination> SubscriptionLike<<Destination as Observer>::Context>
+	for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
@@ -105,13 +94,31 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<O1, O2, Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
+	for IntoVariant1of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<<Destination as Observer>::Context>>,
+		context: &mut <Destination as Observer>::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 
@@ -212,30 +219,33 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
+	type Context = <Destination as Observer>::Context;
+
 	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(EitherOut2::O2(next));
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		self.destination.next(EitherOut2::O2(next), context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(EitherOutError2::O2Error(error));
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination
+			.error(EitherOutError2::O2Error(error), context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.next(EitherOut2::CompleteO2);
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.next(EitherOut2::CompleteO2, context);
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
-impl<O1, O2, Destination> SubscriptionLike for IntoVariant2of2Subscriber<O1, O2, Destination>
+impl<O1, O2, Destination> SubscriptionLike<<Destination as Observer>::Context>
+	for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
@@ -253,13 +263,31 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<O1, O2, Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
+	for IntoVariant2of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<<Destination as Observer>::Context>>,
+		context: &mut <Destination as Observer>::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

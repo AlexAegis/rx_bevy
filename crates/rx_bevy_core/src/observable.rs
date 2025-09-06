@@ -1,6 +1,4 @@
-#[cfg(feature = "channel_context")]
-use crate::ChannelContext;
-use crate::{Subscription, UpgradeableObserver};
+use crate::{Observer, Subscription, UpgradeableObserver};
 
 pub trait ObservableOutput {
 	type Out: 'static;
@@ -14,7 +12,7 @@ pub trait Observable: ObservableOutput {
 	>(
 		&mut self,
 		destination: Destination,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+		context: &mut <Destination as Observer>::Context,
 	) -> Subscription;
 }
 

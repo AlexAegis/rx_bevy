@@ -3,7 +3,9 @@ use std::{
 	sync::{Arc, RwLock},
 };
 
-use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{
+	ChannelContext, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+};
 
 /// Internal to [RcSubscriber]
 #[doc(hidden)]
@@ -38,17 +40,17 @@ where
 		}
 	}
 
-	pub fn unsubscribe_if_can(&mut self) {
+	pub fn unsubscribe_if_can(&mut self, context: &mut ChannelContext) {
 		if self.unsubscribe_count == self.ref_count && !self.closed {
 			self.closed = true;
-			self.destination.unsubscribe()
+			self.destination.unsubscribe(context);
 		}
 	}
 
-	pub fn complete_if_can(&mut self) {
+	pub fn complete_if_can(&mut self, context: &mut ChannelContext) {
 		if self.completion_count == self.ref_count && !self.closed {
 			self.closed = true;
-			self.destination.complete()
+			self.destination.complete(context);
 		}
 	}
 }
@@ -85,30 +87,29 @@ impl<Destination> Observer for RcDestination<Destination>
 where
 	Destination: Subscriber,
 {
-	fn next(&mut self, next: Self::In) {
+	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
 		if !self.is_closed() {
-			self.destination.next(next);
+			self.destination.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError) {
+	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
 		if !self.is_closed() {
-			self.destination.error(error);
-			self.unsubscribe();
+			self.destination.error(error, context);
+			self.unsubscribe(context);
 		}
 	}
 
-	fn complete(&mut self) {
+	fn complete(&mut self, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			self.completion_count += 1;
-			self.complete_if_can();
+			self.complete_if_can(context);
 		}
 	}
 
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
 		if !self.is_closed() {
-			self.destination.tick(tick);
+			self.destination.tick(tick, context);
 		}
 	}
 }
@@ -121,15 +122,15 @@ where
 		self.closed || self.destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			self.unsubscribe_count += 1;
-			self.unsubscribe_if_can();
+			self.unsubscribe_if_can(context);
 		}
 	}
 
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.destination.add(subscription);
+	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut ChannelContext) {
+		self.destination.add(subscription, context);
 	}
 }
 
@@ -144,7 +145,10 @@ where
 		debug_assert_eq!(self.unsubscribe_count, 0);
 		debug_assert_eq!(self.ref_count, 0);
 
-		self.destination.unsubscribe();
+		if !self.closed {
+			panic!("Dropped without unsubscribing!");
+		}
+		// self.destination.unsubscribe();
 	}
 }
 
@@ -242,35 +246,33 @@ impl<Destination> Observer for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	fn next(&mut self, next: Self::In) {
+	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.next(next);
+			lock.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError) {
+	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.error(error);
+			lock.error(error, context);
 		}
 	}
 
-	fn complete(&mut self) {
+	fn complete(&mut self, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			self.completed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.complete();
+			lock.complete(context);
 		}
 	}
 
-	#[cfg(feature = "tick")]
-	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			self.completed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.tick(tick);
+			lock.tick(tick, context);
 		}
 	}
 }
@@ -288,18 +290,18 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			self.unsubscribed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
 
-			lock.unsubscribe();
+			lock.unsubscribe(context);
 		}
 	}
 
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut ChannelContext) {
 		let mut lock = self.destination.write().expect("lock is poisoned!");
-		lock.add(subscription);
+		lock.add(subscription, context);
 	}
 }
 
@@ -320,8 +322,8 @@ where
 			lock.unsubscribe_count -= 1;
 		}
 
-		lock.complete_if_can();
-		lock.unsubscribe_if_can();
+		//  lock.complete_if_can();
+		//  lock.unsubscribe_if_can();
 	}
 }
 
@@ -353,6 +355,7 @@ pub struct WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
+	// TODO: Since in bevy this won't be a pointer just an Entity, maybe we'd need a enum or trait here
 	destination: Arc<RwLock<RcDestination<Destination>>>,
 	closed: bool,
 }
@@ -406,39 +409,38 @@ impl<Destination> Observer for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	fn next(&mut self, next: Self::In) {
+	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
 		if !self.is_closed()
 			&& let Ok(mut lock) = self.destination.try_write()
 		{
-			lock.next(next);
+			lock.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError) {
+	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.try_write() {
-				lock.error(error);
+				lock.error(error, context);
 			}
-			self.unsubscribe();
+			self.unsubscribe(context);
 		}
 	}
 
-	fn complete(&mut self) {
+	fn complete(&mut self, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.try_write() {
-				lock.complete();
+				lock.complete(context);
 			}
-			self.unsubscribe();
+			self.unsubscribe(context);
 		}
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
 		if !self.is_closed()
 			&& let Ok(mut lock) = self.destination.try_write()
 		{
-			lock.tick(tick);
+			lock.tick(tick, context);
 		}
 	}
 }
@@ -451,18 +453,18 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, context: &mut ChannelContext) {
 		if !self.is_closed() {
 			self.closed = true;
 			if let Ok(mut lock) = self.destination.try_write() {
-				lock.unsubscribe();
+				lock.unsubscribe(context);
 			}
 		}
 	}
 
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut ChannelContext) {
 		if let Ok(mut lock) = self.destination.try_write() {
-			lock.add(subscription);
+			lock.add(subscription, context);
 		}
 	}
 }
@@ -472,10 +474,10 @@ where
 	Destination: Subscriber,
 {
 	fn drop(&mut self) {
-		if let Ok(mut lock) = self.destination.try_write() {
-			lock.complete_if_can();
-			lock.unsubscribe_if_can();
-		}
+		//if let Ok(mut lock) = self.destination.try_write() {
+		//	lock.complete_if_can();
+		//	lock.unsubscribe_if_can();
+		//}
 	}
 }
 

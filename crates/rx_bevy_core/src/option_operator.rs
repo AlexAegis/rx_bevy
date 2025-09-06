@@ -1,10 +1,9 @@
-use crate::{
-	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
-	Subscriber, SubscriptionLike,
-};
+use short_type_name::short_type_name;
 
-#[cfg(feature = "channel_context")]
-use crate::ChannelContext;
+use crate::{
+	ExpandableSubscriptionLike, ObservableOutput, Observer, ObserverInput, Operation,
+	OperationSubscriber, Operator, Subscriber, SubscriptionLike,
+};
 
 /// [Operator]s with the same outputs as its inputs can be made optional.
 /// If upon subscription the operator was [Some] the subscription will be
@@ -15,8 +14,10 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		OptionOperatorSubscriber<Op::Subscriber<D>, D>;
+	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>>
+		= OptionOperatorSubscriber<Op::Subscriber<Destination>, Destination>
+	where
+		Op::Subscriber<Destination>: Observer;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
@@ -51,33 +52,34 @@ where
 	type OutError = InError;
 }
 
-pub enum OptionOperatorSubscriber<OpSub, Destination>
+pub enum OptionOperatorSubscriber<Sub, Destination>
 where
-	OpSub: OperationSubscriber<Destination = Destination>,
-	Destination: Subscriber<In = OpSub::In, InError = OpSub::InError>,
+	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
-	Some(OpSub),
+	Some(Sub),
 	None(Destination),
 }
 
 impl<Sub, Destination> ObserverInput for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination>,
+	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	type In = Sub::In;
 	type InError = Sub::InError;
 }
 
-#[cfg(feature = "channel_context")]
 impl<Sub, Destination> Observer for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination>,
+	Sub: OperationSubscriber<Context = <Destination as Observer>::Context, Destination = Destination>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
 {
-	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+	type Context = <Destination as Observer>::Context;
+
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.next(next, context)
@@ -88,7 +90,7 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.error(error, context)
@@ -99,7 +101,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut ChannelContext) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.complete(context)
@@ -110,8 +112,7 @@ where
 		}
 	}
 
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: crate::Tick, context: &mut ChannelContext) {
+	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.tick(tick, context)
@@ -123,51 +124,9 @@ where
 	}
 }
 
-#[cfg(not(feature = "channel_context"))]
-impl<Sub, Destination> Observer for OptionOperatorSubscriber<Sub, Destination>
-where
-	Sub: OperationSubscriber<Destination = Destination>,
-	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
-	Sub::In: 'static,
-	Sub::InError: 'static,
-{
-	fn next(&mut self, next: Self::In) {
-		match self {
-			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.next(next),
-			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.next(next),
-		}
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		match self {
-			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.error(error),
-			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.error(error),
-		}
-	}
-
-	fn complete(&mut self) {
-		match self {
-			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.complete(),
-			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.complete(),
-		}
-	}
-
-	#[cfg(feature = "tick")]
-	fn tick(
-		&mut self,
-		tick: crate::Tick,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		match self {
-			OptionOperatorSubscriber::Some(internal_subscriber) => internal_subscriber.tick(tick),
-			OptionOperatorSubscriber::None(fallback_subscriber) => fallback_subscriber.tick(tick),
-		}
-	}
-}
-
 impl<Sub, Destination> Operation for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination>,
+	Sub: OperationSubscriber<Context = <Destination as Observer>::Context, Destination = Destination>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	type Destination = Destination;
@@ -199,9 +158,10 @@ where
 	}
 }
 
-impl<Sub, Destination> SubscriptionLike for OptionOperatorSubscriber<Sub, Destination>
+impl<Sub, Destination> SubscriptionLike<<Destination as Observer>::Context>
+	for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination>,
+	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
@@ -213,40 +173,37 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
+	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
-				#[cfg(feature = "channel_context")]
 				internal_subscriber.unsubscribe(context);
-				#[cfg(not(feature = "channel_context"))]
-				internal_subscriber.unsubscribe();
 			}
 			OptionOperatorSubscriber::None(fallback_subscriber) => {
-				#[cfg(feature = "channel_context")]
 				fallback_subscriber.unsubscribe(context);
-				#[cfg(not(feature = "channel_context"))]
-				fallback_subscriber.unsubscribe();
 			}
 		}
 	}
+}
 
+impl<Sub, Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
+	for OptionOperatorSubscriber<Sub, Destination>
+where
+	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
+	Sub::In: 'static,
+	Sub::InError: 'static,
+{
 	fn add(
 		&mut self,
-		subscription: Box<dyn SubscriptionLike>,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+		subscription: impl Into<crate::Teardown<<Sub as Observer>::Context>>,
+		context: &mut <Sub as Observer>::Context,
 	) {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
-				#[cfg(feature = "channel_context")]
 				internal_subscriber.add(subscription, context);
-				#[cfg(not(feature = "channel_context"))]
-				internal_subscriber.add(subscription);
 			}
 			OptionOperatorSubscriber::None(fallback_subscriber) => {
-				#[cfg(feature = "channel_context")]
 				fallback_subscriber.add(subscription, context);
-				#[cfg(not(feature = "channel_context"))]
-				fallback_subscriber.add(subscription);
 			}
 		}
 	}
@@ -254,20 +211,16 @@ where
 
 impl<Sub, Destination> Drop for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<Destination = Destination>,
+	Sub: OperationSubscriber<Destination = Destination, Context = <Destination as Observer>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
 {
 	fn drop(&mut self) {
-		#[cfg(not(feature = "channel_context"))]
-		self.unsubscribe();
-
-		#[cfg(feature = "channel_context")]
 		if !self.is_closed() {
 			panic!(
-				"Dropped {} without unsubscribing first while feature 'channel_context' is enabled!",
-				short_type_name::short_type_name::<Self>()
+				"Dropped {} without unsubscribing!",
+				short_type_name::<Self>()
 			)
 		}
 	}

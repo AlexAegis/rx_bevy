@@ -1,6 +1,8 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike};
+use crate::{
+	ExpandableSubscriptionLike, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
+};
 
 impl<Destination> ObserverInput for Arc<RwLock<Destination>>
 where
@@ -10,37 +12,34 @@ where
 	type InError = Destination::InError;
 }
 
-#[cfg(feature = "channel_context")]
-use crate::ChannelContext;
-
-#[cfg(feature = "channel_context")]
 impl<Destination> Observer for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
 {
-	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+	type Context = <Destination as Observer>::Context;
+
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.error(error, context);
 		}
 	}
 
-	fn complete(&mut self, context: &mut ChannelContext) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.complete(context);
 		}
 	}
 
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: crate::Tick, context: &mut ChannelContext) {
+	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.tick(tick, context);
@@ -48,42 +47,7 @@ where
 	}
 }
 
-#[cfg(not(feature = "channel_context"))]
-impl<Destination> Observer for Arc<RwLock<Destination>>
-where
-	Destination: Subscriber,
-{
-	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() {
-			let mut lock = self.write().expect("lock is poisoned!");
-			lock.next(next);
-		}
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			let mut lock = self.write().expect("lock is poisoned!");
-			lock.error(error);
-		}
-	}
-
-	fn complete(&mut self) {
-		if !self.is_closed() {
-			let mut lock = self.write().expect("lock is poisoned!");
-			lock.complete();
-		}
-	}
-
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: crate::Tick) {
-		if !self.is_closed() {
-			let mut lock = self.write().expect("lock is poisoned!");
-			lock.tick(tick);
-		}
-	}
-}
-
-impl<Destination> SubscriptionLike for Arc<RwLock<Destination>>
+impl<Destination> SubscriptionLike<<Destination as Observer>::Context> for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
 {
@@ -92,23 +56,23 @@ where
 		lock.is_closed()
 	}
 
-	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
+	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
 		let mut lock = self.write().expect("lock is poisoned!");
-		#[cfg(feature = "channel_context")]
 		lock.unsubscribe(context);
-		#[cfg(not(feature = "channel_context"))]
-		lock.unsubscribe();
 	}
+}
 
+impl<Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
+	for Arc<RwLock<Destination>>
+where
+	Destination: Subscriber,
+{
 	fn add(
 		&mut self,
-		subscription: Box<dyn SubscriptionLike>,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
+		subscription: impl Into<Teardown<<Destination as Observer>::Context>>,
+		context: &mut <Destination as Observer>::Context,
 	) {
 		let mut lock = self.write().expect("lock is poisoned!");
-		#[cfg(feature = "channel_context")]
 		lock.add(subscription, context);
-		#[cfg(not(feature = "channel_context"))]
-		lock.add(subscription);
 	}
 }

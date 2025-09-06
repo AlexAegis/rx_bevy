@@ -1,17 +1,19 @@
-use std::sync::{Arc, RwLock};
+use rx_bevy_core::{
+	ChannelContext, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+};
 
-use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
-
+/// It must hold the invariant that the cloned destination points to the
+/// exact same thing. Like an `Arc` or an `Entity`
 pub struct SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
-	destination: Arc<RwLock<Destination>>,
+	destination: Destination,
 }
 
 impl<Destination> From<Destination> for SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
 	fn from(destination: Destination) -> Self {
 		Self::new(destination)
@@ -20,18 +22,10 @@ where
 
 impl<Destination> SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
 	pub fn new(destination: Destination) -> Self {
-		Self {
-			destination: Arc::new(RwLock::new(destination)),
-		}
-	}
-
-	pub fn new_from_shared(destination: impl Into<Arc<RwLock<Destination>>>) -> Self {
-		Self {
-			destination: destination.into(),
-		}
+		Self { destination }
 	}
 
 	/// Let's you check the shared observer for the duration of the callback
@@ -39,7 +33,7 @@ where
 	where
 		F: Fn(&Destination),
 	{
-		reader(&self.destination.read().expect("poisoned"))
+		reader(&self.destination)
 	}
 
 	/// Let's you check the shared observer for the duration of the callback
@@ -47,13 +41,13 @@ where
 	where
 		F: FnMut(&mut Destination),
 	{
-		reader(&mut self.destination.write().expect("poisoned"))
+		reader(&mut self.destination)
 	}
 }
 
 impl<Destination> Clone for SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -64,7 +58,7 @@ where
 
 impl<Destination> ObserverInput for SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -72,33 +66,33 @@ where
 
 impl<Destination> Observer for SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(next);
+	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut ChannelContext) {
+		self.destination.complete(context);
 	}
 
 	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
+		self.destination.tick(tick, context);
 	}
 }
 
 impl<Destination> SubscriptionLike for SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -106,19 +100,19 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut ChannelContext) {
+		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.destination.add(subscription);
+	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut ChannelContext) {
+		self.destination.add(subscription, context);
 	}
 }
 
 impl<Destination> Drop for SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
 	/// Should not unsubscribe on drop as it's shared
 	fn drop(&mut self) {}
@@ -126,9 +120,9 @@ where
 
 impl<Destination> Operation for SharedSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: Subscriber + Clone,
 {
-	type Destination = Arc<RwLock<Destination>>;
+	type Destination = Destination;
 
 	#[inline]
 	fn read_destination<F>(&self, reader: F)

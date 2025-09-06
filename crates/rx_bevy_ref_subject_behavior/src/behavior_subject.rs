@@ -120,7 +120,7 @@ where
 	}
 
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
+	fn add(&mut self, subscription: impl Into<Teardown>) {
 		self.subject.add(subscription);
 	}
 }

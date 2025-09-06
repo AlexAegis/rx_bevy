@@ -1,9 +1,8 @@
 use std::marker::PhantomData;
 
-#[cfg(feature = "channel_context")]
-use rx_bevy_core::ChannelContext;
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike, Tick,
+	ExpandableSubscriptionLike, ObservableOutput, Observer, ObserverInput, Operation, Subscriber,
+	SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -41,56 +40,37 @@ where
 	Destination: Observer<In = AdsrSignal, InError = InError>,
 	InError: 'static,
 {
+	type Context = <Destination as Observer>::Context;
+
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		#[cfg(feature = "channel_context")] _context: &mut ChannelContext,
-	) {
+	fn next(&mut self, next: Self::In, _context: &mut Self::Context) {
 		self.is_getting_activated = next;
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
-		#[cfg(feature = "channel_context")]
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination.error(error, context);
-		#[cfg(not(feature = "channel_context"))]
-		self.destination.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
-		#[cfg(feature = "channel_context")]
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
-		#[cfg(not(feature = "channel_context"))]
-		self.destination.complete();
 	}
 
 	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		#[cfg(feature = "channel_context")] context: &mut ChannelContext,
-	) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		let next =
 			self.state
 				.calculate_output(self.options.envelope, self.is_getting_activated, tick);
 
 		if !matches!(next.adsr_envelope_phase, AdsrEnvelopePhase::None) {
-			#[cfg(feature = "channel_context")]
 			self.destination.next(next, context);
-
-			#[cfg(not(feature = "channel_context"))]
-			self.destination.next(next);
 		}
 	}
 }
 
-impl<InError, Destination> SubscriptionLike for AdsrSubscriber<InError, Destination>
+impl<InError, Destination> SubscriptionLike<<Destination as Observer>::Context>
+	for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
@@ -100,13 +80,23 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, #[cfg(feature = "channel_context")] context: &mut ChannelContext) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<InError, Destination> ExpandableSubscriptionLike<<Destination as Observer>::Context>
+	for AdsrSubscriber<InError, Destination>
+where
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+{
 	#[inline]
-	fn add(&mut self, subscription: Box<dyn SubscriptionLike>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<<Destination as Observer>::Context>>,
+		context: &mut <Destination as Observer>::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 
