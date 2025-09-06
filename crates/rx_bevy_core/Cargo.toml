@@ -16,14 +16,20 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = []
-dev = ["rx_bevy/dev", "rx_bevy_common_bounds/dev", "rx_bevy_testing/dev"]
+default = ["dev_panic_on_dropped_active_subscriptions"]
+dev = [
+    "dev_panic_on_dropped_active_subscriptions",
+    "rx_bevy/dev",
+    "rx_bevy_common_bounds/dev",
+    "rx_bevy_testing/dev",
+]
 example = ["dev", "rx_bevy/example", "rx_bevy_testing/example"]
 bevy = [
     "tick",
     "channel_context",
     "dep:bevy_ecs",
     "dep:bevy_time",
+    "dep:bevy_log",
     "rx_bevy/bevy",
     "rx_bevy_testing/bevy",
 ]
@@ -36,6 +42,14 @@ reflect = [
     "rx_bevy/reflect",
     "rx_bevy_common_bounds/reflect",
 ]
+# Keep this turned on for development, turn it off for production!
+# Depending on the context a subscription needs to perform an unsubscribe,
+# not all subscriptions can be automatically unsubscribed when they are dropped
+# The subscriptions when dropped, will check if they had been unsubscribed, and
+# during development, this should panic so you notice it. For production, you
+# can decide if you want to keep your program running or crash for mishandled
+# subscriptions.
+dev_panic_on_dropped_active_subscriptions = []
 
 [dependencies]
 smallvec = { workspace = true }
@@ -43,6 +57,7 @@ rx_bevy_common_bounds = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 bevy_ecs = { workspace = true, optional = true }
 bevy_time = { workspace = true, optional = true }
+bevy_log = { workspace = true, optional = true }
 short_type_name = { workspace = true }
 
 [dev-dependencies]

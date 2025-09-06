@@ -24,7 +24,7 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Subscriber<D: Subscriber<In = Self::Out, InError = Self::OutError>> =
+	type Subscriber<D: Subscriber<In = In, InError = InError>> =
 		FilterSubscriber<In, InError, Filter, D>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(

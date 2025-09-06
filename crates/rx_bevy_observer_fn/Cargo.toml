@@ -21,20 +21,17 @@ dev = [
     "rx_bevy/dev",
     "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
-    "rx_bevy_subscriber_observer/dev",
     "rx_bevy_testing/dev",
 ]
 example = [
     "dev",
     "rx_bevy/example",
     "rx_bevy_core/example",
-    "rx_bevy_subscriber_observer/example",
     "rx_bevy_testing/example",
 ]
 bevy = [
     "rx_bevy/bevy",
     "rx_bevy_core/bevy",
-    "rx_bevy_subscriber_observer/bevy",
     "rx_bevy_testing/bevy",
     "tick",
     "channel_context",
@@ -42,15 +39,9 @@ bevy = [
 channel_context = [
     "rx_bevy/channel_context",
     "rx_bevy_core/channel_context",
-    "rx_bevy_subscriber_observer/channel_context",
     "rx_bevy_testing/channel_context",
 ]
-tick = [
-    "rx_bevy/tick",
-    "rx_bevy_core/tick",
-    "rx_bevy_subscriber_observer/tick",
-    "rx_bevy_testing/tick",
-]
+tick = ["rx_bevy/tick", "rx_bevy_core/tick", "rx_bevy_testing/tick"]
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
@@ -61,7 +52,6 @@ reflect = [
 [dependencies]
 rx_bevy_core = { workspace = true }
 rx_bevy_common_bounds = { workspace = true }
-rx_bevy_subscriber_observer = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]

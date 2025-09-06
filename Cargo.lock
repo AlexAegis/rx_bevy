@@ -4621,6 +4621,7 @@ name = "rx_bevy_core"
 version = "0.1.0"
 dependencies = [
  "bevy_ecs",
+ "bevy_log",
  "bevy_reflect",
  "bevy_time",
  "rx_bevy",
@@ -4748,7 +4749,6 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
- "rx_bevy_subscriber_observer",
  "rx_bevy_testing",
 ]
 
@@ -4760,7 +4760,6 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
- "rx_bevy_subscriber_observer",
  "rx_bevy_testing",
 ]
 
@@ -5159,15 +5158,6 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_subscriber_detached"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_subscriber_observer"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",

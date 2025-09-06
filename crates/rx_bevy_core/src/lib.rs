@@ -1,4 +1,5 @@
 mod arc_subscriber;
+mod assert_subscription_closed_on_drop;
 mod drop_subscription;
 mod observable;
 mod observer;
@@ -8,6 +9,7 @@ mod subject;
 mod subscriber;
 mod subscription;
 
+pub use assert_subscription_closed_on_drop::*;
 pub use drop_subscription::*;
 pub use observable::*;
 pub use observer::*;

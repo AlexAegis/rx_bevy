@@ -1,12 +1,9 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SubscriptionLike, Tick, UpgradeableObserver,
-};
-use rx_bevy_subscriber_observer::ObserverSubscriber;
+use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
 
 /// An [FnObserver] requires you to define a callback for all three notifications
-pub struct FnObserver<In, InError, OnPush, OnError, OnComplete>
+pub struct FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
 where
 	OnPush: FnMut(In),
 	OnError: FnMut(InError),
@@ -16,11 +13,11 @@ where
 	on_error: OnError,
 	on_complete: OnComplete,
 	closed: bool,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError, OnPush, OnError, OnComplete> ObserverInput
-	for FnObserver<In, InError, OnPush, OnError, OnComplete>
+impl<In, InError, OnPush, OnError, OnComplete, Context> ObserverInput
+	for FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -33,7 +30,7 @@ where
 }
 
 impl<In, InError, OnPush, OnError, OnComplete, Context> SignalContext
-	for FnObserver<In, InError, OnPush, OnError, OnComplete>
+	for FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -44,8 +41,8 @@ where
 	type Context = Context;
 }
 
-impl<In, InError, OnPush, OnError, OnComplete> Observer
-	for FnObserver<In, InError, OnPush, OnError, OnComplete>
+impl<In, InError, OnPush, OnError, OnComplete, Context> Observer
+	for FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -68,8 +65,8 @@ where
 	fn tick(&mut self, _tick: Tick, _context: &mut Self::Context) {}
 }
 
-impl<In, InError, OnPush, OnError, OnComplete> SubscriptionLike
-	for FnObserver<In, InError, OnPush, OnError, OnComplete>
+impl<In, InError, OnPush, OnError, OnComplete, Context> SubscriptionLike
+	for FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -88,7 +85,8 @@ where
 	}
 }
 
-impl<In, InError, OnPush, OnError, OnComplete> FnObserver<In, InError, OnPush, OnError, OnComplete>
+impl<In, InError, OnPush, OnError, OnComplete, Context>
+	FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
 where
 	OnPush: Fn(In),
 	OnError: Fn(InError),

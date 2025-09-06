@@ -1,13 +1,16 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	AssertSubscriptionClosedOnDrop, ObservableOutput, Observer, ObserverInput, Operation,
+	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
 where
-	Destination: Observer,
+	In: 'static,
+	InError: 'static,
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	destination: Destination,
 	filter: Filter,
@@ -16,7 +19,10 @@ where
 
 impl<In, InError, Filter, Destination> FilterSubscriber<In, InError, Filter, Destination>
 where
-	Destination: Observer,
+	In: 'static,
+	InError: 'static,
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	pub fn new(destination: Destination, filter: Filter) -> Self {
 		Self {
@@ -33,10 +39,7 @@ where
 	In: 'static,
 	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Observer<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	type Context = Destination::Context;
 }
@@ -47,10 +50,7 @@ where
 	In: 'static,
 	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Observer<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -81,10 +81,7 @@ where
 	In: 'static,
 	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -103,10 +100,7 @@ where
 	In: 'static,
 	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = In, InError = InError>,
 	Destination: SubscriptionCollection,
 {
 	#[inline]
@@ -125,7 +119,7 @@ where
 	In: 'static,
 	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Observer,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	type In = In;
 	type InError = InError;
@@ -137,7 +131,7 @@ where
 	In: 'static,
 	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Observer,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	type Out = In;
 	type OutError = InError;
@@ -149,10 +143,7 @@ where
 	In: 'static,
 	InError: 'static,
 	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Observer<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = In, InError = InError>,
 {
 	type Destination = Destination;
 
@@ -170,5 +161,17 @@ where
 		F: FnMut(&mut Self::Destination),
 	{
 		writer(&mut self.destination);
+	}
+}
+
+impl<In, InError, Filter, Destination> Drop for FilterSubscriber<In, InError, Filter, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Subscriber<In = In, InError = InError>,
+{
+	fn drop(&mut self) {
+		self.assert_closed_when_dropped();
 	}
 }
