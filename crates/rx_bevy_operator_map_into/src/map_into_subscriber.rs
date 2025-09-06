@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 pub struct MapIntoSubscriber<In, InError, Out, OutError, Destination>
@@ -36,6 +37,21 @@ where
 	}
 }
 
+impl<In, InError, Out, OutError, Destination> SignalContext
+	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
+where
+	In: 'static + Into<Out>,
+	InError: 'static + Into<OutError>,
+	Out: 'static,
+	OutError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Context = Destination::Context;
+}
+
 impl<In, InError, Out, OutError, Destination> Observer
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
@@ -49,24 +65,23 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(next.into());
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		self.destination.next(next.into(), context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error.into());
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error.into(), context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -88,13 +103,31 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Out, OutError, Destination> SubscriptionCollection
+	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
+where
+	In: 'static + Into<Out>,
+	InError: 'static + Into<OutError>,
+	Out: 'static,
+	OutError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+	Destination: SubscriptionCollection,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

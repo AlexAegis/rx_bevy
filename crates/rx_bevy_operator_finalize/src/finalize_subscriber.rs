@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 // TODO: Fix
@@ -32,6 +33,20 @@ where
 	}
 }
 
+impl<In, InError, Callback, Destination> SignalContext
+	for FinalizeSubscriber<In, InError, Callback, Destination>
+where
+	Callback: FnOnce(),
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+	In: 'static,
+	InError: 'static,
+{
+	type Context = Destination::Context;
+}
+
 impl<In, InError, Callback, Destination> Observer
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
@@ -44,24 +59,23 @@ where
 	InError: 'static,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(next);
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -69,23 +83,45 @@ impl<In, InError, Callback, Destination> SubscriptionLike
 	for FinalizeSubscriber<In, InError, Callback, Destination>
 where
 	Callback: FnOnce(),
-	Destination: Subscriber,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+	In: 'static,
+	InError: 'static,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if let Some(finalize) = self.callback.take() {
 			(finalize)();
 		}
-		self.destination.unsubscribe();
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Callback, Destination> SubscriptionCollection
+	for FinalizeSubscriber<In, InError, Callback, Destination>
+where
+	Callback: FnOnce(),
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+	In: 'static,
+	InError: 'static,
+	Destination: SubscriptionCollection,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

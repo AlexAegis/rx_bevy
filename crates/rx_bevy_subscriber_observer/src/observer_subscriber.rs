@@ -1,9 +1,7 @@
 use rx_bevy_core::{
-	InnerDropSubscription, ObservableOutput, Observer, ObserverInput, Operation, SubscriptionLike,
+	DropContext, InnerDropSubscription, ObservableOutput, Observer, ObserverInput, Operation,
+	SignalContext, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
-
-#[cfg(feature = "channel_context")]
-use rx_bevy_core::ChannelContext;
 
 /// A simple wrapper for a plain [Observer] to make it "closeable"
 pub struct ObserverSubscriber<Destination>
@@ -12,7 +10,7 @@ where
 {
 	pub destination: Destination,
 	pub closed: bool,
-	pub teardown: InnerDropSubscription,
+	pub teardown: InnerDropSubscription<Destination::Context>,
 }
 
 impl<Destination> ObserverSubscriber<Destination>
@@ -28,68 +26,33 @@ where
 	}
 }
 
-#[cfg(feature = "channel_context")]
 impl<Destination> Observer for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
-	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.destination.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.destination.error(error, context);
-			self.unsubscribe();
+			self.unsubscribe(context);
 		}
 	}
 
-	fn complete(&mut self, context: &mut ChannelContext) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.destination.complete(context);
-			self.unsubscribe();
+			self.unsubscribe(context);
 		}
 	}
 
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.destination.tick(tick, context);
-		}
-	}
-}
-
-#[cfg(not(feature = "channel_context"))]
-impl<Destination> Observer for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() {
-			self.destination.next(next);
-		}
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			self.destination.error(error);
-			self.unsubscribe();
-		}
-	}
-
-	fn complete(&mut self) {
-		if !self.is_closed() {
-			self.destination.complete();
-			self.unsubscribe();
-		}
-	}
-
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		if !self.is_closed() {
-			self.destination.tick(tick);
 		}
 	}
 }
@@ -110,6 +73,13 @@ where
 	type OutError = Destination::InError;
 }
 
+impl<Destination> SignalContext for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	type Context = Destination::Context;
+}
+
 impl<Destination> SubscriptionLike for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
@@ -118,14 +88,23 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.closed = true;
-		self.teardown.unsubscribe();
+		self.teardown.unsubscribe(context);
 	}
+}
 
-	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.teardown.add_finalizer(subscription);
+impl<Destination> SubscriptionCollection for ObserverSubscriber<Destination>
+where
+	Destination: Observer,
+	Destination: SubscriptionCollection,
+{
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.teardown.add_finalizer(subscription, context);
 	}
 }
 
@@ -162,14 +141,5 @@ where
 			closed: false,
 			teardown: InnerDropSubscription::new_empty(),
 		}
-	}
-}
-
-impl<Destination> Drop for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	fn drop(&mut self) {
-		self.unsubscribe();
 	}
 }

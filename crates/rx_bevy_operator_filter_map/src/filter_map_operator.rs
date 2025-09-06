@@ -51,6 +51,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		_context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		CompositeSubscriber::new(MapSubscriber::new(
 			LiftOptionSubscriber::new(destination),

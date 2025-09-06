@@ -1,7 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SubjectLike, DropSubscription, SubscriptionLike, UpgradeableObserver,
+	DropContext, Observable, ObservableOutput, SignalContext, SubjectLike, SubscriptionCollection,
+	SubscriptionLike, Teardown, UpgradeableObserver,
 };
 
 use crate::{
@@ -22,6 +23,7 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription: Clone,
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
@@ -46,16 +48,70 @@ impl<Source, ConnectorCreator, Connector> Observable
 where
 	Source: Observable,
 	ConnectorCreator: Fn() -> Connector,
-	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Connector: 'static
+		+ SubjectLike<
+			In = Source::Out,
+			InError = Source::OutError,
+			Context = <Source::Subscription as SignalContext>::Context,
+		>,
+	Source::Subscription: Clone,
 {
+	type Subscription = Connector::Subscription;
+
 	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+		Destination: 'static
+			+ UpgradeableObserver<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> DropSubscription {
+		context: &mut Destination::Context,
+	) -> Self::Subscription {
 		let mut connector = self.connector.lock().expect("cant lock");
-		connector.subscribe(destination)
+		connector.subscribe(destination, context)
+	}
+}
+
+impl<Source, ConnectorCreator, Connector> SignalContext
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
+where
+	Source: Observable,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static
+		+ SubjectLike<
+			In = Source::Out,
+			InError = Source::OutError,
+			Context = <Source::Subscription as SignalContext>::Context,
+		>,
+	Source::Subscription: Clone,
+{
+	type Context = <Source::Subscription as SignalContext>::Context;
+}
+
+impl<Source, ConnectorCreator, Connector> SubscriptionCollection
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
+where
+	Source: Observable,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static
+		+ SubjectLike<
+			In = Source::Out,
+			InError = Source::OutError,
+			Context = <Source::Subscription as SignalContext>::Context,
+		>,
+	Source::Subscription: Clone,
+	Connector: SubscriptionCollection,
+{
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		let mut connector = self.connector.lock().expect("lockable");
+		connector.add(subscription, context);
 	}
 }
 
@@ -64,22 +120,22 @@ impl<Source, ConnectorCreator, Connector> SubscriptionLike
 where
 	Source: Observable,
 	ConnectorCreator: Fn() -> Connector,
-	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Connector: 'static
+		+ SubjectLike<
+			In = Source::Out,
+			InError = Source::OutError,
+			Context = <Source::Subscription as SignalContext>::Context,
+		>,
+	Source::Subscription: Clone,
 {
 	fn is_closed(&self) -> bool {
 		let connector = self.connector.lock().expect("lockable");
 		connector.is_closed()
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		let mut connector = self.connector.lock().expect("lockable");
-		connector.unsubscribe();
-	}
-
-	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		let mut connector = self.connector.lock().expect("lockable");
-		connector.add(subscription);
+		connector.unsubscribe(context);
 	}
 }
 
@@ -88,11 +144,23 @@ impl<Source, ConnectorCreator, Connector> Connectable
 where
 	Source: Observable,
 	ConnectorCreator: Fn() -> Connector,
-	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Connector: 'static
+		+ SubjectLike<
+			In = Source::Out,
+			InError = Source::OutError,
+			Context = <Source::Subscription as SignalContext>::Context,
+		>,
+	Source::Subscription: Clone + SubscriptionCollection,
+	<Source::Subscription as SignalContext>::Context: DropContext,
 {
-	fn connect(&mut self) -> DropSubscription {
+	type ConnectionSubscription = Source::Subscription;
+
+	fn connect(
+		&mut self,
+		context: &mut <Self::ConnectionSubscription as SignalContext>::Context,
+	) -> Self::ConnectionSubscription {
 		let mut connector = self.connector.lock().expect("cant lock");
-		connector.connect()
+		connector.connect(context)
 	}
 }
 

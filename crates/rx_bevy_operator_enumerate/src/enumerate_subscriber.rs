@@ -1,10 +1,8 @@
 use std::marker::PhantomData;
 
-#[cfg(feature = "channel_context")]
-use rx_bevy_core::ChannelContext;
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike,
+	SubscriptionCollection, SubscriptionLike, Teardown,
 };
 
 pub struct EnumerateSubscriber<In, InError, Destination>
@@ -117,9 +115,14 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
+	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut Destination::Context) {
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
 		self.destination.add(subscription, context);
 	}
 }

@@ -56,6 +56,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		_context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		LiftResultSubscriber::new(destination, self.in_error_to_result_error.clone())
 	}

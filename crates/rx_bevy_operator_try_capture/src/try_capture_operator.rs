@@ -42,6 +42,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		TryCaptureSubscriber::new(destination)
 	}

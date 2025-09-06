@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	Observable, ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
@@ -11,8 +12,13 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
 {
 	// TODO: Check if it would be enough to use this in a bevy context by just swapping the SwitchSubscriber impl to an ECS based one.
 	destination: SwitchSubscriber<InnerObservable, Destination>,
@@ -27,8 +33,13 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Clone + Fn(In) -> InnerObservable,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
 {
 	pub fn new(destination: Destination, switcher: Switcher) -> Self {
 		Self {
@@ -39,6 +50,26 @@ where
 	}
 }
 
+impl<In, InError, Switcher, InnerObservable, Destination> SignalContext
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
+where
+	In: 'static,
+	InError: 'static + Into<InnerObservable::OutError>,
+	InnerObservable: 'static + Observable,
+	Switcher: Fn(In) -> InnerObservable,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
+	In: 'static,
+	InError: 'static + Into<InnerObservable::OutError>,
+{
+	type Context = <InnerObservable::Subscription as SignalContext>::Context;
+}
+
 impl<In, InError, Switcher, InnerObservable, Destination> Observer
 	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
@@ -46,30 +77,34 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.destination.next((self.switcher)(next));
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		self.destination.next((self.switcher)(next), context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error.into());
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error.into(), context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -80,8 +115,13 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -89,13 +129,34 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Switcher, InnerObservable, Destination> SubscriptionCollection
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
+where
+	In: 'static,
+	InError: 'static + Into<InnerObservable::OutError>,
+	InnerObservable: 'static + Observable,
+	Switcher: Fn(In) -> InnerObservable,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
+	Destination: SubscriptionCollection,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 
@@ -106,7 +167,13 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
 {
 	type In = In;
 	type InError = InError;
@@ -119,7 +186,13 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
 {
 	type Out = InnerObservable::Out;
 	type OutError = InnerObservable::OutError;
@@ -132,7 +205,13 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Destination: Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
+		+ Clone,
 {
 	type Destination = Destination;
 

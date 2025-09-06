@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use rx_bevy_core::{
 	ChannelContext, DropContext, DropSubscription, Observable, ObservableOutput, Observer,
 	SubscriptionLike, Teardown, UpgradeableObserver,
@@ -5,23 +7,27 @@ use rx_bevy_core::{
 
 /// Emits a single value then immediately completes
 #[derive(Clone, Debug)]
-pub struct IteratorObservable<Iterator>
+pub struct IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 {
 	iterator: Iterator,
+	_phantom_data: PhantomData<Context>,
 }
 
-impl<Iterator> IteratorObservable<Iterator>
+impl<Iterator, Context> IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 {
 	pub fn new(iterator: Iterator) -> Self {
-		Self { iterator }
+		Self {
+			iterator,
+			_phantom_data: PhantomData,
+		}
 	}
 }
 
-impl<Iterator> ObservableOutput for IteratorObservable<Iterator>
+impl<Iterator, Context> ObservableOutput for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
@@ -30,7 +36,7 @@ where
 	type OutError = ();
 }
 
-impl<Iterator, Context> Observable for IteratorObservable<Iterator>
+impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
@@ -39,11 +45,11 @@ where
 	type Subscription = DropSubscription<Context>;
 
 	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Context>,
 	>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as Observer>::Context,
+		context: &mut Context,
 	) -> DropSubscription<Context> {
 		let mut subscriber = destination.upgrade();
 		for item in self.iterator.clone().into_iter() {

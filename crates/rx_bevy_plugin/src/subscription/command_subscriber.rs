@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy_ecs::entity::Entity;
 
 use rx_bevy_common_bounds::SignalBound;
-use rx_bevy_core::{ChannelContext, Observer, ObserverInput};
+use rx_bevy_core::{ChannelContext, Observer, ObserverInput, SignalContext};
 
 use crate::{RxComplete, RxError, RxNext};
 
@@ -64,12 +64,20 @@ where
 	type InError = InError;
 }
 
+impl<In, InError> SignalContext for CommandSubscriber<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	type Context = ChannelContext<'_, '_, '_>;
+}
+
 impl<In, InError> Observer for CommandSubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands
@@ -77,7 +85,7 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands
@@ -85,7 +93,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut ChannelContext) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands

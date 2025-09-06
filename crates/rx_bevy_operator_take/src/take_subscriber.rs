@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 #[derive(Debug)]
@@ -32,6 +33,18 @@ where
 	}
 }
 
+impl<In, InError, Destination> SignalContext for TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Context = Destination::Context;
+}
+
 impl<In, InError, Destination> Observer for TakeSubscriber<In, InError, Destination>
 where
 	In: 'static,
@@ -42,32 +55,30 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if self.count > 0 {
 			self.count -= 1;
-			self.destination.next(next);
+			self.destination.next(next, context);
 
 			if self.count == 0 {
-				self.complete();
-				//	self.unsubscribe();
+				self.complete(context);
 			}
 		}
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -80,16 +91,34 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+impl<In, InError, Destination> SubscriptionCollection for TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+	Destination: SubscriptionCollection,
+{
+	#[inline]
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

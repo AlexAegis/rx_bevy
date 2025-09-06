@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observer, ObserverInput, SubscriptionLike, Tick};
+use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
 
 #[derive(Debug)]
 pub struct MockObserver<In, InError>
@@ -30,10 +30,12 @@ where
 	pub errors: Vec<InError>,
 	pub ticks: Vec<Tick>,
 	pub completed: usize,
+	pub unsubscribed: bool,
 	pub values_after_closed: Vec<In>,
 	pub errors_after_closed: Vec<InError>,
 	pub ticks_after_closed: Vec<Tick>,
 	pub completed_after_closed: usize,
+	pub unsubscribes_after_closed: usize,
 }
 
 impl<In, InError> MockContext<In, InError>
@@ -46,6 +48,7 @@ where
 			&& self.errors_after_closed.is_empty()
 			&& self.completed_after_closed == 0
 			&& self.ticks_after_closed.is_empty()
+			&& self.unsubscribes_after_closed == 0
 	}
 }
 
@@ -64,6 +67,8 @@ where
 			ticks_after_closed: Vec::new(),
 			completed: 0,
 			completed_after_closed: 0,
+			unsubscribed: false,
+			unsubscribes_after_closed: 0,
 		}
 	}
 }
@@ -73,8 +78,6 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Context = MockContext<In, InError>;
-
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
 			context.values.push(next);
@@ -109,7 +112,14 @@ where
 	}
 }
 
-impl<In, InError> SubscriptionLike<MockContext<In, InError>> for MockObserver<In, InError>
+impl<In, InError> SignalContext for MockObserver<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
+	type Context = MockContext<In, InError>;
+}
+impl<In, InError> SubscriptionLike for MockObserver<In, InError>
 where
 	In: 'static,
 	InError: 'static,
@@ -119,8 +129,13 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut MockContext<In, InError>) {
-		self.closed = true;
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		if !self.closed {
+			self.closed = true;
+			context.unsubscribed = true;
+		} else {
+			context.unsubscribes_after_closed += 1;
+		}
 	}
 }
 

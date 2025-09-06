@@ -1,11 +1,8 @@
 use std::marker::PhantomData;
 
-#[cfg(feature = "channel_context")]
-#[cfg(feature = "tick")]
-use rx_bevy_core::ChannelContext;
 use rx_bevy_core::{
-	SubscriptionCollection, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionLike,
+	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown,
 };
 
 #[derive(Debug)]
@@ -36,7 +33,7 @@ where
 	Inner: Subscriber,
 	Destination: Observer,
 {
-	type Context = Destination::Context;
+	type Context = Inner::Context;
 }
 
 impl<Inner, Destination> Observer for CompositeSubscriber<Inner, Destination>
@@ -65,8 +62,7 @@ where
 	}
 }
 
-impl<Inner, Destination> SubscriptionLike<<Destination as Observer>::Context>
-	for CompositeSubscriber<Inner, Destination>
+impl<Inner, Destination> SubscriptionLike for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
 	Destination: Observer,
@@ -77,22 +73,22 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Destination as Observer>::Context) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.subscriber.unsubscribe(context);
 	}
 }
 
-impl<Inner, Destination> SubscriptionCollection<<Destination as Observer>::Context>
-	for CompositeSubscriber<Inner, Destination>
+impl<Inner, Destination> SubscriptionCollection for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
 	Destination: Observer,
+	Inner: SubscriptionCollection,
 {
 	#[inline]
 	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<<Destination as Observer>::Context>>,
-		context: &mut <Destination as Observer>::Context,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.subscriber.add(subscription, context);
 	}
@@ -142,6 +138,11 @@ where
 	Destination: Observer,
 {
 	fn drop(&mut self) {
-		self.unsubscribe(());
+		if !self.is_closed() {
+			panic!(
+				"Dropped {} without unsubscribing first!",
+				short_type_name::short_type_name::<Self>()
+			)
+		}
 	}
 }

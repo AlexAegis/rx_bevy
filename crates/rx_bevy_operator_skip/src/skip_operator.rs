@@ -37,6 +37,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		_context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		SkipSubscriber::new(destination, self.count)
 	}

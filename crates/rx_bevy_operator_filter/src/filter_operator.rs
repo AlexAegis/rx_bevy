@@ -30,6 +30,7 @@ where
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
+		_context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		FilterSubscriber::new(destination, self.filter.clone())
 	}

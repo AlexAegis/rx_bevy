@@ -1,5 +1,6 @@
 use rx_bevy_core::{
-	ChannelContext, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
 };
 
 /// It must hold the invariant that the cloned destination points to the
@@ -64,28 +65,34 @@ where
 	type InError = Destination::InError;
 }
 
+impl<Destination> SignalContext for SharedSubscriber<Destination>
+where
+	Destination: Subscriber + Clone,
+{
+	type Context = Destination::Context;
+}
+
 impl<Destination> Observer for SharedSubscriber<Destination>
 where
 	Destination: Subscriber + Clone,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut ChannelContext) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut ChannelContext) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut ChannelContext) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -100,12 +107,22 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut ChannelContext) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<Destination> SubscriptionCollection for SharedSubscriber<Destination>
+where
+	Destination: Subscriber + Clone,
+	Destination: SubscriptionCollection,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut ChannelContext) {
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
 		self.destination.add(subscription, context);
 	}
 }

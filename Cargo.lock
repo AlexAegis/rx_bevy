@@ -4808,6 +4808,7 @@ dependencies = [
  "rx_bevy_core",
  "rx_bevy_ref_pipe",
  "rx_bevy_testing",
+ "short_type_name",
 ]
 
 [[package]]

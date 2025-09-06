@@ -1,4 +1,7 @@
-use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike};
+use rx_bevy_core::{
+	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
+};
 
 /// A helper subscriber that does not forward completion and unsubscribe signals.
 /// Creating a barrier for these lifecycle signals.
@@ -28,29 +31,35 @@ where
 	type InError = Destination::InError;
 }
 
+impl<Destination> SignalContext for DetachedSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	type Context = Destination::Context;
+}
+
 impl<Destination> Observer for DetachedSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(next);
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
+	fn complete(&mut self, _context: &mut Self::Context) {
 		// Disconnected on purpose
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -64,13 +73,23 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
+	fn unsubscribe(&mut self, _context: &mut Self::Context) {
 		// The subscription management is handled by the implementor
 	}
+}
 
+impl<Destination> SubscriptionCollection for DetachedSubscriber<Destination>
+where
+	Destination: Subscriber,
+	Destination: SubscriptionCollection,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

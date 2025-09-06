@@ -1,5 +1,8 @@
+use std::task::Context;
+
 use rx_bevy_core::{
-	DropSubscription, Observable, ObservableOutput, Observer, Teardown, UpgradeableObserver,
+	DropContext, DropSubscription, Observable, ObservableOutput, Observer, Teardown,
+	UpgradeableObserver,
 };
 
 /// Observable creator for [ThrowObservable]
@@ -10,7 +13,7 @@ where
 	ThrowObservable::new(error)
 }
 
-impl<Error> ObservableOutput for ThrowObservable<Error>
+impl<Error, Context> ObservableOutput for ThrowObservable<Error, Context>
 where
 	Error: 'static + Clone,
 {
@@ -18,15 +21,20 @@ where
 	type OutError = Error;
 }
 
-impl<Error> Observable for ThrowObservable<Error>
+impl<Error, Context> Observable for ThrowObservable<Error, Context>
 where
 	Error: 'static + Clone,
+	Context: DropContext,
 {
-	fn subscribe<Destination: 'static + UpgradeableObserver<In = (), InError = Error>>(
+	type Subscription = DropSubscription<Context>;
+
+	fn subscribe<
+		Destination: 'static + UpgradeableObserver<In = (), InError = Error, Context = Context>,
+	>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as Observer>::Context,
-	) -> DropSubscription {
+		context: &mut Context,
+	) -> Self::Subscription {
 		let mut subscriber = destination.upgrade();
 		subscriber.error(self.error.clone(), context);
 
@@ -35,14 +43,14 @@ where
 }
 
 #[derive(Clone)]
-pub struct ThrowObservable<Error>
+pub struct ThrowObservable<Error, Context>
 where
 	Error: Clone,
 {
 	error: Error,
 }
 
-impl<Error> ThrowObservable<Error>
+impl<Error, Context> ThrowObservable<Error, Context>
 where
 	Error: Clone,
 {

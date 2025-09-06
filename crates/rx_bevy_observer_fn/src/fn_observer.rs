@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observer, ObserverInput, UpgradeableObserver};
+use rx_bevy_core::{
+	Observer, ObserverInput, SignalContext, SubscriptionLike, Tick, UpgradeableObserver,
+};
 use rx_bevy_subscriber_observer::ObserverSubscriber;
 
 /// An [FnObserver] requires you to define a callback for all three notifications
@@ -13,6 +15,7 @@ where
 	on_next: OnPush,
 	on_error: OnError,
 	on_complete: OnComplete,
+	closed: bool,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -29,6 +32,18 @@ where
 	type InError = InError;
 }
 
+impl<In, InError, OnPush, OnError, OnComplete, Context> SignalContext
+	for FnObserver<In, InError, OnPush, OnError, OnComplete>
+where
+	In: 'static,
+	InError: 'static,
+	OnPush: FnMut(In),
+	OnError: FnMut(InError),
+	OnComplete: FnMut(),
+{
+	type Context = Context;
+}
+
 impl<In, InError, OnPush, OnError, OnComplete> Observer
 	for FnObserver<In, InError, OnPush, OnError, OnComplete>
 where
@@ -38,35 +53,38 @@ where
 	OnError: FnMut(InError),
 	OnComplete: FnMut(),
 {
-	fn next(&mut self, next: In) {
+	fn next(&mut self, next: In, _context: &mut Self::Context) {
 		(self.on_next)(next);
 	}
 
-	fn error(&mut self, error: InError) {
+	fn error(&mut self, error: InError, _context: &mut Self::Context) {
 		(self.on_error)(error);
 	}
 
-	fn complete(&mut self) {
+	fn complete(&mut self, _context: &mut Self::Context) {
 		(self.on_complete)();
 	}
 
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, _tick: rx_bevy_core::Tick) {}
+	fn tick(&mut self, _tick: Tick, _context: &mut Self::Context) {}
 }
 
-impl<In, InError, OnPush, OnError, OnComplete> UpgradeableObserver
+impl<In, InError, OnPush, OnError, OnComplete> SubscriptionLike
 	for FnObserver<In, InError, OnPush, OnError, OnComplete>
 where
 	In: 'static,
 	InError: 'static,
-	OnPush: 'static + FnMut(In),
-	OnError: 'static + FnMut(InError),
-	OnComplete: 'static + FnMut(),
+	OnPush: FnMut(In),
+	OnError: FnMut(InError),
+	OnComplete: FnMut(),
 {
-	type Subscriber = ObserverSubscriber<Self>;
+	#[inline]
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
 
-	fn upgrade(self) -> Self::Subscriber {
-		ObserverSubscriber::new(self)
+	#[inline]
+	fn unsubscribe(&mut self, _context: &mut Self::Context) {
+		self.closed = true;
 	}
 }
 
@@ -81,6 +99,7 @@ where
 			on_next: next,
 			on_error: error,
 			on_complete: complete,
+			closed: false,
 			_phantom_data: PhantomData,
 		}
 	}

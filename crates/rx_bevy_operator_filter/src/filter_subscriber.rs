@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
@@ -26,6 +27,20 @@ where
 	}
 }
 
+impl<In, InError, Filter, Destination> SignalContext
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Observer<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Context = Destination::Context;
+}
+
 impl<In, InError, Filter, Destination> Observer
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
@@ -38,26 +53,25 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if (self.filter)(&next) {
-			self.destination.next(next);
+			self.destination.next(next, context);
 		}
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -78,13 +92,30 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Filter, Destination> SubscriptionCollection
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+	Destination: SubscriptionCollection,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

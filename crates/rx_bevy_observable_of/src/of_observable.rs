@@ -1,5 +1,8 @@
+use std::marker::PhantomData;
+
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, DropSubscription, Teardown, UpgradeableObserver,
+	DropContext, DropSubscription, Observable, ObservableOutput, Observer, Teardown,
+	UpgradeableObserver,
 };
 
 /// Observable creator for [OfObservable]
@@ -12,33 +15,40 @@ where
 
 /// Emits a single value then immediately completes
 #[derive(Clone)]
-pub struct OfObservable<Out>
+pub struct OfObservable<Out, Context>
 where
 	Out: Clone,
 {
 	value: Out,
+	_phantom_data: PhantomData<Context>,
 }
 
-impl<Out> OfObservable<Out>
+impl<Out, Context> OfObservable<Out, Context>
 where
 	Out: Clone,
 {
 	pub fn new(value: Out) -> Self {
-		Self { value }
+		Self {
+			value,
+			_phantom_data: PhantomData,
+		}
 	}
 }
 
-impl<Out> Observable for OfObservable<Out>
+impl<Out, Context> Observable for OfObservable<Out, Context>
 where
 	Out: 'static + Clone,
+	Context: DropContext,
 {
+	type Subscription = DropSubscription<Context>;
+
 	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Context>,
 	>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as Observer>::Context,
-	) -> DropSubscription {
+		context: &mut Context,
+	) -> Self::Subscription {
 		let mut subscriber = destination.upgrade();
 		subscriber.next(self.value.clone(), context);
 		subscriber.complete(context);
@@ -46,7 +56,7 @@ where
 	}
 }
 
-impl<Out> ObservableOutput for OfObservable<Out>
+impl<Out, Context> ObservableOutput for OfObservable<Out, Context>
 where
 	Out: 'static + Clone,
 {
@@ -66,7 +76,7 @@ mod tests {
 		let mut observable = OfObservable::new(value);
 		let mut mock_observer = MockObserver::new();
 
-		let _s = observable.subscribe(mock_observer.clone());
+		let _s = observable.subscribe(mock_observer.clone(), ());
 
 		mock_observer.read(|d| {
 			assert_eq!(d.destination.values, vec![value]);

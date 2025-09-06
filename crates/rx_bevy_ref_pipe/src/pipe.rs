@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, ObservableOutput, Operator, DropSubscription, UpgradeableObserver};
+use rx_bevy_core::{Observable, ObservableOutput, Operator, SignalContext, UpgradeableObserver};
 
 pub struct Pipe<Source, Op>
 where
@@ -67,15 +67,24 @@ where
 	Source: 'static + Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
 {
+	type Subscription = Source::Subscription;
+
 	#[inline]
 	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+		Destination: 'static
+			+ UpgradeableObserver<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> DropSubscription {
+		context: &mut Destination::Context,
+	) -> Self::Subscription {
 		let subscriber = destination.upgrade();
-		let operator_subscriber = self.operator.operator_subscribe(subscriber);
-		self.source_observable.subscribe(operator_subscriber)
+		let operator_subscriber = self.operator.operator_subscribe(subscriber, context);
+		self.source_observable
+			.subscribe(operator_subscriber, context)
 	}
 }

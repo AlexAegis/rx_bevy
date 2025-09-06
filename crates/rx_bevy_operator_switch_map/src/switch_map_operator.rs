@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observable, ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{
+	Observable, ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber,
+};
 
 use crate::SwitchMapSubscriber;
 
@@ -28,12 +30,19 @@ where
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	InnerObservable: 'static + Observable,
 {
-	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>> =
-		SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>;
+	// TODO: Add some Into magic for the context
+	type Subscriber<
+		Destination: Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <InnerObservable::Subscription as SignalContext>::Context,
+			>,
+	> = SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
+		context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		SwitchMapSubscriber::new(destination, self.switcher.clone())
 	}

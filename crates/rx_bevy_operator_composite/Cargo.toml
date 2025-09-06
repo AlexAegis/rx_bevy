@@ -62,6 +62,7 @@ rx_bevy_core = { workspace = true }
 rx_bevy_ref_pipe = { workspace = true, optional = true }
 rx_bevy_common_bounds = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
+short_type_name = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

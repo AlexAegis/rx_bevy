@@ -33,6 +33,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		_context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		LiftOptionSubscriber::new(destination)
 	}

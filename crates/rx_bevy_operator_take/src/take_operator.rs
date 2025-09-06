@@ -36,6 +36,7 @@ where
 	>(
 		&mut self,
 		destination: Destination,
+		_context: &mut Destination::Context,
 	) -> Self::Subscriber<Destination> {
 		TakeSubscriber::new(destination, self.count)
 	}

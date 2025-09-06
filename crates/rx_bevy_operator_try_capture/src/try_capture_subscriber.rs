@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike,
+	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 pub struct TryCaptureSubscriber<In, InError, Destination>
@@ -31,6 +32,18 @@ where
 	}
 }
 
+impl<In, InError, Destination> SignalContext for TryCaptureSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type Context = Destination::Context;
+}
+
 impl<In, InError, Destination> Observer for TryCaptureSubscriber<In, InError, Destination>
 where
 	In: 'static,
@@ -41,24 +54,23 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(Ok(next));
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		self.destination.next(Ok(next), context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.next(Err(error));
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.next(Err(error), context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -71,16 +83,34 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
-
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.destination.unsubscribe(context);
 	}
+}
 
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+impl<In, InError, Destination> SubscriptionCollection
+	for TryCaptureSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+	Destination: SubscriptionCollection,
+{
+	#[inline]
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

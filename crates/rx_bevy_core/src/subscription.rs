@@ -14,6 +14,8 @@ pub trait SignalContext {
 /// but it doesn't actually execute any teardown logic beyond its own, it is
 /// primarily used by operators.
 pub trait SubscriptionLike: SignalContext {
+	// TODO: 	fn unsubscribe<'c>(&mut self, context: &'c mut Self::Context<'c>); the context needs to know it's own lifetime, for other lifetimes, use for<'w>
+
 	fn unsubscribe(&mut self, context: &mut Self::Context);
 
 	fn is_closed(&self) -> bool;

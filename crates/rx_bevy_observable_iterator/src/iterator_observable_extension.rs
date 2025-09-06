@@ -1,7 +1,7 @@
 use crate::IteratorObservable;
 
 pub trait IntoIteratorObservableExtension: IntoIterator + Clone {
-	fn into_observable(self) -> IteratorObservable<Self> {
+	fn into_observable(self) -> IteratorObservable<Self, ()> {
 		IteratorObservable::new(self)
 	}
 }
