@@ -63,20 +63,23 @@ where
 impl<O1, O2> Observable for Zip<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
+	type Subscription = O1::Subscription;
+
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	>(
 		&mut self,
 		destination: Destination,
-	) -> DropSubscription
+		context: &mut Destination::Context,
+	) -> Self::Subscription
 	where
 		Self: Sized,
 	{
-		let mut subscription = DropSubscription::new_empty();
+		let mut subscription = Self::Subscription::default();
 
 		let rc_subscriber =
 			RcSubscriber::new(ZipSubscriber::<Destination::Subscriber, O1, O2>::new(
@@ -84,15 +87,21 @@ where
 				self.options.clone(),
 			));
 
-		subscription.add(Teardown::new_from_subscription(
-			self.observable_1
-				.subscribe(IntoVariant1of2Subscriber::new(rc_subscriber.clone())),
-		));
+		subscription.add(
+			Teardown::new_from_subscription(self.observable_1.subscribe(
+				IntoVariant1of2Subscriber::new(rc_subscriber.clone()),
+				context,
+			)),
+			context,
+		);
 
-		subscription.add(Teardown::new_from_subscription(
-			self.observable_2
-				.subscribe(IntoVariant2of2Subscriber::new(rc_subscriber.clone())),
-		));
+		subscription.add(
+			Teardown::new_from_subscription(self.observable_2.subscribe(
+				IntoVariant2of2Subscriber::new(rc_subscriber.clone()),
+				context,
+			)),
+			context,
+		);
 
 		subscription
 	}

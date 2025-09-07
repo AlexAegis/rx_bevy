@@ -1,5 +1,6 @@
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike, Tick,
+	Observable, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -52,12 +53,12 @@ where
 		// else, don't do anything, the incoming value is ignored as the queue is full
 	}
 
-	fn check_if_can_complete(&mut self) {
+	fn check_if_can_complete(&mut self, context: &mut <Self as SignalContext>::Context) {
 		if !self.destination.is_closed()
 			&& (self.o1_queue.is_completed() || self.o2_queue.is_completed())
 		{
-			self.destination.complete();
-			self.unsubscribe();
+			self.destination.complete(context);
+			self.unsubscribe(context);
 		}
 	}
 }
@@ -82,7 +83,7 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	fn next(&mut self, next: Self::In) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		match next {
 			EitherOut2::O1(o1_next) => {
 				Self::push_next(&mut self.o1_queue, o1_next, &self.options);
@@ -102,28 +103,40 @@ where
 			&& !self.o2_queue.is_empty()
 			&& let Some((o1_val, o2_val)) = self.o1_queue.pop().zip(self.o2_queue.pop())
 		{
-			self.destination.next((o1_val.clone(), o2_val.clone()));
+			self.destination
+				.next((o1_val.clone(), o2_val.clone()), context);
 		}
 
-		self.check_if_can_complete();
+		self.check_if_can_complete(context);
 	}
 
-	fn error(&mut self, error: Self::InError) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.destination.is_closed() {
-			self.destination.error(error);
-			self.unsubscribe()
+			self.destination.error(error, context);
+			self.unsubscribe(context)
 		}
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.check_if_can_complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.check_if_can_complete(context);
 	}
 
 	#[inline]
-	fn tick(&mut self, tick: Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
+}
+
+impl<Destination, O1, O2> SignalContext for ZipSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
+	type Context = Destination::Context;
 }
 
 impl<Destination, O1, O2> SubscriptionLike for ZipSubscriber<Destination, O1, O2>
@@ -134,16 +147,38 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.destination.unsubscribe(context);
+	}
+}
+
+impl<Destination, O1, O2> SubscriptionCollection for ZipSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: SubscriptionCollection,
+{
+	#[inline]
+	fn new_empty() -> Self {
+		Destination::new_empty()
 	}
 
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	#[inline]
+	fn add(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

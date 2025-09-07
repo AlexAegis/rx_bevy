@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, Observable, ObservableOutput, SignalContext, UpgradeableObserver};
+use rx_bevy_core::{
+	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, UpgradeableObserver,
+};
 
 pub fn deferred_observable<F, Source>(observable_creator: F) -> DeferredObservable<F, Source>
 where
@@ -37,7 +39,7 @@ where
 impl<F, Source> Observable for DeferredObservable<F, Source>
 where
 	Source: Observable,
-	<Source::Subscription as SignalContext>::Context: DropContext,
+	<Source::Subscription as SignalContext>::Context: DropContextFromSubscription,
 	F: Clone + Fn() -> Source,
 {
 	type Subscription = Source::Subscription;

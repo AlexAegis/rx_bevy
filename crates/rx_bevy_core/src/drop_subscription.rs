@@ -2,14 +2,33 @@ use std::sync::{Arc, RwLock};
 
 use smallvec::SmallVec;
 
-use crate::{DropContext, SignalContext, SubscriptionCollection, SubscriptionLike, Teardown};
+use crate::{
+	DropContext, DropContextFromSubscription, SignalContext, SubscriptionCollection,
+	SubscriptionLike, Teardown,
+};
 
+// TODO: Move this to its own crate
+/// A DropSubscription is a type of Subscription Observables may use, it
+/// requires the subscriptions SignalContext to be irrelevant during
+/// unsubscription which is achieved by the [DropContext] trait that allows
+/// creating this context out of the subscription itself
 #[derive(Clone)]
 pub struct DropSubscription<Context>
 where
 	Context: DropContext,
 {
 	inner: Arc<RwLock<InnerDropSubscription<Context>>>,
+}
+
+impl<Context> Default for DropSubscription<Context>
+where
+	Context: DropContext,
+{
+	fn default() -> Self {
+		Self {
+			inner: Arc::new(RwLock::new(InnerDropSubscription::default())),
+		}
+	}
 }
 
 impl<Context> DropSubscription<Context>
@@ -81,6 +100,15 @@ where
 {
 	is_closed: bool,
 	finalizers: SmallVec<[Teardown<Context>; 1]>,
+}
+
+impl<Context> DropContextFromSubscription for InnerDropSubscription<Context>
+where
+	Context: DropContext,
+{
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		Context::get_context_for_drop()
+	}
 }
 
 impl<Context> Default for InnerDropSubscription<Context>
@@ -174,6 +202,7 @@ where
 	Context: DropContext,
 {
 	fn drop(&mut self) {
-		self.unsubscribe(&mut Context::drop_context());
+		let mut context = self.get_unsubscribe_context();
+		self.unsubscribe(&mut context);
 	}
 }

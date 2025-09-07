@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
-	DropContext, Observable, ObservableOutput, SignalContext, SubjectLike, SubscriptionCollection,
+	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, SubjectLike, SubscriptionCollection,
 	SubscriptionLike, Teardown, UpgradeableObserver,
 };
 
@@ -151,7 +151,7 @@ where
 			Context = <Source::Subscription as SignalContext>::Context,
 		>,
 	Source::Subscription: Clone + SubscriptionCollection,
-	<Source::Subscription as SignalContext>::Context: DropContext,
+	<Source::Subscription as SignalContext>::Context: DropContextFromSubscription,
 {
 	type ConnectionSubscription = Source::Subscription;
 

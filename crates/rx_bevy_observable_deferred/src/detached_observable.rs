@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Teardown,
-	UpgradeableObserver,
+	DropSubscription, Observable, ObservableOutput, SignalContext, DropContext,
+	Teardown, UpgradeableObserver,
 };
 
 pub fn detached_observable<'s, Source>(source: &'s mut Source) -> DetachedObservable<'s, Source>

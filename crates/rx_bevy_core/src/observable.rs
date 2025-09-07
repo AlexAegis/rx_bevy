@@ -1,4 +1,4 @@
-use crate::{SignalContext, SubscriptionLike, UpgradeableObserver};
+use crate::{SignalContext, SubscriptionCollection, SubscriptionLike, UpgradeableObserver};
 
 pub trait ObservableOutput {
 	type Out: 'static;
@@ -6,7 +6,7 @@ pub trait ObservableOutput {
 }
 
 pub trait Observable: ObservableOutput {
-	type Subscription: 'static + SubscriptionLike;
+	type Subscription: 'static + Default + SubscriptionLike + SubscriptionCollection;
 
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
 	fn subscribe<

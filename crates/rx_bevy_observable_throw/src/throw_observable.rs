@@ -1,8 +1,8 @@
 use std::task::Context;
 
 use rx_bevy_core::{
-	DropContext, DropSubscription, Observable, ObservableOutput, Observer, Teardown,
-	UpgradeableObserver,
+	DropContextFromSubscription, DropSubscription, Observable, ObservableOutput, Observer,
+	Teardown, UpgradeableObserver,
 };
 
 /// Observable creator for [ThrowObservable]
@@ -24,7 +24,7 @@ where
 impl<Error, Context> Observable for ThrowObservable<Error, Context>
 where
 	Error: 'static + Clone,
-	Context: DropContext,
+	Context: DropContextFromSubscription,
 {
 	type Subscription = DropSubscription<Context>;
 

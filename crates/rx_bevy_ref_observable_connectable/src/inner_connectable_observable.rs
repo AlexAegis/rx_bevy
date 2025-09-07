@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	DropContext, Observable, ObservableOutput, SignalContext, SubjectLike, SubscriptionCollection,
-	SubscriptionLike, Teardown, UpgradeableObserver,
+	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, SubjectLike,
+	SubscriptionCollection, SubscriptionLike, Teardown, UpgradeableObserver,
 };
 
 use crate::{Connectable, ConnectableOptions};
@@ -125,7 +125,7 @@ where
 			Context = <Source::Subscription as SignalContext>::Context,
 		>,
 	Source::Subscription: Clone + SubscriptionCollection,
-	<Source::Subscription as SignalContext>::Context: DropContext,
+	<Source::Subscription as SignalContext>::Context: DropContextFromSubscription,
 {
 	type ConnectionSubscription = Source::Subscription;
 
@@ -142,7 +142,7 @@ where
 				connection.add(
 					Teardown::new(Box::new(move || {
 						connector.unsubscribe(
-							&mut <Source::Subscription as SignalContext>::Context::drop_context(),
+							&mut <Source::Subscription as SignalContext>::Context::get_unsubscribe_context(),
 						);
 					})),
 					context,

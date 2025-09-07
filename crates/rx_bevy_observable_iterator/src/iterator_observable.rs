@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ChannelContext, DropContext, DropSubscription, Observable, ObservableOutput, Observer,
-	SubscriptionLike, Teardown, UpgradeableObserver,
+	ChannelContext, DropContext, DropContextFromSubscription, DropSubscription, Observable,
+	ObservableOutput, Observer, SubscriptionLike, Teardown, UpgradeableObserver,
 };
 
 /// Emits a single value then immediately completes

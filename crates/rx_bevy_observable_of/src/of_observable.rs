@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, DropSubscription, Observable, ObservableOutput, Observer, Teardown,
+	DropContextFromSubscription, DropSubscription, Observable, ObservableOutput, Observer, Teardown,
 	UpgradeableObserver,
 };
 
@@ -38,7 +38,7 @@ where
 impl<Out, Context> Observable for OfObservable<Out, Context>
 where
 	Out: 'static + Clone,
-	Context: DropContext,
+	Context: DropContextFromSubscription,
 {
 	type Subscription = DropSubscription<Context>;
 

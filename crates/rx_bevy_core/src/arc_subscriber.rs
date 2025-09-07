@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use crate::{
-	SubscriptionCollection, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionLike, Teardown,
+	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
+	Teardown,
 };
 
 impl<Destination> ObserverInput for Arc<RwLock<Destination>>
