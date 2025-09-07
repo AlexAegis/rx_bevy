@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	SubscriptionCollection, ObservableOutput, Observer, ObserverInput, Operation,
-	SignalContext, Subscriber, SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -54,17 +54,17 @@ where
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		self.destination.complete(context);
 	}
 
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
 		let next =
 			self.state
 				.calculate_output(self.options.envelope, self.is_getting_activated, tick);
@@ -86,7 +86,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		self.destination.unsubscribe(context);
 	}
 }
@@ -98,10 +98,10 @@ where
 	InError: 'static,
 {
 	#[inline]
-	fn add(
+	fn add<'c>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
-		context: &mut Self::Context,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
 	) {
 		self.destination.add(subscription, context);
 	}

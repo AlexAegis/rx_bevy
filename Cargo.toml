@@ -123,6 +123,10 @@ rx_bevy_subscriber_detached = { path = "crates/rx_bevy_subscriber_detached" }
 rx_bevy_ref_subscriber_rc = { path = "crates/rx_bevy_ref_subscriber_rc" }
 rx_bevy_ref_subscriber_shared = { path = "crates/rx_bevy_ref_subscriber_shared" }
 rx_bevy_ref_subscriber_switch = { path = "crates/rx_bevy_ref_subscriber_switch" }
+# Subscribers
+rx_bevy_subscriber_entity = { path = "crates/rx_bevy_subscriber_entity" }
+# Subscription Contexts
+rx_bevy_context_command = { path = "crates/rx_bevy_context_command" }
 # Subjects
 rx_bevy_ref_subject = { path = "crates/rx_bevy_ref_subject" }
 rx_bevy_ref_subject_behavior = { path = "crates/rx_bevy_ref_subject_behavior" }

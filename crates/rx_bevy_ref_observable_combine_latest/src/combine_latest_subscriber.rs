@@ -1,5 +1,6 @@
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, Operation, Subscriber, SubscriptionLike, Tick,
+	Observable, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -45,6 +46,17 @@ where
 	type InError = EitherOutError2<O1, O2>;
 }
 
+impl<Destination, O1, O2> SignalContext for CombineLatestSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
+	type Context<'c> = Destination::Context<'c>;
+}
+
 impl<Destination, O1, O2> Observer for CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
@@ -53,7 +65,7 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	fn next(&mut self, next: Self::In) {
+	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
 		match next {
 			EitherOut2::O1(o1_next) => {
 				self.o1_val.replace(o1_next);
@@ -66,23 +78,24 @@ where
 		}
 
 		if let Some((o1_val, o2_val)) = self.o1_val.as_ref().zip(self.o2_val.as_ref()) {
-			self.destination.next((o1_val.clone(), o2_val.clone()));
+			self.destination
+				.next((o1_val.clone(), o2_val.clone()), context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
-		self.unsubscribe()
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+		self.destination.error(error, context);
+		self.unsubscribe(context)
 	}
 
-	fn complete(&mut self) {
-		self.destination.complete();
-		self.unsubscribe()
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+		self.destination.complete(context);
+		self.unsubscribe(context)
 	}
 
 	#[inline]
-	fn tick(&mut self, tick: Tick) {
-		self.destination.tick(tick);
+	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -98,12 +111,26 @@ where
 		self.destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self) {
-		self.destination.unsubscribe();
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+		self.destination.unsubscribe(context);
 	}
+}
 
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+impl<Destination, O1, O2> SubscriptionCollection for CombineLatestSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: SubscriptionCollection,
+{
+	fn add<'c>(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 

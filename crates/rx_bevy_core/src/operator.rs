@@ -8,19 +8,19 @@ use crate::{ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber
 /// that defines how those input signals will produce output signals.
 pub trait Operator: ObserverInput + ObservableOutput + Clone {
 	// TODO: Should be into destination context so the context can be downgraded along the operators
-	type Subscriber<Destination>: OperationSubscriber<
+	type Subscriber<Destination>: for<'c> OperationSubscriber<
 			Destination = Destination,
 			In = Self::In,
 			InError = Self::InError,
-			Context = Destination::Context,
+			Context<'c> = Destination::Context<'c>,
 		>
 	where
 		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<'c, Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		context: &mut <Self::Subscriber<Destination> as SignalContext>::Context<'c>,
 	) -> Self::Subscriber<Destination>;
 }
 

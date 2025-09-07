@@ -59,22 +59,22 @@ where
 	InError: 'static,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
 		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		self.destination.complete(context);
 	}
 
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -95,7 +95,7 @@ where
 		self.destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if let Some(finalize) = self.callback.take() {
 			(finalize)();
 		}
@@ -116,10 +116,10 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<'c>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
-		context: &mut Self::Context,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
 	) {
 		self.destination.add(subscription, context);
 	}

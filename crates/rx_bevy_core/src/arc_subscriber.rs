@@ -17,28 +17,28 @@ impl<Destination> Observer for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.error(error, context);
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.complete(context);
 		}
 	}
 
-	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
+	fn tick<'c>(&mut self, tick: crate::Tick, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			let mut lock = self.write().expect("lock is poisoned!");
 			lock.tick(tick, context);
@@ -50,7 +50,7 @@ impl<Destination> SignalContext for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
 {
-	type Context = Destination::Context;
+	type Context<'c> = Destination::Context<'c>;
 }
 
 impl<Destination> SubscriptionLike for Arc<RwLock<Destination>>
@@ -62,7 +62,7 @@ where
 		lock.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Destination::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Destination::Context<'c>) {
 		let mut lock = self.write().expect("lock is poisoned!");
 		lock.unsubscribe(context);
 	}
@@ -73,10 +73,10 @@ where
 	Destination: Subscriber,
 	Destination: SubscriptionCollection,
 {
-	fn add(
+	fn add<'c>(
 		&mut self,
-		subscription: impl Into<Teardown<Destination::Context>>,
-		context: &mut Destination::Context,
+		subscription: impl Into<Teardown<Destination::Context<'c>>>,
+		context: &mut Destination::Context<'c>,
 	) {
 		let mut lock = self.write().expect("lock is poisoned!");
 		lock.add(subscription, context);

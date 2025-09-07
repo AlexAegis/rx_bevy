@@ -1,4 +1,4 @@
-use crate::{SignalContext, SubscriptionCollection, SubscriptionLike, UpgradeableObserver};
+use crate::{SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike};
 
 pub trait ObservableOutput {
 	type Out: 'static;
@@ -9,18 +9,17 @@ pub trait Observable: ObservableOutput {
 	type Subscription: 'static + Default + SubscriptionLike + SubscriptionCollection;
 
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
-	fn subscribe<
-		Destination: 'static
-			+ UpgradeableObserver<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
-			>,
-	>(
+	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
-	) -> Self::Subscription;
+		context: &mut <Destination as SignalContext>::Context<'c>,
+	) -> Self::Subscription
+	where
+		Destination: Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+			>;
 }
 
 impl ObservableOutput for () {

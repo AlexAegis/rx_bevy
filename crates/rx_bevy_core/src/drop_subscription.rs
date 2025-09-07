@@ -65,7 +65,7 @@ impl<Context> SignalContext for DropSubscription<Context>
 where
 	Context: DropContext,
 {
-	type Context = Context;
+	type Context<'c> = Context;
 }
 
 impl<Context> SubscriptionLike for DropSubscription<Context>
@@ -76,7 +76,7 @@ where
 		self.inner.read().expect("to not be locked").is_closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		let mut lock = self.inner.write().expect("to not be locked");
 
 		lock.unsubscribe(context);
@@ -87,7 +87,11 @@ impl<Context> SubscriptionCollection for DropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn add(&mut self, subscription: impl Into<Teardown<Context>>, context: &mut Context) {
+	fn add<'c>(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
+	) {
 		let mut lock = self.inner.write().expect("to not be locked");
 
 		lock.add_finalizer(subscription, context);
@@ -106,7 +110,7 @@ impl<Context> DropContextFromSubscription for InnerDropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
+	fn get_unsubscribe_context<'c>(&mut self) -> Self::Context<'c> {
 		Context::get_context_for_drop()
 	}
 }
@@ -127,7 +131,7 @@ impl<Context> SignalContext for InnerDropSubscription<Context>
 where
 	Context: DropContext,
 {
-	type Context = Context;
+	type Context<'c> = Context;
 }
 
 impl<Context> InnerDropSubscription<Context>
@@ -136,15 +140,12 @@ where
 {
 	pub fn new(finalizer: impl Into<Teardown<Context>>) -> Self {
 		let teardown = finalizer.into();
-		let is_closed = matches!(&teardown, Teardown::Sub(sub) if sub.is_closed());
+
+		// let is_closed = matches!(&teardown, Teardown::Sub(sub) if sub.is_closed());
 
 		Self {
-			is_closed,
-			finalizers: if is_closed {
-				SmallVec::new()
-			} else {
-				smallvec::smallvec![teardown]
-			},
+			is_closed: false,
+			finalizers: smallvec::smallvec![teardown],
 		}
 	}
 
@@ -192,7 +193,11 @@ impl<Context> SubscriptionCollection for InnerDropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn add(&mut self, subscription: impl Into<Teardown<Context>>, context: &mut Context) {
+	fn add<'c>(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
+	) {
 		self.add_finalizer(subscription, context);
 	}
 }

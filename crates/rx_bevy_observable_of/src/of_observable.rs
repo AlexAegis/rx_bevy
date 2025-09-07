@@ -1,12 +1,12 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContextFromSubscription, DropSubscription, Observable, ObservableOutput, Observer, Teardown,
-	UpgradeableObserver,
+	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
+	Teardown,
 };
 
 /// Observable creator for [OfObservable]
-pub fn of<T>(value: T) -> OfObservable<T>
+pub fn of<T>(value: T) -> OfObservable<T, ()>
 where
 	T: Clone,
 {
@@ -38,21 +38,29 @@ where
 impl<Out, Context> Observable for OfObservable<Out, Context>
 where
 	Out: 'static + Clone,
-	Context: DropContextFromSubscription,
+	Context: DropContext,
 {
 	type Subscription = DropSubscription<Context>;
 
-	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Context>,
-	>(
+	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Context,
-	) -> Self::Subscription {
-		let mut subscriber = destination.upgrade();
+	) -> Self::Subscription
+	where
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+			>,
+	{
+		let mut subscriber = destination;
 		subscriber.next(self.value.clone(), context);
 		subscriber.complete(context);
-		DropSubscription::new(Teardown::new_from_subscription(subscriber))
+		DropSubscription::new(Teardown::new(move |_| {
+			subscriber.unsubscribe(&mut DropContext::get_context_for_drop())
+		}))
 	}
 }
 

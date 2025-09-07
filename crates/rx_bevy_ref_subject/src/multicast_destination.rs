@@ -1,19 +1,20 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	InnerDropSubscription, ObserverInput, Subscriber, SubscriptionLike, UpgradeableObserver,
+	InnerDropSubscription, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown,
 };
 use slab::Slab;
 
 use crate::MulticastSubscriber;
 
-pub struct MulticastDestination<In, InError> {
-	pub(crate) slab: Slab<Box<dyn Subscriber<In = In, InError = InError>>>,
+pub struct MulticastDestination<In, InError, Context> {
+	pub(crate) slab: Slab<Box<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
 	pub(crate) closed: bool,
-	pub(crate) teardown: InnerDropSubscription,
+	pub(crate) teardown: InnerDropSubscription<Context>,
 }
 
-impl<In, InError> ObserverInput for MulticastDestination<In, InError>
+impl<In, InError, Context> ObserverInput for MulticastDestination<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -22,25 +23,28 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> MulticastDestination<In, InError> {
+impl<In, InError, Context> MulticastDestination<In, InError, Context> {
 	/// Closes this destination and drains its subscribers
 	/// It does not do anything with the subscribers as their actions too might
 	/// need write access to this destination
-	pub fn drain(&mut self) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
+	pub fn drain<'c>(
+		&mut self,
+	) -> Vec<Box<dyn Subscriber<In = In, InError = InError, Context<'c> = Context>>> {
 		self.closed = true;
 		self.slab.drain().collect::<Vec<_>>()
 	}
 
-	pub fn take(&mut self, key: usize) -> Option<Box<dyn Subscriber<In = In, InError = InError>>> {
+	pub fn take<'c>(
+		&mut self,
+		key: usize,
+	) -> Option<Box<dyn Subscriber<In = In, InError = InError, Context<'c> = Context>>> {
 		self.slab.try_remove(key)
 	}
 
-	pub fn multicast_subscribe<
-		Destination: 'static + UpgradeableObserver<In = In, InError = InError>,
-	>(
+	pub fn multicast_subscribe<Destination: 'static + Subscriber<In = In, InError = InError>>(
 		&mut self,
-		subscriber: Destination::Subscriber,
-		subscriber_ref: Arc<RwLock<MulticastDestination<In, InError>>>,
+		subscriber: Destination,
+		subscriber_ref: Arc<RwLock<MulticastDestination<In, InError, Context>>>,
 	) -> usize {
 		let entry = self.slab.vacant_entry();
 		let key = entry.key();
@@ -54,7 +58,7 @@ impl<In, InError> MulticastDestination<In, InError> {
 	}
 }
 
-impl<In, InError> Default for MulticastDestination<In, InError> {
+impl<In, InError, Context> Default for MulticastDestination<In, InError, Context> {
 	fn default() -> Self {
 		Self {
 			slab: Slab::with_capacity(1),
@@ -64,16 +68,26 @@ impl<In, InError> Default for MulticastDestination<In, InError> {
 	}
 }
 
-impl<In, InError> SubscriptionLike for MulticastDestination<In, InError> {
+impl<In, InError, Context> SignalContext for MulticastDestination<In, InError, Context> {
+	type Context<'c> = Context;
+}
+
+impl<In, InError, Context> SubscriptionLike for MulticastDestination<In, InError, Context> {
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
 
-	fn unsubscribe(&mut self) {
-		self.teardown.unsubscribe();
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+		self.teardown.unsubscribe(context);
 	}
+}
 
-	fn add(&mut self, subscription: impl Into<Teardown>) {
+impl<In, InError, Context> SubscriptionCollection for MulticastDestination<In, InError, Context> {
+	fn add<'c>(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
+	) {
 		self.teardown.add_finalizer(subscription);
 	}
 }

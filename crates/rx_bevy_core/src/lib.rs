@@ -5,6 +5,7 @@ mod observable;
 mod observer;
 mod operator;
 mod option_operator;
+mod ref_cell_observer;
 mod subject;
 mod subscriber;
 mod subscription;

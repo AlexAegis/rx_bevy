@@ -78,7 +78,7 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			context.values.push(next);
 		} else {
@@ -86,7 +86,7 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			context.errors.push(error);
 		} else {
@@ -94,7 +94,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			context.completed += 1;
 			self.unsubscribe(context);
@@ -103,7 +103,7 @@ where
 		}
 	}
 
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			context.ticks.push(tick);
 		} else {
@@ -117,7 +117,7 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Context = MockContext<In, InError>;
+	type Context<'c> = MockContext<In, InError>;
 }
 impl<In, InError> SubscriptionLike for MockObserver<In, InError>
 where
@@ -129,7 +129,7 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.closed {
 			self.closed = true;
 			context.unsubscribed = true;

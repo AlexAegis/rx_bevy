@@ -4,8 +4,8 @@ use std::{
 };
 
 use rx_bevy_core::{
-	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	AssertSubscriptionClosedOnDrop, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 /// Internal to [RcSubscriber]
@@ -41,14 +41,14 @@ where
 		}
 	}
 
-	pub fn unsubscribe_if_can(&mut self, context: &mut <Self as SignalContext>::Context) {
+	pub fn unsubscribe_if_can<'c>(&mut self, context: &mut <Self as SignalContext>::Context<'c>) {
 		if self.unsubscribe_count == self.ref_count && !self.closed {
 			self.closed = true;
 			self.destination.unsubscribe(context);
 		}
 	}
 
-	pub fn complete_if_can(&mut self, context: &mut <Self as SignalContext>::Context) {
+	pub fn complete_if_can<'c>(&mut self, context: &mut <Self as SignalContext>::Context<'c>) {
 		if self.completion_count == self.ref_count && !self.closed {
 			self.closed = true;
 			self.destination.complete(context);
@@ -88,34 +88,34 @@ impl<Destination> SignalContext for RcDestination<Destination>
 where
 	Destination: Subscriber,
 {
-	type Context = Destination::Context;
+	type Context<'c> = Destination::Context<'c>;
 }
 
 impl<Destination> Observer for RcDestination<Destination>
 where
 	Destination: Subscriber,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.destination.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.destination.error(error, context);
 			self.unsubscribe(context);
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.completion_count += 1;
 			self.complete_if_can(context);
 		}
 	}
 
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.destination.tick(tick, context);
 		}
@@ -130,7 +130,7 @@ where
 		self.closed || self.destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.unsubscribe_count += 1;
 			self.unsubscribe_if_can(context);
@@ -144,10 +144,10 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<'c>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
-		context: &mut Self::Context,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
 	) {
 		self.destination.add(subscription, context);
 	}
@@ -175,6 +175,7 @@ pub struct RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
+	// TODO Instead of an Arc, all this should guarantee that the destination is cloneable and it still points to the same thing. This is true for entities aswell
 	destination: Arc<RwLock<RcDestination<Destination>>>,
 	completed: bool,
 	unsubscribed: bool,
@@ -265,28 +266,28 @@ impl<Destination> SignalContext for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	type Context = Destination::Context;
+	type Context<'c> = Destination::Context<'c>;
 }
 
 impl<Destination> Observer for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			let mut lock = self.destination.write().expect("lock is poisoned!");
 			lock.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			let mut lock = self.destination.write().expect("lock is poisoned!");
 			lock.error(error, context);
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.completed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
@@ -294,7 +295,7 @@ where
 		}
 	}
 
-	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
+	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.completed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
@@ -316,7 +317,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.unsubscribed = true;
 			let mut lock = self.destination.write().expect("lock is poisoned!");
@@ -331,10 +332,10 @@ where
 	Destination: Subscriber,
 	Destination: SubscriptionCollection,
 {
-	fn add(
+	fn add<'c>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
-		context: &mut Self::Context,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
 	) {
 		let mut lock = self.destination.write().expect("lock is poisoned!");
 		lock.add(subscription, context);
@@ -357,6 +358,8 @@ where
 		if self.unsubscribed {
 			lock.unsubscribe_count -= 1;
 		}
+
+		self.assert_closed_when_dropped();
 
 		//  lock.complete_if_can();
 		//  lock.unsubscribe_if_can();
@@ -445,14 +448,14 @@ impl<Destination> SignalContext for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	type Context = Destination::Context;
+	type Context<'c> = Destination::Context<'c>;
 }
 
 impl<Destination> Observer for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
 		if !self.is_closed()
 			&& let Ok(mut lock) = self.destination.try_write()
 		{
@@ -460,7 +463,7 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.try_write() {
 				lock.error(error, context);
@@ -469,7 +472,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.try_write() {
 				lock.complete(context);
@@ -478,7 +481,7 @@ where
 		}
 	}
 
-	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
+	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
 		if !self.is_closed()
 			&& let Ok(mut lock) = self.destination.try_write()
 		{
@@ -495,7 +498,7 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			self.closed = true;
 			if let Ok(mut lock) = self.destination.try_write() {
@@ -510,10 +513,10 @@ where
 	Destination: Subscriber,
 	Destination: SubscriptionCollection,
 {
-	fn add(
+	fn add<'c>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
-		context: &mut Self::Context,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
 	) {
 		if let Ok(mut lock) = self.destination.try_write() {
 			lock.add(subscription, context);

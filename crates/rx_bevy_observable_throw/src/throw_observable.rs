@@ -1,12 +1,12 @@
-use std::task::Context;
+use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContextFromSubscription, DropSubscription, Observable, ObservableOutput, Observer,
-	Teardown, UpgradeableObserver,
+	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
+	Teardown,
 };
 
 /// Observable creator for [ThrowObservable]
-pub fn throw<Error>(error: Error) -> ThrowObservable<Error>
+pub fn throw<Error>(error: Error) -> ThrowObservable<Error, ()>
 where
 	Error: Clone,
 {
@@ -24,21 +24,28 @@ where
 impl<Error, Context> Observable for ThrowObservable<Error, Context>
 where
 	Error: 'static + Clone,
-	Context: DropContextFromSubscription,
+	Context: DropContext,
 {
 	type Subscription = DropSubscription<Context>;
 
-	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = (), InError = Error, Context = Context>,
-	>(
+	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Context,
-	) -> Self::Subscription {
-		let mut subscriber = destination.upgrade();
+	) -> Self::Subscription
+	where
+		Destination: Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+			>,
+	{
+		let mut subscriber = destination;
 		subscriber.error(self.error.clone(), context);
 
-		DropSubscription::new(Teardown::new_from_subscription(subscriber))
+		DropSubscription::new(Teardown::new(move |_| {
+			subscriber.unsubscribe(&mut Context::get_context_for_drop());
+		}))
 	}
 }
 
@@ -48,6 +55,7 @@ where
 	Error: Clone,
 {
 	error: Error,
+	_phantom_data: PhantomData<Context>,
 }
 
 impl<Error, Context> ThrowObservable<Error, Context>
@@ -55,7 +63,10 @@ where
 	Error: Clone,
 {
 	pub fn new(error: Error) -> Self {
-		Self { error }
+		Self {
+			error,
+			_phantom_data: PhantomData,
+		}
 	}
 }
 
@@ -71,7 +82,7 @@ mod tests {
 		let mut observable = ThrowObservable::new(error);
 		let mut mock_observer = MockObserver::new_shared();
 
-		let _s = observable.subscribe(mock_observer.clone());
+		let _s = observable.subscribe(mock_observer.clone(), ());
 
 		mock_observer.read(|d| {
 			assert_eq!(d.destination.errors, vec![error]);

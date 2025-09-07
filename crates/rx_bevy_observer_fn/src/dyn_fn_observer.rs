@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	SubscriptionCollection, InnerDropSubscription, Observer, ObserverInput, SubscriptionLike,
-	Tick,
+	InnerDropSubscription, Observer, ObserverInput, SubscriptionCollection, SubscriptionLike, Tick,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -55,7 +54,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			if let Some(on_complete) = self.on_complete.take() {
 				(on_complete)();
@@ -91,8 +90,7 @@ where
 	}
 }
 
-impl<In, InError, Context> SubscriptionCollection<Context>
-	for DynFnObserver<In, InError, Context>
+impl<In, InError, Context> SubscriptionCollection<Context> for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,

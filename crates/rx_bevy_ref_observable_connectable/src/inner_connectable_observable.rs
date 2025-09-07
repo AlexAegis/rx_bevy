@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, SubjectLike,
-	SubscriptionCollection, SubscriptionLike, Teardown, UpgradeableObserver,
+	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown,
 };
 
 use crate::{Connectable, ConnectableOptions};
@@ -96,18 +96,18 @@ where
 {
 	type Subscription = Connector::Subscription;
 
-	fn subscribe<
-		Destination: 'static
-			+ UpgradeableObserver<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
-			>,
-	>(
+	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
-	) -> Self::Subscription {
+		context: &mut Destination::Context<'c>,
+	) -> Self::Subscription
+	where
+		Destination: Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+			>,
+	{
 		let connector = self.get_active_connector();
 		connector.subscribe(destination, context)
 	}
@@ -119,19 +119,19 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static
-		+ SubjectLike<
+		+ for<'c> SubjectLike<
 			In = Source::Out,
 			InError = Source::OutError,
-			Context = <Source::Subscription as SignalContext>::Context,
+			Context<'c> = <Source::Subscription as SignalContext>::Context<'c>,
 		>,
 	Source::Subscription: Clone + SubscriptionCollection,
-	<Source::Subscription as SignalContext>::Context: DropContextFromSubscription,
+	for<'c> <Source::Subscription as SignalContext>::Context<'c>: DropContextFromSubscription,
 {
 	type ConnectionSubscription = Source::Subscription;
 
-	fn connect(
+	fn connect<'c>(
 		&mut self,
-		context: &mut <Self::ConnectionSubscription as SignalContext>::Context,
+		context: &mut <Self::ConnectionSubscription as SignalContext>::Context<'c>,
 	) -> Self::ConnectionSubscription {
 		self.get_active_connection().unwrap_or_else(|| {
 			let mut connector = self.get_connector().clone();
@@ -140,10 +140,8 @@ where
 
 			if self.options.unsubscribe_connector_on_disconnect {
 				connection.add(
-					Teardown::new(Box::new(move || {
-						connector.unsubscribe(
-							&mut <Source::Subscription as SignalContext>::Context::get_unsubscribe_context(),
-						);
+					Teardown::new(Box::new(move |c| {
+						connector.unsubscribe(c);
 					})),
 					context,
 				);
@@ -163,7 +161,7 @@ where
 	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
-	type Context = Connector::Context;
+	type Context<'c> = Connector::Context<'c>;
 }
 
 impl<Source, ConnectorCreator, Connector> SubscriptionLike
@@ -178,7 +176,7 @@ where
 		self.is_connection_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if let Some(connector) = &mut self.connector {
 			connector.unsubscribe(context);
 		}
@@ -195,10 +193,10 @@ where
 	Connector: SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<'c>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
-		context: &mut Self::Context,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
 	) {
 		if let Some(connector) = &mut self.connector {
 			connector.add(subscription, context);

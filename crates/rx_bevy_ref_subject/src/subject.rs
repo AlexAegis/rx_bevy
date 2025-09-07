@@ -1,29 +1,29 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	DropSubscription, Observable, ObservableOutput, Observer, ObserverInput, Subscriber,
-	SubscriptionLike, Teardown, Tick, UpgradeableObserver,
+	DropContext, DropSubscription, Observable, ObservableOutput, Observer, ObserverInput,
+	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 use crate::MulticastDestination;
 
 /// A Subject is a shared multicast observer, can be used for broadcasting,
 /// A subjects clone still multicasts to the same set of subscribers.
-pub struct Subject<In, InError = ()>
+pub struct Subject<In, InError = (), Context = ()>
 where
 	In: 'static,
 	InError: 'static,
 {
-	pub multicast: Arc<RwLock<MulticastDestination<In, InError>>>,
+	pub multicast: Arc<RwLock<MulticastDestination<In, InError, Context>>>,
 }
 
-impl<In, InError> Subject<In, InError> {
+impl<In, InError, Context> Subject<In, InError, Context> {
 	/// Closes the multicast and drains its subscribers to be unsubscribed.
 	/// It does not do anything with the subscribers as their actions too might
 	/// need write access to this destination
-	pub(crate) fn close_and_drain(
+	pub(crate) fn close_and_drain<'c>(
 		&mut self,
-	) -> Vec<Box<dyn Subscriber<In = In, InError = InError>>> {
+	) -> Vec<Box<dyn Subscriber<In = In, InError = InError, Context<'c> = Context>>> {
 		let mut multicast = self.multicast.write().expect("poison");
 		multicast.closed = true;
 		multicast.drain()
@@ -56,18 +56,27 @@ where
 	type OutError = Error;
 }
 
-impl<T, Error> Observable for Subject<T, Error>
+impl<T, Error, Context> Observable for Subject<T, Error, Context>
 where
 	T: 'static,
 	Error: 'static,
+	Context: DropContext,
 {
-	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
-	>(
+	type Subscription = DropSubscription<Context>;
+
+	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
-	) -> DropSubscription {
-		let subscriber = destination.upgrade();
+		context: &mut <Destination as SignalContext>::Context<'c>,
+	) -> Self::Subscription
+	where
+		Destination: Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+			>,
+	{
+		let subscriber = destination;
 
 		let mut multicast_destination = self.multicast.write().expect("Poisoned!");
 
@@ -75,7 +84,7 @@ where
 			.multicast_subscribe::<Destination>(subscriber, self.multicast.clone());
 
 		let multicast_ref = self.multicast.clone();
-		DropSubscription::new(Teardown::new(Box::new(move || {
+		DropSubscription::new(Teardown::new(Box::new(move |_| {
 			let subscriber = {
 				let mut write_multicast = multicast_ref.write().expect("blocked 1");
 				write_multicast.take(key)
@@ -88,7 +97,7 @@ where
 	}
 }
 
-impl<T, Error> ObserverInput for Subject<T, Error>
+impl<T, Error, Context> ObserverInput for Subject<T, Error, Context>
 where
 	T: 'static + Clone,
 	Error: 'static + Clone,
@@ -97,12 +106,20 @@ where
 	type InError = Error;
 }
 
-impl<T, Error> Observer for Subject<T, Error>
+impl<T, Error, Context> SignalContext for Subject<T, Error, Context>
 where
 	T: 'static + Clone,
 	Error: 'static + Clone,
 {
-	fn next(&mut self, next: Self::In) {
+	type Context<'c> = Context;
+}
+
+impl<T, Error, Context> Observer for Subject<T, Error, Context>
+where
+	T: 'static + Clone,
+	Error: 'static + Clone,
+{
+	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -112,7 +129,7 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError) {
+	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -123,7 +140,7 @@ where
 		}
 	}
 
-	fn complete(&mut self) {
+	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
 		if !self.is_closed() {
 			let mut destinations = self.close_and_drain();
 			for destination in destinations.iter_mut() {
@@ -132,7 +149,7 @@ where
 		}
 	}
 
-	fn tick(&mut self, tick: Tick) {
+	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -143,7 +160,7 @@ where
 	}
 }
 
-impl<T, Error> SubscriptionLike for Subject<T, Error>
+impl<T, Error, Context> SubscriptionLike for Subject<T, Error, Context>
 where
 	T: 'static,
 	Error: 'static,
@@ -156,16 +173,25 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self) {
+	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
 		for mut destination in self.close_and_drain() {
-			destination.unsubscribe();
+			destination.unsubscribe(context);
 		}
 	}
+}
 
-	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
+impl<T, Error, Context> SubscriptionCollection for Subject<T, Error, Context>
+where
+	T: 'static,
+	Error: 'static,
+{
+	fn add<'c>(
+		&mut self,
+		subscription: impl Into<Teardown<Self::Context<'c>>>,
+		context: &mut Self::Context<'c>,
+	) {
 		if let Ok(mut multicast) = self.multicast.write() {
-			multicast.add(subscription);
+			multicast.add(subscription, context);
 		}
 	}
 }

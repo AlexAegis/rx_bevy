@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ChannelContext, DropContext, DropContextFromSubscription, DropSubscription, Observable,
-	ObservableOutput, Observer, SubscriptionLike, Teardown, UpgradeableObserver,
+	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
+	Teardown,
 };
 
 /// Emits a single value then immediately completes
@@ -44,14 +44,20 @@ where
 {
 	type Subscription = DropSubscription<Context>;
 
-	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Context>,
-	>(
+	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Context,
-	) -> DropSubscription<Context> {
-		let mut subscriber = destination.upgrade();
+		context: &mut <Destination as SignalContext>::Context<'c>,
+	) -> Self::Subscription
+	where
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+			>,
+	{
+		let mut subscriber = destination;
 		for item in self.iterator.clone().into_iter() {
 			if subscriber.is_closed() {
 				break;
@@ -59,6 +65,8 @@ where
 			subscriber.next(item, context);
 		}
 		subscriber.complete(context);
-		DropSubscription::new(Teardown::Sub(Box::new(subscriber)))
+		DropSubscription::new(Teardown::new(move |_| {
+			subscriber.unsubscribe(&mut Context::get_context_for_drop())
+		}))
 	}
 }
