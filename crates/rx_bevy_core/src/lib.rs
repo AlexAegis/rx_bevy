@@ -8,6 +8,7 @@ mod option_operator;
 mod subject;
 mod subscriber;
 mod subscription;
+mod tick;
 
 pub use assert_subscription_closed_on_drop::*;
 pub use drop_subscription::*;
@@ -18,11 +19,6 @@ pub use option_operator::*;
 pub use subject::*;
 pub use subscriber::*;
 pub use subscription::*;
-
-#[cfg(feature = "tick")]
-mod tick;
-
-#[cfg(feature = "tick")]
 pub use tick::*;
 
 pub mod prelude {
@@ -30,7 +26,5 @@ pub mod prelude {
 	pub use super::observer::*;
 	pub use super::option_operator::*;
 	pub use super::subscription::*;
-
-	#[cfg(feature = "tick")]
 	pub use super::tick::*;
 }

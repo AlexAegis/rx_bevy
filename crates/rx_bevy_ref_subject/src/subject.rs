@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, DropSubscription,
-	SubscriptionLike, Teardown, UpgradeableObserver,
+	DropSubscription, Observable, ObservableOutput, Observer, ObserverInput, Subscriber,
+	SubscriptionLike, Teardown, Tick, UpgradeableObserver,
 };
 
 use crate::MulticastDestination;
@@ -132,8 +132,7 @@ where
 		}
 	}
 
-	#[cfg(feature = "tick")]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(&mut self, tick: Tick) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{

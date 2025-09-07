@@ -38,12 +38,6 @@ reflect = [
     "rx_bevy_core/reflect",
     "rx_bevy_observable_deferred/reflect",
 ]
-tick = [
-    "rx_bevy_core/tick",
-    "rx_bevy/tick",
-    "rx_bevy_testing/tick",
-    "rx_bevy_observable_deferred/tick",
-]
 
 [dependencies]
 rx_bevy_core = { workspace = true }

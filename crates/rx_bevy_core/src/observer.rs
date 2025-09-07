@@ -85,7 +85,6 @@ where
 		self.borrow_mut().complete(context);
 	}
 
-	#[cfg(feature = "tick")]
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		self.borrow_mut().tick(tick, context);
 	}

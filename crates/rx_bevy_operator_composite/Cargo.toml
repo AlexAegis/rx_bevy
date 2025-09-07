@@ -23,6 +23,7 @@ dev = [
     "rx_bevy_core/dev",
     "rx_bevy_ref_pipe?/dev",
     "rx_bevy_testing/dev",
+    "short_type_name/dev",
 ]
 example = [
     "dev",
@@ -32,24 +33,7 @@ example = [
     "rx_bevy_testing/example",
 ]
 pipe = ["dep:rx_bevy_ref_pipe", "rx_bevy/pipe"]
-bevy = [
-    "tick",
-    "channel_context",
-    "rx_bevy/bevy",
-    "rx_bevy_core/bevy",
-    "rx_bevy_testing/bevy",
-]
-channel_context = [
-    "rx_bevy/channel_context",
-    "rx_bevy_testing/channel_context",
-    "rx_bevy_core/channel_context",
-]
-tick = [
-    "rx_bevy/tick",
-    "rx_bevy_testing/tick",
-    "rx_bevy_core/tick",
-    "rx_bevy_ref_pipe?/tick",
-]
+bevy = ["rx_bevy/bevy", "rx_bevy_core/bevy", "rx_bevy_testing/bevy"]
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",

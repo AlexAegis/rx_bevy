@@ -22,19 +22,16 @@ dev = [
     "rx_bevy/dev",
     "rx_bevy_common_bounds/dev",
     "rx_bevy_testing/dev",
+    "short_type_name/dev",
 ]
 example = ["dev", "rx_bevy/example", "rx_bevy_testing/example"]
 bevy = [
-    "tick",
-    "channel_context",
     "dep:bevy_ecs",
     "dep:bevy_time",
     "dep:bevy_log",
     "rx_bevy/bevy",
     "rx_bevy_testing/bevy",
 ]
-channel_context = ["rx_bevy/channel_context", "rx_bevy_testing/channel_context"]
-tick = ["rx_bevy/tick", "rx_bevy_testing/tick"]
 serialize = ["rx_bevy_common_bounds/serialize"]
 debug = ["rx_bevy_common_bounds/debug"]
 reflect = [

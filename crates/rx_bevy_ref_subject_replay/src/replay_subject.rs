@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_bevy_core::{
 	DropSubscription, Observable, ObservableOutput, Observer, ObserverInput, SubscriptionLike,
-	UpgradeableObserver,
+	Tick, UpgradeableObserver,
 };
 use rx_bevy_ref_subject::Subject;
 
@@ -60,9 +60,8 @@ where
 		self.subject.complete();
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(&mut self, tick: Tick) {
 		self.subject.tick(tick);
 	}
 }

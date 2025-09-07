@@ -1,8 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, DropSubscription, SubscriptionLike,
-	UpgradeableObserver,
+	DropSubscription, Observable, ObservableOutput, Observer, ObserverInput, SubscriptionLike,
+	Tick, UpgradeableObserver,
 };
 use rx_bevy_ref_subject::Subject;
 
@@ -70,9 +70,8 @@ where
 		self.subject.complete();
 	}
 
-	#[cfg(feature = "tick")]
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick) {
+	fn tick(&mut self, tick: Tick) {
 		self.subject.tick(tick);
 	}
 }

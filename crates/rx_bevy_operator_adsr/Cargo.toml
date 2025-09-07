@@ -32,17 +32,7 @@ debug = [
     "rx_bevy_core/debug",
     "rx_bevy_ecs_observable_keyboard/debug",
 ]
-bevy = [
-    "channel_context",
-    "rx_bevy/bevy",
-    "rx_bevy_core/bevy",
-    "rx_bevy_testing/bevy",
-]
-channel_context = [
-    "rx_bevy/channel_context",
-    "rx_bevy_core/channel_context",
-    "rx_bevy_testing/channel_context",
-]
+bevy = ["rx_bevy/bevy", "rx_bevy_core/bevy", "rx_bevy_testing/bevy"]
 example = [
     "bevy/bevy_asset",
     "bevy/bevy_core_pipeline",
@@ -81,7 +71,7 @@ serialize = [
 
 [dependencies]
 rx_bevy_common_bounds = { workspace = true }
-rx_bevy_core = { workspace = true, features = ["tick"] }
+rx_bevy_core = { workspace = true }
 bevy_time = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_log = { workspace = true }

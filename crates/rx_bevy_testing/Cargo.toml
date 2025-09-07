@@ -19,9 +19,7 @@ workspace = true
 default = []
 dev = ["rx_bevy/dev", "rx_bevy_core/dev"]
 example = ["bevy", "dev", "rx_bevy/example", "rx_bevy_core/example"]
-bevy = ["channel_context", "rx_bevy/bevy", "rx_bevy_core/bevy", "tick"]
-channel_context = ["rx_bevy/channel_context", "rx_bevy_core/channel_context"]
-tick = ["rx_bevy/tick", "rx_bevy_core/tick"]
+bevy = ["rx_bevy/bevy", "rx_bevy_core/bevy"]
 
 [dependencies]
 rx_bevy_core = { workspace = true }

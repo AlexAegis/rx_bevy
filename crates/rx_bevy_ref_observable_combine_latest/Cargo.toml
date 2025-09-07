@@ -33,13 +33,6 @@ example = [
     "rx_bevy_ref_subscriber_rc/example",
     "rx_bevy_testing/example",
 ]
-tick = [
-    "rx_bevy/tick",
-    "rx_bevy_core/tick",
-    "rx_bevy_emission_variants/tick",
-    "rx_bevy_ref_subscriber_rc/tick",
-    "rx_bevy_testing/tick",
-]
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",

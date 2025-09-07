@@ -30,12 +30,7 @@ example = [
     "rx_bevy_ref_subject/example",
     "rx_bevy_testing/example",
 ]
-tick = [
-    "rx_bevy/tick",
-    "rx_bevy_testing/tick",
-    "rx_bevy_core/tick",
-    "rx_bevy_ref_subject/tick",
-]
+
 [dependencies]
 rx_bevy_ref_subject = { workspace = true }
 rx_bevy_core = { workspace = true }

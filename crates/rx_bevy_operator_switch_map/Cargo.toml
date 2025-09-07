@@ -59,26 +59,6 @@ bevy = [
     "rx_bevy_operator_finalize/bevy",
     "rx_bevy_operator_map/bevy",
     "rx_bevy_testing/bevy",
-    "tick",
-    "channel_context",
-]
-channel_context = [
-    "rx_bevy/channel_context",
-    "rx_bevy_core/channel_context",
-    "rx_bevy_operator_composite?/channel_context",
-    "rx_bevy_operator_finalize/channel_context",
-    "rx_bevy_operator_map/channel_context",
-    "rx_bevy_testing/channel_context",
-]
-tick = [
-    "rx_bevy/tick",
-    "rx_bevy_core/tick",
-    "rx_bevy_operator_composite?/tick",
-    "rx_bevy_operator_finalize/tick",
-    "rx_bevy_operator_map/tick",
-    "rx_bevy_ref_pipe?/tick",
-    "rx_bevy_ref_subscriber_switch/tick",
-    "rx_bevy_testing/tick",
 ]
 reflect = [
     "dep:bevy_reflect",
