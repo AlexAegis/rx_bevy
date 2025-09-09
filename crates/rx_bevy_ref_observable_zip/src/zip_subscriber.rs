@@ -53,7 +53,7 @@ where
 		// else, don't do anything, the incoming value is ignored as the queue is full
 	}
 
-	fn check_if_can_complete<'c>(&mut self, context: &mut <Self as SignalContext>::Context<'c>) {
+	fn check_if_can_complete(&mut self, context: &mut <Self as SignalContext>::Context) {
 		if !self.destination.is_closed()
 			&& (self.o1_queue.is_completed() || self.o2_queue.is_completed())
 		{
@@ -83,7 +83,7 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		match next {
 			EitherOut2::O1(o1_next) => {
 				Self::push_next(&mut self.o1_queue, o1_next, &self.options);
@@ -110,7 +110,7 @@ where
 		self.check_if_can_complete(context);
 	}
 
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.destination.is_closed() {
 			self.destination.error(error, context);
 			self.unsubscribe(context)
@@ -118,12 +118,12 @@ where
 	}
 
 	#[inline]
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.check_if_can_complete(context);
 	}
 
 	#[inline]
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -136,7 +136,7 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type Context<'c> = Destination::Context<'c>;
+	type Context = Destination::Context;
 }
 
 impl<Destination, O1, O2> SubscriptionLike for ZipSubscriber<Destination, O1, O2>
@@ -153,7 +153,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
 }
@@ -168,10 +168,10 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
 	}

@@ -49,7 +49,7 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
-	type Context<'c> = <Destination as SignalContext>::Context<'c>;
+	type Context = <Destination as SignalContext>::Context;
 }
 
 impl<O1, O2, Destination> Observer for IntoVariant1of2Subscriber<O1, O2, Destination>
@@ -64,24 +64,24 @@ where
 		>,
 {
 	#[inline]
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.destination.next(EitherOut2::O1(next), context);
 	}
 
 	#[inline]
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination
 			.error(EitherOutError2::O1Error(error), context);
 	}
 
 	#[inline]
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.next(EitherOut2::CompleteO1, context);
 		self.destination.complete(context);
 	}
 
 	#[inline]
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -103,7 +103,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe<'c>(&mut self, context: &mut <Destination as SignalContext>::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut <Destination as SignalContext>::Context) {
 		self.destination.unsubscribe(context);
 	}
 }
@@ -120,10 +120,10 @@ where
 		> + SubscriptionCollection,
 {
 	#[inline]
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<<Destination as SignalContext>::Context<'c>>>,
-		context: &mut <Destination as SignalContext>::Context<'c>,
+		subscription: impl Into<Teardown<<Destination as SignalContext>::Context>>,
+		context: &mut <Destination as SignalContext>::Context,
 	) {
 		self.destination.add(subscription, context);
 	}
@@ -225,7 +225,7 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
-	type Context<'c> = <Destination as SignalContext>::Context<'c>;
+	type Context = <Destination as SignalContext>::Context;
 }
 
 impl<O1, O2, Destination> Observer for IntoVariant2of2Subscriber<O1, O2, Destination>
@@ -240,24 +240,24 @@ where
 		>,
 {
 	#[inline]
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.destination.next(EitherOut2::O2(next), context);
 	}
 
 	#[inline]
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination
 			.error(EitherOutError2::O2Error(error), context);
 	}
 
 	#[inline]
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.next(EitherOut2::CompleteO2, context);
 		self.destination.complete(context);
 	}
 
 	#[inline]
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -279,7 +279,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe<'c>(&mut self, context: &mut <Destination as SignalContext>::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut <Destination as SignalContext>::Context) {
 		self.destination.unsubscribe(context);
 	}
 }
@@ -296,10 +296,10 @@ where
 		> + SubscriptionCollection,
 {
 	#[inline]
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<<Destination as SignalContext>::Context<'c>>>,
-		context: &mut <Destination as SignalContext>::Context<'c>,
+		subscription: impl Into<Teardown<<Destination as SignalContext>::Context>>,
+		context: &mut <Destination as SignalContext>::Context,
 	) {
 		self.destination.add(subscription, context);
 	}

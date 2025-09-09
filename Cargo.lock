@@ -4620,6 +4620,7 @@ dependencies = [
 name = "rx_bevy_context_command"
 version = "0.1.0"
 dependencies = [
+ "bevy",
  "bevy_ecs",
  "rx_bevy",
  "rx_bevy_core",

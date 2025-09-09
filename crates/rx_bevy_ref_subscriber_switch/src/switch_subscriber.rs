@@ -11,10 +11,10 @@ use rx_bevy_subscriber_detached::DetachedSubscriber;
 pub struct SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 {
 	destination: SharedSubscriber<Destination>,
@@ -26,10 +26,10 @@ where
 impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 {
 	pub fn new(destination: Destination) -> Self {
@@ -44,10 +44,10 @@ where
 impl<InnerObservable, Destination> ObserverInput for SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 {
 	type In = InnerObservable;
@@ -59,13 +59,13 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 {
-	type Context<'c> = Destination::Context<'c>;
+	type Context = Destination::Context;
 }
 
 impl<InnerObservable, Destination> Observer for SwitchSubscriber<InnerObservable, Destination>
@@ -73,13 +73,13 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 {
-	fn next<'c>(&mut self, mut next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, mut next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Some(mut inner_subscription) = self.inner_subscription.take() {
 				inner_subscription.unsubscribe(context);
@@ -91,14 +91,14 @@ where
 		}
 	}
 
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.destination.error(error, context);
 			self.unsubscribe(context);
 		}
 	}
 
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if self.inner_subscription.is_none() {
 				self.destination.complete(context);
@@ -107,7 +107,7 @@ where
 		}
 	}
 
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.destination.tick(tick, context);
 		}
@@ -120,10 +120,10 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 {
 	#[inline]
@@ -131,7 +131,7 @@ where
 		self.closed
 	}
 
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.closed = true;
 		if let Some(mut inner_subscription) = self.inner_subscription.take() {
 			inner_subscription.unsubscribe(context);
@@ -146,18 +146,18 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
 	}
@@ -166,10 +166,10 @@ where
 impl<InnerObservable, Destination> Drop for SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 {
 	#[inline]
@@ -185,10 +185,10 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Destination: for<'c> Subscriber<
+	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context<'c> = <InnerObservable::Subscription as SignalContext>::Context<'c>,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		> + Clone,
 {
 	type Destination = SharedSubscriber<Destination>;

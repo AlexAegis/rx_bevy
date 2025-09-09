@@ -38,7 +38,7 @@ where
 	OnError: FnMut(InError),
 	OnComplete: FnMut(),
 {
-	type Context<'c> = Context;
+	type Context = Context;
 }
 
 impl<In, InError, OnPush, OnError, OnComplete, Context> Observer
@@ -50,19 +50,19 @@ where
 	OnError: FnMut(InError),
 	OnComplete: FnMut(),
 {
-	fn next<'c>(&mut self, next: In, _context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: In, _context: &mut Self::Context) {
 		(self.on_next)(next);
 	}
 
-	fn error<'c>(&mut self, error: InError, _context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: InError, _context: &mut Self::Context) {
 		(self.on_error)(error);
 	}
 
-	fn complete<'c>(&mut self, _context: &mut Self::Context<'c>) {
+	fn complete(&mut self, _context: &mut Self::Context) {
 		(self.on_complete)();
 	}
 
-	fn tick<'c>(&mut self, _tick: Tick, _context: &mut Self::Context<'c>) {}
+	fn tick(&mut self, _tick: Tick, _context: &mut Self::Context) {}
 }
 
 impl<In, InError, OnPush, OnError, OnComplete, Context> SubscriptionLike
@@ -80,7 +80,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe<'c>(&mut self, _context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, _context: &mut Self::Context) {
 		self.closed = true;
 	}
 }

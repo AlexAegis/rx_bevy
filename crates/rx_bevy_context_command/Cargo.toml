@@ -32,3 +32,4 @@ bevy_ecs = { workspace = true }
 [dev-dependencies]
 rx_bevy = { workspace = true, features = ["bevy"] }
 rx_bevy_testing = { workspace = true, features = ["bevy"] }
+bevy = { workspace = true }

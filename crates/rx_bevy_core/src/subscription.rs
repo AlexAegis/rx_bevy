@@ -6,7 +6,7 @@
 /// And next signals sometimes trigger completion signals, so all contexts
 /// must be the same.
 pub trait SignalContext {
-	type Context<'c>;
+	type Context;
 }
 
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
@@ -14,7 +14,7 @@ pub trait SignalContext {
 /// but it doesn't actually execute any teardown logic beyond its own, it is
 /// primarily used by operators.
 pub trait SubscriptionLike: SignalContext {
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>);
+	fn unsubscribe(&mut self, context: &mut Self::Context);
 
 	fn is_closed(&self) -> bool;
 }
@@ -23,11 +23,11 @@ pub trait SubscriptionLike: SignalContext {
 /// needed for it to unsubscribe, this trait can enable unsubscribe-on-drop
 /// behavior.
 pub trait DropContextFromSubscription: SignalContext {
-	fn get_unsubscribe_context<'c>(&mut self) -> Self::Context<'c>;
+	fn get_unsubscribe_context(&mut self) -> Self::Context;
 }
 
 impl DropContextFromSubscription for () {
-	fn get_unsubscribe_context<'c>(&mut self) -> Self::Context<'c> {
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		()
 	}
 }
@@ -45,10 +45,10 @@ impl DropContext for () {
 }
 
 pub trait SubscriptionCollection: SubscriptionLike {
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	);
 }
 
@@ -78,7 +78,7 @@ where
 }
 
 impl SignalContext for () {
-	type Context<'c> = ();
+	type Context = ();
 }
 
 impl SubscriptionLike for () {
@@ -86,14 +86,14 @@ impl SubscriptionLike for () {
 		true
 	}
 
-	fn unsubscribe<'c>(&mut self, _context: &mut Self::Context<'c>) {}
+	fn unsubscribe(&mut self, _context: &mut Self::Context) {}
 }
 
 impl SubscriptionCollection for () {
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		let teardown: Teardown<()> = subscription.into();
 		teardown.call(context);

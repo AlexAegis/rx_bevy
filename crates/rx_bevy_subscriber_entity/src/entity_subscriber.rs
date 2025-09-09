@@ -52,7 +52,7 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	type Context<'c> = CommandContext<'c, 'c>;
+	type Context = CommandContext<'c, 'c>;
 }
 
 #[derive(Event, Clone)]
@@ -73,7 +73,7 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands
@@ -81,7 +81,7 @@ where
 		}
 	}
 
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands
@@ -89,7 +89,7 @@ where
 		}
 	}
 
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands
@@ -98,7 +98,7 @@ where
 		}
 	}
 
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands
@@ -117,7 +117,7 @@ where
 		self.closed
 	}
 
-	fn unsubscribe<'c>(&mut self, context: &mut <Self as SignalContext>::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut <Self as SignalContext>::Context) {
 		self.closed = true;
 		context.commands.entity(self.subscription_entity).despawn();
 	}

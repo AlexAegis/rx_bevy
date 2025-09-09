@@ -35,7 +35,7 @@ impl<Destination> SignalContext for DetachedSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	type Context<'c> = Destination::Context<'c>;
+	type Context = Destination::Context;
 }
 
 impl<Destination> Observer for DetachedSubscriber<Destination>
@@ -43,22 +43,22 @@ where
 	Destination: Subscriber,
 {
 	#[inline]
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete<'c>(&mut self, _context: &mut Self::Context<'c>) {
+	fn complete(&mut self, _context: &mut Self::Context) {
 		// Disconnected on purpose
 	}
 
 	#[inline]
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -73,7 +73,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe<'c>(&mut self, _context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, _context: &mut Self::Context) {
 		// The subscription management is handled by the implementor
 	}
 }
@@ -84,10 +84,10 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
 	}

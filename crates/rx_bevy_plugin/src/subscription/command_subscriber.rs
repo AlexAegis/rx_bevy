@@ -77,7 +77,7 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands
@@ -85,7 +85,7 @@ where
 		}
 	}
 
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands
@@ -93,7 +93,7 @@ where
 		}
 	}
 
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.closed {
 			context
 				.commands

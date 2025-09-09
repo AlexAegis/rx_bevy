@@ -56,7 +56,7 @@ where
 		>,
 {
 	#[inline]
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.destination.next((next, self.counter), context);
 
 		// Increment after emission, so the first value could be 0
@@ -71,12 +71,12 @@ where
 	}
 
 	#[inline]
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
 
@@ -118,10 +118,10 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
 	}

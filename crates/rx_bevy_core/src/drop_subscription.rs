@@ -65,7 +65,7 @@ impl<Context> SignalContext for DropSubscription<Context>
 where
 	Context: DropContext,
 {
-	type Context<'c> = Context;
+	type Context = Context;
 }
 
 impl<Context> SubscriptionLike for DropSubscription<Context>
@@ -76,7 +76,7 @@ where
 		self.inner.read().expect("to not be locked").is_closed
 	}
 
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		let mut lock = self.inner.write().expect("to not be locked");
 
 		lock.unsubscribe(context);
@@ -87,10 +87,10 @@ impl<Context> SubscriptionCollection for DropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		let mut lock = self.inner.write().expect("to not be locked");
 
@@ -110,7 +110,7 @@ impl<Context> DropContextFromSubscription for InnerDropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn get_unsubscribe_context<'c>(&mut self) -> Self::Context<'c> {
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
 	}
 }
@@ -131,7 +131,7 @@ impl<Context> SignalContext for InnerDropSubscription<Context>
 where
 	Context: DropContext,
 {
-	type Context<'c> = Context;
+	type Context = Context;
 }
 
 impl<Context> InnerDropSubscription<Context>
@@ -193,10 +193,10 @@ impl<Context> SubscriptionCollection for InnerDropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.add_finalizer(subscription, context);
 	}

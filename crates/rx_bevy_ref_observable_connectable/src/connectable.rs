@@ -3,8 +3,8 @@ use rx_bevy_core::{Observable, SignalContext, SubscriptionLike};
 pub trait Connectable: Observable {
 	type ConnectionSubscription: SubscriptionLike;
 
-	fn connect<'c>(
+	fn connect(
 		&mut self,
-		context: &mut <Self::ConnectionSubscription as SignalContext>::Context<'c>,
+		context: &mut <Self::ConnectionSubscription as SignalContext>::Context,
 	) -> Self::ConnectionSubscription;
 }

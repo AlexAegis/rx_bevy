@@ -14,7 +14,7 @@ impl<T> SignalContext for RefCell<T>
 where
 	T: Observer,
 {
-	type Context<'c> = T::Context<'c>;
+	type Context = T::Context;
 }
 
 impl<T> Observer for RefCell<T>
@@ -22,22 +22,22 @@ where
 	T: Observer,
 {
 	#[inline]
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.borrow_mut().next(next, context);
 	}
 
 	#[inline]
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.borrow_mut().error(error, context);
 	}
 
 	#[inline]
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.borrow_mut().complete(context);
 	}
 
 	#[inline]
-	fn tick<'c>(&mut self, tick: crate::Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		self.borrow_mut().tick(tick, context);
 	}
 }

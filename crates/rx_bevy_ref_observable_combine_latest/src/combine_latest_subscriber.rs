@@ -54,7 +54,7 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type Context<'c> = Destination::Context<'c>;
+	type Context = Destination::Context;
 }
 
 impl<Destination, O1, O2> Observer for CombineLatestSubscriber<Destination, O1, O2>
@@ -65,7 +65,7 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		match next {
 			EitherOut2::O1(o1_next) => {
 				self.o1_val.replace(o1_next);
@@ -83,18 +83,18 @@ where
 		}
 	}
 
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination.error(error, context);
 		self.unsubscribe(context)
 	}
 
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 		self.unsubscribe(context)
 	}
 
 	#[inline]
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -111,7 +111,7 @@ where
 		self.destination.is_closed()
 	}
 
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
 }
@@ -125,10 +125,10 @@ where
 	O2::Out: Clone,
 	Destination: SubscriptionCollection,
 {
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
 	}

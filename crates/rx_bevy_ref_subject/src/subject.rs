@@ -21,9 +21,9 @@ impl<In, InError, Context> Subject<In, InError, Context> {
 	/// Closes the multicast and drains its subscribers to be unsubscribed.
 	/// It does not do anything with the subscribers as their actions too might
 	/// need write access to this destination
-	pub(crate) fn close_and_drain<'c>(
+	pub(crate) fn close_and_drain(
 		&mut self,
-	) -> Vec<Box<dyn Subscriber<In = In, InError = InError, Context<'c> = Context>>> {
+	) -> Vec<Box<dyn Subscriber<In = In, InError = InError, Context = Context>>> {
 		let mut multicast = self.multicast.write().expect("poison");
 		multicast.closed = true;
 		multicast.drain()
@@ -67,13 +67,13 @@ where
 	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as SignalContext>::Context<'c>,
+		context: &mut <Destination as SignalContext>::Context,
 	) -> Self::Subscription
 	where
 		Destination: Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+				Context = <Self::Subscription as SignalContext>::Context,
 			>,
 	{
 		let subscriber = destination;
@@ -111,7 +111,7 @@ where
 	T: 'static + Clone,
 	Error: 'static + Clone,
 {
-	type Context<'c> = Context;
+	type Context = Context;
 }
 
 impl<T, Error, Context> Observer for Subject<T, Error, Context>
@@ -119,7 +119,7 @@ where
 	T: 'static + Clone,
 	Error: 'static + Clone,
 {
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -129,7 +129,7 @@ where
 		}
 	}
 
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -140,7 +140,7 @@ where
 		}
 	}
 
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			let mut destinations = self.close_and_drain();
 			for destination in destinations.iter_mut() {
@@ -149,7 +149,7 @@ where
 		}
 	}
 
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -173,7 +173,7 @@ where
 		}
 	}
 
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		for mut destination in self.close_and_drain() {
 			destination.unsubscribe(context);
 		}
@@ -185,10 +185,10 @@ where
 	T: 'static,
 	Error: 'static,
 {
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		if let Ok(mut multicast) = self.multicast.write() {
 			multicast.add(subscription, context);

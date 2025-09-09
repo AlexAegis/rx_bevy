@@ -67,7 +67,7 @@ where
 		>,
 {
 	#[inline]
-	fn next<'c>(&mut self, next: Self::In, context: &mut Self::Context<'c>) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		match next {
 			Ok(next) => self.destination.next(next, context),
 			Err(error) => self.destination.error(error, context),
@@ -75,18 +75,18 @@ where
 	}
 
 	#[inline]
-	fn error<'c>(&mut self, error: Self::InError, context: &mut Self::Context<'c>) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination
 			.error((self.in_error_to_result_error)(error), context);
 	}
 
 	#[inline]
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
 
 	#[inline]
-	fn tick<'c>(&mut self, tick: Tick, context: &mut Self::Context<'c>) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -109,7 +109,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
 }
@@ -127,10 +127,10 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
 	}

@@ -75,13 +75,13 @@ where
 	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as SignalContext>::Context<'c>,
+		context: &mut <Destination as SignalContext>::Context,
 	) -> Self::Subscription
 	where
 		Destination: Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+				Context = <Self::Subscription as SignalContext>::Context,
 			>,
 		Self: Sized,
 	{

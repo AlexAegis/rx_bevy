@@ -27,17 +27,17 @@ impl<In, InError, Context> MulticastDestination<In, InError, Context> {
 	/// Closes this destination and drains its subscribers
 	/// It does not do anything with the subscribers as their actions too might
 	/// need write access to this destination
-	pub fn drain<'c>(
+	pub fn drain(
 		&mut self,
-	) -> Vec<Box<dyn Subscriber<In = In, InError = InError, Context<'c> = Context>>> {
+	) -> Vec<Box<dyn Subscriber<In = In, InError = InError, Context = Context>>> {
 		self.closed = true;
 		self.slab.drain().collect::<Vec<_>>()
 	}
 
-	pub fn take<'c>(
+	pub fn take(
 		&mut self,
 		key: usize,
-	) -> Option<Box<dyn Subscriber<In = In, InError = InError, Context<'c> = Context>>> {
+	) -> Option<Box<dyn Subscriber<In = In, InError = InError, Context = Context>>> {
 		self.slab.try_remove(key)
 	}
 
@@ -69,7 +69,7 @@ impl<In, InError, Context> Default for MulticastDestination<In, InError, Context
 }
 
 impl<In, InError, Context> SignalContext for MulticastDestination<In, InError, Context> {
-	type Context<'c> = Context;
+	type Context = Context;
 }
 
 impl<In, InError, Context> SubscriptionLike for MulticastDestination<In, InError, Context> {
@@ -77,16 +77,16 @@ impl<In, InError, Context> SubscriptionLike for MulticastDestination<In, InError
 		self.closed
 	}
 
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.teardown.unsubscribe(context);
 	}
 }
 
 impl<In, InError, Context> SubscriptionCollection for MulticastDestination<In, InError, Context> {
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		self.teardown.add_finalizer(subscription);
 	}

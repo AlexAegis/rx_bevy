@@ -13,12 +13,12 @@ pub struct DynFnObserver<In, Error, Context> {
 
 	on_unsubscribe: Option<Box<dyn FnOnce()>>,
 
-	inner_subscription: InnerDropSubscription,
+	inner_subscription: InnerDropSubscription<Context>,
 
 	_phantom_data: PhantomData<Context>,
 }
 
-impl<In, InError> ObserverInput for DynFnObserver<In, InError>
+impl<In, InError, Context> ObserverInput for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -54,7 +54,7 @@ where
 		}
 	}
 
-	fn complete<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Some(on_complete) = self.on_complete.take() {
 				(on_complete)();

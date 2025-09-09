@@ -99,13 +99,13 @@ where
 	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context<'c>,
+		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
 		Destination: Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+				Context = <Self::Subscription as SignalContext>::Context,
 			>,
 	{
 		let connector = self.get_active_connector();
@@ -119,19 +119,19 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static
-		+ for<'c> SubjectLike<
+		+ SubjectLike<
 			In = Source::Out,
 			InError = Source::OutError,
-			Context<'c> = <Source::Subscription as SignalContext>::Context<'c>,
+			Context = <Source::Subscription as SignalContext>::Context,
 		>,
 	Source::Subscription: Clone + SubscriptionCollection,
-	for<'c> <Source::Subscription as SignalContext>::Context<'c>: DropContextFromSubscription,
+	<Source::Subscription as SignalContext>::Context: DropContextFromSubscription,
 {
 	type ConnectionSubscription = Source::Subscription;
 
-	fn connect<'c>(
+	fn connect(
 		&mut self,
-		context: &mut <Self::ConnectionSubscription as SignalContext>::Context<'c>,
+		context: &mut <Self::ConnectionSubscription as SignalContext>::Context,
 	) -> Self::ConnectionSubscription {
 		self.get_active_connection().unwrap_or_else(|| {
 			let mut connector = self.get_connector().clone();
@@ -161,7 +161,7 @@ where
 	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
 {
-	type Context<'c> = Connector::Context<'c>;
+	type Context = Connector::Context;
 }
 
 impl<Source, ConnectorCreator, Connector> SubscriptionLike
@@ -176,7 +176,7 @@ where
 		self.is_connection_closed()
 	}
 
-	fn unsubscribe<'c>(&mut self, context: &mut Self::Context<'c>) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if let Some(connector) = &mut self.connector {
 			connector.unsubscribe(context);
 		}
@@ -193,10 +193,10 @@ where
 	Connector: SubscriptionCollection,
 {
 	#[inline]
-	fn add<'c>(
+	fn add(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context<'c>>>,
-		context: &mut Self::Context<'c>,
+		subscription: impl Into<Teardown<Self::Context>>,
+		context: &mut Self::Context,
 	) {
 		if let Some(connector) = &mut self.connector {
 			connector.add(subscription, context);

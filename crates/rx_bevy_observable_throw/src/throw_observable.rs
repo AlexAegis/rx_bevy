@@ -37,7 +37,7 @@ where
 		Destination: Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context<'c> = <Self::Subscription as SignalContext>::Context<'c>,
+				Context = <Self::Subscription as SignalContext>::Context,
 			>,
 	{
 		let mut subscriber = destination;
