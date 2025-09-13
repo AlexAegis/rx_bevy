@@ -4693,6 +4693,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_core",
  "rx_bevy_plugin",
+ "rx_bevy_subscription_entity",
  "rx_bevy_testing",
 ]
 
@@ -4749,6 +4750,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
+ "rx_bevy_subscription_drop",
  "rx_bevy_testing",
 ]
 
@@ -5101,6 +5103,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_core",
+ "rx_bevy_subscription_drop",
  "rx_bevy_testing",
  "slab",
 ]
@@ -5174,6 +5177,29 @@ dependencies = [
  "rx_bevy_context_command",
  "rx_bevy_core",
  "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_subscription_drop"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_bevy_core",
+ "rx_bevy_testing",
+ "smallvec",
+]
+
+[[package]]
+name = "rx_bevy_subscription_entity"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_ecs",
+ "rx_bevy",
+ "rx_bevy_context_command",
+ "rx_bevy_core",
+ "rx_bevy_testing",
+ "smallvec",
 ]
 
 [[package]]

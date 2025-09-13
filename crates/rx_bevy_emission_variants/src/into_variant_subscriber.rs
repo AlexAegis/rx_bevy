@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	SubscriptionCollection, SubscriptionLike, Tick,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -120,9 +120,9 @@ where
 		> + SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<<Destination as SignalContext>::Context>>,
+		subscription: impl Into<S>,
 		context: &mut <Destination as SignalContext>::Context,
 	) {
 		self.destination.add(subscription, context);
@@ -296,9 +296,9 @@ where
 		> + SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<<Destination as SignalContext>::Context>>,
+		subscription: impl Into<S>,
 		context: &mut <Destination as SignalContext>::Context,
 	) {
 		self.destination.add(subscription, context);

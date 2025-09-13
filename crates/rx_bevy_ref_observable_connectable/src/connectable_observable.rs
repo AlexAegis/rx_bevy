@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
 	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, SubjectLike,
-	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown,
+	Subscriber, SubscriptionCollection, SubscriptionLike,
 };
 
 use crate::{
@@ -104,9 +104,9 @@ where
 	Source::Subscription: Clone,
 	Connector: SubscriptionCollection,
 {
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		let mut connector = self.connector.lock().expect("lockable");

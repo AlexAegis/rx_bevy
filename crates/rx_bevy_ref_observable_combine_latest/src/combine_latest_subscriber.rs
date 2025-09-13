@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	SubscriptionCollection, SubscriptionLike, Tick,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -125,9 +125,10 @@ where
 	O2::Out: Clone,
 	Destination: SubscriptionCollection,
 {
-	fn add(
+	#[inline]
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);

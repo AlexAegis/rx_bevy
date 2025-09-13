@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	SubscriptionLike, TeardownFn, Tick,
 };
 
 /// It must hold the invariant that the cloned destination points to the
@@ -118,9 +118,9 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);

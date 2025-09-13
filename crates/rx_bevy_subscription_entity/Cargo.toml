@@ -1,0 +1,57 @@
+[package]
+name = "rx_bevy_subscription_entity"
+description = "rx_bevy entity subscription, unsubscribes on despawn"
+version = "0.1.0"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev", "debug"]
+dev = [
+    "bevy/dynamic_linking",
+    "rx_bevy/dev",
+    "rx_bevy_core/dev",
+    "rx_bevy_testing/dev",
+]
+debug = ["rx_bevy_core/debug"]
+example = [
+    "bevy/bevy_asset",
+    "bevy/bevy_core_pipeline",
+    "bevy/bevy_gltf",
+    "bevy/bevy_pbr",
+    "bevy/bevy_picking",
+    "bevy/bevy_render",
+    "bevy/bevy_scene",
+    "bevy/bevy_winit",
+    "bevy/tonemapping_luts",
+    "bevy/x11",
+    "debug",
+    "dev",
+    "rx_bevy/example",
+    "rx_bevy_core/example",
+    "rx_bevy_testing/example",
+]
+dev_panic_on_dropped_active_subscriptions = [
+    "rx_bevy_core/dev_panic_on_dropped_active_subscriptions",
+]
+
+[dependencies]
+rx_bevy_core = { workspace = true, features = ["bevy"] }
+rx_bevy_context_command = { workspace = true }
+bevy_ecs = { workspace = true }
+smallvec = { workspace = true }
+
+[dev-dependencies]
+bevy = { workspace = true }
+rx_bevy = { workspace = true, features = ["bevy"] }
+rx_bevy_testing = { workspace = true, features = ["bevy"] }

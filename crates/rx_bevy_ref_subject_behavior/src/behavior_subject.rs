@@ -90,6 +90,7 @@ where
 	T: Clone + 'static,
 	Error: Clone + 'static,
 {
+	type Subscription = DropSubscription<Self::Context>;
 	fn subscribe<
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	>(

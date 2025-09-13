@@ -76,7 +76,7 @@ where
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.closed {
 			context
-				.commands
+				.commands()
 				.trigger_targets(RxNext::<In>(next), self.destination_entity);
 		}
 	}
@@ -84,7 +84,7 @@ where
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.closed {
 			context
-				.commands
+				.commands()
 				.trigger_targets(RxError::<InError>(error), self.destination_entity);
 		}
 	}
@@ -92,7 +92,7 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.closed {
 			context
-				.commands
+				.commands()
 				.trigger_targets(RxComplete, self.destination_entity);
 			self.unsubscribe(context);
 		}
@@ -101,7 +101,7 @@ where
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if !self.closed {
 			context
-				.commands
+				.commands()
 				.trigger_targets(tick, self.destination_entity);
 		}
 	}
@@ -119,7 +119,10 @@ where
 
 	fn unsubscribe(&mut self, context: &mut <Self as SignalContext>::Context) {
 		self.closed = true;
-		context.commands.entity(self.subscription_entity).despawn();
+		context
+			.commands()
+			.entity(self.subscription_entity)
+			.despawn();
 	}
 }
 

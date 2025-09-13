@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown,
+	SubscriptionLike, TeardownFn,
 };
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
@@ -98,7 +98,7 @@ where
 		);
 
 		subscription.add(
-			Teardown::new(move |c| {
+			TeardownFn::new(move |c| {
 				sub_1.unsubscribe(c);
 			}),
 			context,
@@ -110,7 +110,7 @@ where
 		);
 
 		subscription.add(
-			Teardown::new(move |c| {
+			TeardownFn::new(move |c| {
 				sub_2.unsubscribe(c);
 			}),
 			context,

@@ -30,7 +30,6 @@ where
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	InnerObservable: 'static + Observable,
 {
-	// TODO: Add some Into magic for the context
 	type Subscriber<
 		Destination: Subscriber<
 				In = Self::Out,

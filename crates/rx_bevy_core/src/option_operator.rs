@@ -223,9 +223,9 @@ where
 	Sub: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
-		subscription: impl Into<crate::Teardown<<Sub as SignalContext>::Context>>,
+		subscription: impl Into<S>,
 		context: &mut <Sub as SignalContext>::Context,
 	) {
 		match self {

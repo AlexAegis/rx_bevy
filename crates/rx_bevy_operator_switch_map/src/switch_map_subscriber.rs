@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	SubscriptionCollection, SubscriptionLike, TeardownFn, Tick,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
@@ -151,9 +151,9 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);

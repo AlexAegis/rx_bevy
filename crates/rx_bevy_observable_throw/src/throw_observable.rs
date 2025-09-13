@@ -1,9 +1,10 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
-	Teardown,
+	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionCollectionTeardownFnExtension, TeardownFn,
 };
+use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 /// Observable creator for [ThrowObservable]
 pub fn throw<Error>(error: Error) -> ThrowObservable<Error, ()>
@@ -19,6 +20,14 @@ where
 {
 	type Out = ();
 	type OutError = Error;
+}
+
+impl<Error, Context> SignalContext for ThrowObservable<Error, Context>
+where
+	Error: 'static + Clone,
+	Context: DropContext,
+{
+	type Context = Context;
 }
 
 impl<Error, Context> Observable for ThrowObservable<Error, Context>
@@ -37,15 +46,26 @@ where
 		Destination: Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self as SignalContext>::Context,
 			>,
 	{
 		let mut subscriber = destination;
 		subscriber.error(self.error.clone(), context);
 
-		DropSubscription::new(Teardown::new(move |_| {
-			subscriber.unsubscribe(&mut Context::get_context_for_drop());
-		}))
+		// let a = TeardownFn::new(move |_| {
+		// 	subscriber.unsubscribe(&mut Context::get_context_for_drop());
+		// });
+		let mut d = DropSubscription::default();
+
+		d.add_fn(
+			move |c| {
+				subscriber.unsubscribe(c);
+			},
+			context,
+		);
+
+		// d.add(subscriber, context);
+		d
 	}
 }
 

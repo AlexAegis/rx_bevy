@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike, UpgradeableObserver};
+use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike};
 
 #[derive(Debug)]
 pub struct NoopObserver<In, InError, Context> {
@@ -53,12 +53,12 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::SubscriptionContext) {
+	fn unsubscribe(&mut self, _context: &mut Self::Context) {
 		self.closed = true;
 	}
 }
 
-impl<In, InError> Default for NoopObserver<In, InError> {
+impl<In, InError, Context> Default for NoopObserver<In, InError, Context> {
 	fn default() -> Self {
 		Self {
 			closed: false,

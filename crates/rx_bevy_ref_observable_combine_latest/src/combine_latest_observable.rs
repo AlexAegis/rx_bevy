@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
-	Teardown,
+	TeardownFn,
 };
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
@@ -87,7 +87,7 @@ where
 		));
 
 		subscription.add(
-			Teardown::new_from_subscription(self.observable_1.subscribe(
+			TeardownFn::new_from_subscription(self.observable_1.subscribe(
 				IntoVariant1of2Subscriber::new(rc_subscriber.clone()),
 				context,
 			)),
@@ -95,7 +95,7 @@ where
 		);
 
 		subscription.add(
-			Teardown::new_from_subscription(self.observable_2.subscribe(
+			TeardownFn::new_from_subscription(self.observable_2.subscribe(
 				IntoVariant2of2Subscriber::new(rc_subscriber.clone()),
 				context,
 			)),

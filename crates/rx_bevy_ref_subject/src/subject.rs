@@ -1,9 +1,10 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	DropContext, DropSubscription, Observable, ObservableOutput, Observer, ObserverInput,
-	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Tick,
 };
+use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 use crate::MulticastDestination;
 
@@ -11,13 +12,19 @@ use crate::MulticastDestination;
 /// A subjects clone still multicasts to the same set of subscribers.
 pub struct Subject<In, InError = (), Context = ()>
 where
-	In: 'static,
-	InError: 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	pub multicast: Arc<RwLock<MulticastDestination<In, InError, Context>>>,
 }
 
-impl<In, InError, Context> Subject<In, InError, Context> {
+impl<In, InError, Context> Subject<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
 	/// Closes the multicast and drains its subscribers to be unsubscribed.
 	/// It does not do anything with the subscribers as their actions too might
 	/// need write access to this destination
@@ -30,7 +37,12 @@ impl<In, InError, Context> Subject<In, InError, Context> {
 	}
 }
 
-impl<T, Error> Clone for Subject<T, Error> {
+impl<In, InError, Context> Clone for Subject<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
 	/// Cloning a subject keeps all existing destinations
 	fn clone(&self) -> Self {
 		Self {
@@ -39,7 +51,12 @@ impl<T, Error> Clone for Subject<T, Error> {
 	}
 }
 
-impl<T, Error> Default for Subject<T, Error> {
+impl<In, InError, Context> Default for Subject<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
 	fn default() -> Self {
 		Self {
 			multicast: Arc::new(RwLock::new(MulticastDestination::default())),
@@ -47,24 +64,25 @@ impl<T, Error> Default for Subject<T, Error> {
 	}
 }
 
-impl<T, Error> ObservableOutput for Subject<T, Error>
+impl<In, InError, Context> ObservableOutput for Subject<In, InError, Context>
 where
-	T: 'static,
-	Error: 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	type Out = T;
-	type OutError = Error;
+	type Out = In;
+	type OutError = InError;
 }
 
-impl<T, Error, Context> Observable for Subject<T, Error, Context>
+impl<In, InError, Context> Observable for Subject<In, InError, Context>
 where
-	T: 'static,
-	Error: 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
 	Context: DropContext,
 {
 	type Subscription = DropSubscription<Context>;
 
-	fn subscribe<'c, Destination>(
+	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut <Destination as SignalContext>::Context,
@@ -84,47 +102,53 @@ where
 			.multicast_subscribe::<Destination>(subscriber, self.multicast.clone());
 
 		let multicast_ref = self.multicast.clone();
-		DropSubscription::new(Teardown::new(Box::new(move |_| {
-			let subscriber = {
-				let mut write_multicast = multicast_ref.write().expect("blocked 1");
-				write_multicast.take(key)
-			};
+		DropSubscription::new_from_fn(
+			move |_: &mut <Self::Subscription as SignalContext>::Context| {
+				let subscriber = {
+					let mut write_multicast = multicast_ref.write().expect("blocked 1");
+					write_multicast.take(key)
+				};
 
-			if let Some(mut subscriber) = subscriber {
-				subscriber.unsubscribe();
-			}
-		})))
+				if let Some(mut subscriber) = subscriber {
+					subscriber.unsubscribe(&mut Context::get_context_for_drop());
+				}
+			},
+			context,
+		)
 	}
 }
 
-impl<T, Error, Context> ObserverInput for Subject<T, Error, Context>
+impl<In, InError, Context> ObserverInput for Subject<In, InError, Context>
 where
-	T: 'static + Clone,
-	Error: 'static + Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	type In = T;
-	type InError = Error;
+	type In = In;
+	type InError = InError;
 }
 
-impl<T, Error, Context> SignalContext for Subject<T, Error, Context>
+impl<In, InError, Context> SignalContext for Subject<In, InError, Context>
 where
-	T: 'static + Clone,
-	Error: 'static + Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	type Context = Context;
 }
 
-impl<T, Error, Context> Observer for Subject<T, Error, Context>
+impl<In, InError, Context> Observer for Subject<In, InError, Context>
 where
-	T: 'static + Clone,
-	Error: 'static + Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
 			for (_, destination) in multicast.slab.iter_mut() {
-				destination.next(next.clone());
+				destination.next(next.clone(), context);
 			}
 		}
 	}
@@ -135,7 +159,7 @@ where
 		{
 			multicast.closed = true;
 			for (_, destination) in multicast.slab.iter_mut() {
-				destination.error(error.clone());
+				destination.error(error.clone(), context);
 			}
 		}
 	}
@@ -144,7 +168,7 @@ where
 		if !self.is_closed() {
 			let mut destinations = self.close_and_drain();
 			for destination in destinations.iter_mut() {
-				destination.complete();
+				destination.complete(context);
 			}
 		}
 	}
@@ -154,16 +178,17 @@ where
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
 			for (_, destination) in multicast.slab.iter_mut() {
-				destination.tick(tick.clone());
+				destination.tick(tick.clone(), context);
 			}
 		}
 	}
 }
 
-impl<T, Error, Context> SubscriptionLike for Subject<T, Error, Context>
+impl<In, InError, Context> SubscriptionLike for Subject<In, InError, Context>
 where
-	T: 'static,
-	Error: 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(multicast) = self.multicast.read() {
@@ -180,14 +205,15 @@ where
 	}
 }
 
-impl<T, Error, Context> SubscriptionCollection for Subject<T, Error, Context>
+impl<In, InError, Context> SubscriptionCollection for Subject<In, InError, Context>
 where
-	T: 'static,
-	Error: 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		if let Ok(mut multicast) = self.multicast.write() {
@@ -196,11 +222,14 @@ where
 	}
 }
 
-impl<T, Error> Drop for Subject<T, Error>
+impl<In, InError, Context> Drop for Subject<In, InError, Context>
 where
-	T: 'static,
-	Error: 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	// Must not unsubscribe on drop, it's the shared destination that should do that
-	fn drop(&mut self) {}
+	fn drop(&mut self) {
+		self.unsubscribe(&mut Context::get_context_for_drop());
+	}
 }

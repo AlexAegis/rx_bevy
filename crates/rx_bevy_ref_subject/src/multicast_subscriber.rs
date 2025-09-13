@@ -1,6 +1,9 @@
 use std::sync::{Arc, RwLock};
 
-use rx_bevy_core::{Observer, ObserverInput, Operation, Subscriber, SubscriptionLike, Tick};
+use rx_bevy_core::{
+	AssertSubscriptionClosedOnDrop, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Tick,
+};
 
 use crate::MulticastDestination;
 
@@ -10,8 +13,22 @@ where
 {
 	pub(crate) key: usize,
 	pub(crate) destination: Destination,
-	pub(crate) subscriber_ref:
-		Arc<RwLock<MulticastDestination<Destination::In, Destination::InError>>>,
+	pub(crate) subscriber_ref: Arc<
+		RwLock<
+			MulticastDestination<
+				Destination::In,
+				Destination::InError,
+				<Self as SignalContext>::Context,
+			>,
+		>,
+	>,
+}
+
+impl<Destination> SignalContext for MulticastSubscriber<Destination>
+where
+	Destination: 'static + Subscriber,
+{
+	type Context = Destination::Context;
 }
 
 impl<Destination> Observer for MulticastSubscriber<Destination>
@@ -19,23 +36,23 @@ where
 	Destination: 'static + Subscriber,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.destination.next(next);
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.destination.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.destination.complete(context);
 	}
 
 	#[inline]
-	fn tick(&mut self, tick: Tick) {
-		self.destination.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -43,10 +60,11 @@ impl<Destination> SubscriptionLike for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	fn unsubscribe(&mut self) {
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		// See the subjects Teardown Fn to learn how this subscriber is
 		// removed from the subject.
-		self.destination.unsubscribe();
+		self.destination.unsubscribe(context);
 	}
 
 	fn is_closed(&self) -> bool {
@@ -60,10 +78,19 @@ where
 			self.destination.is_closed()
 		}
 	}
+}
 
+impl<Destination> SubscriptionCollection for MulticastSubscriber<Destination>
+where
+	Destination: 'static + Subscriber + SubscriptionCollection,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.destination.add(subscription);
+	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
+		&mut self,
+		subscription: impl Into<S>,
+		context: &mut Self::Context,
+	) {
+		self.destination.add(subscription, context);
 	}
 }
 
@@ -103,6 +130,6 @@ where
 	Destination: 'static + Subscriber,
 {
 	fn drop(&mut self) {
-		self.unsubscribe();
+		self.assert_closed_when_dropped();
 	}
 }

@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	InnerDropSubscription, Observer, ObserverInput, SubscriptionCollection, SubscriptionLike, Tick,
+	InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionCollection,
+	SubscriptionLike, Tick,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -13,7 +14,7 @@ pub struct DynFnObserver<In, Error, Context> {
 
 	on_unsubscribe: Option<Box<dyn FnOnce()>>,
 
-	inner_subscription: InnerDropSubscription<Context>,
+	inner_subscription: InnerSubscription<Context>,
 
 	_phantom_data: PhantomData<Context>,
 }
@@ -27,13 +28,19 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
+impl<In, InError, Context> SignalContext for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
 {
 	type Context = Context;
+}
 
+impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+{
 	fn next(&mut self, next: In, _context: &mut Self::Context) {
 		if !self.is_closed()
 			&& let Some(on_next) = &mut self.on_next
@@ -73,7 +80,7 @@ where
 	}
 }
 
-impl<In, InError, Context> SubscriptionLike<Context> for DynFnObserver<In, InError, Context>
+impl<In, InError, Context> SubscriptionLike for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -90,17 +97,21 @@ where
 	}
 }
 
-impl<In, InError, Context> SubscriptionCollection<Context> for DynFnObserver<In, InError, Context>
+impl<In, InError, Context> SubscriptionCollection for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
 {
-	fn add(&mut self, subscription: impl Into<Teardown>, context: &mut Context) {
-		self.inner_subscription.add_finalizer(subscription, context);
+	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
+		&mut self,
+		subscription: impl Into<S>,
+		context: &mut Context,
+	) {
+		self.inner_subscription.add(subscription, context);
 	}
 }
 
-impl<In, InError> Default for DynFnObserver<In, InError> {
+impl<In, InError, Context> Default for DynFnObserver<In, InError, Context> {
 	fn default() -> Self {
 		Self {
 			on_next: None,
@@ -108,13 +119,13 @@ impl<In, InError> Default for DynFnObserver<In, InError> {
 			on_complete: None,
 			on_tick: None,
 			on_unsubscribe: None,
-			inner_subscription: InnerDropSubscription::new_empty(),
+			inner_subscription: InnerSubscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError> DynFnObserver<In, InError> {
+impl<In, InError, Context> DynFnObserver<In, InError, Context> {
 	pub fn with_next<OnPush: 'static + FnMut(In)>(self, next: OnPush) -> Self {
 		Self {
 			on_next: Some(Box::new(next)),

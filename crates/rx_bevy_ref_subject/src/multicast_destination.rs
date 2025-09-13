@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	InnerDropSubscription, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown,
+	InnerSubscription, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike,
 };
 use slab::Slab;
 
@@ -11,7 +11,7 @@ use crate::MulticastSubscriber;
 pub struct MulticastDestination<In, InError, Context> {
 	pub(crate) slab: Slab<Box<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
 	pub(crate) closed: bool,
-	pub(crate) teardown: InnerDropSubscription<Context>,
+	pub(crate) teardown: InnerSubscription<Context>,
 }
 
 impl<In, InError, Context> ObserverInput for MulticastDestination<In, InError, Context>
@@ -41,14 +41,16 @@ impl<In, InError, Context> MulticastDestination<In, InError, Context> {
 		self.slab.try_remove(key)
 	}
 
-	pub fn multicast_subscribe<Destination: 'static + Subscriber<In = In, InError = InError>>(
+	pub fn multicast_subscribe<
+		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>,
+	>(
 		&mut self,
 		subscriber: Destination,
 		subscriber_ref: Arc<RwLock<MulticastDestination<In, InError, Context>>>,
 	) -> usize {
 		let entry = self.slab.vacant_entry();
 		let key = entry.key();
-		let subscriber = MulticastSubscriber::<Destination::Subscriber> {
+		let subscriber = MulticastSubscriber::<Destination> {
 			key,
 			destination: subscriber,
 			subscriber_ref,
@@ -63,7 +65,7 @@ impl<In, InError, Context> Default for MulticastDestination<In, InError, Context
 		Self {
 			slab: Slab::with_capacity(1),
 			closed: false,
-			teardown: InnerDropSubscription::new_empty(),
+			teardown: InnerSubscription::default(),
 		}
 	}
 }
@@ -83,11 +85,11 @@ impl<In, InError, Context> SubscriptionLike for MulticastDestination<In, InError
 }
 
 impl<In, InError, Context> SubscriptionCollection for MulticastDestination<In, InError, Context> {
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
-		self.teardown.add_finalizer(subscription);
+		self.teardown.add(subscription, context);
 	}
 }

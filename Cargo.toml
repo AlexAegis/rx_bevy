@@ -127,6 +127,9 @@ rx_bevy_ref_subscriber_switch = { path = "crates/rx_bevy_ref_subscriber_switch" 
 rx_bevy_subscriber_entity = { path = "crates/rx_bevy_subscriber_entity" }
 # Subscription Contexts
 rx_bevy_context_command = { path = "crates/rx_bevy_context_command" }
+# Subscriptions
+rx_bevy_subscription_drop = { path = "crates/rx_bevy_subscription_drop" }
+rx_bevy_subscription_entity = { path = "crates/rx_bevy_subscription_entity" }
 # Subjects
 rx_bevy_ref_subject = { path = "crates/rx_bevy_ref_subject" }
 rx_bevy_ref_subject_behavior = { path = "crates/rx_bevy_ref_subject_behavior" }

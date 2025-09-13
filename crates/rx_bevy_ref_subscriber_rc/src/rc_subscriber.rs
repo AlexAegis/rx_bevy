@@ -5,7 +5,7 @@ use std::{
 
 use rx_bevy_core::{
 	AssertSubscriptionClosedOnDrop, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	SubscriptionCollection, SubscriptionLike, Tick,
 };
 
 /// Internal to [RcSubscriber]
@@ -144,9 +144,9 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
@@ -332,9 +332,9 @@ where
 	Destination: Subscriber,
 	Destination: SubscriptionCollection,
 {
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		let mut lock = self.destination.write().expect("lock is poisoned!");
@@ -513,9 +513,9 @@ where
 	Destination: Subscriber,
 	Destination: SubscriptionCollection,
 {
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		if let Ok(mut lock) = self.destination.try_write() {

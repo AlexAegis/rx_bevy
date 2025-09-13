@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	SubscriptionLike, Tick,
 };
 
 /// A helper subscriber that does not forward completion and unsubscribe signals.
@@ -84,9 +84,9 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);

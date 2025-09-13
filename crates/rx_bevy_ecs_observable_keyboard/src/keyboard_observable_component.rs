@@ -1,6 +1,7 @@
 use bevy_ecs::component::Component;
 use bevy_input::keyboard::KeyboardInput;
-use rx_bevy_core::ObservableOutput;
+use rx_bevy_core::{Observable, ObservableOutput, Observer};
+use rx_bevy_subscription_entity::EntitySubscription;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -41,6 +42,24 @@ impl ObservableComponent for KeyboardObservableComponent {
 		mut _subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		KeyboardSubscription::new(self.options.clone())
+	}
+}
+
+impl Observable for KeyboardObservableComponent {
+	type Subscription = EntitySubscription;
+
+	fn subscribe<'c, Destination>(
+		&mut self,
+		destination: Destination,
+		context: &mut <Destination as rx_bevy_core::SignalContext>::Context,
+	) -> Self::Subscription
+	where
+		Destination: rx_bevy_core::Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as rx_bevy_core::SignalContext>::Context,
+			>,
+	{
 	}
 }
 

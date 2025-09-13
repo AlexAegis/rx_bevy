@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, SubjectLike,
-	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown,
+	Subscriber, SubscriptionCollection, SubscriptionLike,
 };
 
 use crate::{Connectable, ConnectableOptions};
@@ -140,7 +140,7 @@ where
 
 			if self.options.unsubscribe_connector_on_disconnect {
 				connection.add(
-					Teardown::new(Box::new(move |c| {
+					TeardownFn::new(Box::new(move |c| {
 						connector.unsubscribe(c);
 					})),
 					context,
@@ -193,9 +193,9 @@ where
 	Connector: SubscriptionCollection,
 {
 	#[inline]
-	fn add(
+	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<Teardown<Self::Context>>,
+		subscription: impl Into<S>,
 		context: &mut Self::Context,
 	) {
 		if let Some(connector) = &mut self.connector {
