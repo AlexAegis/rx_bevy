@@ -106,7 +106,7 @@ where
 {
 	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Self::Context,
 	) {
 		let mut connector = self.connector.lock().expect("lockable");

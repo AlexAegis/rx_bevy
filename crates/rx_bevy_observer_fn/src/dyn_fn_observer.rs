@@ -104,7 +104,7 @@ where
 {
 	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Context,
 	) {
 		self.inner_subscription.add(subscription, context);

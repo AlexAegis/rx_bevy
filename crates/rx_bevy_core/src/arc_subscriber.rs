@@ -67,14 +67,14 @@ where
 	}
 }
 
-impl<Destination> SubscriptionCollection for Arc<RwLock<Destination>>
+impl<'c, Destination> SubscriptionCollection<'c> for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection,
+	Destination: SubscriptionCollection<'c>,
 {
-	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
+	fn add<S: 'c + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Destination::Context,
 	) {
 		let mut lock = self.write().expect("lock is poisoned!");

@@ -1,8 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use rx_bevy_core::{
-	InnerSubscription, SignalContext, SubscriptionCollection, SubscriptionLike, TeardownFn,
-};
+use rx_bevy_core::{InnerSubscription, SignalContext, SubscriptionCollection, SubscriptionLike};
 
 use crate::{DropContext, DropContextFromSubscription};
 
@@ -11,21 +9,21 @@ use crate::{DropContext, DropContextFromSubscription};
 /// unsubscription which is achieved by the [DropContext] trait that allows
 /// creating this context out of the subscription itself
 #[derive(Clone)]
-pub struct DropSubscription<Context>
+pub struct DropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
-	inner: Arc<RwLock<InnerDropSubscription<Context>>>,
+	inner: Arc<RwLock<InnerDropSubscription<'c, Context>>>,
 }
 
-impl<Context> DropSubscription<Context>
+impl<'c, Context> DropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
-	pub fn new<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		subscription: impl Into<S>,
-		context: &mut Context,
-	) -> Self {
+	pub fn new<S>(subscription: S, context: &mut Context) -> Self
+	where
+		S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>,
+	{
 		let mut inner = InnerDropSubscription::default();
 		inner.add(subscription, context);
 		Self {
@@ -33,20 +31,17 @@ where
 		}
 	}
 
-	// pub fn new_from_fn<F>(f: F, context: &mut Context) -> Self
-	// where
-	// 	F: 'static + for<'c> FnOnce(&'c mut <Self as SignalContext>::Context),
-	// {
-	// 	let teardown = TeardownFn::new(f);
-	// 	let s = Self::new::<TeardownFn<Context>>(teardown, context);
-	//
-	// 	s
-	// }
+	pub fn new_from<S>(subscription: impl Into<S>, context: &mut Context) -> Self
+	where
+		S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>,
+	{
+		Self::new(subscription.into(), context)
+	}
 }
 
-impl<Context> Default for DropSubscription<Context>
+impl<'c, Context> Default for DropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
 	fn default() -> Self {
 		Self {
@@ -55,16 +50,16 @@ where
 	}
 }
 
-impl<Context> SignalContext for DropSubscription<Context>
+impl<'c, Context> SignalContext for DropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
 	type Context = Context;
 }
 
-impl<Context> SubscriptionLike for DropSubscription<Context>
+impl<'c, Context> SubscriptionLike for DropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
 	fn is_closed(&self) -> bool {
 		self.inner.read().expect("to not be locked").is_closed()
@@ -76,52 +71,51 @@ where
 	}
 }
 
-impl<Context> SubscriptionCollection for DropSubscription<Context>
+impl<'c, Context> SubscriptionCollection<'c> for DropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		&mut self,
-		subscription: impl Into<S>,
-		context: &mut Self::Context,
-	) {
+	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	where
+		S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>,
+	{
 		let mut lock = self.inner.write().expect("to not be locked");
 		lock.add(subscription, context);
 	}
 }
 
-pub struct InnerDropSubscription<Context>(InnerSubscription<Context>)
+pub struct InnerDropSubscription<'c, Context: 'c>(InnerSubscription<'c, Context>)
 where
 	Context: DropContext;
 
-impl<Context> DropContextFromSubscription for InnerDropSubscription<Context>
+impl<'c, Context> DropContextFromSubscription for InnerDropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
 	}
 }
 
-impl<Context> Default for InnerDropSubscription<Context>
+impl<'c, Context> Default for InnerDropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
 	fn default() -> Self {
-		Self(InnerSubscription::<Context>::default())
+		Self(InnerSubscription::default())
 	}
 }
 
-impl<Context> SignalContext for InnerDropSubscription<Context>
+impl<'c, Context> SignalContext for InnerDropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
 	type Context = Context;
 }
 
-impl<Context> SubscriptionLike for InnerDropSubscription<Context>
+impl<'c, Context> SubscriptionLike for InnerDropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
 	fn is_closed(&self) -> bool {
 		self.0.is_closed()
@@ -132,22 +126,21 @@ where
 	}
 }
 
-impl<Context> SubscriptionCollection for InnerDropSubscription<Context>
+impl<'c, Context> SubscriptionCollection<'c> for InnerDropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
-	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
-		&mut self,
-		subscription: impl Into<S>,
-		context: &mut Self::Context,
-	) {
+	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	where
+		S: 'c + SubscriptionLike<Context = Self::Context>,
+	{
 		self.0.add(subscription, context);
 	}
 }
 
-impl<Context> Drop for InnerDropSubscription<Context>
+impl<'c, Context> Drop for InnerDropSubscription<'c, Context>
 where
-	Context: DropContext,
+	Context: DropContext + 'c,
 {
 	fn drop(&mut self) {
 		let mut context = self.get_unsubscribe_context();

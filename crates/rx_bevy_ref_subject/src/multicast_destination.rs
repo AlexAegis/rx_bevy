@@ -8,13 +8,13 @@ use slab::Slab;
 
 use crate::MulticastSubscriber;
 
-pub struct MulticastDestination<In, InError, Context> {
+pub struct MulticastDestination<'c, In, InError, Context> {
 	pub(crate) slab: Slab<Box<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
 	pub(crate) closed: bool,
-	pub(crate) teardown: InnerSubscription<Context>,
+	pub(crate) teardown: InnerSubscription<'c, Context>,
 }
 
-impl<In, InError, Context> ObserverInput for MulticastDestination<In, InError, Context>
+impl<'c, In, InError, Context> ObserverInput for MulticastDestination<'c, In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -23,7 +23,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Context> MulticastDestination<In, InError, Context> {
+impl<'c, In, InError, Context> MulticastDestination<'c, In, InError, Context> {
 	/// Closes this destination and drains its subscribers
 	/// It does not do anything with the subscribers as their actions too might
 	/// need write access to this destination
@@ -60,7 +60,7 @@ impl<In, InError, Context> MulticastDestination<In, InError, Context> {
 	}
 }
 
-impl<In, InError, Context> Default for MulticastDestination<In, InError, Context> {
+impl<'c, In, InError, Context> Default for MulticastDestination<'c, In, InError, Context> {
 	fn default() -> Self {
 		Self {
 			slab: Slab::with_capacity(1),
@@ -70,11 +70,11 @@ impl<In, InError, Context> Default for MulticastDestination<In, InError, Context
 	}
 }
 
-impl<In, InError, Context> SignalContext for MulticastDestination<In, InError, Context> {
+impl<'c, In, InError, Context> SignalContext for MulticastDestination<'c, In, InError, Context> {
 	type Context = Context;
 }
 
-impl<In, InError, Context> SubscriptionLike for MulticastDestination<In, InError, Context> {
+impl<'c, In, InError, Context> SubscriptionLike for MulticastDestination<'c, In, InError, Context> {
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
@@ -84,10 +84,12 @@ impl<In, InError, Context> SubscriptionLike for MulticastDestination<In, InError
 	}
 }
 
-impl<In, InError, Context> SubscriptionCollection for MulticastDestination<In, InError, Context> {
-	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
+impl<'c, In, InError, Context> SubscriptionCollection<'c>
+	for MulticastDestination<'c, In, InError, Context>
+{
+	fn add<S: 'c + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Self::Context,
 	) {
 		self.teardown.add(subscription, context);

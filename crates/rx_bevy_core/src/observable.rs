@@ -5,8 +5,10 @@ pub trait ObservableOutput {
 	type OutError: 'static;
 }
 
-pub trait Observable: ObservableOutput + SignalContext {
-	type Subscription: Default + SubscriptionLike + SubscriptionCollection;
+pub trait Observable<'c>: ObservableOutput + SignalContext {
+	type Subscription: Default + SubscriptionLike + SubscriptionCollection<'c>
+	where
+		Self::Context: 'c;
 
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
 	fn subscribe<Destination>(

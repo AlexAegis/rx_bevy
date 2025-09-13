@@ -7,7 +7,7 @@ use rx_bevy_core::{
 
 use crate::MulticastDestination;
 
-pub struct MulticastSubscriber<Destination>
+pub struct MulticastSubscriber<'c, Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -16,6 +16,7 @@ where
 	pub(crate) subscriber_ref: Arc<
 		RwLock<
 			MulticastDestination<
+				'c,
 				Destination::In,
 				Destination::InError,
 				<Self as SignalContext>::Context,
@@ -24,14 +25,14 @@ where
 	>,
 }
 
-impl<Destination> SignalContext for MulticastSubscriber<Destination>
+impl<'c, Destination> SignalContext for MulticastSubscriber<'c, Destination>
 where
 	Destination: 'static + Subscriber,
 {
 	type Context = Destination::Context;
 }
 
-impl<Destination> Observer for MulticastSubscriber<Destination>
+impl<'c, Destination> Observer for MulticastSubscriber<'c, Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -56,7 +57,7 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for MulticastSubscriber<Destination>
+impl<'c, Destination> SubscriptionLike for MulticastSubscriber<'c, Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -80,21 +81,21 @@ where
 	}
 }
 
-impl<Destination> SubscriptionCollection for MulticastSubscriber<Destination>
+impl<'c, Destination> SubscriptionCollection<'c> for MulticastSubscriber<'c, Destination>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
+	Destination: 'static + Subscriber + SubscriptionCollection<'c>,
 {
 	#[inline]
 	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
 	}
 }
 
-impl<Destination> ObserverInput for MulticastSubscriber<Destination>
+impl<'c, Destination> ObserverInput for MulticastSubscriber<'c, Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -102,7 +103,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> Operation for MulticastSubscriber<Destination>
+impl<'c, Destination> Operation for MulticastSubscriber<'c, Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -125,7 +126,7 @@ where
 	}
 }
 
-impl<Destination> Drop for MulticastSubscriber<Destination>
+impl<'c, Destination> Drop for MulticastSubscriber<'c, Destination>
 where
 	Destination: 'static + Subscriber,
 {

@@ -1,13 +1,13 @@
 use crate::{SignalContext, SubscriptionCollection, SubscriptionLike};
 use smallvec::SmallVec;
 
-pub struct InnerSubscription<Context> {
+pub struct InnerSubscription<'c, Context: 'c> {
 	is_closed: bool,
 	finalizers:
-		SmallVec<[Box<dyn SubscriptionLike<Context = <Self as SignalContext>::Context>>; 1]>,
+		SmallVec<[Box<dyn SubscriptionLike<Context = <Self as SignalContext>::Context> + 'c>; 1]>,
 }
 
-impl<Context> Default for InnerSubscription<Context> {
+impl<'c, Context: 'c> Default for InnerSubscription<'c, Context> {
 	fn default() -> Self {
 		Self {
 			finalizers: SmallVec::new(),
@@ -16,11 +16,11 @@ impl<Context> Default for InnerSubscription<Context> {
 	}
 }
 
-impl<Context> SignalContext for InnerSubscription<Context> {
+impl<'c, Context: 'c> SignalContext for InnerSubscription<'c, Context> {
 	type Context = Context;
 }
 
-impl<Context> SubscriptionLike for InnerSubscription<Context> {
+impl<'c, Context: 'c> SubscriptionLike for InnerSubscription<'c, Context> {
 	fn is_closed(&self) -> bool {
 		self.is_closed
 	}
@@ -36,17 +36,17 @@ impl<Context> SubscriptionLike for InnerSubscription<Context> {
 	}
 }
 
-impl<Context> SubscriptionCollection for InnerSubscription<Context> {
-	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
-		&mut self,
-		subscription: impl Into<S>,
-		context: &mut Self::Context,
-	) {
+impl<'c, Context: 'c> SubscriptionCollection<'c> for InnerSubscription<'c, Context> {
+	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context> + 'c,
+	{
+		let mut s: S = subscription.into();
 		if self.is_closed() {
 			// If this subscription is already closed, the added one is unsubscribed immediately
-			subscription.into().unsubscribe(context);
+			s.unsubscribe(context);
 		} else {
-			self.finalizers.push(Box::new(subscription.into()));
+			self.finalizers.push(Box::new(s));
 		}
 	}
 }

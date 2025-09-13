@@ -78,15 +78,15 @@ where
 	}
 }
 
-impl<Destination> SubscriptionCollection for DetachedSubscriber<Destination>
+impl<'c, Destination> SubscriptionCollection<'c> for DetachedSubscriber<Destination>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection,
+	Destination: SubscriptionCollection<'c>,
 {
 	#[inline]
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
+	fn add<S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);

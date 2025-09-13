@@ -195,7 +195,7 @@ where
 	#[inline]
 	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Self::Context,
 	) {
 		if let Some(connector) = &mut self.connector {

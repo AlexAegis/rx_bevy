@@ -22,7 +22,3 @@ impl<'c> CommandContext<'c> {
 		Self { commands }
 	}
 }
-
-fn goo(mut commands: Commands, ctx: CommandContext) {
-	let c = CommandContext::new(commands);
-}

@@ -12,12 +12,11 @@ impl SubscriptionLike for () {
 	fn unsubscribe(&mut self, _context: &mut Self::Context) {}
 }
 
-impl SubscriptionCollection for () {
-	fn add<S: SubscriptionLike<Context = Self::Context>>(
-		&mut self,
-		subscription: impl Into<S>,
-		context: &mut Self::Context,
-	) {
+impl<'c> SubscriptionCollection<'c> for () {
+	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context> + 'c,
+	{
 		let mut teardown: S = subscription.into();
 		teardown.unsubscribe(context);
 	}

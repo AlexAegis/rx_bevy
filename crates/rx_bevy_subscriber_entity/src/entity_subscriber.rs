@@ -3,10 +3,10 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, event::Event, system::Commands};
 
 use rx_bevy_common_bounds::SignalBound;
-use rx_bevy_context_command::CommandContext;
+use rx_bevy_context_command::{CommandContext, ContextWithCommands};
 use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
 
-pub struct EntitySubscriber<In, InError>
+pub struct EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -19,10 +19,10 @@ where
 
 	closed: bool,
 
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<(&'c In, InError)>,
 }
 
-impl<In, InError> EntitySubscriber<In, InError>
+impl<'c, In, InError> EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -38,7 +38,7 @@ where
 	}
 }
 
-impl<In, InError> ObserverInput for EntitySubscriber<In, InError>
+impl<'c, In, InError> ObserverInput for EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -47,12 +47,12 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> SignalContext for EntitySubscriber<In, InError>
+impl<'c, In, InError> SignalContext for EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	type Context = CommandContext<'c, 'c>;
+	type Context = CommandContext<'c>;
 }
 
 #[derive(Event, Clone)]
@@ -68,7 +68,7 @@ where
 #[derive(Event, Clone)]
 pub struct RxComplete;
 
-impl<In, InError> Observer for EntitySubscriber<In, InError>
+impl<'c, In, InError> Observer for EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -107,7 +107,7 @@ where
 	}
 }
 
-impl<In, InError> SubscriptionLike for EntitySubscriber<In, InError>
+impl<'c, In, InError> SubscriptionLike for EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,

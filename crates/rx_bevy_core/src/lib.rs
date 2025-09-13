@@ -13,9 +13,6 @@ mod subscription;
 mod teardown_fn;
 mod tick;
 mod unit_subscription;
-mod wtf;
-
-pub use wtf::*;
 
 pub use assert_subscription_closed_on_drop::*;
 pub use inner_subscription::*;

@@ -138,15 +138,15 @@ where
 	}
 }
 
-impl<Destination> SubscriptionCollection for RcDestination<Destination>
+impl<'c, Destination> SubscriptionCollection<'c> for RcDestination<Destination>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection,
+	Destination: SubscriptionCollection<'c>,
 {
 	#[inline]
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
+	fn add<S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Self::Context,
 	) {
 		self.destination.add(subscription, context);
@@ -327,14 +327,14 @@ where
 	}
 }
 
-impl<Destination> SubscriptionCollection for RcSubscriber<Destination>
+impl<'c, Destination> SubscriptionCollection<'c> for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection,
+	Destination: SubscriptionCollection<'c>,
 {
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
+	fn add<S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Self::Context,
 	) {
 		let mut lock = self.destination.write().expect("lock is poisoned!");
@@ -508,14 +508,14 @@ where
 	}
 }
 
-impl<Destination> SubscriptionCollection for WeakRcSubscriber<Destination>
+impl<'c, Destination> SubscriptionCollection<'c> for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection,
+	Destination: SubscriptionCollection<'c>,
 {
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
+	fn add<S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut Self::Context,
 	) {
 		if let Ok(mut lock) = self.destination.try_write() {

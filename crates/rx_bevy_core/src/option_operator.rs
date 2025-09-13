@@ -211,7 +211,7 @@ where
 	}
 }
 
-impl<Sub, Destination> SubscriptionCollection for OptionOperatorSubscriber<Sub, Destination>
+impl<'c, Sub, Destination> SubscriptionCollection<'c> for OptionOperatorSubscriber<Sub, Destination>
 where
 	Sub: OperationSubscriber<
 			Destination = Destination,
@@ -220,12 +220,12 @@ where
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
-	Sub: SubscriptionCollection,
-	Destination: SubscriptionCollection,
+	Sub: SubscriptionCollection<'c>,
+	Destination: SubscriptionCollection<'c>,
 {
-	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
+	fn add<S: 'c + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
-		subscription: impl Into<S>,
+		subscription: S,
 		context: &mut <Sub as SignalContext>::Context,
 	) {
 		match self {
