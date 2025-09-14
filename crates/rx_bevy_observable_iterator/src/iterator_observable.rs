@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
-	TeardownFn,
+	Teardown,
 };
 
 /// Emits a single value then immediately completes
@@ -65,7 +65,7 @@ where
 			subscriber.next(item, context);
 		}
 		subscriber.complete(context);
-		DropSubscription::new(TeardownFn::new(move |_| {
+		DropSubscription::new(Teardown::new(move |_| {
 			subscriber.unsubscribe(&mut Context::get_context_for_drop())
 		}))
 	}

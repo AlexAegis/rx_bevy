@@ -1,4 +1,4 @@
-use crate::{SignalContext, SubscriptionCollection, SubscriptionLike};
+use crate::{SignalContext, SubscriptionCollection, SubscriptionLike, Teardown};
 
 impl SignalContext for () {
 	type Context = ();
@@ -13,11 +13,12 @@ impl SubscriptionLike for () {
 }
 
 impl SubscriptionCollection for () {
-	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
 	where
-		S: 'static + SubscriptionLike<Context = Self::Context>,
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
 	{
-		let mut teardown: S = subscription.into();
-		teardown.unsubscribe(context);
+		let teardown: Teardown<S, S::Context> = subscription.into();
+		teardown.take()(context);
 	}
 }

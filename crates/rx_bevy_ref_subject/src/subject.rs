@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, TeardownFn, Tick,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
@@ -103,7 +103,7 @@ where
 
 		// TODO: Big problem, due to 'c on multicast and observable (this) bound together
 		let multicast_ref = self.multicast.clone();
-		DropSubscription::new_from::<TeardownFn<<Self::Subscription as SignalContext>::Context>>(
+		DropSubscription::new_from::<Teardown<<Self::Subscription as SignalContext>::Context>>(
 			move |_: &mut <Self::Subscription as SignalContext>::Context| {
 				let subscriber = {
 					let mut write_multicast = multicast_ref.write().expect("blocked 1");

@@ -2,7 +2,7 @@ use short_type_name::short_type_name;
 
 use crate::{
 	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
-	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
+	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown,
 };
 
 /// [Operator]s with the same outputs as its inputs can be made optional.
@@ -223,11 +223,11 @@ where
 	Sub: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
-	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut <Sub as SignalContext>::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.add(subscription, context);

@@ -1,14 +1,5 @@
-use crate::{Observable, Subscriber, SubscriptionCollection, SubscriptionLike};
+use crate::{Observable, Subscriber};
 
-pub trait SubjectLike<Subscription>: Clone + Observable<Subscription> + Subscriber
-where
-	Subscription: SubscriptionLike + SubscriptionCollection,
-{
-}
+pub trait SubjectLike: Clone + Observable + Subscriber {}
 
-impl<T, Subscription> SubjectLike<Subscription> for T
-where
-	T: Clone + Observable<Subscription> + Subscriber,
-	Subscription: SubscriptionLike + SubscriptionCollection,
-{
-}
+impl<T> SubjectLike for T where T: Clone + Observable + Subscriber {}

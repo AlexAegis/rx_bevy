@@ -44,7 +44,7 @@ where
 impl<'c, InnerObservable, Destination> ObserverInput
 	for SwitchSubscriber<'c, InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable<'c>,
+	InnerObservable: 'static + Observable,
 	Destination: Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,

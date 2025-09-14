@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
-	TeardownFn,
+	Teardown,
 };
 
 /// Observable creator for [OfObservable]
@@ -58,7 +58,7 @@ where
 		let mut subscriber = destination;
 		subscriber.next(self.value.clone(), context);
 		subscriber.complete(context);
-		DropSubscription::new(TeardownFn::new(move |_| {
+		DropSubscription::new(Teardown::new(move |_| {
 			subscriber.unsubscribe(&mut DropContext::get_context_for_drop())
 		}))
 	}

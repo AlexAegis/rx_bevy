@@ -1,16 +1,14 @@
-use crate::{SignalContext, SubscriptionCollection, SubscriptionLike};
-use smallvec::SmallVec;
+use crate::{SignalContext, SubscriptionCollection, SubscriptionLike, Teardown};
 
 pub struct InnerSubscription<Context> {
 	is_closed: bool,
-	finalizers:
-		SmallVec<[Box<dyn SubscriptionLike<Context = <Self as SignalContext>::Context>>; 1]>,
+	finalizers: Vec<Box<dyn FnOnce(&mut Context)>>,
 }
 
 impl<Context> Default for InnerSubscription<Context> {
 	fn default() -> Self {
 		Self {
-			finalizers: SmallVec::new(),
+			finalizers: Vec::new(),
 			is_closed: false,
 		}
 	}
@@ -29,24 +27,25 @@ impl<Context> SubscriptionLike for InnerSubscription<Context> {
 		if !self.is_closed {
 			self.is_closed = true;
 
-			for mut teardown in self.finalizers.drain(..) {
-				teardown.unsubscribe(context);
+			for teardown in self.finalizers.drain(..) {
+				(teardown)(context);
 			}
 		}
 	}
 }
 
 impl<Context> SubscriptionCollection for InnerSubscription<Context> {
-	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
 	where
-		S: 'static + SubscriptionLike<Context = Self::Context>,
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
 	{
-		let mut s: S = subscription.into();
+		let teardown: Teardown<S, S::Context> = subscription.into();
 		if self.is_closed() {
 			// If this subscription is already closed, the added one is unsubscribed immediately
-			s.unsubscribe(context);
+			teardown.take()(context);
 		} else {
-			self.finalizers.push(Box::new(s));
+			self.finalizers.push(teardown.take());
 		}
 	}
 }

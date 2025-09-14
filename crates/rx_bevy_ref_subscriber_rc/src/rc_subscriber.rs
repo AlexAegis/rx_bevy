@@ -5,7 +5,7 @@ use std::{
 
 use rx_bevy_core::{
 	AssertSubscriptionClosedOnDrop, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Tick,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 /// Internal to [RcSubscriber]
@@ -138,17 +138,17 @@ where
 	}
 }
 
-impl<'c, Destination> SubscriptionCollection<'c> for RcDestination<Destination>
+impl<Destination> SubscriptionCollection for RcDestination<Destination>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection<'c>,
+	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn add<S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut Self::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
 		self.destination.add(subscription, context);
 	}
 }
@@ -327,16 +327,16 @@ where
 	}
 }
 
-impl<'c, Destination> SubscriptionCollection<'c> for RcSubscriber<Destination>
+impl<Destination> SubscriptionCollection for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection<'c>,
+	Destination: SubscriptionCollection,
 {
-	fn add<S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut Self::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
 		let mut lock = self.destination.write().expect("lock is poisoned!");
 		lock.add(subscription, context);
 	}
@@ -508,16 +508,16 @@ where
 	}
 }
 
-impl<'c, Destination> SubscriptionCollection<'c> for WeakRcSubscriber<Destination>
+impl<Destination> SubscriptionCollection for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection<'c>,
+	Destination: SubscriptionCollection,
 {
-	fn add<S: 'c + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut Self::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
 		if let Ok(mut lock) = self.destination.try_write() {
 			lock.add(subscription, context);
 		}

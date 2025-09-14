@@ -1,23 +1,32 @@
+use std::marker::PhantomData;
+
 use bevy_ecs::component::Component;
 
 use rx_bevy_core::{
 	AssertSubscriptionClosedOnDrop, InnerSubscription, SignalContext, SubscriptionCollection,
-	SubscriptionLike,
+	SubscriptionLike, Teardown,
 };
 
 use rx_bevy_context_command::ContextWithCommands;
 
 #[derive(Component)]
-pub struct EntitySubscription<'c, Context>(InnerSubscription<'c, Context>)
+pub struct EntitySubscription<'c, Context>
 where
-	Context: ContextWithCommands<'c>;
+	Context: ContextWithCommands<'c>,
+{
+	subscription: InnerSubscription<Context>,
+	phantom_data: PhantomData<&'c Context>,
+}
 
 impl<'c, Context> Default for EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {
 	fn default() -> Self {
-		Self(InnerSubscription::<Context>::default())
+		Self {
+			subscription: InnerSubscription::<Context>::default(),
+			phantom_data: PhantomData,
+		}
 	}
 }
 
@@ -33,24 +42,24 @@ where
 	Context: ContextWithCommands<'c>,
 {
 	fn is_closed(&self) -> bool {
-		self.0.is_closed()
+		self.subscription.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut Context) {
-		self.0.unsubscribe(context);
+		self.subscription.unsubscribe(context);
 	}
 }
 
-impl<'c, Context> SubscriptionCollection<'c> for EntitySubscription<'c, Context>
+impl<'c, Context> SubscriptionCollection for EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {
-	fn add<S: 'c + SubscriptionLike<Context = Self::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut Self::Context,
-	) {
-		self.0.add(subscription, context);
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		self.subscription.add(subscription, context);
 	}
 }
 

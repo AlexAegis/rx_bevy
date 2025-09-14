@@ -1,6 +1,8 @@
 use std::sync::{Arc, RwLock};
 
-use rx_bevy_core::{InnerSubscription, SignalContext, SubscriptionCollection, SubscriptionLike};
+use rx_bevy_core::{
+	InnerSubscription, SignalContext, SubscriptionCollection, SubscriptionLike, Teardown,
+};
 
 use crate::{DropContext, DropContextFromSubscription};
 
@@ -75,9 +77,10 @@ impl<Context> SubscriptionCollection for DropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
 	where
-		S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>,
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
 	{
 		let mut lock = self.inner.write().expect("to not be locked");
 		lock.add(subscription, context);
@@ -130,9 +133,10 @@ impl<Context> SubscriptionCollection for InnerDropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
 	where
-		S: 'static + SubscriptionLike<Context = Self::Context>,
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
 	{
 		self.0.add(subscription, context);
 	}

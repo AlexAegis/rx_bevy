@@ -1,8 +1,6 @@
-use rx_bevy_core::{
-	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionCollectionTeardownFnExtension, SubscriptionLike,
-};
+use rx_bevy_core::{Observable, ObservableOutput, Subscriber, SubscriptionLike};
 
+use rx_bevy_core::SubscriptionCollection;
 use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 /// Observable creator for [ThrowObservable]
@@ -21,11 +19,13 @@ where
 	type OutError = Error;
 }
 
-impl<Error, Context> Observable<DropSubscription<Context>> for ThrowObservable<Error>
+impl<Error, Context> Observable for ThrowObservable<Error>
 where
 	Error: 'static + Clone,
 	Context: DropContext,
 {
+	type Subscription = DropSubscription<Context>;
+
 	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
@@ -36,11 +36,11 @@ where
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Context>,
 	{
 		destination.error(self.error.clone(), context);
-		let mut subscription = DropSubscription::<Context>::default();
-		//	subscription.add(destination, context);
-		subscription.add_fn(move |c| destination.unsubscribe(c), context);
-		subscription.unsubscribe(context);
-		subscription
+		let mut sub = DropSubscription::<Context>::default();
+		sub.add(destination, context);
+		// sub.add_fn(move |c| destination.unsubscribe(c), context);
+		sub.unsubscribe(context);
+		sub
 	}
 }
 

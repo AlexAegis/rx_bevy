@@ -1,4 +1,4 @@
-use crate::SignalContext;
+use crate::{SignalContext, Teardown};
 
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational, and safe to drop
@@ -11,7 +11,17 @@ pub trait SubscriptionLike: SignalContext {
 }
 
 pub trait SubscriptionCollection: SubscriptionLike {
-	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
 	where
-		S: 'static + SubscriptionLike<Context = Self::Context>;
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>;
+
+	fn add_fn<F>(&mut self, f: F, context: &mut Self::Context)
+	where
+		F: 'static + FnOnce(&mut Self::Context),
+		Self: Sized,
+	{
+		let teardown = Teardown::<Self, Self::Context>::new(f);
+		self.add(teardown, context);
+	}
 }

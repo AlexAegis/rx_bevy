@@ -10,7 +10,7 @@ mod signal_context;
 mod subject;
 mod subscriber;
 mod subscription;
-mod teardown_fn;
+mod teardown;
 mod tick;
 mod unit_subscription;
 
@@ -24,7 +24,7 @@ pub use signal_context::*;
 pub use subject::*;
 pub use subscriber::*;
 pub use subscription::*;
-pub use teardown_fn::*;
+pub use teardown::*;
 pub use tick::*;
 
 pub mod prelude {

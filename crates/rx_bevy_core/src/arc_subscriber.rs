@@ -2,6 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use crate::{
 	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
+	Teardown,
 };
 
 impl<Destination> ObserverInput for Arc<RwLock<Destination>>
@@ -72,11 +73,11 @@ where
 	Destination: Subscriber,
 	Destination: SubscriptionCollection,
 {
-	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut Destination::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
 		let mut lock = self.write().expect("lock is poisoned!");
 		lock.add(subscription, context);
 	}
