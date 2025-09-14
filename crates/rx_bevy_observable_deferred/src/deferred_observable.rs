@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
-};
+use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber};
+use rx_bevy_subscription_drop::DropContextFromSubscription;
 
 pub fn deferred_observable<F, Source>(observable_creator: F) -> DeferredObservable<F, Source>
 where

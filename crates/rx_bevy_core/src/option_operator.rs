@@ -14,7 +14,7 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>>
+	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>
 		= OptionOperatorSubscriber<Op::Subscriber<Destination>, Destination>
 	where
 		Op::Subscriber<Destination>: Observer;
@@ -211,7 +211,7 @@ where
 	}
 }
 
-impl<'c, Sub, Destination> SubscriptionCollection<'c> for OptionOperatorSubscriber<Sub, Destination>
+impl<Sub, Destination> SubscriptionCollection for OptionOperatorSubscriber<Sub, Destination>
 where
 	Sub: OperationSubscriber<
 			Destination = Destination,
@@ -220,10 +220,10 @@ where
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
-	Sub: SubscriptionCollection<'c>,
-	Destination: SubscriptionCollection<'c>,
+	Sub: SubscriptionCollection,
+	Destination: SubscriptionCollection,
 {
-	fn add<S: 'c + SubscriptionLike<Context = Self::Context>>(
+	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
 		subscription: S,
 		context: &mut <Sub as SignalContext>::Context,

@@ -10,8 +10,8 @@ pub trait SubscriptionLike: SignalContext {
 	fn is_closed(&self) -> bool;
 }
 
-pub trait SubscriptionCollection<'c>: SubscriptionLike {
+pub trait SubscriptionCollection: SubscriptionLike {
 	fn add<S>(&mut self, subscription: S, context: &mut Self::Context)
 	where
-		S: 'c + SubscriptionLike<Context = Self::Context>;
+		S: 'static + SubscriptionLike<Context = Self::Context>;
 }

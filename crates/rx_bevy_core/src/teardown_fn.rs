@@ -38,15 +38,15 @@ impl<Context> SubscriptionLike for TeardownFn<Context> {
 	}
 }
 
-pub trait SubscriptionCollectionTeardownFnExtension<'c>: SubscriptionCollection<'c> {
+pub trait SubscriptionCollectionTeardownFnExtension: SubscriptionCollection {
 	fn add_fn<F>(&mut self, f: F, context: &mut Self::Context)
 	where
-		F: 'static + FnOnce(&mut <Self as SignalContext>::Context),
-		Self::Context: 'c,
+		F: FnOnce(&mut Self::Context) + 'static,
+		TeardownFn<Self::Context>: 'static,
 	{
 		let teardown: TeardownFn<Self::Context> = f.into();
-		self.add::<TeardownFn<Self::Context>>(teardown, context)
+		self.add(teardown, context)
 	}
 }
 
-impl<'c, T> SubscriptionCollectionTeardownFnExtension<'c> for T where T: SubscriptionCollection<'c> {}
+impl<T> SubscriptionCollectionTeardownFnExtension for T where T: SubscriptionCollection {}

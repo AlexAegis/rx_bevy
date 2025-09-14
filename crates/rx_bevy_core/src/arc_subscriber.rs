@@ -67,12 +67,12 @@ where
 	}
 }
 
-impl<'c, Destination> SubscriptionCollection<'c> for Arc<RwLock<Destination>>
+impl<Destination> SubscriptionCollection for Arc<RwLock<Destination>>
 where
 	Destination: Subscriber,
-	Destination: SubscriptionCollection<'c>,
+	Destination: SubscriptionCollection,
 {
-	fn add<S: 'c + SubscriptionLike<Context = Self::Context>>(
+	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
 		&mut self,
 		subscription: S,
 		context: &mut Destination::Context,

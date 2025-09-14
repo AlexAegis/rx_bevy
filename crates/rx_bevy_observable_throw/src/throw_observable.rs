@@ -1,19 +1,19 @@
-use std::marker::PhantomData;
-
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike,
 };
-use rx_bevy_subscription_drop::{DropContext, DropSubscription};
+
+use rx_bevy_subscription_drop::DropSubscription;
 
 /// Observable creator for [ThrowObservable]
-pub fn throw<Error>(error: Error) -> ThrowObservable<Error, ()>
+pub fn throw<Error>(error: Error) -> ThrowObservable<Error>
 where
 	Error: Clone,
 {
 	ThrowObservable::new(error)
 }
 
-impl<Error, Context> ObservableOutput for ThrowObservable<Error, Context>
+impl<Error> ObservableOutput for ThrowObservable<Error>
 where
 	Error: 'static + Clone,
 {
@@ -21,71 +21,54 @@ where
 	type OutError = Error;
 }
 
-impl<Error, Context> SignalContext for ThrowObservable<Error, Context>
+impl<Error> SignalContext for ThrowObservable<Error>
 where
 	Error: 'static + Clone,
-	Context: DropContext,
 {
-	type Context = Context;
+	type Context = ();
 }
 
-impl<'c, Error, Context> Observable<'c> for ThrowObservable<Error, Context>
+impl<Error> Observable for ThrowObservable<Error>
 where
 	Error: 'static + Clone,
-	Context: 'c + DropContext,
 {
-	type Subscription = DropSubscription<'c, Context>;
+	type Subscription = DropSubscription<()>;
 
 	fn subscribe<Destination>(
 		&mut self,
-		destination: Destination,
-		context: &mut Context,
+		mut destination: Destination,
+		context: &mut Self::Context,
 	) -> Self::Subscription
 	where
-		Destination: Subscriber<
+		Destination: 'static
+			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self as SignalContext>::Context,
 			>,
 	{
-		let mut subscriber = destination;
-		subscriber.error(self.error.clone(), context);
-
-		// let a = TeardownFn::new(move |_| {
-		// 	subscriber.unsubscribe(&mut Context::get_context_for_drop());
-		// });
-		let mut d = DropSubscription::default();
-
-		// d.add_fn(
-		// 	move |c| {
-		// 		subscriber.unsubscribe(c);
-		// 	},
-		// 	context,
-		// );
-
-		d.add(subscriber, context);
-		d
+		destination.error(self.error.clone(), context);
+		let mut subscription = Self::Subscription::default();
+		subscription.add(destination, context);
+		subscription.unsubscribe(context);
+		subscription
 	}
 }
 
 #[derive(Clone)]
-pub struct ThrowObservable<Error, Context>
+pub struct ThrowObservable<Error>
 where
 	Error: Clone,
 {
 	error: Error,
-	_phantom_data: PhantomData<Context>,
 }
 
-impl<Error, Context> ThrowObservable<Error, Context>
+impl<Error> ThrowObservable<Error>
 where
 	Error: Clone,
 {
 	pub fn new(error: Error) -> Self {
-		Self {
-			error,
-			_phantom_data: PhantomData,
-		}
+		Self { error }
 	}
 }
 

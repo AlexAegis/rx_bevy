@@ -20,6 +20,6 @@ use crate::{Observer, SubscriptionLike};
 /// a long chain of operators that do not interact with the error signal, the
 /// error will go straight to the destination observer with a single `error`
 /// call.
-pub trait Subscriber: 'static + Observer + SubscriptionLike {}
+pub trait Subscriber: Observer + SubscriptionLike {}
 
-impl<T> Subscriber for T where T: 'static + Observer + SubscriptionLike {}
+impl<T> Subscriber for T where T: Observer + SubscriptionLike {}

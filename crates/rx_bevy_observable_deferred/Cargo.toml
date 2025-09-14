@@ -40,6 +40,7 @@ bevy = ["rx_bevy_core/bevy", "rx_bevy/bevy", "rx_bevy_testing/bevy"]
 [dependencies]
 rx_bevy_core = { workspace = true }
 rx_bevy_common_bounds = { workspace = true }
+rx_bevy_subscription_drop = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]
