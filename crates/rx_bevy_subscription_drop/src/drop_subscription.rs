@@ -22,22 +22,21 @@ impl<Context> DropSubscription<Context>
 where
 	Context: DropContext,
 {
-	pub fn new<S>(subscription: S, context: &mut Context) -> Self
+	pub fn new<S, T>(subscription: T) -> Self
 	where
-		S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>,
+		S: SubscriptionLike<Context = Context>,
+		T: Into<Teardown<S, S::Context>>,
 	{
-		let mut inner = InnerDropSubscription::default();
-		inner.add(subscription, context);
 		Self {
-			inner: Arc::new(RwLock::new(inner)),
+			inner: Arc::new(RwLock::new(InnerDropSubscription::new(subscription))),
 		}
 	}
 
-	pub fn new_from<S>(subscription: impl Into<S>, context: &mut Context) -> Self
+	pub fn new_fn<F>(f: F) -> Self
 	where
-		S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>,
+		F: 'static + FnOnce(&mut Context),
 	{
-		Self::new(subscription.into(), context)
+		Self::new(Teardown::<Self, Context>::new(f))
 	}
 }
 
@@ -90,6 +89,26 @@ where
 pub struct InnerDropSubscription<Context>(InnerSubscription<Context>)
 where
 	Context: DropContext;
+
+impl<Context> InnerDropSubscription<Context>
+where
+	Context: DropContext,
+{
+	pub fn new<S, T>(subscription: T) -> Self
+	where
+		S: SubscriptionLike<Context = Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		Self(InnerSubscription::new(subscription))
+	}
+
+	pub fn new_fn<F>(f: F) -> Self
+	where
+		F: 'static + FnOnce(&mut Context),
+	{
+		Self::new(Teardown::<Self, Context>::new(f))
+	}
+}
 
 impl<Context> DropContextFromSubscription for InnerDropSubscription<Context>
 where

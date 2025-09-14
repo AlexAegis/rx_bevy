@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
-	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, SubjectLike,
-	Subscriber, SubscriptionCollection, SubscriptionLike,
+	Observable, ObservableOutput, SignalContext, SubjectLike, Subscriber, SubscriptionCollection,
+	SubscriptionLike,
 };
 
 use crate::{
@@ -57,13 +57,14 @@ where
 {
 	type Subscription = Connector::Subscription;
 
-	fn subscribe<'c, Destination>(
+	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
-		Destination: Subscriber<
+		Destination: 'static
+			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
@@ -104,11 +105,11 @@ where
 	Source::Subscription: Clone,
 	Connector: SubscriptionCollection,
 {
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut Self::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<rx_bevy_core::Teardown<S, S::Context>>,
+	{
 		let mut connector = self.connector.lock().expect("lockable");
 		connector.add(subscription, context);
 	}
@@ -150,7 +151,6 @@ where
 			Context = <Source::Subscription as SignalContext>::Context,
 		>,
 	Source::Subscription: Clone + SubscriptionCollection,
-	<Source::Subscription as SignalContext>::Context: DropContextFromSubscription,
 {
 	type ConnectionSubscription = Source::Subscription;
 

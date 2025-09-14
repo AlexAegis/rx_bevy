@@ -1,17 +1,40 @@
-use rx_bevy_core::{Observable, ObservableOutput, Subscriber, SubscriptionLike};
+use std::marker::PhantomData;
+
+use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionLike};
 
 use rx_bevy_core::SubscriptionCollection;
 use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 /// Observable creator for [ThrowObservable]
-pub fn throw<Error>(error: Error) -> ThrowObservable<Error>
+pub fn throw<Error, Context>(error: Error) -> ThrowObservable<Error, Context>
 where
 	Error: Clone,
 {
 	ThrowObservable::new(error)
 }
 
-impl<Error> ObservableOutput for ThrowObservable<Error>
+#[derive(Clone)]
+pub struct ThrowObservable<Error, Context>
+where
+	Error: Clone,
+{
+	error: Error,
+	_phantom_data: PhantomData<Context>,
+}
+
+impl<Error, Context> ThrowObservable<Error, Context>
+where
+	Error: Clone,
+{
+	pub fn new(error: Error) -> Self {
+		Self {
+			error,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<Error, Context> ObservableOutput for ThrowObservable<Error, Context>
 where
 	Error: 'static + Clone,
 {
@@ -19,7 +42,15 @@ where
 	type OutError = Error;
 }
 
-impl<Error, Context> Observable for ThrowObservable<Error>
+impl<Error, Context> SignalContext for ThrowObservable<Error, Context>
+where
+	Error: 'static + Clone,
+	Context: DropContext,
+{
+	type Context = Context;
+}
+
+impl<Error, Context> Observable for ThrowObservable<Error, Context>
 where
 	Error: 'static + Clone,
 	Context: DropContext,
@@ -38,26 +69,9 @@ where
 		destination.error(self.error.clone(), context);
 		let mut sub = DropSubscription::<Context>::default();
 		sub.add(destination, context);
-		// sub.add_fn(move |c| destination.unsubscribe(c), context);
+		//sub.add_fn(move |c| destination.unsubscribe(c), context);
 		sub.unsubscribe(context);
 		sub
-	}
-}
-
-#[derive(Clone)]
-pub struct ThrowObservable<Error>
-where
-	Error: Clone,
-{
-	error: Error,
-}
-
-impl<Error> ThrowObservable<Error>
-where
-	Error: Clone,
-{
-	pub fn new(error: Error) -> Self {
-		Self { error }
 	}
 }
 

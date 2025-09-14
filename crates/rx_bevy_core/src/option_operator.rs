@@ -14,7 +14,7 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Subscriber<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>
+	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>>
 		= OptionOperatorSubscriber<Op::Subscriber<Destination>, Destination>
 	where
 		Op::Subscriber<Destination>: Observer;

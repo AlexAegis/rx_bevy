@@ -4729,6 +4729,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
+ "rx_bevy_subscription_drop",
  "rx_bevy_testing",
 ]
 
@@ -4740,6 +4741,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_common_bounds",
  "rx_bevy_core",
+ "rx_bevy_subscription_drop",
  "rx_bevy_testing",
 ]
 
@@ -5050,6 +5052,7 @@ dependencies = [
  "rx_bevy_core",
  "rx_bevy_emission_variants",
  "rx_bevy_ref_subscriber_rc",
+ "rx_bevy_subscription_drop",
  "rx_bevy_testing",
 ]
 

@@ -45,6 +45,7 @@ reflect = [
 rx_bevy_core = { workspace = true }
 rx_bevy_emission_variants = { workspace = true }
 rx_bevy_common_bounds = { workspace = true }
+rx_bevy_subscription_drop = { workspace = true }
 rx_bevy_ref_subscriber_rc = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 

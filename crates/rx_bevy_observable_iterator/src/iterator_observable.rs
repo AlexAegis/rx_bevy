@@ -1,9 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
-	Teardown,
-};
+use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber};
+use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 /// Emits a single value then immediately completes
 #[derive(Clone, Debug)]
@@ -36,6 +34,15 @@ where
 	type OutError = ();
 }
 
+impl<Iterator, Context> SignalContext for IteratorObservable<Iterator, Context>
+where
+	Iterator: Clone + IntoIterator,
+	Iterator::Item: 'static,
+	Context: DropContext,
+{
+	type Context = Context;
+}
+
 impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
@@ -44,7 +51,7 @@ where
 {
 	type Subscription = DropSubscription<Context>;
 
-	fn subscribe<'c, Destination>(
+	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut <Destination as SignalContext>::Context,
@@ -65,8 +72,6 @@ where
 			subscriber.next(item, context);
 		}
 		subscriber.complete(context);
-		DropSubscription::new(Teardown::new(move |_| {
-			subscriber.unsubscribe(&mut Context::get_context_for_drop())
-		}))
+		DropSubscription::new(subscriber)
 	}
 }

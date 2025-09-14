@@ -2,15 +2,15 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Tick,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{EitherOut2, EitherOutError2};
 
 pub struct IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -21,8 +21,8 @@ where
 
 impl<O1, O2, Destination> IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -40,8 +40,8 @@ where
 
 impl<O1, O2, Destination> SignalContext for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -54,8 +54,8 @@ where
 
 impl<O1, O2, Destination> Observer for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -88,8 +88,8 @@ where
 
 impl<O1, O2, Destination> SubscriptionLike for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -110,8 +110,8 @@ where
 
 impl<O1, O2, Destination> SubscriptionCollection for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -120,19 +120,19 @@ where
 		> + SubscriptionCollection,
 {
 	#[inline]
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut <Destination as SignalContext>::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
 		self.destination.add(subscription, context);
 	}
 }
 
 impl<O1, O2, Destination> ObserverInput for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -143,8 +143,8 @@ where
 
 impl<O1, O2, Destination> ObservableOutput for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -155,8 +155,8 @@ where
 
 impl<O1, O2, Destination> Operation for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -185,8 +185,8 @@ where
 
 pub struct IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -197,8 +197,8 @@ where
 
 impl<O1, O2, Destination> IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -216,8 +216,8 @@ where
 
 impl<O1, O2, Destination> SignalContext for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -230,8 +230,8 @@ where
 
 impl<O1, O2, Destination> Observer for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -264,8 +264,8 @@ where
 
 impl<O1, O2, Destination> SubscriptionLike for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -286,8 +286,8 @@ where
 
 impl<O1, O2, Destination> SubscriptionCollection for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -296,19 +296,19 @@ where
 		> + SubscriptionCollection,
 {
 	#[inline]
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut <Destination as SignalContext>::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
 		self.destination.add(subscription, context);
 	}
 }
 
 impl<O1, O2, Destination> ObserverInput for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -319,8 +319,8 @@ where
 
 impl<O1, O2, Destination> ObservableOutput for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -331,8 +331,8 @@ where
 
 impl<O1, O2, Destination> Operation for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O1: 'static + Observable<Context = Destination::Context>,
+	O2: 'static + Observable<Context = Destination::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<

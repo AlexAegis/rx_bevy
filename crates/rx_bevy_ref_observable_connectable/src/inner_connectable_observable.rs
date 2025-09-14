@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	DropContextFromSubscription, Observable, ObservableOutput, SignalContext, SubjectLike,
-	Subscriber, SubscriptionCollection, SubscriptionLike,
+	Observable, ObservableOutput, SignalContext, SubjectLike, Subscriber, SubscriptionCollection,
+	SubscriptionLike,
 };
 
 use crate::{Connectable, ConnectableOptions};
@@ -96,13 +96,14 @@ where
 {
 	type Subscription = Connector::Subscription;
 
-	fn subscribe<'c, Destination>(
+	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
-		Destination: Subscriber<
+		Destination: 'static
+			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
@@ -125,7 +126,6 @@ where
 			Context = <Source::Subscription as SignalContext>::Context,
 		>,
 	Source::Subscription: Clone + SubscriptionCollection,
-	<Source::Subscription as SignalContext>::Context: DropContextFromSubscription,
 {
 	type ConnectionSubscription = Source::Subscription;
 
@@ -134,17 +134,12 @@ where
 		context: &mut <Self::ConnectionSubscription as SignalContext>::Context,
 	) -> Self::ConnectionSubscription {
 		self.get_active_connection().unwrap_or_else(|| {
-			let mut connector = self.get_connector().clone();
+			let connector = self.get_connector().clone();
 
 			let mut connection = self.source.subscribe(connector.clone(), context);
 
 			if self.options.unsubscribe_connector_on_disconnect {
-				connection.add(
-					TeardownFn::new(Box::new(move |c| {
-						connector.unsubscribe(c);
-					})),
-					context,
-				);
+				connection.add(connector, context);
 			}
 
 			self.connection.replace(connection.clone());
@@ -193,11 +188,11 @@ where
 	Connector: SubscriptionCollection,
 {
 	#[inline]
-	fn add<S: 'static + SubscriptionLike<Context = <Self as SignalContext>::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut Self::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<rx_bevy_core::Teardown<S, S::Context>>,
+	{
 		if let Some(connector) = &mut self.connector {
 			connector.add(subscription, context);
 		}

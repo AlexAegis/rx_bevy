@@ -19,6 +19,6 @@ impl SubscriptionCollection for () {
 		T: Into<Teardown<S, S::Context>>,
 	{
 		let teardown: Teardown<S, S::Context> = subscription.into();
-		teardown.take()(context);
+		teardown.call(context);
 	}
 }

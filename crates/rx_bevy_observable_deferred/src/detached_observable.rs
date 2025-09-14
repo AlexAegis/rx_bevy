@@ -27,30 +27,37 @@ where
 	}
 }
 
-impl<'s, Source> Observable for DetachedObservable<'s, Source>
+impl<'s, Source> SignalContext for DetachedObservable<'s, Source>
 where
 	Source: Observable,
 	<Source::Subscription as SignalContext>::Context: DropContext,
+	Source::Subscription: 'static,
+{
+	type Context = Source::Context;
+}
+
+impl<'s, Source> Observable for DetachedObservable<'s, Source>
+where
+	Source: Observable,
+	<Source as SignalContext>::Context: DropContext,
+	Source::Subscription: 'static,
 {
 	type Subscription = Source::Subscription;
 
-	fn subscribe<'c, Destination>(
+	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as SignalContext>::Context,
+		context: &mut Self::Context,
 	) -> Self::Subscription
 	where
-		Destination: Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let subscription = self.source.subscribe(destination, context);
 
 		let mut sub = Self::Subscription::default();
-		sub.add(
-			move |_: &mut <Self::Subscription as SignalContext>::Context<'_>| {
+		sub.add_fn(
+			move |_: &mut Self::Context| {
 				let _s = subscription;
 			},
 			context,

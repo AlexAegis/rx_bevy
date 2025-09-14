@@ -1,8 +1,5 @@
-use std::marker::PhantomData;
-
 use rx_bevy_core::{
-	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
-	Teardown,
+	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
 };
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
@@ -11,10 +8,10 @@ use rx_bevy_ref_subscriber_rc::RcSubscriber;
 
 use crate::CombineLatestSubscriber;
 
-pub fn combine_latest<O1, O2>(observable_1: O1, observable_2: O2) -> CombineLatest<O1, O2, ()>
+pub fn combine_latest<O1, O2>(observable_1: O1, observable_2: O2) -> CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -24,7 +21,7 @@ where
 pub struct CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -35,7 +32,7 @@ where
 impl<O1, O2> CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -50,7 +47,7 @@ where
 impl<O1, O2> ObservableOutput for CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -58,47 +55,54 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<O1, O2> Observable for CombineLatest<O1, O2>
+impl<O1, O2> SignalContext for CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type Subscription = DropSubscription<<O1::Subscription as SignalContext>::Context>;
+	type Context = O1::Context;
+}
 
-	fn subscribe<'c, Destination>(
+impl<O1, O2> Observable for CombineLatest<O1, O2>
+where
+	O1: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
+	type Subscription = O1::Subscription;
+
+	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as SignalContext>::Context,
+		context: &mut Self::Context,
 	) -> Self::Subscription
 	where
-		Destination: Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 		Self: Sized,
 	{
-		let mut subscription = DropSubscription::new_empty();
+		let mut subscription = Self::Subscription::default();
 
 		let rc_subscriber = RcSubscriber::new(CombineLatestSubscriber::<Destination, O1, O2>::new(
 			destination,
 		));
 
 		subscription.add(
-			Teardown::new_from_subscription(self.observable_1.subscribe(
+			self.observable_1.subscribe(
 				IntoVariant1of2Subscriber::new(rc_subscriber.clone()),
 				context,
-			)),
+			),
 			context,
 		);
 
 		subscription.add(
-			Teardown::new_from_subscription(self.observable_2.subscribe(
+			self.observable_2.subscribe(
 				IntoVariant2of2Subscriber::new(rc_subscriber.clone()),
 				context,
-			)),
+			),
 			context,
 		);
 

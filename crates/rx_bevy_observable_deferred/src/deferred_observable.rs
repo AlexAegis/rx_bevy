@@ -35,26 +35,31 @@ where
 	}
 }
 
+impl<F, Source> SignalContext for DeferredObservable<F, Source>
+where
+	Source: Observable,
+	<Source as SignalContext>::Context: DropContextFromSubscription,
+	F: Clone + Fn() -> Source,
+{
+	type Context = Source::Context;
+}
+
 impl<F, Source> Observable for DeferredObservable<F, Source>
 where
 	Source: Observable,
-	<Source::Subscription as SignalContext>::Context: DropContextFromSubscription,
+	<Source as SignalContext>::Context: DropContextFromSubscription,
 	F: Clone + Fn() -> Source,
 {
 	type Subscription = Source::Subscription;
 
-	fn subscribe<'c, Destination>(
+	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as SignalContext>::Context,
+		context: &mut Self::Context,
 	) -> Self::Subscription
 	where
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Source::Subscription as SignalContext>::Context,
-			>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let subscriber = destination.into();
 		let mut source = (self.observable_creator)();

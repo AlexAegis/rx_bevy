@@ -125,16 +125,3 @@ where
 			.despawn();
 	}
 }
-
-fn test(mut commands: Commands) {
-	let mut c = EntitySubscriber::<i32, ()> {
-		_phantom_data: PhantomData,
-		closed: false,
-		destination_entity: Entity::PLACEHOLDER,
-		subscription_entity: Entity::PLACEHOLDER,
-	};
-
-	let mut context = CommandContext::new(commands);
-
-	let context = c.next(1, &mut context);
-}

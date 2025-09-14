@@ -1,9 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	DropContext, DropSubscription, Observable, ObservableOutput, SignalContext, Subscriber,
-	Teardown,
-};
+use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber};
+use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 /// Observable creator for [OfObservable]
 pub fn of<T>(value: T) -> OfObservable<T, ()>
@@ -35,6 +33,14 @@ where
 	}
 }
 
+impl<Out, Context> SignalContext for OfObservable<Out, Context>
+where
+	Out: 'static + Clone,
+	Context: DropContext,
+{
+	type Context = Context;
+}
+
 impl<Out, Context> Observable for OfObservable<Out, Context>
 where
 	Out: 'static + Clone,
@@ -44,7 +50,7 @@ where
 
 	fn subscribe<'c, Destination>(
 		&mut self,
-		destination: Destination,
+		mut destination: Destination,
 		context: &mut Context,
 	) -> Self::Subscription
 	where
@@ -55,12 +61,9 @@ where
 				Context = <Self::Subscription as SignalContext>::Context,
 			>,
 	{
-		let mut subscriber = destination;
-		subscriber.next(self.value.clone(), context);
-		subscriber.complete(context);
-		DropSubscription::new(Teardown::new(move |_| {
-			subscriber.unsubscribe(&mut DropContext::get_context_for_drop())
-		}))
+		destination.next(self.value.clone(), context);
+		destination.complete(context);
+		DropSubscription::new(destination)
 	}
 }
 

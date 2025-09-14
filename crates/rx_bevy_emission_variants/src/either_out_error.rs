@@ -4,7 +4,7 @@ use rx_bevy_core::Observable;
 pub enum EitherOutError2<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {

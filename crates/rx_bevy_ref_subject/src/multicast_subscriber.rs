@@ -7,7 +7,7 @@ use rx_bevy_core::{
 
 use crate::MulticastDestination;
 
-pub struct MulticastSubscriber<'c, Destination>
+pub struct MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -16,7 +16,6 @@ where
 	pub(crate) subscriber_ref: Arc<
 		RwLock<
 			MulticastDestination<
-				'c,
 				Destination::In,
 				Destination::InError,
 				<Self as SignalContext>::Context,
@@ -25,14 +24,14 @@ where
 	>,
 }
 
-impl<'c, Destination> SignalContext for MulticastSubscriber<'c, Destination>
+impl<Destination> SignalContext for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
 	type Context = Destination::Context;
 }
 
-impl<'c, Destination> Observer for MulticastSubscriber<'c, Destination>
+impl<Destination> Observer for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -57,17 +56,10 @@ where
 	}
 }
 
-impl<'c, Destination> SubscriptionLike for MulticastSubscriber<'c, Destination>
+impl<Destination> SubscriptionLike for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		// See the subjects Teardown Fn to learn how this subscriber is
-		// removed from the subject.
-		self.destination.unsubscribe(context);
-	}
-
 	fn is_closed(&self) -> bool {
 		if let Ok(subject) = self.subscriber_ref.read() {
 			subject
@@ -79,23 +71,30 @@ where
 			self.destination.is_closed()
 		}
 	}
+
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		// See the subjects Teardown Fn to learn how this subscriber is
+		// removed from the subject.
+		self.destination.unsubscribe(context);
+	}
 }
 
-impl<'c, Destination> SubscriptionCollection<'c> for MulticastSubscriber<'c, Destination>
+impl<Destination> SubscriptionCollection for MulticastSubscriber<Destination>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection<'c>,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 {
 	#[inline]
-	fn add<S: 'static + SubscriptionLike<Context = Self::Context>>(
-		&mut self,
-		subscription: S,
-		context: &mut Self::Context,
-	) {
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<rx_bevy_core::Teardown<S, S::Context>>,
+	{
 		self.destination.add(subscription, context);
 	}
 }
 
-impl<'c, Destination> ObserverInput for MulticastSubscriber<'c, Destination>
+impl<Destination> ObserverInput for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -103,7 +102,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<'c, Destination> Operation for MulticastSubscriber<'c, Destination>
+impl<Destination> Operation for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -126,7 +125,7 @@ where
 	}
 }
 
-impl<'c, Destination> Drop for MulticastSubscriber<'c, Destination>
+impl<Destination> Drop for MulticastSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {

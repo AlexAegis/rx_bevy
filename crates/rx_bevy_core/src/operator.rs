@@ -15,9 +15,9 @@ pub trait Operator: ObserverInput + ObservableOutput + Clone {
 			Context = Destination::Context,
 		>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<'c, Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
 		destination: Destination,
 		context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
