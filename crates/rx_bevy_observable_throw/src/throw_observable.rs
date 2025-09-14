@@ -1,9 +1,9 @@
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike,
+	SubscriptionCollectionTeardownFnExtension, SubscriptionLike,
 };
 
-use rx_bevy_subscription_drop::DropSubscription;
+use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 /// Observable creator for [ThrowObservable]
 pub fn throw<Error>(error: Error) -> ThrowObservable<Error>
@@ -21,35 +21,24 @@ where
 	type OutError = Error;
 }
 
-impl<Error> SignalContext for ThrowObservable<Error>
+impl<Error, Context> Observable<DropSubscription<Context>> for ThrowObservable<Error>
 where
 	Error: 'static + Clone,
+	Context: DropContext,
 {
-	type Context = ();
-}
-
-impl<Error> Observable for ThrowObservable<Error>
-where
-	Error: 'static + Clone,
-{
-	type Subscription = DropSubscription<()>;
-
 	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut Self::Context,
-	) -> Self::Subscription
+		context: &mut Destination::Context,
+	) -> DropSubscription<Context>
 	where
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self as SignalContext>::Context,
-			>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Context>,
 	{
 		destination.error(self.error.clone(), context);
-		let mut subscription = Self::Subscription::default();
-		subscription.add(destination, context);
+		let mut subscription = DropSubscription::<Context>::default();
+		//	subscription.add(destination, context);
+		subscription.add_fn(move |c| destination.unsubscribe(c), context);
 		subscription.unsubscribe(context);
 		subscription
 	}
