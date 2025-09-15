@@ -3,8 +3,6 @@ use crate::{SignalContext, SubscriptionCollection, SubscriptionLike, Teardown};
 pub struct InnerSubscription<Context> {
 	is_closed: bool,
 	finalizers: Vec<Box<dyn FnOnce(&mut Context)>>,
-	// Force invariance, the compiler resolves Context to be a bivariant // And now it doesn't report it as bivariant anymore??
-	//_phantom_data: PhantomData<*mut (Context)>,
 }
 
 impl<Context> InnerSubscription<Context> {
@@ -19,7 +17,6 @@ impl<Context> InnerSubscription<Context> {
 			Self {
 				is_closed: false,
 				finalizers: vec![teardown_fn],
-				//	_phantom_data: PhantomData,
 			}
 		} else {
 			Self::default()
@@ -39,7 +36,6 @@ impl<Context> Default for InnerSubscription<Context> {
 		Self {
 			finalizers: Vec::new(),
 			is_closed: false,
-			// _phantom_data: PhantomData,
 		}
 	}
 }

@@ -3,7 +3,7 @@ use rx_bevy_core::{
 	SubscriptionLike, Teardown, Tick,
 };
 
-/// It must hold the invariant that the cloned destination points to the
+/// TODO: It must hold the invariant that the cloned destination points to the
 /// exact same thing. Like an `Arc` or an `Entity`
 pub struct SharedSubscriber<Destination>
 where

@@ -1,26 +1,11 @@
-use std::sync::{Arc, RwLock};
-
 use rx_bevy_core::{
-	InnerSubscription, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown,
+	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Tick,
 };
 use slab::Slab;
-
-use crate::MulticastSubscriber;
 
 pub struct MulticastDestination<In, InError, Context> {
 	pub(crate) slab: Slab<Box<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
 	pub(crate) closed: bool,
-	pub(crate) teardown: InnerSubscription<Context>,
-}
-
-impl<In, InError, Context> ObserverInput for MulticastDestination<In, InError, Context>
-where
-	In: 'static,
-	InError: 'static,
-{
-	type In = In;
-	type InError = InError;
 }
 
 impl<In, InError, Context> MulticastDestination<In, InError, Context> {
@@ -46,18 +31,80 @@ impl<In, InError, Context> MulticastDestination<In, InError, Context> {
 	>(
 		&mut self,
 		subscriber: Destination,
-		subscriber_ref: Arc<RwLock<MulticastDestination<In, InError, Context>>>,
 	) -> usize {
 		let entry = self.slab.vacant_entry();
 		let key = entry.key();
-		let subscriber = MulticastSubscriber::<Destination> {
-			key,
-			destination: subscriber,
-			subscriber_ref,
-		};
 		entry.insert(Box::new(subscriber));
 		key
 	}
+}
+
+impl<In, InError, Context> Observer for MulticastDestination<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+{
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		for (_, destination) in self.slab.iter_mut() {
+			destination.next(next.clone(), context);
+		}
+	}
+
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		let destinations = self.drain();
+		for mut destination in destinations {
+			destination.error(error.clone(), context);
+			destination.unsubscribe(context);
+		}
+	}
+
+	fn complete(&mut self, context: &mut Self::Context) {
+		let mut destinations = self.drain();
+		for destination in destinations.iter_mut() {
+			destination.complete(context);
+			destination.unsubscribe(context);
+		}
+	}
+
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		for (_, destination) in self.slab.iter_mut() {
+			destination.tick(tick.clone(), context);
+		}
+	}
+}
+
+impl<In, InError, Context> SubscriptionLike for MulticastDestination<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+{
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
+
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		for mut destination in self.drain() {
+			destination.unsubscribe(context);
+		}
+	}
+}
+
+impl<In, InError, Context> ObserverInput for MulticastDestination<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+{
+	type In = In;
+	type InError = InError;
+}
+
+impl<In, InError, Context> ObservableOutput for MulticastDestination<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+{
+	type Out = In;
+	type OutError = InError;
 }
 
 impl<In, InError, Context> Default for MulticastDestination<In, InError, Context> {
@@ -65,31 +112,10 @@ impl<In, InError, Context> Default for MulticastDestination<In, InError, Context
 		Self {
 			slab: Slab::with_capacity(1),
 			closed: false,
-			teardown: InnerSubscription::default(),
 		}
 	}
 }
 
 impl<In, InError, Context> SignalContext for MulticastDestination<In, InError, Context> {
 	type Context = Context;
-}
-
-impl<In, InError, Context> SubscriptionLike for MulticastDestination<In, InError, Context> {
-	fn is_closed(&self) -> bool {
-		self.closed
-	}
-
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		self.teardown.unsubscribe(context);
-	}
-}
-
-impl<In, InError, Context> SubscriptionCollection for MulticastDestination<In, InError, Context> {
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.teardown.add(subscription, context);
-	}
 }
