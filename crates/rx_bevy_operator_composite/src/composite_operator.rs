@@ -48,7 +48,8 @@ where
 		CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<D>>, D>;
 
 	fn operator_subscribe<
-		Destination: Subscriber<
+		Destination: 'static
+			+ Subscriber<
 				In = <Self as ObservableOutput>::Out,
 				InError = <Self as ObservableOutput>::OutError,
 			>,

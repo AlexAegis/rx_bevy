@@ -35,6 +35,7 @@ example = [
 ringbuffer = { workspace = true }
 rx_bevy_ref_subject = { workspace = true }
 rx_bevy_core = { workspace = true }
+rx_bevy_subscription_drop = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

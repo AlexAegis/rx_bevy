@@ -31,11 +31,8 @@ where
 	InnerObservable: 'static + Observable,
 {
 	type Subscriber<
-		Destination: Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <InnerObservable::Subscription as SignalContext>::Context,
-			>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = InnerObservable::Context>,
 	> = SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(

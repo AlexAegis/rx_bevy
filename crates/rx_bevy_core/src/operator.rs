@@ -27,9 +27,9 @@ pub trait Operator: ObserverInput + ObservableOutput + Clone {
 /// An [OperationSubscriber] is a more specialized version of a [Subscriber]
 /// used by [Operators]. It's a [Subscriber] that is aware of its Destination
 /// because it has constrains on its own outputs.
-pub trait OperationSubscriber: Subscriber + Operation {}
+pub trait OperationSubscriber: 'static + Subscriber + Operation {}
 
-impl<T> OperationSubscriber for T where T: Subscriber + Operation {}
+impl<T> OperationSubscriber for T where T: 'static + Subscriber + Operation {}
 
 /// An operation is something that does something to its [`Self::Destination`]
 pub trait Operation {

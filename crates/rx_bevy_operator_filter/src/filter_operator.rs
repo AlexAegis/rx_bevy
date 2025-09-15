@@ -24,10 +24,12 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Subscriber<D: Subscriber<In = In, InError = InError>> =
-		FilterSubscriber<In, InError, Filter, D>;
+	type Subscriber<Destination: 'static + Subscriber<In = In, InError = InError>> =
+		FilterSubscriber<In, InError, Filter, Destination>;
 
-	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
+	>(
 		&mut self,
 		destination: Destination,
 		_context: &mut Destination::Context,

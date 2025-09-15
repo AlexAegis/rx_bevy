@@ -5119,6 +5119,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_core",
  "rx_bevy_ref_subject",
+ "rx_bevy_subscription_drop",
  "rx_bevy_testing",
 ]
 
@@ -5130,6 +5131,7 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_core",
  "rx_bevy_ref_subject",
+ "rx_bevy_subscription_drop",
  "rx_bevy_testing",
 ]
 

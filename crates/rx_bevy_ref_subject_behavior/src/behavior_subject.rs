@@ -1,30 +1,33 @@
 use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
-	DropSubscription, Observable, ObservableOutput, Observer, ObserverInput, SubscriptionLike,
-	Tick, UpgradeableObserver,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_ref_subject::Subject;
+use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.
 #[derive(Clone)]
-pub struct BehaviorSubject<In, Error = ()>
+pub struct BehaviorSubject<In, InError = (), Context = ()>
 where
-	In: 'static,
-	Error: 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	subject: Subject<In, Error>,
+	subject: Subject<In, InError, Context>,
 	/// RefCell so even cloned subjects retain the same current value across clones
 	value: Rc<RefCell<In>>,
 }
 
-impl<T, Error> BehaviorSubject<T, Error>
+impl<In, InError, Context> BehaviorSubject<In, InError, Context>
 where
-	T: Clone,
-	Error: Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	pub fn new(value: T) -> Self {
+	pub fn new(value: In) -> Self {
 		Self {
 			subject: Subject::default(),
 			value: Rc::new(RefCell::new(value)),
@@ -35,79 +38,93 @@ where
 	/// In case you want to access the current value, prefer using a
 	/// subscription though to keep your code reactive, only use this when it's
 	/// absolutely necessary.
-	pub fn value(&self) -> T {
+	pub fn value(&self) -> In {
 		self.value.borrow().clone()
 	}
 }
 
-impl<T, Error> ObserverInput for BehaviorSubject<T, Error>
+impl<In, InError, Context> ObserverInput for BehaviorSubject<In, InError, Context>
 where
-	T: Clone,
-	Error: Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	type In = T;
-	type InError = Error;
+	type In = In;
+	type InError = InError;
 }
 
-impl<T, Error> Observer for BehaviorSubject<T, Error>
+impl<In, InError, Context> Observer for BehaviorSubject<In, InError, Context>
 where
-	T: Clone,
-	Error: Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	fn next(&mut self, next: T) {
+	fn next(&mut self, next: In, context: &mut Self::Context) {
 		let n = next.clone();
 		self.value.replace(next);
-		self.subject.next(n);
+		self.subject.next(n, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.subject.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.subject.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.subject.complete();
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.subject.complete(context);
 	}
 
 	#[inline]
-	fn tick(&mut self, tick: Tick) {
-		self.subject.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.subject.tick(tick, context);
 	}
 }
 
-impl<T, Error> ObservableOutput for BehaviorSubject<T, Error>
+impl<In, InError, Context> ObservableOutput for BehaviorSubject<In, InError, Context>
 where
-	T: Clone + 'static,
-	Error: Clone + 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	type Out = T;
-	type OutError = Error;
+	type Out = In;
+	type OutError = InError;
 }
 
-impl<T, Error> Observable for BehaviorSubject<T, Error>
+impl<In, InError, Context> SignalContext for BehaviorSubject<In, InError, Context>
 where
-	T: Clone + 'static,
-	Error: Clone + 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
+	type Context = Context;
+}
+
+impl<In, InError, Context> Observable for BehaviorSubject<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	type Subscription = DropSubscription<Self::Context>;
+
 	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	>(
 		&mut self,
-		destination: Destination,
-	) -> DropSubscription {
-		let mut subscriber = destination.upgrade();
-
-		subscriber.next(self.value.borrow().clone());
-		self.subject.subscribe(subscriber)
+		mut destination: Destination,
+		context: &mut Context,
+	) -> Self::Subscription {
+		destination.next(self.value.borrow().clone(), context);
+		self.subject.subscribe(destination, context)
 	}
 }
 
-impl<T, Error> SubscriptionLike for BehaviorSubject<T, Error>
+impl<In, InError, Context> SubscriptionLike for BehaviorSubject<In, InError, Context>
 where
-	T: 'static + Clone,
-	Error: 'static + Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -115,12 +132,23 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.subject.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.subject.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Context> SubscriptionCollection for BehaviorSubject<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.subject.add(subscription);
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		self.subject.add(subscription, context);
 	}
 }

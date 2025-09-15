@@ -5,6 +5,7 @@
 /// commonly: completion and error signals should trigger an unsubscribe call.
 /// And next signals sometimes trigger completion signals, so all contexts
 /// must be the same.
+/// TODO: Maybe a better name would be Environment, or ExecutionEnvironment
 #[doc(alias = "ChannelContext")]
 pub trait SignalContext {
 	type Context;

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{entity::Entity, event::Event, system::Commands};
+use bevy_ecs::{entity::Entity, event::Event};
 
 use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_context_command::{CommandContext, ContextWithCommands};

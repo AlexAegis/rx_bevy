@@ -109,18 +109,19 @@ where
 
 		let multicast_ref = self.multicast.clone();
 		let mut s = DropSubscription::default();
-		s.add_fn(
-			move |c| {
-				let subscriber = {
-					let mut write_multicast = multicast_ref.write().expect("blocked 1");
-					write_multicast.take(key)
-				};
-				if let Some(mut subscriber) = subscriber {
-					subscriber.unsubscribe(c);
-				}
-			},
-			context,
-		);
+		// TODO: Enable, one way or another
+		// .add_fn(
+		// 	move |c| {
+		// 		let subscriber = {
+		// 			let mut write_multicast = multicast_ref.write().expect("blocked 1");
+		// 			write_multicast.take(key)
+		// 		};
+		// 		if let Some(mut subscriber) = subscriber {
+		// 			subscriber.unsubscribe(c);
+		// 		}
+		// 	},
+		// 	context,
+		// ;
 		s
 	}
 }

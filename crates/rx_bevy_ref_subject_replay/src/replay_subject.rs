@@ -2,27 +2,32 @@ use std::{cell::RefCell, rc::Rc};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_bevy_core::{
-	DropSubscription, Observable, ObservableOutput, Observer, ObserverInput, SubscriptionLike,
-	Tick, UpgradeableObserver,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_ref_subject::Subject;
+use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.
 #[derive(Clone)]
-pub struct ReplaySubject<const CAPACITY: usize, T, Error = ()>
+pub struct ReplaySubject<const CAPACITY: usize, In, InError = (), Context = ()>
 where
-	T: 'static,
-	Error: 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	subject: Subject<T, Error>,
+	subject: Subject<In, InError, Context>,
 	/// Refcell so even cloned subjects retain the same current value across clones
-	values: Rc<RefCell<ConstGenericRingBuffer<T, CAPACITY>>>,
+	values: Rc<RefCell<ConstGenericRingBuffer<In, CAPACITY>>>,
 }
 
-impl<const CAPACITY: usize, T, Error> Default for ReplaySubject<CAPACITY, T, Error>
+impl<const CAPACITY: usize, In, InError, Context> Default
+	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	T: Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	fn default() -> Self {
 		Self {
@@ -32,74 +37,96 @@ where
 	}
 }
 
-impl<const CAPACITY: usize, T, Error> ObserverInput for ReplaySubject<CAPACITY, T, Error>
+impl<const CAPACITY: usize, In, InError, Context> ObserverInput
+	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	T: Clone,
-	Error: Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	type In = T;
-	type InError = Error;
+	type In = In;
+	type InError = InError;
 }
-impl<const CAPACITY: usize, T, Error> Observer for ReplaySubject<CAPACITY, T, Error>
+
+impl<const CAPACITY: usize, In, InError, Context> Observer
+	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	T: Clone,
-	Error: Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	fn next(&mut self, next: T) {
+	fn next(&mut self, next: In, context: &mut Context) {
 		self.values.borrow_mut().enqueue(next.clone());
-		self.subject.next(next);
+		self.subject.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.subject.error(error);
+	fn error(&mut self, error: Self::InError, context: &mut Context) {
+		self.subject.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self) {
-		self.subject.complete();
+	fn complete(&mut self, context: &mut Context) {
+		self.subject.complete(context);
 	}
 
 	#[inline]
-	fn tick(&mut self, tick: Tick) {
-		self.subject.tick(tick);
+	fn tick(&mut self, tick: Tick, context: &mut Context) {
+		self.subject.tick(tick, context);
 	}
 }
 
-impl<const CAPACITY: usize, T, Error> ObservableOutput for ReplaySubject<CAPACITY, T, Error>
+impl<const CAPACITY: usize, In, InError, Context> ObservableOutput
+	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	T: Clone + 'static,
-	Error: Clone + 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
-	type Out = T;
-	type OutError = Error;
+	type Out = In;
+	type OutError = InError;
 }
 
-impl<const CAPACITY: usize, T, Error> Observable for ReplaySubject<CAPACITY, T, Error>
+impl<const CAPACITY: usize, In, InError, Context> SignalContext
+	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	T: Clone + 'static,
-	Error: Clone + 'static,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
+	type Context = Context;
+}
+
+impl<const CAPACITY: usize, In, InError, Context> Observable
+	for ReplaySubject<CAPACITY, In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
+	type Subscription = DropSubscription<Context>;
+
 	fn subscribe<
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	>(
 		&mut self,
-		destination: Destination,
-	) -> DropSubscription {
-		let mut subscriber = destination.upgrade();
-
+		mut destination: Destination,
+		context: &mut Context,
+	) -> Self::Subscription {
 		for value in self.values.borrow().iter() {
-			subscriber.next(value.clone());
+			destination.next(value.clone(), context);
 		}
 
-		self.subject.subscribe(subscriber)
+		self.subject.subscribe(destination, context)
 	}
 }
 
-impl<const CAPACITY: usize, T, Error> SubscriptionLike for ReplaySubject<CAPACITY, T, Error>
+impl<const CAPACITY: usize, In, InError, Context> SubscriptionLike
+	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	T: 'static + Clone,
-	Error: 'static + Clone,
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -107,12 +134,24 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self) {
-		self.subject.unsubscribe();
+	fn unsubscribe(&mut self, context: &mut Context) {
+		self.subject.unsubscribe(context);
 	}
+}
 
+impl<const CAPACITY: usize, In, InError, Context> SubscriptionCollection
+	for ReplaySubject<CAPACITY, In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
 	#[inline]
-	fn add(&mut self, subscription: impl Into<Teardown>) {
-		self.subject.add(subscription);
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		self.subject.add(subscription, context);
 	}
 }
