@@ -101,7 +101,8 @@ where
 
 impl<Destination, O1, O2> SubscriptionLike for CombineLatestSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	Destination:
+		Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>> + SubscriptionLike,
 	O1: 'static + Observable,
 	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
@@ -113,6 +114,11 @@ where
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
+	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
 	}
 }
 
@@ -144,5 +150,4 @@ where
 	O2::Out: Clone,
 {
 	type Destination = Destination;
-
 }

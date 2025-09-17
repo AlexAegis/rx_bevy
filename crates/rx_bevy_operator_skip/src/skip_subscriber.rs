@@ -96,6 +96,11 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
+	}
 }
 
 impl<In, InError, Destination> SubscriptionCollection for SkipSubscriber<In, InError, Destination>
@@ -148,5 +153,4 @@ where
 		>,
 {
 	type Destination = Destination;
-
 }

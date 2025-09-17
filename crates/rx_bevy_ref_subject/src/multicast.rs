@@ -1,20 +1,26 @@
-use std::sync::{Arc, RwLock};
-
 use rx_bevy_core::{
-	DropContext, DropSafeSignalContext, DynSubscriber, ErasedArcSubscriber, Observable,
-	ObservableOutput, Observer, ObserverInput, SharedSubscriber, SignalContext, Subscriber,
-	SubscriptionLike, Tick,
+	DropContext, ErasedArcSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
+	SharedSubscriber, SignalContext, Subscriber, SubscriptionLike, Tick,
 };
-
-use rx_bevy_subscription_drop::DropSubscription;
 use smallvec::SmallVec;
 
-/// TODO: Drop the need for a DropSafeSignalContext once the method of sharing is configurable
+use crate::MulticastSubscription;
+
+/// A multicast subject that fan-outs every incoming signal to all subscribed destinations.
+///
+/// Unlike the previous implementation this version DOES NOT require the Context to be drop-safe
+/// (ie. `DropSafety = DropSafeSignalContext`). That means we never attempt to synthesize a
+/// context value during `Drop`, so contexts that borrow (eg. `&mut World`) can be used.
+///
+/// Because we cannot obtain a context during `Drop`, the per-subscriber subscription returned
+/// from `subscribe` will NOT automatically unsubscribe the inner subscriber when it's dropped.
+/// Users must explicitly call `unsubscribe` with a valid context if eager cleanup is desired.
+/// Closed subscribers are lazily cleaned up on the next `next` / `tick` emission.
 pub struct Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	subscribers: SmallVec<[ErasedArcSubscriber<In, InError, Context>; 1]>,
 	closed: bool,
@@ -24,7 +30,7 @@ impl<In, InError, Context> Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	/// Drops all closed subscribers
 	fn clean(&mut self) {
@@ -37,9 +43,9 @@ impl<In, InError, Context> Observable for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
-	type Subscription = DropSubscription<Context>;
+	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
@@ -52,7 +58,7 @@ where
 	{
 		let shared = ErasedArcSubscriber::share(destination);
 		self.subscribers.push(shared.clone());
-		DropSubscription::new(shared)
+		MulticastSubscription::new(shared)
 	}
 }
 
@@ -60,7 +66,7 @@ impl<In, InError, Context> Observer for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		for destination in self.subscribers.iter_mut() {
@@ -95,7 +101,7 @@ impl<In, InError, Context> SubscriptionLike for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	fn is_closed(&self) -> bool {
 		self.closed
@@ -116,7 +122,7 @@ impl<In, InError, Context> ObserverInput for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	type In = In;
 	type InError = InError;
@@ -126,7 +132,7 @@ impl<In, InError, Context> ObservableOutput for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	type Out = In;
 	type OutError = InError;
@@ -136,7 +142,7 @@ impl<In, InError, Context> Default for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	fn default() -> Self {
 		Self {
@@ -150,7 +156,7 @@ impl<In, InError, Context> SignalContext for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	type Context = Context;
 }

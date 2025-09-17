@@ -1,11 +1,10 @@
 use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	DropContext, DropSafeSignalContext, Observable, ObservableOutput, Observer, ObserverInput,
+	SignalContext, Subscriber, SubscriptionLike, Tick,
 };
-use rx_bevy_ref_subject::Subject;
-use rx_bevy_subscription_drop::{DropContext, DropSubscription};
+use rx_bevy_ref_subject::{MulticastSubscription, Subject};
 
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.
@@ -14,7 +13,7 @@ pub struct BehaviorSubject<In, InError = (), Context = ()>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	subject: Subject<In, InError, Context>,
 	/// RefCell so even cloned subjects retain the same current value across clones
@@ -25,7 +24,7 @@ impl<In, InError, Context> BehaviorSubject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	pub fn new(value: In) -> Self {
 		Self {
@@ -47,7 +46,7 @@ impl<In, InError, Context> ObserverInput for BehaviorSubject<In, InError, Contex
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	type In = In;
 	type InError = InError;
@@ -57,7 +56,7 @@ impl<In, InError, Context> Observer for BehaviorSubject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	fn next(&mut self, next: In, context: &mut Self::Context) {
 		let n = next.clone();
@@ -85,7 +84,7 @@ impl<In, InError, Context> ObservableOutput for BehaviorSubject<In, InError, Con
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	type Out = In;
 	type OutError = InError;
@@ -95,7 +94,7 @@ impl<In, InError, Context> SignalContext for BehaviorSubject<In, InError, Contex
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	type Context = Context;
 }
@@ -104,9 +103,9 @@ impl<In, InError, Context> Observable for BehaviorSubject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
-	type Subscription = DropSubscription<Self::Context>;
+	type Subscription = MulticastSubscription<In, InError, Self::Context>;
 
 	fn subscribe<
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
@@ -124,7 +123,7 @@ impl<In, InError, Context> SubscriptionLike for BehaviorSubject<In, InError, Con
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -135,20 +134,9 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.subject.unsubscribe(context);
 	}
-}
 
-impl<In, InError, Context> SubscriptionCollection for BehaviorSubject<In, InError, Context>
-where
-	In: 'static + Clone,
-	InError: 'static + Clone,
-	Context: DropContext,
-{
 	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.subject.add(subscription, context);
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		Self::Context::get_context_for_drop()
 	}
 }

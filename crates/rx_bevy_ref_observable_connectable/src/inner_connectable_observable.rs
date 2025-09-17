@@ -176,6 +176,15 @@ where
 			connector.unsubscribe(context);
 		}
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		if let Some(connector) = &mut self.connector {
+			connector.get_unsubscribe_context()
+		} else {
+			self.get_connector().get_unsubscribe_context()
+		}
+	}
 }
 
 impl<Source, ConnectorCreator, Connector> SubscriptionCollection

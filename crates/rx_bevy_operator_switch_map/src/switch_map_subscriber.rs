@@ -132,6 +132,11 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
+	}
 }
 
 impl<In, InError, Switcher, InnerObservable, Destination> SubscriptionCollection
@@ -214,28 +219,4 @@ where
 		+ Clone,
 {
 	type Destination = Destination;
-
-	fn read_destination<F>(&self, reader: F)
-	where
-		F: Fn(&Self::Destination),
-	{
-		self.destination.read_destination(|shared_subscriber| {
-			shared_subscriber.read_destination(|shared_destination| {
-				let lock = shared_destination.read().expect("not be poisoned");
-				reader(&lock);
-			});
-		});
-	}
-
-	fn write_destination<F>(&mut self, mut writer: F)
-	where
-		F: FnMut(&mut Self::Destination),
-	{
-		self.destination.write_destination(|shared_subscriber| {
-			shared_subscriber.write_destination(|shared_destination| {
-				let mut lock = shared_destination.write().expect("not be poisoned");
-				writer(&mut lock);
-			});
-		});
-	}
 }

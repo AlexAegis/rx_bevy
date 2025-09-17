@@ -1,6 +1,6 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike};
+use rx_bevy_core::{DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct PrintObserver<In, InError = (), Context = ()>
@@ -60,6 +60,7 @@ impl<In, InError, Context> Observer for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
+	Context: DropContext,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, _context: &mut Self::Context) {
@@ -86,6 +87,7 @@ impl<In, InError, Context> SignalContext for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
+	Context: DropContext,
 {
 	type Context = Context;
 }
@@ -94,6 +96,7 @@ impl<In, InError, Context> SubscriptionLike for PrintObserver<In, InError, Conte
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
+	Context: DropContext,
 {
 	fn is_closed(&self) -> bool {
 		self.closed
@@ -105,5 +108,10 @@ where
 
 			println!("{}unsubscribed", self.get_prefix());
 		}
+	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		Context::get_context_for_drop()
 	}
 }

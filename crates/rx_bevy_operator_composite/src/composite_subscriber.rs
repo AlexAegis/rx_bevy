@@ -76,6 +76,11 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.subscriber.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.subscriber.get_unsubscribe_context()
+	}
 }
 
 impl<Inner, Destination> SubscriptionCollection for CompositeSubscriber<Inner, Destination>
@@ -106,30 +111,9 @@ where
 impl<Inner, Destination> Operation for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber + Operation,
-	<Inner as Operation>::Destination: Operation<Destination = Destination>,
 	Destination: Observer,
 {
 	type Destination = Destination;
-
-	#[inline]
-	fn read_destination<F>(&self, reader: F)
-	where
-		F: Fn(&Self::Destination),
-	{
-		self.subscriber.read_destination(|operation| {
-			operation.read_destination(|destination| reader(destination))
-		});
-	}
-
-	#[inline]
-	fn write_destination<F>(&mut self, mut writer: F)
-	where
-		F: FnMut(&mut Self::Destination),
-	{
-		self.subscriber.write_destination(|operation| {
-			operation.write_destination(|destination| writer(destination))
-		});
-	}
 }
 
 impl<Inner, Destination> Drop for CompositeSubscriber<Inner, Destination>

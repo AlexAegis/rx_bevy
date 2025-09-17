@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
+use rx_bevy_core::{DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
 
 /// An [FnObserver] requires you to define a callback for all three notifications
 pub struct FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
@@ -37,6 +37,7 @@ where
 	OnPush: FnMut(In),
 	OnError: FnMut(InError),
 	OnComplete: FnMut(),
+	Context: DropContext,
 {
 	type Context = Context;
 }
@@ -49,6 +50,7 @@ where
 	OnPush: FnMut(In),
 	OnError: FnMut(InError),
 	OnComplete: FnMut(),
+	Context: DropContext,
 {
 	fn next(&mut self, next: In, _context: &mut Self::Context) {
 		(self.on_next)(next);
@@ -73,6 +75,7 @@ where
 	OnPush: FnMut(In),
 	OnError: FnMut(InError),
 	OnComplete: FnMut(),
+	Context: DropContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -82,6 +85,11 @@ where
 	#[inline]
 	fn unsubscribe(&mut self, _context: &mut Self::Context) {
 		self.closed = true;
+	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		Context::get_context_for_drop()
 	}
 }
 

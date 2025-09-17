@@ -1,7 +1,7 @@
+use rx_bevy_core::DropContext;
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
 };
-use rx_bevy_subscription_drop::DropContext;
 
 pub fn detached_observable<'s, Source>(source: &'s mut Source) -> DetachedObservable<'s, Source>
 where

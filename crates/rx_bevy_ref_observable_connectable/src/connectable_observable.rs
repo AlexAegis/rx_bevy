@@ -137,6 +137,12 @@ where
 		let mut connector = self.connector.lock().expect("lockable");
 		connector.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		let mut connector = self.connector.lock().expect("lockable");
+		connector.get_unsubscribe_context()
+	}
 }
 
 impl<Source, ConnectorCreator, Connector> Connectable

@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
+use rx_bevy_core::{DropContext, DropSafeSignalContext};
 use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber};
-use rx_bevy_subscription_drop::{DropContext, DropSubscription};
+use rx_bevy_subscription_drop::DropSubscription;
 
 /// Emits a single value then immediately completes
 #[derive(Clone, Debug)]
@@ -38,7 +39,7 @@ impl<Iterator, Context> SignalContext for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	type Context = Context;
 }
@@ -47,7 +48,7 @@ impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
-	Context: DropContext,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	type Subscription = DropSubscription<Context>;
 

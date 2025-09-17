@@ -101,6 +101,11 @@ where
 		}
 		self.destination.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
+	}
 }
 
 impl<In, InError, Callback, Destination> SubscriptionCollection
@@ -161,5 +166,4 @@ where
 	InError: 'static,
 {
 	type Destination = Destination;
-
 }

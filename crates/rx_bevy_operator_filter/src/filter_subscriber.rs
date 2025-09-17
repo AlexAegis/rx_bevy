@@ -92,6 +92,11 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
+	}
 }
 
 impl<In, InError, Filter, Destination> SubscriptionCollection
@@ -146,7 +151,6 @@ where
 	Destination: Subscriber<In = In, InError = InError>,
 {
 	type Destination = Destination;
-
 }
 
 impl<In, InError, Filter, Destination> Drop for FilterSubscriber<In, InError, Filter, Destination>

@@ -106,6 +106,11 @@ where
 	fn unsubscribe(&mut self, context: &mut <Destination as SignalContext>::Context) {
 		self.destination.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
+	}
 }
 
 impl<O1, O2, Destination> SubscriptionCollection for IntoVariant1of2Subscriber<O1, O2, Destination>
@@ -265,6 +270,11 @@ where
 	#[inline]
 	fn unsubscribe(&mut self, context: &mut <Destination as SignalContext>::Context) {
 		self.destination.unsubscribe(context);
+	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
 	}
 }
 

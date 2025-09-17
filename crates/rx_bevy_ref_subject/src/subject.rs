@@ -4,9 +4,8 @@ use rx_bevy_core::{
 	DropContext, DropSafeSignalContext, Observable, ObservableOutput, Observer, ObserverInput,
 	SignalContext, Subscriber, SubscriptionLike, Tick,
 };
-use rx_bevy_subscription_drop::DropSubscription;
 
-use crate::Multicast;
+use crate::{Multicast, MulticastSubscription};
 
 /// A Subject is a shared multicast observer, can be used for broadcasting,
 /// A subjects clone still multicasts to the same set of subscribers.
@@ -71,7 +70,7 @@ where
 	InError: 'static + Clone,
 	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
-	type Subscription = DropSubscription<Context>;
+	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<Destination>(
 		&mut self,

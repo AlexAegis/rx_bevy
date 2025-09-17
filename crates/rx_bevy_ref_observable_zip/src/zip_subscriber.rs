@@ -156,6 +156,11 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
+	}
 }
 
 impl<Destination, O1, O2> SubscriptionCollection for ZipSubscriber<Destination, O1, O2>
@@ -186,5 +191,4 @@ where
 	O2::Out: Clone,
 {
 	type Destination = Destination;
-
 }
