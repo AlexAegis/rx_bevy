@@ -4,7 +4,7 @@ use bevy_ecs::{entity::Entity, event::Event};
 
 use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_context_command::{CommandContext, ContextWithCommands};
-use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
+use rx_bevy_core::{DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
 
 pub struct EntitySubscriber<'c, In, InError>
 where
@@ -15,6 +15,7 @@ where
 	destination_entity: Entity,
 
 	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
+	/// As this subscriber is stored in this entity!
 	subscription_entity: Entity,
 
 	closed: bool,
@@ -123,5 +124,13 @@ where
 			.commands()
 			.entity(self.subscription_entity)
 			.despawn();
+	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		// This WILL panic. But do not worry, everything should be properly
+		// closed by the time a Drop would try to unsubscribe as they are
+		// automatically unsubscribed by an on_remove hook
+		DropContext::get_context_for_drop()
 	}
 }

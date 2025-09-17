@@ -1,6 +1,10 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
+use rx_bevy_core::{
+	DropContext, DropUnsafeSignalContext, Observer, ObserverInput, SignalContext, SubscriptionLike,
+	Tick,
+};
+use short_type_name::short_type_name;
 
 #[derive(Debug)]
 pub struct MockObserver<In, InError>
@@ -49,6 +53,26 @@ where
 			&& self.completed_after_closed == 0
 			&& self.ticks_after_closed.is_empty()
 			&& self.unsubscribes_after_closed == 0
+	}
+}
+
+impl<In, InError> DropContext for MockContext<In, InError>
+where
+	In: 'static,
+	InError: 'static,
+{
+	type DropSafety = DropUnsafeSignalContext;
+
+	fn get_context_for_drop() -> Self {
+		// While this context could be constructed very easily (It has a
+		// [Default] implementation too! This is the reason why this method
+		// exists by the way. It just doesn't have the same connotation!)
+		// letting subscriptions implicitly unsubscribe on drop would lead to
+		// tests that you cannot trust!
+		panic!(
+			"An unclosed Subscription was dropped during a test! For tests, the context must be explicitly supplied as it stores the data used for asserts! {}",
+			short_type_name::<Self>()
+		)
 	}
 }
 
@@ -136,6 +160,10 @@ where
 		} else {
 			context.unsubscribes_after_closed += 1;
 		}
+	}
+
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		MockContext::default()
 	}
 }
 

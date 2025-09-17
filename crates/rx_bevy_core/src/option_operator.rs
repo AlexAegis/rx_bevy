@@ -173,7 +173,7 @@ where
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.get_unsubscribe_context()

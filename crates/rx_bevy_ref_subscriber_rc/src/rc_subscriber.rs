@@ -1,9 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
 use rx_bevy_core::{
-	ArcSubscriber, AssertSubscriptionClosedOnDrop, DropContextFromSubscription, Observer,
-	ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
-	Teardown, Tick,
+	ArcSubscriber, AssertSubscriptionClosedOnDrop, Observer, ObserverInput, Operation,
+	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 /// Internal to [RcSubscriber]
@@ -124,6 +123,7 @@ impl<Destination> SubscriptionLike for RcDestination<Destination>
 where
 	Destination: Subscriber,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.closed || self.destination.is_closed()
 	}
@@ -133,6 +133,11 @@ where
 			self.unsubscribe_count += 1;
 			self.unsubscribe_if_can(context);
 		}
+	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
 	}
 }
 
@@ -155,17 +160,16 @@ impl<Destination> Drop for RcDestination<Destination>
 where
 	Destination: Subscriber,
 {
-	/// When dropped, the reference counts don't matter, the destination has to be unsubscribed.
 	/// This should only happen when all counters reach 0.
 	fn drop(&mut self) {
 		debug_assert_eq!(self.completion_count, 0);
 		debug_assert_eq!(self.unsubscribe_count, 0);
 		debug_assert_eq!(self.ref_count, 0);
 
-		if !self.closed {
-			panic!("Dropped without unsubscribing!");
+		if !self.is_closed() {
+			let mut context = self.destination.get_unsubscribe_context();
+			self.destination.unsubscribe(&mut context);
 		}
-		// self.destination.unsubscribe();
 	}
 }
 
@@ -314,6 +318,11 @@ where
 			self.destination.unsubscribe(context);
 		}
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
+	}
 }
 
 impl<Destination> SubscriptionCollection for RcSubscriber<Destination>
@@ -449,6 +458,7 @@ impl<Destination> SubscriptionLike for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
@@ -458,6 +468,11 @@ where
 			self.closed = true;
 			self.destination.unsubscribe(context);
 		}
+	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
 	}
 }
 
@@ -475,25 +490,18 @@ where
 	}
 }
 
-impl<Destination> DropContextFromSubscription for WeakRcSubscriber<Destination>
-where
-	Destination: Subscriber + DropContextFromSubscription,
-{
-	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
-		self.destination.get_unsubscribe_context()
-	}
-}
-
 impl<Destination> Drop for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	fn drop(&mut self) {
-
-		//if let Ok(mut lock) = self.destination.try_write() {
-		//	lock.complete_if_can();
-		//	lock.unsubscribe_if_can();
-		//}
+		if !self.is_closed() {
+			self.destination.write(|destination| {
+				let mut context = destination.get_unsubscribe_context();
+				destination.complete_if_can(&mut context);
+				destination.unsubscribe_if_can(&mut context);
+			});
+		}
 	}
 }
 

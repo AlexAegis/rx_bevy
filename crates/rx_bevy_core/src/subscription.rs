@@ -10,7 +10,7 @@ pub trait SubscriptionLike: SignalContext {
 	fn is_closed(&self) -> bool;
 
 	// TODO: Rename, to emphazise it's for dropping only
-	fn get_unsubscribe_context(&mut self) -> Option<Self::Context>;
+	fn get_unsubscribe_context(&mut self) -> Self::Context;
 }
 
 pub trait SubscriptionCollection: SubscriptionLike {

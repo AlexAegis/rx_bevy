@@ -143,12 +143,14 @@ where
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		if let Ok(mut lock) = self.destination.write() {
 			lock.get_unsubscribe_context()
 		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			None
+			panic!(
+				"Context can't be acquired in a {} as the destination RwLock is poisoned!",
+				short_type_name::<Self>()
+			)
 		}
 	}
 }

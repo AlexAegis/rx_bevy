@@ -1,4 +1,7 @@
-use std::sync::{Arc, RwLock, RwLockReadGuard};
+use std::{
+	marker::PhantomData,
+	sync::{Arc, RwLock, RwLockReadGuard},
+};
 
 use short_type_name::short_type_name;
 
@@ -14,6 +17,7 @@ where
 	Context: DropContext,
 {
 	destination: Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
+	_ph: PhantomData<*mut Context>,
 }
 
 impl<In, InError, Context> ErasedArcSubscriber<In, InError, Context>
@@ -28,6 +32,7 @@ where
 	{
 		Self {
 			destination: Arc::new(RwLock::new(destination)),
+			_ph: PhantomData,
 		}
 	}
 
@@ -63,6 +68,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			destination: self.destination.clone(),
+			_ph: PhantomData,
 		}
 	}
 }
@@ -143,7 +149,6 @@ where
 	InError: 'static,
 	Context: DropContext,
 {
-	#[inline]
 	fn is_closed(&self) -> bool {
 		if let Ok(lock) = self.destination.read() {
 			lock.is_closed()
@@ -153,7 +158,6 @@ where
 		}
 	}
 
-	#[inline]
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
@@ -164,12 +168,14 @@ where
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		if let Ok(mut lock) = self.destination.write() {
 			lock.get_unsubscribe_context()
 		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			None
+			panic!(
+				"Context can't be acquired in a {} as the destination RwLock is poisoned!",
+				short_type_name::<Self>()
+			)
 		}
 	}
 }

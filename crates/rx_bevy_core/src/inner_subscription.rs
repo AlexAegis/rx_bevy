@@ -60,6 +60,7 @@ impl<Context> SubscriptionLike for InnerSubscription<Context>
 where
 	Context: DropContext,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.is_closed
 	}
@@ -74,8 +75,13 @@ where
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
-		Some(Context::get_context_for_drop())
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		// May or may not panic, depending on the context used.
+		// If you want to make sure it doesn't panic, use DropSafe contexts!
+		// If you do need to use DropUnsafe contexts, make sure you unsubscribe
+		// it before letting it go out of scope and drop!
+		Context::get_context_for_drop()
 	}
 }
 

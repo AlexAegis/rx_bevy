@@ -87,7 +87,8 @@ where
 		self.destination.unsubscribe(context);
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
 	}
 }

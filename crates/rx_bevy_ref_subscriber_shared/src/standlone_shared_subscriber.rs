@@ -110,6 +110,11 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		self.destination.get_unsubscribe_context()
+	}
 }
 
 impl<Destination> SubscriptionCollection for SharedSubscriber<Destination>
@@ -131,8 +136,9 @@ impl<Destination> Drop for SharedSubscriber<Destination>
 where
 	Destination: Subscriber + Clone,
 {
-	/// Should not unsubscribe on drop as it's shared
-	fn drop(&mut self) {}
+	fn drop(&mut self) {
+		// Should not unsubscribe on drop as it's shared!
+	}
 }
 
 impl<Destination> Operation for SharedSubscriber<Destination>

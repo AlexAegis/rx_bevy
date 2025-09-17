@@ -41,12 +41,19 @@ impl<'c, Context> SubscriptionLike for EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.subscription.is_closed()
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self, context: &mut Context) {
 		self.subscription.unsubscribe(context);
+	}
+
+	#[inline]
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		Context::get_context_for_drop()
 	}
 }
 
