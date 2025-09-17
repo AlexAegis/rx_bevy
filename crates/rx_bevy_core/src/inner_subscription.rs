@@ -1,11 +1,17 @@
-use crate::{SignalContext, SubscriptionCollection, SubscriptionLike, Teardown};
+use crate::{DropContext, SignalContext, SubscriptionCollection, SubscriptionLike, Teardown};
 
-pub struct InnerSubscription<Context> {
+pub struct InnerSubscription<Context>
+where
+	Context: DropContext,
+{
 	is_closed: bool,
 	finalizers: Vec<Box<dyn FnOnce(&mut Context)>>,
 }
 
-impl<Context> InnerSubscription<Context> {
+impl<Context> InnerSubscription<Context>
+where
+	Context: DropContext,
+{
 	pub fn new<S, T>(subscription: T) -> Self
 	where
 		S: SubscriptionLike<Context = Context>,
@@ -31,7 +37,10 @@ impl<Context> InnerSubscription<Context> {
 	}
 }
 
-impl<Context> Default for InnerSubscription<Context> {
+impl<Context> Default for InnerSubscription<Context>
+where
+	Context: DropContext,
+{
 	fn default() -> Self {
 		Self {
 			finalizers: Vec::new(),
@@ -40,11 +49,17 @@ impl<Context> Default for InnerSubscription<Context> {
 	}
 }
 
-impl<Context> SignalContext for InnerSubscription<Context> {
+impl<Context> SignalContext for InnerSubscription<Context>
+where
+	Context: DropContext,
+{
 	type Context = Context;
 }
 
-impl<Context> SubscriptionLike for InnerSubscription<Context> {
+impl<Context> SubscriptionLike for InnerSubscription<Context>
+where
+	Context: DropContext,
+{
 	fn is_closed(&self) -> bool {
 		self.is_closed
 	}
@@ -58,9 +73,16 @@ impl<Context> SubscriptionLike for InnerSubscription<Context> {
 			}
 		}
 	}
+
+	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+		Some(Context::get_context_for_drop())
+	}
 }
 
-impl<Context> SubscriptionCollection for InnerSubscription<Context> {
+impl<Context> SubscriptionCollection for InnerSubscription<Context>
+where
+	Context: DropContext,
+{
 	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
 	where
 		S: SubscriptionLike<Context = Self::Context>,

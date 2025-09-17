@@ -1,9 +1,7 @@
-mod multicast_destination;
-mod multicast_subscription;
+mod multicast;
 mod subject;
 
-pub use multicast_destination::*;
-pub use multicast_subscription::*;
+pub use multicast::*;
 pub use subject::*;
 
 pub mod prelude {

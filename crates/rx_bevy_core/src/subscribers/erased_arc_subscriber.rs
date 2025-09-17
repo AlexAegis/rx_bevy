@@ -1,0 +1,208 @@
+use std::sync::{Arc, RwLock, RwLockReadGuard};
+
+use short_type_name::short_type_name;
+
+use crate::{
+	DropContext, Observer, ObserverInput, SharedSubscriber, SignalContext, Subscriber,
+	SubscriptionLike,
+};
+
+pub struct ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	destination: Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
+}
+
+impl<In, InError, Context> ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	pub fn new<Destination>(destination: Destination) -> Self
+	where
+		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>,
+	{
+		Self {
+			destination: Arc::new(RwLock::new(destination)),
+		}
+	}
+
+	pub fn read<F>(&self, reader: F)
+	where
+		F: Fn(&dyn Subscriber<Context = Context, In = In, InError = InError>),
+	{
+		if let Ok(lock) = self.destination.read() {
+			reader(&*lock);
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+		}
+	}
+
+	pub fn write<F>(&self, mut writer: F)
+	where
+		F: FnMut(&mut dyn Subscriber<Context = Context, In = In, InError = InError>),
+	{
+		if let Ok(mut lock) = self.destination.write() {
+			writer(&mut *lock);
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+		}
+	}
+}
+
+impl<In, InError, Context> Clone for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	fn clone(&self) -> Self {
+		Self {
+			destination: self.destination.clone(),
+		}
+	}
+}
+
+impl<In, InError, Context> ObserverInput for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	type In = In;
+	type InError = InError;
+}
+
+impl<In, InError, Context> SignalContext for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	type Context = Context;
+}
+
+impl<In, InError, Context> Observer for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	#[inline]
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.write() {
+				lock.next(next, context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			}
+		}
+	}
+
+	#[inline]
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.write() {
+				lock.error(error, context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			}
+		}
+	}
+
+	#[inline]
+	fn complete(&mut self, context: &mut Self::Context) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.write() {
+				lock.complete(context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			}
+		}
+	}
+
+	#[inline]
+	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.write() {
+				lock.tick(tick, context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			}
+		}
+	}
+}
+
+impl<In, InError, Context> SubscriptionLike for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		if let Ok(lock) = self.destination.read() {
+			lock.is_closed()
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			true
+		}
+	}
+
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.write() {
+				lock.unsubscribe(context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			}
+		}
+	}
+
+	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+		if let Ok(mut lock) = self.destination.write() {
+			lock.get_unsubscribe_context()
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			None
+		}
+	}
+}
+
+impl<In, InError, Context> SharedSubscriber for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	fn share<Destination>(destination: Destination) -> Self
+	where
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+	{
+		ErasedArcSubscriber::new(destination)
+	}
+}
+
+impl<In, InError, Context> SignalContext
+	for RwLockReadGuard<'_, dyn Subscriber<Context = Context, In = In, InError = InError>>
+where
+	Context: DropContext,
+{
+	type Context = Context;
+}
+
+impl<'d, In, InError, Context> ObserverInput
+	for RwLockReadGuard<'d, dyn Subscriber<Context = Context, In = In, InError = InError>>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+{
+	type In = In;
+	type InError = InError;
+}

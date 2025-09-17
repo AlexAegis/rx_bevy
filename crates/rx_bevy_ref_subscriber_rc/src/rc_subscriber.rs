@@ -1,11 +1,9 @@
-use std::{
-	ops::{Deref, DerefMut},
-	sync::{Arc, RwLock},
-};
+use std::ops::{Deref, DerefMut};
 
 use rx_bevy_core::{
-	AssertSubscriptionClosedOnDrop, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	ArcSubscriber, AssertSubscriptionClosedOnDrop, DropContextFromSubscription, Observer,
+	ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
+	Teardown, Tick,
 };
 
 /// Internal to [RcSubscriber]
@@ -176,7 +174,7 @@ where
 	Destination: Subscriber,
 {
 	// TODO Instead of an Arc, all this should guarantee that the destination is cloneable and it still points to the same thing. This is true for entities aswell
-	destination: Arc<RwLock<RcDestination<Destination>>>,
+	destination: ArcSubscriber<RcDestination<Destination>>,
 	completed: bool,
 	unsubscribed: bool,
 }
@@ -196,7 +194,7 @@ where
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
-			destination: Arc::new(RwLock::new(RcDestination::new(destination))),
+			destination: ArcSubscriber::new(RcDestination::new(destination)),
 			completed: false,
 			unsubscribed: false,
 		}
@@ -207,15 +205,15 @@ where
 	where
 		F: Fn(&RcDestination<Destination>),
 	{
-		reader(&self.destination.read().expect("poisoned"))
+		self.destination.read(reader);
 	}
 
 	/// Let's you check the shared observer for the duration of the callback
-	pub fn write<F>(&mut self, mut writer: F)
+	pub fn write<F>(&mut self, writer: F)
 	where
 		F: FnMut(&mut RcDestination<Destination>),
 	{
-		writer(&mut self.destination.write().expect("poisoned"))
+		self.destination.write(writer);
 	}
 
 	/// Acquire a clone to the same reference which will not interact with
@@ -235,16 +233,17 @@ where
 	Destination: Subscriber,
 {
 	fn clone(&self) -> Self {
-		let mut destination = self.destination.write().expect("lock is poisoned!");
-		destination.ref_count += 1;
+		self.destination.write(|destination| {
+			destination.ref_count += 1;
 
-		if self.completed {
-			destination.completion_count += 1;
-		}
+			if self.completed {
+				destination.completion_count += 1;
+			}
 
-		if self.unsubscribed {
-			destination.unsubscribe_count += 1;
-		}
+			if self.unsubscribed {
+				destination.unsubscribe_count += 1;
+			}
+		});
 
 		Self {
 			completed: self.completed,
@@ -275,31 +274,26 @@ where
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.next(next, context);
+			self.destination.next(next, context);
 		}
 	}
 
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed() {
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.error(error, context);
+			self.destination.error(error, context);
 		}
 	}
 
 	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.completed = true;
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.complete(context);
+			self.complete(context);
 		}
 	}
 
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if !self.is_closed() {
-			self.completed = true;
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-			lock.tick(tick, context);
+			self.destination.tick(tick, context);
 		}
 	}
 }
@@ -311,18 +305,13 @@ where
 	fn is_closed(&self) -> bool {
 		let is_this_clone_closed = self.completed || self.unsubscribed;
 
-		is_this_clone_closed || {
-			let lock = self.destination.read().expect("lock is poisoned");
-			lock.is_closed()
-		}
+		is_this_clone_closed || self.destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.unsubscribed = true;
-			let mut lock = self.destination.write().expect("lock is poisoned!");
-
-			lock.unsubscribe(context);
+			self.destination.unsubscribe(context);
 		}
 	}
 }
@@ -337,8 +326,7 @@ where
 		S: SubscriptionLike<Context = Self::Context>,
 		T: Into<Teardown<S, S::Context>>,
 	{
-		let mut lock = self.destination.write().expect("lock is poisoned!");
-		lock.add(subscription, context);
+		self.destination.add(subscription, context);
 	}
 }
 
@@ -347,17 +335,17 @@ where
 	Destination: Subscriber,
 {
 	fn drop(&mut self) {
-		let mut lock = self.destination.write().expect("lock is poisoned!");
+		self.destination.write(|destination| {
+			destination.ref_count -= 1;
 
-		lock.ref_count -= 1;
+			if self.completed {
+				destination.completion_count -= 1;
+			}
 
-		if self.completed {
-			lock.completion_count -= 1;
-		}
-
-		if self.unsubscribed {
-			lock.unsubscribe_count -= 1;
-		}
+			if self.unsubscribed {
+				destination.unsubscribe_count -= 1;
+			}
+		});
 
 		self.assert_closed_when_dropped();
 
@@ -370,23 +358,7 @@ impl<Destination> Operation for RcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	type Destination = Arc<RwLock<RcDestination<Destination>>>;
-
-	#[inline]
-	fn read_destination<F>(&self, reader: F)
-	where
-		F: Fn(&Self::Destination),
-	{
-		reader(&self.destination);
-	}
-
-	#[inline]
-	fn write_destination<F>(&mut self, mut writer: F)
-	where
-		F: FnMut(&mut Self::Destination),
-	{
-		writer(&mut self.destination);
-	}
+	type Destination = ArcSubscriber<RcDestination<Destination>>;
 }
 
 /// Acquired by calling `downgrade` on `RcSubscriber`
@@ -395,7 +367,7 @@ where
 	Destination: Subscriber,
 {
 	// TODO: Since in bevy this won't be a pointer just an Entity, maybe we'd need a enum or trait here
-	destination: Arc<RwLock<RcDestination<Destination>>>,
+	destination: ArcSubscriber<RcDestination<Destination>>,
 	closed: bool,
 }
 
@@ -408,19 +380,15 @@ where
 	where
 		F: Fn(&RcDestination<Destination>),
 	{
-		if let Ok(destination) = self.destination.try_read() {
-			reader(&destination)
-		}
+		self.destination.read(reader);
 	}
 
 	/// Let's you check the shared observer for the duration of the callback
-	pub fn read_mut<F>(&mut self, mut reader: F)
+	pub fn write<F>(&mut self, writer: F)
 	where
 		F: FnMut(&mut RcDestination<Destination>),
 	{
-		if let Ok(mut destination) = self.destination.try_write() {
-			reader(&mut destination)
-		}
+		self.destination.write(writer);
 	}
 }
 
@@ -456,36 +424,23 @@ where
 	Destination: Subscriber,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
-		if !self.is_closed()
-			&& let Ok(mut lock) = self.destination.try_write()
-		{
-			lock.next(next, context);
-		}
+		self.destination.next(next, context);
 	}
 
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed() {
-			if let Ok(mut lock) = self.destination.try_write() {
-				lock.error(error, context);
-			}
+			self.destination.error(error, context);
 			self.unsubscribe(context);
 		}
 	}
 
 	fn complete(&mut self, context: &mut Self::Context) {
-		if !self.is_closed() {
-			if let Ok(mut lock) = self.destination.try_write() {
-				lock.complete(context);
-			}
-			self.unsubscribe(context);
-		}
+		self.destination.complete(context);
 	}
 
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.is_closed()
-			&& let Ok(mut lock) = self.destination.try_write()
-		{
-			lock.tick(tick, context);
+		if !self.is_closed() {
+			self.destination.tick(tick, context);
 		}
 	}
 }
@@ -501,9 +456,7 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.closed = true;
-			if let Ok(mut lock) = self.destination.try_write() {
-				lock.unsubscribe(context);
-			}
+			self.destination.unsubscribe(context);
 		}
 	}
 }
@@ -518,9 +471,16 @@ where
 		S: SubscriptionLike<Context = Self::Context>,
 		T: Into<Teardown<S, S::Context>>,
 	{
-		if let Ok(mut lock) = self.destination.try_write() {
-			lock.add(subscription, context);
-		}
+		self.destination.add(subscription, context);
+	}
+}
+
+impl<Destination> DropContextFromSubscription for WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber + DropContextFromSubscription,
+{
+	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+		self.destination.get_unsubscribe_context()
 	}
 }
 
@@ -529,6 +489,7 @@ where
 	Destination: Subscriber,
 {
 	fn drop(&mut self) {
+
 		//if let Ok(mut lock) = self.destination.try_write() {
 		//	lock.complete_if_can();
 		//	lock.unsubscribe_if_can();
@@ -540,21 +501,5 @@ impl<Destination> Operation for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	type Destination = Arc<RwLock<RcDestination<Destination>>>;
-
-	#[inline]
-	fn read_destination<F>(&self, reader: F)
-	where
-		F: Fn(&Self::Destination),
-	{
-		reader(&self.destination);
-	}
-
-	#[inline]
-	fn write_destination<F>(&mut self, mut writer: F)
-	where
-		F: FnMut(&mut Self::Destination),
-	{
-		writer(&mut self.destination);
-	}
+	type Destination = Destination;
 }

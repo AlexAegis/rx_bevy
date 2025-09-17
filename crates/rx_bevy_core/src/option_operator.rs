@@ -145,43 +145,6 @@ where
 	}
 }
 
-impl<Sub, Destination> Operation for OptionOperatorSubscriber<Sub, Destination>
-where
-	Sub: OperationSubscriber<
-			Context = <Destination as SignalContext>::Context,
-			Destination = Destination,
-		>,
-	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
-{
-	type Destination = Destination;
-
-	/// Let's you check the shared observer for the duration of the callback
-	fn read_destination<F>(&self, reader: F)
-	where
-		F: Fn(&Self::Destination),
-	{
-		match self {
-			OptionOperatorSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.read_destination(reader)
-			}
-			OptionOperatorSubscriber::None(fallback_subscriber) => reader(fallback_subscriber),
-		}
-	}
-
-	/// Let's you check the shared observer for the duration of the callback
-	fn write_destination<F>(&mut self, mut writer: F)
-	where
-		F: FnMut(&mut Self::Destination),
-	{
-		match self {
-			OptionOperatorSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.write_destination(writer)
-			}
-			OptionOperatorSubscriber::None(fallback_subscriber) => writer(fallback_subscriber),
-		}
-	}
-}
-
 impl<Sub, Destination> SubscriptionLike for OptionOperatorSubscriber<Sub, Destination>
 where
 	Sub: OperationSubscriber<
@@ -206,6 +169,17 @@ where
 			}
 			OptionOperatorSubscriber::None(fallback_subscriber) => {
 				fallback_subscriber.unsubscribe(context);
+			}
+		}
+	}
+
+	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => {
+				internal_subscriber.get_unsubscribe_context()
+			}
+			OptionOperatorSubscriber::None(fallback_subscriber) => {
+				fallback_subscriber.get_unsubscribe_context()
 			}
 		}
 	}
@@ -237,6 +211,19 @@ where
 			}
 		}
 	}
+}
+
+impl<Sub, Destination> Operation for OptionOperatorSubscriber<Sub, Destination>
+where
+	Sub: OperationSubscriber<
+			Destination = Destination,
+			Context = <Destination as SignalContext>::Context,
+		>,
+	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
+	Sub::In: 'static,
+	Sub::InError: 'static,
+{
+	type Destination = Destination;
 }
 
 impl<Sub, Destination> Drop for OptionOperatorSubscriber<Sub, Destination>

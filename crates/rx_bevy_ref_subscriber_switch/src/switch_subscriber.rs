@@ -210,20 +210,4 @@ where
 		+ Clone,
 {
 	type Destination = SharedSubscriber<Destination>;
-
-	#[inline]
-	fn read_destination<F>(&self, reader: F)
-	where
-		F: Fn(&Self::Destination),
-	{
-		reader(&self.destination);
-	}
-
-	#[inline]
-	fn write_destination<F>(&mut self, mut writer: F)
-	where
-		F: FnMut(&mut Self::Destination),
-	{
-		writer(&mut self.destination);
-	}
 }

@@ -5107,9 +5107,10 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_core",
+ "rx_bevy_ref_subscriber_shared",
  "rx_bevy_subscription_drop",
  "rx_bevy_testing",
- "slab",
+ "smallvec",
 ]
 
 [[package]]

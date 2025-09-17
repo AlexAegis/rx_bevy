@@ -6,7 +6,7 @@ use rx_bevy_core::{
 };
 use rx_bevy_subscription_drop::{DropContext, DropSubscription};
 
-use crate::{MulticastDestination, MulticastSubscription};
+use crate::Multicast;
 
 /// A Subject is a shared multicast observer, can be used for broadcasting,
 /// A subjects clone still multicasts to the same set of subscribers.
@@ -16,7 +16,7 @@ where
 	InError: 'static + Clone,
 	Context: DropContext,
 {
-	pub multicast: Arc<RwLock<MulticastDestination<In, InError, Context>>>,
+	pub multicast: Arc<RwLock<Multicast<In, InError, Context>>>,
 }
 
 impl<In, InError, Context> Clone for Subject<In, InError, Context>
@@ -41,7 +41,7 @@ where
 {
 	fn default() -> Self {
 		Self {
-			multicast: Arc::new(RwLock::new(MulticastDestination::default())),
+			multicast: Arc::new(RwLock::new(Multicast::default())),
 		}
 	}
 }
@@ -82,14 +82,8 @@ where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		let subscriber = destination;
-
-		let mut multicast_destination = self.multicast.write().expect("Poisoned!");
-
-		let key = multicast_destination.multicast_subscribe::<Destination>(subscriber);
-		let subscription = MulticastSubscription::new(key, self.multicast.clone());
-
-		DropSubscription::new(subscription)
+		let multicast = self.multicast.write().expect("asd");
+		multicast.subscribe(destination)
 	}
 }
 

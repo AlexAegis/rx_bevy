@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	DropContextFromSubscription, Observer, ObserverInput, Operation, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 /// A helper subscriber that does not forward completion and unsubscribe signals.
@@ -93,25 +93,19 @@ where
 	}
 }
 
+impl<Destination> DropContextFromSubscription for DetachedSubscriber<Destination>
+where
+	Destination: Subscriber,
+	Destination: SubscriptionCollection,
+{
+	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+		self.destination.get_unsubscribe_context()
+	}
+}
+
 impl<Destination> Operation for DetachedSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	type Destination = Destination;
-
-	#[inline]
-	fn read_destination<F>(&self, reader: F)
-	where
-		F: Fn(&Self::Destination),
-	{
-		reader(&self.destination);
-	}
-
-	#[inline]
-	fn write_destination<F>(&mut self, mut writer: F)
-	where
-		F: FnMut(&mut Self::Destination),
-	{
-		writer(&mut self.destination);
-	}
 }

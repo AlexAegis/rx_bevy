@@ -8,5 +8,14 @@
 /// TODO: Maybe a better name would be Environment, or ExecutionEnvironment
 #[doc(alias = "ChannelContext")]
 pub trait SignalContext {
-	type Context;
+	type Context: DropContext;
+}
+
+/// In addition to [ContextFromSubscription], this trait denotes contexts for
+/// for dropped [Subscription]s. For example when the context is just `()`.
+///
+/// If a type can't implement this it should Panic
+/// TODO: Give it a more generic name, this is required for all contexts, Use SignalContext here, and rename the other one
+pub trait DropContext {
+	fn get_context_for_drop() -> Self;
 }

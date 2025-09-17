@@ -8,6 +8,9 @@ pub trait SubscriptionLike: SignalContext {
 	fn unsubscribe(&mut self, context: &mut Self::Context);
 
 	fn is_closed(&self) -> bool;
+
+	// TODO: Rename, to emphazise it's for dropping only
+	fn get_unsubscribe_context(&mut self) -> Option<Self::Context>;
 }
 
 pub trait SubscriptionCollection: SubscriptionLike {

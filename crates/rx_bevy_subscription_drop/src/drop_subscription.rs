@@ -1,10 +1,9 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	InnerSubscription, SignalContext, SubscriptionCollection, SubscriptionLike, Teardown,
+	DropContext, DropContextFromSubscription, InnerSubscription, SignalContext,
+	SubscriptionCollection, SubscriptionLike, Teardown,
 };
-
-use crate::{DropContext, DropContextFromSubscription};
 
 /// A DropSubscription is a type of Subscription Observables may use, it
 /// requires the subscriptions SignalContext to be irrelevant during
@@ -114,8 +113,8 @@ impl<Context> DropContextFromSubscription for InnerDropSubscription<Context>
 where
 	Context: DropContext,
 {
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_unsubscribe_context(&mut self) -> Option<Self::Context> {
+		Some(Context::get_context_for_drop())
 	}
 }
 
@@ -166,7 +165,10 @@ where
 	Context: DropContext,
 {
 	fn drop(&mut self) {
-		let mut context = self.get_unsubscribe_context();
-		self.unsubscribe(&mut context);
+		if let Some(mut context) = self.get_unsubscribe_context() {
+			self.unsubscribe(&mut context);
+		} else {
+			self.unsubscribe(&mut Context::get_context_for_drop());
+		}
 	}
 }
