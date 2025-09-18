@@ -21,7 +21,6 @@ dev = [
     "rx_bevy/dev",
     "rx_bevy_core/dev",
     "rx_bevy_subscriber_detached/dev",
-    "rx_bevy_ref_subscriber_shared/dev",
     "rx_bevy_testing/dev",
 ]
 example = [
@@ -29,14 +28,12 @@ example = [
     "rx_bevy/example",
     "rx_bevy_core/example",
     "rx_bevy_subscriber_detached/example",
-    "rx_bevy_ref_subscriber_shared/example",
     "rx_bevy_testing/example",
 ]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
 rx_bevy_subscriber_detached = { workspace = true }
-rx_bevy_ref_subscriber_shared = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

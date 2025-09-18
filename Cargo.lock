@@ -5108,7 +5108,6 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_core",
- "rx_bevy_ref_subscriber_shared",
  "rx_bevy_subscription_drop",
  "rx_bevy_testing",
  "smallvec",
@@ -5147,21 +5146,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_ref_subscriber_shared"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
 name = "rx_bevy_ref_subscriber_switch"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_core",
- "rx_bevy_ref_subscriber_shared",
  "rx_bevy_subscriber_detached",
  "rx_bevy_testing",
 ]

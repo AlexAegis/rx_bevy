@@ -6,7 +6,7 @@ use std::{
 use short_type_name::short_type_name;
 
 use crate::{
-	DropContext, Observer, ObserverInput, SharedSubscriber, SignalContext, Subscriber,
+	DropContext, Observer, ObserverInput, ShareableSubscriber, SignalContext, Subscriber,
 	SubscriptionLike,
 };
 
@@ -180,17 +180,18 @@ where
 	}
 }
 
-impl<In, InError, Context> SharedSubscriber for ErasedArcSubscriber<In, InError, Context>
+impl<In, InError, Context, Destination> ShareableSubscriber<Destination>
+	for ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
 	Context: DropContext,
+	Destination:
+		'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
 {
-	fn share<Destination>(destination: Destination) -> Self
-	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
-	{
+	type Shared = ErasedArcSubscriber<In, InError, Context>;
+
+	fn share(destination: Destination) -> Self::Shared {
 		ErasedArcSubscriber::new(destination)
 	}
 }

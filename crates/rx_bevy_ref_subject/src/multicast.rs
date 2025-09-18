@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	DropContext, ErasedArcSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
-	SharedSubscriber, SignalContext, Subscriber, SubscriptionLike, Tick,
+	ShareableSubscriber, SignalContext, Subscriber, SubscriptionLike, Tick,
 };
 use smallvec::SmallVec;
 

@@ -1,18 +1,19 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber,
+	Observable, ObservableOutput, ObserverInput, Operator, ShareableSubscriber, SignalContext,
+	Subscriber,
 };
 
 use crate::SwitchMapSubscriber;
 
-pub struct SwitchMapOperator<In, InError, Switcher, InnerObservable> {
+pub struct SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable> {
 	pub switcher: Switcher,
-	pub _phantom_data: PhantomData<(In, InError, InnerObservable)>,
+	pub _phantom_data: PhantomData<(In, InError, Sharer, InnerObservable)>,
 }
 
-impl<In, InError, Switcher, InnerObservable>
-	SwitchMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Switcher, Sharer, InnerObservable>
+	SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 {
 	pub fn new(switcher: Switcher) -> Self {
 		Self {
@@ -22,18 +23,18 @@ impl<In, InError, Switcher, InnerObservable>
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable> Operator
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Switcher, Sharer, InnerObservable> Operator
+	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
+	Sharer: 'static,
 	InnerObservable: 'static + Observable,
 {
 	type Subscriber<
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = InnerObservable::Context>,
-	> = SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+	> = SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>;
 
 	fn operator_subscribe<Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
 		&mut self,
@@ -44,8 +45,8 @@ where
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable> ObserverInput
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Switcher, Sharer, InnerObservable> ObserverInput
+	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
 	In: 'static,
 	InError: 'static,
@@ -54,8 +55,8 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Switcher, InnerObservable> ObservableOutput
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Switcher, Sharer, InnerObservable> ObservableOutput
+	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
@@ -65,8 +66,18 @@ where
 	type OutError = InnerObservable::OutError;
 }
 
-impl<In, InError, Switcher, InnerObservable> Clone
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Switcher, Sharer, InnerObservable> SignalContext
+	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
+where
+	In: 'static,
+	InError: 'static,
+	InnerObservable: Observable,
+{
+	type Context = InnerObservable::Context;
+}
+
+impl<In, InError, Switcher, Sharer, InnerObservable> Clone
+	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
 	Switcher: Clone,
 {

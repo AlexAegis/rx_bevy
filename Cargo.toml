@@ -121,7 +121,6 @@ rx_bevy_operator_adsr = { path = "crates/rx_bevy_operator_adsr" }
 # Reference Subscribers
 rx_bevy_subscriber_detached = { path = "crates/rx_bevy_subscriber_detached" }
 rx_bevy_ref_subscriber_rc = { path = "crates/rx_bevy_ref_subscriber_rc" }
-rx_bevy_ref_subscriber_shared = { path = "crates/rx_bevy_ref_subscriber_shared" }
 rx_bevy_ref_subscriber_switch = { path = "crates/rx_bevy_ref_subscriber_switch" }
 # Subscribers
 rx_bevy_subscriber_entity = { path = "crates/rx_bevy_subscriber_entity" }

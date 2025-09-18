@@ -3,8 +3,8 @@ use std::sync::{Arc, RwLock};
 use short_type_name::short_type_name;
 
 use crate::{
-	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown,
+	Observer, ObserverInput, Operation, ShareableSubscriber, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown,
 };
 
 pub struct ArcSubscriber<Destination>
@@ -152,6 +152,17 @@ where
 				short_type_name::<Self>()
 			)
 		}
+	}
+}
+
+impl<Destination> ShareableSubscriber<Destination> for ArcSubscriber<Destination>
+where
+	Destination: 'static + Subscriber,
+{
+	type Shared = ArcSubscriber<Destination>;
+
+	fn share(destination: Destination) -> Self::Shared {
+		ArcSubscriber::new(destination)
 	}
 }
 

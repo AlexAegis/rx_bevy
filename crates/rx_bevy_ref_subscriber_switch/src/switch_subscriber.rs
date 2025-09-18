@@ -1,40 +1,44 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	AssertSubscriptionClosedOnDrop, Observable, Observer, ObserverInput, Operation, SignalContext,
-	Subscriber, SubscriptionCollection, SubscriptionLike, Tick,
+	Observable, Observer, ObserverInput, Operation, ShareableSubscriber, SharedSubscriber,
+	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Tick,
 };
-use rx_bevy_ref_subscriber_shared::SharedSubscriber;
+
 use rx_bevy_subscriber_detached::DetachedSubscriber;
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
-pub struct SwitchSubscriber<InnerObservable, Destination>
+pub struct SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
 	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: ShareableSubscriber<Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>
-		+ Clone,
+		>,
 {
-	destination: SharedSubscriber<Destination>,
+	destination: SharedSubscriber<Destination, Sharer>,
 	inner_subscription: Option<InnerObservable::Subscription>,
 	closed: bool,
 	_phantom_data: PhantomData<InnerObservable>,
 }
 
-impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination, Sharer> SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: Observable,
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: ShareableSubscriber<Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>
-		+ Clone,
+		>,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -45,49 +49,54 @@ where
 		}
 	}
 }
-impl<InnerObservable, Destination> ObserverInput for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination, Sharer> ObserverInput
+	for SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
 	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: ShareableSubscriber<Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>
-		+ Clone,
+		>,
 {
 	type In = InnerObservable;
 	type InError = InnerObservable::OutError;
 }
 
-impl<InnerObservable, Destination> SignalContext for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination, Sharer> SignalContext
+	for SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
+	Sharer: ShareableSubscriber<Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>
-		+ Clone,
+		>,
 {
 	type Context = Destination::Context;
 }
 
-impl<InnerObservable, Destination> Observer for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination, Sharer> Observer
+	for SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
+	Sharer: 'static + ShareableSubscriber<Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>
-		+ Clone,
+		>,
 {
 	fn next(&mut self, mut next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -124,19 +133,19 @@ where
 	}
 }
 
-impl<InnerObservable, Destination> SubscriptionLike
-	for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination, Sharer> SubscriptionLike
+	for SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
+	Sharer: ShareableSubscriber<Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>
-		+ Clone,
+		>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -157,19 +166,20 @@ where
 	}
 }
 
-impl<InnerObservable, Destination> SubscriptionCollection
-	for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination, Sharer> SubscriptionCollection
+	for SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
+	Sharer: ShareableSubscriber<Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>
-		+ Clone,
+		>,
+	Sharer::Shared: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	#[inline]
@@ -182,30 +192,34 @@ where
 	}
 }
 
-impl<InnerObservable, Destination> Drop for SwitchSubscriber<InnerObservable, Destination>
-where
-	InnerObservable: 'static + Observable,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>
-		+ Clone,
-{
-	#[inline]
-	fn drop(&mut self) {
-		// TODO: Check!
-		// self.unsubscribe();
-		self.assert_closed_when_dropped();
-	}
-}
-
-impl<InnerObservable, Destination> Operation for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination, Sharer> Drop
+	for SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
+	Sharer: ShareableSubscriber<Destination>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+{
+	#[inline]
+	fn drop(&mut self) {
+		let mut context = self.destination.get_unsubscribe_context();
+		self.unsubscribe(&mut context);
+	}
+}
+
+impl<InnerObservable, Destination, Sharer> Operation
+	for SwitchSubscriber<InnerObservable, Destination, Sharer>
+where
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: ShareableSubscriber<Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -214,5 +228,5 @@ where
 		>
 		+ Clone,
 {
-	type Destination = SharedSubscriber<Destination>;
+	type Destination = SharedSubscriber<Destination, Sharer>;
 }
