@@ -155,13 +155,21 @@ where
 	}
 }
 
-impl<Destination> ShareableSubscriber<Destination> for ArcSubscriber<Destination>
+impl<D> ShareableSubscriber for ArcSubscriber<D>
 where
-	Destination: 'static + Subscriber,
+	D: 'static + Subscriber,
 {
-	type Shared = ArcSubscriber<Destination>;
+	type Shared<Destination>
+		= ArcSubscriber<Destination>
+	where
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 
-	fn share(destination: Destination) -> Self::Shared {
+	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
+	where
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+	{
 		ArcSubscriber::new(destination)
 	}
 }

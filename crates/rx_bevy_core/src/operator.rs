@@ -30,6 +30,7 @@ pub trait OperationSubscriber: 'static + Subscriber + Operation {}
 impl<T> OperationSubscriber for T where T: 'static + Subscriber + Operation {}
 
 /// An operation is something that does something to its [`Self::Destination`]
+/// TODO: Reevaluate if this trait is still needed or not.
 pub trait Operation {
 	type Destination: Observer;
 }

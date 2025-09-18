@@ -13,7 +13,11 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -32,7 +36,11 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -55,7 +63,11 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -73,7 +85,11 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -90,7 +106,12 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -139,7 +160,11 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -172,14 +197,18 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Sharer::Shared: SubscriptionCollection,
+	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	#[inline]
@@ -198,7 +227,11 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -219,7 +252,11 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,

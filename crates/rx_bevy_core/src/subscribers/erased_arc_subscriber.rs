@@ -180,18 +180,21 @@ where
 	}
 }
 
-impl<In, InError, Context, Destination> ShareableSubscriber<Destination>
-	for ErasedArcSubscriber<In, InError, Context>
+impl<In, InError, Context> ShareableSubscriber for ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
 	Context: DropContext,
-	Destination:
-		'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
 {
-	type Shared = ErasedArcSubscriber<In, InError, Context>;
+	type Shared<Destination>
+		= ErasedArcSubscriber<In, InError, Context>
+	where
+		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>;
 
-	fn share(destination: Destination) -> Self::Shared {
+	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
+	where
+		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>,
+	{
 		ErasedArcSubscriber::new(destination)
 	}
 }

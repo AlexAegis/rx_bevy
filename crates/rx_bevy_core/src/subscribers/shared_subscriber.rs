@@ -6,15 +6,23 @@ use crate::{
 pub struct SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
-	destination: Sharer::Shared,
+	destination: Sharer::Shared<Destination>,
 }
 
 impl<Destination, Sharer> From<Destination> for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	fn from(destination: Destination) -> Self {
 		Self::new(destination)
@@ -24,7 +32,11 @@ where
 impl<Destination, Sharer> SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -35,7 +47,7 @@ where
 	/// Let's you check the shared observer for the duration of the callback
 	pub fn read<F>(&mut self, reader: F)
 	where
-		F: Fn(&Sharer::Shared),
+		F: Fn(&Sharer::Shared<Destination>),
 	{
 		reader(&self.destination)
 	}
@@ -43,7 +55,7 @@ where
 	/// Let's you check the shared observer for the duration of the callback
 	pub fn read_mut<F>(&mut self, mut reader: F)
 	where
-		F: FnMut(&mut Sharer::Shared),
+		F: FnMut(&mut Sharer::Shared<Destination>),
 	{
 		reader(&mut self.destination)
 	}
@@ -52,7 +64,11 @@ where
 impl<Destination, Sharer> Clone for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -64,7 +80,11 @@ where
 impl<Destination, Sharer> ObserverInput for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -73,7 +93,11 @@ where
 impl<Destination, Sharer> SignalContext for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	type Context = Destination::Context;
 }
@@ -81,7 +105,11 @@ where
 impl<Destination, Sharer> Observer for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -107,7 +135,11 @@ where
 impl<Destination, Sharer> SubscriptionLike for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -128,8 +160,12 @@ where
 impl<Destination, Sharer> SubscriptionCollection for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
-	Sharer::Shared: SubscriptionCollection,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
+	Sharer::Shared<Destination>: SubscriptionCollection,
 {
 	#[inline]
 	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
@@ -144,7 +180,11 @@ where
 impl<Destination, Sharer> Drop for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	fn drop(&mut self) {
 		// Should not unsubscribe on drop as it's shared!
@@ -154,7 +194,11 @@ where
 impl<Destination, Sharer> Operation for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<Destination>,
+	Sharer: ShareableSubscriber<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	type Destination = Destination;
 }

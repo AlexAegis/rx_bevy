@@ -12,12 +12,17 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 {
 	// TODO: Check if it would be enough to use this in a bevy context by just swapping the SwitchSubscriber impl to an ECS based one.
@@ -33,14 +38,18 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Clone + Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>
-		+ Clone,
+			Context = InnerObservable::Context,
+		>,
 {
 	pub fn new(destination: Destination, switcher: Switcher) -> Self {
 		Self {
@@ -58,18 +67,22 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>
-		+ Clone,
+			Context = InnerObservable::Context,
+		>,
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 {
-	type Context = <InnerObservable::Subscription as SignalContext>::Context;
+	type Context = InnerObservable::Context;
 }
 
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Observer
@@ -79,14 +92,18 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>
-		+ Clone,
+			Context = InnerObservable::Context,
+		>,
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 {
@@ -118,14 +135,18 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>
-		+ Clone,
+			Context = InnerObservable::Context,
+		>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -150,16 +171,20 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>
-		+ Clone,
+			Context = InnerObservable::Context,
+		>,
 	Destination: SubscriptionCollection,
-	Sharer::Shared: SubscriptionCollection,
+	Sharer::Shared<Destination>: SubscriptionCollection,
 {
 	#[inline]
 	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
@@ -178,14 +203,18 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>
-		+ Clone,
+			Context = InnerObservable::Context,
+		>,
 {
 	type In = In;
 	type InError = InError;
@@ -198,12 +227,17 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = InnerObservable::Context,
 		>
 		+ Clone,
 {
@@ -218,12 +252,17 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: Observable,
 	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static + ShareableSubscriber<Destination>,
+	Sharer: 'static
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = InnerObservable::Context,
 		>
 		+ Clone,
 {
