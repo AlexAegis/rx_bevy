@@ -1,8 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
 use rx_bevy_core::{
-	ArcSubscriber, AssertSubscriptionClosedOnDrop, Observer, ObserverInput, Operation,
-	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	ArcSubscriber, AssertSubscriptionClosedOnDrop, Observer, ObserverInput, SignalContext,
+	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 /// Internal to [RcSubscriber]
@@ -363,13 +363,6 @@ where
 	}
 }
 
-impl<Destination> Operation for RcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type Destination = ArcSubscriber<RcDestination<Destination>>;
-}
-
 /// Acquired by calling `downgrade` on `RcSubscriber`
 pub struct WeakRcSubscriber<Destination>
 where
@@ -503,11 +496,4 @@ where
 			});
 		}
 	}
-}
-
-impl<Destination> Operation for WeakRcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type Destination = Destination;
 }

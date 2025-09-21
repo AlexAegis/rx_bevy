@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike,
+	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
 };
 
 #[derive(Debug)]
@@ -17,7 +16,7 @@ where
 
 impl<Inner, Destination> CompositeSubscriber<Inner, Destination>
 where
-	Inner: Subscriber + Operation,
+	Inner: Subscriber,
 	Destination: Observer,
 {
 	pub fn new(subscriber: Inner) -> Self {
@@ -106,14 +105,6 @@ where
 {
 	type In = Inner::In;
 	type InError = Inner::InError;
-}
-
-impl<Inner, Destination> Operation for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber + Operation,
-	Destination: Observer,
-{
-	type Destination = Destination;
 }
 
 impl<Inner, Destination> Drop for CompositeSubscriber<Inner, Destination>

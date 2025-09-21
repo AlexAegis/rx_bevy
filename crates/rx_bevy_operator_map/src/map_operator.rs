@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
 
 use crate::MapSubscriber;
 
@@ -34,20 +34,20 @@ where
 	Mapper: 'static + Clone + Fn(In) -> Out,
 	Out: 'static,
 {
-	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		MapSubscriber<In, InError, Mapper, Out, Destination>;
+	type Subscriber<Destination>
+		= MapSubscriber<In, InError, Mapper, Out, Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Subscriber<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
+	#[inline]
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Destination::Context,
-	) -> Self::Subscriber<Destination> {
+		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		MapSubscriber::new(destination, self.mapper.clone())
 	}
 }

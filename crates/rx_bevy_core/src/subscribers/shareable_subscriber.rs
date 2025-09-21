@@ -4,11 +4,8 @@ use crate::Subscriber;
 /// the signals sent to the clone will reach the same recipient as the original
 /// subscriber did.
 pub trait ShareableSubscriber: Subscriber {
-	type Shared<Destination>: Subscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + Clone
+	type Shared<Destination>: Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+		+ Clone
 	where
 		Destination:
 			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;

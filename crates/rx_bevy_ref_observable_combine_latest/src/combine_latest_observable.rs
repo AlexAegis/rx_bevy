@@ -11,7 +11,7 @@ use crate::CombineLatestSubscriber;
 pub fn combine_latest<O1, O2>(observable_1: O1, observable_2: O2) -> CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -21,7 +21,7 @@ where
 pub struct CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -32,7 +32,7 @@ where
 impl<O1, O2> CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -47,7 +47,7 @@ where
 impl<O1, O2> ObservableOutput for CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -55,20 +55,10 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<O1, O2> SignalContext for CombineLatest<O1, O2>
-where
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Context = O1::Context;
-}
-
 impl<O1, O2> Observable for CombineLatest<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -77,11 +67,15 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Self::Context,
+		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 		Self: Sized,
 	{
 		let mut subscription = Self::Subscription::default();

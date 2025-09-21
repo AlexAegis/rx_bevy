@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
 use rx_bevy_operator_composite::CompositeSubscriber;
 use rx_bevy_operator_lift_option::LiftOptionSubscriber;
 use rx_bevy_operator_map::MapSubscriber;
@@ -43,16 +43,20 @@ where
 	Out: 'static,
 	InError: 'static,
 {
-	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		FilterMapSubscriber<In, InError, Mapper, Out, D>;
+	type Subscriber<Destination>
+		= FilterMapSubscriber<In, InError, Mapper, Out, Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
-	>(
+	#[inline]
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Destination::Context,
-	) -> Self::Subscriber<Destination> {
+		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		CompositeSubscriber::new(MapSubscriber::new(
 			LiftOptionSubscriber::new(destination),
 			self.mapper.clone(),

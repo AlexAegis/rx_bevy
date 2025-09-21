@@ -44,20 +44,20 @@ where
 	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
-	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<D>>, D>;
+	type Subscriber<Destination>
+		= CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<Destination>>, Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Subscriber<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
+	#[inline]
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
-	) -> Self::Subscriber<Destination> {
+		context: &mut <Self::Subscriber<Destination> as rx_bevy_core::SignalContext>::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		CompositeSubscriber::new(
 			self.prev_op
 				.operator_subscribe(self.op.operator_subscribe(destination, context), context),

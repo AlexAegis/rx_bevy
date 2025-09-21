@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	AssertSubscriptionClosedOnDrop, ObservableOutput, Observer, ObserverInput, Operation,
-	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	AssertSubscriptionClosedOnDrop, ObservableOutput, Observer, ObserverInput, SignalContext,
+	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
@@ -140,17 +140,6 @@ where
 {
 	type Out = In;
 	type OutError = InError;
-}
-
-impl<In, InError, Filter, Destination> Operation
-	for FilterSubscriber<In, InError, Filter, Destination>
-where
-	In: 'static,
-	InError: 'static,
-	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Subscriber<In = In, InError = InError>,
-{
-	type Destination = Destination;
 }
 
 impl<In, InError, Filter, Destination> Drop for FilterSubscriber<In, InError, Filter, Destination>

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
 
 use crate::MapIntoSubscriber;
 
@@ -27,20 +27,19 @@ where
 	Out: 'static,
 	OutError: 'static,
 {
-	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		MapIntoSubscriber<In, InError, Out, OutError, Destination>;
+	type Subscriber<Destination>
+		= MapIntoSubscriber<In, InError, Out, OutError, Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Subscriber<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Destination::Context,
-	) -> Self::Subscriber<Destination> {
+		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		MapIntoSubscriber::new(destination)
 	}
 }

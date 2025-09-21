@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	Observable, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -10,7 +10,7 @@ pub struct ZipSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -24,7 +24,7 @@ impl<Destination, O1, O2> ZipSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -67,7 +67,7 @@ impl<Destination, O1, O2> ObserverInput for ZipSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -79,7 +79,7 @@ impl<Destination, O1, O2> Observer for ZipSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -132,7 +132,7 @@ impl<Destination, O1, O2> SignalContext for ZipSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -143,7 +143,7 @@ impl<Destination, O1, O2> SubscriptionLike for ZipSubscriber<Destination, O1, O2
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -167,7 +167,7 @@ impl<Destination, O1, O2> SubscriptionCollection for ZipSubscriber<Destination, 
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: SubscriptionCollection,
@@ -180,15 +180,4 @@ where
 	{
 		self.destination.add(subscription, context);
 	}
-}
-
-impl<Destination, O1, O2> Operation for ZipSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Destination = Destination;
 }

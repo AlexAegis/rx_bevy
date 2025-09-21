@@ -78,8 +78,12 @@ where
 		context: &mut Context,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	{
 		let mut multicast = self.multicast.write().expect("asd");
 		multicast.subscribe(destination, context)

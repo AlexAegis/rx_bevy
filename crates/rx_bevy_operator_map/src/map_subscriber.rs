@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
 };
 
 #[derive_where(Debug)]
@@ -163,19 +163,4 @@ where
 {
 	type Out = Out;
 	type OutError = InError;
-}
-
-impl<In, InError, Mapper, Out, Destination> Operation
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: 'static,
-	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type Destination = Destination;
 }

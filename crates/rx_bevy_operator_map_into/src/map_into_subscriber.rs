@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
 };
 
 pub struct MapIntoSubscriber<In, InError, Out, OutError, Destination>
@@ -160,19 +160,4 @@ where
 {
 	type Out = Out;
 	type OutError = OutError;
-}
-
-impl<In, InError, Out, OutError, Destination> Operation
-	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
-where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type Destination = Destination;
 }

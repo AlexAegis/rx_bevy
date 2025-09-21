@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Tick,
+	Observable, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Tick,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -8,7 +8,7 @@ pub struct CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -21,7 +21,7 @@ impl<Destination, O1, O2> CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -38,7 +38,7 @@ impl<Destination, O1, O2> ObserverInput for CombineLatestSubscriber<Destination,
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -50,7 +50,7 @@ impl<Destination, O1, O2> SignalContext for CombineLatestSubscriber<Destination,
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -61,7 +61,7 @@ impl<Destination, O1, O2> Observer for CombineLatestSubscriber<Destination, O1, 
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -104,7 +104,7 @@ where
 	Destination:
 		Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>> + SubscriptionLike,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -126,7 +126,7 @@ impl<Destination, O1, O2> SubscriptionCollection for CombineLatestSubscriber<Des
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: SubscriptionCollection,
@@ -139,15 +139,4 @@ where
 	{
 		self.destination.add(subscription, context);
 	}
-}
-
-impl<Destination, O1, O2> Operation for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Destination = Destination;
 }

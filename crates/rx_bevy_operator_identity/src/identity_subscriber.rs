@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
 };
 
 #[derive(Debug)]
@@ -101,11 +101,4 @@ where
 	{
 		self.destination.add(subscription, context);
 	}
-}
-
-impl<Destination> Operation for IdentitySubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type Destination = Destination;
 }

@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_common_bounds::SignalBound;
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
 
 use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
 
@@ -26,16 +26,19 @@ impl<InError> Operator for AdsrOperator<InError>
 where
 	InError: SignalBound,
 {
-	type Subscriber<D: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		AdsrSubscriber<InError, D>;
+	type Subscriber<Destination>
+		= AdsrSubscriber<InError, Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
-	>(
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Destination::Context,
-	) -> Self::Subscriber<Destination> {
+		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		AdsrSubscriber::new(destination, self.options.clone())
 	}
 }

@@ -1,4 +1,3 @@
-use rx_bevy_core::DropContext;
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
 };
@@ -27,19 +26,9 @@ where
 	}
 }
 
-impl<'s, Source> SignalContext for DetachedObservable<'s, Source>
-where
-	Source: Observable,
-	<Source::Subscription as SignalContext>::Context: DropContext,
-	Source::Subscription: 'static,
-{
-	type Context = Source::Context;
-}
-
 impl<'s, Source> Observable for DetachedObservable<'s, Source>
 where
 	Source: Observable,
-	<Source as SignalContext>::Context: DropContext,
 	Source::Subscription: 'static,
 {
 	type Subscription = Source::Subscription;
@@ -47,17 +36,21 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Self::Context,
+		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	{
 		let subscription = self.source.subscribe(destination, context);
 
 		let mut sub = Self::Subscription::default();
 		sub.add_fn(
-			move |_: &mut Self::Context| {
+			move |_: &mut Destination::Context| {
 				let _s = subscription;
 			},
 			context,

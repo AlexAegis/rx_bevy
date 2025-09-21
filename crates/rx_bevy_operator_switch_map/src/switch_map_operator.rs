@@ -13,8 +13,8 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = In, InError = InError, Context = InnerObservable::Context>,
-	InnerObservable: 'static + Observable,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	pub switcher: Switcher,
 	pub _phantom_data: PhantomData<(In, InError, Sharer, InnerObservable)>,
@@ -27,8 +27,8 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = In, InError = InError, Context = InnerObservable::Context>,
-	InnerObservable: 'static + Observable,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	pub fn new(switcher: Switcher) -> Self {
 		Self {
@@ -45,19 +45,23 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = In, InError = InError, Context = InnerObservable::Context>,
-	InnerObservable: 'static + Observable,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
-	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>;
+	type Subscriber<Destination>
+		= SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError, Context = InnerObservable::Context>,
-	>(
+	#[inline]
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Destination::Context,
-	) -> Self::Subscriber<Destination> {
+		context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		SwitchMapSubscriber::new(destination, self.switcher.clone())
 	}
 }
@@ -69,8 +73,8 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = In, InError = InError, Context = InnerObservable::Context>,
-	InnerObservable: 'static + Observable,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	type In = In;
 	type InError = InError;
@@ -83,8 +87,8 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = In, InError = InError, Context = InnerObservable::Context>,
-	InnerObservable: 'static + Observable,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	type Out = InnerObservable::Out;
 	type OutError = InnerObservable::OutError;
@@ -97,11 +101,11 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = In, InError = InError, Context = InnerObservable::Context>,
-	InnerObservable: 'static + Observable,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	// TODO: Here maybe an Into context would make sense to downgrade contexts
-	type Context = InnerObservable::Context;
+	type Context = Sharer::Context;
 }
 
 impl<In, InError, Switcher, Sharer, InnerObservable> Clone
@@ -111,8 +115,8 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = In, InError = InError, Context = InnerObservable::Context>,
-	InnerObservable: 'static + Observable,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	fn clone(&self) -> Self {
 		Self {

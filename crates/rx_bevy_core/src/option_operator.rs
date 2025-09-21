@@ -1,8 +1,8 @@
 use short_type_name::short_type_name;
 
 use crate::{
-	ObservableOutput, Observer, ObserverInput, Operation, OperationSubscriber, Operator,
-	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown,
+	ObservableOutput, Observer, ObserverInput, Operator, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown,
 };
 
 /// [Operator]s with the same outputs as its inputs can be made optional.
@@ -14,16 +14,19 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>>
+	type Subscriber<Destination>
 		= OptionOperatorSubscriber<Op::Subscriber<Destination>, Destination>
 	where
-		Op::Subscriber<Destination>: Observer;
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<'c, Destination: Subscriber<In = Self::Out, InError = Self::OutError>>(
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
-	) -> Self::Subscriber<Destination> {
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		match self {
 			Some(operator) => {
 				OptionOperatorSubscriber::Some(operator.operator_subscribe(destination, context))
@@ -55,10 +58,7 @@ where
 
 pub enum OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<
-			Destination = Destination,
-			Context = <Destination as SignalContext>::Context,
-		>,
+	Sub: Subscriber<Context = <Destination as SignalContext>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	Some(Sub),
@@ -67,10 +67,7 @@ where
 
 impl<Sub, Destination> ObserverInput for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<
-			Destination = Destination,
-			Context = <Destination as SignalContext>::Context,
-		>,
+	Sub: Subscriber<Context = <Destination as SignalContext>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 {
 	type In = Sub::In;
@@ -79,10 +76,7 @@ where
 
 impl<Sub, Destination> SignalContext for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<
-			Destination = Destination,
-			Context = <Destination as SignalContext>::Context,
-		>,
+	Sub: Subscriber<Context = <Destination as SignalContext>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
@@ -92,10 +86,7 @@ where
 
 impl<Sub, Destination> Observer for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<
-			Destination = Destination,
-			Context = <Destination as SignalContext>::Context,
-		>,
+	Sub: Subscriber<Context = <Destination as SignalContext>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
@@ -147,10 +138,7 @@ where
 
 impl<Sub, Destination> SubscriptionLike for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<
-			Destination = Destination,
-			Context = <Destination as SignalContext>::Context,
-		>,
+	Sub: Subscriber<Context = <Destination as SignalContext>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
@@ -187,10 +175,7 @@ where
 
 impl<Sub, Destination> SubscriptionCollection for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<
-			Destination = Destination,
-			Context = <Destination as SignalContext>::Context,
-		>,
+	Sub: Subscriber<Context = <Destination as SignalContext>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,
@@ -213,25 +198,9 @@ where
 	}
 }
 
-impl<Sub, Destination> Operation for OptionOperatorSubscriber<Sub, Destination>
-where
-	Sub: OperationSubscriber<
-			Destination = Destination,
-			Context = <Destination as SignalContext>::Context,
-		>,
-	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
-	Sub::In: 'static,
-	Sub::InError: 'static,
-{
-	type Destination = Destination;
-}
-
 impl<Sub, Destination> Drop for OptionOperatorSubscriber<Sub, Destination>
 where
-	Sub: OperationSubscriber<
-			Destination = Destination,
-			Context = <Destination as SignalContext>::Context,
-		>,
+	Sub: Subscriber<Context = <Destination as SignalContext>::Context>,
 	Destination: Subscriber<In = Sub::In, InError = Sub::InError>,
 	Sub::In: 'static,
 	Sub::InError: 'static,

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -57,17 +57,20 @@ where
 	In: 'static,
 	InError: 'static,
 {
-	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		IdentitySubscriber<Destination>;
+	type Subscriber<Destination>
+		= IdentitySubscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	#[inline]
-	fn operator_subscribe<
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>,
-	>(
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Destination::Context,
-	) -> Self::Subscriber<Destination> {
+		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		IdentitySubscriber::new(destination)
 	}
 }

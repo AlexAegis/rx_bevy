@@ -62,14 +62,6 @@ where
 	type OutError = Op::OutError;
 }
 
-impl<Source, Op> SignalContext for Pipe<Source, Op>
-where
-	Source: 'static + Observable,
-	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
-{
-	type Context = Source::Context;
-}
-
 impl<Source, Op> Observable for Pipe<Source, Op>
 where
 	Source: 'static + Observable,
@@ -81,11 +73,15 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination as SignalContext>::Context,
+		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	{
 		let operator_subscriber = self.operator.operator_subscribe(destination, context);
 		self.source_observable

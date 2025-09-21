@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observer, ObserverInput, Operation, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
+	Teardown, Tick,
 };
 
 /// A helper subscriber that does not forward completion and unsubscribe signals.
@@ -96,11 +96,4 @@ where
 	{
 		self.destination.add(subscription, context);
 	}
-}
-
-impl<Destination> Operation for DetachedSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type Destination = Destination;
 }

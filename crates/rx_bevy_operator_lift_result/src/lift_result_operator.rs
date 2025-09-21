@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
 
 use crate::LiftResultSubscriber;
 
@@ -44,20 +44,20 @@ where
 	InError: 'static,
 	InErrorToResultError: 'static + Clone + Fn(InError) -> ResultInError,
 {
-	type Subscriber<Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>> =
-		LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>;
+	type Subscriber<Destination>
+		= LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
 
-	fn operator_subscribe<
-		Destination: 'static
-			+ Subscriber<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	>(
+	#[inline]
+	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Destination::Context,
-	) -> Self::Subscriber<Destination> {
+		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+	{
 		LiftResultSubscriber::new(destination, self.in_error_to_result_error.clone())
 	}
 }

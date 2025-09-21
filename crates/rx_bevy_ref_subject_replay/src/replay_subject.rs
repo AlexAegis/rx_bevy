@@ -106,7 +106,12 @@ where
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	>(
 		&mut self,
 		mut destination: Destination,

@@ -50,11 +50,15 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Self::Context,
+		_context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	{
 		let shared = ErasedArcSubscriber::share(destination);
 		self.subscribers.push(shared.clone());

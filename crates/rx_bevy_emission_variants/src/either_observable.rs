@@ -6,8 +6,8 @@ use crate::{EitherOut2, EitherOutError2};
 pub enum EitherObservable<Destination, O1, O2>
 where
 	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Observable<Context = Destination::Context>,
-	O2: 'static + Observable<Context = Destination::Context>,
+	O1: 'static + Observable,
+	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {

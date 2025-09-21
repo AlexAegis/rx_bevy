@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, Operation, ShareableSubscriber,
-	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	Observable, ObservableOutput, Observer, ObserverInput, ShareableSubscriber, SignalContext,
+	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
@@ -10,20 +10,16 @@ pub struct SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, D
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 	Switcher: Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
+			Context = Destination::Context,
 		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	// TODO: Check if it would be enough to use this in a bevy context by just swapping the SwitchSubscriber impl to an ECS based one.
 	destination: SwitchSubscriber<InnerObservable, Destination, Sharer>,
@@ -36,20 +32,16 @@ impl<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: 'static + Observable,
-	Switcher: Clone + Fn(In) -> InnerObservable,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
+	Switcher: Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
+			Context = Destination::Context,
 		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	pub fn new(destination: Destination, switcher: Switcher) -> Self {
 		Self {
@@ -65,24 +57,18 @@ impl<In, InError, Switcher, Sharer, InnerObservable, Destination> SignalContext
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 	Switcher: Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
+			Context = Destination::Context,
 		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	type Context = InnerObservable::Context;
+	type Context = Sharer::Context;
 }
 
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Observer
@@ -90,22 +76,16 @@ impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Observer
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 	Switcher: Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
+			Context = Destination::Context,
 		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -133,20 +113,16 @@ impl<In, InError, Switcher, Sharer, InnerObservable, Destination> SubscriptionLi
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 	Switcher: Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
+			Context = Destination::Context,
 		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -169,20 +145,16 @@ impl<In, InError, Switcher, Sharer, InnerObservable, Destination> SubscriptionCo
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 	Switcher: Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
+			Context = Destination::Context,
 		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 	Destination: SubscriptionCollection,
 	Sharer::Shared<Destination>: SubscriptionCollection,
 {
@@ -201,20 +173,16 @@ impl<In, InError, Switcher, Sharer, InnerObservable, Destination> ObserverInput
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: Observable,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 	Switcher: Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
+			Context = Destination::Context,
 		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	type In = In;
 	type InError = InError;
@@ -225,46 +193,17 @@ impl<In, InError, Switcher, Sharer, InnerObservable, Destination> ObservableOutp
 where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: Observable,
+	InnerObservable: 'static + Observable<Subscription = Sharer>,
 	Switcher: Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
+			Context = Destination::Context,
 		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>
-		+ Clone,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	type Out = InnerObservable::Out;
 	type OutError = InnerObservable::OutError;
-}
-
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Operation
-	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
-where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: Observable,
-	Switcher: Fn(In) -> InnerObservable,
-	Sharer: 'static
-		+ ShareableSubscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>
-		+ Clone,
-{
-	type Destination = Destination;
 }

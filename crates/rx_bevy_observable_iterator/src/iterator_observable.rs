@@ -9,6 +9,7 @@ use rx_bevy_subscription_drop::DropSubscription;
 pub struct IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	iterator: Iterator,
 	_phantom_data: PhantomData<Context>,
@@ -17,6 +18,7 @@ where
 impl<Iterator, Context> IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	pub fn new(iterator: Iterator) -> Self {
 		Self {
@@ -30,18 +32,10 @@ impl<Iterator, Context> ObservableOutput for IteratorObservable<Iterator, Contex
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	type Out = Iterator::Item;
 	type OutError = ();
-}
-
-impl<Iterator, Context> SignalContext for IteratorObservable<Iterator, Context>
-where
-	Iterator: Clone + IntoIterator,
-	Iterator::Item: 'static,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
-{
-	type Context = Context;
 }
 
 impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>

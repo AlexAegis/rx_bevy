@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
 };
 
 // TODO: Fix
@@ -152,18 +152,4 @@ where
 {
 	type In = In;
 	type InError = InError;
-}
-
-impl<In, InError, Callback, Destination> Operation
-	for FinalizeSubscriber<In, InError, Callback, Destination>
-where
-	Callback: FnOnce(),
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-	In: 'static,
-	InError: 'static,
-{
-	type Destination = Destination;
 }

@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Operation, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -128,11 +128,4 @@ where
 {
 	type Out = AdsrSignal;
 	type OutError = InError;
-}
-
-impl<InError, Destination> Operation for AdsrSubscriber<InError, Destination>
-where
-	Destination: Observer<In = AdsrSignal, InError = InError>,
-{
-	type Destination = Destination;
 }

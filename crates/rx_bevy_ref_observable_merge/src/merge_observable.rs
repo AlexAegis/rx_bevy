@@ -16,7 +16,7 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
+	O2: Observable<Subscription = O1::Subscription>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -30,7 +30,7 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
+	O2: Observable<Subscription = O1::Subscription>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -46,7 +46,7 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
+	O2: Observable<Subscription = O1::Subscription>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -66,26 +66,12 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
+	O2: Observable<Subscription = O1::Subscription>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
 	type Out = Out;
 	type OutError = OutError;
-}
-
-impl<Out, OutError, O1, O2> SignalContext for MergeObservable<Out, OutError, O1, O2>
-where
-	Out: 'static,
-	OutError: 'static,
-	O1: Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
-{
-	type Context = O1::Context;
 }
 
 impl<Out, OutError, O1, O2> Observable for MergeObservable<Out, OutError, O1, O2>
@@ -96,7 +82,7 @@ where
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
 	<O1 as Observable>::Subscription: 'static,
-	O2: Observable<Context = O1::Context>,
+	O2: Observable<Subscription = O1::Subscription>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 	<O2 as Observable>::Subscription: 'static,
@@ -105,11 +91,16 @@ where
 
 	fn subscribe<
 		'c,
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	>(
 		&mut self,
 		destination: Destination,
-		context: &mut Self::Context,
+		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
 		Self: Sized,

@@ -80,6 +80,15 @@ where
 	}
 }
 
+impl<In, InError, Context> SignalContext for BehaviorSubject<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
+{
+	type Context = Context;
+}
+
 impl<In, InError, Context> ObservableOutput for BehaviorSubject<In, InError, Context>
 where
 	In: 'static + Clone,
@@ -90,25 +99,21 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError, Context> SignalContext for BehaviorSubject<In, InError, Context>
-where
-	In: 'static + Clone,
-	InError: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
-{
-	type Context = Context;
-}
-
 impl<In, InError, Context> Observable for BehaviorSubject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
 	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
-	type Subscription = MulticastSubscription<In, InError, Self::Context>;
+	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	>(
 		&mut self,
 		mut destination: Destination,

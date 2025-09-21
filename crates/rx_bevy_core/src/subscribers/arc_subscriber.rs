@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use short_type_name::short_type_name;
 
 use crate::{
-	Observer, ObserverInput, Operation, ShareableSubscriber, SignalContext, Subscriber,
+	Observer, ObserverInput, ShareableSubscriber, SignalContext, Subscriber,
 	SubscriptionCollection, SubscriptionLike, Teardown,
 };
 
@@ -192,13 +192,6 @@ where
 			}
 		}
 	}
-}
-
-impl<Destination> Operation for ArcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type Destination = Destination;
 }
 
 impl<Destination> Drop for ArcSubscriber<Destination>

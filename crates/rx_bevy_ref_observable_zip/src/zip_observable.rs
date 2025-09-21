@@ -54,7 +54,7 @@ where
 impl<O1, O2> ObservableOutput for Zip<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context, Subscription = O1::Subscription>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -62,20 +62,10 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<O1, O2> SignalContext for Zip<O1, O2>
-where
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context, Subscription = O1::Subscription>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Context = O1::Context;
-}
-
 impl<O1, O2> Observable for Zip<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context, Subscription = O1::Subscription>,
+	O2: 'static + Observable<Subscription = O1::Subscription>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -84,11 +74,15 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Self::Context,
+		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>,
 	{
 		let mut subscription = Self::Subscription::default();
 

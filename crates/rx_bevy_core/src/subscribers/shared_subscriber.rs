@@ -1,5 +1,5 @@
 use crate::{
-	Observer, ObserverInput, Operation, ShareableSubscriber, SignalContext, Subscriber,
+	Observer, ObserverInput, ShareableSubscriber, SignalContext, Subscriber,
 	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
@@ -189,16 +189,4 @@ where
 	fn drop(&mut self) {
 		// Should not unsubscribe on drop as it's shared!
 	}
-}
-
-impl<Destination, Sharer> Operation for SharedSubscriber<Destination, Sharer>
-where
-	Destination: 'static + Subscriber,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		>,
-{
-	type Destination = Destination;
 }
