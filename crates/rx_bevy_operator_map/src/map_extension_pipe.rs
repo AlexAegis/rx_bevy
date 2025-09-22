@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, SignalContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::MapOperator;
@@ -16,7 +16,16 @@ pub trait ObservableExtensionMap: Observable + Sized {
 	fn map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> NextOut>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, MapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
+	) -> Pipe<
+		Self,
+		MapOperator<
+			Self::Out,
+			Self::OutError,
+			Mapper,
+			NextOut,
+			<Self::Subscription as SignalContext>::Context,
+		>,
+	> {
 		Pipe::new(self, MapOperator::new(mapper))
 	}
 }

@@ -7,5 +7,5 @@ fn main() {
 		.into_observable()
 		.pipe(map(|next: i32| next + 1))
 		.filter(|i| i > &2)
-		.subscribe(PrintObserver::new("filter_operator"));
+		.subscribe(PrintObserver::new("filter_operator"), &mut ());
 }

@@ -66,6 +66,13 @@ where
 	type InError = Destination::InError;
 }
 
+impl<Destination> SignalContext for ArcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	type Context = Destination::Context;
+}
+
 impl<Destination> Observer for ArcSubscriber<Destination>
 where
 	Destination: Subscriber,
@@ -111,13 +118,6 @@ where
 			}
 		}
 	}
-}
-
-impl<Destination> SignalContext for ArcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type Context = Destination::Context;
 }
 
 impl<Destination> SubscriptionLike for ArcSubscriber<Destination>

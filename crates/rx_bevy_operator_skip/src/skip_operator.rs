@@ -1,17 +1,17 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::SkipSubscriber;
 
 /// The [SkipOperator] is used to skip the first `n` emissions of an observable,
 /// after which it does nothing.
-pub struct SkipOperator<In, InError> {
+pub struct SkipOperator<In, InError, Context = ()> {
 	pub count: usize,
-	pub _phantom_data: PhantomData<(In, InError)>,
+	pub _phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError> SkipOperator<In, InError> {
+impl<In, InError, Context> SkipOperator<In, InError, Context> {
 	pub fn new(count: usize) -> Self {
 		Self {
 			count,
@@ -20,30 +20,34 @@ impl<In, InError> SkipOperator<In, InError> {
 	}
 }
 
-impl<In, InError> Operator for SkipOperator<In, InError>
+impl<In, InError, Context> Operator for SkipOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= SkipSubscriber<In, InError, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		SkipSubscriber::new(destination, self.count)
 	}
 }
 
-impl<In, InError> ObserverInput for SkipOperator<In, InError>
+impl<In, InError, Context> ObserverInput for SkipOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -52,7 +56,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> ObservableOutput for SkipOperator<In, InError>
+impl<In, InError, Context> ObservableOutput for SkipOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -61,7 +65,7 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError> Clone for SkipOperator<In, InError> {
+impl<In, InError, Context> Clone for SkipOperator<In, InError, Context> {
 	fn clone(&self) -> Self {
 		Self {
 			count: self.count,

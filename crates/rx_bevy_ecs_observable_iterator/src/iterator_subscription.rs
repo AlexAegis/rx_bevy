@@ -1,10 +1,9 @@
 use bevy_ecs::observer::Trigger;
-use rx_bevy_common_bounds::DebugBound;
+use rx_bevy_common_bounds::{DebugBound, SignalBound};
 use rx_bevy_core::{ObservableOutput, Observer};
 
 use rx_bevy_plugin::{
-	CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick, SignalBound,
-	SubscriptionChannelHandlerRegistrationContext,
+	CommandSubscriber, RxSubscription, RxTick, SubscriptionChannelHandlerRegistrationContext,
 };
 
 #[cfg(feature = "debug")]
@@ -73,19 +72,19 @@ where
 
 fn iterator_subscriber_on_tick<Iterator>(
 	trigger: Trigger<RxTick>,
-	mut context: RxContextSub<IteratorSubscription<Iterator, true>>,
-	mut destination: RxDestination<IteratorSubscription<Iterator, true>>,
+	// mut context: RxContextSub<IteratorSubscription<Iterator, true>>,
+	// mut destination: RxDestination<IteratorSubscription<Iterator, true>>,
 ) where
 	Iterator: 'static + IntoIterator,
 	Iterator::IntoIter: 'static + Send + Sync + DebugBound,
 	Iterator::Item: SignalBound,
 {
-	let mut subscription = context.get_subscription(trigger.target());
-	let mut subscriber = destination.get_subscriber_of(trigger.target());
-
-	if let Some(next) = subscription.iterator.next() {
-		subscriber.next(next);
-	} else {
-		subscriber.complete();
-	}
+	// let mut subscription = context.get_subscription(trigger.target());
+	// let mut subscriber = destination.get_subscriber_of(trigger.target());
+	//
+	// if let Some(next) = subscription.iterator.next() {
+	// 	subscriber.next(next);
+	// } else {
+	// 	subscriber.complete();
+	// }
 }

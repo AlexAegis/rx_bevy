@@ -13,6 +13,9 @@ mod teardown;
 mod tick;
 mod unit_subscription;
 
+mod temporary;
+pub use temporary::*;
+
 pub use assert_subscription_closed_on_drop::*;
 pub use inner_subscription::*;
 pub use observable::*;

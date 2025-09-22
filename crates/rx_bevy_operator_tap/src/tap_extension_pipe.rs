@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, SignalContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::TapOperator;
@@ -16,7 +16,15 @@ pub trait ObservableExtensionTapNext: Observable + Sized {
 	fn tap_next<Callback: 'static + Clone + for<'a> Fn(&'a Self::Out)>(
 		self,
 		callback: Callback,
-	) -> Pipe<Self, TapOperator<Self::Out, Self::OutError, Callback>> {
+	) -> Pipe<
+		Self,
+		TapOperator<
+			Self::Out,
+			Self::OutError,
+			Callback,
+			<Self::Subscription as SignalContext>::Context,
+		>,
+	> {
 		Pipe::new(self, TapOperator::new(callback))
 	}
 }

@@ -1,19 +1,19 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::EnumerateSubscriber;
 
 /// The [EnumerateOperator] counts emissions, and downstream receives this
 /// counter in a tuple with the emitted value as (T, usize)
-pub struct EnumerateOperator<In, InError>
+pub struct EnumerateOperator<In, InError, Context = ()>
 where
 	InError: 'static,
 {
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError> Default for EnumerateOperator<In, InError>
+impl<In, InError, Context> Default for EnumerateOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -25,30 +25,34 @@ where
 	}
 }
 
-impl<In, InError> Operator for EnumerateOperator<In, InError>
+impl<In, InError, Context> Operator for EnumerateOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= EnumerateSubscriber<In, InError, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		EnumerateSubscriber::new(destination)
 	}
 }
 
-impl<In, InError> ObserverInput for EnumerateOperator<In, InError>
+impl<In, InError, Context> ObserverInput for EnumerateOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -57,7 +61,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> ObservableOutput for EnumerateOperator<In, InError>
+impl<In, InError, Context> ObservableOutput for EnumerateOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -66,7 +70,7 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError> Clone for EnumerateOperator<In, InError>
+impl<In, InError, Context> Clone for EnumerateOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,

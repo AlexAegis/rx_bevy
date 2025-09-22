@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, SignalContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::EnumerateOperator;
@@ -14,7 +14,16 @@ where
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionEnumerate: Observable + Sized {
-	fn enumerate(self) -> Pipe<Self, EnumerateOperator<Self::Out, Self::OutError>> {
+	fn enumerate(
+		self,
+	) -> Pipe<
+		Self,
+		EnumerateOperator<
+			Self::Out,
+			Self::OutError,
+			<Self::Subscription as SignalContext>::Context,
+		>,
+	> {
 		Pipe::new(self, EnumerateOperator::default())
 	}
 }

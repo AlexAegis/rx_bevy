@@ -4,5 +4,5 @@ use rx_bevy::prelude::*;
 fn main() {
 	let _s = of(1)
 		.map(|i| i + 1)
-		.subscribe(PrintObserver::new("mapped:"));
+		.subscribe(PrintObserver::new("mapped:"), &mut ());
 }

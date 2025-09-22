@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, SignalContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::TakeOperator;
@@ -10,7 +10,13 @@ pub fn take<In, InError>(count: usize) -> TakeOperator<In, InError> {
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionTake: Observable + Sized {
-	fn take(self, count: usize) -> Pipe<Self, TakeOperator<Self::Out, Self::OutError>> {
+	fn take(
+		self,
+		count: usize,
+	) -> Pipe<
+		Self,
+		TakeOperator<Self::Out, Self::OutError, <Self::Subscription as SignalContext>::Context>,
+	> {
 		Pipe::new(self, TakeOperator::new(count))
 	}
 }

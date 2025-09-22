@@ -66,7 +66,7 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut Context) {
-		if !self.is_closed {
+		if !self.is_closed() {
 			self.is_closed = true;
 
 			for teardown in self.finalizers.drain(..) {

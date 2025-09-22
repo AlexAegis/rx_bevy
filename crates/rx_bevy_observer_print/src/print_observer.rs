@@ -98,12 +98,13 @@ where
 	InError: 'static + Debug,
 	Context: DropContext,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
 
 	fn unsubscribe(&mut self, _context: &mut Self::Context) {
-		if !self.closed {
+		if !self.is_closed() {
 			self.closed = true;
 
 			println!("{}unsubscribed", self.get_prefix());

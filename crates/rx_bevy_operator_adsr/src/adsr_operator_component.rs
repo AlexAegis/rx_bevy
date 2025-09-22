@@ -1,19 +1,26 @@
 use std::marker::PhantomData;
 
-use rx_bevy_common_bounds::SignalBound;
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
 
 // TODO: Currently this is a regular operator, not an operatorComponent, which would make it hard to control it from bevy
 #[derive(Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
-pub struct AdsrOperator<InError> {
+pub struct AdsrOperator<InError, Context>
+where
+	InError: 'static,
+	Context: DropContext + 'static,
+{
 	options: AdsrOperatorOptions,
-	_phantom_data: PhantomData<InError>,
+	_phantom_data: PhantomData<(*mut InError, *mut Context)>,
 }
 
-impl<InError> AdsrOperator<InError> {
+impl<InError, Context> AdsrOperator<InError, Context>
+where
+	InError: 'static,
+	Context: DropContext + 'static,
+{
 	pub fn new(options: AdsrOperatorOptions) -> Self {
 		Self {
 			options,
@@ -22,38 +29,45 @@ impl<InError> AdsrOperator<InError> {
 	}
 }
 
-impl<InError> Operator for AdsrOperator<InError>
+impl<InError, Context> Operator for AdsrOperator<InError, Context>
 where
-	InError: SignalBound,
+	InError: 'static,
+	Context: DropContext + 'static,
 {
+	type Context = Context;
+
 	type Subscriber<Destination>
 		= AdsrSubscriber<InError, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		AdsrSubscriber::new(destination, self.options.clone())
 	}
 }
 
-impl<InError> ObserverInput for AdsrOperator<InError>
+impl<InError, Context> ObserverInput for AdsrOperator<InError, Context>
 where
 	InError: 'static,
+	Context: DropContext + 'static,
 {
 	type In = bool;
 	type InError = InError;
 }
 
-impl<InError> ObservableOutput for AdsrOperator<InError>
+impl<InError, Context> ObservableOutput for AdsrOperator<InError, Context>
 where
 	InError: 'static,
+	Context: DropContext + 'static,
 {
 	type Out = AdsrSignal;
 	type OutError = InError;

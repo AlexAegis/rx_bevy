@@ -21,7 +21,7 @@ fn main() {
 	let mut subscription = subject
 		.clone()
 		.finalize(|| println!("finally!"))
-		.subscribe(PrintObserver::new("finalize_operator"));
+		.subscribe(PrintObserver::new("finalize_operator"), &mut ());
 
 	subject.next(1);
 	subject.next(2);

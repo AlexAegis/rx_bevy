@@ -1,14 +1,14 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::LiftOptionSubscriber;
 
-pub struct LiftOptionOperator<In, InError> {
-	pub _phantom_data: PhantomData<(In, InError)>,
+pub struct LiftOptionOperator<In, InError, Context = ()> {
+	pub _phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError> Default for LiftOptionOperator<In, InError> {
+impl<In, InError, Context> Default for LiftOptionOperator<In, InError, Context> {
 	fn default() -> Self {
 		Self {
 			_phantom_data: PhantomData,
@@ -16,30 +16,34 @@ impl<In, InError> Default for LiftOptionOperator<In, InError> {
 	}
 }
 
-impl<In, InError> Operator for LiftOptionOperator<In, InError>
+impl<In, InError, Context> Operator for LiftOptionOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= LiftOptionSubscriber<In, InError, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		LiftOptionSubscriber::new(destination)
 	}
 }
 
-impl<In, InError> ObserverInput for LiftOptionOperator<In, InError>
+impl<In, InError, Context> ObserverInput for LiftOptionOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -48,7 +52,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> ObservableOutput for LiftOptionOperator<In, InError>
+impl<In, InError, Context> ObservableOutput for LiftOptionOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -57,7 +61,7 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError> Clone for LiftOptionOperator<In, InError> {
+impl<In, InError, Context> Clone for LiftOptionOperator<In, InError, Context> {
 	fn clone(&self) -> Self {
 		Self {
 			_phantom_data: PhantomData,

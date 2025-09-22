@@ -1,11 +1,11 @@
-use rx_bevy::prelude::*;
-use rx_bevy_operator_switch_map::switch_map_extension_pipe::ObservableExtensionSwitchMap;
+use rx_bevy::{ArcSubscriber, ErasedArcSubscriber, prelude::*};
 
 fn main() {
 	let _s = (1..=5)
 		.into_observable()
-		.switch_map(|next| {
-			IteratorObservable::new(next..=3).map(move |i| format!("from {next} i: {i}"))
-		})
-		.subscribe(PrintObserver::new("switch_map"));
+		.switch_map(
+			|next| IteratorObservable::new(next..=3),
+			use_share::<ErasedArcSubscriber<i32, (), ()>>(),
+		)
+		.subscribe(PrintObserver::new("switch_map"), &mut ());
 }

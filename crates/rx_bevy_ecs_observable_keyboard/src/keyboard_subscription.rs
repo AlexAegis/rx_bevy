@@ -3,8 +3,7 @@ use bevy_input::keyboard::KeyboardInput;
 use rx_bevy_core::{ObservableOutput, Observer};
 
 use rx_bevy_plugin::{
-	CommandSubscriber, RxDestination, RxSubscription, RxTick,
-	SubscriptionChannelHandlerRegistrationContext,
+	CommandSubscriber, RxSubscription, RxTick, SubscriptionChannelHandlerRegistrationContext,
 };
 
 #[cfg(feature = "reflect")]
@@ -34,7 +33,7 @@ impl RxSubscription for KeyboardSubscription {
 		&mut self,
 		mut hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		hooks.register_tick_handler(keyboard_subscription_on_tick_system);
+		// hooks.register_tick_handler(keyboard_subscription_on_tick_system);
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
@@ -44,14 +43,14 @@ impl RxSubscription for KeyboardSubscription {
 
 fn keyboard_subscription_on_tick_system(
 	trigger: Trigger<RxTick>,
-	mut destination: RxDestination<KeyboardSubscription>,
+	// mut destination: RxDestination<KeyboardSubscription>,
 	mut keyboard_input_events: EventReader<KeyboardInput>,
 ) {
-	let mut subscriber = destination.get_subscriber_of(trigger.target());
+	// let mut subscriber = destination.get_subscriber_of(trigger.target());
 
-	for keyboard_input in keyboard_input_events.read() {
-		subscriber.next(keyboard_input.clone());
-	}
-
-	subscriber.tick(trigger.0.clone());
+	// for keyboard_input in keyboard_input_events.read() {
+	// 	subscriber.next(keyboard_input.clone());
+	// }
+	//
+	// subscriber.tick(trigger.0.clone());
 }

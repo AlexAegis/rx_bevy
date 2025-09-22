@@ -1,11 +1,11 @@
 use rx_bevy_plugin::{
 	CommandSubscriber, ObservableComponent, ObservableOnInsertContext, OnInsertSubHook,
-	SignalBound, observable_on_insert_hook, observable_on_remove_hook,
+	observable_on_insert_hook, observable_on_remove_hook,
 };
 
 use bevy_ecs::component::Component;
 
-use rx_bevy_common_bounds::{DebugBound, ReflectBound};
+use rx_bevy_common_bounds::{DebugBound, ReflectBound, SignalBound};
 use rx_bevy_core::{ObservableOutput, Observer};
 
 use crate::IteratorSubscription;
@@ -60,10 +60,10 @@ where
 		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		if !EMIT_ON_TICK {
-			for item in self.iterator.clone().into_iter() {
-				subscriber.next(item);
-			}
-			subscriber.complete();
+			// for item in self.iterator.clone().into_iter() {
+			// 	subscriber.next(item);
+			// }
+			// subscriber.complete();
 		}
 
 		IteratorSubscription::new(self.iterator.clone())

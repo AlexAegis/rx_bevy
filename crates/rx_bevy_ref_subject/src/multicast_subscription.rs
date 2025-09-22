@@ -64,10 +64,12 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		if let Some(mut subscriber) = self.subscriber.take() {
-			subscriber.unsubscribe(context);
+		if !self.is_closed() {
+			if let Some(mut subscriber) = self.subscriber.take() {
+				subscriber.unsubscribe(context);
+			}
+			self.inner.unsubscribe(context);
 		}
-		self.inner.unsubscribe(context);
 	}
 
 	fn get_unsubscribe_context(&mut self) -> Self::Context {

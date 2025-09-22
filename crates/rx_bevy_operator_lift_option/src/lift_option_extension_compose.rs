@@ -8,7 +8,10 @@ pub trait CompositeOperatorExtensionLiftOption<T>: Operator<Out = Option<T>> + S
 where
 	T: 'static,
 {
-	fn lift_option(self) -> CompositeOperator<Self, LiftOptionOperator<T, Self::OutError>> {
+	fn lift_option(
+		self,
+	) -> CompositeOperator<Self, LiftOptionOperator<T, Self::OutError, <Self as Operator>::Context>>
+	{
 		CompositeOperator::new(self, LiftOptionOperator::default())
 	}
 }

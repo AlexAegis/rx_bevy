@@ -19,9 +19,11 @@ workspace = true
 default = [
     "bevy",
     "compose",
+    "all_common_observables",
     "all_ecs_observables",
     "all_observers",
     "all_operators",
+    "pipe",
 ]
 dev = [
     "rx_bevy_core/dev",

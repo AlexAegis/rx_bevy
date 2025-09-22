@@ -8,7 +8,10 @@ pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
 	fn tap_next<Callback: 'static + Clone + for<'a> Fn(&'a Self::Out)>(
 		self,
 		callback: Callback,
-	) -> CompositeOperator<Self, TapOperator<Self::Out, Self::OutError, Callback>> {
+	) -> CompositeOperator<
+		Self,
+		TapOperator<Self::Out, Self::OutError, Callback, <Self as Operator>::Context>,
+	> {
 		CompositeOperator::new(self, TapOperator::new(callback))
 	}
 }

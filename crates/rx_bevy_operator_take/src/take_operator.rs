@@ -1,16 +1,16 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::TakeSubscriber;
 
 #[derive(Debug)]
-pub struct TakeOperator<In, InError> {
+pub struct TakeOperator<In, InError, Context = ()> {
 	pub count: usize,
-	pub _phantom_data: PhantomData<(In, InError)>,
+	pub _phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError> TakeOperator<In, InError> {
+impl<In, InError, Context> TakeOperator<In, InError, Context> {
 	pub fn new(count: usize) -> Self {
 		Self {
 			count,
@@ -19,30 +19,34 @@ impl<In, InError> TakeOperator<In, InError> {
 	}
 }
 
-impl<In, InError> Operator for TakeOperator<In, InError>
+impl<In, InError, Context> Operator for TakeOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= TakeSubscriber<In, InError, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		TakeSubscriber::new(destination, self.count)
 	}
 }
 
-impl<In, InError> ObserverInput for TakeOperator<In, InError>
+impl<In, InError, Context> ObserverInput for TakeOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -51,7 +55,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> ObservableOutput for TakeOperator<In, InError>
+impl<In, InError, Context> ObservableOutput for TakeOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -60,7 +64,7 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError> Clone for TakeOperator<In, InError> {
+impl<In, InError, Context> Clone for TakeOperator<In, InError, Context> {
 	fn clone(&self) -> Self {
 		Self {
 			count: self.count,

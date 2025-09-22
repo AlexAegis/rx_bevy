@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 use rx_bevy_operator_composite::CompositeSubscriber;
 use rx_bevy_operator_lift_option::LiftOptionSubscriber;
 use rx_bevy_operator_map::MapSubscriber;
@@ -16,15 +16,15 @@ pub type FilterMapSubscriber<In, InError, Mapper, Out, Destination> = CompositeS
 	Destination,
 >;
 
-pub struct FilterMapOperator<In, InError, Mapper, Out>
+pub struct FilterMapOperator<In, InError, Mapper, Out, Context = ()>
 where
 	Mapper: Fn(In) -> Option<Out>,
 {
 	pub mapper: Mapper,
-	pub _phantom_data: PhantomData<(In, Out, InError)>,
+	pub _phantom_data: PhantomData<(In, Out, InError, Context)>,
 }
 
-impl<In, InError, Mapper, Out> FilterMapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> FilterMapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Option<Out>,
 {
@@ -36,26 +36,31 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out> Operator for FilterMapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> Operator
+	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: 'static + Clone + Fn(In) -> Option<Out>,
 	In: 'static,
 	Out: 'static,
 	InError: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		CompositeSubscriber::new(MapSubscriber::new(
 			LiftOptionSubscriber::new(destination),
@@ -64,7 +69,8 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out> ObserverInput for FilterMapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> ObserverInput
+	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Option<Out>,
 	In: 'static,
@@ -74,7 +80,8 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Mapper, Out> ObservableOutput for FilterMapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> ObservableOutput
+	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Option<Out>,
 	Out: 'static,
@@ -84,7 +91,8 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError, Mapper, Out> Clone for FilterMapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> Clone
+	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Clone + Fn(In) -> Option<Out>,
 {

@@ -45,23 +45,23 @@ impl ObservableComponent for KeyboardObservableComponent {
 	}
 }
 
-impl Observable for KeyboardObservableComponent {
-	type Subscription = EntitySubscription;
-
-	fn subscribe<'c, Destination>(
-		&mut self,
-		destination: Destination,
-		context: &mut <Destination as rx_bevy_core::SignalContext>::Context,
-	) -> Self::Subscription
-	where
-		Destination: rx_bevy_core::Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as rx_bevy_core::SignalContext>::Context,
-			>,
-	{
-	}
-}
+// impl Observable for KeyboardObservableComponent {
+// 	type Subscription = EntitySubscription;
+//
+// 	fn subscribe<'c, Destination>(
+// 		&mut self,
+// 		destination: Destination,
+// 		context: &mut <Destination as rx_bevy_core::SignalContext>::Context,
+// 	) -> Self::Subscription
+// 	where
+// 		Destination: rx_bevy_core::Subscriber<
+// 				In = Self::Out,
+// 				InError = Self::OutError,
+// 				Context = <Self::Subscription as rx_bevy_core::SignalContext>::Context,
+// 			>,
+// 	{
+// 	}
+// }
 
 impl OnInsertSubHook for KeyboardObservableComponent {
 	fn on_insert(&mut self, _context: ObservableOnInsertContext) {}

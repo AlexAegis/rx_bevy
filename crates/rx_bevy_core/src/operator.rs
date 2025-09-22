@@ -1,20 +1,27 @@
-use crate::{ObservableOutput, ObserverInput, SignalContext, Subscriber};
+use crate::{DropContext, ObservableOutput, ObserverInput, Subscriber};
 
 /// # [Operator]
 ///
-/// An [Operator] defines its own inputs and output, and a [OperationSubscriber]
+/// An [Operator] defines its own inputs and output, and a Subscriber
 /// that defines how those input signals will produce output signals.
-pub trait Operator: ObserverInput + ObservableOutput + Clone {
-	// TODO: Should be into destination context so the context can be downgraded along the operators
-	type Subscriber<Destination>: Subscriber<In = Self::In, InError = Self::InError, Context = Destination::Context>
+///
+/// Operators choose a single Context type for the whole subscription chain
+/// they participate in. Downstream and upstream must agree on this Context.
+pub trait Operator: ObserverInput + ObservableOutput {
+	type Context: DropContext;
+
+	type Subscriber<Destination>: 'static
+		+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 }

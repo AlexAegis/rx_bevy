@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
+use crate::{
 	Observable, ObservableOutput, ObserverInput, Operator, ShareableSubscriber, SignalContext,
 	Subscriber,
 };
@@ -49,18 +49,18 @@ where
 	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	type Context = <Sharer as SignalContext>::Context;
+
 	type Subscriber<Destination>
 		= SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError>
-			+ SignalContext<Context = Self::Context>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Sharer as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination:
@@ -98,6 +98,7 @@ where
 	type OutError = InnerObservable::OutError;
 }
 
+// Context is defined via Operator::Context
 impl<In, InError, Switcher, Sharer, InnerObservable> SignalContext
 	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
@@ -108,7 +109,7 @@ where
 		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
-	type Context = Sharer::Context;
+	type Context = <Sharer as SignalContext>::Context;
 }
 
 impl<In, InError, Switcher, Sharer, InnerObservable> Clone

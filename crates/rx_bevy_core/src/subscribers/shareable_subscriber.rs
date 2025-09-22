@@ -16,9 +16,10 @@ pub trait ShareableSubscriber: Subscriber {
 			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 }
 
-/// TODO: IDEA A noop just to define S, where a shareable needs to be defined
-pub fn use_share<S>()
+/// Convenience function to define a sharer from a function argument position, it's a noop and will never get called.
+pub fn use_share<Sharer>() -> impl Fn(Sharer) -> ()
 where
-	S: ShareableSubscriber,
+	Sharer: ShareableSubscriber,
 {
+	|_: Sharer| ()
 }

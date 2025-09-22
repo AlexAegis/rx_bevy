@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, SignalContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::MapIntoOperator;
@@ -12,7 +12,16 @@ pub fn into<In, InError, Out, OutError>() -> MapIntoOperator<In, InError, Out, O
 pub trait ObservableExtensionInto: Observable + Sized {
 	fn map_into<NextOut: 'static, NextOutError: 'static>(
 		self,
-	) -> Pipe<Self, MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError>>
+	) -> Pipe<
+		Self,
+		MapIntoOperator<
+			Self::Out,
+			Self::OutError,
+			NextOut,
+			NextOutError,
+			<Self::Subscription as SignalContext>::Context,
+		>,
+	>
 	where
 		Self::Out: Into<NextOut>,
 		Self::OutError: Into<NextOutError>,

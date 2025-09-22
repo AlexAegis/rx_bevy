@@ -1,34 +1,37 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, DropUnsafeSignalContext, Observer, ObserverInput, SignalContext, SubscriptionLike,
-	Tick,
+	DropContext, DropSafeSignalContext, Observer, ObserverInput, SignalContext,
+	SignalContextDropSafety, SubscriptionLike, Tick,
 };
 use short_type_name::short_type_name;
 
 #[derive(Debug)]
-pub struct MockObserver<In, InError>
+pub struct MockObserver<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
 	pub closed: bool,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<(In, InError, DropSafety)>,
 }
 
-impl<In, InError> ObserverInput for MockObserver<In, InError>
+impl<In, InError, DropSafety> ObserverInput for MockObserver<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
 	type In = In;
 	type InError = InError;
 }
 
-pub struct MockContext<In, InError>
+pub struct MockContext<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
 	pub values: Vec<In>,
 	pub errors: Vec<InError>,
@@ -40,12 +43,14 @@ where
 	pub ticks_after_closed: Vec<Tick>,
 	pub completed_after_closed: usize,
 	pub unsubscribes_after_closed: usize,
+	_phantom_data: PhantomData<DropSafety>,
 }
 
-impl<In, InError> MockContext<In, InError>
+impl<In, InError, DropSafety> MockContext<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
 	pub fn nothing_happened_after_closed(&self) -> bool {
 		self.values_after_closed.is_empty()
@@ -56,12 +61,14 @@ where
 	}
 }
 
-impl<In, InError> DropContext for MockContext<In, InError>
+impl<In, InError, DropSafety> DropContext for MockContext<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
-	type DropSafety = DropUnsafeSignalContext;
+	/// The DropSafety is parametric for the sake of testability, the context will always panic on drop if not closed to ensure proper tests.
+	type DropSafety = DropSafety;
 
 	fn get_context_for_drop() -> Self {
 		// While this context could be constructed very easily (It has a
@@ -76,10 +83,11 @@ where
 	}
 }
 
-impl<In, InError> Default for MockContext<In, InError>
+impl<In, InError, DropSafety> Default for MockContext<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
 	fn default() -> Self {
 		Self {
@@ -93,14 +101,16 @@ where
 			completed_after_closed: 0,
 			unsubscribed: false,
 			unsubscribes_after_closed: 0,
+			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError> Observer for MockObserver<In, InError>
+impl<In, InError, DropSafety> Observer for MockObserver<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -113,6 +123,7 @@ where
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed() {
 			context.errors.push(error);
+			self.unsubscribe(context);
 		} else {
 			context.errors_after_closed.push(error);
 		}
@@ -136,17 +147,20 @@ where
 	}
 }
 
-impl<In, InError> SignalContext for MockObserver<In, InError>
+impl<In, InError, DropSafety> SignalContext for MockObserver<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
-	type Context = MockContext<In, InError>;
+	type Context = MockContext<In, InError, DropSafety>;
 }
-impl<In, InError> SubscriptionLike for MockObserver<In, InError>
+
+impl<In, InError, DropSafety> SubscriptionLike for MockObserver<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -154,7 +168,7 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		if !self.closed {
+		if !self.is_closed() {
 			self.closed = true;
 			context.unsubscribed = true;
 		} else {
@@ -167,10 +181,11 @@ where
 	}
 }
 
-impl<In, InError> Default for MockObserver<In, InError>
+impl<In, InError, DropSafety> Default for MockObserver<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
+	DropSafety: SignalContextDropSafety,
 {
 	fn default() -> Self {
 		Self {

@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, SignalContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::FinalizeOperator;
@@ -18,7 +18,15 @@ pub trait ObservableExtensionFinalize: Observable + Sized {
 	fn finalize<Callback: 'static + Clone + FnOnce()>(
 		self,
 		callback: Callback,
-	) -> Pipe<Self, FinalizeOperator<Self::Out, Self::OutError, Callback>> {
+	) -> Pipe<
+		Self,
+		FinalizeOperator<
+			Self::Out,
+			Self::OutError,
+			Callback,
+			<Self::Subscription as SignalContext>::Context,
+		>,
+	> {
 		Pipe::new(self, FinalizeOperator::new(callback))
 	}
 }

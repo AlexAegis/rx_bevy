@@ -1,15 +1,15 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::FilterSubscriber;
 
-pub struct FilterOperator<In, InError, Filter> {
+pub struct FilterOperator<In, InError, Filter, Context = ()> {
 	pub filter: Filter,
-	pub _phantom_data: PhantomData<(In, InError)>,
+	pub _phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError, Filter> FilterOperator<In, InError, Filter> {
+impl<In, InError, Filter, Context> FilterOperator<In, InError, Filter, Context> {
 	pub fn new(filter: Filter) -> Self {
 		Self {
 			filter,
@@ -18,31 +18,35 @@ impl<In, InError, Filter> FilterOperator<In, InError, Filter> {
 	}
 }
 
-impl<In, InError, Filter> Operator for FilterOperator<In, InError, Filter>
+impl<In, InError, Filter, Context> Operator for FilterOperator<In, InError, Filter, Context>
 where
 	Filter: 'static + Clone + for<'a> Fn(&'a In) -> bool,
 	In: 'static,
 	InError: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= FilterSubscriber<In, InError, Filter, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		FilterSubscriber::new(destination, self.filter.clone())
 	}
 }
 
-impl<In, InError, Filter> ObserverInput for FilterOperator<In, InError, Filter>
+impl<In, InError, Filter, Context> ObserverInput for FilterOperator<In, InError, Filter, Context>
 where
 	Filter: for<'a> Fn(&'a In) -> bool,
 	In: 'static,
@@ -52,7 +56,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Filter> ObservableOutput for FilterOperator<In, InError, Filter>
+impl<In, InError, Filter, Context> ObservableOutput for FilterOperator<In, InError, Filter, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -62,7 +66,7 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError, Filter> Clone for FilterOperator<In, InError, Filter>
+impl<In, InError, Filter, Context> Clone for FilterOperator<In, InError, Filter, Context>
 where
 	Filter: Clone,
 {

@@ -1,21 +1,21 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::MapSubscriber;
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
-pub struct MapOperator<In, InError, Mapper, Out = In>
+pub struct MapOperator<In, InError, Mapper, Out = In, Context = ()>
 where
 	Mapper: Fn(In) -> Out,
 {
 	pub mapper: Mapper,
-	pub _phantom_data: PhantomData<(In, InError, Out)>,
+	pub _phantom_data: PhantomData<(In, InError, Out, Context)>,
 }
 
-impl<In, InError, Mapper, Out> MapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> MapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Out,
 {
@@ -27,32 +27,37 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out> Operator for MapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> Operator for MapOperator<In, InError, Mapper, Out, Context>
 where
 	In: 'static,
 	InError: 'static,
 	Mapper: 'static + Clone + Fn(In) -> Out,
 	Out: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= MapSubscriber<In, InError, Mapper, Out, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		MapSubscriber::new(destination, self.mapper.clone())
 	}
 }
 
-impl<In, InError, Mapper, Out> ObservableOutput for MapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> ObservableOutput
+	for MapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Out,
 	Out: 'static,
@@ -62,7 +67,8 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError, Mapper, Out> ObserverInput for MapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> ObserverInput
+	for MapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Out,
 	In: 'static,
@@ -72,7 +78,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Mapper, Out> Clone for MapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out, Context> Clone for MapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Clone + Fn(In) -> Out,
 {

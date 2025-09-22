@@ -1,19 +1,19 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::TryCaptureSubscriber;
 
 /// The [TryCaptureOperator] is used to pack incoming values and errors into a
 /// Result. When used, upstream errors are guaranteed to not reach downstream.
-pub struct TryCaptureOperator<In, InError>
+pub struct TryCaptureOperator<In, InError, Context = ()>
 where
 	InError: 'static,
 {
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError> Default for TryCaptureOperator<In, InError>
+impl<In, InError, Context> Default for TryCaptureOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -25,30 +25,34 @@ where
 	}
 }
 
-impl<In, InError> Operator for TryCaptureOperator<In, InError>
+impl<In, InError, Context> Operator for TryCaptureOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= TryCaptureSubscriber<In, InError, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		TryCaptureSubscriber::new(destination)
 	}
 }
 
-impl<In, InError> ObserverInput for TryCaptureOperator<In, InError>
+impl<In, InError, Context> ObserverInput for TryCaptureOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -57,7 +61,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> ObservableOutput for TryCaptureOperator<In, InError>
+impl<In, InError, Context> ObservableOutput for TryCaptureOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
@@ -66,7 +70,7 @@ where
 	type OutError = ();
 }
 
-impl<In, InError> Clone for TryCaptureOperator<In, InError>
+impl<In, InError, Context> Clone for TryCaptureOperator<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,

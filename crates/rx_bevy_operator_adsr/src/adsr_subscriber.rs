@@ -99,8 +99,8 @@ where
 impl<InError, Destination> SubscriptionCollection for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	Destination: SubscriptionCollection,
 	InError: 'static,
+	Destination: SubscriptionCollection,
 {
 	#[inline]
 	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)

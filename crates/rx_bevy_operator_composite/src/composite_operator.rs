@@ -9,7 +9,7 @@ use bevy_reflect::Reflect;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
 	Op: Operator,
 {
 	prev_op: PrevOp,
@@ -18,7 +18,7 @@ where
 
 impl<PrevOp, Op> CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
 	Op: Operator,
 {
 	pub fn new(first_operator: PrevOp, second_operator: Op) -> Self {
@@ -30,7 +30,7 @@ where
 
 	pub fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
 	where
-		NextOp: Operator<In = Op::Out, InError = Op::OutError>,
+		NextOp: Operator<In = Op::Out, InError = Op::OutError, Context = Op::Context>,
 	{
 		CompositeOperator {
 			prev_op: self,
@@ -41,22 +41,29 @@ where
 
 impl<PrevOp, Op> Operator for CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
 	Op: Operator,
 {
+	type Context = Op::Context;
+
 	type Subscriber<Destination>
 		= CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<Destination>>, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Op::Subscriber<Destination>:
+			Subscriber<In = Op::In, InError = Op::InError, Context = Self::Context>,
+		PrevOp::Subscriber<Op::Subscriber<Destination>>: Subscriber<Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Subscriber<Destination> as rx_bevy_core::SignalContext>::Context,
+		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		CompositeSubscriber::new(
 			self.prev_op
@@ -67,7 +74,7 @@ where
 
 impl<PrevOp, Op> ObserverInput for CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
 	Op: Operator,
 {
 	type In = PrevOp::In;
@@ -76,7 +83,7 @@ where
 
 impl<PrevOp, Op> ObservableOutput for CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
 	Op: Operator,
 {
 	type Out = Op::Out;

@@ -8,7 +8,10 @@ pub trait CompositeOperatorExtensionFinalize: Operator + Sized {
 	fn finalize<Callback: 'static + Clone + FnOnce()>(
 		self,
 		callback: Callback,
-	) -> CompositeOperator<Self, FinalizeOperator<Self::Out, Self::OutError, Callback>> {
+	) -> CompositeOperator<
+		Self,
+		FinalizeOperator<Self::Out, Self::OutError, Callback, <Self as Operator>::Context>,
+	> {
 		CompositeOperator::new(self, FinalizeOperator::new(callback))
 	}
 }

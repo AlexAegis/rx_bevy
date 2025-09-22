@@ -8,7 +8,10 @@ pub trait CompositeOperatorExtensionMap: Operator + Sized {
 	fn map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> NextOut>(
 		self,
 		mapper: Mapper,
-	) -> CompositeOperator<Self, MapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
+	) -> CompositeOperator<
+		Self,
+		MapOperator<Self::Out, Self::OutError, Mapper, NextOut, <Self as Operator>::Context>,
+	> {
 		CompositeOperator::new(self, MapOperator::new(mapper))
 	}
 }

@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
+use crate::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
+
+#[cfg(feature = "reflect")]
+use bevy_reflect::Reflect;
 
 use crate::IdentitySubscriber;
 
@@ -9,7 +12,9 @@ use crate::IdentitySubscriber;
 /// The [IdentityOperator] does nothing. It's only purpose is to let you
 /// easily define input types for a [CompositeOperator]
 #[derive(Debug)]
+#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct IdentityOperator<In, InError, Context> {
+	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 

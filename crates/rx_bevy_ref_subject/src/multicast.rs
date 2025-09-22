@@ -112,8 +112,11 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		for mut destination in self.subscribers.drain(..) {
-			destination.unsubscribe(context);
+		if !self.is_closed() {
+			self.closed = true;
+			for mut destination in self.subscribers.drain(..) {
+				destination.unsubscribe(context);
+			}
 		}
 	}
 

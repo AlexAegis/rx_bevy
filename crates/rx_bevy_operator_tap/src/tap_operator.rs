@@ -1,19 +1,19 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::TapSubscriber;
 
 #[derive(Debug)]
-pub struct TapOperator<In, InError, Callback>
+pub struct TapOperator<In, InError, Callback, Context = ()>
 where
 	Callback: for<'a> Fn(&'a In),
 {
 	callback: Callback,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError, Callback> TapOperator<In, InError, Callback>
+impl<In, InError, Callback, Context> TapOperator<In, InError, Callback, Context>
 where
 	Callback: for<'a> Fn(&'a In),
 {
@@ -25,31 +25,36 @@ where
 	}
 }
 
-impl<In, InError, Callback> Operator for TapOperator<In, InError, Callback>
+impl<In, InError, Callback, Context> Operator for TapOperator<In, InError, Callback, Context>
 where
 	Callback: 'static + Clone + for<'a> Fn(&'a In),
 	In: 'static,
 	InError: 'static,
+	Context: DropContext,
 {
+	type Context = Context;
 	type Subscriber<Destination>
 		= TapSubscriber<In, InError, Callback, Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Subscriber<Destination> as SignalContext>::Context,
+		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: Subscriber<In = Self::Out, InError = Self::OutError>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		TapSubscriber::new(destination, self.callback.clone())
 	}
 }
 
-impl<In, InError, Callback> ObservableOutput for TapOperator<In, InError, Callback>
+impl<In, InError, Callback, Context> ObservableOutput
+	for TapOperator<In, InError, Callback, Context>
 where
 	Callback: for<'a> Fn(&'a In),
 	In: 'static,
@@ -59,7 +64,7 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError, Callback> ObserverInput for TapOperator<In, InError, Callback>
+impl<In, InError, Callback, Context> ObserverInput for TapOperator<In, InError, Callback, Context>
 where
 	Callback: for<'a> Fn(&'a In),
 	In: 'static,
@@ -69,7 +74,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Callback> Clone for TapOperator<In, InError, Callback>
+impl<In, InError, Callback, Context> Clone for TapOperator<In, InError, Callback, Context>
 where
 	Callback: Clone + for<'a> Fn(&'a In),
 {

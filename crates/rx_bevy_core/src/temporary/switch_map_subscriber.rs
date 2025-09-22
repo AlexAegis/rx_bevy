@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
+use crate::SwitchSubscriber;
+use crate::{
 	Observable, ObservableOutput, Observer, ObserverInput, ShareableSubscriber, SignalContext,
 	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
-use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
 pub struct SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where

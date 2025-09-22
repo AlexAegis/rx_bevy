@@ -5,7 +5,12 @@ use crate::TryCaptureOperator;
 
 /// Provides a convenient function to pipe the operator from another operator  
 pub trait CompositeOperatorExtensionTryCapture: Operator + Sized {
-	fn lift_result(self) -> CompositeOperator<Self, TryCaptureOperator<Self::Out, Self::OutError>> {
+	fn lift_result(
+		self,
+	) -> CompositeOperator<
+		Self,
+		TryCaptureOperator<Self::Out, Self::OutError, <Self as Operator>::Context>,
+	> {
 		CompositeOperator::new(self, TryCaptureOperator::default())
 	}
 }

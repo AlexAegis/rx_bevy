@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, SignalContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::FilterOperator;
@@ -16,7 +16,15 @@ pub trait ObservableExtensionFilter: Observable + Sized {
 	fn filter<Filter: 'static + Clone + for<'a> Fn(&'a Self::Out) -> bool>(
 		self,
 		filter: Filter,
-	) -> Pipe<Self, FilterOperator<Self::Out, Self::OutError, Filter>> {
+	) -> Pipe<
+		Self,
+		FilterOperator<
+			Self::Out,
+			Self::OutError,
+			Filter,
+			<Self::Subscription as SignalContext>::Context,
+		>,
+	> {
 		Pipe::new(self, FilterOperator::new(filter))
 	}
 }

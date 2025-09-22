@@ -16,9 +16,9 @@ use short_type_name::short_type_name;
 
 use crate::{
 	CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
-	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, EntityContext, RxChannel,
-	RxChannelTick, RxSubscription, RxTick, Subscribe, SubscribeError, SubscribeObserverRef,
-	Subscription, SubscriptionChannelHandlerRef, SubscriptionChannelHandlerRegistrationContext,
+	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, RxChannel, RxChannelTick,
+	RxSubscription, RxTick, Subscribe, SubscribeError, SubscribeObserverRef, Subscription,
+	SubscriptionChannelHandlerRef, SubscriptionChannelHandlerRegistrationContext,
 	SubscriptionMarker, SubscriptionOf, Subscriptions,
 };
 
@@ -154,20 +154,20 @@ where
 	let subscription_entity = trigger.event().get_subscription_entity();
 
 	{
-		let context = SubscriberContext::new(EntityContext {
-			destination_entity,
-			subscription_entity,
-		});
-
-		let mut spawned_subscription =
-			observable_component.on_subscribe(context.upgrade(&mut commands));
-
-		spawned_subscription.register_subscription_channel_handlers(
-			SubscriptionChannelHandlerRegistrationContext::<O::Subscription>::new(
-				subscription_entity,
-				&mut commands,
-			),
-		);
+		// let context = SubscriberContext::new(EntityContext {
+		// 	destination_entity,
+		// 	subscription_entity,
+		// });
+		//
+		// let mut spawned_subscription =
+		// 	observable_component.on_subscribe(context.upgrade(&mut commands));
+		//
+		// spawned_subscription.register_subscription_channel_handlers(
+		// 	SubscriptionChannelHandlerRegistrationContext::<O::Subscription>::new(
+		// 		subscription_entity,
+		// 		&mut commands,
+		// 	),
+		// );
 
 		let mut subscription_entity_commands = commands.entity(subscription_entity);
 
@@ -179,7 +179,7 @@ where
 				observable_entity
 			)),
 			SubscriptionMarker,
-			Subscription::<O::Subscription>::new(spawned_subscription),
+			// Subscription::<O::Subscription>::new(spawned_subscription),
 			SubscriptionOf::<O::Subscription>::new(observable_entity),
 		));
 

@@ -64,58 +64,59 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> SignalContext for CommandSubscriber<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Context = CommandContext;
-}
-
-impl<In, InError> Observer for CommandSubscriber<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
-		if !self.closed {
-			context
-				.commands
-				.trigger_targets(RxNext::<In>(next), self.destination_entity);
-		}
-	}
-
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
-		if !self.closed {
-			context
-				.commands
-				.trigger_targets(RxError::<InError>(error), self.destination_entity);
-		}
-	}
-
-	fn complete(&mut self, context: &mut Self::Context) {
-		if !self.closed {
-			context
-				.commands
-				.trigger_targets(RxComplete, self.destination_entity);
-			self.unsubscribe();
-		}
-	}
-
-	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
-		if !self.closed {
-			context
-				.commands
-				.trigger_targets(tick, self.destination_entity);
-		}
-	}
-}
-
-/// This intermediate struct is used to avoid mixing up the three entities
-pub struct EntityContext {
-	/// The "destination" entity, where signals are sent.
-	pub destination_entity: Entity,
-	/// Despawning this stops the subscription, and is equivalent of an
-	/// unsubscribe.
-	pub subscription_entity: Entity,
-}
+// impl<In, InError> SignalContext for CommandSubscriber<In, InError>
+// where
+// 	In: SignalBound,
+// 	InError: SignalBound,
+// {
+// 	type Context = CommandContext;
+// }
+//
+//impl<In, InError> Observer for CommandSubscriber<In, InError>
+//where
+//	In: SignalBound,
+//	InError: SignalBound,
+//{
+//	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+//		if !self.closed {
+//			context
+//				.commands
+//				.trigger_targets(RxNext::<In>(next), self.destination_entity);
+//		}
+//	}
+//
+//	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+//		if !self.closed {
+//			context
+//				.commands
+//				.trigger_targets(RxError::<InError>(error), self.destination_entity);
+//		}
+//	}
+//
+//	fn complete(&mut self, context: &mut Self::Context) {
+//		if !self.closed {
+//			context
+//				.commands
+//				.trigger_targets(RxComplete, self.destination_entity);
+//			self.unsubscribe();
+//		}
+//	}
+//
+//	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
+//		if !self.closed {
+//			context
+//				.commands
+//				.trigger_targets(tick, self.destination_entity);
+//		}
+//	}
+//}
+//
+///// This intermediate struct is used to avoid mixing up the three entities
+//pub struct EntityContext {
+//	/// The "destination" entity, where signals are sent.
+//	pub destination_entity: Entity,
+//	/// Despawning this stops the subscription, and is equivalent of an
+//	/// unsubscribe.
+//	pub subscription_entity: Entity,
+//}
+//

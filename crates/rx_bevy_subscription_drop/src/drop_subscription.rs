@@ -65,8 +65,10 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		let mut lock = self.inner.write().expect("to not be locked");
-		lock.unsubscribe(context);
+		if !self.is_closed() {
+			let mut lock = self.inner.write().expect("to not be locked");
+			lock.unsubscribe(context);
+		}
 	}
 
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
@@ -166,8 +168,15 @@ where
 	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
 	fn drop(&mut self) {
-		// This is safe to do, because we require the context to be drop safe!
-		let mut context = self.get_unsubscribe_context();
-		self.unsubscribe(&mut context);
+		// While we require the context to be drop-safe, some contexts (like
+		// the MockContext) may lie about its safety, so it's mandatory to still
+		// check closed-ness before attempting an unsubscribe.
+		// Not to mention that if the subscription is closed, it doesn't make
+		// sense to trigger an unsubscription again on drop when one was already
+		// done manually.
+		if !self.is_closed() {
+			let mut context = self.get_unsubscribe_context();
+			self.unsubscribe(&mut context);
+		}
 	}
 }

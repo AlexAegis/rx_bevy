@@ -15,7 +15,13 @@ where
 		in_error_to_result_error: InErrorToResultError,
 	) -> CompositeOperator<
 		Self,
-		LiftResultOperator<ResultIn, ResultInError, Self::OutError, InErrorToResultError>,
+		LiftResultOperator<
+			ResultIn,
+			ResultInError,
+			Self::OutError,
+			InErrorToResultError,
+			<Self as Operator>::Context,
+		>,
 	>
 	where
 		InErrorToResultError: 'static + Clone + Fn(Self::OutError) -> ResultInError,

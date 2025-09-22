@@ -80,18 +80,19 @@ where
 mod tests {
 
 	use super::*;
-	use rx_bevy_testing::MockObserver;
+	use rx_bevy_core::SubscriptionLike;
+	use rx_bevy_testing::{MockContext, MockObserver};
 
 	#[test]
 	fn should_emit_single_value() {
 		let value = 4;
 		let mut observable = OfObservable::new(value);
-		let mut mock_observer = MockObserver::new();
+		let mock_observer = MockObserver::default();
+		let mut mock_context = MockContext::default();
 
-		let _s = observable.subscribe(mock_observer.clone(), ());
+		let mut subscription = observable.subscribe(mock_observer, &mut mock_context);
+		subscription.unsubscribe(&mut mock_context);
 
-		mock_observer.read(|d| {
-			assert_eq!(d.destination.values, vec![value]);
-		});
+		assert_eq!(mock_context.values, vec![value]);
 	}
 }

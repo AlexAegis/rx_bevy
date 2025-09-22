@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, SignalContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::LiftResultOperator;
@@ -27,7 +27,13 @@ where
 		in_error_to_result_error: InErrorToResultError,
 	) -> Pipe<
 		Self,
-		LiftResultOperator<ResultOut, ResultOutError, Self::OutError, InErrorToResultError>,
+		LiftResultOperator<
+			ResultOut,
+			ResultOutError,
+			Self::OutError,
+			InErrorToResultError,
+			<Self::Subscription as SignalContext>::Context,
+		>,
 	>
 	where
 		InErrorToResultError: Clone + Fn(Self::OutError) -> ResultOutError,

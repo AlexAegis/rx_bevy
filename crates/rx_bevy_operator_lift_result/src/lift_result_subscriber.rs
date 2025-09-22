@@ -70,7 +70,10 @@ where
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		match next {
 			Ok(next) => self.destination.next(next, context),
-			Err(error) => self.destination.error(error, context),
+			Err(error) => {
+				self.destination.error(error, context);
+				self.destination.unsubscribe(context);
+			}
 		}
 	}
 
@@ -78,11 +81,13 @@ where
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination
 			.error((self.in_error_to_result_error)(error), context);
+		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
+		self.destination.unsubscribe(context);
 	}
 
 	#[inline]

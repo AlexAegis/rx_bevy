@@ -9,5 +9,5 @@ fn main() {
 		.into_observable()
 		.map(|i| if i % 2 == 0 { Some(i) } else { None })
 		.lift_option()
-		.subscribe(PrintObserver::new("lift_option_operator"));
+		.subscribe(PrintObserver::new("lift_option_operator"), &mut ());
 }
