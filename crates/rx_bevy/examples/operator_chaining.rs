@@ -6,5 +6,5 @@ fn main() {
 	let _s = of(12)
 		.map(|n: i32| n * 2)
 		.map(|n: i32| n.to_string())
-		.subscribe(PrintObserver::new("hello"));
+		.subscribe(PrintObserver::new("hello"), &mut ());
 }

@@ -14,6 +14,6 @@ use rx_bevy::prelude::*;
 /// ```
 fn main() {
 	let _s = of(12)
-		.finalize(|| println!("finally!"))
+		.finalize(|_| println!("finally!"))
 		.subscribe(PrintObserver::new("finalize_operator"), &mut ());
 }

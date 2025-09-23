@@ -1,4 +1,6 @@
-use rx_bevy_core::{Observable, ObservableOutput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	Observable, ObservableOutput, Operator, SignalContext, Subscriber, SubscriptionCollection,
+};
 
 pub struct Pipe<Source, Op>
 where
@@ -113,7 +115,8 @@ where
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 	{
 		let operator_subscriber = self.operator.operator_subscribe(destination, context);
 		self.source_observable

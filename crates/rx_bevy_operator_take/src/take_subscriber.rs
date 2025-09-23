@@ -56,7 +56,7 @@ where
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
-		if self.count > 0 {
+		if !self.is_closed() && self.count > 0 {
 			self.count -= 1;
 			self.destination.next(next, context);
 
@@ -68,17 +68,25 @@ where
 
 	#[inline]
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
-		self.destination.error(error, context);
+		if !self.is_closed() {
+			self.destination.error(error, context);
+			self.unsubscribe(context);
+		}
 	}
 
 	#[inline]
 	fn complete(&mut self, context: &mut Self::Context) {
-		self.destination.complete(context);
+		if !self.is_closed() {
+			self.destination.complete(context);
+			self.unsubscribe(context);
+		}
 	}
 
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		self.destination.tick(tick, context);
+		if !self.is_closed() {
+			self.destination.tick(tick, context);
+		}
 	}
 }
 

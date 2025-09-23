@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber};
+use rx_bevy_core::{
+	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
+};
 
 pub fn deferred_observable<F, Source>(observable_creator: F) -> DeferredObservable<F, Source>
 where
@@ -52,7 +54,8 @@ where
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 	{
 		let subscriber = destination.into();
 		let mut source = (self.observable_creator)();

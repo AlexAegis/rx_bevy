@@ -75,7 +75,8 @@ where
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 		Self: Sized,
 	{
 		let mut subscription = Self::Subscription::default();

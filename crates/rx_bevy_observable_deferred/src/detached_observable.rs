@@ -44,7 +44,8 @@ where
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 	{
 		let subscription = self.source.subscribe(destination, context);
 

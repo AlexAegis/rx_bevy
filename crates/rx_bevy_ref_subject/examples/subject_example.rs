@@ -4,26 +4,30 @@ use rx_bevy_ref_subject::Subject;
 fn main() {
 	let mut subject = Subject::<i32>::default();
 
+	let context = &mut ();
+
 	let mut subscription_1 = subject
 		.clone()
 		.finalize(|| println!("finalize 0"))
-		.subscribe(PrintObserver::<i32>::new(
-			"subject_example (subscription 0)",
-		));
+		.subscribe(
+			PrintObserver::<i32>::new("subject_example (subscription 0)"),
+			context,
+		);
 
-	subject.next(1);
+	subject.next(1, context);
 
 	// Bind subscriptions to a variable if you want it to live until the end of the block (naming it "_" doesn't do that)
 	let _subscription_2 = subject
 		.clone()
 		.finalize(|| println!("finalize 1"))
-		.subscribe(PrintObserver::<i32>::new(
-			"subject_example (subscription 1)",
-		));
+		.subscribe(
+			PrintObserver::<i32>::new("subject_example (subscription 1)"),
+			context,
+		);
 
-	subject.next(2);
-	subscription_1.unsubscribe();
-	subject.next(3);
-	subject.complete();
-	subject.next(4); // Wont get emitted as it's already closed
+	subject.next(2, context);
+	subscription_1.unsubscribe(context);
+	subject.next(3, context);
+	subject.complete(context);
+	subject.next(4, context); // Wont get emitted as it's already closed
 }

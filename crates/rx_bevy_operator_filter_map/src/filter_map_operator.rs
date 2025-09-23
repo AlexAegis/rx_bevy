@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{
+	DropContext, ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionCollection,
+};
 use rx_bevy_operator_composite::CompositeSubscriber;
 use rx_bevy_operator_lift_option::LiftOptionSubscriber;
 use rx_bevy_operator_map::MapSubscriber;
@@ -49,8 +51,9 @@ where
 	type Subscriber<Destination>
 		= FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -59,8 +62,9 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection,
 	{
 		CompositeSubscriber::new(MapSubscriber::new(
 			LiftOptionSubscriber::new(destination),

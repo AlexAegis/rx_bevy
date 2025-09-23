@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
 	DropContext, DropSafeSignalContext, Observable, ObservableOutput, Observer, ObserverInput,
-	SignalContext, Subscriber, SubscriptionLike, Tick,
+	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -83,7 +83,8 @@ where
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 	{
 		let mut multicast = self.multicast.write().expect("asd");
 		multicast.subscribe(destination, context)
@@ -174,5 +175,24 @@ where
 {
 	fn drop(&mut self) {
 		// Must not unsubscribe on drop, it's the shared destination that should do that
+	}
+}
+
+impl<In, InError, Context> SubscriptionCollection for Subject<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext<DropSafety = DropSafeSignalContext>,
+{
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		if !self.is_closed()
+			&& let Ok(mut multicast) = self.multicast.write()
+		{
+			multicast.add(subscription, context);
+		}
 	}
 }

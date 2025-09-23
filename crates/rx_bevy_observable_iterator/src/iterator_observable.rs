@@ -48,7 +48,7 @@ where
 
 	fn subscribe<Destination>(
 		&mut self,
-		destination: Destination,
+		mut destination: Destination,
 		context: &mut <Destination as SignalContext>::Context,
 	) -> Self::Subscription
 	where
@@ -59,14 +59,14 @@ where
 				Context = <Self::Subscription as SignalContext>::Context,
 			>,
 	{
-		let mut subscriber = destination;
 		for item in self.iterator.clone().into_iter() {
-			if subscriber.is_closed() {
+			if destination.is_closed() {
 				break;
 			}
-			subscriber.next(item, context);
+			destination.next(item, context);
 		}
-		subscriber.complete(context);
-		DropSubscription::new(subscriber)
+		destination.complete(context);
+
+		DropSubscription::new(destination, false)
 	}
 }

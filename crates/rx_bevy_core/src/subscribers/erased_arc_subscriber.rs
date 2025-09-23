@@ -6,8 +6,8 @@ use std::{
 use short_type_name::short_type_name;
 
 use crate::{
-	DropContext, Observer, ObserverInput, ShareableSubscriber, SignalContext, Subscriber,
-	SubscriptionLike,
+	DropContext, InnerSubscription, Observer, ObserverInput, ShareableSubscriber, SignalContext,
+	Subscriber, SubscriptionCollection, SubscriptionLike,
 };
 
 pub struct ErasedArcSubscriber<In, InError, Context>
@@ -17,6 +17,7 @@ where
 	Context: DropContext,
 {
 	destination: Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
+	teardown: InnerSubscription<Context>,
 	_ph: PhantomData<*mut Context>,
 }
 
@@ -32,6 +33,7 @@ where
 	{
 		Self {
 			destination: Arc::new(RwLock::new(destination)),
+			teardown: InnerSubscription::default(),
 			_ph: PhantomData,
 		}
 	}
@@ -68,8 +70,25 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			destination: self.destination.clone(),
+			teardown: InnerSubscription::default(), // New instance, new teardowns
 			_ph: PhantomData,
 		}
+	}
+}
+
+impl<In, InError, Context> SubscriptionCollection for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	#[inline]
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<crate::Teardown<S, S::Context>>,
+	{
+		self.teardown.add(subscription, context);
 	}
 }
 
@@ -189,11 +208,15 @@ where
 	type Shared<Destination>
 		= ErasedArcSubscriber<In, InError, Context>
 	where
-		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>;
+		Destination: 'static
+			+ Subscriber<In = In, InError = InError, Context = Context>
+			+ SubscriptionCollection;
 
 	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
 	where
-		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>,
+		Destination: 'static
+			+ Subscriber<In = In, InError = InError, Context = Context>
+			+ SubscriptionCollection,
 	{
 		ErasedArcSubscriber::new(destination)
 	}

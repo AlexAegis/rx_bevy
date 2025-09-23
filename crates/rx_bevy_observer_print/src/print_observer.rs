@@ -1,15 +1,19 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use rx_bevy_core::{DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike};
+use rx_bevy_core::{
+	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionCollection,
+	SubscriptionLike, Teardown,
+};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct PrintObserver<In, InError = (), Context = ()>
 where
 	In: Debug,
 	InError: Debug,
+	Context: DropContext,
 {
 	prefix: Option<&'static str>,
-	closed: bool,
+	teardown: InnerSubscription<Context>,
 	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
@@ -17,11 +21,12 @@ impl<In, InError, Context> PrintObserver<In, InError, Context>
 where
 	In: Debug,
 	InError: Debug,
+	Context: DropContext,
 {
 	pub fn new(message: &'static str) -> Self {
 		Self {
 			prefix: Some(message),
-			closed: false,
+			teardown: InnerSubscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -37,11 +42,12 @@ impl<In, InError, Context> Default for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
+	Context: DropContext,
 {
 	fn default() -> Self {
 		Self {
 			prefix: None,
-			closed: false,
+			teardown: InnerSubscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -51,6 +57,7 @@ impl<In, InError, Context> ObserverInput for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
+	Context: DropContext,
 {
 	type In = In;
 	type InError = InError;
@@ -68,13 +75,15 @@ where
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, _context: &mut Self::Context) {
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		println!("{}error: {:?}", self.get_prefix(), error);
+		self.teardown.unsubscribe(context);
 	}
 
 	#[inline]
-	fn complete(&mut self, _context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut Self::Context) {
 		println!("{}completed", self.get_prefix());
+		self.teardown.unsubscribe(context);
 	}
 
 	#[inline]
@@ -100,13 +109,12 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed
+		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, _context: &mut Self::Context) {
-		if !self.is_closed() {
-			self.closed = true;
-
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		if !self.teardown.is_closed() {
+			self.teardown.unsubscribe(context);
 			println!("{}unsubscribed", self.get_prefix());
 		}
 	}
@@ -114,5 +122,20 @@ where
 	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
+	}
+}
+
+impl<In, InError, Context> SubscriptionCollection for PrintObserver<In, InError, Context>
+where
+	In: 'static + Debug,
+	InError: 'static + Debug,
+	Context: DropContext,
+{
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		self.teardown.add(subscription, context);
 	}
 }

@@ -3,9 +3,9 @@ use std::marker::PhantomData;
 use bevy_ecs::entity::Entity;
 
 use rx_bevy_common_bounds::SignalBound;
-use rx_bevy_core::{Observer, ObserverInput, SignalContext};
+use rx_bevy_core::ObserverInput;
 
-use crate::{RxComplete, RxError, RxNext};
+use crate::{RxError, RxNext};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;

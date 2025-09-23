@@ -64,7 +64,7 @@ where
 	{
 		destination.next(self.value.clone(), context);
 		destination.complete(context);
-		DropSubscription::new(destination)
+		DropSubscription::new(destination, true)
 	}
 }
 

@@ -1,8 +1,6 @@
 mod finalize_operator;
-mod finalize_subscriber;
 
 pub use finalize_operator::*;
-pub use finalize_subscriber::*;
 
 #[cfg(feature = "compose")]
 pub mod finalize_extension_compose;

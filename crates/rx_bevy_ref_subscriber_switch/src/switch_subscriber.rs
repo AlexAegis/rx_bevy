@@ -14,13 +14,15 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Sharer::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 {
 	destination: SharedSubscriber<Destination, Sharer>,
 	inner_subscription: Option<InnerObservable::Subscription>,
@@ -34,13 +36,15 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Sharer::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -58,13 +62,15 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Sharer::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 {
 	type In = InnerObservable;
 	type InError = InnerObservable::OutError;
@@ -77,13 +83,15 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Sharer::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 {
 	type Context = Destination::Context;
 }
@@ -95,13 +103,15 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Sharer::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 {
 	fn next(&mut self, mut next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -145,13 +155,15 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Sharer::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -179,13 +191,15 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Sharer::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
@@ -206,13 +220,15 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Sharer::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 {
 	#[inline]
 	fn drop(&mut self) {

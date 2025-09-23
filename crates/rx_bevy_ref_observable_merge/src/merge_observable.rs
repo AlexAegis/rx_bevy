@@ -89,21 +89,19 @@ where
 {
 	type Subscription = O1::Subscription;
 
-	fn subscribe<
-		'c,
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
-			>,
-	>(
+	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
 	) -> Self::Subscription
 	where
-		Self: Sized,
+		Destination: 'static
+			+ Subscriber<
+				In = Self::Out,
+				InError = Self::OutError,
+				Context = <Self::Subscription as SignalContext>::Context,
+			>
+			+ SubscriptionCollection,
 	{
 		let mut subscription = O1::Subscription::default();
 

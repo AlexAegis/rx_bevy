@@ -5,24 +5,24 @@ use crate::{
 
 pub struct SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	destination: Sharer::Shared<Destination>,
 }
 
 impl<Destination, Sharer> From<Destination> for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	fn from(destination: Destination) -> Self {
 		Self::new(destination)
@@ -31,12 +31,12 @@ where
 
 impl<Destination, Sharer> SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -63,12 +63,12 @@ where
 
 impl<Destination, Sharer> Clone for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -79,12 +79,12 @@ where
 
 impl<Destination, Sharer> ObserverInput for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -92,24 +92,24 @@ where
 
 impl<Destination, Sharer> SignalContext for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	type Context = Destination::Context;
 }
 
 impl<Destination, Sharer> Observer for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -134,12 +134,12 @@ where
 
 impl<Destination, Sharer> SubscriptionLike for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -159,13 +159,12 @@ where
 
 impl<Destination, Sharer> SubscriptionCollection for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
-	Sharer::Shared<Destination>: SubscriptionCollection,
+		> + SubscriptionCollection,
 {
 	#[inline]
 	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
@@ -179,12 +178,12 @@ where
 
 impl<Destination, Sharer> Drop for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + SubscriptionCollection,
 	Sharer: ShareableSubscriber<
 			In = Destination::In,
 			InError = Destination::InError,
 			Context = Destination::Context,
-		>,
+		> + SubscriptionCollection,
 {
 	fn drop(&mut self) {
 		// Should not unsubscribe on drop as it's shared!

@@ -20,13 +20,16 @@ impl<Context> DropSubscription<Context>
 where
 	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
-	pub fn new<S, T>(subscription: T) -> Self
+	pub fn new<S, T>(subscription: T, is_closed: bool) -> Self
 	where
 		S: SubscriptionLike<Context = Context>,
 		T: Into<Teardown<S, S::Context>>,
 	{
 		Self {
-			inner: Arc::new(RwLock::new(InnerDropSubscription::new(subscription))),
+			inner: Arc::new(RwLock::new(InnerDropSubscription::new(
+				subscription,
+				is_closed,
+			))),
 		}
 	}
 
@@ -34,7 +37,7 @@ where
 	where
 		F: 'static + FnOnce(&mut Context),
 	{
-		Self::new(Teardown::<Self, Context>::new(f))
+		Self::new(Teardown::<Self, Context>::new(f), false)
 	}
 }
 
@@ -98,19 +101,19 @@ impl<Context> InnerDropSubscription<Context>
 where
 	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
-	pub fn new<S, T>(subscription: T) -> Self
+	pub fn new<S, T>(subscription: T, is_closed: bool) -> Self
 	where
 		S: SubscriptionLike<Context = Context>,
 		T: Into<Teardown<S, S::Context>>,
 	{
-		Self(InnerSubscription::new(subscription))
+		Self(InnerSubscription::new(subscription, is_closed))
 	}
 
 	pub fn new_fn<F>(f: F) -> Self
 	where
 		F: 'static + FnOnce(&mut Context),
 	{
-		Self::new(Teardown::<Self, Context>::new(f))
+		Self::new(Teardown::<Self, Context>::new(f), false)
 	}
 }
 

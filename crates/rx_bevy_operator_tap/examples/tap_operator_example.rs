@@ -5,5 +5,5 @@ fn main() {
 	let _s = (1..=5)
 		.into_observable()
 		.tap_next(|next| println!("hello {next}"))
-		.subscribe(PrintObserver::new("tap_operator"));
+		.subscribe(PrintObserver::new("tap_operator"), &mut ());
 }

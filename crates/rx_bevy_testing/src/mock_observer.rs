@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, DropSafeSignalContext, Observer, ObserverInput, SignalContext,
-	SignalContextDropSafety, SubscriptionLike, Tick,
+	DropContext, Observer, ObserverInput, SignalContext, SignalContextDropSafety, SubscriptionLike,
+	Tick,
 };
 use short_type_name::short_type_name;
 

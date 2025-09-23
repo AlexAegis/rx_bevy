@@ -4,7 +4,7 @@ use bevy_ecs::{
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::{Commands, Query, SystemParam},
+	system::{Commands, Query},
 	world::DeferredWorld,
 };
 #[cfg(feature = "debug")]

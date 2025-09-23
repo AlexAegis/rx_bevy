@@ -1,4 +1,4 @@
-use crate::{DropContext, ObservableOutput, ObserverInput, Subscriber};
+use crate::{DropContext, ObservableOutput, ObserverInput, Subscriber, SubscriptionCollection};
 
 /// # [Operator]
 ///
@@ -12,9 +12,11 @@ pub trait Operator: ObserverInput + ObservableOutput {
 
 	type Subscriber<Destination>: 'static
 		+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+		+ SubscriptionCollection
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
@@ -22,6 +24,7 @@ pub trait Operator: ObserverInput + ObservableOutput {
 		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection;
 }

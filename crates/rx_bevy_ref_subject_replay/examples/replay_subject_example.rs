@@ -7,15 +7,17 @@ fn main() {
 	// Doesn't print out anything on subscribe
 	let _s = subject
 		.clone()
-		.subscribe(PrintObserver::<i32>::new("hello"));
+		.subscribe(PrintObserver::<i32>::new("hello"), &mut ());
 
-	subject.next(1);
-	subject.next(2);
-	subject.next(3);
+	subject.next(1, &mut ());
+	subject.next(2, &mut ());
+	subject.next(3, &mut ());
 
 	// Only the last two value is printed out, since our capacity is just 2
-	let _s2 = subject.clone().subscribe(PrintObserver::<i32>::new("hi"));
+	let _s2 = subject
+		.clone()
+		.subscribe(PrintObserver::<i32>::new("hi"), &mut ());
 
-	subject.next(4);
-	subject.next(5);
+	subject.next(4, &mut ());
+	subject.next(5, &mut ());
 }

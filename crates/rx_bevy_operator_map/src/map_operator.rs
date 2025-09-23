@@ -1,7 +1,9 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{
+	DropContext, ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionCollection,
+};
 
 use crate::MapSubscriber;
 
@@ -39,8 +41,9 @@ where
 	type Subscriber<Destination>
 		= MapSubscriber<In, InError, Mapper, Out, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -49,8 +52,9 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection,
 	{
 		MapSubscriber::new(destination, self.mapper.clone())
 	}

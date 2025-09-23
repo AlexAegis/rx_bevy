@@ -12,7 +12,7 @@ impl<Context> InnerSubscription<Context>
 where
 	Context: DropContext,
 {
-	pub fn new<S, T>(subscription: T) -> Self
+	pub fn new<S, T>(subscription: T, closed: bool) -> Self
 	where
 		S: SubscriptionLike<Context = Context>,
 		T: Into<Teardown<S, S::Context>>,
@@ -21,11 +21,14 @@ where
 
 		if let Some(teardown_fn) = teardown.take() {
 			Self {
-				is_closed: false,
+				is_closed: closed,
 				finalizers: vec![teardown_fn],
 			}
 		} else {
-			Self::default()
+			Self {
+				is_closed: closed,
+				finalizers: Vec::default(),
+			}
 		}
 	}
 
@@ -33,7 +36,7 @@ where
 	where
 		F: 'static + FnOnce(&mut Context),
 	{
-		Self::new(Teardown::<Self, Context>::new(f))
+		Self::new(Teardown::<Self, Context>::new(f), false)
 	}
 }
 

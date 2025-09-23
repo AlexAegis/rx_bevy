@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{
+	DropContext, ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionCollection,
+};
 
 use crate::IdentitySubscriber;
 
@@ -57,8 +59,9 @@ where
 	type Subscriber<Destination>
 		= IdentitySubscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -67,8 +70,9 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection,
 	{
 		IdentitySubscriber::new(destination)
 	}

@@ -23,6 +23,8 @@ default = [
     "all_ecs_observables",
     "all_observers",
     "all_operators",
+    "all_ref_observables",
+    "all_subjects",
     "pipe",
 ]
 dev = [

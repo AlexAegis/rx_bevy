@@ -17,9 +17,11 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Destination::Context,
-		>,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		>
+		+ SubscriptionCollection,
+	Destination: 'static
+		+ Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 {
 	// TODO: Check if it would be enough to use this in a bevy context by just swapping the SwitchSubscriber impl to an ECS based one.
 	destination: SwitchSubscriber<InnerObservable, Destination, Sharer>,
@@ -39,9 +41,11 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Destination::Context,
-		>,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		>
+		+ SubscriptionCollection,
+	Destination: 'static
+		+ Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 {
 	pub fn new(destination: Destination, switcher: Switcher) -> Self {
 		Self {
@@ -64,9 +68,11 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Destination::Context,
-		>,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		>
+		+ SubscriptionCollection,
+	Destination: 'static
+		+ Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 {
 	type Context = Destination::Context;
 }
@@ -83,9 +89,11 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Destination::Context,
-		>,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		>
+		+ SubscriptionCollection,
+	Destination: 'static
+		+ Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -120,9 +128,11 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Destination::Context,
-		>,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		>
+		+ SubscriptionCollection,
+	Destination: 'static
+		+ Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -152,9 +162,11 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Destination::Context,
-		>,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		>
+		+ SubscriptionCollection,
+	Destination: 'static
+		+ Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	Destination: SubscriptionCollection,
 	Sharer::Shared<Destination>: SubscriptionCollection,
 {
@@ -180,9 +192,11 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Destination::Context,
-		>,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		>
+		+ SubscriptionCollection,
+	Destination: 'static
+		+ Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 {
 	type In = In;
 	type InError = InError;
@@ -200,9 +214,11 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = Destination::Context,
-		>,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		>
+		+ SubscriptionCollection,
+	Destination: 'static
+		+ Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 {
 	type Out = InnerObservable::Out;
 	type OutError = InnerObservable::OutError;

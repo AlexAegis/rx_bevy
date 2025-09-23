@@ -68,7 +68,8 @@ where
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 	{
 		let mut connector = self.connector.lock().expect("cant lock");
 		connector.subscribe(destination, context)
@@ -155,7 +156,8 @@ where
 			In = Source::Out,
 			InError = Source::OutError,
 			Context = <Source::Subscription as SignalContext>::Context,
-		>,
+		>
+		+ SubscriptionCollection,
 	Source::Subscription: Clone + SubscriptionCollection,
 {
 	type ConnectionSubscription = Source::Subscription;

@@ -19,8 +19,8 @@ where
 		= OptionOperatorSubscriber<Op::Subscriber<Destination>, Destination>
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError>
-			+ SignalContext<Context = Self::Context>,
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection,
 		Op::Subscriber<Destination>: Subscriber;
 
 	fn operator_subscribe<Destination>(
@@ -30,8 +30,8 @@ where
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError>
-			+ SignalContext<Context = Self::Context>,
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection,
 	{
 		match self {
 			Some(operator) => {

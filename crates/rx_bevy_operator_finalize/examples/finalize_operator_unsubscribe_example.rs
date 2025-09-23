@@ -17,7 +17,7 @@ use rx_bevy::prelude::*;
 /// > just stopped listening.
 ///
 fn main() {
-	let mut subject = Subject::<i32>::default();
+	let mut subject = Subject::<i32, ()>::default();
 	let mut subscription = subject
 		.clone()
 		.finalize(|| println!("finally!"))

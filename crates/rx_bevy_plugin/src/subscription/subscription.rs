@@ -56,10 +56,10 @@ fn unsubscribe_subscription_on_remove<Sub>(
 {
 	let subscription_entity = hook_context.entity;
 
-	let (mut entities, mut commands) = deferred_world.entities_and_commands();
+	let (mut entities, _commands) = deferred_world.entities_and_commands();
 
 	let mut subscription_entity = entities.get_mut(subscription_entity).ok();
-	let mut subscription = subscription_entity
+	let _subscription = subscription_entity
 		.as_mut()
 		.and_then(|e| e.get_mut::<Subscription<Sub>>())
 		.expect("the component should be available");

@@ -1,6 +1,7 @@
 use rx_bevy_core::{
-	DropContext, ErasedArcSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
-	ShareableSubscriber, SignalContext, Subscriber, SubscriptionLike, Tick,
+	DropContext, ErasedArcSubscriber, InnerSubscription, Observable, ObservableOutput, Observer,
+	ObserverInput, ShareableSubscriber, SignalContext, Subscriber, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
 };
 use smallvec::SmallVec;
 
@@ -24,6 +25,7 @@ where
 {
 	subscribers: SmallVec<[ErasedArcSubscriber<In, InError, Context>; 1]>,
 	closed: bool,
+	teardown: InnerSubscription<Context>,
 }
 
 impl<In, InError, Context> Multicast<In, InError, Context>
@@ -58,7 +60,8 @@ where
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 	{
 		let shared = ErasedArcSubscriber::share(destination);
 		self.subscribers.push(shared.clone());
@@ -117,6 +120,7 @@ where
 			for mut destination in self.subscribers.drain(..) {
 				destination.unsubscribe(context);
 			}
+			self.teardown.unsubscribe(context);
 		}
 	}
 
@@ -154,6 +158,7 @@ where
 	fn default() -> Self {
 		Self {
 			subscribers: SmallVec::new(),
+			teardown: InnerSubscription::default(),
 			closed: false,
 		}
 	}
@@ -166,4 +171,19 @@ where
 	Context: DropContext,
 {
 	type Context = Context;
+}
+
+impl<In, InError, Context> SubscriptionCollection for Multicast<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		self.teardown.add(subscription, context);
+	}
 }

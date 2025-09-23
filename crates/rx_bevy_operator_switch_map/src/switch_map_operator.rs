@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, ObserverInput, Operator, ShareableSubscriber, SignalContext,
-	Subscriber,
+	Subscriber, SubscriptionCollection,
 };
 
 use crate::SwitchMapSubscriber;
@@ -45,7 +45,8 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ SubscriptionCollection,
 	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	type Context = <Sharer as SignalContext>::Context;
@@ -53,8 +54,8 @@ where
 		= SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError>
-			+ SignalContext<Context = Self::Context>;
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -63,8 +64,9 @@ where
 		_context: &mut <Sharer as SignalContext>::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection,
 	{
 		SwitchMapSubscriber::new(destination, self.switcher.clone())
 	}

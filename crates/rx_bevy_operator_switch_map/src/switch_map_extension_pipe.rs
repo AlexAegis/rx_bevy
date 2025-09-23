@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, ShareableSubscriber, SignalContext};
+use rx_bevy_core::{Observable, ShareableSubscriber, SignalContext, SubscriptionCollection};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::SwitchMapOperator;
@@ -25,7 +25,8 @@ pub trait ObservableExtensionSwitchMap: Observable + Sized {
 				In = NextInnerObservable::Out,
 				InError = NextInnerObservable::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 		NextInnerObservable: 'static + Observable<Subscription = Sharer>,
 		Switcher: 'static + Clone + Fn(Self::Out) -> NextInnerObservable,
 	>(

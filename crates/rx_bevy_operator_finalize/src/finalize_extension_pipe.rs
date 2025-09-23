@@ -4,18 +4,20 @@ use rx_bevy_ref_pipe::Pipe;
 use crate::FinalizeOperator;
 
 /// Operator creator function
-pub fn finalize<Out, OutError, Callback>(
+pub fn finalize<Out, OutError, Callback, Context>(
 	callback: Callback,
-) -> FinalizeOperator<Out, OutError, Callback>
+) -> FinalizeOperator<Out, OutError, Callback, Context>
 where
-	Callback: Clone + FnOnce(),
+	Callback: 'static + Clone + FnOnce(&mut Context),
 {
 	FinalizeOperator::new(callback)
 }
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionFinalize: Observable + Sized {
-	fn finalize<Callback: 'static + Clone + FnOnce()>(
+	fn finalize<
+		Callback: 'static + Clone + FnOnce(&mut <Self::Subscription as SignalContext>::Context),
+	>(
 		self,
 		callback: Callback,
 	) -> Pipe<

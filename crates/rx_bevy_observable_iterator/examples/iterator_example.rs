@@ -5,7 +5,7 @@ use rx_bevy::prelude::*;
 fn main() {
 	let iterator_observable = IteratorObservable::new(1..=7);
 	let _s = iterator_observable
-		.finalize(|| println!("fin"))
 		.take(3)
-		.subscribe(PrintObserver::new("hello once"));
+		.finalize(|_| println!("fin"))
+		.subscribe(PrintObserver::new("hello once"), &mut ());
 }

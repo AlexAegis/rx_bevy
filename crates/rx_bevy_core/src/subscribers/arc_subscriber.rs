@@ -162,13 +162,15 @@ where
 	type Shared<Destination>
 		= ArcSubscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ SubscriptionCollection;
 
 	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ SubscriptionCollection,
 	{
 		ArcSubscriber::new(destination)
 	}

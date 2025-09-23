@@ -20,7 +20,8 @@ pub trait Observable: ObservableOutput {
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as SignalContext>::Context,
-			>;
+			>
+			+ SubscriptionCollection;
 }
 
 impl ObservableOutput for () {

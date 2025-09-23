@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, Operator, ShareableSubscriber};
+use rx_bevy_core::{Observable, Operator, ShareableSubscriber, SubscriptionCollection};
 use rx_bevy_operator_composite::CompositeOperator;
 
 use crate::SwitchMapOperator;
@@ -11,7 +11,8 @@ pub trait CompositeOperatorExtensionSwitchMap: Operator + Sized {
 				In = NextInnerObservable::Out,
 				InError = NextInnerObservable::OutError,
 				Context = <Self as Operator>::Context,
-			>,
+			>
+			+ SubscriptionCollection,
 		NextInnerObservable: 'static + Observable<Subscription = Sharer>,
 		Switcher: 'static + Clone + Fn(Self::Out) -> NextInnerObservable,
 	>(
