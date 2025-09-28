@@ -79,7 +79,7 @@ fn next_adsr_observer(
 
 fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
 	println!("Unsubscribe subscription!");
-	commands.unsubscribe(example_entities.subscription);
+	//	commands.unsubscribe(example_entities.subscription);
 }
 
 #[derive(Resource, Reflect)]

@@ -1,10 +1,7 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionLike};
-
-use rx_bevy_core::SubscriptionCollection;
-use rx_bevy_core::{DropContext, DropSafeSignalContext};
-use rx_bevy_subscription_drop::DropSubscription;
+use rx_bevy_core::{DropContext, Observable, ObservableOutput, SignalContext, Subscriber};
+use rx_bevy_subscription_inert::InertSubscription;
 
 /// Observable creator for [ThrowObservable]
 pub fn throw<Error, Context>(error: Error) -> ThrowObservable<Error, Context>
@@ -46,7 +43,7 @@ where
 impl<Error, Context> SignalContext for ThrowObservable<Error, Context>
 where
 	Error: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	type Context = Context;
 }
@@ -54,24 +51,21 @@ where
 impl<Error, Context> Observable for ThrowObservable<Error, Context>
 where
 	Error: 'static + Clone,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
-	type Subscription = DropSubscription<Context>;
+	type Subscription = InertSubscription<Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
 		context: &mut Destination::Context,
-	) -> DropSubscription<Context>
+	) -> InertSubscription<Context>
 	where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Context>,
 	{
 		destination.error(self.error.clone(), context);
-		let mut sub = DropSubscription::<Context>::default();
-		sub.add(destination, context);
-		sub.unsubscribe(context);
-		sub
+		InertSubscription::<Context>::new(destination, context)
 	}
 }
 
@@ -79,13 +73,14 @@ where
 mod tests {
 	use super::*;
 
+	use rx_bevy_core::DropSafeSignalContext;
 	use rx_bevy_testing::prelude::*;
 
 	#[test]
 	fn should_emit_single_value() {
 		let error = "error";
 		let mut observable = ThrowObservable::new(error);
-		let mock_observer = MockObserver::default();
+		let mock_observer = MockObserver::<_, _, DropSafeSignalContext>::default();
 		let mut mock_context = MockContext::default();
 
 		let _s = observable.subscribe(mock_observer, &mut mock_context);

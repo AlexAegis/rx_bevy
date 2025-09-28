@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, task::Context};
 
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, ShareableSubscriber, SharedSubscriber, SignalContext,
@@ -32,6 +32,7 @@ where
 	destination: SharedSubscriber<Destination, Sharer>,
 	inner_subscription: Option<<InnerObservable as Observable>::Subscription>,
 	closed: bool,
+	is_complete: bool,
 	_phantom_data: PhantomData<InnerObservable>,
 }
 
@@ -61,7 +62,18 @@ where
 			destination: SharedSubscriber::new(destination),
 			inner_subscription: None,
 			closed: false,
+			is_complete: false,
 			_phantom_data: PhantomData,
+		}
+	}
+
+	fn complete_if_can(
+		&mut self,
+		context: &mut <InnerObservable::Subscription as SignalContext>::Context,
+	) {
+		if self.is_complete && self.inner_subscription.is_none() {
+			self.destination.complete(context);
+			self.unsubscribe(context);
 		}
 	}
 }
@@ -144,8 +156,15 @@ where
 				inner_subscription.unsubscribe(context);
 			}
 
-			let subscription =
+			let mut subscription =
 				next.subscribe(DetachedSubscriber::new(self.destination.clone()), context);
+			// Whenever the inner subscription completes, the switch subscriber should also check if it can  forward this completion to the destination
+			subscription.add_fn(
+				|c| {
+					self.complete_if_can(c);
+				},
+				context,
+			);
 			self.inner_subscription = Some(subscription);
 		}
 	}
@@ -158,12 +177,7 @@ where
 	}
 
 	fn complete(&mut self, context: &mut Self::Context) {
-		if !self.is_closed() {
-			if self.inner_subscription.is_none() {
-				self.destination.complete(context);
-			}
-			self.closed = true;
-		}
+		self.complete_if_can(context);
 	}
 
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {

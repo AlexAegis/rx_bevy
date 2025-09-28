@@ -1,15 +1,14 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, DropSafeSignalContext};
-use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber};
-use rx_bevy_subscription_drop::DropSubscription;
+use rx_bevy_core::{DropContext, Observable, ObservableOutput, SignalContext, Subscriber};
+use rx_bevy_subscription_inert::InertSubscription;
 
 /// Emits a single value then immediately completes
 #[derive(Clone, Debug)]
 pub struct IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	iterator: Iterator,
 	_phantom_data: PhantomData<Context>,
@@ -18,7 +17,7 @@ where
 impl<Iterator, Context> IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	pub fn new(iterator: Iterator) -> Self {
 		Self {
@@ -32,7 +31,7 @@ impl<Iterator, Context> ObservableOutput for IteratorObservable<Iterator, Contex
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
 	type Out = Iterator::Item;
 	type OutError = ();
@@ -42,9 +41,9 @@ impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: DropContext,
 {
-	type Subscription = DropSubscription<Context>;
+	type Subscription = InertSubscription<Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
@@ -66,7 +65,6 @@ where
 			destination.next(item, context);
 		}
 		destination.complete(context);
-
-		DropSubscription::new(destination, false)
+		InertSubscription::new(destination, context)
 	}
 }

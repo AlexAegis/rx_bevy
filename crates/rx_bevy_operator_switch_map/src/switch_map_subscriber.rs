@@ -131,11 +131,13 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination.error(error.into(), context);
+		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
+		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
