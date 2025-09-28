@@ -6,11 +6,13 @@ use rx_bevy_ref_observable_combine_latest::combine_latest;
 /// the first observable emits all of its values immediately upon subscription,
 /// before the second one could even start listening.
 fn main() {
+	// TODO: Fix, something gets dropped early and it doesn't emit anything
 	let mut subject_1 = Subject::<i32, ()>::default();
 	let mut subject_2 = Subject::<i32, ()>::default();
 
 	let mut subscription = combine_latest(subject_1.clone(), subject_2.clone()).subscribe(
-		DynFnObserver::default().with_next(|next: (i32, i32)| println!("{}, {}", next.0, next.1)),
+		DynFnObserver::default()
+			.with_next(|next: (i32, i32), _context| println!("{}, {}", next.0, next.1)),
 		&mut (),
 	);
 

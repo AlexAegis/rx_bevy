@@ -20,7 +20,7 @@ pub trait ShareableSubscriber: Subscriber {
 }
 
 /// Convenience function to define a sharer from a function argument position, it's a noop and will never get called.
-pub fn use_share<Sharer>() -> impl Fn(Sharer)
+pub fn use_sharer<Sharer>() -> impl Fn(Sharer)
 where
 	Sharer: ShareableSubscriber,
 {

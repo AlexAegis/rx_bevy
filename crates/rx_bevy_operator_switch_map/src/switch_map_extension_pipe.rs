@@ -10,7 +10,7 @@ pub fn switch_map<In, InError, Switcher, Sharer, InnerObservable>(
 where
 	Switcher: Clone + Fn(In) -> InnerObservable,
 	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: 'static + Observable<Subscription = Sharer>,
+	InnerObservable: 'static + Observable,
 	Sharer: 'static
 		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
@@ -24,10 +24,11 @@ pub trait ObservableExtensionSwitchMap: Observable + Sized {
 			+ ShareableSubscriber<
 				In = NextInnerObservable::Out,
 				InError = NextInnerObservable::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <NextInnerObservable::Subscription as SignalContext>::Context,
 			>
-			+ SubscriptionCollection,
-		NextInnerObservable: 'static + Observable<Subscription = Sharer>,
+			+ SubscriptionCollection
+			+ SignalContext<Context = <Self::Subscription as SignalContext>::Context>,
+		NextInnerObservable: 'static + Observable,
 		Switcher: 'static + Clone + Fn(Self::Out) -> NextInnerObservable,
 	>(
 		self,
@@ -38,6 +39,8 @@ pub trait ObservableExtensionSwitchMap: Observable + Sized {
 		SwitchMapOperator<Self::Out, Self::OutError, Switcher, Sharer, NextInnerObservable>,
 	>
 	where
+		NextInnerObservable::Subscription:
+			SignalContext<Context = <Self::Subscription as SignalContext>::Context>,
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
 		Pipe::new(self, SwitchMapOperator::new(switcher))

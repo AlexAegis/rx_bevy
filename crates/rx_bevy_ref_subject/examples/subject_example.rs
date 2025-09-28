@@ -29,5 +29,5 @@ fn main() {
 	subscription_1.unsubscribe(context);
 	subject.next(3, context);
 	subject.complete(context);
-	subject.next(4, context); // Wont get emitted as it's already closed
+	subject.next(4, context); // Won't get emitted as it's already closed
 }

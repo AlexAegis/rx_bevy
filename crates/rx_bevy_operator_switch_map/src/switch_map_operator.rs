@@ -14,7 +14,7 @@ where
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
-	InnerObservable: 'static + Observable<Subscription = Sharer>,
+	InnerObservable: 'static + Observable,
 {
 	pub switcher: Switcher,
 	pub _phantom_data: PhantomData<(In, InError, Sharer, InnerObservable)>,
@@ -28,7 +28,7 @@ where
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
-	InnerObservable: 'static + Observable<Subscription = Sharer>,
+	InnerObservable: 'static + Observable,
 {
 	pub fn new(switcher: Switcher) -> Self {
 		Self {
@@ -44,10 +44,16 @@ where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>
+		+ ShareableSubscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>
 		+ SubscriptionCollection,
-	InnerObservable: 'static + Observable<Subscription = Sharer>,
 {
 	type Context = <Sharer as SignalContext>::Context;
 	type Subscriber<Destination>
@@ -80,7 +86,7 @@ where
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
-	InnerObservable: 'static + Observable<Subscription = Sharer>,
+	InnerObservable: 'static + Observable,
 {
 	type In = In;
 	type InError = InError;
@@ -94,7 +100,7 @@ where
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
-	InnerObservable: 'static + Observable<Subscription = Sharer>,
+	InnerObservable: 'static + Observable,
 {
 	type Out = InnerObservable::Out;
 	type OutError = InnerObservable::OutError;
@@ -108,7 +114,7 @@ where
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
-	InnerObservable: 'static + Observable<Subscription = Sharer>,
+	InnerObservable: 'static + Observable,
 {
 	type Context = Sharer::Context;
 }
@@ -121,7 +127,7 @@ where
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
 	Sharer: 'static
 		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
-	InnerObservable: 'static + Observable<Subscription = Sharer>,
+	InnerObservable: 'static + Observable,
 {
 	fn clone(&self) -> Self {
 		Self {
