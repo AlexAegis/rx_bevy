@@ -4595,7 +4595,7 @@ dependencies = [
  "rx_bevy_operator_skip",
  "rx_bevy_operator_switch_map",
  "rx_bevy_operator_take",
- "rx_bevy_operator_tap",
+ "rx_bevy_operator_tap_next",
  "rx_bevy_operator_try_capture",
  "rx_bevy_ref_observable_combine_latest",
  "rx_bevy_ref_observable_connectable",
@@ -4988,7 +4988,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_operator_tap"
+name = "rx_bevy_operator_tap_next"
 version = "0.1.0"
 dependencies = [
  "bevy_reflect",

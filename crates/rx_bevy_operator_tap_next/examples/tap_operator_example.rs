@@ -4,6 +4,6 @@ use rx_bevy::prelude::*;
 fn main() {
 	let _s = (1..=5)
 		.into_observable()
-		.tap_next(|next| println!("hello {next}"))
+		.tap_next(|next, _context| println!("hello {next}"))
 		.subscribe(PrintObserver::new("tap_operator"), &mut ());
 }

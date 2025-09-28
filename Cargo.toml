@@ -115,7 +115,7 @@ rx_bevy_operator_map_into = { path = "crates/rx_bevy_operator_map_into" }
 rx_bevy_operator_skip = { path = "crates/rx_bevy_operator_skip" }
 rx_bevy_operator_switch_map = { path = "crates/rx_bevy_operator_switch_map" }
 rx_bevy_operator_take = { path = "crates/rx_bevy_operator_take" }
-rx_bevy_operator_tap = { path = "crates/rx_bevy_operator_tap" }
+rx_bevy_operator_tap_next = { path = "crates/rx_bevy_operator_tap_next" }
 rx_bevy_operator_try_capture = { path = "crates/rx_bevy_operator_try_capture" }
 rx_bevy_operator_adsr = { path = "crates/rx_bevy_operator_adsr" }
 # Reference Subscribers

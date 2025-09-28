@@ -1,18 +1,20 @@
 use rx_bevy_core::Operator;
 use rx_bevy_operator_composite::CompositeOperator;
 
-use crate::TapOperator;
+use crate::TapNextOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
-	fn tap_next<Callback: 'static + Clone + for<'a> Fn(&'a Self::Out)>(
+	fn tap_next<
+		OnNext: 'static + Clone + for<'a> Fn(&'a Self::Out, &'a mut <Self as Operator>::Context),
+	>(
 		self,
-		callback: Callback,
+		callback: OnNext,
 	) -> CompositeOperator<
 		Self,
-		TapOperator<Self::Out, Self::OutError, Callback, <Self as Operator>::Context>,
+		TapNextOperator<Self::Out, Self::OutError, OnNext, <Self as Operator>::Context>,
 	> {
-		CompositeOperator::new(self, TapOperator::new(callback))
+		CompositeOperator::new(self, TapNextOperator::new(callback))
 	}
 }
 

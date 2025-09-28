@@ -1,26 +1,30 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
+	ObservableOutput, Observer, ObserverInput, SignalContext, SubscriptionCollection,
 	SubscriptionLike, Teardown, Tick,
 };
 
-pub struct TapSubscriber<In, InError, Callback, Destination>
+pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	Callback: for<'a> Fn(&'a In),
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Observer<In = In, InError = InError>,
+	In: 'static,
+	InError: 'static,
 {
 	destination: Destination,
-	callback: Callback,
+	callback: OnNext,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Callback, Destination> TapSubscriber<In, InError, Callback, Destination>
+impl<In, InError, OnNext, Destination> TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	Callback: for<'a> Fn(&'a In),
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Observer<In = In, InError = InError>,
+	In: 'static,
+	InError: 'static,
 {
-	pub fn new(destination: Destination, callback: Callback) -> Self {
+	pub fn new(destination: Destination, callback: OnNext) -> Self {
 		Self {
 			destination,
 			callback,
@@ -29,10 +33,10 @@ where
 	}
 }
 
-impl<In, InError, Callback, Destination> SignalContext
-	for TapSubscriber<In, InError, Callback, Destination>
+impl<In, InError, OnNext, Destination> SignalContext
+	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Observer<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
@@ -40,17 +44,17 @@ where
 	type Context = Destination::Context;
 }
 
-impl<In, InError, Callback, Destination> Observer
-	for TapSubscriber<In, InError, Callback, Destination>
+impl<In, InError, OnNext, Destination> Observer
+	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Observer<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
-		(self.callback)(&next);
+		(self.callback)(&next, context);
 		self.destination.next(next, context);
 	}
 
@@ -70,13 +74,14 @@ where
 	}
 }
 
-impl<In, InError, Callback, Destination> SubscriptionLike
-	for TapSubscriber<In, InError, Callback, Destination>
+impl<In, InError, OnNext, Destination> SubscriptionLike
+	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
-	Destination: Subscriber<In = In, InError = InError>,
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	Destination: Observer<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
+	Destination: SubscriptionLike,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -94,14 +99,14 @@ where
 	}
 }
 
-impl<In, InError, Callback, Destination> SubscriptionCollection
-	for TapSubscriber<In, InError, Callback, Destination>
+impl<In, InError, OnNext, Destination> SubscriptionCollection
+	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
-	Destination: Subscriber<In = In, InError = InError>,
-	Destination: SubscriptionCollection,
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	Destination: Observer<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
+	Destination: SubscriptionCollection,
 {
 	#[inline]
 	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
@@ -113,10 +118,10 @@ where
 	}
 }
 
-impl<In, InError, Callback, Destination> ObservableOutput
-	for TapSubscriber<In, InError, Callback, Destination>
+impl<In, InError, OnNext, Destination> ObservableOutput
+	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Observer<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
@@ -125,10 +130,10 @@ where
 	type OutError = InError;
 }
 
-impl<In, InError, Callback, Destination> ObserverInput
-	for TapSubscriber<In, InError, Callback, Destination>
+impl<In, InError, OnNext, Destination> ObserverInput
+	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	Callback: Clone + for<'a> Fn(&'a In),
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Observer<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,

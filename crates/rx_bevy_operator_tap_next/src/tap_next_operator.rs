@@ -1,0 +1,96 @@
+use std::marker::PhantomData;
+
+use rx_bevy_core::{
+	DropContext, ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionCollection,
+};
+
+use crate::TapNextSubscriber;
+
+#[derive(Debug)]
+pub struct TapNextOperator<In, InError, OnNext, Context>
+where
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context),
+{
+	on_next: OnNext,
+	_phantom_data: PhantomData<(In, InError, Context)>,
+}
+
+impl<In, InError, OnNext, Context> TapNextOperator<In, InError, OnNext, Context>
+where
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context),
+{
+	pub fn new(on_next: OnNext) -> Self {
+		Self {
+			on_next,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError, OnNext, Context> Operator for TapNextOperator<In, InError, OnNext, Context>
+where
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	type Context = Context;
+	type Subscriber<Destination>
+		= TapNextSubscriber<In, InError, OnNext, Destination>
+	where
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection;
+
+	#[inline]
+	fn operator_subscribe<Destination>(
+		&mut self,
+		destination: Destination,
+		_context: &mut Self::Context,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ SubscriptionCollection,
+	{
+		TapNextSubscriber::new(destination, self.on_next.clone())
+	}
+}
+
+impl<In, InError, OnNext, Context> ObservableOutput
+	for TapNextOperator<In, InError, OnNext, Context>
+where
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	type Out = In;
+	type OutError = InError;
+}
+
+impl<In, InError, OnNext, Context> ObserverInput for TapNextOperator<In, InError, OnNext, Context>
+where
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	type In = In;
+	type InError = InError;
+}
+
+impl<In, InError, OnNext, Context> Clone for TapNextOperator<In, InError, OnNext, Context>
+where
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	fn clone(&self) -> Self {
+		Self {
+			on_next: self.on_next.clone(),
+			_phantom_data: PhantomData,
+		}
+	}
+}

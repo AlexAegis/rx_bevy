@@ -57,7 +57,7 @@ pub use rx_bevy_operator_switch_map::*;
 #[cfg(feature = "operator_take")]
 pub use rx_bevy_operator_take::*;
 #[cfg(feature = "operator_tap")]
-pub use rx_bevy_operator_tap::*;
+pub use rx_bevy_operator_tap_next::*;
 #[cfg(feature = "operator_try_capture")]
 pub use rx_bevy_operator_try_capture::*;
 // Subjects
@@ -128,7 +128,7 @@ pub mod prelude {
 	#[cfg(feature = "operator_take")]
 	pub use rx_bevy_operator_take::prelude::*;
 	#[cfg(feature = "operator_tap")]
-	pub use rx_bevy_operator_tap::prelude::*;
+	pub use rx_bevy_operator_tap_next::prelude::*;
 	#[cfg(feature = "operator_try_capture")]
 	pub use rx_bevy_operator_try_capture::prelude::*;
 

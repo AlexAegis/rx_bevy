@@ -1,6 +1,6 @@
 [package]
-name = "rx_bevy_operator_tap"
-description = "tap operator for rx_bevy"
+name = "rx_bevy_operator_tap_next"
+description = "tap next operator for rx_bevy, for the simple use cases where you don't want to define an entire observable to peek into a observable."
 version = "0.1.0"
 readme = "readme.md"
 publish = false

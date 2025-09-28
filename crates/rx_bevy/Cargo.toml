@@ -56,7 +56,7 @@ dev = [
     "rx_bevy_operator_skip?/dev",
     "rx_bevy_operator_switch_map?/dev",
     "rx_bevy_operator_take?/dev",
-    "rx_bevy_operator_tap?/dev",
+    "rx_bevy_operator_tap_next?/dev",
     "rx_bevy_operator_try_capture?/dev",
     "rx_bevy_ref_pipe?/dev",
     "rx_bevy_ref_subject?/dev",
@@ -94,7 +94,7 @@ example = [
     "rx_bevy_operator_skip?/example",
     "rx_bevy_operator_switch_map?/example",
     "rx_bevy_operator_take?/example",
-    "rx_bevy_operator_tap?/example",
+    "rx_bevy_operator_tap_next?/example",
     "rx_bevy_operator_try_capture?/example",
     "rx_bevy_ref_pipe?/example",
     "rx_bevy_ref_subject?/example",
@@ -125,7 +125,7 @@ bevy = [
     "rx_bevy_operator_skip?/bevy",
     "rx_bevy_operator_switch_map?/bevy",
     "rx_bevy_operator_take?/bevy",
-    "rx_bevy_operator_tap?/bevy",
+    "rx_bevy_operator_tap_next?/bevy",
     "rx_bevy_operator_try_capture?/bevy",
     "rx_bevy_testing/bevy",
 ]
@@ -155,7 +155,7 @@ reflect = [
     "rx_bevy_operator_skip?/reflect",
     "rx_bevy_operator_switch_map?/reflect",
     "rx_bevy_operator_take?/reflect",
-    "rx_bevy_operator_tap?/reflect",
+    "rx_bevy_operator_tap_next?/reflect",
     "rx_bevy_operator_try_capture?/reflect",
     "rx_bevy_ref_observable_combine_latest?/reflect",
     "rx_bevy_ref_observable_connectable?/reflect",
@@ -174,7 +174,7 @@ pipe = [
     "rx_bevy_operator_skip?/pipe",
     "rx_bevy_operator_switch_map?/pipe",
     "rx_bevy_operator_take?/pipe",
-    "rx_bevy_operator_tap?/pipe",
+    "rx_bevy_operator_tap_next?/pipe",
     "rx_bevy_operator_try_capture?/pipe",
 ]
 compose = [
@@ -190,7 +190,7 @@ compose = [
     "rx_bevy_operator_skip?/compose",
     "rx_bevy_operator_switch_map?/compose",
     "rx_bevy_operator_take?/compose",
-    "rx_bevy_operator_tap?/compose",
+    "rx_bevy_operator_tap_next?/compose",
     "rx_bevy_operator_try_capture?/compose",
 ]
 # Common Observables
@@ -256,7 +256,7 @@ operator_map_into = ["dep:rx_bevy_operator_map_into"]
 operator_skip = ["dep:rx_bevy_operator_skip"]
 operator_switch_map = ["dep:rx_bevy_operator_switch_map"]
 operator_take = ["dep:rx_bevy_operator_take"]
-operator_tap = ["dep:rx_bevy_operator_tap"]
+operator_tap = ["dep:rx_bevy_operator_tap_next"]
 operator_try_capture = ["dep:rx_bevy_operator_try_capture"]
 # Ref Subjects
 all_subjects = ["ref_subject", "ref_subject_behavior", "ref_subject_replay"]
@@ -300,7 +300,7 @@ rx_bevy_operator_map_into = { workspace = true, optional = true }
 rx_bevy_operator_skip = { workspace = true, optional = true }
 rx_bevy_operator_switch_map = { workspace = true, optional = true }
 rx_bevy_operator_take = { workspace = true, optional = true }
-rx_bevy_operator_tap = { workspace = true, optional = true }
+rx_bevy_operator_tap_next = { workspace = true, optional = true }
 rx_bevy_operator_try_capture = { workspace = true, optional = true }
 # Ref Subjects
 rx_bevy_ref_subject = { workspace = true, optional = true }
