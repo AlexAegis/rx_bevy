@@ -6,7 +6,7 @@ use rx_bevy_plugin::{
 use bevy_ecs::component::Component;
 
 use rx_bevy_common_bounds::{DebugBound, ReflectBound, SignalBound};
-use rx_bevy_core::{ObservableOutput, Observer};
+use rx_bevy_core::ObservableOutput;
 
 use crate::IteratorSubscription;
 
@@ -57,7 +57,7 @@ where
 
 	fn on_subscribe(
 		&mut self,
-		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		mut _subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		if !EMIT_ON_TICK {
 			// for item in self.iterator.clone().into_iter() {

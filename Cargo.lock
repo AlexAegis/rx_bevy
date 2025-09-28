@@ -5142,7 +5142,9 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy",
  "rx_bevy_core",
+ "rx_bevy_observable_iterator",
  "rx_bevy_testing",
+ "short_type_name",
 ]
 
 [[package]]

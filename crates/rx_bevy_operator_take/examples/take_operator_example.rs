@@ -6,5 +6,5 @@ fn main() {
 	let _s = (1..=5)
 		.into_observable()
 		.take(2)
-		.subscribe(PrintObserver::new("take_operator"));
+		.subscribe(PrintObserver::new("take_operator"), &mut ());
 }

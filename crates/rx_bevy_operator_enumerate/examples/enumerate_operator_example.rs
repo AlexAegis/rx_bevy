@@ -6,5 +6,5 @@ fn main() {
 	let _s = (10..=15)
 		.into_observable()
 		.enumerate()
-		.subscribe(PrintObserver::new("enumerate_operator"));
+		.subscribe(PrintObserver::new("enumerate_operator"), &mut ());
 }

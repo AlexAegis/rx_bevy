@@ -1,10 +1,9 @@
 use bevy_ecs::observer::Trigger;
 use bevy_time::{Timer, TimerMode};
-use rx_bevy_core::{ObservableOutput, Observer};
+use rx_bevy_core::ObservableOutput;
 
 use rx_bevy_plugin::{
-	CommandSubscriber, RxContextSub, RxDestination, RxSubscription, RxTick,
-	SubscriptionChannelHandlerRegistrationContext,
+	CommandSubscriber, RxSubscription, RxTick, SubscriptionChannelHandlerRegistrationContext,
 };
 
 #[cfg(feature = "reflect")]
@@ -40,9 +39,9 @@ impl ObservableOutput for IntervalSubscription {
 impl RxSubscription for IntervalSubscription {
 	fn register_subscription_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		mut hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		mut _hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
-		hooks.register_tick_handler(interval_subscription_on_tick_system);
+		// hooks.register_tick_handler(interval_subscription_on_tick_system);
 	}
 
 	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
@@ -50,17 +49,17 @@ impl RxSubscription for IntervalSubscription {
 	}
 }
 
-fn interval_subscription_on_tick_system(
-	trigger: Trigger<RxTick>,
-	mut context: RxContextSub<IntervalSubscription>,
-	mut destination: RxDestination<IntervalSubscription>,
+fn _interval_subscription_on_tick_system(
+	_trigger: Trigger<RxTick>,
+	// mut context: RxContextSub<IntervalSubscription>,
+	// mut destination: RxDestination<IntervalSubscription>,
 ) {
-	let mut subscription = context.get_subscription(trigger.target());
-	let mut subscriber = destination.get_subscriber_of(trigger.target());
-
-	subscription.timer.tick(trigger.event().delta);
-	if subscription.timer.just_finished() {
-		subscriber.next(subscription.count);
-		subscription.count += 1;
-	}
+	// let mut subscription = context.get_subscription(trigger.target());
+	// let mut subscriber = destination.get_subscriber_of(trigger.target());
+	//
+	// subscription.timer.tick(trigger.event().delta);
+	// if subscription.timer.just_finished() {
+	// 	subscriber.next(subscription.count);
+	// 	subscription.count += 1;
+	// }
 }

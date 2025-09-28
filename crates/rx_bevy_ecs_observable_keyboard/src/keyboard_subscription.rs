@@ -1,6 +1,6 @@
 use bevy_ecs::{event::EventReader, observer::Trigger};
 use bevy_input::keyboard::KeyboardInput;
-use rx_bevy_core::{ObservableOutput, Observer};
+use rx_bevy_core::ObservableOutput;
 
 use rx_bevy_plugin::{
 	CommandSubscriber, RxSubscription, RxTick, SubscriptionChannelHandlerRegistrationContext,
@@ -31,7 +31,7 @@ impl RxSubscription for KeyboardSubscription {
 
 	fn register_subscription_channel_handlers<'a, 'w, 's>(
 		&mut self,
-		mut hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		mut _hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
 	) {
 		// hooks.register_tick_handler(keyboard_subscription_on_tick_system);
 	}
@@ -41,10 +41,10 @@ impl RxSubscription for KeyboardSubscription {
 	}
 }
 
-fn keyboard_subscription_on_tick_system(
-	trigger: Trigger<RxTick>,
+fn _keyboard_subscription_on_tick_system(
+	_trigger: Trigger<RxTick>,
 	// mut destination: RxDestination<KeyboardSubscription>,
-	mut keyboard_input_events: EventReader<KeyboardInput>,
+	mut _keyboard_input_events: EventReader<KeyboardInput>,
 ) {
 	// let mut subscriber = destination.get_subscriber_of(trigger.target());
 

@@ -1,5 +1,5 @@
 use bevy_ecs::component::Component;
-use rx_bevy_core::{ObservableOutput, Observer};
+use rx_bevy_core::ObservableOutput;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -37,10 +37,10 @@ impl ObservableComponent for IntervalObservableComponent {
 
 	fn on_subscribe(
 		&mut self,
-		mut subscriber: CommandSubscriber<Self::Out, Self::OutError>,
+		mut _subscriber: CommandSubscriber<Self::Out, Self::OutError>,
 	) -> Self::Subscription {
 		if self.options.start_on_subscribe {
-			subscriber.next(0);
+			// subscriber.next(0);
 		}
 		IntervalSubscription::new(self.options.clone())
 	}

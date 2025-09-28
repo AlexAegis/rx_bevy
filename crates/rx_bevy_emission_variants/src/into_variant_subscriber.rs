@@ -72,12 +72,14 @@ where
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination
 			.error(EitherOutError2::O1Error(error), context);
+		//self.destination.unsubscribe(context);
 	}
 
 	#[inline]
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.next(EitherOut2::CompleteO1, context);
 		self.destination.complete(context);
+		//self.destination.unsubscribe(context);
 	}
 
 	#[inline]
@@ -223,12 +225,14 @@ where
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination
 			.error(EitherOutError2::O2Error(error), context);
+		//self.destination.unsubscribe(context);
 	}
 
 	#[inline]
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.next(EitherOut2::CompleteO2, context);
 		self.destination.complete(context);
+		//self.destination.unsubscribe(context);
 	}
 
 	#[inline]

@@ -11,6 +11,7 @@ impl ObserverInput for () {
 }
 
 pub trait Observer: ObserverInput + SignalContext {
+	/// TODO: Maybe rename all contextual functions to xy_with_context and add default implemented functions for a plain next where the context is just the default, but it should disallow overriding the default impl, so maybe on a sealed trait?
 	fn next(&mut self, next: Self::In, context: &mut Self::Context);
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context);
 	fn complete(&mut self, context: &mut Self::Context);

@@ -17,13 +17,14 @@ use rx_bevy::prelude::*;
 /// > just stopped listening.
 ///
 fn main() {
+	let mut context = ();
 	let mut subject = Subject::<i32, ()>::default();
 	let mut subscription = subject
 		.clone()
-		.finalize(|| println!("finally!"))
-		.subscribe(PrintObserver::new("finalize_operator"), &mut ());
+		.finalize(|_| println!("finally!"))
+		.subscribe(PrintObserver::new("finalize_operator"), &mut context);
 
-	subject.next(1);
-	subject.next(2);
-	subscription.unsubscribe();
+	subject.next(1, &mut context);
+	subject.next(2, &mut context);
+	subscription.unsubscribe(&mut context);
 }

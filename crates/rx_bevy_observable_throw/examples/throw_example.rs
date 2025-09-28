@@ -9,5 +9,5 @@ use rx_bevy_observable_throw::throw;
 /// throw_example - error: "hello"
 /// ```
 fn main() {
-	let _s = throw("hello").subscribe(PrintObserver::new("throw_example"));
+	let _s = throw("hello").subscribe(PrintObserver::new("throw_example"), &mut ());
 }

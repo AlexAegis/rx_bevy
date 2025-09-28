@@ -32,7 +32,7 @@ pub trait ObservableExtensionSwitchMap: Observable + Sized {
 	>(
 		self,
 		switcher: Switcher,
-		_use_share: impl Fn(Sharer) -> (),
+		_use_share: impl Fn(Sharer),
 	) -> Pipe<
 		Self,
 		SwitchMapOperator<Self::Out, Self::OutError, Switcher, Sharer, NextInnerObservable>,

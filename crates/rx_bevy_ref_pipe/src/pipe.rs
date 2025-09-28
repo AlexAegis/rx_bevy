@@ -16,7 +16,7 @@ where
 	pub(crate) operator: Op,
 }
 
-impl<'c, Source, Op> Clone for Pipe<Source, Op>
+impl<Source, Op> Clone for Pipe<Source, Op>
 where
 	Source: 'static + Clone + Observable,
 	Op: 'static

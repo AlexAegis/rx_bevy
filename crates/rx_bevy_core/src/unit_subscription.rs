@@ -7,9 +7,7 @@ impl DropContext for () {
 	type DropSafety = DropSafeSignalContext;
 
 	#[inline]
-	fn get_context_for_drop() -> Self {
-		()
-	}
+	fn get_context_for_drop() -> Self {}
 }
 
 impl SignalContext for () {

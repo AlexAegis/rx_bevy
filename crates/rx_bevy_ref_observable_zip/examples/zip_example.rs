@@ -10,8 +10,9 @@ fn main() {
 	let observable_2 = (4..=6).into_observable();
 	let _s = zip(observable_1, observable_2).subscribe(
 		DynFnObserver::default()
-			.with_next(|next: (i32, i32)| println!("zip_next {}, {}", next.0, next.1))
-			.with_complete(|| println!("zip_complete"))
-			.with_unsubscribe(|| println!("zip_unsubscribe")),
+			.with_next(|next: (i32, i32), _context| println!("zip_next {}, {}", next.0, next.1))
+			.with_complete(|_context| println!("zip_complete"))
+			.with_unsubscribe(|_context| println!("zip_unsubscribe")),
+		&mut (),
 	);
 }

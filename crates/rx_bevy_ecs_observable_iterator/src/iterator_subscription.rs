@@ -1,6 +1,6 @@
 use bevy_ecs::observer::Trigger;
 use rx_bevy_common_bounds::{DebugBound, SignalBound};
-use rx_bevy_core::{ObservableOutput, Observer};
+use rx_bevy_core::ObservableOutput;
 
 use rx_bevy_plugin::{
 	CommandSubscriber, RxSubscription, RxTick, SubscriptionChannelHandlerRegistrationContext,
@@ -71,7 +71,7 @@ where
 }
 
 fn iterator_subscriber_on_tick<Iterator>(
-	trigger: Trigger<RxTick>,
+	_trigger: Trigger<RxTick>,
 	// mut context: RxContextSub<IteratorSubscription<Iterator, true>>,
 	// mut destination: RxDestination<IteratorSubscription<Iterator, true>>,
 ) where

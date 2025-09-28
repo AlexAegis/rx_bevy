@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, Observer, ObserverInput, SignalContext, SignalContextDropSafety, SubscriptionLike,
-	Tick,
+	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext,
+	SignalContextDropSafety, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use short_type_name::short_type_name;
 
@@ -14,6 +14,7 @@ where
 	DropSafety: SignalContextDropSafety,
 {
 	pub closed: bool,
+	teardown: InnerSubscription<MockContext<In, InError, DropSafety>>,
 	_phantom_data: PhantomData<(In, InError, DropSafety)>,
 }
 
@@ -27,6 +28,7 @@ where
 	type InError = InError;
 }
 
+#[derive(Debug)]
 pub struct MockContext<In, InError, DropSafety>
 where
 	In: 'static,
@@ -37,12 +39,14 @@ where
 	pub errors: Vec<InError>,
 	pub ticks: Vec<Tick>,
 	pub completed: usize,
-	pub unsubscribed: bool,
+	pub unsubscribes: usize,
+	pub adds: usize,
 	pub values_after_closed: Vec<In>,
 	pub errors_after_closed: Vec<InError>,
 	pub ticks_after_closed: Vec<Tick>,
 	pub completed_after_closed: usize,
 	pub unsubscribes_after_closed: usize,
+	pub adds_after_closed: usize,
 	_phantom_data: PhantomData<DropSafety>,
 }
 
@@ -58,6 +62,41 @@ where
 			&& self.completed_after_closed == 0
 			&& self.ticks_after_closed.is_empty()
 			&& self.unsubscribes_after_closed == 0
+			&& self.adds_after_closed == 0
+	}
+
+	pub fn all_values(&self) -> Vec<In>
+	where
+		In: Clone,
+	{
+		self.values
+			.iter()
+			.chain(self.values_after_closed.iter())
+			.cloned()
+			.collect()
+	}
+
+	pub fn all_errors(&self) -> Vec<InError>
+	where
+		InError: Clone,
+	{
+		self.errors
+			.iter()
+			.chain(self.errors_after_closed.iter())
+			.cloned()
+			.collect()
+	}
+
+	pub fn all_completions(&self) -> usize {
+		self.completed + self.completed_after_closed
+	}
+
+	pub fn all_unsubscribes(&self) -> usize {
+		self.unsubscribes + self.unsubscribes_after_closed
+	}
+
+	pub fn all_adds(&self) -> usize {
+		self.adds + self.adds_after_closed
 	}
 }
 
@@ -99,8 +138,10 @@ where
 			ticks_after_closed: Vec::new(),
 			completed: 0,
 			completed_after_closed: 0,
-			unsubscribed: false,
+			unsubscribes: 0,
 			unsubscribes_after_closed: 0,
+			adds: 0,
+			adds_after_closed: 0,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -170,10 +211,14 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			self.closed = true;
-			context.unsubscribed = true;
+			context.unsubscribes += 1;
 		} else {
 			context.unsubscribes_after_closed += 1;
 		}
+		println!(
+			"mock context unsub {} {}",
+			context.unsubscribes, context.unsubscribes_after_closed
+		);
 	}
 
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
@@ -190,7 +235,30 @@ where
 	fn default() -> Self {
 		Self {
 			closed: false,
+			teardown: InnerSubscription::default(),
 			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError, DropSafety> SubscriptionCollection for MockObserver<In, InError, DropSafety>
+where
+	In: 'static,
+	InError: 'static,
+	DropSafety: SignalContextDropSafety,
+{
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		if !self.is_closed() {
+			context.adds += 1;
+			self.teardown.add(subscription, context);
+		} else {
+			context.adds_after_closed += 1;
+			let teardown: Teardown<S, S::Context> = subscription.into();
+			teardown.call(context)
 		}
 	}
 }

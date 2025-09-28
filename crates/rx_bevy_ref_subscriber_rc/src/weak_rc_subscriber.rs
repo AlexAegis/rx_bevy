@@ -3,7 +3,7 @@ use rx_bevy_core::{
 	SubscriptionLike, Teardown, Tick,
 };
 
-use crate::RcDestination;
+use crate::InnerRcSubscriber;
 
 /// Acquired by calling `downgrade` on `RcSubscriber`
 pub struct WeakRcSubscriber<Destination>
@@ -11,7 +11,7 @@ where
 	Destination: Subscriber,
 {
 	// TODO: Since in bevy this won't be a pointer just an Entity, maybe we'd need a enum or trait here
-	pub(crate) destination: ArcSubscriber<RcDestination<Destination>>,
+	pub(crate) destination: ArcSubscriber<InnerRcSubscriber<Destination>>,
 	pub(crate) closed: bool,
 }
 
@@ -22,7 +22,7 @@ where
 	/// Let's you check the shared observer for the duration of the callback
 	pub fn read<F>(&mut self, reader: F)
 	where
-		F: Fn(&RcDestination<Destination>),
+		F: Fn(&InnerRcSubscriber<Destination>),
 	{
 		self.destination.read(reader);
 	}
@@ -30,7 +30,7 @@ where
 	/// Let's you check the shared observer for the duration of the callback
 	pub fn write<F>(&mut self, writer: F)
 	where
-		F: FnMut(&mut RcDestination<Destination>),
+		F: FnMut(&mut InnerRcSubscriber<Destination>),
 	{
 		self.destination.write(writer);
 	}

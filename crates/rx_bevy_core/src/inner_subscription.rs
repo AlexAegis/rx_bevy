@@ -1,4 +1,7 @@
+use short_type_name::short_type_name;
+
 use crate::{DropContext, SignalContext, SubscriptionCollection, SubscriptionLike, Teardown};
+use std::fmt::Debug;
 
 pub struct InnerSubscription<Context>
 where
@@ -6,6 +9,20 @@ where
 {
 	is_closed: bool,
 	finalizers: Vec<Box<dyn FnOnce(&mut Context)>>,
+}
+
+impl<Context> Debug for InnerSubscription<Context>
+where
+	Context: DropContext,
+{
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.write_fmt(format_args!(
+			"{} {{ is_closed: {}, finalizers: {} }}",
+			short_type_name::<Self>(),
+			self.is_closed,
+			self.finalizers.len()
+		))
+	}
 }
 
 impl<Context> InnerSubscription<Context>
@@ -101,10 +118,8 @@ where
 		if self.is_closed() {
 			// If this subscription is already closed, the added one is unsubscribed immediately
 			teardown.call(context);
-		} else {
-			if let Some(teardown_fn) = teardown.take() {
-				self.finalizers.push(teardown_fn);
-			}
+		} else if let Some(teardown_fn) = teardown.take() {
+			self.finalizers.push(teardown_fn);
 		}
 	}
 }

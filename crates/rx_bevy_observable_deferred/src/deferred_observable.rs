@@ -57,9 +57,8 @@ where
 			>
 			+ SubscriptionCollection,
 	{
-		let subscriber = destination.into();
 		let mut source = (self.observable_creator)();
-		source.subscribe::<Destination>(subscriber, context)
+		source.subscribe::<Destination>(destination, context)
 	}
 }
 

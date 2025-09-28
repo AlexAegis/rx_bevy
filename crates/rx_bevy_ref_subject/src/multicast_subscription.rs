@@ -3,6 +3,9 @@ use rx_bevy_core::{
 	SubscriptionLike, Teardown,
 };
 
+/// This Subscription extends a shared subscriber into a clone-able subscription
+/// To be a proper subscription it must also implement [Default] in order to be
+/// used in contexts (combinator observables like [ZipObservable] and [CombineLatestObservable]) where multiple subscriptions has to be wrapped in one
 pub struct MulticastSubscription<In, InError, Context>
 where
 	In: 'static + Clone,
@@ -10,7 +13,7 @@ where
 	Context: DropContext,
 {
 	subscriber: Option<ErasedArcSubscriber<In, InError, Context>>,
-	inner: InnerSubscription<Context>,
+	teardown: InnerSubscription<Context>,
 }
 
 impl<In, InError, Context> MulticastSubscription<In, InError, Context>
@@ -22,7 +25,7 @@ where
 	pub fn new(shared_subscriber: ErasedArcSubscriber<In, InError, Context>) -> Self {
 		Self {
 			subscriber: Some(shared_subscriber),
-			inner: InnerSubscription::default(),
+			teardown: InnerSubscription::default(),
 		}
 	}
 }
@@ -36,7 +39,21 @@ where
 	fn default() -> Self {
 		Self {
 			subscriber: None,
-			inner: InnerSubscription::default(),
+			teardown: InnerSubscription::default(),
+		}
+	}
+}
+
+impl<In, InError, Context> Clone for MulticastSubscription<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: DropContext,
+{
+	fn clone(&self) -> Self {
+		Self {
+			subscriber: self.subscriber.clone(),
+			teardown: InnerSubscription::default(),
 		}
 	}
 }
@@ -68,7 +85,7 @@ where
 			if let Some(mut subscriber) = self.subscriber.take() {
 				subscriber.unsubscribe(context);
 			}
-			self.inner.unsubscribe(context);
+			self.teardown.unsubscribe(context);
 		}
 	}
 
@@ -88,7 +105,12 @@ where
 		S: SubscriptionLike<Context = Self::Context>,
 		T: Into<Teardown<S, S::Context>>,
 	{
-		self.inner.add::<S, T>(subscription, context);
+		if let Some(subscriber) = &mut self.subscriber {
+			subscriber.add(subscription, context);
+		} else {
+			let teardown: Teardown<S, S::Context> = subscription.into();
+			teardown.call(context);
+		}
 	}
 }
 
@@ -99,6 +121,11 @@ where
 	Context: DropContext,
 {
 	fn drop(&mut self) {
-		// Does not unsubscribe on drop as it is shared.
+		if !self.teardown.is_closed() {
+			let mut context = self.teardown.get_unsubscribe_context();
+			self.teardown.unsubscribe(&mut context);
+		}
+		// Does not unsubscribe the subscriber on drop as it is shared.
+		// Only the teardown is unsubscribed which is local to the reference instance
 	}
 }

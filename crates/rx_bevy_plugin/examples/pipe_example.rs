@@ -6,10 +6,8 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
 use rx_bevy_ecs_observable_interval::{IntervalObservableComponent, IntervalObservableOptions};
 
-use rx_bevy::prelude::*;
 use rx_bevy_plugin::{
-	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, PipeComponent, RelativeEntity,
-	RxNext, RxPlugin,
+	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxNext, RxPlugin,
 };
 
 /// This test showcases in what order observables execute their observers
@@ -101,12 +99,12 @@ fn setup(
 		Transform::from_xyz(-2.0, 0.0, 0.0),
 		Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 		MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-		PipeComponent::new(
-			RelativeEntity::Other(interval_observable_entity),
-			IdentityOperator::<i32, ()>::default()
-				.pipe(map(|i| i * 2))
-				.pipe(map(|i| format!("mapped! {i}"))),
-		),
+		//PipeComponent::new(
+		//	RelativeEntity::Other(interval_observable_entity),
+		//	IdentityOperator::<i32, ()>::default()
+		//		.pipe(map(|i| i * 2))
+		//		.pipe(map(|i| format!("mapped! {i}"))),
+		//),
 	));
 
 	// TODO: Implement "piped subscriptions", where operators are added between the observable and the subscription, like only subscribing for 4 events using skip(4). Add a pipe extension to both commands and entitycommands, and have them return a struct that holds that operator, and also a method to further pipe it or create the subscription

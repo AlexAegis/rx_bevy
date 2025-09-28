@@ -1,90 +1,142 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
+use rx_bevy_core::{
+	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionCollection,
+	SubscriptionLike, Teardown, Tick,
+};
 
 /// An [FnObserver] requires you to define a callback for all three notifications
-pub struct FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
-where
-	OnPush: FnMut(In),
-	OnError: FnMut(InError),
-	OnComplete: FnMut(),
-{
-	on_next: OnPush,
-	on_error: OnError,
-	on_complete: OnComplete,
-	closed: bool,
-	_phantom_data: PhantomData<(In, InError, Context)>,
-}
-
-impl<In, InError, OnPush, OnError, OnComplete, Context> ObserverInput
-	for FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
+pub struct FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: 'static,
 	InError: 'static,
-	OnPush: FnMut(In),
-	OnError: FnMut(InError),
-	OnComplete: FnMut(),
+	OnNext: FnMut(In, &mut Context),
+	OnError: FnMut(InError, &mut Context),
+	OnComplete: FnMut(&mut Context),
+	OnTick: FnMut(Tick, &mut Context),
+	Context: DropContext,
+{
+	on_next: OnNext,
+	on_error: OnError,
+	on_complete: OnComplete,
+	on_tick: OnTick,
+	teardown: InnerSubscription<Context>,
+	_phantom_data: PhantomData<*mut (In, InError)>,
+}
+
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
+	FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
+where
+	In: 'static,
+	InError: 'static,
+	OnNext: FnMut(In, &mut Context),
+	OnError: FnMut(InError, &mut Context),
+	OnComplete: FnMut(&mut Context),
+	OnTick: FnMut(Tick, &mut Context),
+	Context: DropContext,
+{
+	pub fn new(
+		on_next: OnNext,
+		on_error: OnError,
+		on_complete: OnComplete,
+		on_tick: OnTick,
+	) -> Self {
+		Self {
+			on_next,
+			on_error,
+			on_complete,
+			on_tick,
+			teardown: InnerSubscription::default(),
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> ObserverInput
+	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
+where
+	In: 'static,
+	InError: 'static,
+	OnNext: FnMut(In, &mut Context),
+	OnError: FnMut(InError, &mut Context),
+	OnComplete: FnMut(&mut Context),
+	OnTick: FnMut(Tick, &mut Context),
+	Context: DropContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, OnPush, OnError, OnComplete, Context> SignalContext
-	for FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> SignalContext
+	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: 'static,
 	InError: 'static,
-	OnPush: FnMut(In),
-	OnError: FnMut(InError),
-	OnComplete: FnMut(),
+	OnNext: FnMut(In, &mut Context),
+	OnError: FnMut(InError, &mut Context),
+	OnComplete: FnMut(&mut Context),
+	OnTick: FnMut(Tick, &mut Context),
 	Context: DropContext,
 {
 	type Context = Context;
 }
 
-impl<In, InError, OnPush, OnError, OnComplete, Context> Observer
-	for FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Observer
+	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: 'static,
 	InError: 'static,
-	OnPush: FnMut(In),
-	OnError: FnMut(InError),
-	OnComplete: FnMut(),
+	OnNext: FnMut(In, &mut Context),
+	OnError: FnMut(InError, &mut Context),
+	OnComplete: FnMut(&mut Context),
+	OnTick: FnMut(Tick, &mut Context),
 	Context: DropContext,
 {
-	fn next(&mut self, next: In, _context: &mut Self::Context) {
-		(self.on_next)(next);
+	fn next(&mut self, next: In, context: &mut Self::Context) {
+		if !self.is_closed() {
+			(self.on_next)(next, context);
+		}
 	}
 
-	fn error(&mut self, error: InError, _context: &mut Self::Context) {
-		(self.on_error)(error);
+	fn error(&mut self, error: InError, context: &mut Self::Context) {
+		if !self.is_closed() {
+			(self.on_error)(error, context);
+		}
 	}
 
-	fn complete(&mut self, _context: &mut Self::Context) {
-		(self.on_complete)();
+	fn complete(&mut self, context: &mut Self::Context) {
+		if !self.is_closed() {
+			(self.on_complete)(context);
+			self.unsubscribe(context);
+		}
 	}
 
-	fn tick(&mut self, _tick: Tick, _context: &mut Self::Context) {}
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		if !self.is_closed() {
+			(self.on_tick)(tick, context);
+		}
+	}
 }
 
-impl<In, InError, OnPush, OnError, OnComplete, Context> SubscriptionLike
-	for FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> SubscriptionLike
+	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: 'static,
 	InError: 'static,
-	OnPush: FnMut(In),
-	OnError: FnMut(InError),
-	OnComplete: FnMut(),
+	OnNext: FnMut(In, &mut Context),
+	OnError: FnMut(InError, &mut Context),
+	OnComplete: FnMut(&mut Context),
+	OnTick: FnMut(Tick, &mut Context),
 	Context: DropContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed
+		self.teardown.is_closed()
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, _context: &mut Self::Context) {
-		self.closed = true;
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.teardown.unsubscribe(context);
 	}
 
 	#[inline]
@@ -93,20 +145,23 @@ where
 	}
 }
 
-impl<In, InError, OnPush, OnError, OnComplete, Context>
-	FnObserver<In, InError, OnPush, OnError, OnComplete, Context>
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> SubscriptionCollection
+	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	OnPush: Fn(In),
-	OnError: Fn(InError),
-	OnComplete: Fn(),
+	In: 'static,
+	InError: 'static,
+	OnNext: FnMut(In, &mut Context),
+	OnError: FnMut(InError, &mut Context),
+	OnComplete: FnMut(&mut Context),
+	OnTick: FnMut(Tick, &mut Context),
+	Context: DropContext,
 {
-	pub fn new(next: OnPush, error: OnError, complete: OnComplete) -> Self {
-		Self {
-			on_next: next,
-			on_error: error,
-			on_complete: complete,
-			closed: false,
-			_phantom_data: PhantomData,
-		}
+	#[inline]
+	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	where
+		S: SubscriptionLike<Context = Self::Context>,
+		T: Into<Teardown<S, S::Context>>,
+	{
+		self.teardown.add(subscription, context);
 	}
 }

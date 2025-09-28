@@ -85,12 +85,11 @@ mod tests {
 	fn should_emit_single_value() {
 		let error = "error";
 		let mut observable = ThrowObservable::new(error);
-		let mut mock_observer = MockObserver::new_shared();
+		let mock_observer = MockObserver::default();
+		let mut mock_context = MockContext::default();
 
-		let _s = observable.subscribe(mock_observer.clone(), ());
+		let _s = observable.subscribe(mock_observer, &mut mock_context);
 
-		mock_observer.read(|d| {
-			assert_eq!(d.destination.errors, vec![error]);
-		});
+		assert_eq!(mock_context.errors, vec![error]);
 	}
 }

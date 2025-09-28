@@ -8,14 +8,56 @@ pub struct DynFnObserver<In, Error, Context>
 where
 	Context: DropContext,
 {
-	on_next: Option<Box<dyn FnMut(In)>>,
-	on_error: Option<Box<dyn FnMut(Error)>>,
-	on_complete: Option<Box<dyn FnOnce()>>,
-	on_tick: Option<Box<dyn FnMut(Tick)>>,
+	on_next: Option<Box<dyn FnMut(In, &mut Context)>>,
+	on_error: Option<Box<dyn FnMut(Error, &mut Context)>>,
+	on_complete: Option<Box<dyn FnOnce(&mut Context)>>,
+	on_tick: Option<Box<dyn FnMut(Tick, &mut Context)>>,
+	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context)>>,
+	teardown: InnerSubscription<Context>,
+}
 
-	on_unsubscribe: Option<Box<dyn FnOnce()>>,
+impl<In, InError, Context> DynFnObserver<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context)>(mut self, on_next: OnNext) -> Self {
+		self.on_next.replace(Box::new(on_next));
+		self
+	}
 
-	inner_subscription: InnerSubscription<Context>,
+	pub fn with_error<OnError: 'static + FnMut(InError, &mut Context)>(
+		mut self,
+		on_error: OnError,
+	) -> Self {
+		self.on_error.replace(Box::new(on_error));
+		self
+	}
+
+	pub fn with_complete<OnComplete: 'static + FnOnce(&mut Context)>(
+		mut self,
+		on_complete: OnComplete,
+	) -> Self {
+		self.on_complete.replace(Box::new(on_complete));
+		self
+	}
+
+	/// The difference between this and the regular `add` method that the
+	/// teardown passed into `add` is always guaranteed to be executed, when
+	/// call `add` on an already closed [Subscription], the teardown is
+	/// immediately executed to ensure this.
+	/// This method however does not need to guarantee that, as it's meant to be
+	/// used during the creation of the observer, which enables us to have
+	/// a nicer signature by leaving the context argument off from the method,
+	/// and making it chainable.
+	pub fn with_unsubscribe<OnUnsubscribe: 'static + FnOnce(&mut Context)>(
+		mut self,
+		on_unsubscribe: OnUnsubscribe,
+	) -> Self {
+		self.on_unsubscribe.replace(Box::new(on_unsubscribe));
+		self
+	}
 }
 
 impl<In, InError, Context> ObserverInput for DynFnObserver<In, InError, Context>
@@ -43,18 +85,18 @@ where
 	InError: 'static,
 	Context: DropContext,
 {
-	fn next(&mut self, next: In, _context: &mut Self::Context) {
+	fn next(&mut self, next: In, context: &mut Self::Context) {
 		if !self.is_closed()
 			&& let Some(on_next) = &mut self.on_next
 		{
-			(on_next)(next);
+			(on_next)(next, context);
 		}
 	}
 
 	fn error(&mut self, error: InError, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Some(on_error) = &mut self.on_error {
-				(on_error)(error);
+				(on_error)(error, context);
 			} else {
 				panic!("DynFnObserver without an error observer encountered an error!");
 			}
@@ -66,18 +108,18 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Some(on_complete) = self.on_complete.take() {
-				(on_complete)();
+				(on_complete)(context);
 			}
 
 			self.unsubscribe(context);
 		}
 	}
 
-	fn tick(&mut self, tick: rx_bevy_core::Tick, _context: &mut Self::Context) {
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
 		if !self.is_closed()
 			&& let Some(on_tick) = &mut self.on_tick
 		{
-			(on_tick)(tick);
+			(on_tick)(tick, context);
 		}
 	}
 }
@@ -89,14 +131,14 @@ where
 	Context: DropContext,
 {
 	fn is_closed(&self) -> bool {
-		self.inner_subscription.is_closed()
+		self.teardown.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut Context) {
 		if let Some(on_unsubscribe) = self.on_unsubscribe.take() {
-			(on_unsubscribe)();
+			(on_unsubscribe)(context);
 		}
-		self.inner_subscription.unsubscribe(context);
+		self.teardown.unsubscribe(context);
 	}
 
 	#[inline]
@@ -117,7 +159,7 @@ where
 		S: SubscriptionLike<Context = Self::Context>,
 		T: Into<Teardown<S, S::Context>>,
 	{
-		self.inner_subscription.add(subscription, context);
+		self.teardown.add(subscription, context);
 	}
 }
 
@@ -134,43 +176,7 @@ where
 			on_complete: None,
 			on_tick: None,
 			on_unsubscribe: None,
-			inner_subscription: InnerSubscription::default(),
-		}
-	}
-}
-
-impl<In, InError, Context> DynFnObserver<In, InError, Context>
-where
-	Context: DropContext,
-{
-	pub fn with_next<OnPush: 'static + FnMut(In)>(self, next: OnPush) -> Self {
-		Self {
-			on_next: Some(Box::new(next)),
-			..self
-		}
-	}
-
-	pub fn with_error<OnError: 'static + FnMut(InError)>(self, error: OnError) -> Self {
-		Self {
-			on_error: Some(Box::new(error)),
-			..self
-		}
-	}
-
-	pub fn with_complete<OnComplete: 'static + FnOnce()>(self, complete: OnComplete) -> Self {
-		Self {
-			on_complete: Some(Box::new(complete)),
-			..self
-		}
-	}
-
-	pub fn with_unsubscribe<OnUnsubscribe: 'static + FnOnce()>(
-		self,
-		on_unsubscribe: OnUnsubscribe,
-	) -> Self {
-		Self {
-			on_unsubscribe: Some(Box::new(on_unsubscribe)),
-			..self
+			teardown: InnerSubscription::default(),
 		}
 	}
 }

@@ -16,10 +16,8 @@ use short_type_name::short_type_name;
 
 use crate::{
 	CommandSubscriber, DeferredWorldObservableCallOnInsertExtension,
-	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, RxChannel, RxChannelTick,
-	RxSubscription, RxTick, Subscribe, SubscribeError, SubscribeObserverRef, Subscription,
-	SubscriptionChannelHandlerRef, SubscriptionChannelHandlerRegistrationContext,
-	SubscriptionMarker, SubscriptionOf, Subscriptions,
+	DeferredWorldObservableSpawnObservableSubscribeObserverExtension, RxSubscription, Subscribe,
+	SubscribeError, SubscribeObserverRef, SubscriptionMarker, SubscriptionOf, Subscriptions,
 };
 
 #[cfg(feature = "reflect")]
@@ -118,7 +116,8 @@ where
 {
 	let observable_entity = trigger.target();
 
-	let Ok(mut observable_component) = observable_component_query.get_mut(observable_entity) else {
+	let Ok(mut _observable_component) = observable_component_query.get_mut(observable_entity)
+	else {
 		return Err(
 			SubscribeError::NotAnObservable(short_type_name::<O>(), observable_entity).into(),
 		);
@@ -206,7 +205,7 @@ where
 /// These direct subscriptions will forward the tick to the operator subscribers
 /// to ensure correct event order.
 /// TODO: Extend this so it observes all channels, next,error,complete,unsub,tick
-pub(crate) fn subscription_tick_observer<Sub>(trigger: Trigger<Tick>, mut commands: Commands)
+pub(crate) fn subscription_tick_observer<Sub>(trigger: Trigger<Tick>, mut _commands: Commands)
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound + Clone,
