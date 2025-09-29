@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	DropContext, SignalContext, SubscriptionCollection, SubscriptionLike, Teardown,
-};
+use rx_bevy_core::{DropContext, SignalContext, SubscriptionLike, Teardown};
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
 /// runs any [Teardown] you may add into it.
@@ -24,12 +22,11 @@ impl<Context> InertSubscription<Context>
 where
 	Context: DropContext,
 {
-	pub fn new<S, T>(subscription: T, context: &mut Context) -> Self
+	pub fn new<T>(subscription: T, context: &mut Context) -> Self
 	where
-		S: SubscriptionLike<Context = Context>,
-		T: Into<Teardown<S, S::Context>>,
+		T: Into<Teardown<Context>>,
 	{
-		let teardown: Teardown<S, S::Context> = subscription.into();
+		let teardown: Teardown<Context> = subscription.into();
 		teardown.call(context);
 
 		Self {
@@ -64,23 +61,16 @@ where
 		true
 	}
 
-	fn unsubscribe(&mut self, _context: &mut Self::Context) {}
+	fn unsubscribe(&mut self, _context: &mut Self::Context) {
+		// Does not need to do anything on unsubscribe
+	}
 
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
 	}
-}
 
-impl<Context> SubscriptionCollection for InertSubscription<Context>
-where
-	Context: DropContext,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		let teardown: Teardown<S, S::Context> = subscription.into();
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		// The added teardown is executed immediately as this subscription is always closed.
 		teardown.call(context);
 	}
 }

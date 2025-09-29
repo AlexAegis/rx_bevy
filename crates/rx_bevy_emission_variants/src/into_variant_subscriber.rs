@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -110,29 +110,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<O1, O2, Destination> SubscriptionCollection for IntoVariant1of2Subscriber<O1, O2, Destination>
-where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		> + SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 
@@ -263,29 +247,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<O1, O2, Destination> SubscriptionCollection for IntoVariant2of2Subscriber<O1, O2, Destination>
-where
-	O1: 'static + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		> + SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 

@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	DropContext, DropSafeSignalContext, InnerSubscription, SignalContext, SubscriptionCollection,
-	SubscriptionLike, Teardown,
+	DropContext, DropSafeSignalContext, InnerSubscription, SignalContext, SubscriptionLike,
+	Teardown,
 };
 
 /// A DropSubscription is a type of Subscription Observables may use, it
@@ -20,16 +20,12 @@ impl<Context> DropSubscription<Context>
 where
 	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
-	pub fn new<S, T>(subscription: T, is_closed: bool) -> Self
+	pub fn new<T>(subscription: T) -> Self
 	where
-		S: SubscriptionLike<Context = Context>,
-		T: Into<Teardown<S, S::Context>>,
+		T: Into<Teardown<Context>>,
 	{
 		Self {
-			inner: Arc::new(RwLock::new(InnerDropSubscription::new(
-				subscription,
-				is_closed,
-			))),
+			inner: Arc::new(RwLock::new(InnerDropSubscription::new(subscription))),
 		}
 	}
 
@@ -37,7 +33,7 @@ where
 	where
 		F: 'static + FnOnce(&mut Context),
 	{
-		Self::new(Teardown::<Self, Context>::new(f), false)
+		Self::new(Teardown::<Context>::new(f))
 	}
 }
 
@@ -74,22 +70,13 @@ where
 		}
 	}
 
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		let mut lock = self.inner.write().expect("to not be locked");
+		lock.add_teardown(teardown, context);
+	}
+
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
-	}
-}
-
-impl<Context> SubscriptionCollection for DropSubscription<Context>
-where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		let mut lock = self.inner.write().expect("to not be locked");
-		lock.add(subscription, context);
 	}
 }
 
@@ -101,19 +88,18 @@ impl<Context> InnerDropSubscription<Context>
 where
 	Context: DropContext<DropSafety = DropSafeSignalContext>,
 {
-	pub fn new<S, T>(subscription: T, is_closed: bool) -> Self
+	pub fn new<T>(subscription: T) -> Self
 	where
-		S: SubscriptionLike<Context = Context>,
-		T: Into<Teardown<S, S::Context>>,
+		T: Into<Teardown<Context>>,
 	{
-		Self(InnerSubscription::new(subscription, is_closed))
+		Self(InnerSubscription::new(subscription))
 	}
 
 	pub fn new_fn<F>(f: F) -> Self
 	where
 		F: 'static + FnOnce(&mut Context),
 	{
-		Self::new(Teardown::<Self, Context>::new(f), false)
+		Self::new(Teardown::<Context>::new(f))
 	}
 }
 
@@ -148,21 +134,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.0.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.0.get_unsubscribe_context()
-	}
-}
-
-impl<Context> SubscriptionCollection for InnerDropSubscription<Context>
-where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.0.add(subscription, context);
 	}
 }
 

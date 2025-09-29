@@ -1,6 +1,5 @@
 use rx_bevy_core::{
-	DropContext, ErasedArcSubscriber, InnerSubscription, SignalContext, SubscriptionCollection,
-	SubscriptionLike, Teardown,
+	DropContext, ErasedArcSubscriber, InnerSubscription, SignalContext, SubscriptionLike, Teardown,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -89,28 +88,16 @@ where
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
-	}
-}
-
-impl<In, InError, Context> SubscriptionCollection for MulticastSubscription<In, InError, Context>
-where
-	In: 'static + Clone,
-	InError: 'static + Clone,
-	Context: DropContext,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
 		if let Some(subscriber) = &mut self.subscriber {
-			subscriber.add(subscription, context);
+			subscriber.add_teardown(teardown, context);
 		} else {
-			let teardown: Teardown<S, S::Context> = subscription.into();
 			teardown.call(context);
 		}
+	}
+
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		Context::get_context_for_drop()
 	}
 }
 

@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike,
+	Teardown, Tick,
 };
 
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
@@ -119,30 +119,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> SubscriptionCollection
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-	Destination: SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 

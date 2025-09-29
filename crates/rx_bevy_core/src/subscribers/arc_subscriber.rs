@@ -143,6 +143,16 @@ where
 		}
 	}
 
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.write() {
+				lock.add_teardown(teardown, context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			}
+		}
+	}
+
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		if let Ok(mut lock) = self.destination.write() {
 			lock.get_unsubscribe_context()
@@ -173,26 +183,6 @@ where
 			+ SubscriptionCollection,
 	{
 		ArcSubscriber::new(destination)
-	}
-}
-
-impl<Destination> SubscriptionCollection for ArcSubscriber<Destination>
-where
-	Destination: Subscriber,
-	Destination: SubscriptionCollection,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		if !self.is_closed() {
-			if let Ok(mut lock) = self.destination.write() {
-				lock.add(subscription, context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
-		}
 	}
 }
 

@@ -1,7 +1,4 @@
-use crate::{
-	DropContext, DropSafeSignalContext, SignalContext, SubscriptionCollection, SubscriptionLike,
-	Teardown,
-};
+use crate::{DropContext, DropSafeSignalContext, SignalContext, SubscriptionLike, Teardown};
 
 impl DropContext for () {
 	type DropSafety = DropSafeSignalContext;
@@ -24,19 +21,12 @@ impl SubscriptionLike for () {
 	fn unsubscribe(&mut self, _context: &mut Self::Context) {}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		teardown.call(context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Self::get_context_for_drop()
-	}
-}
-
-impl SubscriptionCollection for () {
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		let teardown: Teardown<S, S::Context> = subscription.into();
-		teardown.call(context);
 	}
 }

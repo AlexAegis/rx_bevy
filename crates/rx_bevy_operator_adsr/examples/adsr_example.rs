@@ -1,21 +1,15 @@
-use std::time::Duration;
-
 use bevy::{
-	input::{ButtonState, common_conditions::input_just_pressed, keyboard::KeyboardInput},
+	input::{common_conditions::input_just_pressed, keyboard::KeyboardInput},
 	prelude::*,
 };
 use bevy_egui::EguiPlugin;
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
-use rx_bevy::MapOperator;
 use rx_bevy_ecs_observable_keyboard::{KeyboardObservableComponent, KeyboardObservableOptions};
 
-use rx_bevy_operator_adsr::{AdsrEnvelope, AdsrOperator, AdsrOperatorOptions, AdsrSignal};
-use rx_bevy_plugin::{
-	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, PipeComponent, RelativeEntity,
-	RxNext, RxPlugin,
-};
+use rx_bevy_operator_adsr::AdsrSignal;
+use rx_bevy_plugin::{EntityCommandSubscribeExtension, RelativeEntity, RxNext, RxPlugin};
 
 fn main() -> AppExit {
 	App::new()
@@ -77,7 +71,7 @@ fn next_adsr_observer(
 	);
 }
 
-fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
+fn unsubscribe(mut _commands: Commands, _example_entities: Res<ExampleEntities>) {
 	println!("Unsubscribe subscription!");
 	//	commands.unsubscribe(example_entities.subscription);
 }
@@ -100,31 +94,31 @@ fn setup(
 	let mut keyboard_observable_entity_commands = commands.spawn((
 		Name::new("KeyboardObservable"),
 		KeyboardObservableComponent::new(KeyboardObservableOptions {}),
-		PipeComponent::new(
-			RelativeEntity::This,
-			MapOperator::<KeyboardInput, (), _, bool>::new(|input: KeyboardInput| {
-				if input.key_code == KeyCode::Space {
-					input.state == ButtonState::Pressed
-				} else {
-					false
-				}
-			}),
-		),
-		PipeComponent::new(
-			RelativeEntity::This,
-			AdsrOperator::<()>::new(AdsrOperatorOptions {
-				emit_none_more_than_once: false,
-				envelope: AdsrEnvelope {
-					attack_time: Duration::from_millis(400),
-					attack_easing: Some(EaseFunction::CubicOut),
-					decay_time: Duration::from_millis(200),
-					decay_easing: Some(EaseFunction::BackInOut),
-					release_time: Duration::from_millis(800),
-					release_easing: Some(EaseFunction::Linear),
-					sustain_volume: 0.6,
-				},
-			}),
-		),
+		// PipeComponent::new(
+		// 	RelativeEntity::This,
+		// 	MapOperator::<KeyboardInput, (), _, bool>::new(|input: KeyboardInput| {
+		// 		if input.key_code == KeyCode::Space {
+		// 			input.state == ButtonState::Pressed
+		// 		} else {
+		// 			false
+		// 		}
+		// 	}),
+		// ),
+		// PipeComponent::new(
+		// 	RelativeEntity::This,
+		// 	AdsrOperator::<()>::new(AdsrOperatorOptions {
+		// 		emit_none_more_than_once: false,
+		// 		envelope: AdsrEnvelope {
+		// 			attack_time: Duration::from_millis(400),
+		// 			attack_easing: Some(EaseFunction::CubicOut),
+		// 			decay_time: Duration::from_millis(200),
+		// 			decay_easing: Some(EaseFunction::BackInOut),
+		// 			release_time: Duration::from_millis(800),
+		// 			release_easing: Some(EaseFunction::Linear),
+		// 			sustain_volume: 0.6,
+		// 		},
+		// 	}),
+		// ),
 	));
 
 	keyboard_observable_entity_commands.observe(next_keyboard_input_observer);

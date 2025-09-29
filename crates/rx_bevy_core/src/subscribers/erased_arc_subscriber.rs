@@ -10,6 +10,7 @@ use crate::{
 	Subscriber, SubscriptionCollection, SubscriptionLike,
 };
 
+// todo check if its even needed where it is currently, not having add is pretty bad, OR MAYBE put add on another trait and add a simpler fn on subscriber
 pub struct ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
@@ -29,7 +30,9 @@ where
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
-		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>,
+		Destination: 'static
+			+ Subscriber<In = In, InError = InError, Context = Context>
+			+ SubscriptionCollection,
 	{
 		Self {
 			destination: Arc::new(RwLock::new(destination)),
@@ -73,22 +76,6 @@ where
 			teardown: InnerSubscription::default(), // New instance, new teardowns
 			_ph: PhantomData,
 		}
-	}
-}
-
-impl<In, InError, Context> SubscriptionCollection for ErasedArcSubscriber<In, InError, Context>
-where
-	In: 'static,
-	InError: 'static,
-	Context: DropContext,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<crate::Teardown<S, S::Context>>,
-	{
-		self.teardown.add(subscription, context);
 	}
 }
 
@@ -150,6 +137,8 @@ where
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
 		}
+		// Must always run
+		self.teardown.unsubscribe(context);
 	}
 
 	#[inline]
@@ -183,6 +172,22 @@ where
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			}
+		}
+		// Must always run
+		self.teardown.unsubscribe(context);
+	}
+
+	fn add_teardown(
+		&mut self,
+		teardown: crate::Teardown<Self::Context>,
+		context: &mut Self::Context,
+	) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.destination.write() {
+				lock.add_teardown(teardown, context);
 			} else {
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}

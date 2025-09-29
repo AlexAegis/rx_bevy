@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext,
-	SignalContextDropSafety, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	SignalContextDropSafety, SubscriptionLike, Teardown, Tick,
 };
 use short_type_name::short_type_name;
 
@@ -215,12 +215,20 @@ where
 		} else {
 			context.unsubscribes_after_closed += 1;
 		}
-		println!(
-			"mock context unsub {} {}",
-			context.unsubscribes, context.unsubscribes_after_closed
-		);
 	}
 
+	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		if !self.is_closed() {
+			context.adds += 1;
+			self.teardown.add_teardown(teardown, context);
+		} else {
+			context.adds_after_closed += 1;
+			teardown.call(context)
+		}
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		MockContext::default()
 	}
@@ -237,28 +245,6 @@ where
 			closed: false,
 			teardown: InnerSubscription::default(),
 			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<In, InError, DropSafety> SubscriptionCollection for MockObserver<In, InError, DropSafety>
-where
-	In: 'static,
-	InError: 'static,
-	DropSafety: SignalContextDropSafety,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		if !self.is_closed() {
-			context.adds += 1;
-			self.teardown.add(subscription, context);
-		} else {
-			context.adds_after_closed += 1;
-			let teardown: Teardown<S, S::Context> = subscription.into();
-			teardown.call(context)
 		}
 	}
 }

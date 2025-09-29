@@ -144,24 +144,12 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.subject.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Self::Context::get_context_for_drop()
-	}
-}
-
-impl<const CAPACITY: usize, In, InError, Context> SubscriptionCollection
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: 'static + Clone,
-	InError: 'static + Clone,
-	Context: DropContext,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.subject.add(subscription, context);
 	}
 }

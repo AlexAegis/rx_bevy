@@ -2,13 +2,14 @@ use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_bevy_context_command::ContextWithCommands;
-use rx_bevy_core::{SignalContext, SubscriptionLike};
+use rx_bevy_core::{InnerSubscription, SignalContext, SubscriptionLike, Teardown};
 
 pub struct EntityTeardown<Context>
 where
 	Context: for<'c> ContextWithCommands<'c>,
 {
 	entity: Option<Entity>,
+	teardown: InnerSubscription<Context>,
 	_phantom_data: PhantomData<Context>,
 }
 
@@ -32,11 +33,17 @@ where
 		if let Some(entity) = self.entity.take() {
 			context.commands().entity(entity).despawn();
 		}
+		self.teardown.unsubscribe(context);
+	}
+
+	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.teardown.add_teardown(teardown, context);
 	}
 
 	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		// Will panic!
+		// Will panic! But don't worry about it ;)
 		Context::get_context_for_drop()
 	}
 }

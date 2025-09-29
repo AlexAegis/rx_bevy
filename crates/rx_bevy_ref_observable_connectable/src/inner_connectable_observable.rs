@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalContext, SubjectLike, Subscriber, SubscriptionCollection,
-	SubscriptionLike,
+	SubscriptionLike, Teardown,
 };
 
 use crate::{Connectable, ConnectableOptions};
@@ -179,33 +179,18 @@ where
 		}
 	}
 
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		if let Some(connector) = &mut self.connector {
+			connector.add_teardown(teardown, context);
+		}
+	}
+
 	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		if let Some(connector) = &mut self.connector {
 			connector.get_unsubscribe_context()
 		} else {
 			self.get_connector().get_unsubscribe_context()
-		}
-	}
-}
-
-impl<Source, ConnectorCreator, Connector> SubscriptionCollection
-	for InnerConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Observable,
-	ConnectorCreator: Fn() -> Connector,
-	Connector: 'static + SubjectLike<In = Source::Out, InError = Source::OutError>,
-	Source::Subscription: Clone,
-	Connector: SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<rx_bevy_core::Teardown<S, S::Context>>,
-	{
-		if let Some(connector) = &mut self.connector {
-			connector.add(subscription, context);
 		}
 	}
 }

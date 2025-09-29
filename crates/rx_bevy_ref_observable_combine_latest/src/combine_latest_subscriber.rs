@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Tick,
+	Observable, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
+	Tick,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -108,36 +108,24 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.destination.is_closed()
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<Destination, O1, O2> SubscriptionCollection for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-	Destination: SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<rx_bevy_core::Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 
@@ -154,7 +142,7 @@ where
 		// subscription through the [RcSubscriber], this subscriber does not
 		// need to ensure unsubscription, as they do.
 		// TODO: This is actually true for all subscribers, only subscriptions
-		// need to unsub on drop, the rest is contained in the subscription so
+		// need to unsubscribe on drop, the rest is contained in the subscription so
 		// they either wont drop earlier, or if they do they do because of internal logic in which case it will ensure unsub
 	}
 }

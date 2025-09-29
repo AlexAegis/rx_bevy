@@ -162,6 +162,14 @@ where
 		}
 	}
 
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		if !self.is_closed()
+			&& let Ok(mut multicast) = self.multicast.write()
+		{
+			multicast.add_teardown(teardown, context);
+		}
+	}
+
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Self::Context::get_context_for_drop()
 	}
@@ -175,24 +183,5 @@ where
 {
 	fn drop(&mut self) {
 		// Must not unsubscribe on drop, it's the shared destination that should do that
-	}
-}
-
-impl<In, InError, Context> SubscriptionCollection for Subject<In, InError, Context>
-where
-	In: 'static + Clone,
-	InError: 'static + Clone,
-	Context: DropContext,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		if !self.is_closed()
-			&& let Ok(mut multicast) = self.multicast.write()
-		{
-			multicast.add(subscription, context);
-		}
 	}
 }

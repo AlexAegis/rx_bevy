@@ -152,27 +152,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<Destination, Sharer> SubscriptionCollection for SharedSubscriber<Destination, Sharer>
-where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 

@@ -1,6 +1,6 @@
 use short_type_name::short_type_name;
 
-use crate::{DropContext, SignalContext, SubscriptionCollection, SubscriptionLike, Teardown};
+use crate::{DropContext, SignalContext, SubscriptionLike, Teardown};
 use std::fmt::Debug;
 
 pub struct InnerSubscription<Context>
@@ -29,21 +29,17 @@ impl<Context> InnerSubscription<Context>
 where
 	Context: DropContext,
 {
-	pub fn new<S, T>(subscription: T, closed: bool) -> Self
-	where
-		S: SubscriptionLike<Context = Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		let teardown: Teardown<S, S::Context> = subscription.into();
+	pub fn new(subscription: impl Into<Teardown<Context>>) -> Self {
+		let teardown: Teardown<Context> = subscription.into();
 
 		if let Some(teardown_fn) = teardown.take() {
 			Self {
-				is_closed: closed,
+				is_closed: false,
 				finalizers: vec![teardown_fn],
 			}
 		} else {
 			Self {
-				is_closed: closed,
+				is_closed: false,
 				finalizers: Vec::default(),
 			}
 		}
@@ -53,7 +49,7 @@ where
 	where
 		F: 'static + FnOnce(&mut Context),
 	{
-		Self::new(Teardown::<Self, Context>::new(f), false)
+		Self::new(Teardown::<Context>::new(f))
 	}
 }
 
@@ -95,6 +91,15 @@ where
 		}
 	}
 
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		if self.is_closed() {
+			// If this subscription is already closed, the added one is unsubscribed immediately
+			teardown.call(context);
+		} else if let Some(teardown_fn) = teardown.take() {
+			self.finalizers.push(teardown_fn);
+		}
+	}
+
 	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		// May or may not panic, depending on the context used.
@@ -102,24 +107,5 @@ where
 		// If you do need to use DropUnsafe contexts, make sure you unsubscribe
 		// it before letting it go out of scope and drop!
 		Context::get_context_for_drop()
-	}
-}
-
-impl<Context> SubscriptionCollection for InnerSubscription<Context>
-where
-	Context: DropContext,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		let teardown: Teardown<S, S::Context> = subscription.into();
-		if self.is_closed() {
-			// If this subscription is already closed, the added one is unsubscribed immediately
-			teardown.call(context);
-		} else if let Some(teardown_fn) = teardown.take() {
-			self.finalizers.push(teardown_fn);
-		}
 	}
 }

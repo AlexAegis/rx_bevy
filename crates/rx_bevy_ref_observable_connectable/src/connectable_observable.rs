@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalContext, SubjectLike, Subscriber, SubscriptionCollection,
-	SubscriptionLike,
+	SubscriptionLike, Teardown,
 };
 
 use crate::{
@@ -92,30 +92,6 @@ where
 	type Context = <Source::Subscription as SignalContext>::Context;
 }
 
-impl<Source, ConnectorCreator, Connector> SubscriptionCollection
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Observable,
-	ConnectorCreator: Fn() -> Connector,
-	Connector: 'static
-		+ SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as SignalContext>::Context,
-		>,
-	Source::Subscription: Clone,
-	Connector: SubscriptionCollection,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<rx_bevy_core::Teardown<S, S::Context>>,
-	{
-		let mut connector = self.connector.lock().expect("lockable");
-		connector.add(subscription, context);
-	}
-}
-
 impl<Source, ConnectorCreator, Connector> SubscriptionLike
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
@@ -137,6 +113,12 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		let mut connector = self.connector.lock().expect("lockable");
 		connector.unsubscribe(context);
+	}
+
+	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		let mut connector = self.connector.lock().expect("lockable");
+		connector.add_teardown(teardown, context);
 	}
 
 	#[inline]

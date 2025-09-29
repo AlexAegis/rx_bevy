@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, SignalContext, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tick,
 };
 
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
@@ -94,27 +93,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<In, InError, OnNext, Destination> SubscriptionCollection
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
-	Destination: Observer<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
-	Destination: SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 

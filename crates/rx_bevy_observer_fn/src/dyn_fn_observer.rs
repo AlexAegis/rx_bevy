@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionLike,
+	Teardown, Tick,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -130,6 +130,7 @@ where
 	InError: 'static,
 	Context: DropContext,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.teardown.is_closed()
 	}
@@ -141,25 +142,13 @@ where
 		self.teardown.unsubscribe(context);
 	}
 
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.teardown.add_teardown(teardown, context);
+	}
+
 	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
-	}
-}
-
-impl<In, InError, Context> SubscriptionCollection for DynFnObserver<In, InError, Context>
-where
-	In: 'static,
-	InError: 'static,
-	Context: DropContext,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.teardown.add(subscription, context);
 	}
 }
 

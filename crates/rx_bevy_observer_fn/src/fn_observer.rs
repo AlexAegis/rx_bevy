@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionLike,
+	Teardown, Tick,
 };
 
 /// An [FnObserver] requires you to define a callback for all three notifications
@@ -140,28 +140,12 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.teardown.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
-	}
-}
-
-impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> SubscriptionCollection
-	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
-where
-	In: 'static,
-	InError: 'static,
-	OnNext: FnMut(In, &mut Context),
-	OnError: FnMut(InError, &mut Context),
-	OnComplete: FnMut(&mut Context),
-	OnTick: FnMut(Tick, &mut Context),
-	Context: DropContext,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.teardown.add(subscription, context);
 	}
 }

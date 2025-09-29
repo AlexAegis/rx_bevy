@@ -85,6 +85,7 @@ smallvec = { workspace = true }
 bevy = { workspace = true }
 rx_bevy = { workspace = true, features = ["bevy"] }
 rx_bevy_testing = { workspace = true, features = ["bevy"] }
+rx_bevy_plugin = { workspace = true }
 examples_common = { workspace = true }
 bevy-inspector-egui = { workspace = true }
 bevy_egui = { workspace = true }

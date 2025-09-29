@@ -4,7 +4,9 @@ use bevy_ecs::{entity::Entity, event::Event};
 
 use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_context_command::{CommandContext, ContextWithCommands};
-use rx_bevy_core::{DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike, Tick};
+use rx_bevy_core::{
+	DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tick,
+};
 
 pub struct EntitySubscriber<'c, In, InError>
 where
@@ -124,6 +126,10 @@ where
 			.commands()
 			.entity(self.subscription_entity)
 			.despawn();
+	}
+
+	fn add_teardown(&mut self, _teardown: Teardown<Self::Context>, _context: &mut Self::Context) {
+		// TODO: Extend the Context to have a query (lens?) ref to the subscription component once there is a proper one, and add it there.
 	}
 
 	#[inline]

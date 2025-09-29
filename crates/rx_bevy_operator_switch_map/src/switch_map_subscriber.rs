@@ -182,43 +182,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> SubscriptionCollection
-	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
-where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ ShareableSubscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
-		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
-	Destination: SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 

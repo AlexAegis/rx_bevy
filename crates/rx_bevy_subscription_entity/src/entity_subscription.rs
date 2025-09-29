@@ -3,8 +3,7 @@ use std::marker::PhantomData;
 use bevy_ecs::component::Component;
 
 use rx_bevy_core::{
-	AssertSubscriptionClosedOnDrop, InnerSubscription, SignalContext, SubscriptionCollection,
-	SubscriptionLike, Teardown,
+	AssertSubscriptionClosedOnDrop, InnerSubscription, SignalContext, SubscriptionLike, Teardown,
 };
 
 use rx_bevy_context_command::ContextWithCommands;
@@ -52,21 +51,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.subscription.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
-	}
-}
-
-impl<'c, Context> SubscriptionCollection for EntitySubscription<'c, Context>
-where
-	Context: ContextWithCommands<'c>,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.subscription.add(subscription, context);
 	}
 }
 

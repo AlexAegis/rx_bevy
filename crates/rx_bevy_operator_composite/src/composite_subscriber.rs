@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike,
+	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
 };
 
 #[derive(Debug)]
@@ -77,24 +77,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.subscriber.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.subscriber.get_unsubscribe_context()
-	}
-}
-
-impl<Inner, Destination> SubscriptionCollection for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-	Inner: SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<rx_bevy_core::Teardown<S, S::Context>>,
-	{
-		self.subscriber.add(subscription, context);
 	}
 }
 

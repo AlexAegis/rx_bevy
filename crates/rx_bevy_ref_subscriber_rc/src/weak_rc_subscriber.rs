@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ArcSubscriber, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	ArcSubscriber, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
+	Tick,
 };
 
 use crate::InnerRcSubscriber;
@@ -106,22 +106,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<Destination> SubscriptionCollection for WeakRcSubscriber<Destination>
-where
-	Destination: Subscriber,
-	Destination: SubscriptionCollection,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 

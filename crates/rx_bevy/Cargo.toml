@@ -160,6 +160,15 @@ reflect = [
     "rx_bevy_ref_observable_combine_latest?/reflect",
     "rx_bevy_ref_observable_connectable?/reflect",
 ]
+trace = [
+    "rx_bevy_observable_iterator?/trace",
+    "rx_bevy_operator_switch_map?/trace",
+    "rx_bevy_operator_tap_next?/trace",
+    "rx_bevy_operator_finalize?/trace",
+    "rx_bevy_operator_map?/trace",
+    "rx_bevy_subscription_inert?/trace",
+]
+
 pipe = [
     "dep:rx_bevy_ref_pipe",
     "rx_bevy_operator_composite?/pipe",
@@ -263,6 +272,11 @@ all_subjects = ["ref_subject", "ref_subject_behavior", "ref_subject_replay"]
 ref_subject = ["dep:rx_bevy_ref_subject"]
 ref_subject_behavior = ["dep:rx_bevy_ref_subject_behavior"]
 ref_subject_replay = ["dep:rx_bevy_ref_subject_replay"]
+# Subscriptions
+all_common_subscriptions = ["subscription_drop", "subscription_inert"]
+subscription_drop = ["dep:rx_bevy_subscription_drop"]
+subscription_inert = ["dep:rx_bevy_subscription_inert"]
+subscription_entity = ["dep:rx_bevy_subscription_entity"]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
@@ -306,6 +320,10 @@ rx_bevy_operator_try_capture = { workspace = true, optional = true }
 rx_bevy_ref_subject = { workspace = true, optional = true }
 rx_bevy_ref_subject_behavior = { workspace = true, optional = true }
 rx_bevy_ref_subject_replay = { workspace = true, optional = true }
+# Subscriptions
+rx_bevy_subscription_drop = { workspace = true, optional = true }
+rx_bevy_subscription_inert = { workspace = true, optional = true }
+rx_bevy_subscription_entity = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_bevy_testing = { workspace = true }

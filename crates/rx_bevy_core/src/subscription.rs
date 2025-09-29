@@ -11,20 +11,27 @@ pub trait SubscriptionLike: SignalContext {
 
 	// TODO: Rename, to emphazise it's for dropping only
 	fn get_unsubscribe_context(&mut self) -> Self::Context;
+
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context);
 }
 
 pub trait SubscriptionCollection: SubscriptionLike {
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
+	fn add<T>(&mut self, subscription: T, context: &mut Self::Context)
 	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>;
+		T: Into<Teardown<Self::Context>>,
+	{
+		let teardown: Teardown<Self::Context> = subscription.into();
+		self.add_teardown(teardown, context);
+	}
 
 	fn add_fn<F>(&mut self, f: F, context: &mut Self::Context)
 	where
 		F: 'static + FnOnce(&mut Self::Context),
 		Self: Sized,
 	{
-		let teardown = Teardown::<Self, Self::Context>::new(f);
+		let teardown = Teardown::<Self::Context>::new(f);
 		self.add(teardown, context);
 	}
 }
+
+impl<S> SubscriptionCollection for S where S: SubscriptionLike {}

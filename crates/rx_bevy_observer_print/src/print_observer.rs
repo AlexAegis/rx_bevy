@@ -1,8 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_bevy_core::{
-	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionCollection,
-	SubscriptionLike, Teardown,
+	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionLike,
+	Teardown,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -120,22 +120,12 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.teardown.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
-	}
-}
-
-impl<In, InError, Context> SubscriptionCollection for PrintObserver<In, InError, Context>
-where
-	In: 'static + Debug,
-	InError: 'static + Debug,
-	Context: DropContext,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.teardown.add(subscription, context);
 	}
 }

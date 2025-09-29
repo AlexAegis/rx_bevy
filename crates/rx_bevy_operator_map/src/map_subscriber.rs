@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike,
+	Teardown, Tick,
 };
 
 #[derive_where(Debug)]
@@ -113,30 +113,13 @@ where
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<In, InError, Mapper, Out, Destination> SubscriptionCollection
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: 'static,
-	InError: 'static,
-	Mapper: Fn(In) -> Out,
-	Out: 'static,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		> + SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
 	}
 }
 

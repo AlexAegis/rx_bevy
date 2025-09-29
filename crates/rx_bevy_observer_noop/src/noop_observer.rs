@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, Observer, ObserverInput, SignalContext, SubscriptionCollection, SubscriptionLike,
-	Teardown,
+	DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown,
 };
 
 #[derive(Debug)]
@@ -55,33 +54,24 @@ where
 	InError: 'static,
 	Context: DropContext,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
 
+	#[inline]
 	fn unsubscribe(&mut self, _context: &mut Self::Context) {
 		self.closed = true;
 	}
 
 	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		teardown.call(context);
+	}
+
+	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		Context::get_context_for_drop()
-	}
-}
-
-impl<In, InError, Context> SubscriptionCollection for NoopObserver<In, InError, Context>
-where
-	In: 'static,
-	InError: 'static,
-	Context: DropContext,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		let teardown: Teardown<S, S::Context> = subscription.into();
-		teardown.call(context);
 	}
 }
 

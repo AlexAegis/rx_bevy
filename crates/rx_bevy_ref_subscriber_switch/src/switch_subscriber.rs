@@ -1,11 +1,11 @@
-use std::{marker::PhantomData, task::Context};
+use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, ShareableSubscriber, SharedSubscriber, SignalContext,
-	Subscriber, SubscriptionCollection, SubscriptionLike, Tick,
+	Observable, Observer, ObserverInput, ShareableSubscriber, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 
-use rx_bevy_subscriber_detached::DetachedSubscriber;
+use crate::SwitchSubscriberState;
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
 pub struct SwitchSubscriber<InnerObservable, Destination, Sharer>
@@ -29,11 +29,7 @@ where
 	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
-	destination: SharedSubscriber<Destination, Sharer>,
-	inner_subscription: Option<<InnerObservable as Observable>::Subscription>,
-	closed: bool,
-	is_complete: bool,
-	_phantom_data: PhantomData<InnerObservable>,
+	state: Rc<RefCell<SwitchSubscriberState<InnerObservable, Destination, Sharer>>>,
 }
 
 impl<InnerObservable, Destination, Sharer> SwitchSubscriber<InnerObservable, Destination, Sharer>
@@ -59,24 +55,11 @@ where
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
-			destination: SharedSubscriber::new(destination),
-			inner_subscription: None,
-			closed: false,
-			is_complete: false,
-			_phantom_data: PhantomData,
-		}
-	}
-
-	fn complete_if_can(
-		&mut self,
-		context: &mut <InnerObservable::Subscription as SignalContext>::Context,
-	) {
-		if self.is_complete && self.inner_subscription.is_none() {
-			self.destination.complete(context);
-			self.unsubscribe(context);
+			state: Rc::new(RefCell::new(SwitchSubscriberState::new(destination))),
 		}
 	}
 }
+
 impl<InnerObservable, Destination, Sharer> ObserverInput
 	for SwitchSubscriber<InnerObservable, Destination, Sharer>
 where
@@ -150,39 +133,29 @@ where
 	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
-	fn next(&mut self, mut next: Self::In, context: &mut Self::Context) {
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
-			if let Some(mut inner_subscription) = self.inner_subscription.take() {
-				inner_subscription.unsubscribe(context);
-			}
-
-			let mut subscription =
-				next.subscribe(DetachedSubscriber::new(self.destination.clone()), context);
-			// Whenever the inner subscription completes, the switch subscriber should also check if it can  forward this completion to the destination
-			subscription.add_fn(
-				|c| {
-					self.complete_if_can(c);
-				},
-				context,
-			);
-			self.inner_subscription = Some(subscription);
+			let mut state = self.state.borrow_mut();
+			state.unsubscribe_inner_subscription(context);
+			state.create_next_subscription(next, self.state.clone(), context);
 		}
 	}
 
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed() {
-			self.destination.error(error, context);
-			self.unsubscribe(context);
+			self.state.borrow_mut().error(error, context);
 		}
 	}
 
 	fn complete(&mut self, context: &mut Self::Context) {
-		self.complete_if_can(context);
+		if !self.is_closed() {
+			self.state.borrow_mut().complete_if_can(context);
+		}
 	}
 
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if !self.is_closed() {
-			self.destination.tick(tick, context);
+			self.state.borrow_mut().tick(tick, context);
 		}
 	}
 }
@@ -211,52 +184,29 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed
+		self.state.borrow().closed
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		self.closed = true;
-		if let Some(mut inner_subscription) = self.inner_subscription.take() {
-			inner_subscription.unsubscribe(context);
+		// Pre-checked to avoid runtime borrow conflicts
+		if !self.is_closed() {
+			self.state.borrow_mut().unsubscribe(context);
 		}
-		self.destination.unsubscribe(context);
+	}
+
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.state
+			.borrow_mut()
+			.destination
+			.add_teardown(teardown, context);
 	}
 
 	#[inline]
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
-	}
-}
-
-impl<InnerObservable, Destination, Sharer> SubscriptionCollection
-	for SwitchSubscriber<InnerObservable, Destination, Sharer>
-where
-	InnerObservable: 'static + Observable,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ ShareableSubscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
-		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
-	Destination: SubscriptionCollection,
-{
-	#[inline]
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<rx_bevy_core::Teardown<S, S::Context>>,
-	{
-		self.destination.add(subscription, context);
+		self.state
+			.borrow_mut()
+			.destination
+			.get_unsubscribe_context()
 	}
 }
 
@@ -284,9 +234,6 @@ where
 {
 	#[inline]
 	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = self.destination.get_unsubscribe_context();
-			self.unsubscribe(&mut context);
-		}
+		// Should not do anything on drop
 	}
 }

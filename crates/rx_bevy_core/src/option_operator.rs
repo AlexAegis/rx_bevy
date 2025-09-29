@@ -172,6 +172,17 @@ where
 		}
 	}
 
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		match self {
+			OptionOperatorSubscriber::Some(internal_subscriber) => {
+				internal_subscriber.add_teardown(teardown, context);
+			}
+			OptionOperatorSubscriber::None(fallback_subscriber) => {
+				fallback_subscriber.add_teardown(teardown, context);
+			}
+		}
+	}
+
 	fn get_unsubscribe_context(&mut self) -> Self::Context {
 		match self {
 			OptionOperatorSubscriber::Some(internal_subscriber) => {
@@ -179,29 +190,6 @@ where
 			}
 			OptionOperatorSubscriber::None(fallback_subscriber) => {
 				fallback_subscriber.get_unsubscribe_context()
-			}
-		}
-	}
-}
-
-impl<Sub, Destination> SubscriptionCollection for OptionOperatorSubscriber<Sub, Destination>
-where
-	Sub: Subscriber + SubscriptionCollection,
-	Destination: Subscriber<In = Sub::In, InError = Sub::InError>
-		+ SignalContext<Context = <Sub as SignalContext>::Context>
-		+ SubscriptionCollection,
-{
-	fn add<S, T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
-		S: SubscriptionLike<Context = Self::Context>,
-		T: Into<Teardown<S, S::Context>>,
-	{
-		match self {
-			OptionOperatorSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.add(subscription, context);
-			}
-			OptionOperatorSubscriber::None(fallback_subscriber) => {
-				fallback_subscriber.add(subscription, context);
 			}
 		}
 	}

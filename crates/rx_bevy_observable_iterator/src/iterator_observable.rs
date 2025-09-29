@@ -64,6 +64,7 @@ where
 			}
 			destination.next(item, context);
 		}
+
 		destination.complete(context);
 		InertSubscription::new(destination, context)
 	}

@@ -1,4 +1,6 @@
-use crate::{DropContext, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike};
+use crate::{
+	DropContext, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
+};
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
 pub type DynSubscriber<In, InError, Context> =
@@ -85,6 +87,11 @@ where
 	#[inline]
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.destination.unsubscribe(context);
+	}
+
+	#[inline]
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.destination.add_teardown(teardown, context);
 	}
 
 	#[inline]

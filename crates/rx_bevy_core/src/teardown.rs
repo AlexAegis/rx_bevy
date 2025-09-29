@@ -1,20 +1,22 @@
-use std::marker::PhantomData;
-
 use crate::SubscriptionLike;
 
-pub struct Teardown<S, Context> {
+pub struct Teardown<Context> {
 	teardown_fn: Option<Box<dyn FnOnce(&mut Context)>>,
-	_phantom_data: PhantomData<S>,
 }
 
-impl<S, Context> Teardown<S, Context> {
+impl<Context> Teardown<Context> {
 	pub fn new<F>(f: F) -> Self
 	where
 		F: 'static + FnOnce(&mut Context),
 	{
 		Self {
 			teardown_fn: Some(Box::new(f)),
-			_phantom_data: PhantomData,
+		}
+	}
+
+	pub fn new_from_box(f: Box<dyn FnOnce(&mut Context)>) -> Self {
+		Self {
+			teardown_fn: Some(f),
 		}
 	}
 
@@ -22,8 +24,11 @@ impl<S, Context> Teardown<S, Context> {
 	/// function if it wasn't already closed.
 	/// Used when the stored function is moved to somewhere else, like into a
 	/// subscription.
+	///
+	/// It's private to ensure that it's not taken without either executing it
+	/// or placing it somewhere else where execution is also guaranteed.
 	#[inline]
-	pub fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context)>> {
+	pub(crate) fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context)>> {
 		self.teardown_fn.take()
 	}
 
@@ -42,19 +47,16 @@ impl<S, Context> Teardown<S, Context> {
 	}
 }
 
-impl<S, Context> Default for Teardown<S, Context> {
+impl<Context> Default for Teardown<Context> {
 	fn default() -> Self {
-		Self {
-			teardown_fn: None,
-			_phantom_data: PhantomData,
-		}
+		Self { teardown_fn: None }
 	}
 }
 
 /// Exposes and respects the original subscriptions closed-ness by storing it
 /// in an option.
 /// TODO: Make sure that dropping the value here when it's closed isn't a problem
-impl<S> From<S> for Teardown<S, S::Context>
+impl<S> From<S> for Teardown<S::Context>
 where
 	S: 'static + SubscriptionLike,
 {
@@ -65,7 +67,6 @@ where
 			} else {
 				Some(Box::new(move |context| value.unsubscribe(context)))
 			},
-			_phantom_data: PhantomData,
 		}
 	}
 }
