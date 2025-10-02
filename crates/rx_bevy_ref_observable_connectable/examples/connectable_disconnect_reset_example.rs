@@ -8,7 +8,7 @@ fn main() {
 
 	let mut connectable = ConnectableObservable::new(
 		src,
-		ConnectableOptions::new(|| {
+		ConnectableOptions::new(|_| {
 			println!("create connector");
 			Subject::default()
 		})
@@ -27,6 +27,7 @@ fn main() {
 
 	source.next(2, &mut ());
 
+	println!("disconnect..");
 	connection.unsubscribe(&mut ());
 
 	let _subscription_2 = connectable

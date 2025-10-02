@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, ObserverInput, Operator, ShareableSubscriber, SignalContext,
-	Subscriber, SubscriptionCollection,
+	Observable, ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber,
+	SubscriptionCollection,
 };
 
 use crate::SwitchMapSubscriber;
@@ -12,8 +12,8 @@ where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
-	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Sharer:
+		'static + SharedDestination<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 {
 	pub switcher: Switcher,
@@ -26,8 +26,8 @@ where
 	In: 'static,
 	InError: 'static + Into<InnerObservable::OutError>,
 	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
-	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+	Sharer:
+		'static + SharedDestination<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 {
 	pub fn new(switcher: Switcher) -> Self {
@@ -48,7 +48,7 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<
+		+ SharedDestination<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = <InnerObservable::Subscription as SignalContext>::Context,

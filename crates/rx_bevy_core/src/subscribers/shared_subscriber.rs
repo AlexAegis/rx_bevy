@@ -1,28 +1,24 @@
 use crate::{
-	Observer, ObserverInput, ShareableSubscriber, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	Observer, ObserverInput, SharedDestination, SignalContext, Subscriber, SubscriptionLike,
+	Teardown, Tick,
 };
 
+/// A SharedSubscriber is a subscriber that guarantees that if you clone it,
+/// the signals sent to the clone will reach the same recipient as the original
+/// subscriber did.
+// TODO: Maybe this and RcSubscriber should be joined together
 pub struct SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Sharer: SharedDestination<Access = Destination>,
 {
-	destination: Sharer::Shared<Destination>,
+	destination: Sharer,
 }
 
-impl<Destination, Sharer> From<Destination> for SharedSubscriber<Destination, Sharer>
+impl<Destination, Share> From<Destination> for SharedSubscriber<Destination, Share>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Share: SharedDestination<Access = Destination>,
 {
 	fn from(destination: Destination) -> Self {
 		Self::new(destination)
@@ -31,12 +27,8 @@ where
 
 impl<Destination, Sharer> SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Sharer: SharedDestination<Access = Destination>,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -44,31 +36,25 @@ where
 		}
 	}
 
-	/// Let's you check the shared observer for the duration of the callback
-	pub fn read<F>(&mut self, reader: F)
+	fn access<F>(&mut self, accessor: F, context: &mut Destination::Context)
 	where
-		F: Fn(&Sharer::Shared<Destination>),
+		F: Fn(&Sharer::Access, &mut Destination::Context),
 	{
-		reader(&self.destination)
+		self.destination.access(accessor, context);
 	}
 
-	/// Let's you check the shared observer for the duration of the callback
-	pub fn read_mut<F>(&mut self, mut reader: F)
+	fn access_mut<F>(&mut self, accessor: F, context: &mut Destination::Context)
 	where
-		F: FnMut(&mut Sharer::Shared<Destination>),
+		F: FnMut(&mut Sharer::Access, &mut Destination::Context),
 	{
-		reader(&mut self.destination)
+		self.destination.access_mut(accessor, context);
 	}
 }
 
 impl<Destination, Sharer> Clone for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Sharer: SharedDestination<Access = Destination>,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -79,12 +65,8 @@ where
 
 impl<Destination, Sharer> ObserverInput for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Sharer: SharedDestination<Access = Destination>,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -92,24 +74,16 @@ where
 
 impl<Destination, Sharer> SignalContext for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Sharer: SharedDestination<Access = Destination>,
 {
 	type Context = Destination::Context;
 }
 
 impl<Destination, Sharer> Observer for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Sharer: SharedDestination<Access = Destination>,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -134,12 +108,8 @@ where
 
 impl<Destination, Sharer> SubscriptionLike for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Sharer: SharedDestination<Access = Destination>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -164,12 +134,8 @@ where
 
 impl<Destination, Sharer> Drop for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber + SubscriptionCollection,
-	Sharer: ShareableSubscriber<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		> + SubscriptionCollection,
+	Destination: 'static + Subscriber,
+	Sharer: SharedDestination<Access = Destination>,
 {
 	fn drop(&mut self) {
 		// Should not unsubscribe on drop as it's shared!

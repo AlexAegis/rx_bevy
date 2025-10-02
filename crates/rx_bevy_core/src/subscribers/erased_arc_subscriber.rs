@@ -1,12 +1,12 @@
 use std::{
 	marker::PhantomData,
-	sync::{Arc, RwLock, RwLockReadGuard},
+	sync::{Arc, RwLock},
 };
 
 use short_type_name::short_type_name;
 
 use crate::{
-	DropContext, InnerSubscription, Observer, ObserverInput, ShareableSubscriber, SignalContext,
+	DropContext, InnerSubscription, Observer, ObserverInput, SharedDestination, SignalContext,
 	Subscriber, SubscriptionCollection, SubscriptionLike,
 };
 
@@ -22,6 +22,43 @@ where
 	_ph: PhantomData<*mut Context>,
 }
 
+impl<In, InError, Context> SharedDestination for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+{
+	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
+
+	fn share<D>(destination: D) -> Self
+	where
+		Self::Access: Sized,
+		D: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Into<Self::Access>,
+	{
+		ErasedArcSubscriber::new(destination)
+	}
+
+	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: Fn(&Self::Access, &mut Self::Context),
+	{
+		if let Ok(destination) = self.destination.read() {
+			accessor(&*destination, context)
+		}
+	}
+
+	fn access_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
+	where
+		F: FnMut(&mut Self::Access, &mut Self::Context),
+	{
+		if let Ok(mut destination) = self.destination.write() {
+			accessor(&mut *destination, context)
+		}
+	}
+}
+
 impl<In, InError, Context> ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
@@ -30,9 +67,7 @@ where
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
-		Destination: 'static
-			+ Subscriber<In = In, InError = InError, Context = Context>
-			+ SubscriptionCollection,
+		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>,
 	{
 		Self {
 			destination: Arc::new(RwLock::new(destination)),
@@ -204,45 +239,4 @@ where
 			)
 		}
 	}
-}
-
-impl<In, InError, Context> ShareableSubscriber for ErasedArcSubscriber<In, InError, Context>
-where
-	In: 'static,
-	InError: 'static,
-	Context: DropContext,
-{
-	type Shared<Destination>
-		= ErasedArcSubscriber<In, InError, Context>
-	where
-		Destination: 'static
-			+ Subscriber<In = In, InError = InError, Context = Context>
-			+ SubscriptionCollection;
-
-	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
-	where
-		Destination: 'static
-			+ Subscriber<In = In, InError = InError, Context = Context>
-			+ SubscriptionCollection,
-	{
-		ErasedArcSubscriber::new(destination)
-	}
-}
-
-impl<In, InError, Context> SignalContext
-	for RwLockReadGuard<'_, dyn Subscriber<Context = Context, In = In, InError = InError>>
-where
-	Context: DropContext,
-{
-	type Context = Context;
-}
-
-impl<'d, In, InError, Context> ObserverInput
-	for RwLockReadGuard<'d, dyn Subscriber<Context = Context, In = In, InError = InError>>
-where
-	In: 'static + Clone,
-	InError: 'static + Clone,
-{
-	type In = In;
-	type InError = InError;
 }

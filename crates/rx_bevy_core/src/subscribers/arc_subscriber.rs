@@ -3,8 +3,8 @@ use std::sync::{Arc, RwLock};
 use short_type_name::short_type_name;
 
 use crate::{
-	Observer, ObserverInput, ShareableSubscriber, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown,
+	Observer, ObserverInput, SharedDestination, SignalContext, Subscriber, SubscriptionLike,
+	Teardown,
 };
 
 pub struct ArcSubscriber<Destination>
@@ -12,6 +12,40 @@ where
 	Destination: Subscriber,
 {
 	destination: Arc<RwLock<Destination>>,
+}
+
+impl<T> SharedDestination for ArcSubscriber<T>
+where
+	T: Subscriber,
+{
+	type Access = T;
+
+	fn share<D>(destination: D) -> Self
+	where
+		D: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Into<Self::Access>,
+	{
+		ArcSubscriber::new(destination.into())
+	}
+
+	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: Fn(&Self::Access, &mut Self::Context),
+	{
+		if let Ok(destination) = self.destination.read() {
+			accessor(&destination, context)
+		}
+	}
+
+	fn access_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
+	where
+		F: FnMut(&mut Self::Access, &mut Self::Context),
+	{
+		if let Ok(mut destination) = self.destination.write() {
+			accessor(&mut destination, context)
+		}
+	}
 }
 
 impl<Destination> ArcSubscriber<Destination>
@@ -162,27 +196,6 @@ where
 				short_type_name::<Self>()
 			)
 		}
-	}
-}
-
-impl<D> ShareableSubscriber for ArcSubscriber<D>
-where
-	D: 'static + Subscriber,
-{
-	type Shared<Destination>
-		= ArcSubscriber<Destination>
-	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ SubscriptionCollection;
-
-	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
-	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ SubscriptionCollection,
-	{
-		ArcSubscriber::new(destination)
 	}
 }
 

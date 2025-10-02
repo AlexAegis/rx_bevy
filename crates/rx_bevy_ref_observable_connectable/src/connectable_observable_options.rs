@@ -1,24 +1,28 @@
-use rx_bevy_core::SubjectLike;
+use std::marker::PhantomData;
+
+use rx_bevy_core::{FromContext, SubjectLike};
 
 #[derive(Clone)]
 pub struct ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator: Fn() -> Connector,
+	ConnectorCreator: Fn(&mut Connector::Context) -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub(crate) connector_creator: ConnectorCreator,
 	pub(crate) unsubscribe_connector_on_disconnect: bool,
+	_phantom_data: PhantomData<*mut Connector>,
 }
 
 impl<ConnectorCreator, Connector> ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator: Fn() -> Connector,
+	ConnectorCreator: Fn(&mut Connector::Context) -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub fn new(connector_creator: ConnectorCreator) -> Self {
 		Self {
 			connector_creator,
 			unsubscribe_connector_on_disconnect: true,
+			_phantom_data: PhantomData,
 		}
 	}
 
@@ -35,15 +39,15 @@ where
 	}
 }
 
-// TODO: Check if its usable
-impl<Connector> Default for ConnectableOptions<fn() -> Connector, Connector>
+impl<Connector> Default for ConnectableOptions<fn(&mut Connector::Context) -> Connector, Connector>
 where
-	Connector: 'static + Default + SubjectLike,
+	Connector: 'static + FromContext + SubjectLike,
 {
 	fn default() -> Self {
 		Self {
-			connector_creator: || Connector::default(),
+			connector_creator: |context| Connector::from_context(context),
 			unsubscribe_connector_on_disconnect: true,
+			_phantom_data: PhantomData,
 		}
 	}
 }

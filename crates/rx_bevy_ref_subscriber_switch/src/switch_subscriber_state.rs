@@ -1,7 +1,7 @@
 use std::{cell::RefCell, marker::PhantomData, rc::Rc};
 
 use rx_bevy_core::{
-	Observable, Observer, ShareableSubscriber, SharedSubscriber, SignalContext, Subscriber,
+	Observable, Observer, SharedDestination, SharedSubscriber, SignalContext, Subscriber,
 	SubscriptionCollection, SubscriptionLike, Tick,
 };
 
@@ -12,20 +12,14 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ ShareableSubscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>,
+	Sharer: 'static + SharedDestination<Access = Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		>,
 	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	pub(crate) destination: SharedSubscriber<Destination, Sharer>,
@@ -41,20 +35,14 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ ShareableSubscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>,
+	Sharer: 'static + SharedDestination<Access = Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		>,
 	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	pub fn new(destination: Destination) -> Self {
@@ -146,20 +134,14 @@ where
 	InnerObservable: 'static + Observable,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ ShareableSubscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
-		>,
+	Sharer: 'static + SharedDestination<Access = Destination>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
 		>,
 	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	#[inline]

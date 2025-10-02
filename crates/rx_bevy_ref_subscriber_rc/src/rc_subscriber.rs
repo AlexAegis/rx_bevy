@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ArcSubscriber, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
-	Tick,
+	ArcSubscriber, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
+	SubscriptionLike, Teardown, Tick,
 };
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
