@@ -12,7 +12,7 @@ where
 	Destination: 'static + Subscriber,
 	Sharer: SharedDestination<Access = Destination>,
 {
-	destination: Sharer,
+	destination: Sharer::Shared<Destination>,
 }
 
 impl<Destination, Share> From<Destination> for SharedSubscriber<Destination, Share>
@@ -36,16 +36,28 @@ where
 		}
 	}
 
-	fn access<F>(&mut self, accessor: F, context: &mut Destination::Context)
-	where
-		F: Fn(&Sharer::Access, &mut Destination::Context),
+	fn access<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context,
+	) where
+		F: Fn(
+			&<<Sharer as SharedDestination>::Shared<Destination> as SharedDestination>::Access,
+			&mut <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context,
+		),
 	{
 		self.destination.access(accessor, context);
 	}
 
-	fn access_mut<F>(&mut self, accessor: F, context: &mut Destination::Context)
-	where
-		F: FnMut(&mut Sharer::Access, &mut Destination::Context),
+	fn access_mut<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context,
+	) where
+		F: FnMut(
+			&mut <<Sharer as SharedDestination>::Shared<Destination> as SharedDestination>::Access,
+			&mut <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context,
+		),
 	{
 		self.destination.access_mut(accessor, context);
 	}
@@ -68,8 +80,12 @@ where
 	Destination: 'static + Subscriber,
 	Sharer: SharedDestination<Access = Destination>,
 {
-	type In = Destination::In;
-	type InError = Destination::InError;
+	type In = <<
+		<Sharer as SharedDestination>::Shared<Destination> as SharedDestination
+	>::Access as ObserverInput>::In;
+	type InError = <<
+		<Sharer as SharedDestination>::Shared<Destination> as SharedDestination
+	>::Access as ObserverInput>::InError;
 }
 
 impl<Destination, Sharer> SignalContext for SharedSubscriber<Destination, Sharer>
@@ -77,7 +93,7 @@ where
 	Destination: 'static + Subscriber,
 	Sharer: SharedDestination<Access = Destination>,
 {
-	type Context = Destination::Context;
+	type Context = <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context;
 }
 
 impl<Destination, Sharer> Observer for SharedSubscriber<Destination, Sharer>
@@ -102,7 +118,10 @@ where
 
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		self.destination.tick(tick, context);
+		self.access_mut(
+			move |destination, inner_context| destination.tick(tick.clone(), inner_context),
+			context,
+		);
 	}
 }
 

@@ -35,7 +35,6 @@ pub mod prelude {
 	pub use super::observable::*;
 	pub use super::observer::*;
 	pub use super::option_operator::*;
-	pub use super::subscribers::prelude::*;
 	pub use super::subscription::*;
 	pub use super::tick::*;
 }

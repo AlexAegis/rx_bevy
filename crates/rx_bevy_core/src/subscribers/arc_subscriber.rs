@@ -20,13 +20,21 @@ where
 {
 	type Access = T;
 
-	fn share<D>(destination: D) -> Self
+	type Shared<D>
+		= ArcSubscriber<D>
 	where
 		D: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Into<Self::Access>,
+			+ Subscriber<
+				In = <Self::Access as ObserverInput>::In,
+				InError = <Self::Access as ObserverInput>::InError,
+				Context = <Self::Access as SignalContext>::Context,
+			>;
+
+	fn share<D>(destination: D) -> Self::Shared<D>
+	where
+		D: 'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
 	{
-		ArcSubscriber::new(destination.into())
+		ArcSubscriber::new(destination)
 	}
 
 	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
@@ -57,7 +65,6 @@ where
 			destination: Arc::new(RwLock::new(destination)),
 		}
 	}
-
 	pub fn read<F>(&mut self, reader: F)
 	where
 		F: Fn(&Destination),

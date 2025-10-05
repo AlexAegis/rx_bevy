@@ -9,12 +9,23 @@ pub trait SharedDestination:
 {
 	type Access: ?Sized + Subscriber;
 
-	fn share<D>(destination: D) -> Self
+	type Shared<D>: SharedDestination
 	where
-		Self::Access: Sized,
 		D: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Into<Self::Access>;
+			+ Subscriber<
+				In = <Self::Access as ObserverInput>::In,
+				InError = <Self::Access as ObserverInput>::InError,
+				Context = <Self::Access as SignalContext>::Context,
+			>;
+
+	fn share<D>(destination: D) -> Self::Shared<D>
+	where
+		D: 'static
+			+ Subscriber<
+				In = <Self::Access as ObserverInput>::In,
+				InError = <Self::Access as ObserverInput>::InError,
+				Context = <Self::Access as SignalContext>::Context,
+			>;
 
 	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where

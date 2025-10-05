@@ -7,7 +7,7 @@ use short_type_name::short_type_name;
 
 use crate::{
 	DropContext, InnerSubscription, Observer, ObserverInput, SharedDestination, SignalContext,
-	Subscriber, SubscriptionCollection, SubscriptionLike,
+	Subscriber, SubscriptionLike,
 };
 
 // todo check if its even needed where it is currently, not having add is pretty bad, OR MAYBE put add on another trait and add a simpler fn on subscriber
@@ -29,13 +29,24 @@ where
 	Context: DropContext,
 {
 	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
-
-	fn share<D>(destination: D) -> Self
+	type Shared<D>
+		= ErasedArcSubscriber<In, InError, Context>
 	where
-		Self::Access: Sized,
 		D: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Into<Self::Access>,
+			+ Subscriber<
+				In = <Self::Access as ObserverInput>::In,
+				InError = <Self::Access as ObserverInput>::InError,
+				Context = <Self::Access as SignalContext>::Context,
+			>;
+
+	fn share<D>(destination: D) -> Self::Shared<D>
+	where
+		D: 'static
+			+ Subscriber<
+				In = <Self::Access as ObserverInput>::In,
+				InError = <Self::Access as ObserverInput>::InError,
+				Context = <Self::Access as SignalContext>::Context,
+			>,
 	{
 		ErasedArcSubscriber::new(destination)
 	}
