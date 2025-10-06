@@ -1,6 +1,8 @@
+mod arc_rw_lock_subscriber;
 mod arc_subscriber;
 mod erased_arc_subscriber;
 mod erased_subscriber;
+mod rc_refcell_subscriber;
 mod rw_lock_guard;
 mod shared_subscriber;
 

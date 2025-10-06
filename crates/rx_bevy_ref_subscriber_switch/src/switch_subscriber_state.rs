@@ -1,11 +1,9 @@
 use std::{cell::RefCell, marker::PhantomData, rc::Rc};
 
 use rx_bevy_core::{
-	DestinationSharer, Observable, Observer, SharedSubscriber, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Tick,
+	DestinationSharer, InnerSubscription, Observable, Observer, ObserverInput, SharedSubscriber,
+	SignalContext, Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
-
-use rx_bevy_subscriber_detached::DetachedSubscriber;
 
 pub struct SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
@@ -28,6 +26,7 @@ where
 {
 	pub(crate) destination: SharedSubscriber<Destination, Sharer>,
 	pub(crate) inner_subscription: Option<<InnerObservable as Observable>::Subscription>,
+	teardown: InnerSubscription<Destination::Context>,
 	pub(crate) closed: bool,
 	pub(crate) is_complete: bool,
 	_phantom_data: PhantomData<InnerObservable>,
@@ -57,6 +56,7 @@ where
 		Self {
 			destination: SharedSubscriber::new(destination),
 			inner_subscription: None,
+			teardown: InnerSubscription::default(),
 			closed: false,
 			is_complete: false,
 			_phantom_data: PhantomData,
@@ -67,34 +67,44 @@ where
 		&mut self,
 		context: &mut <InnerObservable::Subscription as SignalContext>::Context,
 	) {
+		self.clear_inner_state(context);
+	}
+
+	fn clear_inner_state(
+		&mut self,
+		context: &mut <InnerObservable::Subscription as SignalContext>::Context,
+	) {
 		if let Some(mut inner_subscription) = self.inner_subscription.take() {
 			inner_subscription.unsubscribe(context);
 		}
+		self.teardown.unsubscribe(context);
+		self.teardown = InnerSubscription::default();
+	}
+
+	pub(crate) fn unsubscribe_outer(
+		&mut self,
+		context: &mut <InnerObservable::Subscription as SignalContext>::Context,
+	) {
+		if self.closed {
+			return;
+		}
+		self.closed = true;
+		self.clear_inner_state(context);
+		self.destination.unsubscribe(context);
 	}
 
 	pub(crate) fn create_next_subscription(
-		&mut self,
-		mut next: InnerObservable,
 		state_ref: Rc<RefCell<Self>>,
+		mut next: InnerObservable,
 		context: &mut <InnerObservable::Subscription as SignalContext>::Context,
 	) {
-		let mut subscription =
-			next.subscribe(DetachedSubscriber::new(self.destination.clone()), context);
-
+		let subscription = next.subscribe(state_ref.clone(), context);
+		let mut state = state_ref.borrow_mut();
 		if subscription.is_closed() {
-			self.complete_if_can(context);
+			state.complete_if_can(context);
 		} else {
-			// If it's already closed, this would run immediately panic on the
-			// fact that this function is running with the RefCell already borrowed
-			subscription.add_fn(
-				move |context| {
-					state_ref.borrow_mut().complete_if_can(context);
-				},
-				context,
-			);
+			state.inner_subscription = Some(subscription);
 		}
-
-		self.inner_subscription = Some(subscription);
 	}
 
 	pub(crate) fn complete_if_can(
@@ -103,7 +113,7 @@ where
 	) {
 		if self.is_complete && self.inner_subscription.is_none() {
 			self.destination.complete(context);
-			self.unsubscribe(context);
+			self.unsubscribe_outer(context);
 		}
 	}
 
@@ -113,7 +123,7 @@ where
 		context: &mut <InnerObservable::Subscription as SignalContext>::Context,
 	) {
 		self.destination.error(error, context);
-		self.unsubscribe(context);
+		self.unsubscribe_outer(context);
 	}
 
 	pub(crate) fn tick(
@@ -123,17 +133,132 @@ where
 	) {
 		self.destination.tick(tick, context);
 	}
+}
 
-	pub(crate) fn unsubscribe(
-		&mut self,
-		context: &mut <InnerObservable::Subscription as SignalContext>::Context,
-	) {
-		self.closed = true;
-		if let Some(mut inner_subscription) = self.inner_subscription.take() {
-			inner_subscription.unsubscribe(context);
-		}
-		self.destination.unsubscribe(context);
+impl<InnerObservable, Destination, Sharer> Observer
+	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+where
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: 'static
+		+ DestinationSharer<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
+	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+		self.destination.next(next, context);
 	}
+
+	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+		self.destination.error(error, context);
+	}
+
+	fn complete(&mut self, context: &mut Self::Context) {
+		self.clear_inner_state(context);
+		self.complete_if_can(context);
+	}
+
+	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
+		self.destination.tick(tick, context);
+	}
+}
+
+impl<InnerObservable, Destination, Sharer> SubscriptionLike
+	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+where
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: 'static
+		+ DestinationSharer<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
+	fn is_closed(&self) -> bool {
+		self.closed
+	}
+
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		self.teardown.add_teardown(teardown, context);
+	}
+
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.clear_inner_state(context);
+	}
+
+	fn get_unsubscribe_context(&mut self) -> Self::Context {
+		if let Some(inner_subscription) = &mut self.inner_subscription {
+			inner_subscription.get_unsubscribe_context()
+		} else {
+			self.teardown.get_unsubscribe_context()
+		}
+	}
+}
+
+impl<InnerObservable, Destination, Sharer> ObserverInput
+	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+where
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: 'static
+		+ DestinationSharer<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
+	type In = InnerObservable::Out;
+	type InError = InnerObservable::OutError;
+}
+
+impl<InnerObservable, Destination, Sharer> SignalContext
+	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+where
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: 'static
+		+ DestinationSharer<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
+	type Context = <InnerObservable::Subscription as SignalContext>::Context;
 }
 
 impl<InnerObservable, Destination, Sharer> Drop

@@ -7,7 +7,7 @@ fn main() {
 
 	let mut subscription = (1..=3)
 		.into_observable()
-		//.finalize(|_context| println!("finalize: upstream"))
+		.finalize(|_context| println!("finalize: upstream")) // TODO: This runs too soon, it should emit when the entire observable finishes but it prints it out after the first emission
 		.tap_next(|n, _context| println!("emit (source): {n}"))
 		.switch_map(
 			|next| {
@@ -18,7 +18,7 @@ fn main() {
 			},
 			use_sharer::<ErasedArcSubscriber<_, _, _>>(),
 		)
-		//.finalize(|_context| println!("finalize: downstream"))
+		.finalize(|_context| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("switch_map"), &mut context);
 	subscription.unsubscribe(&mut context);
 }

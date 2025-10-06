@@ -183,6 +183,7 @@ where
 
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		println!("add teardown switch map sub");
 		self.destination.add_teardown(teardown, context);
 	}
 

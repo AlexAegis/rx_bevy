@@ -125,9 +125,12 @@ where
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
-			let mut state = self.state.borrow_mut();
-			state.unsubscribe_inner_subscription(context);
-			state.create_next_subscription(next, self.state.clone(), context);
+			let state_ref = Rc::clone(&self.state);
+			{
+				let mut state = state_ref.borrow_mut();
+				state.unsubscribe_inner_subscription(context);
+			}
+			SwitchSubscriberState::create_next_subscription(state_ref, next, context);
 		}
 	}
 
@@ -139,7 +142,9 @@ where
 
 	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
-			self.state.borrow_mut().complete_if_can(context);
+			let mut state = self.state.borrow_mut();
+			state.is_complete = true;
+			state.complete_if_can(context);
 		}
 	}
 
@@ -178,15 +183,12 @@ where
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		// Pre-checked to avoid runtime borrow conflicts
 		if !self.is_closed() {
-			self.state.borrow_mut().unsubscribe(context);
+			self.state.borrow_mut().unsubscribe_outer(context);
 		}
 	}
 
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
-		self.state
-			.borrow_mut()
-			.destination
-			.add_teardown(teardown, context);
+		self.state.borrow_mut().add_teardown(teardown, context);
 	}
 
 	#[inline]
