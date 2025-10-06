@@ -6,8 +6,8 @@ use std::{
 use short_type_name::short_type_name;
 
 use crate::{
-	DropContext, InnerSubscription, Observer, ObserverInput, SharedDestination, SignalContext,
-	Subscriber, SubscriptionLike,
+	DestinationSharer, DropContext, InnerSubscription, Observer, ObserverInput, SharedDestination,
+	SignalContext, Subscriber, SubscriptionLike,
 };
 
 // todo check if its even needed where it is currently, not having add is pretty bad, OR MAYBE put add on another trait and add a simpler fn on subscriber
@@ -22,34 +22,35 @@ where
 	_ph: PhantomData<*mut Context>,
 }
 
-impl<In, InError, Context> SharedDestination for ErasedArcSubscriber<In, InError, Context>
+impl<In, InError, Context> DestinationSharer for ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
 	Context: DropContext,
 {
-	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
-	type Shared<D>
-		= ErasedArcSubscriber<In, InError, Context>
+	type Shared<Destination>
+		= ErasedArcSubscriber<Destination::In, Destination::InError, Destination::Context>
 	where
-		D: 'static
-			+ Subscriber<
-				In = <Self::Access as ObserverInput>::In,
-				InError = <Self::Access as ObserverInput>::InError,
-				Context = <Self::Access as SignalContext>::Context,
-			>;
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 
-	fn share<D>(destination: D) -> Self::Shared<D>
+	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
 	where
-		D: 'static
-			+ Subscriber<
-				In = <Self::Access as ObserverInput>::In,
-				InError = <Self::Access as ObserverInput>::InError,
-				Context = <Self::Access as SignalContext>::Context,
-			>,
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
 	{
 		ErasedArcSubscriber::new(destination)
 	}
+}
+
+impl<In, InError, Context, D> SharedDestination<D> for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: DropContext,
+	D: 'static + Subscriber<In = In, InError = InError, Context = Context>,
+{
+	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
 
 	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where

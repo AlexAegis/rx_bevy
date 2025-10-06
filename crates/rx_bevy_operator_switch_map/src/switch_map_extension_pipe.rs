@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, ShareableSubscriber, SignalContext, SubscriptionCollection};
+use rx_bevy_core::{DestinationSharer, Observable, SignalContext, SubscriptionCollection};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::SwitchMapOperator;
@@ -12,7 +12,11 @@ where
 	InError: 'static + Into<InnerObservable::OutError>,
 	InnerObservable: 'static + Observable,
 	Sharer: 'static
-		+ ShareableSubscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+		+ DestinationSharer<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = <InnerObservable::Subscription as SignalContext>::Context,
+		>,
 {
 	SwitchMapOperator::new(mapper)
 }
@@ -21,7 +25,7 @@ where
 pub trait ObservableExtensionSwitchMap: Observable + Sized {
 	fn switch_map<
 		Sharer: 'static
-			+ ShareableSubscriber<
+			+ DestinationSharer<
 				In = NextInnerObservable::Out,
 				InError = NextInnerObservable::OutError,
 				Context = <NextInnerObservable::Subscription as SignalContext>::Context,

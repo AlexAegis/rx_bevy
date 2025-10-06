@@ -1,6 +1,8 @@
+use std::marker::PhantomData;
+
 use crate::{
-	Observer, ObserverInput, SharedDestination, SignalContext, Subscriber, SubscriptionLike,
-	Teardown, Tick,
+	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
+	SubscriptionLike, Teardown, Tick,
 };
 
 /// A SharedSubscriber is a subscriber that guarantees that if you clone it,
@@ -10,15 +12,24 @@ use crate::{
 pub struct SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	destination: Sharer::Shared<Destination>,
+	_phantom_data: PhantomData<Destination>,
 }
 
-impl<Destination, Share> From<Destination> for SharedSubscriber<Destination, Share>
+impl<Destination, Sharer> From<Destination> for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Share: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	fn from(destination: Destination) -> Self {
 		Self::new(destination)
@@ -28,35 +39,34 @@ where
 impl<Destination, Sharer> SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
 			destination: Sharer::share(destination),
+			_phantom_data: PhantomData,
 		}
 	}
 
-	fn access<F>(
-		&mut self,
-		accessor: F,
-		context: &mut <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context,
-	) where
+	pub fn access<F>(&mut self, accessor: F, context: &mut Sharer::Context)
+	where
 		F: Fn(
-			&<<Sharer as SharedDestination>::Shared<Destination> as SharedDestination>::Access,
-			&mut <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context,
+			&<Sharer::Shared<Destination> as SharedDestination<Destination>>::Access,
+			&mut Sharer::Context,
 		),
 	{
 		self.destination.access(accessor, context);
 	}
 
-	fn access_mut<F>(
-		&mut self,
-		accessor: F,
-		context: &mut <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context,
-	) where
+	pub fn access_mut<F>(&mut self, accessor: F, context: &mut Sharer::Context)
+	where
 		F: FnMut(
-			&mut <<Sharer as SharedDestination>::Shared<Destination> as SharedDestination>::Access,
-			&mut <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context,
+			&mut <Sharer::Shared<Destination> as SharedDestination<Destination>>::Access,
+			&mut Sharer::Context,
 		),
 	{
 		self.destination.access_mut(accessor, context);
@@ -66,11 +76,16 @@ where
 impl<Destination, Sharer> Clone for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	fn clone(&self) -> Self {
 		Self {
 			destination: self.destination.clone(),
+			_phantom_data: PhantomData,
 		}
 	}
 }
@@ -78,28 +93,36 @@ where
 impl<Destination, Sharer> ObserverInput for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
-	type In = <<
-		<Sharer as SharedDestination>::Shared<Destination> as SharedDestination
-	>::Access as ObserverInput>::In;
-	type InError = <<
-		<Sharer as SharedDestination>::Shared<Destination> as SharedDestination
-	>::Access as ObserverInput>::InError;
+	type In = Sharer::In;
+	type InError = Sharer::InError;
 }
 
 impl<Destination, Sharer> SignalContext for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
-	type Context = <<Sharer as SharedDestination>::Shared<Destination> as SignalContext>::Context;
+	type Context = Sharer::Context;
 }
 
 impl<Destination, Sharer> Observer for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -128,7 +151,11 @@ where
 impl<Destination, Sharer> SubscriptionLike for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -154,7 +181,11 @@ where
 impl<Destination, Sharer> Drop for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
-	Sharer: SharedDestination<Access = Destination>,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
 {
 	fn drop(&mut self) {
 		// Should not unsubscribe on drop as it's shared!

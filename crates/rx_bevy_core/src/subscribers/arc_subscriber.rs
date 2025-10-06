@@ -3,8 +3,8 @@ use std::sync::{Arc, RwLock};
 use short_type_name::short_type_name;
 
 use crate::{
-	Observer, ObserverInput, SharedDestination, SignalContext, Subscriber, SubscriptionLike,
-	Teardown,
+	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
+	SubscriptionLike, Teardown,
 };
 
 pub struct ArcSubscriber<Destination>
@@ -14,35 +14,37 @@ where
 	destination: Arc<RwLock<Destination>>,
 }
 
-impl<T> SharedDestination for ArcSubscriber<T>
+impl<T> DestinationSharer for ArcSubscriber<T>
 where
-	T: Subscriber,
+	T: Subscriber + 'static,
 {
-	type Access = T;
-
-	type Shared<D>
-		= ArcSubscriber<D>
+	type Shared<Destination>
+		= ArcSubscriber<Destination>
 	where
-		D: 'static
-			+ Subscriber<
-				In = <Self::Access as ObserverInput>::In,
-				InError = <Self::Access as ObserverInput>::InError,
-				Context = <Self::Access as SignalContext>::Context,
-			>;
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 
-	fn share<D>(destination: D) -> Self::Shared<D>
+	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
 	where
-		D: 'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
 	{
 		ArcSubscriber::new(destination)
 	}
+}
+
+impl<T> SharedDestination<T> for ArcSubscriber<T>
+where
+	T: Subscriber + 'static,
+{
+	type Access = T;
 
 	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where
 		F: Fn(&Self::Access, &mut Self::Context),
 	{
 		if let Ok(destination) = self.destination.read() {
-			accessor(&destination, context)
+			accessor(&*destination, context)
 		}
 	}
 
@@ -51,7 +53,7 @@ where
 		F: FnMut(&mut Self::Access, &mut Self::Context),
 	{
 		if let Ok(mut destination) = self.destination.write() {
-			accessor(&mut destination, context)
+			accessor(&mut *destination, context)
 		}
 	}
 }
@@ -70,7 +72,7 @@ where
 		F: Fn(&Destination),
 	{
 		if let Ok(lock) = self.destination.read() {
-			reader(&lock);
+			reader(&*lock);
 		} else {
 			println!("Poisoned destination lock: {}", short_type_name::<Self>());
 		}
@@ -81,7 +83,7 @@ where
 		F: FnMut(&mut Destination),
 	{
 		if let Ok(mut lock) = self.destination.write() {
-			writer(&mut lock);
+			writer(&mut *lock);
 		} else {
 			println!("Poisoned destination lock: {}", short_type_name::<Self>());
 		}

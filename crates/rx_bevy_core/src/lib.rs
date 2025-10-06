@@ -32,9 +32,18 @@ pub use teardown::*;
 pub use tick::*;
 
 pub mod prelude {
+	pub use super::from_context::*;
+	pub use super::inner_subscription::*;
 	pub use super::observable::*;
 	pub use super::observer::*;
+	pub use super::operator::*;
 	pub use super::option_operator::*;
+	pub use super::shared_destination::*;
+	pub use super::signal_context::*;
+	pub use super::subject::*;
+	pub use super::subscriber::*;
+	pub use super::subscribers::*;
 	pub use super::subscription::*;
+	pub use super::teardown::*;
 	pub use super::tick::*;
 }

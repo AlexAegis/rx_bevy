@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, ShareableSubscriber, SignalContext,
+	DestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, SignalContext,
 	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
@@ -15,7 +15,7 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<
+		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = <InnerObservable::Subscription as SignalContext>::Context,
@@ -46,7 +46,7 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<
+		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = <InnerObservable::Subscription as SignalContext>::Context,
@@ -80,7 +80,7 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<
+		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = <InnerObservable::Subscription as SignalContext>::Context,
@@ -108,7 +108,7 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<
+		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = <InnerObservable::Subscription as SignalContext>::Context,
@@ -156,7 +156,7 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<
+		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = <InnerObservable::Subscription as SignalContext>::Context,
@@ -202,7 +202,7 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<
+		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = <InnerObservable::Subscription as SignalContext>::Context,
@@ -231,7 +231,7 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
-		+ ShareableSubscriber<
+		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = <InnerObservable::Subscription as SignalContext>::Context,
