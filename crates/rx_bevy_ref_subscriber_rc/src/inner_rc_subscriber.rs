@@ -1,7 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown, Tick,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, WithContext,
 };
 use short_type_name::short_type_name;
 
@@ -37,14 +37,14 @@ where
 		}
 	}
 
-	pub fn unsubscribe_if_can(&mut self, context: &mut <Self as SignalContext>::Context) {
+	pub fn unsubscribe_if_can(&mut self, context: &mut <Self as WithContext>::Context) {
 		if self.unsubscribe_count == self.ref_count && !self.closed {
 			self.closed = true;
 			self.destination.unsubscribe(context);
 		}
 	}
 
-	pub fn complete_if_can(&mut self, context: &mut <Self as SignalContext>::Context) {
+	pub fn complete_if_can(&mut self, context: &mut <Self as WithContext>::Context) {
 		if self.completion_count == self.ref_count && !self.closed {
 			self.destination.complete(context);
 			self.unsubscribe(context);
@@ -80,7 +80,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> SignalContext for InnerRcSubscriber<Destination>
+impl<Destination> WithContext for InnerRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
@@ -140,8 +140,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -152,7 +152,7 @@ where
 	/// This should only happen when all counters reach 0.
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.destination.get_unsubscribe_context();
+			let mut context = self.destination.get_context_to_unsubscribe_on_drop();
 			self.destination.unsubscribe(&mut context);
 		}
 

@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, SignalContext};
+use rx_bevy_core::{Observable, WithContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::LiftOptionOperator;
@@ -17,7 +17,7 @@ where
 		self,
 	) -> Pipe<
 		Self,
-		LiftOptionOperator<T, Self::OutError, <Self::Subscription as SignalContext>::Context>,
+		LiftOptionOperator<T, Self::OutError, <Self::Subscription as WithContext>::Context>,
 	> {
 		Pipe::new(self, LiftOptionOperator::default())
 	}

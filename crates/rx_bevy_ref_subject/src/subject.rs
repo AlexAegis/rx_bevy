@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	DropContext, Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick, WithContext,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -13,7 +13,7 @@ pub struct Subject<In, InError = (), Context = ()>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	pub multicast: Arc<RwLock<Multicast<In, InError, Context>>>,
 }
@@ -22,7 +22,7 @@ impl<In, InError, Context> Clone for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	/// Cloning a subject keeps all existing destinations
 	fn clone(&self) -> Self {
@@ -36,7 +36,7 @@ impl<In, InError, Context> Default for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn default() -> Self {
 		Self {
@@ -49,17 +49,17 @@ impl<In, InError, Context> ObservableOutput for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Out = In;
 	type OutError = InError;
 }
 
-impl<In, InError, Context> SignalContext for Subject<In, InError, Context>
+impl<In, InError, Context> WithContext for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -68,7 +68,7 @@ impl<In, InError, Context> Observable for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
@@ -82,7 +82,7 @@ where
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self::Subscription as WithContext>::Context,
 			>
 			+ SubscriptionCollection,
 	{
@@ -95,7 +95,7 @@ impl<In, InError, Context> ObserverInput for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type In = In;
 	type InError = InError;
@@ -105,7 +105,7 @@ impl<In, InError, Context> Observer for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed()
@@ -144,7 +144,7 @@ impl<In, InError, Context> SubscriptionLike for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(multicast) = self.multicast.read() {
@@ -170,8 +170,8 @@ where
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Self::Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Self::Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -179,7 +179,7 @@ impl<In, InError, Context> Drop for Subject<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn drop(&mut self) {
 		// Must not unsubscribe on drop, it's the shared destination that should do that

@@ -1,12 +1,12 @@
-use rx_bevy::{DropContext, DropUnsafeSignalContext, ErasedArcSubscriber, prelude::*};
+use rx_bevy::{DropUnsafeSignalContext, ErasedArcSubscriber, SignalContext, prelude::*};
 use rx_bevy_operator_switch_map::switch_map_extension_pipe::ObservableExtensionSwitchMap;
 
 struct CustomContext;
 
-impl DropContext for CustomContext {
+impl SignalContext for CustomContext {
 	type DropSafety = DropUnsafeSignalContext;
 
-	fn get_context_for_drop() -> Self {
+	fn create_context_to_unsubscribe_on_drop() -> Self {
 		panic!("Don't worry about me");
 	}
 }

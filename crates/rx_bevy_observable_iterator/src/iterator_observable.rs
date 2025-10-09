@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, Observable, ObservableOutput, SignalContext, Subscriber};
+use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber, WithContext};
 use rx_bevy_subscription_inert::InertSubscription;
 
 /// Emits a single value then immediately completes
@@ -8,7 +8,7 @@ use rx_bevy_subscription_inert::InertSubscription;
 pub struct IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	iterator: Iterator,
 	_phantom_data: PhantomData<Context>,
@@ -17,7 +17,7 @@ where
 impl<Iterator, Context> IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	pub fn new(iterator: Iterator) -> Self {
 		Self {
@@ -31,7 +31,7 @@ impl<Iterator, Context> ObservableOutput for IteratorObservable<Iterator, Contex
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Out = Iterator::Item;
 	type OutError = ();
@@ -41,21 +41,21 @@ impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Subscription = InertSubscription<Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut <Destination as SignalContext>::Context,
+		context: &mut <Destination as WithContext>::Context,
 	) -> Self::Subscription
 	where
 		Destination: 'static
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self::Subscription as WithContext>::Context,
 			>,
 	{
 		for item in self.iterator.clone().into_iter() {

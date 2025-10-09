@@ -5,30 +5,26 @@
 /// commonly: completion and error signals should trigger an unsubscribe call.
 /// And next signals sometimes trigger completion signals, so all contexts
 /// must be the same.
-/// TODO: Maybe a better name would be Environment, or ExecutionEnvironment
-#[doc(alias = "ChannelContext")]
-pub trait SignalContext {
-	type Context: DropContext;
+#[doc(alias = "WithEnvironment")]
+pub trait WithContext {
+	type Context: SignalContext;
 }
 
-/// In addition to [ContextFromSubscription], this trait denotes contexts for
-/// for dropped [Subscription]s. For example when the context is just `()`.
-///
-/// If a type can't implement this it should Panic
-/// TODO: Give it a more generic name, this is required for all contexts, Use SignalContext here, and rename the other one
-pub trait DropContext {
+#[doc(alias = "Environment")]
+pub trait SignalContext {
 	/// Indicates if the context can be safely (or not) acquired during a drop
 	/// to perform a last minute unsubscription in case the subscription is not
 	/// already closed.
+	///
 	/// Certain subscribers or subscriptions may demand a context that is
-	/// safe to drop subscriptions with without requiring the user to manually
-	/// unsubscribe everything that happens to go out of scope. While providing
-	/// a mechanic to environments where unsubscription at drop is impossible,
-	/// but going out of scope isn't a concern because it provides hooks for
-	/// when that would happen, like in an ECS.
+	/// safe to drop subscriptions with, without requiring the user to manually
+	/// unsubscribe everything that happens to go out of scope. While also
+	/// providing a mechanic to environments where unsubscription at drop is
+	/// impossible, but going out of scope isn't a concern because it provides
+	/// hooks for when that would happen, like in an ECS.
 	type DropSafety: SignalContextDropSafety;
 
-	fn get_context_for_drop() -> Self;
+	fn create_context_to_unsubscribe_on_drop() -> Self;
 }
 
 mod private {

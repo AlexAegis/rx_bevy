@@ -12,7 +12,7 @@ fn main() {
 	let mut context = ();
 	let source = of(1);
 	let mut connectable =
-		ConnectableObservable::new(source, ConnectableOptions::new(|| Subject::default()));
+		ConnectableObservable::new(source, ConnectableOptions::new(|_| Subject::default()));
 	let _subscription_0 =
 		connectable.subscribe(PrintObserver::new("connectable_observable 0"), &mut context);
 	println!("nothing yet!");

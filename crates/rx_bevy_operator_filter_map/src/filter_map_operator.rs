@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionCollection,
+	ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber, SubscriptionCollection,
 };
 use rx_bevy_operator_composite::CompositeSubscriber;
 use rx_bevy_operator_lift_option::LiftOptionSubscriber;
@@ -45,7 +45,7 @@ where
 	In: 'static,
 	Out: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>

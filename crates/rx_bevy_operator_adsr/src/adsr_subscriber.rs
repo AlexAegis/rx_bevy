@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike,
-	Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
+	WithContext,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -35,7 +35,7 @@ where
 	}
 }
 
-impl<InError, Destination> SignalContext for AdsrSubscriber<InError, Destination>
+impl<InError, Destination> WithContext for AdsrSubscriber<InError, Destination>
 where
 	Destination: Observer<In = AdsrSignal, InError = InError>,
 	InError: 'static,
@@ -96,8 +96,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

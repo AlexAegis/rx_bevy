@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DestinationSharer, Observable, ObservableOutput, ObserverInput, Operator, SignalContext,
-	Subscriber, SubscriptionCollection,
+	DestinationSharer, Observable, ObservableOutput, ObserverInput, Operator, Subscriber,
+	SubscriptionCollection, WithContext,
 };
 
 use crate::SwitchMapSubscriber;
@@ -16,7 +16,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	InnerObservable: 'static + Observable,
 {
@@ -34,7 +34,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	InnerObservable: 'static + Observable,
 {
@@ -59,11 +59,11 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>
 		+ SubscriptionCollection,
 {
-	type Context = <Sharer as SignalContext>::Context;
+	type Context = <Sharer as WithContext>::Context;
 	type Subscriber<Destination>
 		= SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 	where
@@ -75,7 +75,7 @@ where
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Sharer as SignalContext>::Context,
+		_context: &mut <Sharer as WithContext>::Context,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static
@@ -96,7 +96,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	InnerObservable: 'static + Observable,
 {
@@ -114,7 +114,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	InnerObservable: 'static + Observable,
 {
@@ -122,7 +122,7 @@ where
 	type OutError = InnerObservable::OutError;
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable> SignalContext
+impl<In, InError, Switcher, Sharer, InnerObservable> WithContext
 	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
 	In: 'static,
@@ -132,7 +132,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	InnerObservable: 'static + Observable,
 {
@@ -149,7 +149,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	InnerObservable: 'static + Observable,
 {

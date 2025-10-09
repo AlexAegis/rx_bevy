@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown,
+	Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, WithContext,
 };
 
 #[derive(Debug)]
@@ -23,7 +23,7 @@ impl<In, InError, Context> Observer for NoopObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn next(&mut self, _next: Self::In, _context: &mut Self::Context) {}
 
@@ -39,11 +39,11 @@ where
 	fn tick(&mut self, _tick: rx_bevy_core::Tick, _context: &mut Self::Context) {}
 }
 
-impl<In, InError, Context> SignalContext for NoopObserver<In, InError, Context>
+impl<In, InError, Context> WithContext for NoopObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -52,7 +52,7 @@ impl<In, InError, Context> SubscriptionLike for NoopObserver<In, InError, Contex
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -66,12 +66,12 @@ where
 
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
-		teardown.call(context);
+		teardown.execute(context);
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 

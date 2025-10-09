@@ -1,5 +1,21 @@
 use crate::SubscriptionLike;
 
+/// A teardown is a closure which owns resources, by the nature of them being
+/// moved into said closure. The closure itself is responsible for releasing
+/// these resources.
+///
+/// For example if this resource was a subscription, the closure looks like this:
+///
+/// ```rs
+/// move |context| subscription.unsubscribe(context)
+/// ```
+///
+/// Just like subscriptions, a teardown once closed cannot be opened again.
+///
+/// [Teardown] intentionally does not implement [SubscriptionLike] to facilitate
+/// the [SubscriptionCollection][crate::SubscriptionCollection] trait which
+/// uses [Teardown] as the base type of operation. Allowing generic functions
+/// where you can add anything that is `Into<Teardown>` such as Subscriptions.
 pub struct Teardown<Context> {
 	teardown_fn: Option<Box<dyn FnOnce(&mut Context)>>,
 }
@@ -32,10 +48,10 @@ impl<Context> Teardown<Context> {
 		self.teardown_fn.take()
 	}
 
-	/// Immediately consumes and calls the teardown.
-	/// Useful if you just want to execute it and not store it for later.
+	/// Immediately consumes and calls the teardowns closure, leaving a None
+	/// behind, rendering the teardown permamently closed.
 	#[inline]
-	pub fn call(mut self, context: &mut Context) {
+	pub fn execute(mut self, context: &mut Context) {
 		if let Some(teardown) = self.teardown_fn.take() {
 			(teardown)(context);
 		}
@@ -55,17 +71,19 @@ impl<Context> Default for Teardown<Context> {
 
 /// Exposes and respects the original subscriptions closed-ness by storing it
 /// in an option.
-/// TODO: Make sure that dropping the value here when it's closed isn't a problem
+///
+/// This means that when you convert an already closed subscription into a
+/// teardown, it will be immediately dropped.
 impl<S> From<S> for Teardown<S::Context>
 where
 	S: 'static + SubscriptionLike,
 {
-	fn from(mut value: S) -> Self {
+	fn from(mut subscription: S) -> Self {
 		Self {
-			teardown_fn: if value.is_closed() {
+			teardown_fn: if subscription.is_closed() {
 				None
 			} else {
-				Some(Box::new(move |context| value.unsubscribe(context)))
+				Some(Box::new(move |context| subscription.unsubscribe(context)))
 			},
 		}
 	}

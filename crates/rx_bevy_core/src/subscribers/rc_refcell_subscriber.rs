@@ -1,8 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike};
+use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike, WithContext};
 
-impl<S> SignalContext for Rc<RefCell<S>>
+impl<S> WithContext for Rc<RefCell<S>>
 where
 	S: Subscriber,
 {
@@ -68,11 +68,11 @@ where
 		if !self.is_closed() {
 			self.borrow_mut().add_teardown(teardown, context);
 		} else {
-			teardown.call(context);
+			teardown.execute(context);
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.borrow_mut().get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.borrow_mut().get_context_to_unsubscribe_on_drop()
 	}
 }

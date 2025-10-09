@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike,
-	Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
+	WithContext,
 };
 
 pub struct MapIntoSubscriber<In, InError, Out, OutError, Destination>
@@ -37,7 +37,7 @@ where
 	}
 }
 
-impl<In, InError, Out, OutError, Destination> SignalContext
+impl<In, InError, Out, OutError, Destination> WithContext
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
 	In: 'static + Into<Out>,
@@ -113,8 +113,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

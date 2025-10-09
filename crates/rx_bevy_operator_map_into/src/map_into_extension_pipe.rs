@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, SignalContext};
+use rx_bevy_core::{Observable, WithContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::MapIntoOperator;
@@ -19,7 +19,7 @@ pub trait ObservableExtensionInto: Observable + Sized {
 			Self::OutError,
 			NextOut,
 			NextOutError,
-			<Self::Subscription as SignalContext>::Context,
+			<Self::Subscription as WithContext>::Context,
 		>,
 	>
 	where

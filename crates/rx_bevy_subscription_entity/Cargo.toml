@@ -49,7 +49,9 @@ dev_panic_on_dropped_active_subscriptions = [
 rx_bevy_core = { workspace = true, features = ["bevy"] }
 rx_bevy_context_command = { workspace = true }
 bevy_ecs = { workspace = true }
+bevy_log = { workspace = true }
 smallvec = { workspace = true }
+short_type_name = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }

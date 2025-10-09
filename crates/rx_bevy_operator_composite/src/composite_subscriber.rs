@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
-};
+use rx_bevy_core::{Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, WithContext};
 
 #[derive(Debug)]
 pub struct CompositeSubscriber<Inner, Destination>
@@ -27,7 +25,7 @@ where
 	}
 }
 
-impl<Inner, Destination> SignalContext for CompositeSubscriber<Inner, Destination>
+impl<Inner, Destination> WithContext for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
 	Destination: Observer,
@@ -82,8 +80,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.subscriber.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.subscriber.get_context_to_unsubscribe_on_drop()
 	}
 }
 

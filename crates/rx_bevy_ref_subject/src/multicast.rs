@@ -1,7 +1,7 @@
 use rx_bevy_core::{
-	DestinationSharer, DropContext, ErasedArcSubscriber, InnerSubscription, Observable,
-	ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick,
+	DestinationSharer, ErasedArcSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
+	SignalContext, Subscriber, Subscription, SubscriptionCollection, SubscriptionLike, Teardown,
+	Tick, WithContext,
 };
 use smallvec::SmallVec;
 
@@ -21,18 +21,18 @@ pub struct Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	subscribers: SmallVec<[ErasedArcSubscriber<In, InError, Context>; 1]>,
 	closed: bool,
-	teardown: InnerSubscription<Context>,
+	teardown: Subscription<Context>,
 }
 
 impl<In, InError, Context> Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	/// Drops all closed subscribers
 	fn clean(&mut self) {
@@ -45,7 +45,7 @@ impl<In, InError, Context> Observable for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
@@ -59,7 +59,7 @@ where
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self::Subscription as WithContext>::Context,
 			>
 			+ SubscriptionCollection,
 	{
@@ -73,7 +73,7 @@ impl<In, InError, Context> Observer for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		for destination in self.subscribers.iter_mut() {
@@ -108,7 +108,7 @@ impl<In, InError, Context> SubscriptionLike for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -131,8 +131,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Self::Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Self::Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -140,7 +140,7 @@ impl<In, InError, Context> ObserverInput for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type In = In;
 	type InError = InError;
@@ -150,7 +150,7 @@ impl<In, InError, Context> ObservableOutput for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Out = In;
 	type OutError = InError;
@@ -160,22 +160,22 @@ impl<In, InError, Context> Default for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn default() -> Self {
 		Self {
 			subscribers: SmallVec::new(),
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 			closed: false,
 		}
 	}
 }
 
-impl<In, InError, Context> SignalContext for Multicast<In, InError, Context>
+impl<In, InError, Context> WithContext for Multicast<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }

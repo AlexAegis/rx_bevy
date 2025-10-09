@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, SignalContext, SubscriptionLike, Teardown};
+use rx_bevy_core::{SignalContext, SubscriptionLike, Teardown, WithContext};
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
 /// runs any [Teardown] you may add into it.
@@ -12,7 +12,7 @@ use rx_bevy_core::{DropContext, SignalContext, SubscriptionLike, Teardown};
 #[derive(Clone)]
 pub struct InertSubscription<Context>
 where
-	Context: DropContext,
+	Context: SignalContext,
 {
 	// TODO: Check every PhantomData for variance
 	_phantom_data: PhantomData<*mut Context>,
@@ -20,14 +20,14 @@ where
 
 impl<Context> InertSubscription<Context>
 where
-	Context: DropContext,
+	Context: SignalContext,
 {
 	pub fn new<T>(subscription: T, context: &mut Context) -> Self
 	where
 		T: Into<Teardown<Context>>,
 	{
 		let teardown: Teardown<Context> = subscription.into();
-		teardown.call(context);
+		teardown.execute(context);
 
 		Self {
 			_phantom_data: PhantomData,
@@ -37,7 +37,7 @@ where
 
 impl<Context> Default for InertSubscription<Context>
 where
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn default() -> Self {
 		Self {
@@ -46,16 +46,16 @@ where
 	}
 }
 
-impl<Context> SignalContext for InertSubscription<Context>
+impl<Context> WithContext for InertSubscription<Context>
 where
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
 
 impl<Context> SubscriptionLike for InertSubscription<Context>
 where
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn is_closed(&self) -> bool {
 		true
@@ -65,12 +65,12 @@ where
 		// Does not need to do anything on unsubscribe
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Context::create_context_to_unsubscribe_on_drop()
 	}
 
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
 		// The added teardown is executed immediately as this subscription is always closed.
-		teardown.call(context);
+		teardown.execute(context);
 	}
 }

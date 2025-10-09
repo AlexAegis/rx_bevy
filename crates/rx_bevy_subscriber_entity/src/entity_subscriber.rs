@@ -5,7 +5,7 @@ use bevy_ecs::{entity::Entity, event::Event};
 use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_context_command::{CommandContext, ContextWithCommands};
 use rx_bevy_core::{
-	DropContext, Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tick,
+	Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tick, WithContext,
 };
 
 pub struct EntitySubscriber<'c, In, InError>
@@ -50,7 +50,7 @@ where
 	type InError = InError;
 }
 
-impl<'c, In, InError> SignalContext for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError> WithContext for EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -120,7 +120,7 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self as SignalContext>::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self as WithContext>::Context) {
 		self.closed = true;
 		context
 			.commands()
@@ -133,10 +133,10 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
 		// This WILL panic. But do not worry, everything should be properly
 		// closed by the time a Drop would try to unsubscribe as they are
 		// automatically unsubscribed by an on_remove hook
-		DropContext::get_context_for_drop()
+		SignalContext::create_context_to_unsubscribe_on_drop()
 	}
 }

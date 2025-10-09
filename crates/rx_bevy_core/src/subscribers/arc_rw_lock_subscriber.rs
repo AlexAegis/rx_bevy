@@ -3,11 +3,11 @@ use std::sync::{Arc, RwLock};
 use short_type_name::short_type_name;
 
 use crate::{
-	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
-	SubscriptionLike,
+	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
+	WithContext,
 };
 
-impl<S> SignalContext for Arc<RwLock<S>>
+impl<S> WithContext for Arc<RwLock<S>>
 where
 	S: Subscriber,
 {
@@ -150,9 +150,9 @@ where
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
 		if let Ok(mut destination) = self.write() {
-			destination.get_unsubscribe_context()
+			destination.get_context_to_unsubscribe_on_drop()
 		} else {
 			panic!(
 				"Context can't be acquired in a {} as the destination RwLock is poisoned!",

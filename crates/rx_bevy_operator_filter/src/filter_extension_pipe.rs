@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, SignalContext};
+use rx_bevy_core::{Observable, WithContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::FilterOperator;
@@ -22,7 +22,7 @@ pub trait ObservableExtensionFilter: Observable + Sized {
 			Self::Out,
 			Self::OutError,
 			Filter,
-			<Self::Subscription as SignalContext>::Context,
+			<Self::Subscription as WithContext>::Context,
 		>,
 	> {
 		Pipe::new(self, FilterOperator::new(filter))

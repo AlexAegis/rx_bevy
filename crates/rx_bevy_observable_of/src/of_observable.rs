@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{DropContext, Observable, ObservableOutput, SignalContext, Subscriber};
+use rx_bevy_core::{Observable, ObservableOutput, SignalContext, Subscriber, WithContext};
 use rx_bevy_subscription_inert::InertSubscription;
 
 /// Observable creator for [OfObservable]
@@ -33,10 +33,10 @@ where
 	}
 }
 
-impl<Out, Context> SignalContext for OfObservable<Out, Context>
+impl<Out, Context> WithContext for OfObservable<Out, Context>
 where
 	Out: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -44,7 +44,7 @@ where
 impl<Out, Context> Observable for OfObservable<Out, Context>
 where
 	Out: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Subscription = InertSubscription<Context>;
 
@@ -58,7 +58,7 @@ where
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self::Subscription as WithContext>::Context,
 			>,
 	{
 		destination.next(self.value.clone(), context);

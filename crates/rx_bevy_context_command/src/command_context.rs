@@ -1,5 +1,5 @@
 use bevy_ecs::system::Commands;
-use rx_bevy_core::{DropContext, DropUnsafeSignalContext};
+use rx_bevy_core::{DropUnsafeSignalContext, SignalContext};
 use short_type_name::short_type_name;
 
 use crate::ContextWithCommands;
@@ -25,10 +25,10 @@ impl<'c> CommandContext<'c> {
 	}
 }
 
-impl<'c> DropContext for CommandContext<'c> {
+impl<'c> SignalContext for CommandContext<'c> {
 	type DropSafety = DropUnsafeSignalContext;
 
-	fn get_context_for_drop() -> Self {
+	fn create_context_to_unsubscribe_on_drop() -> Self {
 		panic!(
 			"{}::get_context_for_drop() was called, but its impossible to do! This is likely due to an unclosed subscription trying to unsubscribe during Drop, which should not happen!",
 			short_type_name::<Self>()

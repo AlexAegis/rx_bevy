@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionLike,
-	Teardown, Tick,
+	Observer, ObserverInput, SignalContext, Subscription, SubscriptionLike, Teardown, Tick,
+	WithContext,
 };
 
 /// An [FnObserver] requires you to define a callback for all three notifications
@@ -14,13 +14,13 @@ where
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
 	OnTick: FnMut(Tick, &mut Context),
-	Context: DropContext,
+	Context: SignalContext,
 {
 	on_next: OnNext,
 	on_error: OnError,
 	on_complete: OnComplete,
 	on_tick: OnTick,
-	teardown: InnerSubscription<Context>,
+	teardown: Subscription<Context>,
 	_phantom_data: PhantomData<*mut (In, InError)>,
 }
 
@@ -33,7 +33,7 @@ where
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
 	OnTick: FnMut(Tick, &mut Context),
-	Context: DropContext,
+	Context: SignalContext,
 {
 	pub fn new(
 		on_next: OnNext,
@@ -46,7 +46,7 @@ where
 			on_error,
 			on_complete,
 			on_tick,
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -61,13 +61,13 @@ where
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
 	OnTick: FnMut(Tick, &mut Context),
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> SignalContext
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> WithContext
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: 'static,
@@ -76,7 +76,7 @@ where
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
 	OnTick: FnMut(Tick, &mut Context),
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -90,7 +90,7 @@ where
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
 	OnTick: FnMut(Tick, &mut Context),
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn next(&mut self, next: In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -127,7 +127,7 @@ where
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
 	OnTick: FnMut(Tick, &mut Context),
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -145,7 +145,7 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Context::create_context_to_unsubscribe_on_drop()
 	}
 }

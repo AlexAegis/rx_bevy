@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
-};
+use rx_bevy_core::{Observable, ObservableOutput, Subscriber, SubscriptionCollection, WithContext};
 use rx_bevy_operator_map_into::MapIntoSubscriber;
 use rx_bevy_ref_subscriber_rc::RcSubscriber;
 
@@ -99,7 +97,7 @@ where
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self::Subscription as WithContext>::Context,
 			>
 			+ SubscriptionCollection,
 	{

@@ -1,4 +1,4 @@
-use rx_bevy_core::{DropContext, Observable, SignalContext};
+use rx_bevy_core::{Observable, SignalContext, WithContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::TapNextOperator;
@@ -9,7 +9,7 @@ pub fn tap_next<In, InError, OnNext, Context>(
 ) -> TapNextOperator<In, InError, OnNext, Context>
 where
 	OnNext: Clone + for<'a> Fn(&'a In, &'a mut Context),
-	Context: DropContext,
+	Context: SignalContext,
 {
 	TapNextOperator::new(callback)
 }
@@ -19,7 +19,7 @@ pub trait ObservableExtensionTapNext: Observable + Sized {
 	fn tap_next<
 		OnNext: 'static
 			+ Clone
-			+ for<'a> Fn(&'a Self::Out, &'a mut <Self::Subscription as SignalContext>::Context),
+			+ for<'a> Fn(&'a Self::Out, &'a mut <Self::Subscription as WithContext>::Context),
 	>(
 		self,
 		callback: OnNext,
@@ -29,7 +29,7 @@ pub trait ObservableExtensionTapNext: Observable + Sized {
 			Self::Out,
 			Self::OutError,
 			OnNext,
-			<Self::Subscription as SignalContext>::Context,
+			<Self::Subscription as WithContext>::Context,
 		>,
 	> {
 		Pipe::new(self, TapNextOperator::new(callback))

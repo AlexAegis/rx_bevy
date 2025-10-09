@@ -1,8 +1,7 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_bevy_core::{
-	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionLike,
-	Teardown,
+	Observer, ObserverInput, SignalContext, Subscription, SubscriptionLike, Teardown, WithContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -10,10 +9,10 @@ pub struct PrintObserver<In, InError = (), Context = ()>
 where
 	In: Debug,
 	InError: Debug,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	prefix: Option<&'static str>,
-	teardown: InnerSubscription<Context>,
+	teardown: Subscription<Context>,
 	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
@@ -21,12 +20,12 @@ impl<In, InError, Context> PrintObserver<In, InError, Context>
 where
 	In: Debug,
 	InError: Debug,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	pub fn new(message: &'static str) -> Self {
 		Self {
 			prefix: Some(message),
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -42,12 +41,12 @@ impl<In, InError, Context> Default for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn default() -> Self {
 		Self {
 			prefix: None,
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -57,7 +56,7 @@ impl<In, InError, Context> ObserverInput for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type In = In;
 	type InError = InError;
@@ -67,7 +66,7 @@ impl<In, InError, Context> Observer for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, _context: &mut Self::Context) {
@@ -92,11 +91,11 @@ where
 	}
 }
 
-impl<In, InError, Context> SignalContext for PrintObserver<In, InError, Context>
+impl<In, InError, Context> WithContext for PrintObserver<In, InError, Context>
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -105,7 +104,7 @@ impl<In, InError, Context> SubscriptionLike for PrintObserver<In, InError, Conte
 where
 	In: 'static + Debug,
 	InError: 'static + Debug,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -125,7 +124,7 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Context::create_context_to_unsubscribe_on_drop()
 	}
 }

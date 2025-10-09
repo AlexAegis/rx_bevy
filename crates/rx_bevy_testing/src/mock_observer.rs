@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext,
-	SignalContextDropSafety, SubscriptionLike, Teardown, Tick,
+	Observer, ObserverInput, SignalContext, SignalContextDropSafety, Subscription,
+	SubscriptionLike, Teardown, Tick, WithContext,
 };
 use short_type_name::short_type_name;
 
@@ -14,7 +14,7 @@ where
 	DropSafety: SignalContextDropSafety,
 {
 	pub closed: bool,
-	teardown: InnerSubscription<MockContext<In, InError, DropSafety>>,
+	teardown: Subscription<MockContext<In, InError, DropSafety>>,
 	_phantom_data: PhantomData<(In, InError, DropSafety)>,
 }
 
@@ -100,7 +100,7 @@ where
 	}
 }
 
-impl<In, InError, DropSafety> DropContext for MockContext<In, InError, DropSafety>
+impl<In, InError, DropSafety> SignalContext for MockContext<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
@@ -109,7 +109,7 @@ where
 	/// The DropSafety is parametric for the sake of testability, the context will always panic on drop if not closed to ensure proper tests.
 	type DropSafety = DropSafety;
 
-	fn get_context_for_drop() -> Self {
+	fn create_context_to_unsubscribe_on_drop() -> Self {
 		// While this context could be constructed very easily (It has a
 		// [Default] implementation too! This is the reason why this method
 		// exists by the way. It just doesn't have the same connotation!)
@@ -188,7 +188,7 @@ where
 	}
 }
 
-impl<In, InError, DropSafety> SignalContext for MockObserver<In, InError, DropSafety>
+impl<In, InError, DropSafety> WithContext for MockObserver<In, InError, DropSafety>
 where
 	In: 'static,
 	InError: 'static,
@@ -224,12 +224,12 @@ where
 			self.teardown.add_teardown(teardown, context);
 		} else {
 			context.adds_after_closed += 1;
-			teardown.call(context)
+			teardown.execute(context)
 		}
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
 		MockContext::default()
 	}
 }
@@ -243,7 +243,7 @@ where
 	fn default() -> Self {
 		Self {
 			closed: false,
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}

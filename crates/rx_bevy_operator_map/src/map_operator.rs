@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_bevy_core::{
-	DropContext, ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionCollection,
+	ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber, SubscriptionCollection,
 };
 
 use crate::MapSubscriber;
@@ -35,7 +35,7 @@ where
 	InError: 'static,
 	Mapper: 'static + Clone + Fn(In) -> Out,
 	Out: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>

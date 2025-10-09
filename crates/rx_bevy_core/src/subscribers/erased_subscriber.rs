@@ -1,5 +1,5 @@
 use crate::{
-	DropContext, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
+	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown, WithContext,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
@@ -37,11 +37,11 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Context> SignalContext for ErasedSubscriber<In, InError, Context>
+impl<In, InError, Context> WithContext for ErasedSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -50,7 +50,7 @@ impl<In, InError, Context> Observer for ErasedSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -77,7 +77,7 @@ impl<In, InError, Context> SubscriptionLike for ErasedSubscriber<In, InError, Co
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -95,7 +95,7 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }

@@ -1,6 +1,5 @@
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
-	Tick,
+	Observable, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, WithContext,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -46,7 +45,7 @@ where
 	type InError = EitherOutError2<O1, O2>;
 }
 
-impl<Destination, O1, O2> SignalContext for CombineLatestSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> WithContext for CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Observable,
@@ -124,8 +123,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

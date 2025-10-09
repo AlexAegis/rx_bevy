@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DropContext, ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionCollection,
+	ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber, SubscriptionCollection,
 };
 
 use crate::FilterSubscriber;
@@ -25,7 +25,7 @@ where
 	Filter: 'static + Clone + for<'a> Fn(&'a In) -> bool,
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>

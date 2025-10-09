@@ -1,13 +1,26 @@
-use crate::{DropContext, DropSafeSignalContext, SignalContext, SubscriptionLike, Teardown};
+use crate::{
+	DropSafeSignalContext, ObservableOutput, ObserverInput, SignalContext, SubscriptionLike,
+	Teardown, WithContext,
+};
 
-impl DropContext for () {
-	type DropSafety = DropSafeSignalContext;
+impl ObserverInput for () {
+	type In = ();
+	type InError = ();
+}
 
-	#[inline]
-	fn get_context_for_drop() -> Self {}
+impl ObservableOutput for () {
+	type Out = ();
+	type OutError = ();
 }
 
 impl SignalContext for () {
+	type DropSafety = DropSafeSignalContext;
+
+	#[inline]
+	fn create_context_to_unsubscribe_on_drop() -> Self {}
+}
+
+impl WithContext for () {
 	type Context = ();
 }
 
@@ -22,11 +35,11 @@ impl SubscriptionLike for () {
 
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
-		teardown.call(context);
+		teardown.execute(context);
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Self::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Self::create_context_to_unsubscribe_on_drop()
 	}
 }

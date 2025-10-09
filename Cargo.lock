@@ -5203,10 +5203,12 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_ecs",
+ "bevy_log",
  "rx_bevy",
  "rx_bevy_context_command",
  "rx_bevy_core",
  "rx_bevy_testing",
+ "short_type_name",
  "smallvec",
 ]
 

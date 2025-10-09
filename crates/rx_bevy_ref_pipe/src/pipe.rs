@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, Operator, SignalContext, Subscriber, SubscriptionCollection,
+	Observable, ObservableOutput, Operator, Subscriber, SubscriptionCollection, WithContext,
 };
 
 pub struct Pipe<Source, Op>
@@ -9,7 +9,7 @@ where
 		+ Operator<
 			In = Source::Out,
 			InError = Source::OutError,
-			Context = <Source::Subscription as SignalContext>::Context,
+			Context = <Source::Subscription as WithContext>::Context,
 		>,
 {
 	pub(crate) source_observable: Source,
@@ -24,7 +24,7 @@ where
 		+ Operator<
 			In = Source::Out,
 			InError = Source::OutError,
-			Context = <Source::Subscription as SignalContext>::Context,
+			Context = <Source::Subscription as WithContext>::Context,
 		>,
 {
 	fn clone(&self) -> Self {
@@ -42,7 +42,7 @@ where
 		+ Operator<
 			In = Source::Out,
 			InError = Source::OutError,
-			Context = <Source::Subscription as SignalContext>::Context,
+			Context = <Source::Subscription as WithContext>::Context,
 		>,
 {
 	pub fn new(source_observable: Source, operator: Op) -> Self {
@@ -60,7 +60,7 @@ where
 		+ Operator<
 			In = Source::Out,
 			InError = Source::OutError,
-			Context = <Source::Subscription as SignalContext>::Context,
+			Context = <Source::Subscription as WithContext>::Context,
 		>,
 {
 	#[inline]
@@ -70,7 +70,7 @@ where
 			+ Operator<
 				In = <Self as ObservableOutput>::Out,
 				InError = <Self as ObservableOutput>::OutError,
-				Context = <<Pipe<Source, Op> as Observable>::Subscription as SignalContext>::Context,
+				Context = <<Pipe<Source, Op> as Observable>::Subscription as WithContext>::Context,
 			>,
 	{
 		Pipe::<Self, NextOp>::new(self, operator)
@@ -84,7 +84,7 @@ where
 		+ Operator<
 			In = Source::Out,
 			InError = Source::OutError,
-			Context = <Source::Subscription as SignalContext>::Context,
+			Context = <Source::Subscription as WithContext>::Context,
 		>,
 {
 	type Out = Op::Out;
@@ -98,7 +98,7 @@ where
 		+ Operator<
 			In = Source::Out,
 			InError = Source::OutError,
-			Context = <Source::Subscription as SignalContext>::Context,
+			Context = <Source::Subscription as WithContext>::Context,
 		>,
 {
 	type Subscription = Source::Subscription;
@@ -114,7 +114,7 @@ where
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self::Subscription as WithContext>::Context,
 			>
 			+ SubscriptionCollection,
 	{

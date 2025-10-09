@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, SignalContext,
-	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	DestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick, WithContext,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
@@ -18,7 +18,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -49,7 +49,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -70,7 +70,7 @@ where
 	}
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> SignalContext
+impl<In, InError, Switcher, Sharer, InnerObservable, Destination> WithContext
 	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
 	In: 'static,
@@ -83,7 +83,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -111,7 +111,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -159,7 +159,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -188,8 +188,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -206,7 +206,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -235,7 +235,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<

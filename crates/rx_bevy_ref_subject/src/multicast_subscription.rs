@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	DropContext, ErasedArcSubscriber, InnerSubscription, SignalContext, SubscriptionLike, Teardown,
+	ErasedArcSubscriber, SignalContext, Subscription, SubscriptionLike, Teardown, WithContext,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -9,22 +9,22 @@ pub struct MulticastSubscription<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	subscriber: Option<ErasedArcSubscriber<In, InError, Context>>,
-	teardown: InnerSubscription<Context>,
+	teardown: Subscription<Context>,
 }
 
 impl<In, InError, Context> MulticastSubscription<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	pub fn new(shared_subscriber: ErasedArcSubscriber<In, InError, Context>) -> Self {
 		Self {
 			subscriber: Some(shared_subscriber),
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 		}
 	}
 }
@@ -33,12 +33,12 @@ impl<In, InError, Context> Default for MulticastSubscription<In, InError, Contex
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn default() -> Self {
 		Self {
 			subscriber: None,
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 		}
 	}
 }
@@ -47,21 +47,21 @@ impl<In, InError, Context> Clone for MulticastSubscription<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn clone(&self) -> Self {
 		Self {
 			subscriber: self.subscriber.clone(),
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 		}
 	}
 }
 
-impl<In, InError, Context> SignalContext for MulticastSubscription<In, InError, Context>
+impl<In, InError, Context> WithContext for MulticastSubscription<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -70,7 +70,7 @@ impl<In, InError, Context> SubscriptionLike for MulticastSubscription<In, InErro
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn is_closed(&self) -> bool {
 		self.subscriber
@@ -92,12 +92,12 @@ where
 		if let Some(subscriber) = &mut self.subscriber {
 			subscriber.add_teardown(teardown, context);
 		} else {
-			teardown.call(context);
+			teardown.execute(context);
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -105,11 +105,11 @@ impl<In, InError, Context> Drop for MulticastSubscription<In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn drop(&mut self) {
 		if !self.teardown.is_closed() {
-			let mut context = self.teardown.get_unsubscribe_context();
+			let mut context = self.teardown.get_context_to_unsubscribe_on_drop();
 			self.teardown.unsubscribe(&mut context);
 		}
 		// Does not unsubscribe the subscriber on drop as it is shared.

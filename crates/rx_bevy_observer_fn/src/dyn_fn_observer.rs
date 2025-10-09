@@ -1,26 +1,26 @@
 use rx_bevy_core::{
-	DropContext, InnerSubscription, Observer, ObserverInput, SignalContext, SubscriptionLike,
-	Teardown, Tick,
+	Observer, ObserverInput, SignalContext, Subscription, SubscriptionLike, Teardown, Tick,
+	WithContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct DynFnObserver<In, Error, Context>
 where
-	Context: DropContext,
+	Context: SignalContext,
 {
 	on_next: Option<Box<dyn FnMut(In, &mut Context)>>,
 	on_error: Option<Box<dyn FnMut(Error, &mut Context)>>,
 	on_complete: Option<Box<dyn FnOnce(&mut Context)>>,
 	on_tick: Option<Box<dyn FnMut(Tick, &mut Context)>>,
 	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context)>>,
-	teardown: InnerSubscription<Context>,
+	teardown: Subscription<Context>,
 }
 
 impl<In, InError, Context> DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context)>(mut self, on_next: OnNext) -> Self {
 		self.on_next.replace(Box::new(on_next));
@@ -64,17 +64,17 @@ impl<In, InError, Context> ObserverInput for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Context> SignalContext for DynFnObserver<In, InError, Context>
+impl<In, InError, Context> WithContext for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -83,7 +83,7 @@ impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn next(&mut self, next: In, context: &mut Self::Context) {
 		if !self.is_closed()
@@ -128,7 +128,7 @@ impl<In, InError, Context> SubscriptionLike for DynFnObserver<In, InError, Conte
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -147,8 +147,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -156,7 +156,7 @@ impl<In, InError, Context> Default for DynFnObserver<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn default() -> Self {
 		Self {
@@ -165,7 +165,7 @@ where
 			on_complete: None,
 			on_tick: None,
 			on_unsubscribe: None,
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 		}
 	}
 }

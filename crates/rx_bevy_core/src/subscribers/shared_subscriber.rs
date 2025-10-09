@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use crate::{
-	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
-	SubscriptionLike, Teardown, Tick,
+	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
+	Teardown, Tick, WithContext,
 };
 
 /// A SharedSubscriber is a subscriber that guarantees that if you clone it,
@@ -103,7 +103,7 @@ where
 	type InError = Sharer::InError;
 }
 
-impl<Destination, Sharer> SignalContext for SharedSubscriber<Destination, Sharer>
+impl<Destination, Sharer> WithContext for SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
 	Sharer: DestinationSharer<
@@ -173,8 +173,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

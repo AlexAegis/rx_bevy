@@ -1,4 +1,6 @@
-use rx_bevy_core::{DestinationSharer, Observable, SignalContext, SubscriptionCollection};
+use rx_bevy_core::{
+	DestinationSharer, Observable, SubscriptionCollection, SubscriptionLike, WithContext,
+};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::SwitchMapOperator;
@@ -15,7 +17,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as SignalContext>::Context,
+			Context = <InnerObservable::Subscription as WithContext>::Context,
 		>,
 {
 	SwitchMapOperator::new(mapper)
@@ -28,10 +30,9 @@ pub trait ObservableExtensionSwitchMap: Observable + Sized {
 			+ DestinationSharer<
 				In = NextInnerObservable::Out,
 				InError = NextInnerObservable::OutError,
-				Context = <NextInnerObservable::Subscription as SignalContext>::Context,
+				Context = <NextInnerObservable::Subscription as WithContext>::Context,
 			>
-			+ SubscriptionCollection
-			+ SignalContext<Context = <Self::Subscription as SignalContext>::Context>,
+			+ SubscriptionCollection,
 		NextInnerObservable: 'static + Observable,
 		Switcher: 'static + Clone + Fn(Self::Out) -> NextInnerObservable,
 	>(
@@ -44,7 +45,7 @@ pub trait ObservableExtensionSwitchMap: Observable + Sized {
 	>
 	where
 		NextInnerObservable::Subscription:
-			SignalContext<Context = <Self::Subscription as SignalContext>::Context>,
+			SubscriptionLike<Context = <Self::Subscription as WithContext>::Context>,
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
 		Pipe::new(self, SwitchMapOperator::new(switcher))

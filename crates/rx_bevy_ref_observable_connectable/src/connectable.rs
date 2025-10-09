@@ -1,10 +1,10 @@
-use rx_bevy_core::{Observable, SignalContext, SubscriptionLike};
+use rx_bevy_core::{Observable, SubscriptionLike, WithContext};
 
 pub trait Connectable: Observable {
 	type ConnectionSubscription: SubscriptionLike;
 
 	fn connect(
 		&mut self,
-		context: &mut <Self::ConnectionSubscription as SignalContext>::Context,
+		context: &mut <Self::ConnectionSubscription as WithContext>::Context,
 	) -> Self::ConnectionSubscription;
 }

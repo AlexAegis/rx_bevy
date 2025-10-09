@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, SignalContext};
+use rx_bevy_core::{Observable, WithContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::TryCaptureOperator;
@@ -18,11 +18,7 @@ pub trait ObservableExtensionTryCapture: Observable + Sized {
 		self,
 	) -> Pipe<
 		Self,
-		TryCaptureOperator<
-			Self::Out,
-			Self::OutError,
-			<Self::Subscription as SignalContext>::Context,
-		>,
+		TryCaptureOperator<Self::Out, Self::OutError, <Self::Subscription as WithContext>::Context>,
 	> {
 		Pipe::new(self, TryCaptureOperator::default())
 	}

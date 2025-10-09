@@ -2,8 +2,8 @@ use std::{cell::RefCell, rc::Rc};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_bevy_core::{
-	DropContext, Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick, WithContext,
 };
 use rx_bevy_ref_subject::{MulticastSubscription, Subject};
 
@@ -14,7 +14,7 @@ pub struct ReplaySubject<const CAPACITY: usize, In, InError = (), Context = ()>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	subject: Subject<In, InError, Context>,
 	/// Refcell so even cloned subjects retain the same current value across clones
@@ -26,7 +26,7 @@ impl<const CAPACITY: usize, In, InError, Context> Default
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn default() -> Self {
 		Self {
@@ -41,7 +41,7 @@ impl<const CAPACITY: usize, In, InError, Context> ObserverInput
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type In = In;
 	type InError = InError;
@@ -52,7 +52,7 @@ impl<const CAPACITY: usize, In, InError, Context> Observer
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn next(&mut self, next: In, context: &mut Context) {
 		self.values.borrow_mut().enqueue(next.clone());
@@ -80,18 +80,18 @@ impl<const CAPACITY: usize, In, InError, Context> ObservableOutput
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Out = In;
 	type OutError = InError;
 }
 
-impl<const CAPACITY: usize, In, InError, Context> SignalContext
+impl<const CAPACITY: usize, In, InError, Context> WithContext
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -101,7 +101,7 @@ impl<const CAPACITY: usize, In, InError, Context> Observable
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
@@ -110,7 +110,7 @@ where
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self::Subscription as WithContext>::Context,
 			>
 			+ SubscriptionCollection,
 	>(
@@ -131,7 +131,7 @@ impl<const CAPACITY: usize, In, InError, Context> SubscriptionLike
 where
 	In: 'static + Clone,
 	InError: 'static + Clone,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -149,7 +149,7 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Self::Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Self::Context::create_context_to_unsubscribe_on_drop()
 	}
 }

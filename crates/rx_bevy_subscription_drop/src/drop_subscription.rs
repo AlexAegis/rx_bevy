@@ -1,8 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	DropContext, DropSafeSignalContext, InnerSubscription, SignalContext, SubscriptionLike,
-	Teardown,
+	DropSafeSignalContext, SignalContext, Subscription, SubscriptionLike, Teardown, WithContext,
 };
 
 /// A DropSubscription is a type of Subscription Observables may use, it
@@ -11,14 +10,14 @@ use rx_bevy_core::{
 #[derive(Clone)]
 pub struct DropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	inner: Arc<RwLock<InnerDropSubscription<Context>>>,
 }
 
 impl<Context> DropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	pub fn new<T>(subscription: T) -> Self
 	where
@@ -39,7 +38,7 @@ where
 
 impl<Context> Default for DropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	fn default() -> Self {
 		Self {
@@ -48,16 +47,16 @@ where
 	}
 }
 
-impl<Context> SignalContext for DropSubscription<Context>
+impl<Context> WithContext for DropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	type Context = Context;
 }
 
 impl<Context> SubscriptionLike for DropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	fn is_closed(&self) -> bool {
 		self.inner.read().expect("to not be locked").is_closed()
@@ -75,24 +74,24 @@ where
 		lock.add_teardown(teardown, context);
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 
-pub struct InnerDropSubscription<Context>(InnerSubscription<Context>)
+pub struct InnerDropSubscription<Context>(Subscription<Context>)
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>;
+	Context: SignalContext<DropSafety = DropSafeSignalContext>;
 
 impl<Context> InnerDropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	pub fn new<T>(subscription: T) -> Self
 	where
 		T: Into<Teardown<Context>>,
 	{
-		Self(InnerSubscription::new(subscription))
+		Self(Subscription::new(subscription))
 	}
 
 	pub fn new_fn<F>(f: F) -> Self
@@ -105,23 +104,23 @@ where
 
 impl<Context> Default for InnerDropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	fn default() -> Self {
-		Self(InnerSubscription::default())
+		Self(Subscription::default())
 	}
 }
 
-impl<Context> SignalContext for InnerDropSubscription<Context>
+impl<Context> WithContext for InnerDropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	type Context = Context;
 }
 
 impl<Context> SubscriptionLike for InnerDropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -139,14 +138,14 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.0.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.0.get_context_to_unsubscribe_on_drop()
 	}
 }
 
 impl<Context> Drop for InnerDropSubscription<Context>
 where
-	Context: DropContext<DropSafety = DropSafeSignalContext>,
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	fn drop(&mut self) {
 		// While we require the context to be drop-safe, some contexts (like
@@ -156,7 +155,7 @@ where
 		// sense to trigger an unsubscription again on drop when one was already
 		// done manually.
 		if !self.is_closed() {
-			let mut context = self.get_unsubscribe_context();
+			let mut context = self.get_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

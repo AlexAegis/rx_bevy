@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, SubscriptionLike, Teardown, Tick, WithContext,
 };
 
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
@@ -32,7 +32,7 @@ where
 	}
 }
 
-impl<In, InError, OnNext, Destination> SignalContext
+impl<In, InError, OnNext, Destination> WithContext
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
@@ -98,8 +98,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

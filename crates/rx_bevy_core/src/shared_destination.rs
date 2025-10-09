@@ -1,6 +1,8 @@
-use crate::{ObserverInput, SignalContext, Subscriber};
+use crate::{ObserverInput, Subscriber, WithContext};
 
-pub trait DestinationSharer: ObserverInput + SignalContext {
+/// A [DestinationSharer] that can create a [SharedDestination] out of a
+/// destination subscriber.
+pub trait DestinationSharer: ObserverInput + WithContext {
 	type Shared<Destination>: SharedDestination<Destination>
 	where
 		Destination:
@@ -12,6 +14,19 @@ pub trait DestinationSharer: ObserverInput + SignalContext {
 			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 }
 
+/// A [SharedDestination] is a subscriber that can be cloned, but each clone
+/// will point to the exact same destination subscriber.
+///
+/// Different [SharedDestination]s behave differently, some are just simply
+/// smart pointers with locks, some are reference counted on a subscriber level
+/// and unsubscribe when the last clone unsubscribes even before all clones are
+/// dropped, like with a regular [Rc].
+///
+/// Since the always define a layer on the destination they share, an
+/// [`access`][SharedDestination::access] method is provided to inspect the
+/// destination it wraps. In the case of an `Arc<RwLock<Destination>>` calling
+/// the `access_mut` method will attempt to write lock the destination for the
+/// duration of the call.
 pub trait SharedDestination<Destination>:
 	Subscriber<In = Destination::In, InError = Destination::InError, Context = Destination::Context>
 	+ Clone

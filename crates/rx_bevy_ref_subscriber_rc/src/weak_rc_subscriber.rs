@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ArcSubscriber, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown,
-	Tick,
+	ArcSubscriber, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
+	WithContext,
 };
 
 use crate::InnerRcSubscriber;
@@ -56,7 +56,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> SignalContext for WeakRcSubscriber<Destination>
+impl<Destination> WithContext for WeakRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
@@ -111,8 +111,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -123,7 +123,7 @@ where
 	fn drop(&mut self) {
 		if !self.is_closed() {
 			self.destination.write(|destination| {
-				let mut context = destination.get_unsubscribe_context();
+				let mut context = destination.get_context_to_unsubscribe_on_drop();
 				destination.complete_if_can(&mut context);
 				destination.unsubscribe_if_can(&mut context);
 			});

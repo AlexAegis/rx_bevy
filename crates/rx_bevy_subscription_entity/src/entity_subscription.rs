@@ -2,9 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::component::Component;
 
-use rx_bevy_core::{
-	AssertSubscriptionClosedOnDrop, InnerSubscription, SignalContext, SubscriptionLike, Teardown,
-};
+use rx_bevy_core::{Subscription, SubscriptionLike, Teardown, WithContext};
 
 use rx_bevy_context_command::ContextWithCommands;
 
@@ -13,7 +11,7 @@ pub struct EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {
-	subscription: InnerSubscription<Context>,
+	subscription: Subscription<Context>,
 	phantom_data: PhantomData<&'c Context>,
 }
 
@@ -23,13 +21,13 @@ where
 {
 	fn default() -> Self {
 		Self {
-			subscription: InnerSubscription::<Context>::default(),
+			subscription: Subscription::<Context>::default(),
 			phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<'c, Context> SignalContext for EntitySubscription<'c, Context>
+impl<'c, Context> WithContext for EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {
@@ -56,8 +54,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		Context::get_context_for_drop()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -68,6 +66,17 @@ where
 	fn drop(&mut self) {
 		// Only panics when the `dev_panic_on_dropped_active_subscriptions`
 		// feature is active, otherwise it just prints a warning.
-		self.assert_closed_when_dropped();
+
+		if !self.is_closed() {
+			let message = format!(
+				"{} was dropped without unsubscribing first!",
+				short_type_name::short_type_name::<Self>()
+			);
+			#[cfg(not(feature = "dev_panic_on_dropped_active_subscriptions"))]
+			bevy_log::warn!("{}", message);
+
+			#[cfg(feature = "dev_panic_on_dropped_active_subscriptions")]
+			panic!("{}", message);
+		}
 	}
 }

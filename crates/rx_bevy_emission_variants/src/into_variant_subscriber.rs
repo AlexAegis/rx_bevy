@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionLike, Teardown, Tick,
+	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
+	Tick, WithContext,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -38,7 +38,7 @@ where
 	}
 }
 
-impl<O1, O2, Destination> SignalContext for IntoVariant1of2Subscriber<O1, O2, Destination>
+impl<O1, O2, Destination> WithContext for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
@@ -49,7 +49,7 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
-	type Context = <Destination as SignalContext>::Context;
+	type Context = <Destination as WithContext>::Context;
 }
 
 impl<O1, O2, Destination> Observer for IntoVariant1of2Subscriber<O1, O2, Destination>
@@ -105,7 +105,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Destination as SignalContext>::Context) {
+	fn unsubscribe(&mut self, context: &mut <Destination as WithContext>::Context) {
 		self.destination.unsubscribe(context);
 	}
 
@@ -115,8 +115,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -175,7 +175,7 @@ where
 	}
 }
 
-impl<O1, O2, Destination> SignalContext for IntoVariant2of2Subscriber<O1, O2, Destination>
+impl<O1, O2, Destination> WithContext for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Observable,
 	O2: 'static + Observable,
@@ -186,7 +186,7 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
-	type Context = <Destination as SignalContext>::Context;
+	type Context = <Destination as WithContext>::Context;
 }
 
 impl<O1, O2, Destination> Observer for IntoVariant2of2Subscriber<O1, O2, Destination>
@@ -242,7 +242,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Destination as SignalContext>::Context) {
+	fn unsubscribe(&mut self, context: &mut <Destination as WithContext>::Context) {
 		self.destination.unsubscribe(context);
 	}
 
@@ -252,8 +252,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

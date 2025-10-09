@@ -6,8 +6,8 @@ use std::{
 use short_type_name::short_type_name;
 
 use crate::{
-	DestinationSharer, DropContext, InnerSubscription, Observer, ObserverInput, SharedDestination,
-	SignalContext, Subscriber, SubscriptionLike,
+	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
+	Subscription, SubscriptionLike, WithContext,
 };
 
 // todo check if its even needed where it is currently, not having add is pretty bad, OR MAYBE put add on another trait and add a simpler fn on subscriber
@@ -15,10 +15,10 @@ pub struct ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	destination: Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
-	teardown: InnerSubscription<Context>,
+	teardown: Subscription<Context>,
 	_ph: PhantomData<*mut Context>,
 }
 
@@ -26,7 +26,7 @@ impl<In, InError, Context> DestinationSharer for ErasedArcSubscriber<In, InError
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Shared<Destination>
 		= ErasedArcSubscriber<Destination::In, Destination::InError, Destination::Context>
@@ -47,7 +47,7 @@ impl<In, InError, Context, D> SharedDestination<D> for ErasedArcSubscriber<In, I
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 	D: 'static + Subscriber<In = In, InError = InError, Context = Context>,
 {
 	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
@@ -75,7 +75,7 @@ impl<In, InError, Context> ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
@@ -83,7 +83,7 @@ where
 	{
 		Self {
 			destination: Arc::new(RwLock::new(destination)),
-			teardown: InnerSubscription::default(),
+			teardown: Subscription::default(),
 			_ph: PhantomData,
 		}
 	}
@@ -115,12 +115,12 @@ impl<In, InError, Context> Clone for ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn clone(&self) -> Self {
 		Self {
 			destination: self.destination.clone(),
-			teardown: InnerSubscription::default(), // New instance, new teardowns
+			teardown: Subscription::default(), // New instance, new teardowns
 			_ph: PhantomData,
 		}
 	}
@@ -130,17 +130,17 @@ impl<In, InError, Context> ObserverInput for ErasedArcSubscriber<In, InError, Co
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Context> SignalContext for ErasedArcSubscriber<In, InError, Context>
+impl<In, InError, Context> WithContext for ErasedArcSubscriber<In, InError, Context>
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	type Context = Context;
 }
@@ -149,7 +149,7 @@ impl<In, InError, Context> Observer for ErasedArcSubscriber<In, InError, Context
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -204,7 +204,7 @@ impl<In, InError, Context> SubscriptionLike for ErasedArcSubscriber<In, InError,
 where
 	In: 'static,
 	InError: 'static,
-	Context: DropContext,
+	Context: SignalContext,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(lock) = self.destination.read() {
@@ -241,9 +241,9 @@ where
 		}
 	}
 
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
 		if let Ok(mut lock) = self.destination.write() {
-			lock.get_unsubscribe_context()
+			lock.get_context_to_unsubscribe_on_drop()
 		} else {
 			panic!(
 				"Context can't be acquired in a {} as the destination RwLock is poisoned!",

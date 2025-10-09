@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown, Tick,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, WithContext,
 };
 
 /// A helper subscriber that does not forward completion and unsubscribe signals.
@@ -30,7 +30,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> SignalContext for DetachedSubscriber<Destination>
+impl<Destination> WithContext for DetachedSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
@@ -82,7 +82,7 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }

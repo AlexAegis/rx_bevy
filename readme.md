@@ -4,14 +4,9 @@
 
 > Reactive Extensions for the [Bevy Game Engine][BevyWebsite]!
 
-## Requirements
+## Usage
 
-- [Git LFS](https://git-lfs.github.com/)
-- [Latest Rust Stable](https://rustup.rs/)
-- [Mold](https://github.com/rui314/mold) (Only on Linux)
-- [LLD](https://lld.llvm.org/) (Only on Windows)
-
-## Development
+## Development of this repository
 
 This repository is using `cargo-make`, it will take care of installing all
 required cargo extensions and rustup components used in this repository.
@@ -19,6 +14,11 @@ required cargo extensions and rustup components used in this repository.
 1. Run `scripts/setup.sh` (Or run `cargo install cargo-make`)
 2. (Optional) Install the rest of the tooling/cargo extensions using
    `cargo make setup`
+
+### Requirements
+
+- [Git LFS](https://git-lfs.github.com/)
+- [Latest Rust Stable](https://rustup.rs/)
 
 ### What is that `package.json` file doing here?
 
@@ -33,5 +33,12 @@ JavaScript package.
 - `cargo make format` to format all crates
 - `cargo make lint` to lint all crates using `clippy` and `rustfmt`
 - `cargo make book-build` to build the documentation book
+
+## Bevy Compatibility Table
+
+| Bevy | rx_bevy |
+| ---- | ------- |
+| 0.17 | 0.2     |
+| 0.16 | 0.1     |
 
 [BevyWebsite]: https://bevyengine.org/

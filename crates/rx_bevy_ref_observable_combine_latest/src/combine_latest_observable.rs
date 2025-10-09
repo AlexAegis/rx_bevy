@@ -1,6 +1,4 @@
-use rx_bevy_core::{
-	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionCollection,
-};
+use rx_bevy_core::{Observable, ObservableOutput, Subscriber, SubscriptionCollection, WithContext};
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
 };
@@ -74,7 +72,7 @@ where
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
-				Context = <Self::Subscription as SignalContext>::Context,
+				Context = <Self::Subscription as WithContext>::Context,
 			>
 			+ SubscriptionCollection,
 		Self: Sized,

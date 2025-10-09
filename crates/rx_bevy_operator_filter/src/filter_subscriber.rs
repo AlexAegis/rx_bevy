@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	AssertSubscriptionClosedOnDrop, ObservableOutput, Observer, ObserverInput, SignalContext,
-	Subscriber, SubscriptionLike, Teardown, Tick,
+	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
+	WithContext,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
@@ -33,7 +33,7 @@ where
 	}
 }
 
-impl<In, InError, Filter, Destination> SignalContext
+impl<In, InError, Filter, Destination> WithContext
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
 	In: 'static,
@@ -99,8 +99,8 @@ where
 	}
 
 	#[inline]
-	fn get_unsubscribe_context(&mut self) -> Self::Context {
-		self.destination.get_unsubscribe_context()
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -126,16 +126,4 @@ where
 {
 	type Out = In;
 	type OutError = InError;
-}
-
-impl<In, InError, Filter, Destination> Drop for FilterSubscriber<In, InError, Filter, Destination>
-where
-	In: 'static,
-	InError: 'static,
-	Filter: for<'a> Fn(&'a In) -> bool,
-	Destination: Subscriber<In = In, InError = InError>,
-{
-	fn drop(&mut self) {
-		self.assert_closed_when_dropped();
-	}
 }
