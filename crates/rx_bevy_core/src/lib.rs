@@ -1,4 +1,5 @@
 mod from_context;
+mod notifications;
 mod observable;
 mod observer;
 mod operator;
@@ -14,6 +15,7 @@ mod operators;
 mod subscribers;
 
 pub use from_context::*;
+pub use notifications::*;
 pub use observable::*;
 pub use observer::*;
 pub use operator::*;

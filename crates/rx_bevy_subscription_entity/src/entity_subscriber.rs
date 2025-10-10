@@ -3,23 +3,22 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, event::Event};
 
 use rx_bevy_common_bounds::SignalBound;
-use rx_bevy_context_command::{CommandContext, ContextWithCommands};
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
+	SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
+
+use crate::{CommandContext, ContextWithCommands};
 
 pub struct EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	/// "Destination" entity
+	/// Entity where observed signals are sent to
 	destination_entity: Entity,
 
-	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
-	/// As this subscriber is stored in this entity!
-	subscription_entity: Entity,
-
+	// TODO: Determine from the context using a querylens
 	closed: bool,
 
 	_phantom_data: PhantomData<(&'c In, InError)>,
@@ -30,14 +29,79 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
+	pub fn new(destination_entity: Entity) -> Self {
+		Self {
+			destination_entity,
+			closed: false,
+			_phantom_data: PhantomData,
+		}
+	}
+
 	#[inline]
 	pub fn get_destination_entity(&self) -> Entity {
 		self.destination_entity
 	}
+}
 
-	#[inline]
-	pub fn get_subscription_entity(&self) -> Entity {
-		self.subscription_entity
+impl<'c, In, InError> Clone for EntitySubscriber<'c, In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	fn clone(&self) -> Self {
+		Self {
+			destination_entity: self.destination_entity,
+			closed: self.closed,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<'c, In, InError> DestinationSharer for EntitySubscriber<'c, In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	type Shared<Destination>
+		= EntitySubscriber<'c, In, InError>
+	where
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
+
+	fn share<Destination>(
+		destination: Destination,
+		context: &mut CommandContext<'c>,
+	) -> Self::Shared<Destination>
+	where
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+	{
+		// TODO: Impl component that can actually store the destination
+		let destination_entity = context.commands().spawn(());
+
+		EntitySubscriber::new(destination_entity.id())
+	}
+}
+impl<'c, In, InError, Destination> SharedDestination<Destination>
+	for EntitySubscriber<'c, In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Destination: 'static + Subscriber<In = In, InError = InError, Context = Self::Context>,
+{
+	// TODO: Maybe a SubscriberComponent<Destination>?
+	type Access = EntitySubscriber<'c, In, InError>;
+
+	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: Fn(&Self::Access, &mut Self::Context),
+	{
+	}
+
+	fn access_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: FnMut(&mut Self::Access, &mut Self::Context),
+	{
 	}
 }
 
@@ -124,12 +188,9 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self as WithContext>::Context) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.closed = true;
-		context
-			.commands()
-			.entity(self.subscription_entity)
-			.despawn();
+		// TODO: QueryLens of destination with self.access, call unsubscribe on destination
 	}
 
 	fn add_teardown(&mut self, _teardown: Teardown<Self::Context>, _context: &mut Self::Context) {
@@ -141,6 +202,6 @@ where
 		// This WILL panic. But do not worry, everything should be properly
 		// closed by the time a Drop would try to unsubscribe as they are
 		// automatically unsubscribed by an on_remove hook
-		SignalContext::create_context_to_unsubscribe_on_drop()
+		Self::Context::create_context_to_unsubscribe_on_drop()
 	}
 }

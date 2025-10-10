@@ -61,9 +61,13 @@ where
 	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
-	pub fn new(destination: Destination, switcher: Switcher) -> Self {
+	pub fn new(
+		destination: Destination,
+		switcher: Switcher,
+		context: &mut InnerObservable::Context,
+	) -> Self {
 		Self {
-			destination: SwitchSubscriber::new(destination),
+			destination: SwitchSubscriber::new(destination, context),
 			switcher,
 			_phantom_data: PhantomData,
 		}
@@ -131,13 +135,11 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		self.destination.error(error.into(), context);
-		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
-		self.destination.unsubscribe(context);
 	}
 }
 

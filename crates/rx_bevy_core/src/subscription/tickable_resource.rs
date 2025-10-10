@@ -22,7 +22,7 @@ pub struct NotifiableSubscription<Context>
 where
 	Context: SignalContext,
 {
-	notify_fn: Option<Box<dyn FnMut(SubscriptionNotification<Context>)>>,
+	notify_fn: Option<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context)>>,
 }
 
 impl<Context> NotifiableSubscription<Context>
@@ -31,14 +31,16 @@ where
 {
 	pub fn new<F>(f: F) -> Self
 	where
-		F: 'static + FnMut(SubscriptionNotification<Context>),
+		F: 'static + FnMut(SubscriptionNotification<Context>, &mut Context),
 	{
 		Self {
 			notify_fn: Some(Box::new(f)),
 		}
 	}
 
-	pub fn new_from_box(f: Box<dyn FnMut(SubscriptionNotification<Context>)>) -> Self {
+	pub fn new_from_box(
+		f: Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context)>,
+	) -> Self {
 		Self { notify_fn: Some(f) }
 	}
 
@@ -50,16 +52,18 @@ where
 	/// It's private to ensure that it's not taken without either executing it
 	/// or placing it somewhere else where execution is also guaranteed.
 	#[inline]
-	pub(crate) fn take(mut self) -> Option<Box<dyn FnMut(SubscriptionNotification<Context>)>> {
+	pub(crate) fn take(
+		mut self,
+	) -> Option<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context)>> {
 		self.notify_fn.take()
 	}
 
 	/// Immediately consumes and calls the teardowns closure, leaving a None
 	/// behind, rendering the teardown permamently closed.
 	#[inline]
-	pub fn execute(&mut self, action: SubscriptionNotification<Context>) {
+	pub fn execute(&mut self, action: SubscriptionNotification<Context>, context: &mut Context) {
 		if let Some(teardown) = &mut self.notify_fn {
-			(teardown)(action);
+			(teardown)(action, context);
 		}
 	}
 
@@ -85,7 +89,7 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		self.execute(SubscriptionNotification::Unsubscribe(context));
+		self.execute(SubscriptionNotification::Unsubscribe, context);
 	}
 
 	fn add_teardown(
@@ -93,7 +97,7 @@ where
 		teardown: super::Teardown<Self::Context>,
 		context: &mut Self::Context,
 	) {
-		self.execute(SubscriptionNotification::Add(teardown, context));
+		self.execute(SubscriptionNotification::Add(teardown), context);
 	}
 
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
@@ -124,14 +128,14 @@ where
 			notify_fn: if subscription.is_closed() {
 				None
 			} else {
-				Some(Box::new(move |action| match action {
-					SubscriptionNotification::Tick(tick, context) => {
+				Some(Box::new(move |action, context| match action {
+					SubscriptionNotification::Tick(tick) => {
 						subscription.tick(tick, context);
 					}
-					SubscriptionNotification::Unsubscribe(context) => {
+					SubscriptionNotification::Unsubscribe => {
 						subscription.unsubscribe(context);
 					}
-					SubscriptionNotification::Add(teardown, context) => {
+					SubscriptionNotification::Add(teardown) => {
 						subscription.add_teardown(teardown, context);
 					}
 				}))

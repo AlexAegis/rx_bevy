@@ -123,8 +123,6 @@ rx_bevy_ref_subscriber_rc = { path = "crates/rx_bevy_ref_subscriber_rc" }
 rx_bevy_ref_subscriber_switch = { path = "crates/rx_bevy_ref_subscriber_switch" }
 # Subscribers
 rx_bevy_subscriber_entity = { path = "crates/rx_bevy_subscriber_entity" }
-# Subscription Contexts
-rx_bevy_context_command = { path = "crates/rx_bevy_context_command" }
 # Subscriptions
 rx_bevy_subscription_drop = { path = "crates/rx_bevy_subscription_drop" }
 rx_bevy_subscription_entity = { path = "crates/rx_bevy_subscription_entity" }

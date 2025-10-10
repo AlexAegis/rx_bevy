@@ -54,9 +54,9 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	pub fn new(destination: Destination) -> Self {
+	pub fn new(destination: Destination, context: &mut InnerObservable::Context) -> Self {
 		Self {
-			destination: SharedSubscriber::new(destination),
+			destination: SharedSubscriber::new(destination, context),
 			inner_subscription: None,
 			teardown: SubscriptionData::default(),
 			closed: false,

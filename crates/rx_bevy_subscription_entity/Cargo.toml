@@ -46,8 +46,9 @@ dev_panic_on_dropped_active_subscriptions = [
 ]
 
 [dependencies]
+# TODO: disable default features in all dependencies
+rx_bevy_common_bounds = { workspace = true }
 rx_bevy_core = { workspace = true, features = ["bevy"] }
-rx_bevy_context_command = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_log = { workspace = true }
 smallvec = { workspace = true }

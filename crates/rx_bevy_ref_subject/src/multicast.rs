@@ -52,7 +52,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut Destination::Context,
+		context: &mut Destination::Context,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
@@ -62,7 +62,7 @@ where
 				Context = <Self::Subscription as WithContext>::Context,
 			>,
 	{
-		let shared = ErasedArcSubscriber::share(destination);
+		let shared = ErasedArcSubscriber::share(destination, context);
 		self.subscribers.push(shared.clone());
 		SubscriptionHandle::new(MulticastSubscription::new(shared))
 	}

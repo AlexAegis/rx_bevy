@@ -49,9 +49,12 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	pub fn new(destination: Destination) -> Self {
+	pub fn new(destination: Destination, context: &mut InnerObservable::Context) -> Self {
 		Self {
-			state: Rc::new(RefCell::new(SwitchSubscriberState::new(destination))),
+			state: Rc::new(RefCell::new(SwitchSubscriberState::new(
+				destination,
+				context,
+			))),
 		}
 	}
 }

@@ -32,7 +32,10 @@ where
 		Destination:
 			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 
-	fn share<Destination>(destination: Destination) -> Self::Shared<Destination>
+	fn share<Destination>(
+		destination: Destination,
+		_context: &mut Self::Context,
+	) -> Self::Shared<Destination>
 	where
 		Destination:
 			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,

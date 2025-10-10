@@ -1,29 +1,30 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::component::Component;
+use bevy_ecs::{component::Component, entity::Entity};
 
 use rx_bevy_core::{SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithContext};
 
-use rx_bevy_context_command::ContextWithCommands;
+use crate::ContextWithCommands;
 
 #[derive(Component)]
 pub struct EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {
+	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
+	/// As this subscriber is stored in this entity!
+	subscription_entity: Entity,
 	subscription: SubscriptionData<Context>,
 	phantom_data: PhantomData<&'c ()>,
 }
 
-impl<'c, Context> Default for EntitySubscription<'c, Context>
+impl<'c, Context> EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {
-	fn default() -> Self {
-		Self {
-			subscription: SubscriptionData::<Context>::default(),
-			phantom_data: PhantomData,
-		}
+	#[inline]
+	pub fn get_subscription_entity(&self) -> Entity {
+		self.subscription_entity
 	}
 }
 

@@ -1,3 +1,5 @@
+use crate::{DestinationSharer, Subscriber};
+
 /// ## Why is there only a single associated context type?
 ///
 /// Both Subscriptions and Observers in the same subscription use the same kind
@@ -23,6 +25,13 @@ pub trait SignalContext {
 	/// impossible, but going out of scope isn't a concern because it provides
 	/// hooks for when that would happen, like in an ECS.
 	type DropSafety: SignalContextDropSafety;
+
+	// TODO: Utilize this type instead of the use_sharer fn
+	/// Defines how new subscription should be created for subscribers that
+	/// can create additional subscriptions as they operate.
+	type Sharer<Destination>: DestinationSharer<Context = Self>
+	where
+		Destination: 'static + Subscriber<Context = Self>;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self;
 }
@@ -75,6 +84,7 @@ impl SignalContextDropSafety for DropUnsafeSignalContext {
 /// A trivial example of a [DropSafeSignalContext] is the unit context `()`,
 /// because it's empty! It doesn't let you acquire resources outside of the
 /// subscription, so you don't need to release anything either!
+#[derive(Debug)]
 pub struct DropSafeSignalContext;
 
 impl private::Seal for DropSafeSignalContext {}

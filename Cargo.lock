@@ -4620,18 +4620,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_context_command"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_ecs",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
 name = "rx_bevy_core"
 version = "0.1.0"
 dependencies = [
@@ -5164,18 +5152,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_subscriber_entity"
-version = "0.1.0"
-dependencies = [
- "bevy_ecs",
- "rx_bevy",
- "rx_bevy_common_bounds",
- "rx_bevy_context_command",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
 name = "rx_bevy_subscription_drop"
 version = "0.1.0"
 dependencies = [
@@ -5193,7 +5169,7 @@ dependencies = [
  "bevy_ecs",
  "bevy_log",
  "rx_bevy",
- "rx_bevy_context_command",
+ "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_testing",
  "short_type_name",

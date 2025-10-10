@@ -22,20 +22,6 @@ where
 	_phantom_data: PhantomData<Destination>,
 }
 
-impl<Destination, Sharer> From<Destination> for SharedSubscriber<Destination, Sharer>
-where
-	Destination: 'static + Subscriber,
-	Sharer: DestinationSharer<
-			In = Destination::In,
-			InError = Destination::InError,
-			Context = Destination::Context,
-		>,
-{
-	fn from(destination: Destination) -> Self {
-		Self::new(destination)
-	}
-}
-
 impl<Destination, Sharer> SharedSubscriber<Destination, Sharer>
 where
 	Destination: 'static + Subscriber,
@@ -45,9 +31,9 @@ where
 			Context = Destination::Context,
 		>,
 {
-	pub fn new(destination: Destination) -> Self {
+	pub fn new(destination: Destination, context: &mut Sharer::Context) -> Self {
 		Self {
-			destination: Sharer::share(destination),
+			destination: Sharer::share(destination, context),
 			_phantom_data: PhantomData,
 		}
 	}

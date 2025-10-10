@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::SubscriptionLike;
 
 /// A teardown is a closure which owns resources, by the nature of them being
@@ -18,6 +20,16 @@ use crate::SubscriptionLike;
 /// where you can add anything that is `Into<Teardown>` such as Subscriptions.
 pub struct Teardown<Context> {
 	teardown_fn: Option<Box<dyn FnOnce(&mut Context)>>,
+}
+
+impl<Context> Debug for Teardown<Context> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.write_fmt(format_args!(
+			"{} {{ is_closed: {} }}",
+			short_type_name::short_type_name::<Self>(),
+			self.is_closed(),
+		))
+	}
 }
 
 impl<Context> Teardown<Context> {

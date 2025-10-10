@@ -1,15 +1,10 @@
 use short_type_name::short_type_name;
 
 use crate::{
-	NotifiableSubscription, SignalContext, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	NotifiableSubscription, SignalContext, SubscriptionLike, SubscriptionNotification, Teardown,
+	Tick, Tickable, WithContext,
 };
 use std::fmt::Debug;
-
-pub enum SubscriptionNotification<'c, Context> {
-	Tick(Tick, &'c mut Context),
-	Unsubscribe(&'c mut Context),
-	Add(Teardown<Context>, &'c mut Context),
-}
 
 /// The base subscription implementation commonly used by other subscription
 /// implementations.
@@ -31,7 +26,7 @@ where
 	/// also be 'static when we want to use this as a `dyn SubscriptionLike`
 	/// trait object, due to variance as the accepting functions signature is
 	/// `impl SubscriptionLike<Context = Context> + 'static`
-	notifiable_subscriptions: Vec<Box<dyn FnMut(SubscriptionNotification<Context>)>>,
+	notifiable_subscriptions: Vec<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context)>>,
 	finalizers: Vec<Box<dyn FnOnce(&mut Context)>>,
 }
 
@@ -61,7 +56,7 @@ where
 	) {
 		if let Some(mut notifiable_subscription) = subscription.take() {
 			if self.is_closed() {
-				(notifiable_subscription)(SubscriptionNotification::Unsubscribe(context))
+				(notifiable_subscription)(SubscriptionNotification::Unsubscribe, context)
 			}
 			self.notifiable_subscriptions.push(notifiable_subscription);
 		}
@@ -94,7 +89,7 @@ where
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		for notifiable_subscription in self.notifiable_subscriptions.iter_mut() {
-			(notifiable_subscription)(SubscriptionNotification::Tick(tick.clone(), context));
+			(notifiable_subscription)(SubscriptionNotification::Tick(tick.clone()), context);
 		}
 	}
 }
@@ -113,7 +108,7 @@ where
 			self.is_closed = true;
 
 			for mut notifiable_subscription in self.notifiable_subscriptions.drain(..) {
-				(notifiable_subscription)(SubscriptionNotification::Unsubscribe(context));
+				(notifiable_subscription)(SubscriptionNotification::Unsubscribe, context);
 			}
 
 			for teardown in self.finalizers.drain(..) {
@@ -150,7 +145,7 @@ where
 		f.write_fmt(format_args!(
 			"{} {{ is_closed: {}, finalizers: {} }}",
 			short_type_name::<Self>(),
-			self.is_closed,
+			self.is_closed(),
 			self.finalizers.len()
 		))
 	}

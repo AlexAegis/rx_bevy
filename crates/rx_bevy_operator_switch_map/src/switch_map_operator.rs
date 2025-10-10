@@ -74,13 +74,13 @@ where
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Sharer as WithContext>::Context,
+		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		SwitchMapSubscriber::new(destination, self.switcher.clone())
+		SwitchMapSubscriber::new(destination, self.switcher.clone(), context)
 	}
 }
 
@@ -156,5 +156,33 @@ where
 			switcher: self.switcher.clone(),
 			_phantom_data: PhantomData,
 		}
+	}
+}
+
+#[cfg(test)]
+mod test {
+
+	use rx_bevy::prelude::*;
+	use rx_bevy_core::{ErasedArcSubscriber, use_sharer};
+	use rx_bevy_testing::prelude::*;
+
+	#[test]
+	fn t() {
+		let mut context = MockContext::default();
+		let mock_destination = MockObserver::<i32, (), DropSafeSignalContext>::default();
+
+		let mut source = (1..=2)
+			.into_observable::<MockContext<_, _, _>>()
+			.switch_map(
+				|_| (10..=12).into_observable(),
+				use_sharer::<ErasedArcSubscriber<_, _, _>>(),
+			);
+		let _subscription = source.subscribe(mock_destination, &mut context);
+		println!("{context:?}");
+		assert!(
+			context.nothing_happened_after_closed(),
+			"something happened after unsubscribe"
+		);
+		assert_eq!(context.all_observed_values(), vec![10, 11, 12, 10, 11, 12]);
 	}
 }

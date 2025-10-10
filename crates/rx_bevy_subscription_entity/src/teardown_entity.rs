@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
-use rx_bevy_context_command::ContextWithCommands;
 use rx_bevy_core::{SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithContext};
+
+use crate::ContextWithCommands;
 
 pub struct EntityTeardown<Context>
 where

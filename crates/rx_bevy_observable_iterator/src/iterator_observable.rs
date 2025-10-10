@@ -76,3 +76,25 @@ where
 		SubscriptionHandle::new(InertSubscription::new(destination, context))
 	}
 }
+
+#[cfg(test)]
+mod test {
+
+	use rx_bevy::prelude::*;
+	use rx_bevy_testing::prelude::*;
+
+	#[test]
+	fn iterator_observable_should_emit_its_values_then_complete() {
+		let mut context = MockContext::default();
+		let mock_destination = MockObserver::<i32, (), DropSafeSignalContext>::default();
+
+		let mut source = (1..=2).into_observable::<MockContext<_, _, _>>();
+		let _subscription = source.subscribe(mock_destination, &mut context);
+		println!("{context:?}");
+		assert!(
+			context.nothing_happened_after_closed(),
+			"something happened after unsubscribe"
+		);
+		assert_eq!(context.all_observed_values(), vec![10, 11, 12, 10, 11, 12]);
+	}
+}

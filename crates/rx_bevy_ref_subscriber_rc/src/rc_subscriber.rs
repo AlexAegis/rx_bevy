@@ -245,7 +245,7 @@ mod test {
 		rc_subscriber.next(1, &mut context);
 		rc_subscriber.unsubscribe(&mut context);
 
-		assert_eq!(context.all_unsubscribes(), 1);
+		assert_eq!(context.count_all_observed_unsubscribes(), 1);
 	}
 
 	#[test]
@@ -257,7 +257,7 @@ mod test {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
-		assert_eq!(context.unsubscribes, 0);
+		assert_eq!(context.count_all_observed_unsubscribes(), 0);
 
 		rc_subscriber_clone.unsubscribe(&mut context);
 
@@ -265,7 +265,7 @@ mod test {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
-		assert_eq!(context.unsubscribes, 0);
+		assert_eq!(context.count_all_observed_unsubscribes(), 0);
 	}
 
 	#[test]

@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionHandle, SubscriptionLike, Teardown, WithContext,
+	SubscriptionHandle, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -127,6 +127,19 @@ where
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
 			multicast.complete(context);
+		}
+	}
+}
+
+impl<In, InError, Context> Tickable for Subject<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: SignalContext,
+{
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		if let Ok(mut multicast) = self.multicast.write() {
+			multicast.tick(tick, context);
 		}
 	}
 }
