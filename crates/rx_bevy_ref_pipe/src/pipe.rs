@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, Operator, Subscriber, SubscriptionCollection, WithContext,
+	Observable, ObservableOutput, Operator, Subscriber, SubscriptionHandle, WithContext,
 };
 
 pub struct Pipe<Source, Op>
@@ -91,6 +91,19 @@ where
 	type OutError = Op::OutError;
 }
 
+impl<Source, Op> WithContext for Pipe<Source, Op>
+where
+	Source: 'static + Observable,
+	Op: 'static
+		+ Operator<
+			In = Source::Out,
+			InError = Source::OutError,
+			Context = <Source::Subscription as WithContext>::Context,
+		>,
+{
+	type Context = Source::Context;
+}
+
 impl<Source, Op> Observable for Pipe<Source, Op>
 where
 	Source: 'static + Observable,
@@ -108,15 +121,10 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> Self::Subscription
+	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let operator_subscriber = self.operator.operator_subscribe(destination, context);
 		self.source_observable

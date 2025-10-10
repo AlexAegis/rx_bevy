@@ -1,65 +1,90 @@
-use bevy_ecs::observer::Trigger;
 use bevy_time::{Timer, TimerMode};
-use rx_bevy_core::ObservableOutput;
-
-use rx_bevy_plugin::{
-	CommandSubscriber, RxSubscription, RxTick, SubscriptionChannelHandlerRegistrationContext,
+use rx_bevy_core::{
+	SignalContext, Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable, WithContext,
 };
-
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
 
 use crate::IntervalObservableOptions;
 
-#[cfg_attr(feature = "debug", derive(Debug))]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct IntervalSubscription {
+// TODO: Ensure that if a tick loops the timer over multiple times, all of them are counted and emitted
+pub struct IntervalSubscription<Context>
+where
+	Context: SignalContext,
+{
 	timer: Timer,
-	count: i32,
+	count: u32,
+	max_emissions_per_tick: u32,
+	destination: Box<dyn Subscriber<In = u32, InError = (), Context = Context>>,
+	teardown: SubscriptionData<Context>,
 }
 
-impl IntervalSubscription {
-	pub fn new(interval_observable_options: IntervalObservableOptions) -> Self {
-		Self {
-			timer: Timer::new(interval_observable_options.duration, TimerMode::Repeating),
-			count: if interval_observable_options.start_on_subscribe {
+impl<Context> IntervalSubscription<Context>
+where
+	Context: SignalContext,
+{
+	pub fn new(
+		destination: impl Subscriber<In = u32, InError = (), Context = Context> + 'static,
+		interval_subscription_options: IntervalObservableOptions,
+	) -> Self {
+		IntervalSubscription {
+			timer: Timer::new(interval_subscription_options.duration, TimerMode::Repeating),
+			count: if interval_subscription_options.start_on_subscribe {
 				1
 			} else {
 				0
 			},
+			max_emissions_per_tick: interval_subscription_options.max_emissions_per_tick,
+			destination: Box::new(destination),
+			teardown: SubscriptionData::default(),
 		}
 	}
 }
 
-impl ObservableOutput for IntervalSubscription {
-	type Out = i32;
-	type OutError = ();
+impl<Context> WithContext for IntervalSubscription<Context>
+where
+	Context: SignalContext,
+{
+	type Context = Context;
 }
 
-impl RxSubscription for IntervalSubscription {
-	fn register_subscription_channel_handlers<'a, 'w, 's>(
+impl<Context> Tickable for IntervalSubscription<Context>
+where
+	Context: SignalContext,
+{
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.timer.tick(tick.delta);
+		let ticks = self
+			.timer
+			.times_finished_this_tick()
+			.min(self.max_emissions_per_tick);
+		for i in 0..ticks {
+			self.destination.next(self.count + i, context);
+		}
+		self.count += ticks;
+	}
+}
+
+impl<Context> SubscriptionLike for IntervalSubscription<Context>
+where
+	Context: SignalContext,
+{
+	fn is_closed(&self) -> bool {
+		self.teardown.is_closed()
+	}
+
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		self.destination.unsubscribe(context);
+		self.teardown.unsubscribe(context);
+	}
+
+	fn add_teardown(
 		&mut self,
-		mut _hooks: SubscriptionChannelHandlerRegistrationContext<'a, 'w, 's, Self>,
+		teardown: rx_bevy_core::Teardown<Self::Context>,
+		context: &mut Self::Context,
 	) {
-		// hooks.register_tick_handler(interval_subscription_on_tick_system);
+		self.teardown.add_teardown(teardown, context);
 	}
 
-	fn unsubscribe(&mut self, mut destination: CommandSubscriber<Self::Out, Self::OutError>) {
-		destination.unsubscribe();
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		self.destination.get_context_to_unsubscribe_on_drop()
 	}
-}
-
-fn _interval_subscription_on_tick_system(
-	_trigger: Trigger<RxTick>,
-	// mut context: RxContextSub<IntervalSubscription>,
-	// mut destination: RxDestination<IntervalSubscription>,
-) {
-	// let mut subscription = context.get_subscription(trigger.target());
-	// let mut subscriber = destination.get_subscriber_of(trigger.target());
-	//
-	// subscription.timer.tick(trigger.event().delta);
-	// if subscription.timer.just_finished() {
-	// 	subscriber.next(subscription.count);
-	// 	subscription.count += 1;
-	// }
 }

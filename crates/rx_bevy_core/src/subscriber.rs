@@ -1,4 +1,4 @@
-use crate::{Observer, SubscriptionLike, WithContext};
+use crate::{Observer, SubscriptionLike, Tickable, WithContext};
 
 /// # [Subscriber]
 ///
@@ -15,6 +15,6 @@ use crate::{Observer, SubscriptionLike, WithContext};
 /// A subscribers [Observer] functions like `next`, `error` and `complete`
 /// that just simply forward the signal to its destination should always
 /// be `#[inline]`.
-pub trait Subscriber: Observer + SubscriptionLike + WithContext {}
+pub trait Subscriber: Observer + Tickable + SubscriptionLike + WithContext {}
 
-impl<T> Subscriber for T where T: Observer + SubscriptionLike + WithContext {}
+impl<T> Subscriber for T where T: Observer + Tickable + SubscriptionLike + WithContext {}

@@ -4652,14 +4652,12 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_ecs",
  "bevy_egui",
  "bevy_reflect",
  "bevy_time",
  "examples_common",
  "rx_bevy",
  "rx_bevy_core",
- "rx_bevy_plugin",
  "rx_bevy_testing",
 ]
 
@@ -5158,16 +5156,6 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_ref_subscriber_switch"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subscriber_detached",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_subscriber_detached"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",

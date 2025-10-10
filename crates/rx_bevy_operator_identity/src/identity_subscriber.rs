@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	WithContext,
+	Tickable, WithContext,
 };
 
 #[derive(Debug)]
@@ -61,7 +61,12 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<Destination> Tickable for IdentitySubscriber<Destination>
+where
+	Destination: Subscriber,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);

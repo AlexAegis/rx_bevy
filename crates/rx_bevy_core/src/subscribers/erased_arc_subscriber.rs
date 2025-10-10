@@ -7,7 +7,7 @@ use short_type_name::short_type_name;
 
 use crate::{
 	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
-	Subscription, SubscriptionLike, WithContext,
+	SubscriptionData, SubscriptionLike, Tickable, WithContext,
 };
 
 // todo check if its even needed where it is currently, not having add is pretty bad, OR MAYBE put add on another trait and add a simpler fn on subscriber
@@ -18,7 +18,7 @@ where
 	Context: SignalContext,
 {
 	destination: Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
-	teardown: Subscription<Context>,
+	teardown: SubscriptionData<Context>,
 	_ph: PhantomData<*mut Context>,
 }
 
@@ -83,7 +83,7 @@ where
 	{
 		Self {
 			destination: Arc::new(RwLock::new(destination)),
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 			_ph: PhantomData,
 		}
 	}
@@ -120,7 +120,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			destination: self.destination.clone(),
-			teardown: Subscription::default(), // New instance, new teardowns
+			teardown: SubscriptionData::default(), // New instance, new teardowns
 			_ph: PhantomData,
 		}
 	}
@@ -151,7 +151,6 @@ where
 	InError: 'static,
 	Context: SignalContext,
 {
-	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
@@ -162,7 +161,6 @@ where
 		}
 	}
 
-	#[inline]
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
@@ -174,7 +172,6 @@ where
 		}
 	}
 
-	#[inline]
 	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
@@ -187,15 +184,19 @@ where
 		// Must always run
 		self.teardown.unsubscribe(context);
 	}
+}
 
-	#[inline]
+impl<In, InError, Context> Tickable for ErasedArcSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: SignalContext,
+{
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
-		if !self.is_closed() {
-			if let Ok(mut lock) = self.destination.write() {
-				lock.tick(tick, context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
+		if let Ok(mut lock) = self.destination.write() {
+			lock.tick(tick, context);
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
 		}
 	}
 }

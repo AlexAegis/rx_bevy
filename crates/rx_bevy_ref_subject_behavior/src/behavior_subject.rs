@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick, WithContext,
+	SubscriptionHandle, SubscriptionLike, Teardown, WithContext,
 };
 use rx_bevy_ref_subject::{MulticastSubscription, Subject};
 
@@ -73,11 +73,6 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.subject.complete(context);
 	}
-
-	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		self.subject.tick(tick, context);
-	}
 }
 
 impl<In, InError, Context> WithContext for BehaviorSubject<In, InError, Context>
@@ -108,18 +103,12 @@ where
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	>(
 		&mut self,
 		mut destination: Destination,
 		context: &mut Context,
-	) -> Self::Subscription {
+	) -> SubscriptionHandle<Self::Subscription> {
 		destination.next(self.value.borrow().clone(), context);
 		self.subject.subscribe(destination, context)
 	}

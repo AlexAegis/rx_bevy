@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
-	Tick, WithContext,
+	Tick, Tickable, WithContext,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -81,7 +81,19 @@ where
 		self.destination.complete(context);
 		//self.destination.unsubscribe(context);
 	}
+}
 
+impl<O1, O2, Destination> Tickable for IntoVariant1of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
@@ -218,7 +230,19 @@ where
 		self.destination.complete(context);
 		//self.destination.unsubscribe(context);
 	}
+}
 
+impl<O1, O2, Destination> Tickable for IntoVariant2of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);

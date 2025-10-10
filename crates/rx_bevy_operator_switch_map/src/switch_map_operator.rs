@@ -67,9 +67,8 @@ where
 	type Subscriber<Destination>
 		= SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ SubscriptionCollection;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -78,9 +77,8 @@ where
 		_context: &mut <Sharer as WithContext>::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ SubscriptionCollection,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		SwitchMapSubscriber::new(destination, self.switcher.clone())
 	}

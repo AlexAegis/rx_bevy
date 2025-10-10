@@ -1,7 +1,15 @@
 use short_type_name::short_type_name;
 
-use crate::{SignalContext, SubscriptionLike, Teardown, WithContext};
+use crate::{
+	NotifiableSubscription, SignalContext, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+};
 use std::fmt::Debug;
+
+pub enum SubscriptionNotification<'c, Context> {
+	Tick(Tick, &'c mut Context),
+	Unsubscribe(&'c mut Context),
+	Add(Teardown<Context>, &'c mut Context),
+}
 
 /// The base subscription implementation commonly used by other subscription
 /// implementations.
@@ -14,62 +22,84 @@ use std::fmt::Debug;
 /// upon which the collection is drained, and the closures are called,
 /// effectively dropping everything held by the subscription before the
 /// subscription itself is dropped.
-pub struct Subscription<Context>
+pub struct SubscriptionData<Context>
 where
 	Context: SignalContext,
 {
 	is_closed: bool,
+	/// Must be stored as function reference or else Context would be forced to
+	/// also be 'static when we want to use this as a `dyn SubscriptionLike`
+	/// trait object, due to variance as the accepting functions signature is
+	/// `impl SubscriptionLike<Context = Context> + 'static`
+	notifiable_subscriptions: Vec<Box<dyn FnMut(SubscriptionNotification<Context>)>>,
 	finalizers: Vec<Box<dyn FnOnce(&mut Context)>>,
 }
 
-impl<Context> Subscription<Context>
+impl<Context> SubscriptionData<Context>
 where
 	Context: SignalContext,
 {
-	pub fn new(subscription: impl Into<Teardown<Context>>) -> Self {
-		let teardown: Teardown<Context> = subscription.into();
-
-		if let Some(teardown_fn) = teardown.take() {
-			Self {
-				is_closed: false,
-				finalizers: vec![teardown_fn],
-			}
+	pub fn new_from_resource(subscription: NotifiableSubscription<Context>) -> Self {
+		let is_closed = subscription.is_closed();
+		let notifiable_subscriptions = if let Some(notifiable_subscription) = subscription.take() {
+			vec![notifiable_subscription]
 		} else {
-			Self {
-				is_closed: false,
-				finalizers: Vec::default(),
-			}
+			Vec::new()
+		};
+
+		Self {
+			is_closed,
+			notifiable_subscriptions,
+			finalizers: Vec::new(),
 		}
 	}
 
-	pub fn new_fn<F>(f: F) -> Self
-	where
-		F: 'static + FnOnce(&mut Context),
-	{
-		Self::new(Teardown::<Context>::new(f))
+	pub fn add_notifiable(
+		&mut self,
+		subscription: NotifiableSubscription<Context>,
+		context: &mut Context,
+	) {
+		if let Some(mut notifiable_subscription) = subscription.take() {
+			if self.is_closed() {
+				(notifiable_subscription)(SubscriptionNotification::Unsubscribe(context))
+			}
+			self.notifiable_subscriptions.push(notifiable_subscription);
+		}
 	}
 }
 
-impl<Context> Default for Subscription<Context>
+impl<Context> Default for SubscriptionData<Context>
 where
 	Context: SignalContext,
 {
 	fn default() -> Self {
 		Self {
+			notifiable_subscriptions: Vec::new(),
 			finalizers: Vec::new(),
 			is_closed: false,
 		}
 	}
 }
 
-impl<Context> WithContext for Subscription<Context>
+impl<Context> WithContext for SubscriptionData<Context>
 where
 	Context: SignalContext,
 {
 	type Context = Context;
 }
 
-impl<Context> SubscriptionLike for Subscription<Context>
+impl<Context> Tickable for SubscriptionData<Context>
+where
+	Context: SignalContext,
+{
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		for notifiable_subscription in self.notifiable_subscriptions.iter_mut() {
+			(notifiable_subscription)(SubscriptionNotification::Tick(tick.clone(), context));
+		}
+	}
+}
+
+impl<Context> SubscriptionLike for SubscriptionData<Context>
 where
 	Context: SignalContext,
 {
@@ -81,6 +111,10 @@ where
 	fn unsubscribe(&mut self, context: &mut Context) {
 		if !self.is_closed() {
 			self.is_closed = true;
+
+			for mut notifiable_subscription in self.notifiable_subscriptions.drain(..) {
+				(notifiable_subscription)(SubscriptionNotification::Unsubscribe(context));
+			}
 
 			for teardown in self.finalizers.drain(..) {
 				(teardown)(context);
@@ -108,7 +142,7 @@ where
 	}
 }
 
-impl<Context> Debug for Subscription<Context>
+impl<Context> Debug for SubscriptionData<Context>
 where
 	Context: SignalContext,
 {

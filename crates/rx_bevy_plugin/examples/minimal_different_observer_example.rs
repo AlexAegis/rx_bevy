@@ -5,7 +5,7 @@ use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
 
-use rx_bevy_ecs_observable_interval::{IntervalObservableComponent, IntervalObservableOptions};
+use rx_bevy_ecs_observable_interval::{IntervalObservable, IntervalObservableOptions};
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxNext, RxPlugin,
 };
@@ -66,7 +66,7 @@ fn setup(mut commands: Commands) {
 
 	let mut interval_observable_entity_commands = commands.spawn((
 		Name::new("IntervalObservable"),
-		IntervalObservableComponent::new(IntervalObservableOptions {
+		IntervalObservable::new(IntervalObservableOptions {
 			duration: Duration::from_secs(1),
 			start_on_subscribe: true,
 		}),

@@ -1,5 +1,6 @@
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, WithContext,
+	Observable, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
+	WithContext,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -7,9 +8,13 @@ use crate::{ObservableEmissionQueue, QueueOverflowBehavior, ZipSubscriberOptions
 
 pub struct ZipSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Subscription = O1::Subscription>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -21,9 +26,13 @@ where
 
 impl<Destination, O1, O2> ZipSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Subscription = O1::Subscription>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -52,7 +61,7 @@ where
 		// else, don't do anything, the incoming value is ignored as the queue is full
 	}
 
-	fn check_if_can_complete(&mut self, context: &mut <Self as WithContext>::Context) {
+	fn check_if_can_complete(&mut self, context: &mut O1::Context) {
 		if !self.destination.is_closed()
 			&& (self.o1_queue.is_completed() || self.o2_queue.is_completed())
 		{
@@ -64,9 +73,13 @@ where
 
 impl<Destination, O1, O2> ObserverInput for ZipSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Subscription = O1::Subscription>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -76,9 +89,13 @@ where
 
 impl<Destination, O1, O2> Observer for ZipSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Subscription = O1::Subscription>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -120,7 +137,20 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.check_if_can_complete(context);
 	}
+}
 
+impl<Destination, O1, O2> Tickable for ZipSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
+	O1: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
@@ -129,20 +159,28 @@ where
 
 impl<Destination, O1, O2> WithContext for ZipSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Subscription = O1::Subscription>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type Context = Destination::Context;
+	type Context = O1::Context;
 }
 
 impl<Destination, O1, O2> SubscriptionLike for ZipSubscriber<Destination, O1, O2>
 where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
 	O1: 'static + Observable,
-	O2: 'static + Observable<Subscription = O1::Subscription>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {

@@ -1,5 +1,6 @@
 use rx_bevy_core::{
-	ErasedArcSubscriber, SignalContext, Subscription, SubscriptionLike, Teardown, WithContext,
+	ErasedArcSubscriber, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
+	Tickable, WithContext,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -12,7 +13,7 @@ where
 	Context: SignalContext,
 {
 	subscriber: Option<ErasedArcSubscriber<In, InError, Context>>,
-	teardown: Subscription<Context>,
+	teardown: SubscriptionData<Context>,
 }
 
 impl<In, InError, Context> MulticastSubscription<In, InError, Context>
@@ -24,7 +25,7 @@ where
 	pub fn new(shared_subscriber: ErasedArcSubscriber<In, InError, Context>) -> Self {
 		Self {
 			subscriber: Some(shared_subscriber),
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 		}
 	}
 }
@@ -38,7 +39,7 @@ where
 	fn default() -> Self {
 		Self {
 			subscriber: None,
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 		}
 	}
 }
@@ -52,7 +53,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			subscriber: self.subscriber.clone(),
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 		}
 	}
 }
@@ -64,6 +65,19 @@ where
 	Context: SignalContext,
 {
 	type Context = Context;
+}
+
+impl<In, InError, Context> Tickable for MulticastSubscription<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: SignalContext,
+{
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		if let Some(subscriber) = &mut self.subscriber {
+			subscriber.tick(tick, context);
+		}
+	}
 }
 
 impl<In, InError, Context> SubscriptionLike for MulticastSubscription<In, InError, Context>

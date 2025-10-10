@@ -1,77 +1,35 @@
 use std::time::Duration;
 
-use bevy::{input::common_conditions::input_just_pressed, prelude::*};
-use bevy_egui::EguiPlugin;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use examples_common::send_event;
-use rx_bevy_ecs_observable_interval::{IntervalObservableComponent, IntervalObservableOptions};
+use rx_bevy::prelude::*;
+use rx_bevy_ecs_observable_interval::{IntervalObservable, IntervalObservableOptions};
+use rx_bevy_testing::MockClock;
 
-use rx_bevy_plugin::{
-	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxNext, RxPlugin,
-};
+/// An [IteratorObservable] turns the items from an [IntoIterator] and emits
+/// them immediately upon subscription
+fn main() {
+	let mut mock_clock = MockClock::default();
+	let mut context = ();
 
-fn main() -> AppExit {
-	App::new()
-		.add_plugins((
-			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
-			WorldInspectorPlugin::new(),
-			RxPlugin,
-		))
-		.register_type::<ExampleEntities>()
-		.add_systems(Startup, setup)
-		.add_systems(
-			Update,
-			(
-				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
-				unsubscribe_from_interval.run_if(input_just_pressed(KeyCode::Space)),
-			),
-		)
-		.run()
-}
-
-fn next_number_observer(next: Trigger<RxNext<i32>>, name_query: Query<&Name>, time: Res<Time>) {
-	println!(
-		"value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
-		next.event(),
-		next.target(),
-		name_query.get(next.target()).unwrap(),
-		time.elapsed_secs()
-	);
-}
-
-fn unsubscribe_from_interval(mut commands: Commands, example_entities: Res<ExampleEntities>) {
-	println!("Unsubscribe interval_subscription!");
-	commands.unsubscribe(example_entities.interval_subscription);
-}
-
-#[derive(Resource, Reflect)]
-struct ExampleEntities {
-	interval_subscription: Entity,
-}
-
-fn setup(mut commands: Commands) {
-	commands.spawn((
-		Camera3d::default(),
-		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
-	));
-
-	let mut interval_observable_entity_commands = commands.spawn((
-		Name::new("IntervalObservable"),
-		IntervalObservableComponent::new(IntervalObservableOptions {
-			duration: Duration::from_secs(1),
-			start_on_subscribe: true,
-		}),
-	));
-
-	interval_observable_entity_commands.observe(next_number_observer);
-
-	let interval_subscription = interval_observable_entity_commands
-		.subscribe_to_this_scheduled::<i32, (), Update>(RelativeEntity::This);
-
-	commands.insert_resource(ExampleEntities {
-		interval_subscription,
+	let mut interval_observable = IntervalObservable::new(IntervalObservableOptions {
+		duration: Duration::from_secs(1),
+		start_on_subscribe: true,
+		max_emissions_per_tick: 3,
 	});
+	let mut subscription =
+		interval_observable.subscribe(PrintObserver::new("interval_observable"), &mut context);
+
+	println!("subscribed!");
+	subscription.tick(mock_clock.elapse(Duration::from_millis(600)), &mut context);
+	println!("600ms elapsed!");
+	subscription.tick(mock_clock.elapse(Duration::from_millis(400)), &mut context);
+	println!("400ms elapsed!");
+	subscription.tick(
+		mock_clock.elapse(Duration::from_millis(16200)),
+		&mut context,
+	); // lag spike! would result in 16 emissions, but the limit is 2!
+	println!("16200ms elapsed!");
+	subscription.tick(mock_clock.elapse(Duration::from_millis(1200)), &mut context);
+	println!("1200ms elapsed!");
+	subscription.tick(mock_clock.elapse(Duration::from_millis(2200)), &mut context);
+	println!("2200ms elapsed!");
 }

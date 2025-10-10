@@ -1,4 +1,4 @@
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionCollection};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
 
 use crate::CompositeSubscriber;
 
@@ -49,9 +49,8 @@ where
 	type Subscriber<Destination>
 		= CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<Destination>>, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ SubscriptionCollection,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 		Op::Subscriber<Destination>:
 			Subscriber<In = Op::In, InError = Op::InError, Context = Self::Context>,
 		PrevOp::Subscriber<Op::Subscriber<Destination>>: Subscriber<Context = Self::Context>;
@@ -63,9 +62,8 @@ where
 		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ SubscriptionCollection,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		CompositeSubscriber::new(
 			self.prev_op

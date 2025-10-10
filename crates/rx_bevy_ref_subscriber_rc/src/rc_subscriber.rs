@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	ArcSubscriber, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
+	ArcSubscriber, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
 	WithContext,
 };
 
@@ -138,11 +138,17 @@ where
 			self.unsubscribe(context);
 		}
 	}
+}
 
+impl<Destination> Tickable for RcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.is_this_clone_closed() {
-			self.destination.tick(tick, context);
-		}
+		// TODO: verify how shared destinations behave if all of them are getting ticked, ticks might need an id, and consumers of ticks would probably need to check if a tick had been processed before using them
+		//if !self.is_this_clone_closed() {
+		self.destination.tick(tick, context);
+		//}
 	}
 }
 

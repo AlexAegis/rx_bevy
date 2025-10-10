@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, WithContext,
+	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable,
+	WithContext,
 };
 
 pub struct EnumerateSubscriber<In, InError, Destination>
@@ -78,7 +79,17 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<In, InError, Destination> Tickable for EnumerateSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);

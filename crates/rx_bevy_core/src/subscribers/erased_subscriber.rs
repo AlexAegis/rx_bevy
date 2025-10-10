@@ -1,5 +1,6 @@
 use crate::{
-	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown, WithContext,
+	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown, Tickable,
+	WithContext,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
@@ -66,7 +67,14 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<In, InError, Context> Tickable for ErasedSubscriber<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: SignalContext,
+{
 	#[inline]
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);

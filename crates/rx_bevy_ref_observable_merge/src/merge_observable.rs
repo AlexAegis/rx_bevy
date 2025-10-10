@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observable, ObservableOutput, Subscriber, SubscriptionCollection, WithContext};
+use rx_bevy_core::{
+	Observable, ObservableOutput, Subscriber, SubscriptionData, SubscriptionHandle, WithContext,
+};
 use rx_bevy_operator_map_into::MapIntoSubscriber;
 use rx_bevy_ref_subscriber_rc::RcSubscriber;
 
@@ -14,7 +16,7 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Subscription = O1::Subscription>,
+	O2: Observable<Context = O1::Context>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -28,7 +30,7 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Subscription = O1::Subscription>,
+	O2: Observable<Context = O1::Context>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -44,7 +46,7 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Subscription = O1::Subscription>,
+	O2: Observable<Context = O1::Context>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -64,12 +66,26 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Subscription = O1::Subscription>,
+	O2: Observable<Context = O1::Context>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
 	type Out = Out;
 	type OutError = OutError;
+}
+
+impl<Out, OutError, O1, O2> WithContext for MergeObservable<Out, OutError, O1, O2>
+where
+	Out: 'static,
+	OutError: 'static,
+	O1: Observable,
+	O1::Out: Into<Out>,
+	O1::OutError: Into<OutError>,
+	O2: Observable<Context = O1::Context>,
+	O2::Out: Into<Out>,
+	O2::OutError: Into<OutError>,
+{
+	type Context = O1::Context;
 }
 
 impl<Out, OutError, O1, O2> Observable for MergeObservable<Out, OutError, O1, O2>
@@ -80,43 +96,39 @@ where
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
 	<O1 as Observable>::Subscription: 'static,
-	O2: Observable<Subscription = O1::Subscription>,
+	O2: Observable<Context = O1::Context>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 	<O2 as Observable>::Subscription: 'static,
 {
-	type Subscription = O1::Subscription;
+	type Subscription = SubscriptionData<O1::Context>;
 
 	fn subscribe<'c, Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> Self::Subscription
+	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection,
+			>,
 	{
-		let mut subscription = O1::Subscription::default();
-
 		let rc_subscriber = RcSubscriber::new(destination);
 
-		subscription.add(
-			self.observable_1
-				.subscribe(MapIntoSubscriber::new(rc_subscriber.clone()), context),
-			context,
-		);
+		let s1 = self
+			.observable_1
+			.subscribe(MapIntoSubscriber::new(rc_subscriber.clone()), context);
 
-		subscription.add(
-			self.observable_2
-				.subscribe(MapIntoSubscriber::new(rc_subscriber), context),
-			context,
-		);
+		let s2 = self
+			.observable_2
+			.subscribe(MapIntoSubscriber::new(rc_subscriber), context);
 
-		subscription
+		let mut subscription = SubscriptionData::default();
+		subscription.add_notifiable(s1.into(), context);
+		subscription.add_notifiable(s2.into(), context);
+		SubscriptionHandle::new(subscription)
 	}
 }

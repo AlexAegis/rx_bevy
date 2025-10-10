@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	WithContext,
+	Tickable, WithContext,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -11,7 +11,7 @@ use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSigna
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub struct AdsrSubscriber<InError, Destination>
 where
-	Destination: Observer<In = AdsrSignal, InError = InError>,
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	destination: Destination,
 	is_getting_activated: bool,
@@ -22,7 +22,7 @@ where
 
 impl<InError, Destination> AdsrSubscriber<InError, Destination>
 where
-	Destination: Observer<In = AdsrSignal, InError = InError>,
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	pub fn new(destination: Destination, options: AdsrOperatorOptions) -> Self {
 		Self {
@@ -37,7 +37,7 @@ where
 
 impl<InError, Destination> WithContext for AdsrSubscriber<InError, Destination>
 where
-	Destination: Observer<In = AdsrSignal, InError = InError>,
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 	InError: 'static,
 {
 	type Context = Destination::Context;
@@ -45,7 +45,7 @@ where
 
 impl<InError, Destination> Observer for AdsrSubscriber<InError, Destination>
 where
-	Destination: Observer<In = AdsrSignal, InError = InError>,
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 	InError: 'static,
 {
 	#[inline]
@@ -62,7 +62,13 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<InError, Destination> Tickable for AdsrSubscriber<InError, Destination>
+where
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	InError: 'static,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		let next =
@@ -103,7 +109,7 @@ where
 
 impl<InError, Destination> ObserverInput for AdsrSubscriber<InError, Destination>
 where
-	Destination: Observer<In = AdsrSignal, InError = InError>,
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 	InError: 'static,
 {
 	type In = bool;
@@ -112,7 +118,7 @@ where
 
 impl<InError, Destination> ObservableOutput for AdsrSubscriber<InError, Destination>
 where
-	Destination: Observer<In = AdsrSignal, InError = InError>,
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 	InError: 'static,
 {
 	type Out = AdsrSignal;

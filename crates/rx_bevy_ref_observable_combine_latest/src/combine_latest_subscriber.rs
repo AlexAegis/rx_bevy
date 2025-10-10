@@ -1,5 +1,6 @@
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, WithContext,
+	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -43,6 +44,18 @@ where
 {
 	type In = EitherOut2<O1, O2>;
 	type InError = EitherOutError2<O1, O2>;
+}
+
+impl<Destination, O1, O2> ObservableOutput for CombineLatestSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
+	type Out = (O1::Out, O2::Out);
+	type OutError = EitherOutError2<O1, O2>;
 }
 
 impl<Destination, O1, O2> WithContext for CombineLatestSubscriber<Destination, O1, O2>
@@ -91,7 +104,17 @@ where
 		self.destination.complete(context);
 		self.unsubscribe(context)
 	}
+}
 
+impl<Destination, O1, O2> Tickable for CombineLatestSubscriber<Destination, O1, O2>
+where
+	Destination:
+		Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>> + SubscriptionLike,
+	O1: 'static + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);

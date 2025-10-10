@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	WithContext,
+	Tickable, WithContext,
 };
 
 #[derive(Debug)]
@@ -81,12 +81,20 @@ where
 			self.unsubscribe(context);
 		}
 	}
+}
 
+impl<In, InError, Destination> Tickable for TakeSubscriber<In, InError, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.is_closed() {
-			self.destination.tick(tick, context);
-		}
+		self.destination.tick(tick, context);
 	}
 }
 

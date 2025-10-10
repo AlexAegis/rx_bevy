@@ -1,6 +1,6 @@
 use crate::{
 	DropSafeSignalContext, ObservableOutput, ObserverInput, SignalContext, SubscriptionLike,
-	Teardown, WithContext,
+	Teardown, Tickable, WithContext,
 };
 
 impl ObserverInput for () {
@@ -22,6 +22,10 @@ impl SignalContext for () {
 
 impl WithContext for () {
 	type Context = ();
+}
+
+impl Tickable for () {
+	fn tick(&mut self, _tick: crate::Tick, _context: &mut Self::Context) {}
 }
 
 impl SubscriptionLike for () {

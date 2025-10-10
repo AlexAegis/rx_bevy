@@ -1,6 +1,6 @@
-use std::marker::PhantomData;
-
-use rx_bevy_core::{SignalContext, SubscriptionLike, Teardown, WithContext};
+use rx_bevy_core::{
+	SignalContext, SubscriptionLike, Teardown, Tick, Tickable, TickableSubscription, WithContext,
+};
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
 /// runs any [Teardown] you may add into it.
@@ -9,39 +9,26 @@ use rx_bevy_core::{SignalContext, SubscriptionLike, Teardown, WithContext};
 /// This aspect lets us safely ignore the drop-safety of the context used, as
 /// subscriptions made with drop-unsafe contexts can (obviously) be dropped once
 /// they are unsubscribed, and that is guaranteed here.
-#[derive(Clone)]
 pub struct InertSubscription<Context>
 where
 	Context: SignalContext,
 {
+	tickable: Box<dyn Tickable<Context = Context>>,
 	// TODO: Check every PhantomData for variance
-	_phantom_data: PhantomData<*mut Context>,
 }
 
 impl<Context> InertSubscription<Context>
 where
 	Context: SignalContext,
 {
-	pub fn new<T>(subscription: T, context: &mut Context) -> Self
-	where
-		T: Into<Teardown<Context>>,
-	{
-		let teardown: Teardown<Context> = subscription.into();
-		teardown.execute(context);
+	pub fn new(
+		mut destination: impl TickableSubscription<Context = Context> + 'static,
+		context: &mut Context,
+	) -> Self {
+		destination.unsubscribe(context);
 
 		Self {
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<Context> Default for InertSubscription<Context>
-where
-	Context: SignalContext,
-{
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
+			tickable: Box::new(destination),
 		}
 	}
 }
@@ -51,6 +38,15 @@ where
 	Context: SignalContext,
 {
 	type Context = Context;
+}
+
+impl<Context> Tickable for InertSubscription<Context>
+where
+	Context: SignalContext,
+{
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.tickable.tick(tick, context);
+	}
 }
 
 impl<Context> SubscriptionLike for InertSubscription<Context>

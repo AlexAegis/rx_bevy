@@ -4,7 +4,7 @@ use short_type_name::short_type_name;
 
 use crate::{
 	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
-	WithContext,
+	Tickable, WithContext,
 };
 
 impl<S> WithContext for Arc<RwLock<S>>
@@ -101,14 +101,17 @@ where
 			}
 		}
 	}
+}
 
+impl<S> Tickable for Arc<RwLock<S>>
+where
+	S: Subscriber,
+{
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
-		if !self.is_closed() {
-			if let Ok(mut destination) = self.write() {
-				destination.tick(tick, context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
+		if let Ok(mut destination) = self.write() {
+			destination.tick(tick, context);
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
 		}
 	}
 }

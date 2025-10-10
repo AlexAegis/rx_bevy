@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick, WithContext,
+	SubscriptionHandle, SubscriptionLike, Teardown, WithContext,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -76,15 +76,14 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Context,
-	) -> Self::Subscription
+	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection,
+			>,
 	{
 		let mut multicast = self.multicast.write().expect("asd");
 		multicast.subscribe(destination, context)
@@ -128,14 +127,6 @@ where
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
 			multicast.complete(context);
-		}
-	}
-
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.is_closed()
-			&& let Ok(mut multicast) = self.multicast.write()
-		{
-			multicast.tick(tick, context);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 use rx_bevy_core::{
 	DestinationSharer, ErasedArcSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
-	SignalContext, Subscriber, Subscription, SubscriptionCollection, SubscriptionLike, Teardown,
-	Tick, WithContext,
+	SignalContext, Subscriber, SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 use smallvec::SmallVec;
 
@@ -25,7 +25,7 @@ where
 {
 	subscribers: SmallVec<[ErasedArcSubscriber<In, InError, Context>; 1]>,
 	closed: bool,
-	teardown: Subscription<Context>,
+	teardown: SubscriptionData<Context>,
 }
 
 impl<In, InError, Context> Multicast<In, InError, Context>
@@ -53,19 +53,18 @@ where
 		&mut self,
 		destination: Destination,
 		_context: &mut Destination::Context,
-	) -> Self::Subscription
+	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection,
+			>,
 	{
 		let shared = ErasedArcSubscriber::share(destination);
 		self.subscribers.push(shared.clone());
-		MulticastSubscription::new(shared)
+		SubscriptionHandle::new(MulticastSubscription::new(shared))
 	}
 }
 
@@ -95,7 +94,14 @@ where
 			destination.unsubscribe(context);
 		}
 	}
+}
 
+impl<In, InError, Context> Tickable for Multicast<In, InError, Context>
+where
+	In: 'static + Clone,
+	InError: 'static + Clone,
+	Context: SignalContext,
+{
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		for destination in self.subscribers.iter_mut() {
 			destination.tick(tick.clone(), context);
@@ -165,7 +171,7 @@ where
 	fn default() -> Self {
 		Self {
 			subscribers: SmallVec::new(),
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 			closed: false,
 		}
 	}

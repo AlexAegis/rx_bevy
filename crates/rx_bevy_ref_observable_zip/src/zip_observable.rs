@@ -1,4 +1,6 @@
-use rx_bevy_core::{Observable, ObservableOutput, Subscriber, SubscriptionCollection, WithContext};
+use rx_bevy_core::{
+	Observable, ObservableOutput, Subscriber, SubscriptionData, SubscriptionHandle, WithContext,
+};
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
 };
@@ -52,7 +54,7 @@ where
 impl<O1, O2> ObservableOutput for Zip<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Subscription = O1::Subscription>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -60,52 +62,56 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<O1, O2> Observable for Zip<O1, O2>
+impl<O1, O2> WithContext for Zip<O1, O2>
 where
 	O1: 'static + Observable,
-	O2: 'static + Observable<Subscription = O1::Subscription>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type Subscription = O1::Subscription;
+	type Context = O1::Context;
+}
+
+impl<O1, O2> Observable for Zip<O1, O2>
+where
+	O1: 'static + Observable,
+	O2: 'static + Observable<Context = O1::Context>,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
+	type Subscription = SubscriptionData<O1::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> Self::Subscription
+	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection,
+			>,
 	{
-		let mut subscription = Self::Subscription::default();
-
 		let rc_subscriber = RcSubscriber::new(ZipSubscriber::<Destination, O1, O2>::new(
 			destination,
 			self.options.clone(),
 		));
 
-		subscription.add(
-			self.observable_1.subscribe(
-				IntoVariant1of2Subscriber::new(rc_subscriber.clone()),
-				context,
-			),
+		let s1 = self.observable_1.subscribe(
+			IntoVariant1of2Subscriber::new(rc_subscriber.clone()),
 			context,
 		);
 
-		subscription.add(
-			self.observable_2.subscribe(
-				IntoVariant2of2Subscriber::new(rc_subscriber.clone()),
-				context,
-			),
+		let s2 = self.observable_2.subscribe(
+			IntoVariant2of2Subscriber::new(rc_subscriber.clone()),
 			context,
 		);
 
-		subscription
+		let mut subscription = SubscriptionData::default();
+		subscription.add_notifiable(s1.into(), context);
+		subscription.add_notifiable(s2.into(), context);
+		SubscriptionHandle::new(subscription)
 	}
 }

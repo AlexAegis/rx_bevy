@@ -1,7 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, WithContext,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 use short_type_name::short_type_name;
 
@@ -112,11 +112,14 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.complete_if_can(context);
 	}
+}
 
+impl<Destination> Tickable for InnerRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.closed {
-			self.destination.tick(tick, context);
-		}
+		self.destination.tick(tick, context);
 	}
 }
 

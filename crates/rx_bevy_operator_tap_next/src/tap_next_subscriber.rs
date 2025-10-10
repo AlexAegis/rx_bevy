@@ -1,13 +1,14 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, SubscriptionLike, Teardown, Tick, WithContext,
+	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
+	Tickable, WithContext,
 };
 
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
-	Destination: Observer<In = In, InError = InError>,
+	Destination: Subscriber<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
 {
@@ -19,7 +20,7 @@ where
 impl<In, InError, OnNext, Destination> TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
-	Destination: Observer<In = In, InError = InError>,
+	Destination: Subscriber<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
 {
@@ -36,7 +37,7 @@ impl<In, InError, OnNext, Destination> WithContext
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
-	Destination: Observer<In = In, InError = InError>,
+	Destination: Subscriber<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
 {
@@ -47,7 +48,7 @@ impl<In, InError, OnNext, Destination> Observer
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
-	Destination: Observer<In = In, InError = InError>,
+	Destination: Subscriber<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
 {
@@ -66,7 +67,17 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<In, InError, OnNext, Destination> Tickable
+	for TapNextSubscriber<In, InError, OnNext, Destination>
+where
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	Destination: Subscriber<In = In, InError = InError>,
+	In: 'static,
+	InError: 'static,
+	Destination: SubscriptionLike,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
@@ -77,7 +88,7 @@ impl<In, InError, OnNext, Destination> SubscriptionLike
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
-	Destination: Observer<In = In, InError = InError>,
+	Destination: Subscriber<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
 	Destination: SubscriptionLike,
@@ -107,7 +118,7 @@ impl<In, InError, OnNext, Destination> ObservableOutput
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
-	Destination: Observer<In = In, InError = InError>,
+	Destination: Subscriber<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
 {
@@ -119,7 +130,7 @@ impl<In, InError, OnNext, Destination> ObserverInput
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
-	Destination: Observer<In = In, InError = InError>,
+	Destination: Subscriber<In = In, InError = InError>,
 	In: 'static,
 	InError: 'static,
 {

@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, Subscription, SubscriptionLike, Teardown, Tick,
-	WithContext,
+	Observer, ObserverInput, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
+	Tickable, WithContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -13,7 +13,7 @@ where
 	on_complete: Option<Box<dyn FnOnce(&mut Context)>>,
 	on_tick: Option<Box<dyn FnMut(Tick, &mut Context)>>,
 	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context)>>,
-	teardown: Subscription<Context>,
+	teardown: SubscriptionData<Context>,
 }
 
 impl<In, InError, Context> DynFnObserver<In, InError, Context>
@@ -114,11 +114,16 @@ where
 			self.unsubscribe(context);
 		}
 	}
+}
 
+impl<In, InError, Context> Tickable for DynFnObserver<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: SignalContext,
+{
 	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
-		if !self.is_closed()
-			&& let Some(on_tick) = &mut self.on_tick
-		{
+		if let Some(on_tick) = &mut self.on_tick {
 			(on_tick)(tick, context);
 		}
 	}
@@ -165,7 +170,7 @@ where
 			on_complete: None,
 			on_tick: None,
 			on_unsubscribe: None,
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 		}
 	}
 }

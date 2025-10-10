@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
 	DestinationSharer, Observable, Observer, ObserverInput, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick, WithContext,
+	SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 
 use crate::SwitchSubscriberState;
@@ -17,13 +17,13 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: SubscriptionCollection,
 {
@@ -39,13 +39,13 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: SubscriptionCollection,
 {
@@ -66,13 +66,13 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: SubscriptionCollection,
 {
@@ -90,13 +90,13 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: SubscriptionCollection,
 {
@@ -113,13 +113,13 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: SubscriptionCollection,
 {
@@ -147,11 +147,30 @@ where
 			state.complete_if_can(context);
 		}
 	}
+}
 
+impl<InnerObservable, Destination, Sharer> Tickable
+	for SwitchSubscriber<InnerObservable, Destination, Sharer>
+where
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: 'static
+		+ DestinationSharer<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.is_closed() {
-			self.state.borrow_mut().tick(tick, context);
-		}
+		self.state.borrow_mut().tick(tick, context);
 	}
 }
 
@@ -165,13 +184,13 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: SubscriptionCollection,
 {
@@ -215,13 +234,13 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: SubscriptionCollection,
 {

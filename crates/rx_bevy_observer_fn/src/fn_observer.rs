@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, Subscription, SubscriptionLike, Teardown, Tick,
-	WithContext,
+	Observer, ObserverInput, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
+	Tickable, WithContext,
 };
 
 /// An [FnObserver] requires you to define a callback for all three notifications
@@ -20,7 +20,7 @@ where
 	on_error: OnError,
 	on_complete: OnComplete,
 	on_tick: OnTick,
-	teardown: Subscription<Context>,
+	teardown: SubscriptionData<Context>,
 	_phantom_data: PhantomData<*mut (In, InError)>,
 }
 
@@ -46,7 +46,7 @@ where
 			on_error,
 			on_complete,
 			on_tick,
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -110,11 +110,21 @@ where
 			self.unsubscribe(context);
 		}
 	}
+}
 
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Tickable
+	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
+where
+	In: 'static,
+	InError: 'static,
+	OnNext: FnMut(In, &mut Context),
+	OnError: FnMut(InError, &mut Context),
+	OnComplete: FnMut(&mut Context),
+	OnTick: FnMut(Tick, &mut Context),
+	Context: SignalContext,
+{
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.is_closed() {
-			(self.on_tick)(tick, context);
-		}
+		(self.on_tick)(tick, context);
 	}
 }
 

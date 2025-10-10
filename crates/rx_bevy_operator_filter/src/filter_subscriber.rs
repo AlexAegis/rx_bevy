@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	WithContext,
+	Tickable, WithContext,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
@@ -68,7 +68,16 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<In, InError, Filter, Destination> Tickable
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Subscriber<In = In, InError = InError>,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);

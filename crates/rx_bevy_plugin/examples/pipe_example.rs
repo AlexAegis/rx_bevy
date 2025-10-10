@@ -4,7 +4,7 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
-use rx_bevy_ecs_observable_interval::{IntervalObservableComponent, IntervalObservableOptions};
+use rx_bevy_ecs_observable_interval::{IntervalObservable, IntervalObservableOptions};
 
 use rx_bevy_plugin::{
 	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxNext, RxPlugin,
@@ -87,7 +87,7 @@ fn setup(
 			Transform::from_xyz(-1.0, 0.0, 0.0),
 			Mesh3d(meshes.add(Cuboid::new(0.5, 0.5, 0.5))),
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::srgb(0.3, 0.3, 0.9)))),
-			IntervalObservableComponent::new(IntervalObservableOptions {
+			IntervalObservable::new(IntervalObservableOptions {
 				duration: Duration::from_secs(1),
 				start_on_subscribe: true,
 			}),

@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, WithContext,
+	Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tickable, WithContext,
 };
 
 #[derive(Debug)]
@@ -35,7 +35,14 @@ where
 	}
 
 	fn complete(&mut self, _context: &mut Self::Context) {}
+}
 
+impl<In, InError, Context> Tickable for NoopObserver<In, InError, Context>
+where
+	In: 'static,
+	InError: 'static,
+	Context: SignalContext,
+{
 	fn tick(&mut self, _tick: rx_bevy_core::Tick, _context: &mut Self::Context) {}
 }
 

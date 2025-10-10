@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{
-	ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber, SubscriptionCollection,
-};
+use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
 
 use crate::EnumerateSubscriber;
 
@@ -37,9 +35,8 @@ where
 	type Subscriber<Destination>
 		= EnumerateSubscriber<In, InError, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ SubscriptionCollection;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -48,9 +45,8 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ SubscriptionCollection,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		EnumerateSubscriber::new(destination)
 	}

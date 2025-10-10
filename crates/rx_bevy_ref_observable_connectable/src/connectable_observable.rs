@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, WithContext,
+	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionHandle, SubscriptionLike,
+	Teardown, WithContext,
 };
 
 use crate::{
@@ -12,15 +12,10 @@ use crate::{
 pub struct ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Subscription as WithContext>::Context) -> Connector,
+	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
 	Connector: 'static
-		+ SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
-	<Connector as Observable>::Subscription:
-		SubscriptionLike<Context = <Source::Subscription as WithContext>::Context>,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: Clone,
 {
 	connector: Arc<Mutex<InnerConnectableObservable<Source, ConnectorCreator, Connector>>>,
@@ -29,15 +24,10 @@ where
 impl<Source, ConnectorCreator, Connector> ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Subscription as WithContext>::Context) -> Connector,
+	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
 	Connector: 'static
-		+ SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
-	<Connector as Observable>::Subscription:
-		SubscriptionLike<Context = <Source::Subscription as WithContext>::Context>,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: Clone,
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
@@ -51,33 +41,35 @@ impl<Source, ConnectorCreator, Connector> ObservableOutput
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Subscription as WithContext>::Context) -> Connector,
+	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
 	Connector: 'static
-		+ SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
-	<Connector as Observable>::Subscription:
-		SubscriptionLike<Context = <Source::Subscription as WithContext>::Context>,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: Clone,
 {
 	type Out = Connector::Out;
 	type OutError = Connector::OutError;
 }
 
+impl<Source, ConnectorCreator, Connector> WithContext
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
+where
+	Source: Observable,
+	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription: Clone,
+{
+	type Context = Source::Context;
+}
+
 impl<Source, ConnectorCreator, Connector> Observable
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Subscription as WithContext>::Context) -> Connector,
-	Connector: SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
-	<Connector as Observable>::Subscription:
-		SubscriptionLike<Context = <Source::Subscription as WithContext>::Context>,
+	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: Clone,
 {
 	type Subscription = Connector::Subscription;
@@ -86,15 +78,14 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> Self::Subscription
+	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
 			+ Subscriber<
 				In = Self::Out,
 				InError = Self::OutError,
 				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection,
+			>,
 	{
 		print!("connectable subscribe about to lock..");
 		let mut connector = self.connector.lock().expect("cant lock");
@@ -104,37 +95,14 @@ where
 	}
 }
 
-impl<Source, ConnectorCreator, Connector> WithContext
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Subscription as WithContext>::Context) -> Connector,
-	Connector: 'static
-		+ SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
-	<Connector as Observable>::Subscription:
-		SubscriptionLike<Context = <Source::Subscription as WithContext>::Context>,
-	Source::Subscription: Clone,
-{
-	type Context = <Source::Subscription as WithContext>::Context;
-}
-
 impl<Source, ConnectorCreator, Connector> SubscriptionLike
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Subscription as WithContext>::Context) -> Connector,
+	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
 	Connector: 'static
-		+ SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
-	<Connector as Observable>::Subscription:
-		SubscriptionLike<Context = <Source::Subscription as WithContext>::Context>,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: Clone,
 {
 	fn is_closed(&self) -> bool {
@@ -180,13 +148,8 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut Connector::Context) -> Connector,
 	Connector: 'static
-		+ SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
-	<Connector as Observable>::Subscription:
-		SubscriptionLike<Context = <Source::Subscription as WithContext>::Context>,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: Clone,
 {
 	type ConnectionSubscription = Source::Subscription;
@@ -194,7 +157,7 @@ where
 	fn connect(
 		&mut self,
 		context: &mut <Self::ConnectionSubscription as WithContext>::Context,
-	) -> Self::ConnectionSubscription {
+	) -> SubscriptionHandle<Self::ConnectionSubscription> {
 		print!("connectable connect about to lock..");
 
 		let mut connector = self.connector.lock().expect("cant lock");
@@ -210,13 +173,8 @@ where
 	Source: Clone + Observable,
 	ConnectorCreator: Clone + Fn(&mut Connector::Context) -> Connector,
 	Connector: 'static
-		+ SubjectLike<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
-	<Connector as Observable>::Subscription:
-		SubscriptionLike<Context = <Source::Subscription as WithContext>::Context>,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: Clone,
 {
 	fn clone(&self) -> Self {

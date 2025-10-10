@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike, WithContext};
+use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike, Tickable, WithContext};
 
 impl<S> WithContext for Rc<RefCell<S>>
 where
@@ -38,11 +38,14 @@ where
 			self.borrow_mut().complete(context);
 		}
 	}
+}
 
+impl<S> Tickable for Rc<RefCell<S>>
+where
+	S: Subscriber,
+{
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
-		if !self.is_closed() {
-			self.borrow_mut().tick(tick, context);
-		}
+		self.borrow_mut().tick(tick, context);
 	}
 }
 

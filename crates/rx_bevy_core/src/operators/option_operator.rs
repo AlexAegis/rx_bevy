@@ -1,6 +1,4 @@
-use crate::{
-	ObservableOutput, ObserverInput, Operator, OptionSubscriber, Subscriber, SubscriptionCollection,
-};
+use crate::{ObservableOutput, ObserverInput, Operator, OptionSubscriber, Subscriber};
 
 /// [Operator]s with the same outputs as its inputs can be made optional.
 ///
@@ -16,9 +14,8 @@ where
 	type Subscriber<Destination>
 		= OptionSubscriber<Op::Subscriber<Destination>, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ SubscriptionCollection,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 		Op::Subscriber<Destination>: Subscriber;
 
 	fn operator_subscribe<Destination>(
@@ -27,9 +24,8 @@ where
 		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ SubscriptionCollection,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		match self {
 			Some(operator) => {

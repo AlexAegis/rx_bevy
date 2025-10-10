@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SignalContextDropSafety, Subscription,
-	SubscriptionLike, Teardown, Tick, WithContext,
+	Observer, ObserverInput, SignalContext, SignalContextDropSafety, SubscriptionData,
+	SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 use short_type_name::short_type_name;
 
@@ -14,7 +14,7 @@ where
 	DropSafety: SignalContextDropSafety,
 {
 	pub closed: bool,
-	teardown: Subscription<MockContext<In, InError, DropSafety>>,
+	teardown: SubscriptionData<MockContext<In, InError, DropSafety>>,
 	_phantom_data: PhantomData<(In, InError, DropSafety)>,
 }
 
@@ -178,7 +178,14 @@ where
 			context.completed_after_closed += 1;
 		}
 	}
+}
 
+impl<In, InError, DropSafety> Tickable for MockObserver<In, InError, DropSafety>
+where
+	In: 'static,
+	InError: 'static,
+	DropSafety: SignalContextDropSafety,
+{
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if !self.is_closed() {
 			context.ticks.push(tick);
@@ -243,7 +250,7 @@ where
 	fn default() -> Self {
 		Self {
 			closed: false,
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 			_phantom_data: PhantomData,
 		}
 	}

@@ -5,7 +5,7 @@ use bevy_ecs::{entity::Entity, event::Event};
 use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_context_command::{CommandContext, ContextWithCommands};
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tick, WithContext,
+	Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 
 pub struct EntitySubscriber<'c, In, InError>
@@ -100,13 +100,17 @@ where
 			self.unsubscribe(context);
 		}
 	}
+}
 
+impl<'c, In, InError> Tickable for EntitySubscriber<'c, In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.closed {
-			context
-				.commands()
-				.trigger_targets(tick, self.destination_entity);
-		}
+		context
+			.commands()
+			.trigger_targets(tick, self.destination_entity);
 	}
 }
 

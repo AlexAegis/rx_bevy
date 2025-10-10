@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use derive_where::derive_where;
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	WithContext,
+	Tickable, WithContext,
 };
 
 #[derive_where(Debug)]
@@ -83,7 +83,20 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<In, InError, Mapper, Out, Destination> Tickable
+	for MapSubscriber<In, InError, Mapper, Out, Destination>
+where
+	In: 'static,
+	InError: 'static,
+	Mapper: Fn(In) -> Out,
+	Out: 'static,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);

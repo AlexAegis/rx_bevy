@@ -4,7 +4,7 @@ use short_type_name::short_type_name;
 
 use crate::{
 	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
-	Teardown, WithContext,
+	Teardown, Tickable, WithContext,
 };
 
 pub struct ArcSubscriber<Destination>
@@ -151,14 +151,17 @@ where
 			}
 		}
 	}
+}
 
+impl<Destination> Tickable for ArcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
-		if !self.is_closed() {
-			if let Ok(mut lock) = self.destination.write() {
-				lock.tick(tick, context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
+		if let Ok(mut lock) = self.destination.write() {
+			lock.tick(tick, context);
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
 		}
 	}
 }

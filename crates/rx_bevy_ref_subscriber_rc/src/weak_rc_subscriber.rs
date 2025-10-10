@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	ArcSubscriber, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
+	ArcSubscriber, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
 	WithContext,
 };
 
@@ -81,11 +81,14 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<Destination> Tickable for WeakRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		if !self.is_closed() {
-			self.destination.tick(tick, context);
-		}
+		self.destination.tick(tick, context);
 	}
 }
 

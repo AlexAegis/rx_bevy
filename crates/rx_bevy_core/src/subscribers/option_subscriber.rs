@@ -1,4 +1,6 @@
-use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, WithContext};
+use crate::{
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable, WithContext,
+};
 
 pub enum OptionSubscriber<InnerSubscriber, Destination>
 where
@@ -75,7 +77,19 @@ where
 			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.complete(context),
 		}
 	}
+}
 
+impl<InnerSubscriber, Destination> Tickable for OptionSubscriber<InnerSubscriber, Destination>
+where
+	InnerSubscriber: Subscriber,
+	Destination: Subscriber<
+			In = InnerSubscriber::In,
+			InError = InnerSubscriber::InError,
+			Context = InnerSubscriber::Context,
+		>,
+	InnerSubscriber::In: 'static,
+	InnerSubscriber::InError: 'static,
+{
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.tick(tick, context),

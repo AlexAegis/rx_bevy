@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::component::Component;
 
-use rx_bevy_core::{Subscription, SubscriptionLike, Teardown, WithContext};
+use rx_bevy_core::{SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithContext};
 
 use rx_bevy_context_command::ContextWithCommands;
 
@@ -11,8 +11,8 @@ pub struct EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {
-	subscription: Subscription<Context>,
-	phantom_data: PhantomData<&'c Context>,
+	subscription: SubscriptionData<Context>,
+	phantom_data: PhantomData<&'c ()>,
 }
 
 impl<'c, Context> Default for EntitySubscription<'c, Context>
@@ -21,7 +21,7 @@ where
 {
 	fn default() -> Self {
 		Self {
-			subscription: Subscription::<Context>::default(),
+			subscription: SubscriptionData::<Context>::default(),
 			phantom_data: PhantomData,
 		}
 	}
@@ -56,6 +56,15 @@ where
 	#[inline]
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
 		Context::create_context_to_unsubscribe_on_drop()
+	}
+}
+
+impl<'c, Context> Tickable for EntitySubscription<'c, Context>
+where
+	Context: ContextWithCommands<'c>,
+{
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		self.subscription.tick(tick, context);
 	}
 }
 

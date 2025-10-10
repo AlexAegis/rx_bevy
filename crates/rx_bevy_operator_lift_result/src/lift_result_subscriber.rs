@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	WithContext,
+	Tickable, WithContext,
 };
 
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
@@ -89,7 +89,20 @@ where
 		self.destination.complete(context);
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> Tickable
+	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
+where
+	ResultIn: 'static,
+	ResultInError: 'static,
+	InError: 'static,
+	InErrorToResultError: Fn(InError) -> ResultInError,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);

@@ -1,4 +1,7 @@
-use crate::{Subscriber, SubscriptionCollection, WithContext, signal_context::SignalContext};
+use crate::{
+	Subscriber, SubscriptionHandle, TickableSubscription, WithContext,
+	signal_context::SignalContext,
+};
 
 /// # [ObservableOutput]
 ///
@@ -73,23 +76,18 @@ pub trait ObservableOutput {
 /// > Note that not assigning the subscription to a variable (or assining it to
 /// > `let _ =`) will cause it to be immediately dropped, hence `subscribe` is
 /// > `#[must_use]`!
-pub trait Observable: ObservableOutput {
-	type Subscription: SubscriptionCollection + Default;
+pub trait Observable: ObservableOutput + WithContext {
+	type Subscription: TickableSubscription<Context = Self::Context>;
 
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
-	) -> Self::Subscription
+		context: &mut Self::Context,
+	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection;
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 }
 
 /// For usecases where the context is not used at all, some convenience
@@ -97,18 +95,15 @@ pub trait Observable: ObservableOutput {
 pub trait ObservableWithDefaultDropContext: Observable {
 	/// Convenience function that uses the default drop context to `subscribe`
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
-	fn subscribe_noctx<Destination>(&mut self, destination: Destination) -> Self::Subscription
+	fn subscribe_noctx<Destination>(
+		&mut self,
+		destination: Destination,
+	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>
-			+ SubscriptionCollection,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		let mut context =
-			<Self::Subscription as WithContext>::Context::create_context_to_unsubscribe_on_drop();
+		let mut context = Self::Context::create_context_to_unsubscribe_on_drop();
 		self.subscribe(destination, &mut context)
 	}
 }

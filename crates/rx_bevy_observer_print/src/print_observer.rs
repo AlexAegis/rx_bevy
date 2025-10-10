@@ -1,7 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, Subscription, SubscriptionLike, Teardown, WithContext,
+	Observer, ObserverInput, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tickable,
+	WithContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -12,7 +13,7 @@ where
 	Context: SignalContext,
 {
 	prefix: Option<&'static str>,
-	teardown: Subscription<Context>,
+	teardown: SubscriptionData<Context>,
 	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
@@ -25,7 +26,7 @@ where
 	pub fn new(message: &'static str) -> Self {
 		Self {
 			prefix: Some(message),
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -46,7 +47,7 @@ where
 	fn default() -> Self {
 		Self {
 			prefix: None,
-			teardown: Subscription::default(),
+			teardown: SubscriptionData::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -84,7 +85,14 @@ where
 		println!("{}completed", self.get_prefix());
 		self.teardown.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Context> Tickable for PrintObserver<In, InError, Context>
+where
+	In: 'static + Debug,
+	InError: 'static + Debug,
+	Context: SignalContext,
+{
 	#[inline]
 	fn tick(&mut self, tick: rx_bevy_core::Tick, _context: &mut Self::Context) {
 		println!("{}tick: {:?}", self.get_prefix(), tick);

@@ -1,7 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	DropSafeSignalContext, SignalContext, Subscription, SubscriptionLike, Teardown, WithContext,
+	DropSafeSignalContext, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
+	Tickable, TickableSubscription, WithContext,
 };
 
 /// A DropSubscription is a type of Subscription Observables may use, it
@@ -19,20 +20,15 @@ impl<Context> DropSubscription<Context>
 where
 	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
-	pub fn new<T>(subscription: T) -> Self
+	pub fn new<S>(subscription: S) -> Self
 	where
-		T: Into<Teardown<Context>>,
+		S: TickableSubscription<Context = Context> + 'static,
 	{
 		Self {
-			inner: Arc::new(RwLock::new(InnerDropSubscription::new(subscription))),
+			inner: Arc::new(RwLock::new(InnerDropSubscription(
+				SubscriptionData::new_from_resource(subscription.into()),
+			))),
 		}
-	}
-
-	pub fn new_fn<F>(f: F) -> Self
-	where
-		F: 'static + FnOnce(&mut Context),
-	{
-		Self::new(Teardown::<Context>::new(f))
 	}
 }
 
@@ -54,24 +50,35 @@ where
 	type Context = Context;
 }
 
+impl<Context> Tickable for DropSubscription<Context>
+where
+	Context: SignalContext<DropSafety = DropSafeSignalContext>,
+{
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		if let Ok(mut lock) = self.inner.write() {
+			lock.0.tick(tick, context);
+		}
+	}
+}
+
 impl<Context> SubscriptionLike for DropSubscription<Context>
 where
 	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	fn is_closed(&self) -> bool {
-		self.inner.read().expect("to not be locked").is_closed()
+		self.inner.read().expect("to not be locked").0.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			let mut lock = self.inner.write().expect("to not be locked");
-			lock.unsubscribe(context);
+			lock.0.unsubscribe(context);
 		}
 	}
 
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
 		let mut lock = self.inner.write().expect("to not be locked");
-		lock.add_teardown(teardown, context);
+		lock.0.add_teardown(teardown, context);
 	}
 
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
@@ -79,67 +86,16 @@ where
 	}
 }
 
-pub struct InnerDropSubscription<Context>(Subscription<Context>)
+pub struct InnerDropSubscription<Context>(SubscriptionData<Context>)
 where
 	Context: SignalContext<DropSafety = DropSafeSignalContext>;
-
-impl<Context> InnerDropSubscription<Context>
-where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
-{
-	pub fn new<T>(subscription: T) -> Self
-	where
-		T: Into<Teardown<Context>>,
-	{
-		Self(Subscription::new(subscription))
-	}
-
-	pub fn new_fn<F>(f: F) -> Self
-	where
-		F: 'static + FnOnce(&mut Context),
-	{
-		Self::new(Teardown::<Context>::new(f))
-	}
-}
 
 impl<Context> Default for InnerDropSubscription<Context>
 where
 	Context: SignalContext<DropSafety = DropSafeSignalContext>,
 {
 	fn default() -> Self {
-		Self(Subscription::default())
-	}
-}
-
-impl<Context> WithContext for InnerDropSubscription<Context>
-where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
-{
-	type Context = Context;
-}
-
-impl<Context> SubscriptionLike for InnerDropSubscription<Context>
-where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.0.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut Context) {
-		self.0.unsubscribe(context);
-	}
-
-	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
-		self.0.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.0.get_context_to_unsubscribe_on_drop()
+		Self(SubscriptionData::default())
 	}
 }
 
@@ -154,9 +110,9 @@ where
 		// Not to mention that if the subscription is closed, it doesn't make
 		// sense to trigger an unsubscription again on drop when one was already
 		// done manually.
-		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
+		if !self.0.is_closed() {
+			let mut context = Context::create_context_to_unsubscribe_on_drop();
+			self.0.unsubscribe(&mut context);
 		}
 	}
 }

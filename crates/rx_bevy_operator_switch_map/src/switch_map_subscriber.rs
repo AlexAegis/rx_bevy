@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	DestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick, WithContext,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
@@ -18,7 +18,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -49,7 +49,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -83,7 +83,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -111,7 +111,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -139,7 +139,33 @@ where
 		self.destination.complete(context);
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Tickable
+	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+where
+	In: 'static,
+	InError: 'static + Into<InnerObservable::OutError>,
+	Switcher: Fn(In) -> InnerObservable,
+	InnerObservable: 'static + Observable,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Sharer: 'static
+		+ DestinationSharer<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = Sharer::Context,
+		>,
+	Sharer: SubscriptionCollection,
+	Sharer::Shared<Destination>: SubscriptionCollection,
+	Destination: SubscriptionCollection,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
@@ -159,7 +185,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -206,7 +232,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<
@@ -235,7 +261,7 @@ where
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 	Destination: 'static
 		+ Subscriber<

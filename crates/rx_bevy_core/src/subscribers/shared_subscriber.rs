@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::{
 	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
-	Teardown, Tick, WithContext,
+	Teardown, Tick, Tickable, WithContext,
 };
 
 /// A SharedSubscriber is a subscriber that guarantees that if you clone it,
@@ -138,7 +138,17 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.destination.complete(context);
 	}
+}
 
+impl<Destination, Sharer> Tickable for SharedSubscriber<Destination, Sharer>
+where
+	Destination: 'static + Subscriber,
+	Sharer: DestinationSharer<
+			In = Destination::In,
+			InError = Destination::InError,
+			Context = Destination::Context,
+		>,
+{
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.access_mut(

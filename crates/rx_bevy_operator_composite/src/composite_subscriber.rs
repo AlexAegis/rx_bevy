@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, WithContext};
+use rx_bevy_core::{
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+};
 
 #[derive(Debug)]
 pub struct CompositeSubscriber<Inner, Destination>
@@ -52,9 +54,15 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		self.subscriber.complete(context);
 	}
+}
 
+impl<Inner, Destination> Tickable for CompositeSubscriber<Inner, Destination>
+where
+	Inner: Subscriber,
+	Destination: Observer,
+{
 	#[inline]
-	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.subscriber.tick(tick, context);
 	}
 }
