@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use rx_bevy::prelude::*;
-use rx_bevy_ecs_observable_interval::{IntervalObservable, IntervalObservableOptions};
+use rx_bevy_observable_interval::{IntervalObservable, IntervalObservableOptions};
 use rx_bevy_testing::MockClock;
 
 /// An [IteratorObservable] turns the items from an [IntoIterator] and emits

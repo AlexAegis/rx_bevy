@@ -5,6 +5,8 @@ pub use rx_bevy_core::*;
 pub use rx_bevy_observable_deferred::*;
 #[cfg(feature = "observable_iterator")]
 pub use rx_bevy_observable_iterator::*;
+#[cfg(feature = "observable_iterator_on_tick")]
+pub use rx_bevy_observable_iterator_on_tick::*;
 #[cfg(feature = "observable_of")]
 pub use rx_bevy_observable_of::*;
 #[cfg(feature = "observable_throw")]
@@ -76,6 +78,8 @@ pub mod prelude {
 	pub use rx_bevy_observable_deferred::prelude::*;
 	#[cfg(feature = "observable_iterator")]
 	pub use rx_bevy_observable_iterator::prelude::*;
+	#[cfg(feature = "observable_iterator_on_tick")]
+	pub use rx_bevy_observable_iterator_on_tick::prelude::*;
 	#[cfg(feature = "observable_of")]
 	pub use rx_bevy_observable_of::prelude::*;
 	#[cfg(feature = "observable_throw")]

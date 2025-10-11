@@ -2,6 +2,15 @@ use crate::{Teardown, WithContext};
 
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational.
+///
+/// [Drop] is mandatory to manually implement for subscriptions, but not for
+/// subscribers. This is why this bound is only enforced on the
+/// [Observable::Subscription][crate::Observable::Subscription].
+///
+/// It has to be implemented to guarantee that resources are
+/// properly released on drop. Note that some subscriptionlikes do not need to
+/// do anything on drop. If that's the case, the `drop` fn should only contain
+/// a comment on why it doesn't need to do anything.
 pub trait SubscriptionLike: WithContext {
 	/// Returns if the subscription is closed or not. A subscription can be
 	/// closed by calling unsubscribe on it. Some special subscriptions made

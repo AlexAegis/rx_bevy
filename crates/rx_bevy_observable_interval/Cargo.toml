@@ -1,5 +1,5 @@
 [package]
-name = "rx_bevy_ecs_observable_interval"
+name = "rx_bevy_observable_interval"
 description = "rx_bevy interval observable"
 version = "0.1.0"
 readme = "readme.md"

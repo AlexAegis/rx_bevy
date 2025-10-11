@@ -1,4 +1,6 @@
-use rx_bevy::{ArcSubscriber, DropUnsafeSignalContext, SignalContext, prelude::*};
+use rx_bevy::{
+	ArcSubscriber, DropUnsafeSignalContext, ErasedArcSubscriber, SignalContext, prelude::*,
+};
 
 struct CustomContext;
 
@@ -7,6 +9,12 @@ impl SignalContext for CustomContext {
 		= ArcSubscriber<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
+
+	type ErasedSharer<In, InError>
+		= ErasedArcSubscriber<In, InError, Self>
+	where
+		In: SignalBound,
+		InError: SignalBound;
 
 	type DropSafety = DropUnsafeSignalContext;
 

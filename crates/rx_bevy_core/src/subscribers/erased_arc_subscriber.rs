@@ -263,3 +263,17 @@ where
 		}
 	}
 }
+
+impl<In, InError, Context> Drop for ErasedArcSubscriber<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SignalContext,
+{
+	fn drop(&mut self) {
+		if !self.is_closed() {
+			let mut context = self.get_context_to_unsubscribe_on_drop();
+			self.unsubscribe(&mut context);
+		}
+	}
+}

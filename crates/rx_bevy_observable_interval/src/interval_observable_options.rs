@@ -16,5 +16,8 @@ pub struct IntervalObservableOptions {
 	/// during a particularly large tick, for example during a lagged frame,
 	/// this limit ensures at most this many emissions can happen during a
 	/// single tick.
+	///
+	/// It doesn't need to be a `usize` as the number it's compared against is
+	/// a `u32` coming from [bevy_time::Timer::times_finished_this_tick]
 	pub max_emissions_per_tick: u32,
 }

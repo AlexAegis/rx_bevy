@@ -29,12 +29,13 @@ default = [
 ]
 dev = [
     "rx_bevy_core/dev",
-    "rx_bevy_ecs_observable_interval?/dev",
+    "rx_bevy_observable_interval?/dev",
     "rx_bevy_ecs_observable_keyboard?/dev",
     "rx_bevy_ref_observable_combine_latest?/dev",
     "rx_bevy_ref_observable_connectable?/dev",
     "rx_bevy_observable_deferred?/dev",
     "rx_bevy_observable_iterator?/dev",
+    "rx_bevy_observable_iterator_on_tick?/dev",
     "rx_bevy_ref_observable_merge?/dev",
     "rx_bevy_observable_of?/dev",
     "rx_bevy_observable_throw?/dev",
@@ -67,12 +68,13 @@ dev = [
 example = [
     "dev",
     "rx_bevy_core/example",
-    "rx_bevy_ecs_observable_interval?/example",
+    "rx_bevy_observable_interval?/example",
     "rx_bevy_ecs_observable_keyboard?/example",
     "rx_bevy_ref_observable_combine_latest?/example",
     "rx_bevy_ref_observable_connectable?/example",
     "rx_bevy_observable_deferred?/example",
     "rx_bevy_observable_iterator?/example",
+    "rx_bevy_observable_iterator_on_tick?/example",
     "rx_bevy_ref_observable_merge?/example",
     "rx_bevy_observable_of?/example",
     "rx_bevy_observable_throw?/example",
@@ -106,6 +108,7 @@ bevy = [
     "rx_bevy_core/bevy",
     "rx_bevy_observable_deferred?/bevy",
     "rx_bevy_observable_iterator?/bevy",
+    "rx_bevy_observable_iterator_on_tick?/bevy",
     "rx_bevy_observable_of?/bevy",
     "rx_bevy_observable_throw?/bevy",
     "rx_bevy_observer_fn?/bevy",
@@ -132,10 +135,11 @@ bevy = [
 # All Bevy specific features, Components, Schedulers. If not enabled, bevy is not used as a dependency.
 reflect = [
     "rx_bevy_core/reflect",
-    "rx_bevy_ecs_observable_interval?/reflect",
+    "rx_bevy_observable_interval?/reflect",
     "rx_bevy_ecs_observable_keyboard?/reflect",
     "rx_bevy_observable_deferred?/reflect",
     "rx_bevy_observable_iterator?/reflect",
+    "rx_bevy_observable_iterator_on_tick?/reflect",
     "rx_bevy_observable_of?/reflect",
     "rx_bevy_observable_throw?/reflect",
     "rx_bevy_observer_fn?/reflect",
@@ -162,6 +166,7 @@ reflect = [
 ]
 trace = [
     "rx_bevy_observable_iterator?/trace",
+    "rx_bevy_observable_iterator_on_tick?/trace",
     "rx_bevy_operator_switch_map?/trace",
     "rx_bevy_operator_tap_next?/trace",
     "rx_bevy_operator_finalize?/trace",
@@ -206,11 +211,13 @@ compose = [
 all_common_observables = [
     "observable_deferred",
     "observable_iterator",
+    "observable_iterator_on_tick",
     "observable_of",
     "observable_throw",
 ]
 observable_deferred = ["dep:rx_bevy_observable_deferred"]
 observable_iterator = ["dep:rx_bevy_observable_iterator"]
+observable_iterator_on_tick = ["dep:rx_bevy_observable_iterator_on_tick"]
 observable_of = ["dep:rx_bevy_observable_of"]
 observable_throw = ["dep:rx_bevy_observable_throw"]
 # Ref Observables
@@ -283,6 +290,7 @@ rx_bevy_core = { workspace = true }
 # Common Observables
 rx_bevy_observable_deferred = { workspace = true, optional = true }
 rx_bevy_observable_iterator = { workspace = true, optional = true }
+rx_bevy_observable_iterator_on_tick = { workspace = true, optional = true }
 rx_bevy_observable_of = { workspace = true, optional = true }
 rx_bevy_observable_throw = { workspace = true, optional = true }
 # Ref Observables
@@ -291,7 +299,7 @@ rx_bevy_ref_observable_connectable = { workspace = true, optional = true }
 rx_bevy_ref_observable_merge = { workspace = true, optional = true }
 rx_bevy_ref_observable_zip = { workspace = true, optional = true }
 # ECS Observables
-rx_bevy_ecs_observable_interval = { workspace = true, optional = true }
+rx_bevy_observable_interval = { workspace = true, optional = true }
 rx_bevy_ecs_observable_keyboard = { workspace = true, optional = true }
 # Pipe
 rx_bevy_ref_pipe = { workspace = true, optional = true }

@@ -12,6 +12,7 @@ pub trait WithContext {
 	type Context: SignalContext;
 }
 
+/// TODO: Rename to SubscriptionContext
 #[doc(alias = "Environment")]
 pub trait SignalContext {
 	/// Indicates if the context can be safely (or not) acquired during a drop

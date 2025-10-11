@@ -11,9 +11,11 @@ where
 	Context: SignalContext,
 {
 	timer: Timer,
-	count: u32,
+	count: usize,
+	/// It doesn't need to be a `usize` as the number it's compared against is
+	/// a `u32` coming from [bevy_time::Timer::times_finished_this_tick]
 	max_emissions_per_tick: u32,
-	destination: Box<dyn Subscriber<In = u32, InError = (), Context = Context> + Send + Sync>,
+	destination: Box<dyn Subscriber<In = usize, InError = (), Context = Context> + Send + Sync>,
 	teardown: SubscriptionData<Context>,
 }
 
@@ -22,7 +24,7 @@ where
 	Context: SignalContext,
 {
 	pub fn new(
-		destination: impl Subscriber<In = u32, InError = (), Context = Context> + Send + Sync + 'static,
+		destination: impl Subscriber<In = usize, InError = (), Context = Context> + 'static,
 		interval_subscription_options: IntervalObservableOptions,
 	) -> Self {
 		IntervalSubscription {
@@ -57,9 +59,9 @@ where
 			.times_finished_this_tick()
 			.min(self.max_emissions_per_tick);
 		for i in 0..ticks {
-			self.destination.next(self.count + i, context);
+			self.destination.next(self.count + i as usize, context);
 		}
-		self.count += ticks;
+		self.count += ticks as usize;
 	}
 }
 
@@ -86,5 +88,17 @@ where
 
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
 		self.destination.get_context_to_unsubscribe_on_drop()
+	}
+}
+
+impl<Context> Drop for IntervalSubscription<Context>
+where
+	Context: SignalContext,
+{
+	fn drop(&mut self) {
+		if !self.is_closed() {
+			let mut context = self.get_context_to_unsubscribe_on_drop();
+			self.unsubscribe(&mut context);
+		}
 	}
 }

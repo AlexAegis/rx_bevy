@@ -4572,10 +4572,11 @@ name = "rx_bevy"
 version = "0.1.0"
 dependencies = [
  "rx_bevy_core",
- "rx_bevy_ecs_observable_interval",
  "rx_bevy_ecs_observable_keyboard",
  "rx_bevy_observable_deferred",
+ "rx_bevy_observable_interval",
  "rx_bevy_observable_iterator",
+ "rx_bevy_observable_iterator_on_tick",
  "rx_bevy_observable_of",
  "rx_bevy_observable_throw",
  "rx_bevy_observer_fn",
@@ -4627,39 +4628,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_ecs_observable_interval"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_egui",
- "bevy_reflect",
- "bevy_time",
- "examples_common",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_ecs_observable_iterator"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_ecs",
- "bevy_egui",
- "bevy_reflect",
- "bevy_time",
- "derive-where",
- "examples_common",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_plugin",
- "rx_bevy_testing",
-]
-
-[[package]]
 name = "rx_bevy_ecs_observable_keyboard"
 version = "0.1.0"
 dependencies = [
@@ -4701,7 +4669,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_observable_interval"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_egui",
+ "bevy_reflect",
+ "bevy_time",
+ "examples_common",
+ "rx_bevy",
+ "rx_bevy_core",
+ "rx_bevy_testing",
+]
+
+[[package]]
 name = "rx_bevy_observable_iterator"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_bevy_core",
+ "rx_bevy_subscription_inert",
+ "rx_bevy_testing",
+ "short_type_name",
+]
+
+[[package]]
+name = "rx_bevy_observable_iterator_on_tick"
 version = "0.1.0"
 dependencies = [
  "bevy_reflect",
@@ -4996,7 +4991,7 @@ dependencies = [
  "examples_common",
  "rx_bevy",
  "rx_bevy_core",
- "rx_bevy_ecs_observable_interval",
+ "rx_bevy_observable_interval",
  "rx_bevy_operator_composite",
  "rx_bevy_testing",
  "short_type_name",

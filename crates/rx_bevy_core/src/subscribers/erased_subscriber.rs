@@ -11,6 +11,7 @@ pub struct ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: SignalContext,
 {
 	destination: Box<dyn Subscriber<In = In, InError = InError, Context = Context>>,
 }
@@ -19,6 +20,7 @@ impl<In, InError, Context> ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: SignalContext,
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
@@ -33,6 +35,7 @@ impl<In, InError, Context> ObserverInput for ErasedSubscriber<In, InError, Conte
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: SignalContext,
 {
 	type In = In;
 	type InError = InError;
@@ -105,5 +108,19 @@ where
 	#[inline]
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
 		self.destination.get_context_to_unsubscribe_on_drop()
+	}
+}
+
+impl<In, InError, Context> Drop for ErasedSubscriber<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SignalContext,
+{
+	fn drop(&mut self) {
+		if !self.is_closed() {
+			let mut context = self.get_context_to_unsubscribe_on_drop();
+			self.unsubscribe(&mut context);
+		}
 	}
 }

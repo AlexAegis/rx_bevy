@@ -1,6 +1,5 @@
 use crate::{
-	SignalBound, Subscriber, SubscriptionHandle, TickableSubscription, WithContext,
-	signal_context::SignalContext,
+	SignalBound, SignalContext, Subscriber, SubscriptionHandle, TickableSubscription, WithContext,
 };
 
 /// # [ObservableOutput]
@@ -77,7 +76,14 @@ pub trait ObservableOutput {
 /// > `let _ =`) will cause it to be immediately dropped, hence `subscribe` is
 /// > `#[must_use]`!
 pub trait Observable: ObservableOutput + WithContext {
-	type Subscription: TickableSubscription<Context = Self::Context> + Send + Sync;
+	/// The subscription produced by this [Observable]. As this is the only kind
+	/// of subscription that is handled directly by users, only here are
+	/// subscriptions required to implement [Drop] to ensure resources
+	/// are released when the subscription is dropped, and an unsubscribe can
+	/// be attempted. This attempt at unsubscribing on drop, if the subscription
+	/// wasn't already unsubscribed, can panic if the [Context] used is not
+	/// a [DropSafeSignalContext].
+	type Subscription: TickableSubscription<Context = Self::Context> + Drop + Send + Sync;
 
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
 	fn subscribe<Destination>(

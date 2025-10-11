@@ -30,7 +30,7 @@ impl<Context> ObservableOutput for IntervalObservable<Context>
 where
 	Context: SignalContext,
 {
-	type Out = u32;
+	type Out = usize;
 	type OutError = ();
 }
 

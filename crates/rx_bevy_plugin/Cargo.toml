@@ -24,7 +24,7 @@ dev = [
     "inspector",
     "rx_bevy/dev",
     "rx_bevy_core/dev",
-    "rx_bevy_ecs_observable_interval/dev",
+    "rx_bevy_observable_interval/dev",
     "rx_bevy_operator_composite/dev",
     "rx_bevy_testing/dev",
     "short_type_name/dev",
@@ -34,7 +34,7 @@ debug = [
     "bevy_reflect/debug",
     "dep:bevy_input",
     "rx_bevy_core/debug",
-    "rx_bevy_ecs_observable_interval/debug",
+    "rx_bevy_observable_interval/debug",
 ]
 serialize = [
     "bevy/serialize",
@@ -62,7 +62,7 @@ example = [
     "reflect",
     "rx_bevy/example",
     "rx_bevy_core/example",
-    "rx_bevy_ecs_observable_interval/example",
+    "rx_bevy_observable_interval/example",
     "rx_bevy_operator_composite/example",
     "rx_bevy_testing/example",
 ]
@@ -76,7 +76,7 @@ reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
     "rx_bevy_core/reflect",
-    "rx_bevy_ecs_observable_interval/reflect",
+    "rx_bevy_observable_interval/reflect",
     "rx_bevy_operator_composite/reflect",
 ]
 
@@ -109,4 +109,4 @@ bevy = { workspace = true }
 rx_bevy = { workspace = true, features = ["bevy"] }
 rx_bevy_testing = { workspace = true, features = ["bevy"] }
 examples_common = { workspace = true }
-rx_bevy_ecs_observable_interval = { workspace = true }
+rx_bevy_observable_interval = { workspace = true }

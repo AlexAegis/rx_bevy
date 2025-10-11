@@ -107,19 +107,19 @@ where
 	}
 
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
-		if !self.is_closed() {
-			if let Ok(mut state) = self.state.write() {
-				state.error(error, context);
-			}
+		if !self.is_closed()
+			&& let Ok(mut state) = self.state.write()
+		{
+			state.error(error, context);
 		}
 	}
 
 	fn complete(&mut self, context: &mut Self::Context) {
-		if !self.is_closed() {
-			if let Ok(mut state) = self.state.write() {
-				state.is_complete = true;
-				state.complete_if_can(context);
-			}
+		if !self.is_closed()
+			&& let Ok(mut state) = self.state.write()
+		{
+			state.is_complete = true;
+			state.complete_if_can(context);
 		}
 	}
 }
@@ -169,10 +169,10 @@ where
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		// Pre-checked to avoid runtime borrow conflicts
-		if !self.is_closed() {
-			if let Ok(mut state) = self.state.write() {
-				state.unsubscribe_outer(context);
-			}
+		if !self.is_closed()
+			&& let Ok(mut state) = self.state.write()
+		{
+			state.unsubscribe_outer(context);
 		}
 	}
 

@@ -6,8 +6,6 @@ mod subscription_tickable;
 mod teardown;
 mod tickable_resource;
 
-mod unit_subscription;
-
 pub use into_subscription_handle::*;
 pub use subscription_data::*;
 pub use subscription_handle::*;
