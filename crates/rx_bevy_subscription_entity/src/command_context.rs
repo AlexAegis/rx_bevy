@@ -1,5 +1,5 @@
 use bevy_ecs::system::{Commands, Query, QueryLens};
-use rx_bevy_core::{DropUnsafeSignalContext, SignalContext, Subscriber};
+use rx_bevy_core::{DropUnsafeSignalContext, SignalBound, SignalContext, Subscriber};
 use short_type_name::short_type_name;
 
 use crate::{ContextWithCommands, EntitySubscriber, EntitySubscription};
@@ -39,6 +39,12 @@ impl<'c> SignalContext for CommandContext<'c> {
 		= EntitySubscriber<'c, Destination::In, Destination::InError>
 	where
 		Destination: 'static + Subscriber<Context = Self>;
+
+	type ErasedSharer<In, InError>
+		= EntitySubscriber<'c, In, InError>
+	where
+		In: SignalBound,
+		InError: SignalBound;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self {
 		panic!(

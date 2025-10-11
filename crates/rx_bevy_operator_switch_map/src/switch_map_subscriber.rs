@@ -1,12 +1,12 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, SignalBound,
-	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
-pub struct SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+pub struct SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
@@ -14,30 +14,22 @@ where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = InnerObservable::Context,
 		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	// TODO: Check if it would be enough to use this in a bevy context by just swapping the SwitchSubscriber impl to an ECS based one.
-	destination: SwitchSubscriber<InnerObservable, Destination, Sharer>,
+	destination: SwitchSubscriber<InnerObservable, Destination>,
 	switcher: Switcher,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination>
-	SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+impl<In, InError, Switcher, InnerObservable, Destination>
+	SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
@@ -45,20 +37,12 @@ where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = InnerObservable::Context,
 		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	pub fn new(
@@ -74,8 +58,8 @@ where
 	}
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> WithContext
-	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+impl<In, InError, Switcher, InnerObservable, Destination> WithContext
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
@@ -83,27 +67,19 @@ where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = InnerObservable::Context,
 		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	type Context = Destination::Context;
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Observer
-	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+impl<In, InError, Switcher, InnerObservable, Destination> Observer
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
@@ -111,20 +87,12 @@ where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = InnerObservable::Context,
 		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	#[inline]
@@ -143,8 +111,8 @@ where
 	}
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Tickable
-	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+impl<In, InError, Switcher, InnerObservable, Destination> Tickable
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
@@ -152,20 +120,12 @@ where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = InnerObservable::Context,
 		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	#[inline]
@@ -174,8 +134,8 @@ where
 	}
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> SubscriptionLike
-	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+impl<In, InError, Switcher, InnerObservable, Destination> SubscriptionLike
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
@@ -183,20 +143,12 @@ where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = InnerObservable::Context,
 		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	#[inline]
@@ -221,8 +173,8 @@ where
 	}
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> ObserverInput
-	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+impl<In, InError, Switcher, InnerObservable, Destination> ObserverInput
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
@@ -230,28 +182,19 @@ where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = InnerObservable::Context,
 		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
-	Destination: SubscriptionCollection,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Switcher, Sharer, InnerObservable, Destination> ObservableOutput
-	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
+impl<In, InError, Switcher, InnerObservable, Destination> ObservableOutput
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
@@ -259,20 +202,12 @@ where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = Sharer::Context,
+			Context = InnerObservable::Context,
 		>,
-	Sharer: SubscriptionCollection,
-	Sharer::Shared<Destination>: SubscriptionCollection,
 	Destination: SubscriptionCollection,
 {
 	type Out = InnerObservable::Out;

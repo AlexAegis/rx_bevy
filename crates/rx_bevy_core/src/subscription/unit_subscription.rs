@@ -1,6 +1,6 @@
 use crate::{
-	ArcSubscriber, DropSafeSignalContext, ObservableOutput, ObserverInput, SignalContext,
-	Subscriber, SubscriptionLike, Teardown, Tickable, WithContext,
+	ArcSubscriber, DropSafeSignalContext, ErasedArcSubscriber, ObservableOutput, ObserverInput,
+	SignalBound, SignalContext, Subscriber, SubscriptionLike, Teardown, Tickable, WithContext,
 };
 
 impl ObserverInput for () {
@@ -20,6 +20,12 @@ impl SignalContext for () {
 		= ArcSubscriber<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
+
+	type ErasedSharer<In, InError>
+		= ErasedArcSubscriber<In, InError, Self>
+	where
+		In: SignalBound,
+		InError: SignalBound;
 
 	#[inline]
 	fn create_context_to_unsubscribe_on_drop() -> Self {}

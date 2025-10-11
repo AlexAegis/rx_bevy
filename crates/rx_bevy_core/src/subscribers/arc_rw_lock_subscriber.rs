@@ -52,20 +52,36 @@ impl<Destination> SharedDestination<Destination> for Arc<RwLock<Destination>>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
-	type Access = Destination;
-
-	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
+	fn access<F>(&mut self, accessor: F)
 	where
-		F: Fn(&Self::Access, &mut Self::Context),
+		F: Fn(&Destination),
+	{
+		if let Ok(destination) = self.read() {
+			accessor(&*destination)
+		}
+	}
+
+	fn access_mut<F>(&mut self, mut accessor: F)
+	where
+		F: FnMut(&mut Destination),
+	{
+		if let Ok(mut destination) = self.write() {
+			accessor(&mut *destination)
+		}
+	}
+
+	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: Fn(&Destination, &mut Self::Context),
 	{
 		if let Ok(destination) = self.read() {
 			accessor(&*destination, context)
 		}
 	}
 
-	fn access_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
+	fn access_with_context_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
 	where
-		F: FnMut(&mut Self::Access, &mut Self::Context),
+		F: FnMut(&mut Destination, &mut Self::Context),
 	{
 		if let Ok(mut destination) = self.write() {
 			accessor(&mut *destination, context)

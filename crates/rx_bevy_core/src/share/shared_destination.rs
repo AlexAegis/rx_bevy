@@ -1,4 +1,4 @@
-use crate::{ObserverInput, Subscriber, WithContext};
+use crate::{ObserverInput, SignalContext, Subscriber, WithContext};
 
 /// A [DestinationSharer] that can create a [SharedDestination] out of a
 /// destination subscriber.
@@ -21,17 +21,17 @@ pub trait DestinationSharer: ObserverInput + WithContext {
 			+ Sync;
 }
 
-/// A [SharedDestination] is a subscriber that can be cloned, but each clone
-/// will point to the exact same destination subscriber.
+/// A [SharedDestination] is a subscriber that can be cloned, where each clone
+/// points to the exact same destination subscriber.
 ///
 /// Different [SharedDestination]s behave differently, some are just simply
 /// smart pointers with locks, some are reference counted on a subscriber level
 /// and unsubscribe when the last clone unsubscribes even before all clones are
 /// dropped, like with a regular [Rc].
 ///
-/// Since the always define a layer on the destination they share, an
+/// Since they always define a layer on the destination they share, an
 /// [`access`][SharedDestination::access] method is provided to inspect the
-/// destination it wraps. In the case of an `Arc<RwLock<Destination>>` calling
+/// destination it wraps. In the case of an `ErasedArcSubscriber` calling
 /// the `access_mut` method will attempt to write lock the destination for the
 /// duration of the call.
 pub trait SharedDestination<Destination>:
@@ -42,22 +42,32 @@ pub trait SharedDestination<Destination>:
 where
 	Destination: ?Sized + 'static + Subscriber,
 {
-	type Access: ?Sized
-		+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
-
-	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
+	fn access<F>(&mut self, accessor: F)
 	where
-		F: Fn(&Self::Access, &mut Self::Context);
+		F: Fn(&Destination);
 
-	fn access_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
+	fn access_mut<F>(&mut self, accessor: F)
 	where
-		F: FnMut(&mut Self::Access, &mut Self::Context);
+		F: FnMut(&mut Destination);
+
+	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: Fn(&Destination, &mut Self::Context);
+
+	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: FnMut(&mut Destination, &mut Self::Context);
 }
 
-/// Convenience function to define a sharer from a function argument position, it's a noop and will never get called.
-pub fn use_sharer<Sharer>() -> impl Fn(Sharer)
+pub trait DestinationSharedTypes: 'static + Subscriber {
+	type Sharer: DestinationSharer<In = Self::In, InError = Self::InError, Context = Self::Context>;
+	type Shared: ?Sized + SharedDestination<Self>;
+}
+
+impl<Destination> DestinationSharedTypes for Destination
 where
-	Sharer: DestinationSharer,
+	Destination: Subscriber + 'static,
 {
-	|_: Sharer| ()
+	type Sharer = <Self::Context as SignalContext>::Sharer<Self>;
+	type Shared = <Self::Sharer as DestinationSharer>::Shared<Self>;
 }

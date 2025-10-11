@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ErasedArcSubscriber, SignalBound, SignalContext, SubscriptionData, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	ErasedDestinationSharer, SignalBound, SignalContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tick, Tickable, WithContext,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -12,7 +12,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
-	subscriber: Option<ErasedArcSubscriber<In, InError, Context>>,
+	subscriber: Option<<Context::ErasedSharer<In, InError> as ErasedDestinationSharer>::Shared>,
 	teardown: SubscriptionData<Context>,
 }
 
@@ -22,7 +22,9 @@ where
 	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
-	pub fn new(shared_subscriber: ErasedArcSubscriber<In, InError, Context>) -> Self {
+	pub fn new(
+		shared_subscriber: <Context::ErasedSharer<In, InError> as ErasedDestinationSharer>::Shared,
+	) -> Self {
 		Self {
 			subscriber: Some(shared_subscriber),
 			teardown: SubscriptionData::default(),

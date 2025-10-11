@@ -3,11 +3,10 @@ use std::sync::{Arc, RwLock};
 use short_type_name::short_type_name;
 
 use crate::{
-	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalBound, SignalContext,
-	Subscriber, SubscriptionData, SubscriptionLike, Tickable, WithContext,
+	ErasedDestinationSharer, ErasedSharedDestination, Observer, ObserverInput, SignalBound,
+	SignalContext, Subscriber, SubscriptionData, SubscriptionLike, Tickable, WithContext,
 };
 
-// todo check if its even needed where it is currently, not having add is pretty bad, OR MAYBE put add on another trait and add a simpler fn on subscriber
 pub struct ErasedArcSubscriber<In, InError, Context>
 where
 	In: SignalBound,
@@ -19,24 +18,15 @@ where
 	teardown: SubscriptionData<Context>,
 }
 
-impl<In, InError, Context> DestinationSharer for ErasedArcSubscriber<In, InError, Context>
+impl<In, InError, Context> ErasedDestinationSharer for ErasedArcSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Context: SignalContext,
 {
-	type Shared<Destination>
-		= ErasedArcSubscriber<Destination::In, Destination::InError, Destination::Context>
-	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Send
-			+ Sync;
+	type Shared = ErasedArcSubscriber<In, InError, Context>;
 
-	fn share<Destination>(
-		destination: Destination,
-		_context: &mut Self::Context,
-	) -> Self::Shared<Destination>
+	fn share<Destination>(destination: Destination, _context: &mut Self::Context) -> Self::Shared
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
@@ -47,16 +37,33 @@ where
 	}
 }
 
-impl<In, InError, Context, D> SharedDestination<D> for ErasedArcSubscriber<In, InError, Context>
+impl<In, InError, Context> ErasedSharedDestination for ErasedArcSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Context: SignalContext,
-	D: 'static + Subscriber<In = In, InError = InError, Context = Context>,
 {
 	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
 
-	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
+	fn access<F>(&mut self, accessor: F)
+	where
+		F: Fn(&Self::Access),
+	{
+		if let Ok(destination) = self.destination.read() {
+			accessor(&*destination)
+		}
+	}
+
+	fn access_mut<F>(&mut self, mut accessor: F)
+	where
+		F: FnMut(&mut Self::Access),
+	{
+		if let Ok(mut destination) = self.destination.write() {
+			accessor(&mut *destination)
+		}
+	}
+
+	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where
 		F: Fn(&Self::Access, &mut Self::Context),
 	{
@@ -65,7 +72,7 @@ where
 		}
 	}
 
-	fn access_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
+	fn access_with_context_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
 	where
 		F: FnMut(&mut Self::Access, &mut Self::Context),
 	{

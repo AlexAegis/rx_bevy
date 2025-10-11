@@ -4,22 +4,15 @@ use std::{
 };
 
 use rx_bevy_core::{
-	DestinationSharer, Observable, Observer, ObserverInput, SharedSubscriber, Subscriber,
-	SubscriptionCollection, SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
+	SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 
-pub struct SwitchSubscriberState<InnerObservable, Destination, Sharer>
+pub struct SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -30,7 +23,7 @@ where
 		+ Sync,
 	Destination: SubscriptionCollection,
 {
-	pub(crate) destination: SharedSubscriber<Destination, Sharer>,
+	pub(crate) destination: SharedSubscriber<Destination>,
 	pub(crate) inner_subscription:
 		Option<SubscriptionHandle<<InnerObservable as Observable>::Subscription>>,
 	teardown: SubscriptionData<Destination::Context>,
@@ -39,18 +32,11 @@ where
 	_phantom_data: PhantomData<InnerObservable>,
 }
 
-impl<InnerObservable, Destination, Sharer>
-	SwitchSubscriberState<InnerObservable, Destination, Sharer>
+impl<InnerObservable, Destination> SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -132,18 +118,11 @@ where
 	}
 }
 
-impl<InnerObservable, Destination, Sharer> Observer
-	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+impl<InnerObservable, Destination> Observer for SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -168,18 +147,11 @@ where
 	}
 }
 
-impl<InnerObservable, Destination, Sharer> Tickable
-	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+impl<InnerObservable, Destination> Tickable for SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -195,18 +167,12 @@ where
 	}
 }
 
-impl<InnerObservable, Destination, Sharer> SubscriptionLike
-	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+impl<InnerObservable, Destination> SubscriptionLike
+	for SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -238,18 +204,12 @@ where
 	}
 }
 
-impl<InnerObservable, Destination, Sharer> ObserverInput
-	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+impl<InnerObservable, Destination> ObserverInput
+	for SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -264,18 +224,12 @@ where
 	type InError = InnerObservable::OutError;
 }
 
-impl<InnerObservable, Destination, Sharer> WithContext
-	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+impl<InnerObservable, Destination> WithContext
+	for SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -289,18 +243,11 @@ where
 	type Context = InnerObservable::Context;
 }
 
-impl<InnerObservable, Destination, Sharer> Drop
-	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
+impl<InnerObservable, Destination> Drop for SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
-	Sharer: 'static
-		+ DestinationSharer<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,

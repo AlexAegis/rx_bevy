@@ -1,7 +1,7 @@
 use rx_bevy_core::{
-	DestinationSharer, ErasedArcSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
-	SignalBound, SignalContext, Subscriber, SubscriptionData, SubscriptionHandle, SubscriptionLike,
-	Teardown, Tick, Tickable, WithContext,
+	ErasedDestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, SignalBound,
+	SignalContext, Subscriber, SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 use smallvec::SmallVec;
 
@@ -23,7 +23,8 @@ where
 	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
-	subscribers: SmallVec<[ErasedArcSubscriber<In, InError, Context>; 1]>,
+	subscribers:
+		SmallVec<[<Context::ErasedSharer<In, InError> as ErasedDestinationSharer>::Shared; 1]>,
 	closed: bool,
 	teardown: SubscriptionData<Context>,
 }
@@ -58,7 +59,7 @@ where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		let shared = ErasedArcSubscriber::share(destination, context);
+		let shared = Context::ErasedSharer::share(destination, context);
 		self.subscribers.push(shared.clone());
 		SubscriptionHandle::new(MulticastSubscription::new(shared))
 	}

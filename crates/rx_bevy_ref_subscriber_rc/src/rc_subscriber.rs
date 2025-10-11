@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ArcSubscriber, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	WithContext,
+	DestinationSharedTypes, DestinationSharer, Observer, ObserverInput, SharedDestination,
+	Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
@@ -9,28 +9,22 @@ pub struct RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	// TODO: Use a generic SHARER, Instead of an Arc, all this should guarantee that the destination is cloneable and it still points to the same thing. This is true for entities aswell
-	destination: ArcSubscriber<InnerRcSubscriber<Destination>>,
+	shared_destination: <InnerRcSubscriber<Destination> as DestinationSharedTypes>::Shared,
 	completed: bool,
 	unsubscribed: bool,
-}
-
-impl<Destination> From<Destination> for RcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn from(destination: Destination) -> Self {
-		Self::new(destination)
-	}
 }
 
 impl<Destination> RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	pub fn new(destination: Destination) -> Self {
+	pub fn new(destination: Destination, context: &mut Destination::Context) -> Self {
 		Self {
-			destination: ArcSubscriber::new(InnerRcSubscriber::new(destination)),
+			shared_destination:
+				<InnerRcSubscriber<Destination> as DestinationSharedTypes>::Sharer::share(
+					InnerRcSubscriber::new(destination),
+					context,
+				),
 			completed: false,
 			unsubscribed: false,
 		}
@@ -41,22 +35,34 @@ where
 		self.unsubscribed || self.completed
 	}
 
-	/// Let's you check the shared observer for the duration of the callback
-	#[inline]
-	pub fn read<F>(&mut self, reader: F)
+	pub fn access<F>(&mut self, accessor: F)
 	where
 		F: Fn(&InnerRcSubscriber<Destination>),
 	{
-		self.destination.read(reader);
+		self.shared_destination.access(accessor);
 	}
 
-	/// Let's you check the shared observer for the duration of the callback
-	#[inline]
-	pub fn write<F>(&mut self, writer: F)
+	pub fn access_mut<F>(&mut self, accessor: F)
 	where
 		F: FnMut(&mut InnerRcSubscriber<Destination>),
 	{
-		self.destination.write(writer);
+		self.shared_destination.access_mut(accessor);
+	}
+
+	pub fn access_with_context<F>(&mut self, accessor: F, context: &mut Destination::Context)
+	where
+		F: Fn(&InnerRcSubscriber<Destination>, &mut Destination::Context),
+	{
+		self.shared_destination
+			.access_with_context(accessor, context);
+	}
+
+	pub fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Destination::Context)
+	where
+		F: FnMut(&mut InnerRcSubscriber<Destination>, &mut Destination::Context),
+	{
+		self.shared_destination
+			.access_with_context_mut(accessor, context);
 	}
 
 	/// Acquire a clone to the same reference which will not interact with
@@ -65,7 +71,7 @@ where
 	/// subscriber
 	pub fn downgrade(&self) -> WeakRcSubscriber<Destination> {
 		WeakRcSubscriber {
-			destination: self.destination.clone(),
+			shared_destination: self.shared_destination.clone(),
 			closed: self.completed || self.unsubscribed,
 		}
 	}
@@ -76,7 +82,9 @@ where
 	Destination: 'static + Subscriber,
 {
 	fn clone(&self) -> Self {
-		self.destination.write(|destination| {
+		let mut shared_destination = self.shared_destination.clone();
+
+		shared_destination.access_mut(|destination| {
 			destination.ref_count += 1;
 
 			if self.completed {
@@ -91,7 +99,7 @@ where
 		Self {
 			completed: self.completed,
 			unsubscribed: self.unsubscribed,
-			destination: self.destination.clone(),
+			shared_destination,
 		}
 	}
 }
@@ -117,13 +125,13 @@ where
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_this_clone_closed() {
-			self.destination.next(next, context);
+			self.shared_destination.next(next, context);
 		}
 	}
 
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.is_this_clone_closed() {
-			self.destination.error(error, context);
+			self.shared_destination.error(error, context);
 			self.unsubscribe(context);
 		}
 	}
@@ -131,10 +139,10 @@ where
 	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.is_this_clone_closed() {
 			self.completed = true;
-			self.destination.write(|destination| {
+			self.shared_destination.access_mut(|destination| {
 				destination.completion_count += 1;
 			});
-			self.destination.complete(context);
+			self.shared_destination.complete(context);
 			self.unsubscribe(context);
 		}
 	}
@@ -147,7 +155,7 @@ where
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		// TODO: verify how shared destinations behave if all of them are getting ticked, ticks might need an id, and consumers of ticks would probably need to check if a tick had been processed before using them
 		//if !self.is_this_clone_closed() {
-		self.destination.tick(tick, context);
+		self.shared_destination.tick(tick, context);
 		//}
 	}
 }
@@ -158,27 +166,27 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
+		self.shared_destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if !self.unsubscribed {
 			self.unsubscribed = true;
-			self.destination.write(|destination| {
+			self.shared_destination.access_mut(|destination| {
 				destination.unsubscribe_count += 1;
 			});
-			self.destination.unsubscribe(context);
+			self.shared_destination.unsubscribe(context);
 		}
 	}
 
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
-		self.destination.add_teardown(teardown, context);
+		self.shared_destination.add_teardown(teardown, context);
 	}
 
 	#[inline]
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
+		self.shared_destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -191,7 +199,7 @@ where
 			let mut context = self.get_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
-		self.destination.write(|destination| {
+		self.shared_destination.access_mut(|destination| {
 			destination.ref_count -= 1;
 
 			if self.completed {
@@ -220,10 +228,10 @@ mod test {
 		RcSubscriber<MockObserver<i32, (), DropSafeSignalContext>>,
 		MockContext<i32, (), DropSafeSignalContext>,
 	) {
-		let context = MockContext::default();
+		let mut context = MockContext::default();
 		let mock_destination = MockObserver::<i32, (), DropSafeSignalContext>::default();
 
-		let rc_subscriber = RcSubscriber::new(mock_destination);
+		let rc_subscriber = RcSubscriber::new(mock_destination, &mut context);
 
 		(rc_subscriber, context)
 	}
@@ -232,7 +240,7 @@ mod test {
 	fn rc_subscriber_starts_with_ref_1() {
 		let (mut rc_subscriber, mut _context) = setup();
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
@@ -253,7 +261,7 @@ mod test {
 		let (mut rc_subscriber, mut context) = setup();
 		let mut rc_subscriber_clone = rc_subscriber.clone();
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
@@ -261,7 +269,7 @@ mod test {
 
 		rc_subscriber_clone.unsubscribe(&mut context);
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
@@ -273,21 +281,21 @@ mod test {
 		let (mut rc_subscriber, mut context) = setup();
 		let mut rc_subscriber_clone = rc_subscriber.clone();
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
 		rc_subscriber.unsubscribe(&mut context);
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
 		rc_subscriber_clone.unsubscribe(&mut context);
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 2);
 		});
@@ -300,28 +308,28 @@ mod test {
 		let (mut rc_subscriber, mut context) = setup();
 		let mut rc_subscriber_clone = rc_subscriber.clone();
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
 		rc_subscriber.unsubscribe(&mut context);
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
 		rc_subscriber_clone.unsubscribe(&mut context);
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 2);
 		});
 
 		drop(rc_subscriber_clone);
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
@@ -338,7 +346,7 @@ mod test {
 	fn rc_subscriber_as_iterator_observable_target_direct() {
 		let (mut rc_subscriber, mut context) = setup();
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
@@ -357,7 +365,7 @@ mod test {
 	fn rc_subscriber_as_iterator_observable_target_cloned() {
 		let (mut rc_subscriber, mut context) = setup();
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
@@ -369,7 +377,7 @@ mod test {
 
 		let mut iterator_a_subscription = iterator_a.subscribe(rc_subscriber.clone(), &mut context);
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
@@ -377,7 +385,7 @@ mod test {
 		// Let the clone drop
 		iterator_a_subscription.unsubscribe(&mut context);
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
@@ -387,41 +395,41 @@ mod test {
 	fn rc_subscriber_asd() {
 		let (mut rc_subscriber, mut context) = setup();
 
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
 		let mut rc_clone_1 = rc_subscriber.clone();
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
 		rc_clone_1.unsubscribe(&mut context);
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
 		let mut rc_clone_2 = rc_subscriber.clone();
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
 		rc_clone_2.unsubscribe(&mut context);
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 2);
 		});
 
 		drop(rc_clone_1);
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
 		drop(rc_clone_2);
-		rc_subscriber.destination.read(|destination| {
+		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});

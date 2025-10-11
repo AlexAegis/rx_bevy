@@ -115,7 +115,7 @@ where
 			+ Send
 			+ Sync,
 	{
-		let rc_subscriber = RcSubscriber::new(destination);
+		let rc_subscriber = RcSubscriber::new(destination, context);
 
 		let s1 = self
 			.observable_1

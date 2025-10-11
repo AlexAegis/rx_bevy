@@ -55,8 +55,10 @@ where
 		context: &mut Destination::Context,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		let mut source = (self.observable_creator)();
 		source.subscribe::<Destination>(destination, context)

@@ -85,9 +85,10 @@ where
 			+ Send
 			+ Sync,
 	{
-		let rc_subscriber = RcSubscriber::new(CombineLatestSubscriber::<Destination, O1, O2>::new(
-			destination,
-		));
+		let rc_subscriber = RcSubscriber::new(
+			CombineLatestSubscriber::<Destination, O1, O2>::new(destination),
+			context,
+		);
 
 		let s1 = self.observable_1.subscribe(
 			IntoVariant1of2Subscriber::new(rc_subscriber.clone()),

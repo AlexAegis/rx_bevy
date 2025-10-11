@@ -3,8 +3,9 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, event::Event};
 
 use rx_bevy_core::{
-	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalBound, SignalContext,
-	Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	DestinationSharer, ErasedDestinationSharer, ErasedSharedDestination, Observer, ObserverInput,
+	SharedDestination, SignalBound, SignalContext, Subscriber, SubscriptionLike, Teardown, Tick,
+	Tickable, WithContext,
 };
 
 use crate::{CommandContext, ContextWithCommands};
@@ -81,6 +82,7 @@ where
 		EntitySubscriber::new(destination_entity.id())
 	}
 }
+
 impl<'c, In, InError, Destination> SharedDestination<Destination>
 	for EntitySubscriber<'c, In, InError>
 where
@@ -88,16 +90,79 @@ where
 	InError: SignalBound,
 	Destination: 'static + Subscriber<In = In, InError = InError, Context = Self::Context>,
 {
-	// TODO: Maybe a SubscriberComponent<Destination>?
+	fn access<F>(&mut self, accessor: F)
+	where
+		F: Fn(&Destination),
+	{
+	}
+
+	fn access_mut<F>(&mut self, accessor: F)
+	where
+		F: FnMut(&mut Destination),
+	{
+	}
+
+	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: Fn(&Destination, &mut Self::Context),
+	{
+	}
+
+	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
+	where
+		F: FnMut(&mut Destination, &mut Self::Context),
+	{
+	}
+}
+
+impl<'c, In, InError> ErasedDestinationSharer for EntitySubscriber<'c, In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	type Shared = EntitySubscriber<'c, In, InError>;
+
+	fn share<Destination>(
+		destination: Destination,
+		context: &mut CommandContext<'c>,
+	) -> Self::Shared
+	where
+		Destination:
+			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+	{
+		// TODO: Impl component that can actually store the destination
+		let destination_entity = context.commands().spawn(());
+
+		EntitySubscriber::new(destination_entity.id())
+	}
+}
+
+impl<'c, In, InError> ErasedSharedDestination for EntitySubscriber<'c, In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
 	type Access = EntitySubscriber<'c, In, InError>;
 
-	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
+	fn access<F>(&mut self, accessor: F)
+	where
+		F: Fn(&Self::Access),
+	{
+	}
+
+	fn access_mut<F>(&mut self, accessor: F)
+	where
+		F: FnMut(&mut Self::Access),
+	{
+	}
+
+	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where
 		F: Fn(&Self::Access, &mut Self::Context),
 	{
 	}
 
-	fn access_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
+	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where
 		F: FnMut(&mut Self::Access, &mut Self::Context),
 	{

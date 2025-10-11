@@ -37,8 +37,10 @@ where
 	type Subscriber<Destination>
 		= MapIntoSubscriber<In, InError, Out, OutError, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
@@ -46,8 +48,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		MapIntoSubscriber::new(destination)
 	}

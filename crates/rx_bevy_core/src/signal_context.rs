@@ -1,4 +1,4 @@
-use crate::{DestinationSharer, Subscriber};
+use crate::{DestinationSharer, ErasedDestinationSharer, SignalBound, Subscriber};
 
 /// ## Why is there only a single associated context type?
 ///
@@ -26,12 +26,18 @@ pub trait SignalContext {
 	/// hooks for when that would happen, like in an ECS.
 	type DropSafety: SignalContextDropSafety;
 
-	// TODO: Utilize this type instead of the use_sharer fn
-	/// Defines how new subscription should be created for subscribers that
+	/// Defines how a new subscription should be created for subscribers that
 	/// can create additional subscriptions as they operate.
-	type Sharer<Destination>: DestinationSharer<Context = Self>
+	type Sharer<Destination>: DestinationSharer<In = Destination::In, InError = Destination::InError, Context = Self>
 	where
 		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
+
+	/// Defines how a new subscription should be created for erased subscribers
+	/// that can create additional subscriptions as they operate.
+	type ErasedSharer<In, InError>: ErasedDestinationSharer<In = In, InError = InError, Context = Self>
+	where
+		In: SignalBound,
+		InError: SignalBound;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self;
 }

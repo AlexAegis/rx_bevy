@@ -1,8 +1,8 @@
 use std::{iter::Chain, slice::Iter};
 
 use rx_bevy_core::{
-	ArcSubscriber, SignalBound, SignalContext, SignalContextDropSafety, Subscriber,
-	SubscriberNotification,
+	ArcSubscriber, ErasedArcSubscriber, SignalBound, SignalContext, SignalContextDropSafety,
+	Subscriber, SubscriberNotification,
 };
 
 #[derive(Debug)]
@@ -301,6 +301,12 @@ where
 		= ArcSubscriber<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self>;
+
+	type ErasedSharer<InForErasedSharer, InErrorForErasedSharer>
+		= ErasedArcSubscriber<InForErasedSharer, InErrorForErasedSharer, Self>
+	where
+		InForErasedSharer: SignalBound,
+		InErrorForErasedSharer: SignalBound;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self {
 		// While this context could be constructed very easily (It has a

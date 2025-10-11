@@ -31,8 +31,10 @@ where
 	type Subscriber<Destination>
 		= TakeSubscriber<In, InError, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -41,8 +43,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		TakeSubscriber::new(destination, self.count)
 	}

@@ -92,10 +92,10 @@ where
 			+ Send
 			+ Sync,
 	{
-		let rc_subscriber = RcSubscriber::new(ZipSubscriber::<Destination, O1, O2>::new(
-			destination,
-			self.options.clone(),
-		));
+		let rc_subscriber = RcSubscriber::new(
+			ZipSubscriber::<Destination, O1, O2>::new(destination, self.options.clone()),
+			context,
+		);
 
 		let s1 = self.observable_1.subscribe(
 			IntoVariant1of2Subscriber::new(rc_subscriber.clone()),
