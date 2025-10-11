@@ -1,5 +1,5 @@
 use rx_bevy_core::{Observable, SignalBound};
-use rx_bevy_ref_pipe::Pipe;
+use rx_bevy_observable_pipe::Pipe;
 
 use crate::EnumerateOperator;
 

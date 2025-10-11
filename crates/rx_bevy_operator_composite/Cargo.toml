@@ -20,7 +20,7 @@ default = ["pipe"]
 dev = [
     "rx_bevy/dev",
     "rx_bevy_core/dev",
-    "rx_bevy_ref_pipe?/dev",
+    "rx_bevy_observable_pipe?/dev",
     "rx_bevy_testing/dev",
     "short_type_name/dev",
 ]
@@ -28,16 +28,16 @@ example = [
     "dev",
     "rx_bevy/example",
     "rx_bevy_core/example",
-    "rx_bevy_ref_pipe?/example",
+    "rx_bevy_observable_pipe?/example",
     "rx_bevy_testing/example",
 ]
-pipe = ["dep:rx_bevy_ref_pipe", "rx_bevy/pipe"]
+pipe = ["dep:rx_bevy_observable_pipe", "rx_bevy/pipe"]
 bevy = ["rx_bevy/bevy", "rx_bevy_core/bevy", "rx_bevy_testing/bevy"]
 reflect = ["dep:bevy_reflect", "rx_bevy/reflect", "rx_bevy_core/reflect"]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
-rx_bevy_ref_pipe = { workspace = true, optional = true }
+rx_bevy_observable_pipe = { workspace = true, optional = true }
 bevy_reflect = { workspace = true, optional = true }
 short_type_name = { workspace = true }
 

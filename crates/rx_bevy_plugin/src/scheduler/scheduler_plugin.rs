@@ -8,7 +8,7 @@ use bevy_ecs::{
 	schedule::ScheduleLabel,
 	system::{Commands, Query, Res},
 };
-use bevy_kit_erased_component_registry::AppRegisterErasedComponentExtension;
+use bevy_erased_component_registry::AppRegisterErasedComponentExtension;
 use bevy_time::Time;
 use derive_where::derive_where;
 use rx_bevy_core::{Clock, Tick};

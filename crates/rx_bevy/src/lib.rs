@@ -1,27 +1,27 @@
 pub use rx_bevy_core::*;
 
 // Observables
+#[cfg(feature = "ref_observable_combine_latest")]
+pub use rx_bevy_observable_combine_latest::*;
+#[cfg(feature = "ref_observable_connectable")]
+pub use rx_bevy_observable_connectable::*;
 #[cfg(feature = "observable_deferred")]
 pub use rx_bevy_observable_deferred::*;
 #[cfg(feature = "observable_iterator")]
 pub use rx_bevy_observable_iterator::*;
 #[cfg(feature = "observable_iterator_on_tick")]
 pub use rx_bevy_observable_iterator_on_tick::*;
+#[cfg(feature = "ref_observable_merge")]
+pub use rx_bevy_observable_merge::*;
 #[cfg(feature = "observable_of")]
 pub use rx_bevy_observable_of::*;
 #[cfg(feature = "observable_throw")]
 pub use rx_bevy_observable_throw::*;
-#[cfg(feature = "ref_observable_combine_latest")]
-pub use rx_bevy_ref_observable_combine_latest::*;
-#[cfg(feature = "ref_observable_connectable")]
-pub use rx_bevy_ref_observable_connectable::*;
-#[cfg(feature = "ref_observable_merge")]
-pub use rx_bevy_ref_observable_merge::*;
 #[cfg(feature = "ref_observable_zip")]
-pub use rx_bevy_ref_observable_zip::*;
+pub use rx_bevy_observable_zip::*;
 // Pipe
 #[cfg(feature = "pipe")]
-pub use rx_bevy_ref_pipe::*;
+pub use rx_bevy_observable_pipe::*;
 // Observers
 #[cfg(feature = "observer_fn")]
 pub use rx_bevy_observer_fn::*;
@@ -64,37 +64,37 @@ pub use rx_bevy_operator_tap_next::*;
 pub use rx_bevy_operator_try_capture::*;
 // Subjects
 #[cfg(feature = "ref_subject")]
-pub use rx_bevy_ref_subject::*;
+pub use rx_bevy_subject::*;
 #[cfg(feature = "ref_subject_behavior")]
-pub use rx_bevy_ref_subject_behavior::*;
+pub use rx_bevy_subject_behavior::*;
 #[cfg(feature = "ref_subject_replay")]
-pub use rx_bevy_ref_subject_replay::*;
+pub use rx_bevy_subject_replay::*;
 
 pub mod prelude {
 	pub use rx_bevy_core::prelude::*;
 
 	// Observables
+	#[cfg(feature = "ref_observable_combine_latest")]
+	pub use rx_bevy_observable_combine_latest::prelude::*;
+	#[cfg(feature = "ref_observable_connectable")]
+	pub use rx_bevy_observable_connectable::prelude::*;
 	#[cfg(feature = "observable_deferred")]
 	pub use rx_bevy_observable_deferred::prelude::*;
 	#[cfg(feature = "observable_iterator")]
 	pub use rx_bevy_observable_iterator::prelude::*;
 	#[cfg(feature = "observable_iterator_on_tick")]
 	pub use rx_bevy_observable_iterator_on_tick::prelude::*;
+	#[cfg(feature = "ref_observable_merge")]
+	pub use rx_bevy_observable_merge::prelude::*;
 	#[cfg(feature = "observable_of")]
 	pub use rx_bevy_observable_of::prelude::*;
 	#[cfg(feature = "observable_throw")]
 	pub use rx_bevy_observable_throw::prelude::*;
-	#[cfg(feature = "ref_observable_combine_latest")]
-	pub use rx_bevy_ref_observable_combine_latest::prelude::*;
-	#[cfg(feature = "ref_observable_connectable")]
-	pub use rx_bevy_ref_observable_connectable::prelude::*;
-	#[cfg(feature = "ref_observable_merge")]
-	pub use rx_bevy_ref_observable_merge::prelude::*;
 	#[cfg(feature = "ref_observable_zip")]
-	pub use rx_bevy_ref_observable_zip::prelude::*;
+	pub use rx_bevy_observable_zip::prelude::*;
 	// Pipe
 	#[cfg(feature = "pipe")]
-	pub use rx_bevy_ref_pipe::prelude::*;
+	pub use rx_bevy_observable_pipe::prelude::*;
 	// Observers
 	#[cfg(feature = "observer_fn")]
 	pub use rx_bevy_observer_fn::prelude::*;
@@ -138,9 +138,9 @@ pub mod prelude {
 
 	// Subjects
 	#[cfg(feature = "ref_subject")]
-	pub use rx_bevy_ref_subject::prelude::*;
+	pub use rx_bevy_subject::prelude::*;
 	#[cfg(feature = "ref_subject_behavior")]
-	pub use rx_bevy_ref_subject_behavior::prelude::*;
+	pub use rx_bevy_subject_behavior::prelude::*;
 	#[cfg(feature = "ref_subject_replay")]
-	pub use rx_bevy_ref_subject_replay::prelude::*;
+	pub use rx_bevy_subject_replay::prelude::*;
 }

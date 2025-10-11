@@ -19,7 +19,7 @@ workspace = true
 default = []
 dev = [
     "bevy/dynamic_linking",
-    "bevy_kit_erased_component_registry/dev",
+    "bevy_erased_component_registry/dev",
     "examples_common/dev",
     "inspector",
     "rx_bevy/dev",
@@ -55,7 +55,7 @@ example = [
     "bevy/bevy_winit",
     "bevy/tonemapping_luts",
     "bevy/x11",
-    "bevy_kit_erased_component_registry/example",
+    "bevy_erased_component_registry/example",
     "debug",
     "dev",
     "inspector",
@@ -81,7 +81,7 @@ reflect = [
 ]
 
 [dependencies]
-bevy_kit_erased_component_registry = { workspace = true }
+bevy_erased_component_registry = { workspace = true }
 # rx_bevy dependencies
 rx_bevy_core = { workspace = true, features = ["bevy"] }
 rx_bevy_operator_composite = { workspace = true, features = ["bevy"] }

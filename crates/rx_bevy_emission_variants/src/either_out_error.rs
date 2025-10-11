@@ -1,5 +1,7 @@
+use derive_where::derive_where;
 use rx_bevy_core::Observable;
 
+#[derive_where(Debug; O1::OutError, O2::OutError)]
 pub enum EitherOutError2<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,

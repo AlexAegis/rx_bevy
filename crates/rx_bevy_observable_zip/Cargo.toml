@@ -1,0 +1,43 @@
+[package]
+name = "rx_bevy_observable_zip"
+description = "zip observable for rx_bevy"
+version = "0.1.0"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev"]
+dev = [
+    "rx_bevy/dev",
+    "rx_bevy_core/dev",
+    "rx_bevy_emission_variants/dev",
+    "rx_bevy_subscriber_rc/dev",
+    "rx_bevy_testing/dev",
+]
+example = [
+    "dev",
+    "rx_bevy/example",
+    "rx_bevy_core/example",
+    "rx_bevy_emission_variants/example",
+    "rx_bevy_subscriber_rc/example",
+    "rx_bevy_testing/example",
+]
+
+[dependencies]
+rx_bevy_core = { workspace = true }
+rx_bevy_emission_variants = { workspace = true }
+rx_bevy_subscriber_rc = { workspace = true }
+
+[dev-dependencies]
+rx_bevy = { workspace = true }
+rx_bevy_testing = { workspace = true }

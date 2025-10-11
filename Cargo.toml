@@ -72,35 +72,40 @@ variadics_please = { version = "1.1.0" }
 either = { version = "1.15.0" }
 thiserror = { version = "2.0.16" }
 rand = { version = "0.9.2" }
+# Misc
 short_type_name = { path = "crates/short_type_name" }
 examples_common = { path = "crates/examples_common" }
 feature_checker = { path = "crates/feature_checker" }
+bevy_erased_component_registry = { path = "crates/bevy_erased_component_registry" }
 # Core
 rx_bevy = { path = "crates/rx_bevy" }
 rx_bevy_core = { path = "crates/rx_bevy_core" }
 rx_bevy_emission_variants = { path = "crates/rx_bevy_emission_variants" }
 rx_bevy_testing = { path = "crates/rx_bevy_testing" }
-bevy_kit_erased_component_registry = { path = "crates/bevy_kit_erased_component_registry" }
 # ECS Observables
-rx_bevy_observable_interval = { path = "crates/rx_bevy_observable_interval" }
 rx_bevy_ecs_observable_keyboard = { path = "crates/rx_bevy_ecs_observable_keyboard" }
 # Observables
-rx_bevy_ref_observable_connectable = { path = "crates/rx_bevy_ref_observable_connectable" }
-rx_bevy_ref_observable_combine_latest = { path = "crates/rx_bevy_ref_observable_combine_latest" }
+rx_bevy_observable_connectable = { path = "crates/rx_bevy_observable_connectable" }
+rx_bevy_observable_combine_latest = { path = "crates/rx_bevy_observable_combine_latest" }
 rx_bevy_observable_deferred = { path = "crates/rx_bevy_observable_deferred" }
+rx_bevy_observable_interval = { path = "crates/rx_bevy_observable_interval" }
 rx_bevy_observable_iterator = { path = "crates/rx_bevy_observable_iterator" }
 rx_bevy_observable_iterator_on_tick = { path = "crates/rx_bevy_observable_iterator_on_tick" }
+rx_bevy_observable_merge = { path = "crates/rx_bevy_observable_merge" }
 rx_bevy_observable_of = { path = "crates/rx_bevy_observable_of" }
-rx_bevy_ref_observable_merge = { path = "crates/rx_bevy_ref_observable_merge" }
+rx_bevy_observable_pipe = { path = "crates/rx_bevy_observable_pipe" }
 rx_bevy_observable_throw = { path = "crates/rx_bevy_observable_throw" }
-rx_bevy_ref_observable_zip = { path = "crates/rx_bevy_ref_observable_zip" }
-# Pipes
-rx_bevy_ref_pipe = { path = "crates/rx_bevy_ref_pipe" }
+rx_bevy_observable_zip = { path = "crates/rx_bevy_observable_zip" }
 # Observers
 rx_bevy_observer_fn = { path = "crates/rx_bevy_observer_fn" }
 rx_bevy_observer_noop = { path = "crates/rx_bevy_observer_noop" }
 rx_bevy_observer_print = { path = "crates/rx_bevy_observer_print" }
+# Subscribers
+rx_bevy_subscriber_entity = { path = "crates/rx_bevy_subscriber_entity" }
+rx_bevy_subscriber_rc = { path = "crates/rx_bevy_subscriber_rc" }
+rx_bevy_subscriber_switch = { path = "crates/rx_bevy_subscriber_switch" }
 # Operators
+rx_bevy_operator_adsr = { path = "crates/rx_bevy_operator_adsr" }
 rx_bevy_operator_composite = { path = "crates/rx_bevy_operator_composite" }
 rx_bevy_operator_enumerate = { path = "crates/rx_bevy_operator_enumerate" }
 rx_bevy_operator_filter = { path = "crates/rx_bevy_operator_filter" }
@@ -116,19 +121,13 @@ rx_bevy_operator_switch_map = { path = "crates/rx_bevy_operator_switch_map" }
 rx_bevy_operator_take = { path = "crates/rx_bevy_operator_take" }
 rx_bevy_operator_tap_next = { path = "crates/rx_bevy_operator_tap_next" }
 rx_bevy_operator_try_capture = { path = "crates/rx_bevy_operator_try_capture" }
-rx_bevy_operator_adsr = { path = "crates/rx_bevy_operator_adsr" }
-# Reference Subscribers
-rx_bevy_ref_subscriber_rc = { path = "crates/rx_bevy_ref_subscriber_rc" }
-rx_bevy_ref_subscriber_switch = { path = "crates/rx_bevy_ref_subscriber_switch" }
-# Subscribers
-rx_bevy_subscriber_entity = { path = "crates/rx_bevy_subscriber_entity" }
 # Subscriptions
 rx_bevy_subscription_drop = { path = "crates/rx_bevy_subscription_drop" }
 rx_bevy_subscription_entity = { path = "crates/rx_bevy_subscription_entity" }
 rx_bevy_subscription_inert = { path = "crates/rx_bevy_subscription_inert" }
 # Subjects
-rx_bevy_ref_subject = { path = "crates/rx_bevy_ref_subject" }
-rx_bevy_ref_subject_behavior = { path = "crates/rx_bevy_ref_subject_behavior" }
-rx_bevy_ref_subject_replay = { path = "crates/rx_bevy_ref_subject_replay" }
+rx_bevy_subject = { path = "crates/rx_bevy_subject" }
+rx_bevy_subject_behavior = { path = "crates/rx_bevy_subject_behavior" }
+rx_bevy_subject_replay = { path = "crates/rx_bevy_subject_replay" }
 # Bevy
 rx_bevy_plugin = { path = "crates/rx_bevy_plugin" }

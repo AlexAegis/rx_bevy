@@ -4,7 +4,7 @@ use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
 	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
-use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
+use rx_bevy_subscriber_switch::SwitchSubscriber;
 
 pub struct SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
