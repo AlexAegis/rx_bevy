@@ -5,7 +5,7 @@ use std::{
 
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
-	SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct SwitchSubscriberState<InnerObservable, Destination>
@@ -24,8 +24,7 @@ where
 	Destination: SubscriptionCollection,
 {
 	pub(crate) destination: SharedSubscriber<Destination>,
-	pub(crate) inner_subscription:
-		Option<SubscriptionHandle<<InnerObservable as Observable>::Subscription>>,
+	pub(crate) inner_subscription: Option<<InnerObservable as Observable>::Subscription>,
 	teardown: SubscriptionData<Destination::Context>,
 	pub(crate) closed: bool,
 	pub(crate) is_complete: bool,

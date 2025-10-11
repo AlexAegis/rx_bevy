@@ -11,6 +11,9 @@ pub trait WithSubscriptionContext {
 	type Context: SubscriptionContext;
 }
 
+/// ## [SubscriptionContext][crate::SubscriptionContext]
+///
+/// The context defines how new subscriptions can be acquired in an observable.
 pub trait SubscriptionContext {
 	/// Indicates if the context can be safely (or not) acquired during a drop
 	/// to perform a last minute unsubscription in case the subscription is not

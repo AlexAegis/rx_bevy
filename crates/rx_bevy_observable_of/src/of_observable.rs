@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext, SubscriptionHandle,
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
 	WithSubscriptionContext,
 };
 use rx_bevy_subscription_inert::InertSubscription;
@@ -55,7 +55,7 @@ where
 		&mut self,
 		mut destination: Destination,
 		context: &mut Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -64,7 +64,7 @@ where
 	{
 		destination.next(self.value.clone(), context);
 		destination.complete(context);
-		SubscriptionHandle::new(InertSubscription::new(destination, context))
+		InertSubscription::new(destination, context)
 	}
 }
 

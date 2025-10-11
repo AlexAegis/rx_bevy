@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, TickableSubscription, WithSubscriptionContext,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, ObservableSubscription, WithSubscriptionContext,
 };
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
@@ -22,7 +22,7 @@ where
 	Context: SubscriptionContext,
 {
 	pub fn new(
-		mut destination: impl TickableSubscription<Context = Context> + 'static + Send + Sync,
+		mut destination: impl ObservableSubscription<Context = Context> + 'static + Send + Sync,
 		context: &mut Context,
 	) -> Self {
 		destination.unsubscribe(context);

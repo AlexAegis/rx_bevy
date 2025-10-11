@@ -1,20 +1,20 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{SubscriptionLike, Tick, Tickable, TickableSubscription, WithSubscriptionContext};
+use crate::{ObservableSubscription, SubscriptionLike, Tick, Tickable, WithSubscriptionContext};
 
 /// Subscriptions are made cloneable through a smart pointer.
 /// Subscriptions have to be clonable to allow their storage to keep them alive
 /// and to still let them be unsubscribable and tickable from other places.
 pub struct SubscriptionHandle<Subscription>
 where
-	Subscription: TickableSubscription,
+	Subscription: ObservableSubscription,
 {
 	handle: Arc<RwLock<Subscription>>,
 }
 
 impl<Subscription> SubscriptionHandle<Subscription>
 where
-	Subscription: TickableSubscription,
+	Subscription: ObservableSubscription,
 {
 	pub fn new(subscription: Subscription) -> Self {
 		Self {
@@ -25,7 +25,7 @@ where
 
 impl<Subscription> Clone for SubscriptionHandle<Subscription>
 where
-	Subscription: TickableSubscription,
+	Subscription: ObservableSubscription,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -36,14 +36,14 @@ where
 
 impl<Subscription> WithSubscriptionContext for SubscriptionHandle<Subscription>
 where
-	Subscription: TickableSubscription,
+	Subscription: ObservableSubscription,
 {
 	type Context = Subscription::Context;
 }
 
 impl<Subscription> Tickable for SubscriptionHandle<Subscription>
 where
-	Subscription: TickableSubscription,
+	Subscription: ObservableSubscription,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if let Ok(mut lock) = self.handle.write() {
@@ -56,7 +56,7 @@ where
 
 impl<Subscription> SubscriptionLike for SubscriptionHandle<Subscription>
 where
-	Subscription: TickableSubscription,
+	Subscription: ObservableSubscription,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(lock) = self.handle.read() {
@@ -97,7 +97,7 @@ where
 
 impl<Subscription> Drop for SubscriptionHandle<Subscription>
 where
-	Subscription: TickableSubscription,
+	Subscription: ObservableSubscription,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

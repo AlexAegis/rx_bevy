@@ -1,5 +1,5 @@
 use crate::{
-	SubscriptionContext, SubscriptionLike, SubscriptionNotification, TickableSubscription, WithSubscriptionContext,
+	SubscriptionContext, SubscriptionLike, SubscriptionNotification, ObservableSubscription, WithSubscriptionContext,
 };
 
 /// A teardown is a closure which owns resources, by the nature of them being
@@ -122,7 +122,7 @@ where
 /// teardown, it will be immediately dropped.
 impl<S> From<S> for NotifiableSubscription<S::Context>
 where
-	S: 'static + TickableSubscription + Send + Sync,
+	S: 'static + ObservableSubscription + Send + Sync,
 {
 	fn from(mut subscription: S) -> Self {
 		Self {

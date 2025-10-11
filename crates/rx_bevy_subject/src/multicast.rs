@@ -1,7 +1,7 @@
 use rx_bevy_core::{
 	ErasedDestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, SignalBound,
-	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionHandle, SubscriptionLike,
-	Teardown, Tick, Tickable, WithSubscriptionContext,
+	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
+	WithSubscriptionContext,
 };
 use smallvec::SmallVec;
 
@@ -86,14 +86,14 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let shared = Context::ErasedSharer::share(destination, context);
 		self.subscribers.push(shared.clone());
-		SubscriptionHandle::new(MulticastSubscription::new(shared))
+		MulticastSubscription::new(shared)
 	}
 }
 

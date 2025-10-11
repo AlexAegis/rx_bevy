@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext, SubscriptionHandle,
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
 	WithSubscriptionContext,
 };
 
@@ -74,12 +74,10 @@ where
 		&mut self,
 		mut destination: Destination,
 		context: &mut Self::Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		if self.options.emit_at_every_nth_tick == 0 {
 			for item in self.iterator.clone().into_iter() {
@@ -91,12 +89,12 @@ where
 			}
 		}
 
-		SubscriptionHandle::new(OnTickIteratorSubscription::new(
+		OnTickIteratorSubscription::new(
 			destination,
 			self.iterator.clone(),
 			self.options.clone(),
 			context,
-		))
+		)
 	}
 }
 

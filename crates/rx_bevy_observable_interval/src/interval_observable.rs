@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SubscriptionContext, Subscriber, SubscriptionHandle, WithSubscriptionContext,
+	Observable, ObservableOutput, Subscriber, SubscriptionContext, WithSubscriptionContext,
 };
 
 use crate::{IntervalObservableOptions, IntervalSubscription};
@@ -51,16 +51,14 @@ where
 		&mut self,
 		mut destination: Destination,
 		context: &mut Self::Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		if self.options.start_on_subscribe {
 			destination.next(0, context);
 		}
-		SubscriptionHandle::new(IntervalSubscription::new(destination, self.options.clone()))
+		IntervalSubscription::new(destination, self.options.clone())
 	}
 }

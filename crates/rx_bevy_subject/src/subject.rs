@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, SubscriptionContext, Subscriber,
-	SubscriptionHandle, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -76,7 +76,7 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,

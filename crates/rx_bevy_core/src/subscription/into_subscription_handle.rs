@@ -1,14 +1,14 @@
-use crate::{SubscriptionHandle, TickableSubscription};
+use crate::{ObservableSubscription, SubscriptionHandle};
 
-pub trait IntoSubscriptionHandle: 'static + TickableSubscription + Sized + Send + Sync {
-	fn to_handle(self) -> SubscriptionHandle<Self>;
+pub trait IntoSubscriptionHandle: 'static + ObservableSubscription + Sized + Send + Sync {
+	fn into_handle(self) -> SubscriptionHandle<Self>;
 }
 
 impl<S> IntoSubscriptionHandle for S
 where
-	S: 'static + TickableSubscription + Sized + Send + Sync,
+	S: 'static + ObservableSubscription + Sized + Send + Sync,
 {
-	fn to_handle(self) -> SubscriptionHandle<Self> {
+	fn into_handle(self) -> SubscriptionHandle<Self> {
 		SubscriptionHandle::new(self)
 	}
 }

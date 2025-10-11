@@ -1,11 +1,13 @@
 mod connectable;
 mod connectable_observable;
 mod connectable_observable_options;
+mod connection_handle;
 mod inner_connectable_observable;
 
 pub use connectable::*;
 pub use connectable_observable::*;
 pub use connectable_observable_options::*;
+pub use connection_handle::*;
 
 pub mod prelude {
 	pub use super::connectable::*;

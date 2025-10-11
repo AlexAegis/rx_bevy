@@ -1,6 +1,4 @@
-use rx_bevy_core::{
-	Observable, ObservableOutput, Operator, Subscriber, SubscriptionHandle, WithSubscriptionContext,
-};
+use rx_bevy_core::{Observable, ObservableOutput, Operator, Subscriber, WithSubscriptionContext};
 
 pub struct Pipe<Source, Op>
 where
@@ -87,7 +85,7 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>

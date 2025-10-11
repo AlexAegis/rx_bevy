@@ -1,9 +1,9 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, SubscriptionContext, SubjectLike, Subscriber, SubscriptionCollection,
-	SubscriptionHandle, SubscriptionLike, Teardown, WithSubscriptionContext,
+	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionCollection,
+	SubscriptionContext, SubscriptionLike, Teardown, WithSubscriptionContext,
 };
 
-use crate::{Connectable, ConnectableOptions};
+use crate::{Connectable, ConnectableOptions, ConnectionHandle};
 
 pub struct InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where
@@ -21,7 +21,7 @@ where
 	/// source
 	connector: Option<Connector>,
 
-	connection: Option<SubscriptionHandle<Source::Subscription>>,
+	connection: Option<ConnectionHandle<Source::Subscription>>,
 
 	options: ConnectableOptions<ConnectorCreator, Connector>,
 }
@@ -63,7 +63,7 @@ where
 		self.get_connector(context)
 	}
 
-	fn get_active_connection(&mut self) -> Option<SubscriptionHandle<Source::Subscription>> {
+	fn get_active_connection(&mut self) -> Option<ConnectionHandle<Source::Subscription>> {
 		self.connection
 			.as_ref()
 			.filter(|connection| !connection.is_closed())
@@ -106,7 +106,7 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -126,17 +126,19 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription: 'static,
 {
 	type ConnectionSubscription = Source::Subscription;
 
 	fn connect(
 		&mut self,
 		context: &mut <Self::ConnectionSubscription as WithSubscriptionContext>::Context,
-	) -> SubscriptionHandle<Self::ConnectionSubscription> {
+	) -> ConnectionHandle<Self::ConnectionSubscription> {
 		self.get_active_connection().unwrap_or_else(|| {
 			let connector = self.get_connector(context).clone();
 
-			let mut connection = self.source.subscribe(connector.clone(), context);
+			let mut connection =
+				ConnectionHandle::new(self.source.subscribe(connector.clone(), context));
 
 			if self.options.unsubscribe_connector_on_disconnect {
 				connection.add(connector, context);

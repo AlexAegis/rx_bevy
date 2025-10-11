@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionHandle, SubscriptionLike, Teardown, WithSubscriptionContext,
+	SubscriptionContext, SubscriptionLike, Teardown, WithSubscriptionContext,
 };
 use rx_bevy_subject::{MulticastSubscription, Subject};
 
@@ -103,15 +103,12 @@ where
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	>(
 		&mut self,
 		mut destination: Destination,
 		context: &mut Context,
-	) -> SubscriptionHandle<Self::Subscription> {
+	) -> Self::Subscription {
 		destination.next(self.value.borrow().clone(), context);
 		self.subject.subscribe(destination, context)
 	}

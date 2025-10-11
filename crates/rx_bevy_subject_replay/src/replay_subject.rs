@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionHandle, SubscriptionLike, Teardown, WithSubscriptionContext,
+	SubscriptionContext, SubscriptionLike, Teardown, WithSubscriptionContext,
 };
 use rx_bevy_subject::{MulticastSubscription, Subject};
 
@@ -109,7 +109,7 @@ where
 		&mut self,
 		mut destination: Destination,
 		context: &mut Context,
-	) -> SubscriptionHandle<Self::Subscription> {
+	) -> Self::Subscription {
 		for value in self.values.borrow().iter() {
 			destination.next(value.clone(), context);
 		}

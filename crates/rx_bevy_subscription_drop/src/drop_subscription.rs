@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	DropSafeSubscriptionContext, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
-	Tickable, TickableSubscription, WithSubscriptionContext,
+	Tickable, ObservableSubscription, WithSubscriptionContext,
 };
 
 /// A DropSubscription is a type of Subscription Observables may use, it
@@ -19,7 +19,7 @@ where
 {
 	pub fn new<S>(subscription: S) -> Self
 	where
-		S: TickableSubscription<Context = Context> + 'static + Send + Sync,
+		S: ObservableSubscription<Context = Context> + 'static + Send + Sync,
 	{
 		Self {
 			subscription_data: SubscriptionData::new_from_resource(subscription.into()),

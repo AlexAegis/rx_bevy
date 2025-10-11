@@ -1,6 +1,5 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, Subscriber, SubscriptionData, SubscriptionHandle,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, Subscriber, SubscriptionData, WithSubscriptionContext,
 };
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
@@ -86,7 +85,7 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -111,6 +110,6 @@ where
 		let mut subscription = SubscriptionData::default();
 		subscription.add_notifiable(s1.into(), context);
 		subscription.add_notifiable(s2.into(), context);
-		SubscriptionHandle::new(subscription)
+		subscription
 	}
 }

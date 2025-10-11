@@ -1,12 +1,13 @@
 use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionHandle, SubscriptionLike,
-	Teardown, WithSubscriptionContext,
+	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionLike, Teardown,
+	WithSubscriptionContext,
 };
 
 use crate::{
-	Connectable, ConnectableOptions, inner_connectable_observable::InnerConnectableObservable,
+	Connectable, ConnectableOptions, ConnectionHandle,
+	inner_connectable_observable::InnerConnectableObservable,
 };
 
 pub struct ConnectableObservable<Source, ConnectorCreator, Connector>
@@ -73,7 +74,7 @@ where
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,
-	) -> SubscriptionHandle<Self::Subscription>
+	) -> Self::Subscription
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -142,13 +143,14 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription: 'static,
 {
 	type ConnectionSubscription = Source::Subscription;
 
 	fn connect(
 		&mut self,
 		context: &mut <Self::ConnectionSubscription as WithSubscriptionContext>::Context,
-	) -> SubscriptionHandle<Self::ConnectionSubscription> {
+	) -> ConnectionHandle<Self::ConnectionSubscription> {
 		print!("connectable connect about to lock..");
 
 		let mut connector = self.connector.lock().expect("cant lock");
