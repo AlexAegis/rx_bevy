@@ -26,8 +26,9 @@ where
 	/// also be 'static when we want to use this as a `dyn SubscriptionLike`
 	/// trait object, due to variance as the accepting functions signature is
 	/// `impl SubscriptionLike<Context = Context> + 'static`
-	notifiable_subscriptions: Vec<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context)>>,
-	finalizers: Vec<Box<dyn FnOnce(&mut Context)>>,
+	notifiable_subscriptions:
+		Vec<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context) + Send + Sync>>,
+	finalizers: Vec<Box<dyn FnOnce(&mut Context) + Send + Sync>>,
 }
 
 impl<Context> SubscriptionData<Context>

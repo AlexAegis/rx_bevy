@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::MapIntoSubscriber;
 
@@ -25,10 +27,10 @@ impl<In, InError, Out, OutError, Context> Default
 impl<In, InError, Out, OutError, Context> Operator
 	for MapIntoOperator<In, InError, Out, OutError, Context>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -36,7 +38,7 @@ where
 		= MapIntoSubscriber<In, InError, Out, OutError, Destination>
 	where
 		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
@@ -45,7 +47,7 @@ where
 	) -> Self::Subscriber<Destination>
 	where
 		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync,
 	{
 		MapIntoSubscriber::new(destination)
 	}
@@ -54,10 +56,10 @@ where
 impl<In, InError, Out, OutError, Context> ObservableOutput
 	for MapIntoOperator<In, InError, Out, OutError, Context>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	type Out = Out;
 	type OutError = OutError;
@@ -66,10 +68,10 @@ where
 impl<In, InError, Out, OutError, Context> ObserverInput
 	for MapIntoOperator<In, InError, Out, OutError, Context>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 {
 	type In = In;
 	type InError = InError;

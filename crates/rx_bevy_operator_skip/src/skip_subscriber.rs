@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 
 pub struct SkipSubscriber<In, InError, Destination>
@@ -16,8 +16,8 @@ where
 
 impl<In, InError, Destination> SkipSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -34,8 +34,8 @@ where
 
 impl<In, InError, Destination> WithContext for SkipSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -46,8 +46,8 @@ where
 
 impl<In, InError, Destination> Observer for SkipSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -75,8 +75,8 @@ where
 
 impl<In, InError, Destination> Tickable for SkipSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -90,8 +90,8 @@ where
 
 impl<In, InError, Destination> SubscriptionLike for SkipSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -120,8 +120,8 @@ where
 
 impl<In, InError, Destination> ObservableOutput for SkipSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber,
 {
 	type Out = In;
@@ -130,8 +130,8 @@ where
 
 impl<In, InError, Destination> ObserverInput for SkipSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber,
 {
 	type In = In;

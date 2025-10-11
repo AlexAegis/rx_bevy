@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, SignalContext, Subscriber,
 	SubscriptionHandle, SubscriptionLike, Teardown, WithContext,
 };
 use rx_bevy_ref_subject::{MulticastSubscription, Subject};
@@ -11,8 +11,8 @@ use rx_bevy_ref_subject::{MulticastSubscription, Subject};
 #[derive(Clone)]
 pub struct BehaviorSubject<In, InError = (), Context = ()>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	subject: Subject<In, InError, Context>,
@@ -22,8 +22,8 @@ where
 
 impl<In, InError, Context> BehaviorSubject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	pub fn new(value: In) -> Self {
@@ -44,8 +44,8 @@ where
 
 impl<In, InError, Context> ObserverInput for BehaviorSubject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type In = In;
@@ -54,8 +54,8 @@ where
 
 impl<In, InError, Context> Observer for BehaviorSubject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn next(&mut self, next: In, context: &mut Self::Context) {
@@ -77,8 +77,8 @@ where
 
 impl<In, InError, Context> WithContext for BehaviorSubject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -86,8 +86,8 @@ where
 
 impl<In, InError, Context> ObservableOutput for BehaviorSubject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Out = In;
@@ -96,14 +96,17 @@ where
 
 impl<In, InError, Context> Observable for BehaviorSubject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	>(
 		&mut self,
 		mut destination: Destination,
@@ -116,8 +119,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for BehaviorSubject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	#[inline]

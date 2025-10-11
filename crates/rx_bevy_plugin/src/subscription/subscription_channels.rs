@@ -1,5 +1,5 @@
 use bevy_ecs::event::Event;
-use rx_bevy_common_bounds::SignalBound;
+use rx_bevy_core::SignalBound;
 
 use crate::{RxComplete, RxError, RxNext, RxSubscription, RxTick, RxUnsubscribe};
 

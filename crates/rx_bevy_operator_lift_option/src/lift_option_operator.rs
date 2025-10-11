@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::LiftOptionSubscriber;
 
@@ -18,16 +20,18 @@ impl<In, InError, Context> Default for LiftOptionOperator<In, InError, Context> 
 
 impl<In, InError, Context> Operator for LiftOptionOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
 		= LiftOptionSubscriber<In, InError, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -36,8 +40,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		LiftOptionSubscriber::new(destination)
 	}
@@ -45,8 +51,8 @@ where
 
 impl<In, InError, Context> ObserverInput for LiftOptionOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = Option<In>;
 	type InError = InError;
@@ -54,8 +60,8 @@ where
 
 impl<In, InError, Context> ObservableOutput for LiftOptionOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Out = In;
 	type OutError = InError;

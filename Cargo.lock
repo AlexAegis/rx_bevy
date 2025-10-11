@@ -4612,14 +4612,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_common_bounds"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "serde",
-]
-
-[[package]]
 name = "rx_bevy_core"
 version = "0.1.0"
 dependencies = [
@@ -4628,8 +4620,8 @@ dependencies = [
  "bevy_reflect",
  "bevy_time",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_testing",
+ "serde",
  "short_type_name",
  "smallvec",
 ]
@@ -4662,7 +4654,6 @@ dependencies = [
  "derive-where",
  "examples_common",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_plugin",
  "rx_bevy_testing",
@@ -4694,7 +4685,6 @@ dependencies = [
  "bevy_reflect",
  "derive-where",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_testing",
 ]
@@ -4705,7 +4695,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_subscription_drop",
  "rx_bevy_testing",
@@ -4717,7 +4706,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_subscription_inert",
  "rx_bevy_testing",
@@ -4730,7 +4718,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_subscription_inert",
  "rx_bevy_testing",
@@ -4742,7 +4729,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_subscription_inert",
  "rx_bevy_testing",
@@ -4754,7 +4740,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_testing",
 ]
@@ -4765,7 +4750,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_testing",
 ]
@@ -4776,7 +4760,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_testing",
 ]
@@ -4796,7 +4779,6 @@ dependencies = [
  "bitflags 2.9.3",
  "examples_common",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_ecs_observable_keyboard",
  "rx_bevy_plugin",
@@ -4811,7 +4793,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_ref_pipe",
  "rx_bevy_testing",
@@ -4824,7 +4805,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4837,7 +4817,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4850,7 +4829,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_operator_lift_option",
@@ -4865,7 +4843,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4879,7 +4856,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_testing",
 ]
@@ -4890,7 +4866,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4903,7 +4878,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4917,7 +4891,6 @@ dependencies = [
  "bevy_reflect",
  "derive-where",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4931,7 +4904,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4944,7 +4916,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4957,7 +4928,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_operator_finalize",
@@ -4974,7 +4944,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -4987,7 +4956,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -5001,7 +4969,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_composite",
  "rx_bevy_ref_pipe",
@@ -5028,7 +4995,6 @@ dependencies = [
  "derive-where",
  "examples_common",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_ecs_observable_interval",
  "rx_bevy_operator_composite",
@@ -5044,7 +5010,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_emission_variants",
  "rx_bevy_ref_subscriber_rc",
@@ -5058,7 +5023,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_observable_deferred",
  "rx_bevy_testing",
@@ -5069,7 +5033,6 @@ name = "rx_bevy_ref_observable_merge"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_operator_map_into",
  "rx_bevy_ref_subscriber_rc",
@@ -5081,7 +5044,6 @@ name = "rx_bevy_ref_observable_zip"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_emission_variants",
  "rx_bevy_ref_subscriber_rc",
@@ -5169,7 +5131,6 @@ dependencies = [
  "bevy_ecs",
  "bevy_log",
  "rx_bevy",
- "rx_bevy_common_bounds",
  "rx_bevy_core",
  "rx_bevy_testing",
  "short_type_name",

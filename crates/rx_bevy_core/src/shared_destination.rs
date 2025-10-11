@@ -5,16 +5,20 @@ use crate::{ObserverInput, Subscriber, WithContext};
 pub trait DestinationSharer: ObserverInput + WithContext {
 	type Shared<Destination>: SharedDestination<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	fn share<Destination>(
 		destination: Destination,
 		context: &mut Self::Context,
 	) -> Self::Shared<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Send
+			+ Sync;
 }
 
 /// A [SharedDestination] is a subscriber that can be cloned, but each clone
@@ -33,6 +37,8 @@ pub trait DestinationSharer: ObserverInput + WithContext {
 pub trait SharedDestination<Destination>:
 	Subscriber<In = Destination::In, InError = Destination::InError, Context = Destination::Context>
 	+ Clone
+	+ Send
+	+ Sync
 where
 	Destination: ?Sized + 'static + Subscriber,
 {

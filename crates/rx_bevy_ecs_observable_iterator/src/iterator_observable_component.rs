@@ -5,8 +5,7 @@ use rx_bevy_plugin::{
 
 use bevy_ecs::component::Component;
 
-use rx_bevy_common_bounds::{DebugBound, ReflectBound, SignalBound};
-use rx_bevy_core::ObservableOutput;
+use rx_bevy_core::{DebugBound, ObservableOutput, ReflectBound, SignalBound};
 
 use crate::IteratorSubscription;
 

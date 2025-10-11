@@ -10,11 +10,11 @@ pub trait CompositeOperatorExtensionSwitchMap: Operator + Sized {
 			+ DestinationSharer<
 				In = NextInnerObservable::Out,
 				InError = NextInnerObservable::OutError,
-				Context = <Self as Operator>::Context,
+				Context = Self::Context,
 			>
 			+ SubscriptionCollection,
-		NextInnerObservable: 'static + Observable<Subscription = Sharer>,
-		Switcher: 'static + Clone + Fn(Self::Out) -> NextInnerObservable,
+		NextInnerObservable: 'static + Observable<Subscription = Sharer, Context = Self::Context> + Send + Sync,
+		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
 		switcher: Switcher,

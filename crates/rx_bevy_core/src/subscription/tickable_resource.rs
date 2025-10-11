@@ -22,7 +22,8 @@ pub struct NotifiableSubscription<Context>
 where
 	Context: SignalContext,
 {
-	notify_fn: Option<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context)>>,
+	notify_fn:
+		Option<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context) + Send + Sync>>,
 }
 
 impl<Context> NotifiableSubscription<Context>
@@ -31,7 +32,7 @@ where
 {
 	pub fn new<F>(f: F) -> Self
 	where
-		F: 'static + FnMut(SubscriptionNotification<Context>, &mut Context),
+		F: 'static + FnMut(SubscriptionNotification<Context>, &mut Context) + Send + Sync,
 	{
 		Self {
 			notify_fn: Some(Box::new(f)),
@@ -39,7 +40,7 @@ where
 	}
 
 	pub fn new_from_box(
-		f: Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context)>,
+		f: Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context) + Send + Sync>,
 	) -> Self {
 		Self { notify_fn: Some(f) }
 	}
@@ -54,7 +55,7 @@ where
 	#[inline]
 	pub(crate) fn take(
 		mut self,
-	) -> Option<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context)>> {
+	) -> Option<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context) + Send + Sync>> {
 		self.notify_fn.take()
 	}
 
@@ -121,14 +122,14 @@ where
 /// teardown, it will be immediately dropped.
 impl<S> From<S> for NotifiableSubscription<S::Context>
 where
-	S: 'static + TickableSubscription,
+	S: 'static + TickableSubscription + Send + Sync,
 {
 	fn from(mut subscription: S) -> Self {
 		Self {
 			notify_fn: if subscription.is_closed() {
 				None
 			} else {
-				Some(Box::new(move |action, context| match action {
+				let closure = move |action, context: &mut S::Context| match action {
 					SubscriptionNotification::Tick(tick) => {
 						subscription.tick(tick, context);
 					}
@@ -138,7 +139,8 @@ where
 					SubscriptionNotification::Add(teardown) => {
 						subscription.add_teardown(teardown, context);
 					}
-				}))
+				};
+				Some(Box::new(closure))
 			},
 		}
 	}

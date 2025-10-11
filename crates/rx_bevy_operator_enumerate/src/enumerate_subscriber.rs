@@ -1,14 +1,14 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable,
-	WithContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
+	Tickable, WithContext,
 };
 
 pub struct EnumerateSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber,
 {
 	destination: Destination,
@@ -18,8 +18,8 @@ where
 
 impl<In, InError, Destination> EnumerateSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -36,8 +36,8 @@ where
 
 impl<In, InError, Destination> WithContext for EnumerateSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -48,8 +48,8 @@ where
 
 impl<In, InError, Destination> Observer for EnumerateSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -83,8 +83,8 @@ where
 
 impl<In, InError, Destination> Tickable for EnumerateSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -98,8 +98,8 @@ where
 
 impl<In, InError, Destination> SubscriptionLike for EnumerateSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -128,8 +128,8 @@ where
 
 impl<In, InError, Destination> ObserverInput for EnumerateSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber,
 {
 	type In = In;
@@ -138,8 +138,8 @@ where
 
 impl<In, InError, Destination> ObservableOutput for EnumerateSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber,
 {
 	type Out = (In, usize);

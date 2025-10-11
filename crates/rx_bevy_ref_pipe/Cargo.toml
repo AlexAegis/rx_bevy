@@ -1,4 +1,5 @@
 [package]
+# TODO: Rename to rx_bevy_observable_pipe it's an observable
 name = "rx_bevy_ref_pipe"
 description = "pipe operator for rx_bevy"
 version = "0.1.0"

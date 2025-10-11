@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, WithContext};
+use rx_bevy_core::{Observable, SignalBound};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::LiftResultOperator;
@@ -8,8 +8,9 @@ pub fn lift_result<ResultIn, ResultInError, InError, InErrorToResultError>(
 	in_error_to_result_error: InErrorToResultError,
 ) -> LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 {
 	LiftResultOperator::new(in_error_to_result_error)
@@ -19,8 +20,8 @@ where
 pub trait ObservableExtensionLiftResult<ResultOut, ResultOutError>:
 	Observable<Out = Result<ResultOut, ResultOutError>> + Sized
 where
-	ResultOut: 'static,
-	ResultOutError: 'static,
+	ResultOut: SignalBound,
+	ResultOutError: SignalBound,
 {
 	fn lift_result<InErrorToResultError>(
 		self,
@@ -32,11 +33,11 @@ where
 			ResultOutError,
 			Self::OutError,
 			InErrorToResultError,
-			<Self::Subscription as WithContext>::Context,
+			Self::Context,
 		>,
 	>
 	where
-		InErrorToResultError: Clone + Fn(Self::OutError) -> ResultOutError,
+		InErrorToResultError: Fn(Self::OutError) -> ResultOutError + Clone + Send + Sync,
 	{
 		Pipe::new(self, LiftResultOperator::new(in_error_to_result_error))
 	}
@@ -46,7 +47,7 @@ impl<Obs, ResultOut, ResultOutError> ObservableExtensionLiftResult<ResultOut, Re
 	for Obs
 where
 	Obs: Observable<Out = Result<ResultOut, ResultOutError>>,
-	ResultOut: 'static,
-	ResultOutError: 'static,
+	ResultOut: SignalBound,
+	ResultOutError: SignalBound,
 {
 }

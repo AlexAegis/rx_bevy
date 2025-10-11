@@ -1,5 +1,5 @@
 use bevy_ecs::{entity::Entity, system::Command, world::World};
-use rx_bevy_common_bounds::SignalBound;
+use rx_bevy_core::SignalBound;
 use std::marker::PhantomData;
 
 use crate::ObservableComponent;

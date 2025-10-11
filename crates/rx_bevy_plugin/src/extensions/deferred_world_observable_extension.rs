@@ -7,7 +7,7 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 #[cfg(feature = "reflect")]
-use rx_bevy_common_bounds::SignalBound;
+use rx_bevy_core::SignalBound;
 
 #[cfg(feature = "reflect")]
 use crate::RxSubscription;

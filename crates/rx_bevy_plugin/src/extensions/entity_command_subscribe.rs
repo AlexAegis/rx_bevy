@@ -3,7 +3,7 @@ use bevy_ecs::{
 	schedule::ScheduleLabel,
 	system::{Commands, EntityCommands},
 };
-use rx_bevy_common_bounds::SignalBound;
+use rx_bevy_core::SignalBound;
 
 use crate::{CommandSubscribeExtension, RelativeEntity};
 

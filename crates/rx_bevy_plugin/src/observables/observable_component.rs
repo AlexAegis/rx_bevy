@@ -3,15 +3,15 @@ use bevy_ecs::{
 	entity::Entity,
 	error::BevyError,
 	name::Name,
-	observer::{Observer, Trigger},
+	observer::Trigger,
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
 #[cfg(feature = "debug")]
 use bevy_log::trace;
 use derive_where::derive_where;
-use rx_bevy_common_bounds::{DebugBound, SignalBound};
-use rx_bevy_core::{ObservableOutput, Tick};
+
+use rx_bevy_core::{DebugBound, ObservableOutput, SignalBound, Tick};
 use short_type_name::short_type_name;
 
 use crate::{
@@ -184,10 +184,10 @@ where
 
 		if O::Subscription::SCHEDULED {
 			// The [SubscriptionSchedule] component was already inserted into this entity
-			subscription_entity_commands.insert((
-				Observer::new(subscription_tick_observer::<O::Subscription>)
-					.with_entity(subscription_entity), // It's observing itself!
-			));
+			// subscription_entity_commands.insert((
+			// 	Observer::new(subscription_tick_observer::<O::Subscription>)
+			// 		.with_entity(subscription_entity), // It's observing itself!
+			// ));
 		};
 	}
 
@@ -205,7 +205,7 @@ where
 /// These direct subscriptions will forward the tick to the operator subscribers
 /// to ensure correct event order.
 /// TODO: Extend this so it observes all channels, next,error,complete,unsub,tick
-pub(crate) fn subscription_tick_observer<Sub>(trigger: Trigger<Tick>, mut _commands: Commands)
+pub(crate) fn _subscription_tick_observer<Sub>(trigger: Trigger<Tick>, mut _commands: Commands)
 where
 	Sub: RxSubscription,
 	Sub::Out: SignalBound + Clone,

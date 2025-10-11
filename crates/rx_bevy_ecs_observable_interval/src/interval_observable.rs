@@ -53,8 +53,10 @@ where
 		context: &mut Self::Context,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		if self.options.start_on_subscribe {
 			destination.next(0, context);

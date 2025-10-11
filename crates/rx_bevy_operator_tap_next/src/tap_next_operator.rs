@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::TapNextSubscriber;
 
@@ -27,17 +29,19 @@ where
 
 impl<In, InError, OnNext, Context> Operator for TapNextOperator<In, InError, OnNext, Context>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
-	In: 'static,
-	InError: 'static,
+	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
 		= TapNextSubscriber<In, InError, OnNext, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -46,8 +50,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		TapNextSubscriber::new(destination, self.on_next.clone())
 	}
@@ -57,8 +63,8 @@ impl<In, InError, OnNext, Context> ObservableOutput
 	for TapNextOperator<In, InError, OnNext, Context>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Out = In;
@@ -68,8 +74,8 @@ where
 impl<In, InError, OnNext, Context> ObserverInput for TapNextOperator<In, InError, OnNext, Context>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type In = In;
@@ -79,8 +85,8 @@ where
 impl<In, InError, OnNext, Context> Clone for TapNextOperator<In, InError, OnNext, Context>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn clone(&self) -> Self {

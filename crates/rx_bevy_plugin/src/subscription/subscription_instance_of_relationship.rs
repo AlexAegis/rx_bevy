@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{component::Component, entity::Entity};
-use rx_bevy_common_bounds::SignalBound;
+use rx_bevy_core::SignalBound;
 use smallvec::SmallVec;
 
 use crate::RxSubscription;

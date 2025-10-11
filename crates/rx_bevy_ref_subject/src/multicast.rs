@@ -1,7 +1,7 @@
 use rx_bevy_core::{
 	DestinationSharer, ErasedArcSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
-	SignalContext, Subscriber, SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	SignalBound, SignalContext, Subscriber, SubscriptionData, SubscriptionHandle, SubscriptionLike,
+	Teardown, Tick, Tickable, WithContext,
 };
 use smallvec::SmallVec;
 
@@ -19,8 +19,8 @@ use crate::MulticastSubscription;
 /// Closed subscribers are lazily cleaned up on the next `next` / `tick` emission.
 pub struct Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	subscribers: SmallVec<[ErasedArcSubscriber<In, InError, Context>; 1]>,
@@ -30,8 +30,8 @@ where
 
 impl<In, InError, Context> Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	/// Drops all closed subscribers
@@ -43,8 +43,8 @@ where
 
 impl<In, InError, Context> Observable for Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Subscription = MulticastSubscription<In, InError, Context>;
@@ -55,12 +55,8 @@ where
 		context: &mut Destination::Context,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let shared = ErasedArcSubscriber::share(destination, context);
 		self.subscribers.push(shared.clone());
@@ -70,8 +66,8 @@ where
 
 impl<In, InError, Context> Observer for Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -98,8 +94,8 @@ where
 
 impl<In, InError, Context> Tickable for Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
@@ -112,8 +108,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	#[inline]
@@ -144,8 +140,8 @@ where
 
 impl<In, InError, Context> ObserverInput for Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type In = In;
@@ -154,8 +150,8 @@ where
 
 impl<In, InError, Context> ObservableOutput for Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Out = In;
@@ -164,8 +160,8 @@ where
 
 impl<In, InError, Context> Default for Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn default() -> Self {
@@ -179,8 +175,8 @@ where
 
 impl<In, InError, Context> WithContext for Multicast<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Context = Context;

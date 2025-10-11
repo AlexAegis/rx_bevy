@@ -1,7 +1,9 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::MapSubscriber;
 
@@ -29,18 +31,20 @@ where
 
 impl<In, InError, Mapper, Out, Context> Operator for MapOperator<In, InError, Mapper, Out, Context>
 where
-	In: 'static,
-	InError: 'static,
-	Mapper: 'static + Clone + Fn(In) -> Out,
-	Out: 'static,
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
+	Out: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
 		= MapSubscriber<In, InError, Mapper, Out, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -49,8 +53,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		MapSubscriber::new(destination, self.mapper.clone())
 	}
@@ -60,8 +66,8 @@ impl<In, InError, Mapper, Out, Context> ObservableOutput
 	for MapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Out,
-	Out: 'static,
-	InError: 'static,
+	Out: SignalBound,
+	InError: SignalBound,
 {
 	type Out = Out;
 	type OutError = InError;
@@ -71,8 +77,8 @@ impl<In, InError, Mapper, Out, Context> ObserverInput
 	for MapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Out,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;

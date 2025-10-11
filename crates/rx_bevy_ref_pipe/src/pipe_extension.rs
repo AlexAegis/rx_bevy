@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, Operator, WithContext};
+use rx_bevy_core::{Observable, Operator};
 
 use crate::Pipe;
 
@@ -8,11 +8,7 @@ pub trait ObservableExtensionPipe: Observable + Sized {
 	fn pipe<Op>(self, operator: Op) -> Pipe<Self, Op>
 	where
 		Self: Sized,
-		Op: Operator<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>,
+		Op: Operator<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		Pipe::new(self, operator)
 	}

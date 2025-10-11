@@ -9,38 +9,42 @@ use crate::{
 
 pub struct ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	destination: Arc<RwLock<Destination>>,
 }
 
-impl<T> DestinationSharer for ArcSubscriber<T>
+impl<D> DestinationSharer for ArcSubscriber<D>
 where
-	T: Subscriber + 'static,
+	D: 'static + Subscriber + Send + Sync,
 {
 	type Shared<Destination>
 		= ArcSubscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	fn share<Destination>(
 		destination: Destination,
 		_context: &mut Self::Context,
 	) -> Self::Shared<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		ArcSubscriber::new(destination)
 	}
 }
 
-impl<T> SharedDestination<T> for ArcSubscriber<T>
+impl<Destination> SharedDestination<Destination> for ArcSubscriber<Destination>
 where
-	T: Subscriber + 'static,
+	Destination: 'static + Subscriber + Send + Sync,
 {
-	type Access = T;
+	type Access = Destination;
 
 	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where
@@ -63,7 +67,7 @@ where
 
 impl<Destination> ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -95,7 +99,7 @@ where
 
 impl<Destination> Clone for ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -106,7 +110,7 @@ where
 
 impl<Destination> ObserverInput for ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -114,14 +118,14 @@ where
 
 impl<Destination> WithContext for ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	type Context = Destination::Context;
 }
 
 impl<Destination> Observer for ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -158,7 +162,7 @@ where
 
 impl<Destination> Tickable for ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		if let Ok(mut lock) = self.destination.write() {
@@ -171,7 +175,7 @@ where
 
 impl<Destination> SubscriptionLike for ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(lock) = self.destination.read() {
@@ -216,7 +220,7 @@ where
 
 impl<Destination> Drop for ArcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn drop(&mut self) {
 		// Should not do anything on drop as it can be shared. Once the Arc

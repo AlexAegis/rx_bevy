@@ -1,4 +1,3 @@
-use bevy::app::App;
 use bevy_ecs::system::{Commands, Query, QueryLens};
 use rx_bevy_core::{DropUnsafeSignalContext, SignalContext, Subscriber};
 use short_type_name::short_type_name;
@@ -6,7 +5,7 @@ use short_type_name::short_type_name;
 use crate::{ContextWithCommands, EntitySubscriber, EntitySubscription};
 
 pub struct CommandContext<'c> {
-	subscription_component_query: QueryLens<'c, &'c mut EntitySubscription<'c, Self>>,
+	//subscription_component_query: QueryLens<'c, &'c mut EntitySubscription<'c, Self>>,
 	commands: Commands<'c, 'c>,
 }
 
@@ -20,14 +19,14 @@ impl<'c> ContextWithCommands<'c> for CommandContext<'c> {
 impl<'c> CommandContext<'c> {
 	pub fn new(
 		commands: Commands<'c, 'c>,
-		subscription_component_query: QueryLens<'c, &'c mut EntitySubscription<'c, Self>>,
+		//subscription_component_query: QueryLens<'c, &'c mut EntitySubscription<'c, Self>>,
 	) -> Self {
 		// // SAFETY: it's always only accessible through a reference
 		// let commands: Commands<'static, 'static> = unsafe {
 		// 	std::mem::transmute::<Commands<'w, 's>, Commands<'static, 'static>>(commands)
 		// };
 		Self {
-			subscription_component_query,
+			//	subscription_component_query,
 			commands,
 		}
 	}

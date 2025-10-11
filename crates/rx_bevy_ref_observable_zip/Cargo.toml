@@ -19,7 +19,6 @@ workspace = true
 default = ["dev"]
 dev = [
     "rx_bevy/dev",
-    "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
     "rx_bevy_emission_variants/dev",
     "rx_bevy_ref_subscriber_rc/dev",
@@ -37,7 +36,6 @@ example = [
 [dependencies]
 rx_bevy_core = { workspace = true }
 rx_bevy_emission_variants = { workspace = true }
-rx_bevy_common_bounds = { workspace = true }
 rx_bevy_ref_subscriber_rc = { workspace = true }
 
 [dev-dependencies]

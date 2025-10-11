@@ -13,7 +13,7 @@ where
 	timer: Timer,
 	count: u32,
 	max_emissions_per_tick: u32,
-	destination: Box<dyn Subscriber<In = u32, InError = (), Context = Context>>,
+	destination: Box<dyn Subscriber<In = u32, InError = (), Context = Context> + Send + Sync>,
 	teardown: SubscriptionData<Context>,
 }
 
@@ -22,7 +22,7 @@ where
 	Context: SignalContext,
 {
 	pub fn new(
-		destination: impl Subscriber<In = u32, InError = (), Context = Context> + 'static,
+		destination: impl Subscriber<In = u32, InError = (), Context = Context> + Send + Sync + 'static,
 		interval_subscription_options: IntervalObservableOptions,
 	) -> Self {
 		IntervalSubscription {

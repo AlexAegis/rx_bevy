@@ -1,11 +1,14 @@
-use rx_bevy_core::Operator;
+use rx_bevy_core::{Operator, SignalBound};
 use rx_bevy_operator_composite::CompositeOperator;
 
 use crate::MapOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionMap: Operator + Sized {
-	fn map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> NextOut>(
+	fn map<
+		NextOut: SignalBound,
+		Mapper: 'static + Fn(Self::Out) -> NextOut + Clone + Send + Sync,
+	>(
 		self,
 		mapper: Mapper,
 	) -> CompositeOperator<

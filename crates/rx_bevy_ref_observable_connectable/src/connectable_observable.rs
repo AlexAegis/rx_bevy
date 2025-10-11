@@ -81,11 +81,9 @@ where
 	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>,
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		print!("connectable subscribe about to lock..");
 		let mut connector = self.connector.lock().expect("cant lock");

@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SubscriptionLike, Teardown, Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SignalContext, SubscriptionLike, Teardown, Tickable,
+	WithContext,
 };
 
 #[derive(Debug)]
@@ -12,8 +13,8 @@ pub struct NoopObserver<In, InError, Context> {
 
 impl<In, InError, Context> ObserverInput for NoopObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -21,8 +22,8 @@ where
 
 impl<In, InError, Context> Observer for NoopObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn next(&mut self, _next: Self::In, _context: &mut Self::Context) {}
@@ -39,8 +40,8 @@ where
 
 impl<In, InError, Context> Tickable for NoopObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn tick(&mut self, _tick: rx_bevy_core::Tick, _context: &mut Self::Context) {}
@@ -48,8 +49,8 @@ where
 
 impl<In, InError, Context> WithContext for NoopObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -57,8 +58,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for NoopObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	#[inline]

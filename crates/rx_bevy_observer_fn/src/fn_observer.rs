@@ -1,15 +1,15 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SignalContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tick, Tickable, WithContext,
 };
 
 /// An [FnObserver] requires you to define a callback for all three notifications
 pub struct FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	OnNext: FnMut(In, &mut Context),
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
@@ -27,8 +27,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 	FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	OnNext: FnMut(In, &mut Context),
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
@@ -55,8 +55,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> ObserverInput
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	OnNext: FnMut(In, &mut Context),
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
@@ -70,8 +70,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> WithContext
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	OnNext: FnMut(In, &mut Context),
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
@@ -84,8 +84,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Observer
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	OnNext: FnMut(In, &mut Context),
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
@@ -115,8 +115,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Tickable
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	OnNext: FnMut(In, &mut Context),
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),
@@ -131,8 +131,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> SubscriptionLike
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	OnNext: FnMut(In, &mut Context),
 	OnError: FnMut(InError, &mut Context),
 	OnComplete: FnMut(&mut Context),

@@ -23,7 +23,6 @@ dev = [
     "examples_common/dev",
     "inspector",
     "rx_bevy/dev",
-    "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
     "rx_bevy_ecs_observable_interval/dev",
     "rx_bevy_operator_composite/dev",
@@ -34,7 +33,6 @@ debug = [
     "bevy/track_location",
     "bevy_reflect/debug",
     "dep:bevy_input",
-    "rx_bevy_common_bounds/debug",
     "rx_bevy_core/debug",
     "rx_bevy_ecs_observable_interval/debug",
 ]
@@ -44,7 +42,6 @@ serialize = [
     "bevy_input/serialize",
     "bevy_platform/serialize",
     "bevy_time/serialize",
-    "rx_bevy_common_bounds/serialize",
     "rx_bevy_core/serialize",
 ]
 example = [
@@ -78,7 +75,6 @@ inspector = [
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
-    "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
     "rx_bevy_ecs_observable_interval/reflect",
     "rx_bevy_operator_composite/reflect",
@@ -89,7 +85,6 @@ bevy_kit_erased_component_registry = { workspace = true }
 # rx_bevy dependencies
 rx_bevy_core = { workspace = true, features = ["bevy"] }
 rx_bevy_operator_composite = { workspace = true, features = ["bevy"] }
-rx_bevy_common_bounds = { workspace = true }
 # bevy dependencies
 bevy_app = { workspace = true }
 bevy_derive = { workspace = true }

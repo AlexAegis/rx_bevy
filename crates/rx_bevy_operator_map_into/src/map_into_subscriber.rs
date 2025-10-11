@@ -1,16 +1,16 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 
 pub struct MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Destination: Subscriber,
 {
 	destination: Destination,
@@ -20,10 +20,10 @@ where
 impl<In, InError, Out, OutError, Destination>
 	MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -40,10 +40,10 @@ where
 impl<In, InError, Out, OutError, Destination> WithContext
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -55,10 +55,10 @@ where
 impl<In, InError, Out, OutError, Destination> Observer
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -83,10 +83,10 @@ where
 impl<In, InError, Out, OutError, Destination> Tickable
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -101,10 +101,10 @@ where
 impl<In, InError, Out, OutError, Destination> SubscriptionLike
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -134,10 +134,10 @@ where
 impl<In, InError, Out, OutError, Destination> ObserverInput
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Destination: Subscriber,
 {
 	type In = In;
@@ -147,10 +147,10 @@ where
 impl<In, InError, Out, OutError, Destination> ObservableOutput
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: 'static + Into<Out>,
-	InError: 'static + Into<OutError>,
-	Out: 'static,
-	OutError: 'static,
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
 	Destination: Subscriber,
 {
 	type Out = Out;

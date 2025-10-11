@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SignalContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tick, Tickable, WithContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -18,8 +18,8 @@ where
 
 impl<In, InError, Context> DynFnObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context)>(mut self, on_next: OnNext) -> Self {
@@ -62,8 +62,8 @@ where
 
 impl<In, InError, Context> ObserverInput for DynFnObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type In = In;
@@ -72,8 +72,8 @@ where
 
 impl<In, InError, Context> WithContext for DynFnObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -81,8 +81,8 @@ where
 
 impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn next(&mut self, next: In, context: &mut Self::Context) {
@@ -118,8 +118,8 @@ where
 
 impl<In, InError, Context> Tickable for DynFnObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
@@ -131,8 +131,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for DynFnObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	#[inline]
@@ -159,8 +159,8 @@ where
 
 impl<In, InError, Context> Default for DynFnObserver<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn default() -> Self {

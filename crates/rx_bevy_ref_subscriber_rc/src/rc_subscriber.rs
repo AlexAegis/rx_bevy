@@ -7,7 +7,7 @@ use crate::{InnerRcSubscriber, WeakRcSubscriber};
 
 pub struct RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	// TODO: Use a generic SHARER, Instead of an Arc, all this should guarantee that the destination is cloneable and it still points to the same thing. This is true for entities aswell
 	destination: ArcSubscriber<InnerRcSubscriber<Destination>>,
@@ -17,7 +17,7 @@ where
 
 impl<Destination> From<Destination> for RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn from(destination: Destination) -> Self {
 		Self::new(destination)
@@ -26,7 +26,7 @@ where
 
 impl<Destination> RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -73,7 +73,7 @@ where
 
 impl<Destination> Clone for RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn clone(&self) -> Self {
 		self.destination.write(|destination| {
@@ -98,7 +98,7 @@ where
 
 impl<Destination> ObserverInput for RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -106,14 +106,14 @@ where
 
 impl<Destination> WithContext for RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	type Context = Destination::Context;
 }
 
 impl<Destination> Observer for RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_this_clone_closed() {
@@ -142,7 +142,7 @@ where
 
 impl<Destination> Tickable for RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		// TODO: verify how shared destinations behave if all of them are getting ticked, ticks might need an id, and consumers of ticks would probably need to check if a tick had been processed before using them
@@ -154,7 +154,7 @@ where
 
 impl<Destination> SubscriptionLike for RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -184,7 +184,7 @@ where
 
 impl<Destination> Drop for RcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn drop(&mut self) {
 		if !self.unsubscribed {

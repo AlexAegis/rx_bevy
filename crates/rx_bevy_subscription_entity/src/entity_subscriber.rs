@@ -2,10 +2,9 @@ use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event};
 
-use rx_bevy_common_bounds::SignalBound;
 use rx_bevy_core::{
-	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
-	SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalBound, SignalContext,
+	Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 
 use crate::{CommandContext, ContextWithCommands};

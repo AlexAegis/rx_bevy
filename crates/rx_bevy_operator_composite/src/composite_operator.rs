@@ -50,7 +50,7 @@ where
 		= CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<Destination>>, Destination>
 	where
 		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync,
 		Op::Subscriber<Destination>:
 			Subscriber<In = Op::In, InError = Op::InError, Context = Self::Context>,
 		PrevOp::Subscriber<Op::Subscriber<Destination>>: Subscriber<Context = Self::Context>;
@@ -63,7 +63,7 @@ where
 	) -> Self::Subscriber<Destination>
 	where
 		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync,
 	{
 		CompositeSubscriber::new(
 			self.prev_op

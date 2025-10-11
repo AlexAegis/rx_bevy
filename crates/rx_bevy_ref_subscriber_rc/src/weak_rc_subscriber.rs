@@ -8,7 +8,7 @@ use crate::InnerRcSubscriber;
 /// Acquired by calling `downgrade` on `RcSubscriber`
 pub struct WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	// TODO: Since in bevy this won't be a pointer just an Entity, maybe we'd need a enum or trait here
 	pub(crate) destination: ArcSubscriber<InnerRcSubscriber<Destination>>,
@@ -17,7 +17,7 @@ where
 
 impl<Destination> WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	/// Let's you check the shared observer for the duration of the callback
 	pub fn read<F>(&mut self, reader: F)
@@ -38,7 +38,7 @@ where
 
 impl<Destination> Clone for WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -50,7 +50,7 @@ where
 
 impl<Destination> ObserverInput for WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
@@ -58,14 +58,14 @@ where
 
 impl<Destination> WithContext for WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	type Context = Destination::Context;
 }
 
 impl<Destination> Observer for WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		self.destination.next(next, context);
@@ -85,7 +85,7 @@ where
 
 impl<Destination> Tickable for WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.destination.tick(tick, context);
@@ -94,7 +94,7 @@ where
 
 impl<Destination> SubscriptionLike for WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -121,7 +121,7 @@ where
 
 impl<Destination> Drop for WeakRcSubscriber<Destination>
 where
-	Destination: Subscriber,
+	Destination: 'static + Subscriber,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

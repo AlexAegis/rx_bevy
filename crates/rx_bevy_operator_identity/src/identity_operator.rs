@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::IdentitySubscriber;
 
@@ -31,8 +33,8 @@ impl<In, InError, Context> Clone for IdentityOperator<In, InError, Context> {
 
 impl<In, InError, Context> ObservableOutput for IdentityOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Out = In;
 	type OutError = InError;
@@ -40,8 +42,8 @@ where
 
 impl<In, InError, Context> ObserverInput for IdentityOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -49,16 +51,18 @@ where
 
 impl<In, InError, Context> Operator for IdentityOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext + 'static,
 {
 	type Context = Context;
 	type Subscriber<Destination>
 		= IdentitySubscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -67,8 +71,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		IdentitySubscriber::new(destination)
 	}

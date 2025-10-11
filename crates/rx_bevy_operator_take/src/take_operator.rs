@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::TakeSubscriber;
 
@@ -21,8 +23,8 @@ impl<In, InError, Context> TakeOperator<In, InError, Context> {
 
 impl<In, InError, Context> Operator for TakeOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -30,7 +32,7 @@ where
 		= TakeSubscriber<In, InError, Destination>
 	where
 		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -40,7 +42,7 @@ where
 	) -> Self::Subscriber<Destination>
 	where
 		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync,
 	{
 		TakeSubscriber::new(destination, self.count)
 	}
@@ -48,8 +50,8 @@ where
 
 impl<In, InError, Context> ObserverInput for TakeOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -57,8 +59,8 @@ where
 
 impl<In, InError, Context> ObservableOutput for TakeOperator<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Out = In;
 	type OutError = InError;

@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, WithContext};
+use rx_bevy_core::Observable;
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::TakeOperator;
@@ -13,10 +13,7 @@ pub trait ObservableExtensionTake: Observable + Sized {
 	fn take(
 		self,
 		count: usize,
-	) -> Pipe<
-		Self,
-		TakeOperator<Self::Out, Self::OutError, <Self::Subscription as WithContext>::Context>,
-	> {
+	) -> Pipe<Self, TakeOperator<Self::Out, Self::OutError, Self::Context>> {
 		Pipe::new(self, TakeOperator::new(count))
 	}
 }

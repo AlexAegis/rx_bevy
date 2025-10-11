@@ -1,5 +1,5 @@
 use crate::{
-	Subscriber, SubscriptionHandle, TickableSubscription, WithContext,
+	SignalBound, Subscriber, SubscriptionHandle, TickableSubscription, WithContext,
 	signal_context::SignalContext,
 };
 
@@ -8,8 +8,8 @@ use crate::{
 /// Defines the outputs of an [Observable]. Also used for [Operator]s to define
 /// the new outputs once the operator is applies.
 pub trait ObservableOutput {
-	type Out: 'static;
-	type OutError: 'static;
+	type Out: SignalBound;
+	type OutError: SignalBound;
 }
 
 /// # [Observable]
@@ -77,7 +77,7 @@ pub trait ObservableOutput {
 /// > `let _ =`) will cause it to be immediately dropped, hence `subscribe` is
 /// > `#[must_use]`!
 pub trait Observable: ObservableOutput + WithContext {
-	type Subscription: TickableSubscription<Context = Self::Context>;
+	type Subscription: TickableSubscription<Context = Self::Context> + Send + Sync;
 
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]
 	fn subscribe<Destination>(
@@ -85,9 +85,12 @@ pub trait Observable: ObservableOutput + WithContext {
 		destination: Destination,
 		context: &mut Self::Context,
 	) -> SubscriptionHandle<Self::Subscription>
+	// TODO: Consider not returning a handle, but keeping it in case the subscription needs to be shared, but internal usecases do not need subscriptions to be shareable
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 }
 
 /// For usecases where the context is not used at all, some convenience
@@ -100,8 +103,10 @@ pub trait ObservableWithDefaultDropContext: Observable {
 		destination: Destination,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		let mut context = Self::Context::create_context_to_unsubscribe_on_drop();
 		self.subscribe(destination, &mut context)

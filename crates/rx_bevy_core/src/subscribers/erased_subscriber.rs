@@ -1,6 +1,6 @@
 use crate::{
-	Observer, ObserverInput, SignalContext, Subscriber, SubscriptionLike, Teardown, Tickable,
-	WithContext,
+	Observer, ObserverInput, SignalBound, SignalContext, Subscriber, SubscriptionLike, Teardown,
+	Tickable, WithContext,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
@@ -9,16 +9,16 @@ pub type DynSubscriber<In, InError, Context> =
 
 pub struct ErasedSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	destination: Box<dyn Subscriber<In = In, InError = InError, Context = Context>>,
 }
 
 impl<In, InError, Context> ErasedSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
@@ -31,8 +31,8 @@ where
 }
 impl<In, InError, Context> ObserverInput for ErasedSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -40,8 +40,8 @@ where
 
 impl<In, InError, Context> WithContext for ErasedSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -49,8 +49,8 @@ where
 
 impl<In, InError, Context> Observer for ErasedSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	#[inline]
@@ -71,8 +71,8 @@ where
 
 impl<In, InError, Context> Tickable for ErasedSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	#[inline]
@@ -83,8 +83,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for ErasedSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	#[inline]

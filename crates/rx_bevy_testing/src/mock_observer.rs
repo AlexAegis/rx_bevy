@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContextDropSafety, SubscriberNotification, SubscriptionLike,
-	Teardown, Tick, Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SignalContextDropSafety, SubscriberNotification,
+	SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 
 use crate::MockContext;
@@ -10,8 +10,8 @@ use crate::MockContext;
 #[derive(Debug)]
 pub struct MockObserver<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	pub closed: bool,
@@ -20,8 +20,8 @@ where
 
 impl<In, InError, DropSafety> ObserverInput for MockObserver<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	type In = In;
@@ -30,8 +30,8 @@ where
 
 impl<In, InError, DropSafety> Observer for MockObserver<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -50,8 +50,8 @@ where
 
 impl<In, InError, DropSafety> Tickable for MockObserver<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
@@ -61,8 +61,8 @@ where
 
 impl<In, InError, DropSafety> WithContext for MockObserver<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	type Context = MockContext<In, InError, DropSafety>;
@@ -70,8 +70,8 @@ where
 
 impl<In, InError, DropSafety> SubscriptionLike for MockObserver<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	#[inline]
@@ -100,8 +100,8 @@ where
 
 impl<In, InError, DropSafety> Default for MockObserver<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	fn default() -> Self {

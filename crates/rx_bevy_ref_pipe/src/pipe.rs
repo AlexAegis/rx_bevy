@@ -5,12 +5,7 @@ use rx_bevy_core::{
 pub struct Pipe<Source, Op>
 where
 	Source: 'static + Observable,
-	Op: 'static
-		+ Operator<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	pub(crate) source_observable: Source,
 	pub(crate) operator: Op,
@@ -21,11 +16,7 @@ where
 	Source: 'static + Clone + Observable,
 	Op: 'static
 		+ Clone
-		+ Operator<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
+		+ Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -38,12 +29,7 @@ where
 impl<Source, Op> Pipe<Source, Op>
 where
 	Source: 'static + Observable,
-	Op: 'static
-		+ Operator<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	pub fn new(source_observable: Source, operator: Op) -> Self {
 		Self {
@@ -56,12 +42,7 @@ where
 impl<Source, Op> Pipe<Source, Op>
 where
 	Source: 'static + Observable,
-	Op: 'static
-		+ Operator<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	#[inline]
 	pub fn pipe<NextOp>(self, operator: NextOp) -> Pipe<Self, NextOp>
@@ -80,12 +61,7 @@ where
 impl<Source, Op> ObservableOutput for Pipe<Source, Op>
 where
 	Source: 'static + Observable,
-	Op: 'static
-		+ Operator<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	type Out = Op::Out;
 	type OutError = Op::OutError;
@@ -94,12 +70,7 @@ where
 impl<Source, Op> WithContext for Pipe<Source, Op>
 where
 	Source: 'static + Observable,
-	Op: 'static
-		+ Operator<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	type Context = Source::Context;
 }
@@ -107,12 +78,7 @@ where
 impl<Source, Op> Observable for Pipe<Source, Op>
 where
 	Source: 'static + Observable,
-	Op: 'static
-		+ Operator<
-			In = Source::Out,
-			InError = Source::OutError,
-			Context = <Source::Subscription as WithContext>::Context,
-		>,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	type Subscription = Source::Subscription;
 
@@ -123,8 +89,10 @@ where
 		context: &mut Destination::Context,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		let operator_subscriber = self.operator.operator_subscribe(destination, context);
 		self.source_observable

@@ -1,24 +1,24 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DestinationSharer, Observable, ObservableOutput, ObserverInput, Operator, Subscriber,
-	SubscriptionCollection, WithContext,
+	DestinationSharer, Observable, ObservableOutput, ObserverInput, Operator, SignalBound,
+	Subscriber, SubscriptionCollection, WithContext,
 };
 
 use crate::SwitchMapSubscriber;
 
 pub struct SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
 	Sharer: 'static
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 {
 	pub switcher: Switcher,
 	pub _phantom_data: PhantomData<(In, InError, Sharer, InnerObservable)>,
@@ -27,16 +27,16 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable>
 	SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
 	Sharer: 'static
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 {
 	pub fn new(switcher: Switcher) -> Self {
 		Self {
@@ -49,26 +49,29 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable> Operator
 	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
-		>
-		+ SubscriptionCollection,
+			Context = InnerObservable::Context,
+		>,
+	Sharer: SubscriptionCollection,
 {
-	type Context = <Sharer as WithContext>::Context;
+	type Context = InnerObservable::Context;
+
 	type Subscriber<Destination>
 		= SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -77,8 +80,10 @@ where
 		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		SwitchMapSubscriber::new(destination, self.switcher.clone(), context)
 	}
@@ -87,16 +92,16 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable> ObserverInput
 	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
 	Sharer: 'static
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 {
 	type In = In;
 	type InError = InError;
@@ -105,16 +110,16 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable> ObservableOutput
 	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
 	Sharer: 'static
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 {
 	type Out = InnerObservable::Out;
 	type OutError = InnerObservable::OutError;
@@ -123,16 +128,16 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable> WithContext
 	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
 	Sharer: 'static
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 {
 	type Context = Sharer::Context;
 }
@@ -140,16 +145,16 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable> Clone
 	for SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
-	Switcher: 'static + Clone + Fn(In) -> InnerObservable,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
 	Sharer: 'static
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 {
 	fn clone(&self) -> Self {
 		Self {

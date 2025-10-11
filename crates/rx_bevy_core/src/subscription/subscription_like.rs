@@ -54,7 +54,7 @@ pub trait SubscriptionCollection: SubscriptionLike {
 
 	fn add_fn<F>(&mut self, f: F, context: &mut Self::Context)
 	where
-		F: 'static + FnOnce(&mut Self::Context),
+		F: 'static + FnOnce(&mut Self::Context) + Send + Sync,
 		Self: Sized,
 	{
 		let teardown = Teardown::<Self::Context>::new(f);

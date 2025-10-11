@@ -10,7 +10,7 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
-use rx_bevy_common_bounds::SignalBound;
+use rx_bevy_core::SignalBound;
 use short_type_name::short_type_name;
 
 use crate::{

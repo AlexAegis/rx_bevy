@@ -1,15 +1,15 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
 	Destination: Subscriber,
 {
@@ -21,9 +21,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 	LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
@@ -42,9 +42,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> WithContext
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
@@ -57,9 +57,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> Observer
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
@@ -94,9 +94,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> Tickable
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
@@ -112,9 +112,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> SubscriptionLike
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
@@ -145,9 +145,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> ObserverInput
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
 	Destination: Subscriber,
 {
@@ -158,9 +158,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> ObservableOutput
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
 	Destination: Subscriber,
 {

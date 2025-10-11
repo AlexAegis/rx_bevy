@@ -1,6 +1,5 @@
 use bevy_ecs::observer::Trigger;
-use rx_bevy_common_bounds::{DebugBound, SignalBound};
-use rx_bevy_core::ObservableOutput;
+use rx_bevy_core::{DebugBound, ObservableOutput, SignalBound};
 
 use rx_bevy_plugin::{
 	CommandSubscriber, RxSubscription, RxTick, SubscriptionChannelHandlerRegistrationContext,

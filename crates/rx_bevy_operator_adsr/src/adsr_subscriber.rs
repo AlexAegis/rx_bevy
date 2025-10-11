@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -38,7 +38,7 @@ where
 impl<InError, Destination> WithContext for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: 'static,
+	InError: SignalBound,
 {
 	type Context = Destination::Context;
 }
@@ -46,7 +46,7 @@ where
 impl<InError, Destination> Observer for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: 'static,
+	InError: SignalBound,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, _context: &mut Self::Context) {
@@ -67,7 +67,7 @@ where
 impl<InError, Destination> Tickable for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: 'static,
+	InError: SignalBound,
 {
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
@@ -84,7 +84,7 @@ where
 impl<InError, Destination> SubscriptionLike for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: 'static,
+	InError: SignalBound,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -110,7 +110,7 @@ where
 impl<InError, Destination> ObserverInput for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: 'static,
+	InError: SignalBound,
 {
 	type In = bool;
 	type InError = InError;
@@ -119,7 +119,7 @@ where
 impl<InError, Destination> ObservableOutput for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: 'static,
+	InError: SignalBound,
 {
 	type Out = AdsrSignal;
 	type OutError = InError;

@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 use rx_bevy_operator_composite::CompositeSubscriber;
 use rx_bevy_operator_lift_option::LiftOptionSubscriber;
 use rx_bevy_operator_map::MapSubscriber;
@@ -39,18 +41,20 @@ where
 impl<In, InError, Mapper, Out, Context> Operator
 	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
-	Mapper: 'static + Clone + Fn(In) -> Option<Out>,
-	In: 'static,
-	Out: 'static,
-	InError: 'static,
+	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
+	In: SignalBound,
+	Out: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
 		= FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -59,8 +63,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		CompositeSubscriber::new(MapSubscriber::new(
 			LiftOptionSubscriber::new(destination),
@@ -73,8 +79,8 @@ impl<In, InError, Mapper, Out, Context> ObserverInput
 	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -84,8 +90,8 @@ impl<In, InError, Mapper, Out, Context> ObservableOutput
 	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
 	Mapper: Fn(In) -> Option<Out>,
-	Out: 'static,
-	InError: 'static,
+	Out: SignalBound,
+	InError: SignalBound,
 {
 	type Out = Out;
 	type OutError = InError;

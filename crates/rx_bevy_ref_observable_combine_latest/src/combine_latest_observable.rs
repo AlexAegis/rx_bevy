@@ -10,8 +10,8 @@ use crate::CombineLatestSubscriber;
 
 pub fn combine_latest<O1, O2>(observable_1: O1, observable_2: O2) -> CombineLatest<O1, O2>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -20,8 +20,8 @@ where
 
 pub struct CombineLatest<O1, O2>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -31,8 +31,8 @@ where
 
 impl<O1, O2> CombineLatest<O1, O2>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -46,8 +46,8 @@ where
 
 impl<O1, O2> ObservableOutput for CombineLatest<O1, O2>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -57,8 +57,8 @@ where
 
 impl<O1, O2> WithContext for CombineLatest<O1, O2>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -67,8 +67,8 @@ where
 
 impl<O1, O2> Observable for CombineLatest<O1, O2>
 where
-	O1: 'static + Observable,
-	O2: 'static + Observable<Context = O1::Context>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
@@ -80,8 +80,10 @@ where
 		context: &mut Destination::Context,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		let rc_subscriber = RcSubscriber::new(CombineLatestSubscriber::<Destination, O1, O2>::new(
 			destination,

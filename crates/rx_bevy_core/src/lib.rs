@@ -1,3 +1,4 @@
+mod bounds;
 mod from_context;
 mod notifications;
 mod observable;
@@ -14,6 +15,8 @@ mod tickable;
 mod operators;
 mod subscribers;
 
+// TODO: Organize these exports into submodules (roughly alreaday done by folders) so not everything is exported on the top level
+pub use bounds::*;
 pub use from_context::*;
 pub use notifications::*;
 pub use observable::*;
@@ -42,4 +45,6 @@ pub mod prelude {
 	pub use super::subscription::*;
 	pub use super::tick::*;
 	pub use super::tickable::*;
+
+	pub use super::bounds::prelude::*;
 }

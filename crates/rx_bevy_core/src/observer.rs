@@ -1,8 +1,8 @@
-use crate::{SignalContext, WithContext};
+use crate::{SignalBound, SignalContext, WithContext};
 
 pub trait ObserverInput {
-	type In: 'static;
-	type InError: 'static;
+	type In: SignalBound;
+	type InError: SignalBound;
 }
 
 pub trait Observer: ObserverInput + WithContext {

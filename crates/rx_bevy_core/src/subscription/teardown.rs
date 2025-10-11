@@ -19,7 +19,7 @@ use crate::SubscriptionLike;
 /// uses [Teardown] as the base type of operation. Allowing generic functions
 /// where you can add anything that is `Into<Teardown>` such as Subscriptions.
 pub struct Teardown<Context> {
-	teardown_fn: Option<Box<dyn FnOnce(&mut Context)>>,
+	teardown_fn: Option<Box<dyn FnOnce(&mut Context) + Send + Sync>>,
 }
 
 impl<Context> Debug for Teardown<Context> {
@@ -35,14 +35,14 @@ impl<Context> Debug for Teardown<Context> {
 impl<Context> Teardown<Context> {
 	pub fn new<F>(f: F) -> Self
 	where
-		F: 'static + FnOnce(&mut Context),
+		F: 'static + FnOnce(&mut Context) + Send + Sync,
 	{
 		Self {
 			teardown_fn: Some(Box::new(f)),
 		}
 	}
 
-	pub fn new_from_box(f: Box<dyn FnOnce(&mut Context)>) -> Self {
+	pub fn new_from_box(f: Box<dyn FnOnce(&mut Context) + Send + Sync>) -> Self {
 		Self {
 			teardown_fn: Some(f),
 		}
@@ -56,7 +56,7 @@ impl<Context> Teardown<Context> {
 	/// It's private to ensure that it's not taken without either executing it
 	/// or placing it somewhere else where execution is also guaranteed.
 	#[inline]
-	pub(crate) fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context)>> {
+	pub(crate) fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context) + Send + Sync>> {
 		self.teardown_fn.take()
 	}
 
@@ -88,14 +88,15 @@ impl<Context> Default for Teardown<Context> {
 /// teardown, it will be immediately dropped.
 impl<S> From<S> for Teardown<S::Context>
 where
-	S: 'static + SubscriptionLike,
+	S: 'static + SubscriptionLike + Send + Sync,
 {
 	fn from(mut subscription: S) -> Self {
 		Self {
 			teardown_fn: if subscription.is_closed() {
 				None
 			} else {
-				Some(Box::new(move |context| subscription.unsubscribe(context)))
+				let closure = move |context: &mut S::Context| subscription.unsubscribe(context);
+				Some(Box::new(closure))
 			},
 		}
 	}

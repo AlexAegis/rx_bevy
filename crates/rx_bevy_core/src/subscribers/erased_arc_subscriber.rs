@@ -1,46 +1,47 @@
-use std::{
-	marker::PhantomData,
-	sync::{Arc, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
 use short_type_name::short_type_name;
 
 use crate::{
-	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalContext, Subscriber,
-	SubscriptionData, SubscriptionLike, Tickable, WithContext,
+	DestinationSharer, Observer, ObserverInput, SharedDestination, SignalBound, SignalContext,
+	Subscriber, SubscriptionData, SubscriptionLike, Tickable, WithContext,
 };
 
 // todo check if its even needed where it is currently, not having add is pretty bad, OR MAYBE put add on another trait and add a simpler fn on subscriber
 pub struct ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
-	destination: Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context>>>,
+	destination:
+		Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context> + Send + Sync>>,
 	teardown: SubscriptionData<Context>,
-	_ph: PhantomData<*mut Context>,
 }
 
 impl<In, InError, Context> DestinationSharer for ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Shared<Destination>
 		= ErasedArcSubscriber<Destination::In, Destination::InError, Destination::Context>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	fn share<Destination>(
 		destination: Destination,
 		_context: &mut Self::Context,
 	) -> Self::Shared<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		ErasedArcSubscriber::new(destination)
 	}
@@ -48,8 +49,8 @@ where
 
 impl<In, InError, Context, D> SharedDestination<D> for ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 	D: 'static + Subscriber<In = In, InError = InError, Context = Context>,
 {
@@ -76,18 +77,18 @@ where
 
 impl<In, InError, Context> ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
-		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>,
+		Destination:
+			'static + Subscriber<In = In, InError = InError, Context = Context> + Send + Sync,
 	{
 		Self {
 			destination: Arc::new(RwLock::new(destination)),
 			teardown: SubscriptionData::default(),
-			_ph: PhantomData,
 		}
 	}
 
@@ -116,23 +117,22 @@ where
 
 impl<In, InError, Context> Clone for ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn clone(&self) -> Self {
 		Self {
 			destination: self.destination.clone(),
 			teardown: SubscriptionData::default(), // New instance, new teardowns
-			_ph: PhantomData,
 		}
 	}
 }
 
 impl<In, InError, Context> ObserverInput for ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type In = In;
@@ -141,8 +141,8 @@ where
 
 impl<In, InError, Context> WithContext for ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -150,8 +150,8 @@ where
 
 impl<In, InError, Context> Observer for ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -191,8 +191,8 @@ where
 
 impl<In, InError, Context> Tickable for ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
@@ -206,8 +206,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for ErasedArcSubscriber<In, InError, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	fn is_closed(&self) -> bool {

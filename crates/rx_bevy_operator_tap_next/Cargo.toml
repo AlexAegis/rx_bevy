@@ -19,7 +19,6 @@ workspace = true
 default = ["pipe", "compose"]
 dev = [
     "rx_bevy/dev",
-    "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
     "rx_bevy_operator_composite/dev",
     "rx_bevy_ref_pipe/dev",
@@ -49,7 +48,6 @@ bevy = [
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
-    "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
     "rx_bevy_operator_composite?/reflect",
 ]
@@ -59,7 +57,6 @@ trace = ["dep:short_type_name", "rx_bevy/trace"]
 rx_bevy_core = { workspace = true }
 rx_bevy_ref_pipe = { workspace = true, optional = true }
 rx_bevy_operator_composite = { workspace = true, optional = true }
-rx_bevy_common_bounds = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 short_type_name = { workspace = true, optional = true }
 

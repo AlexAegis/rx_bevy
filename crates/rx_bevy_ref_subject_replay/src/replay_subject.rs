@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, SignalContext, Subscriber,
 	SubscriptionHandle, SubscriptionLike, Teardown, WithContext,
 };
 use rx_bevy_ref_subject::{MulticastSubscription, Subject};
@@ -12,8 +12,8 @@ use rx_bevy_ref_subject::{MulticastSubscription, Subject};
 #[derive(Clone)]
 pub struct ReplaySubject<const CAPACITY: usize, In, InError = (), Context = ()>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	subject: Subject<In, InError, Context>,
@@ -24,8 +24,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> Default
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn default() -> Self {
@@ -39,8 +39,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> ObserverInput
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type In = In;
@@ -50,8 +50,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> Observer
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn next(&mut self, next: In, context: &mut Context) {
@@ -73,8 +73,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> ObservableOutput
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Out = In;
@@ -84,8 +84,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> WithContext
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -94,14 +94,17 @@ where
 impl<const CAPACITY: usize, In, InError, Context> Observable
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	>(
 		&mut self,
 		mut destination: Destination,
@@ -118,8 +121,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> SubscriptionLike
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	#[inline]

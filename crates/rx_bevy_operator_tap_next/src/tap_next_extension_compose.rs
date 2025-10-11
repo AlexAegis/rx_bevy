@@ -6,7 +6,11 @@ use crate::TapNextOperator;
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
 	fn tap_next<
-		OnNext: 'static + Clone + for<'a> Fn(&'a Self::Out, &'a mut <Self as Operator>::Context),
+		OnNext: 'static
+			+ for<'a> Fn(&'a Self::Out, &'a mut <Self as Operator>::Context)
+			+ Clone
+			+ Send
+			+ Sync,
 	>(
 		self,
 		callback: OnNext,

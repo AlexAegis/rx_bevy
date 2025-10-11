@@ -1,11 +1,11 @@
-use rx_bevy_core::Operator;
+use rx_bevy_core::{Operator, SignalBound};
 use rx_bevy_operator_composite::CompositeOperator;
 
 use crate::MapIntoOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionInto: Operator + Sized {
-	fn map_into<NextOut: 'static, NextOutError: 'static>(
+	fn map_into<NextOut: SignalBound, NextOutError: SignalBound>(
 		self,
 	) -> CompositeOperator<
 		Self,

@@ -1,32 +1,33 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionHandle, WithContext,
+	Observable, ObservableOutput, SignalBound, SignalContext, Subscriber, SubscriptionHandle,
+	WithContext,
 };
 use rx_bevy_subscription_inert::InertSubscription;
 
 /// Observable creator for [ThrowObservable]
 pub fn throw<Error, Context>(error: Error) -> ThrowObservable<Error, Context>
 where
-	Error: Clone,
+	Error: SignalBound + Clone,
 {
 	ThrowObservable::new(error)
 }
 
 #[derive(Clone)]
-pub struct ThrowObservable<Error, Context>
+pub struct ThrowObservable<OutError, Context>
 where
-	Error: Clone,
+	OutError: SignalBound + Clone,
 {
-	error: Error,
+	error: OutError,
 	_phantom_data: PhantomData<Context>,
 }
 
-impl<Error, Context> ThrowObservable<Error, Context>
+impl<OutError, Context> ThrowObservable<OutError, Context>
 where
-	Error: Clone,
+	OutError: SignalBound + Clone,
 {
-	pub fn new(error: Error) -> Self {
+	pub fn new(error: OutError) -> Self {
 		Self {
 			error,
 			_phantom_data: PhantomData,
@@ -34,25 +35,25 @@ where
 	}
 }
 
-impl<Error, Context> ObservableOutput for ThrowObservable<Error, Context>
+impl<OutError, Context> ObservableOutput for ThrowObservable<OutError, Context>
 where
-	Error: 'static + Clone,
+	OutError: SignalBound + Clone,
 {
 	type Out = ();
-	type OutError = Error;
+	type OutError = OutError;
 }
 
-impl<Error, Context> WithContext for ThrowObservable<Error, Context>
+impl<OutError, Context> WithContext for ThrowObservable<OutError, Context>
 where
-	Error: 'static + Clone,
+	OutError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Context = Context;
 }
 
-impl<Error, Context> Observable for ThrowObservable<Error, Context>
+impl<OutError, Context> Observable for ThrowObservable<OutError, Context>
 where
-	Error: 'static + Clone,
+	OutError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Subscription = InertSubscription<Context>;

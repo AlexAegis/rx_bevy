@@ -1,8 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tickable,
-	WithContext,
+	Observer, ObserverInput, SignalBound, SignalContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tickable, WithContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -40,8 +40,8 @@ where
 
 impl<In, InError, Context> Default for PrintObserver<In, InError, Context>
 where
-	In: 'static + Debug,
-	InError: 'static + Debug,
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
 	Context: SignalContext,
 {
 	fn default() -> Self {
@@ -55,8 +55,8 @@ where
 
 impl<In, InError, Context> ObserverInput for PrintObserver<In, InError, Context>
 where
-	In: 'static + Debug,
-	InError: 'static + Debug,
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
 	Context: SignalContext,
 {
 	type In = In;
@@ -65,8 +65,8 @@ where
 
 impl<In, InError, Context> Observer for PrintObserver<In, InError, Context>
 where
-	In: 'static + Debug,
-	InError: 'static + Debug,
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
 	Context: SignalContext,
 {
 	#[inline]
@@ -89,8 +89,8 @@ where
 
 impl<In, InError, Context> Tickable for PrintObserver<In, InError, Context>
 where
-	In: 'static + Debug,
-	InError: 'static + Debug,
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
 	Context: SignalContext,
 {
 	#[inline]
@@ -101,8 +101,8 @@ where
 
 impl<In, InError, Context> WithContext for PrintObserver<In, InError, Context>
 where
-	In: 'static + Debug,
-	InError: 'static + Debug,
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -110,8 +110,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for PrintObserver<In, InError, Context>
 where
-	In: 'static + Debug,
-	InError: 'static + Debug,
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
 	Context: SignalContext,
 {
 	#[inline]

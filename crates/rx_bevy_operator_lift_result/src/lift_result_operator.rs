@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::LiftResultSubscriber;
 
@@ -13,7 +15,7 @@ use crate::LiftResultSubscriber;
 /// that it can panic, however that's only true if the error isn't caught downstream.
 pub struct LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context = ()>
 where
-	InError: 'static,
+	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 {
 	in_error_to_result_error: InErrorToResultError,
@@ -29,9 +31,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 	LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 {
 	pub fn new(in_error_to_result_error: InErrorToResultError) -> Self {
@@ -45,18 +47,20 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> Operator
 	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
-	InErrorToResultError: 'static + Clone + Fn(InError) -> ResultInError,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
+	InErrorToResultError: 'static + Fn(InError) -> ResultInError + Clone + Send + Sync,
 	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
 		= LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -65,8 +69,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		LiftResultSubscriber::new(destination, self.in_error_to_result_error.clone())
 	}
@@ -75,9 +81,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> ObserverInput
 	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 {
 	type In = Result<ResultIn, ResultInError>;
@@ -87,9 +93,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> ObservableOutput
 	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 {
 	type Out = ResultIn;
@@ -99,9 +105,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> Clone
 	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
-	InError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 {
 	fn clone(&self) -> Self {

@@ -21,17 +21,11 @@ dev = [
     "bevy/dynamic_linking",
     "examples_common/dev",
     "rx_bevy/dev",
-    "rx_bevy_common_bounds/dev",
     "rx_bevy_core/dev",
     "rx_bevy_plugin/dev",
     "rx_bevy_testing/dev",
 ]
-debug = [
-    "bevy/track_location",
-    "rx_bevy_common_bounds/debug",
-    "rx_bevy_core/debug",
-    "rx_bevy_plugin/debug",
-]
+debug = ["bevy/track_location", "rx_bevy_core/debug", "rx_bevy_plugin/debug"]
 example = [
     "bevy/bevy_asset",
     "bevy/bevy_core_pipeline",
@@ -54,7 +48,6 @@ example = [
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
-    "rx_bevy_common_bounds/reflect",
     "rx_bevy_core/reflect",
     "rx_bevy_plugin/reflect",
 ]
@@ -62,7 +55,6 @@ reflect = [
 [dependencies]
 rx_bevy_plugin = { workspace = true }
 rx_bevy_core = { workspace = true, features = ["bevy"] }
-rx_bevy_common_bounds = { workspace = true }
 bevy_time = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }

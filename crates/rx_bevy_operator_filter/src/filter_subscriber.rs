@@ -1,14 +1,14 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -19,8 +19,8 @@ where
 
 impl<In, InError, Filter, Destination> FilterSubscriber<In, InError, Filter, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -36,8 +36,8 @@ where
 impl<In, InError, Filter, Destination> WithContext
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -47,8 +47,8 @@ where
 impl<In, InError, Filter, Destination> Observer
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -73,8 +73,8 @@ where
 impl<In, InError, Filter, Destination> Tickable
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -87,8 +87,8 @@ where
 impl<In, InError, Filter, Destination> SubscriptionLike
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -116,8 +116,8 @@ where
 impl<In, InError, Filter, Destination> ObserverInput
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -128,8 +128,8 @@ where
 impl<In, InError, Filter, Destination> ObservableOutput
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 	Destination: Subscriber<In = In, InError = InError>,
 {

@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
 
@@ -9,7 +11,7 @@ use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub struct AdsrOperator<InError, Context>
 where
-	InError: 'static,
+	InError: SignalBound,
 	Context: SignalContext + 'static,
 {
 	options: AdsrOperatorOptions,
@@ -18,7 +20,7 @@ where
 
 impl<InError, Context> AdsrOperator<InError, Context>
 where
-	InError: 'static,
+	InError: SignalBound,
 	Context: SignalContext + 'static,
 {
 	pub fn new(options: AdsrOperatorOptions) -> Self {
@@ -31,7 +33,7 @@ where
 
 impl<InError, Context> Operator for AdsrOperator<InError, Context>
 where
-	InError: 'static,
+	InError: SignalBound,
 	Context: SignalContext + 'static,
 {
 	type Context = Context;
@@ -40,7 +42,7 @@ where
 		= AdsrSubscriber<InError, Destination>
 	where
 		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
@@ -49,7 +51,7 @@ where
 	) -> Self::Subscriber<Destination>
 	where
 		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context> + Send + Sync,
 	{
 		AdsrSubscriber::new(destination, self.options.clone())
 	}
@@ -57,7 +59,7 @@ where
 
 impl<InError, Context> ObserverInput for AdsrOperator<InError, Context>
 where
-	InError: 'static,
+	InError: SignalBound,
 	Context: SignalContext + 'static,
 {
 	type In = bool;
@@ -66,7 +68,7 @@ where
 
 impl<InError, Context> ObservableOutput for AdsrOperator<InError, Context>
 where
-	InError: 'static,
+	InError: SignalBound,
 	Context: SignalContext + 'static,
 {
 	type Out = AdsrSignal;

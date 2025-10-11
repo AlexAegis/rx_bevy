@@ -113,11 +113,9 @@ where
 	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>,
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		let connector = self.get_active_connector(context);
 		connector.subscribe(destination, context)

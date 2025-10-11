@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Subscriber, SubscriptionData, SubscriptionHandle, WithContext,
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionData, SubscriptionHandle,
+	WithContext,
 };
 use rx_bevy_operator_map_into::MapIntoSubscriber;
 use rx_bevy_ref_subscriber_rc::RcSubscriber;
@@ -11,8 +12,8 @@ pub fn merge<Out, OutError, O1, O2>(
 	observable_2: O2,
 ) -> MergeObservable<Out, OutError, O1, O2>
 where
-	Out: 'static,
-	OutError: 'static,
+	Out: SignalBound,
+	OutError: SignalBound,
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
@@ -25,8 +26,8 @@ where
 
 pub struct MergeObservable<Out, OutError, O1, O2>
 where
-	Out: 'static,
-	OutError: 'static,
+	Out: SignalBound,
+	OutError: SignalBound,
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
@@ -41,8 +42,8 @@ where
 
 impl<Out, OutError, O1, O2> MergeObservable<Out, OutError, O1, O2>
 where
-	Out: 'static,
-	OutError: 'static,
+	Out: SignalBound,
+	OutError: SignalBound,
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
@@ -61,8 +62,8 @@ where
 
 impl<Out, OutError, O1, O2> ObservableOutput for MergeObservable<Out, OutError, O1, O2>
 where
-	Out: 'static,
-	OutError: 'static,
+	Out: SignalBound,
+	OutError: SignalBound,
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
@@ -76,8 +77,8 @@ where
 
 impl<Out, OutError, O1, O2> WithContext for MergeObservable<Out, OutError, O1, O2>
 where
-	Out: 'static,
-	OutError: 'static,
+	Out: SignalBound,
+	OutError: SignalBound,
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
@@ -90,8 +91,8 @@ where
 
 impl<Out, OutError, O1, O2> Observable for MergeObservable<Out, OutError, O1, O2>
 where
-	Out: 'static,
-	OutError: 'static,
+	Out: SignalBound,
+	OutError: SignalBound,
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
@@ -110,11 +111,9 @@ where
 	) -> SubscriptionHandle<Self::Subscription>
 	where
 		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>,
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		let rc_subscriber = RcSubscriber::new(destination);
 

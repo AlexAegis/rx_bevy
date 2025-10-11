@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalContext, Subscriber,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, SignalContext, Subscriber,
 	SubscriptionHandle, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 
@@ -11,8 +11,8 @@ use crate::{Multicast, MulticastSubscription};
 /// A subjects clone still multicasts to the same set of subscribers.
 pub struct Subject<In, InError = (), Context = ()>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	pub multicast: Arc<RwLock<Multicast<In, InError, Context>>>,
@@ -20,8 +20,8 @@ where
 
 impl<In, InError, Context> Clone for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	/// Cloning a subject keeps all existing destinations
@@ -34,8 +34,8 @@ where
 
 impl<In, InError, Context> Default for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn default() -> Self {
@@ -47,8 +47,8 @@ where
 
 impl<In, InError, Context> ObservableOutput for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Out = In;
@@ -57,8 +57,8 @@ where
 
 impl<In, InError, Context> WithContext for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -66,8 +66,8 @@ where
 
 impl<In, InError, Context> Observable for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Subscription = MulticastSubscription<In, InError, Context>;
@@ -78,12 +78,8 @@ where
 		context: &mut Context,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination: 'static
-			+ Subscriber<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = <Self::Subscription as WithContext>::Context,
-			>,
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let mut multicast = self.multicast.write().expect("asd");
 		multicast.subscribe(destination, context)
@@ -92,8 +88,8 @@ where
 
 impl<In, InError, Context> ObserverInput for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type In = In;
@@ -102,8 +98,8 @@ where
 
 impl<In, InError, Context> Observer for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -133,8 +129,8 @@ where
 
 impl<In, InError, Context> Tickable for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
@@ -146,8 +142,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn is_closed(&self) -> bool {
@@ -181,8 +177,8 @@ where
 
 impl<In, InError, Context> Drop for Subject<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn drop(&mut self) {

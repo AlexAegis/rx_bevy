@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 
 pub struct LiftOptionSubscriber<In, InError, Destination>
@@ -19,8 +19,8 @@ where
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
 		>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -32,8 +32,8 @@ where
 
 impl<In, InError, Destination> WithContext for LiftOptionSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -44,8 +44,8 @@ where
 
 impl<In, InError, Destination> Observer for LiftOptionSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -71,8 +71,8 @@ where
 
 impl<In, InError, Destination> Tickable for LiftOptionSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -86,8 +86,8 @@ where
 
 impl<In, InError, Destination> SubscriptionLike for LiftOptionSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,
@@ -116,8 +116,8 @@ where
 
 impl<In, InError, Destination> ObserverInput for LiftOptionSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber,
 {
 	type In = Option<In>;
@@ -126,8 +126,8 @@ where
 
 impl<In, InError, Destination> ObservableOutput for LiftOptionSubscriber<In, InError, Destination>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: Subscriber,
 {
 	type Out = In;

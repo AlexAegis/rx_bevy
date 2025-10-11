@@ -77,7 +77,6 @@ examples_common = { path = "crates/examples_common" }
 feature_checker = { path = "crates/feature_checker" }
 # Core
 rx_bevy = { path = "crates/rx_bevy" }
-rx_bevy_common_bounds = { path = "crates/rx_bevy_common_bounds" }
 rx_bevy_core = { path = "crates/rx_bevy_core" }
 rx_bevy_emission_variants = { path = "crates/rx_bevy_emission_variants" }
 rx_bevy_testing = { path = "crates/rx_bevy_testing" }

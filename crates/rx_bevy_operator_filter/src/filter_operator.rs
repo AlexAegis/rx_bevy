@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+};
 
 use crate::FilterSubscriber;
 
@@ -20,17 +22,19 @@ impl<In, InError, Filter, Context> FilterOperator<In, InError, Filter, Context> 
 
 impl<In, InError, Filter, Context> Operator for FilterOperator<In, InError, Filter, Context>
 where
-	Filter: 'static + Clone + for<'a> Fn(&'a In) -> bool,
-	In: 'static,
-	InError: 'static,
+	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
 		= FilterSubscriber<In, InError, Filter, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -39,8 +43,10 @@ where
 		_context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		FilterSubscriber::new(destination, self.filter.clone())
 	}
@@ -49,8 +55,8 @@ where
 impl<In, InError, Filter, Context> ObserverInput for FilterOperator<In, InError, Filter, Context>
 where
 	Filter: for<'a> Fn(&'a In) -> bool,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -58,8 +64,8 @@ where
 
 impl<In, InError, Filter, Context> ObservableOutput for FilterOperator<In, InError, Filter, Context>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
 {
 	type Out = In;

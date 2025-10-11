@@ -13,7 +13,7 @@ pub struct InertSubscription<Context>
 where
 	Context: SignalContext,
 {
-	tickable: Box<dyn Tickable<Context = Context>>,
+	tickable: Box<dyn Tickable<Context = Context> + Send + Sync>,
 	// TODO: Check every PhantomData for variance
 }
 
@@ -22,7 +22,7 @@ where
 	Context: SignalContext,
 {
 	pub fn new(
-		mut destination: impl TickableSubscription<Context = Context> + 'static,
+		mut destination: impl TickableSubscription<Context = Context> + 'static + Send + Sync,
 		context: &mut Context,
 	) -> Self {
 		destination.unsubscribe(context);

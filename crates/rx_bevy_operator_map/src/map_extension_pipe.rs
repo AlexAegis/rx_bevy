@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, WithContext};
+use rx_bevy_core::{Observable, SignalBound};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::MapOperator;
@@ -13,19 +13,13 @@ where
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionMap: Observable + Sized {
-	fn map<NextOut: 'static, Mapper: 'static + Clone + Fn(Self::Out) -> NextOut>(
+	fn map<
+		NextOut: SignalBound,
+		Mapper: 'static + Fn(Self::Out) -> NextOut + Clone + Send + Sync,
+	>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<
-		Self,
-		MapOperator<
-			Self::Out,
-			Self::OutError,
-			Mapper,
-			NextOut,
-			<Self::Subscription as WithContext>::Context,
-		>,
-	> {
+	) -> Pipe<Self, MapOperator<Self::Out, Self::OutError, Mapper, NextOut, Self::Context>> {
 		Pipe::new(self, MapOperator::new(mapper))
 	}
 }

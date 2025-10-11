@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionHandle, WithContext,
+	Observable, ObservableOutput, SignalBound, SignalContext, Subscriber, SubscriptionHandle,
+	WithContext,
 };
 use rx_bevy_subscription_inert::InertSubscription;
 
@@ -37,7 +38,7 @@ where
 
 impl<Out, Context> WithContext for OfObservable<Out, Context>
 where
-	Out: 'static + Clone,
+	Out: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -45,7 +46,7 @@ where
 
 impl<Out, Context> Observable for OfObservable<Out, Context>
 where
-	Out: 'static + Clone,
+	Out: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Subscription = InertSubscription<Context>;
@@ -56,8 +57,10 @@ where
 		context: &mut Context,
 	) -> SubscriptionHandle<Self::Subscription>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		destination.next(self.value.clone(), context);
 		destination.complete(context);
@@ -67,7 +70,7 @@ where
 
 impl<Out, Context> ObservableOutput for OfObservable<Out, Context>
 where
-	Out: 'static + Clone,
+	Out: SignalBound + Clone,
 {
 	type Out = Out;
 	type OutError = ();
@@ -90,6 +93,6 @@ mod tests {
 		let mut subscription = observable.subscribe(mock_observer, &mut mock_context);
 		subscription.unsubscribe(&mut mock_context);
 
-		assert_eq!(mock_context.values, vec![value]);
+		assert_eq!(mock_context.all_observed_values(), vec![value]);
 	}
 }

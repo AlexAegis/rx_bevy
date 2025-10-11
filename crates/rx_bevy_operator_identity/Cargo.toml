@@ -17,12 +17,7 @@ workspace = true
 
 [features]
 default = []
-dev = [
-    "rx_bevy/dev",
-    "rx_bevy_common_bounds/dev",
-    "rx_bevy_core/dev",
-    "rx_bevy_testing/dev",
-]
+dev = ["rx_bevy/dev", "rx_bevy_core/dev", "rx_bevy_testing/dev"]
 example = [
     "bevy",
     "dev",
@@ -31,16 +26,10 @@ example = [
     "rx_bevy_testing/example",
 ]
 bevy = ["rx_bevy/bevy", "rx_bevy_core/bevy", "rx_bevy_testing/bevy"]
-reflect = [
-    "dep:bevy_reflect",
-    "rx_bevy/reflect",
-    "rx_bevy_common_bounds/reflect",
-    "rx_bevy_core/reflect",
-]
+reflect = ["dep:bevy_reflect", "rx_bevy/reflect", "rx_bevy_core/reflect"]
 
 [dependencies]
 rx_bevy_core = { workspace = true }
-rx_bevy_common_bounds = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]

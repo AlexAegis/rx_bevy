@@ -1,4 +1,4 @@
-use crate::{ObservableOutput, ObserverInput, Operator, OptionSubscriber, Subscriber};
+use crate::{ObservableOutput, ObserverInput, Operator, OptionSubscriber, SignalBound, Subscriber};
 
 /// [Operator]s with the same outputs as its inputs can be made optional.
 ///
@@ -7,15 +7,17 @@ use crate::{ObservableOutput, ObserverInput, Operator, OptionSubscriber, Subscri
 impl<In, InError, Op> Operator for Option<Op>
 where
 	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Context = Op::Context;
 	type Subscriber<Destination>
 		= OptionSubscriber<Op::Subscriber<Destination>, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 		Op::Subscriber<Destination>: Subscriber;
 
 	fn operator_subscribe<Destination>(
@@ -24,8 +26,10 @@ where
 		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		match self {
 			Some(operator) => {
@@ -39,8 +43,8 @@ where
 impl<In, InError, Op> ObserverInput for Option<Op>
 where
 	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -49,8 +53,8 @@ where
 impl<In, InError, Op> ObservableOutput for Option<Op>
 where
 	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Out = In;
 	type OutError = InError;

@@ -1,6 +1,4 @@
-use rx_bevy_core::{
-	DestinationSharer, Observable, SubscriptionCollection, SubscriptionLike, WithContext,
-};
+use rx_bevy_core::{DestinationSharer, Observable, SignalBound, SubscriptionCollection};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::SwitchMapOperator;
@@ -10,14 +8,15 @@ pub fn switch_map<In, InError, Switcher, Sharer, InnerObservable>(
 	mapper: Switcher,
 ) -> SwitchMapOperator<In, InError, Switcher, Sharer, InnerObservable>
 where
-	Switcher: Clone + Fn(In) -> InnerObservable,
-	InError: 'static + Into<InnerObservable::OutError>,
-	InnerObservable: 'static + Observable,
+	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	InnerObservable: 'static + Observable + Send + Sync,
 	Sharer: 'static
 		+ DestinationSharer<
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
-			Context = <InnerObservable::Subscription as WithContext>::Context,
+			Context = InnerObservable::Context,
 		>,
 {
 	SwitchMapOperator::new(mapper)
@@ -30,11 +29,11 @@ pub trait ObservableExtensionSwitchMap: Observable + Sized {
 			+ DestinationSharer<
 				In = NextInnerObservable::Out,
 				InError = NextInnerObservable::OutError,
-				Context = <NextInnerObservable::Subscription as WithContext>::Context,
+				Context = Self::Context,
 			>
 			+ SubscriptionCollection,
-		NextInnerObservable: 'static + Observable,
-		Switcher: 'static + Clone + Fn(Self::Out) -> NextInnerObservable,
+		NextInnerObservable: 'static + Observable<Context = Self::Context> + Send + Sync,
+		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
 		switcher: Switcher,
@@ -44,8 +43,6 @@ pub trait ObservableExtensionSwitchMap: Observable + Sized {
 		SwitchMapOperator<Self::Out, Self::OutError, Switcher, Sharer, NextInnerObservable>,
 	>
 	where
-		NextInnerObservable::Subscription:
-			SubscriptionLike<Context = <Self::Subscription as WithContext>::Context>,
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
 		Pipe::new(self, SwitchMapOperator::new(switcher))

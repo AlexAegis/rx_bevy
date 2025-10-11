@@ -1,4 +1,4 @@
-use rx_bevy_core::Operator;
+use rx_bevy_core::{Operator, SignalBound};
 use rx_bevy_operator_composite::CompositeOperator;
 
 use crate::LiftResultOperator;
@@ -7,8 +7,8 @@ use crate::LiftResultOperator;
 pub trait CompositeOperatorExtensionLiftResult<ResultIn, ResultInError>:
 	Operator<Out = Result<ResultIn, ResultInError>> + Sized
 where
-	ResultIn: 'static,
-	ResultInError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
 {
 	fn lift_result<InErrorToResultError>(
 		self,
@@ -24,7 +24,7 @@ where
 		>,
 	>
 	where
-		InErrorToResultError: 'static + Clone + Fn(Self::OutError) -> ResultInError,
+		InErrorToResultError: 'static + Fn(Self::OutError) -> ResultInError + Clone + Send + Sync,
 	{
 		CompositeOperator::new(self, LiftResultOperator::new(in_error_to_result_error))
 	}
@@ -34,7 +34,7 @@ impl<Op, ResultIn, ResultInError> CompositeOperatorExtensionLiftResult<ResultIn,
 	for Op
 where
 	Op: Operator<Out = Result<ResultIn, ResultInError>>,
-	ResultIn: 'static,
-	ResultInError: 'static,
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
 {
 }

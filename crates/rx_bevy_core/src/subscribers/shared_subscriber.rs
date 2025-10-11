@@ -11,7 +11,7 @@ use crate::{
 // TODO: Maybe this and RcSubscriber should be joined together
 pub struct SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,
@@ -24,7 +24,7 @@ where
 
 impl<Destination, Sharer> SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,
@@ -61,7 +61,7 @@ where
 
 impl<Destination, Sharer> Clone for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,
@@ -78,7 +78,7 @@ where
 
 impl<Destination, Sharer> ObserverInput for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,
@@ -91,7 +91,7 @@ where
 
 impl<Destination, Sharer> WithContext for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,
@@ -103,7 +103,7 @@ where
 
 impl<Destination, Sharer> Observer for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,
@@ -128,7 +128,7 @@ where
 
 impl<Destination, Sharer> Tickable for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,
@@ -146,7 +146,7 @@ where
 
 impl<Destination, Sharer> SubscriptionLike for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,
@@ -176,7 +176,7 @@ where
 
 impl<Destination, Sharer> Drop for SharedSubscriber<Destination, Sharer>
 where
-	Destination: 'static + Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 	Sharer: DestinationSharer<
 			In = Destination::In,
 			InError = Destination::InError,

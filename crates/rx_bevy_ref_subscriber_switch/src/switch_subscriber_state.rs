@@ -1,4 +1,7 @@
-use std::{cell::RefCell, marker::PhantomData, rc::Rc};
+use std::{
+	marker::PhantomData,
+	sync::{Arc, RwLock},
+};
 
 use rx_bevy_core::{
 	DestinationSharer, Observable, Observer, ObserverInput, SharedSubscriber, Subscriber,
@@ -8,7 +11,7 @@ use rx_bevy_core::{
 
 pub struct SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -22,7 +25,9 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>,
+		>
+		+ Send
+		+ Sync,
 	Destination: SubscriptionCollection,
 {
 	pub(crate) destination: SharedSubscriber<Destination, Sharer>,
@@ -37,7 +42,7 @@ where
 impl<InnerObservable, Destination, Sharer>
 	SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -51,7 +56,9 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>,
+		>
+		+ Send
+		+ Sync,
 	Destination: SubscriptionCollection,
 {
 	pub fn new(destination: Destination, context: &mut InnerObservable::Context) -> Self {
@@ -90,17 +97,18 @@ where
 	}
 
 	pub(crate) fn create_next_subscription(
-		state_ref: Rc<RefCell<Self>>,
+		state_ref: Arc<RwLock<Self>>,
 		mut next: InnerObservable,
 		context: &mut InnerObservable::Context,
 	) {
 		let subscription = next.subscribe(state_ref.clone(), context);
-		let mut state = state_ref.borrow_mut();
-		if subscription.is_closed() {
-			state.complete_if_can(context);
-		} else {
-			state.inner_subscription = Some(subscription);
-		}
+		if let Ok(mut state) = state_ref.write() {
+			if subscription.is_closed() {
+				state.complete_if_can(context);
+			} else {
+				state.inner_subscription = Some(subscription);
+			}
+		};
 	}
 
 	pub(crate) fn complete_if_can(&mut self, context: &mut InnerObservable::Context) {
@@ -127,7 +135,7 @@ where
 impl<InnerObservable, Destination, Sharer> Observer
 	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -141,7 +149,9 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>,
+		>
+		+ Send
+		+ Sync,
 	Destination: SubscriptionCollection,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -161,7 +171,7 @@ where
 impl<InnerObservable, Destination, Sharer> Tickable
 	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -175,7 +185,9 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>,
+		>
+		+ Send
+		+ Sync,
 	Destination: SubscriptionCollection,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
@@ -186,7 +198,7 @@ where
 impl<InnerObservable, Destination, Sharer> SubscriptionLike
 	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -200,7 +212,9 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>,
+		>
+		+ Send
+		+ Sync,
 	Destination: SubscriptionCollection,
 {
 	fn is_closed(&self) -> bool {
@@ -227,7 +241,7 @@ where
 impl<InnerObservable, Destination, Sharer> ObserverInput
 	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -241,7 +255,9 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>,
+		>
+		+ Send
+		+ Sync,
 	Destination: SubscriptionCollection,
 {
 	type In = InnerObservable::Out;
@@ -251,7 +267,7 @@ where
 impl<InnerObservable, Destination, Sharer> WithContext
 	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -265,7 +281,9 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>,
+		>
+		+ Send
+		+ Sync,
 	Destination: SubscriptionCollection,
 {
 	type Context = InnerObservable::Context;
@@ -274,7 +292,7 @@ where
 impl<InnerObservable, Destination, Sharer> Drop
 	for SwitchSubscriberState<InnerObservable, Destination, Sharer>
 where
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -288,7 +306,9 @@ where
 			In = InnerObservable::Out,
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
-		>,
+		>
+		+ Send
+		+ Sync,
 	Destination: SubscriptionCollection,
 {
 	#[inline]

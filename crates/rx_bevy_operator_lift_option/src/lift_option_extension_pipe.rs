@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, WithContext};
+use rx_bevy_core::{Observable, SignalBound};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::LiftOptionOperator;
@@ -11,14 +11,9 @@ pub fn lift_option<In, InError>() -> LiftOptionOperator<In, InError> {
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionLiftOption<T>: Observable<Out = Option<T>> + Sized
 where
-	T: 'static,
+	T: SignalBound,
 {
-	fn lift_option(
-		self,
-	) -> Pipe<
-		Self,
-		LiftOptionOperator<T, Self::OutError, <Self::Subscription as WithContext>::Context>,
-	> {
+	fn lift_option(self) -> Pipe<Self, LiftOptionOperator<T, Self::OutError, Self::Context>> {
 		Pipe::new(self, LiftOptionOperator::default())
 	}
 }
@@ -26,6 +21,6 @@ where
 impl<Obs, T> ObservableExtensionLiftOption<T> for Obs
 where
 	Obs: Observable<Out = Option<T>>,
-	T: 'static,
+	T: SignalBound,
 {
 }

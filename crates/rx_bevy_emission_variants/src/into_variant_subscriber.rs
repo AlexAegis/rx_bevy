@@ -9,7 +9,7 @@ use crate::{EitherOut2, EitherOutError2};
 
 pub struct IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -21,7 +21,7 @@ where
 
 impl<O1, O2, Destination> IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -40,7 +40,7 @@ where
 
 impl<O1, O2, Destination> WithContext for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -54,7 +54,7 @@ where
 
 impl<O1, O2, Destination> Observer for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -85,7 +85,7 @@ where
 
 impl<O1, O2, Destination> Tickable for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -102,7 +102,7 @@ where
 
 impl<O1, O2, Destination> SubscriptionLike for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -134,7 +134,7 @@ where
 
 impl<O1, O2, Destination> ObserverInput for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -146,7 +146,7 @@ where
 
 impl<O1, O2, Destination> ObservableOutput for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -158,7 +158,7 @@ where
 
 pub struct IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -170,7 +170,7 @@ where
 
 impl<O1, O2, Destination> IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -189,7 +189,7 @@ where
 
 impl<O1, O2, Destination> WithContext for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -203,7 +203,7 @@ where
 
 impl<O1, O2, Destination> Observer for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -234,7 +234,7 @@ where
 
 impl<O1, O2, Destination> Tickable for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -251,7 +251,7 @@ where
 
 impl<O1, O2, Destination> SubscriptionLike for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -283,7 +283,7 @@ where
 
 impl<O1, O2, Destination> ObserverInput for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
@@ -295,7 +295,7 @@ where
 
 impl<O1, O2, Destination> ObservableOutput for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
-	O1: 'static + Observable,
+	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,

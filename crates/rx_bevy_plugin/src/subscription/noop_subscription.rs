@@ -2,8 +2,7 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 
-use rx_bevy_common_bounds::SignalBound;
-use rx_bevy_core::ObservableOutput;
+use rx_bevy_core::{ObservableOutput, SignalBound};
 
 use crate::{CommandSubscriber, RxSubscription, SubscriptionChannelHandlerRegistrationContext};
 
@@ -14,8 +13,7 @@ use bevy_reflect::Reflect;
 /// type safety for observables that aren't scheduled. Use this if your
 /// [ObservableComponent] does not need any scheduling, aka it can't produce
 /// new events on its own, only when subscribed to.
-#[derive_where(Default)]
-#[derive(Debug)]
+#[derive_where(Default, Debug)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct NoopSubscription<Out, OutError>
 where

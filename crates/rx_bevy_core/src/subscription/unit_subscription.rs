@@ -19,7 +19,7 @@ impl SignalContext for () {
 	type Sharer<Destination>
 		= ArcSubscriber<Destination>
 	where
-		Destination: 'static + Subscriber<Context = Self>;
+		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
 
 	#[inline]
 	fn create_context_to_unsubscribe_on_drop() -> Self {}

@@ -1,13 +1,14 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, ObserverInput, Operator, SignalContext, Subscriber, SubscriptionCollection,
+	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+	SubscriptionCollection,
 };
 
 #[derive(Debug)]
 pub struct FinalizeOperator<In, InError, Callback, Context = ()>
 where
-	Callback: 'static + Clone + FnOnce(&mut Context),
+	Callback: 'static + Clone + FnOnce(&mut Context) + Send + Sync,
 {
 	callback: Callback,
 	_phantom_data: PhantomData<(In, InError, Context)>,
@@ -15,7 +16,7 @@ where
 
 impl<In, InError, Callback, Context> FinalizeOperator<In, InError, Callback, Context>
 where
-	Callback: 'static + Clone + FnOnce(&mut Context),
+	Callback: 'static + Clone + FnOnce(&mut Context) + Send + Sync,
 {
 	pub fn new(callback: Callback) -> Self {
 		Self {
@@ -27,17 +28,19 @@ where
 
 impl<In, InError, Callback, Context> Operator for FinalizeOperator<In, InError, Callback, Context>
 where
-	Callback: 'static + Clone + FnOnce(&mut Context),
-	In: 'static,
-	InError: 'static,
+	Callback: 'static + Clone + FnOnce(&mut Context) + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
 	Context: SignalContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
 		= Destination
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -46,8 +49,10 @@ where
 		context: &mut Self::Context,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		destination.add_fn(self.callback.clone(), context);
 		destination
@@ -57,9 +62,9 @@ where
 impl<In, InError, Callback, Context> ObservableOutput
 	for FinalizeOperator<In, InError, Callback, Context>
 where
-	Callback: 'static + Clone + FnOnce(&mut Context),
-	In: 'static,
-	InError: 'static,
+	Callback: 'static + Clone + FnOnce(&mut Context) + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Out = In;
 	type OutError = InError;
@@ -68,9 +73,9 @@ where
 impl<In, InError, Callback, Context> ObserverInput
 	for FinalizeOperator<In, InError, Callback, Context>
 where
-	Callback: 'static + Clone + FnOnce(&mut Context),
-	In: 'static,
-	InError: 'static,
+	Callback: 'static + Clone + FnOnce(&mut Context) + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;
@@ -78,7 +83,7 @@ where
 
 impl<In, InError, Callback, Context> Clone for FinalizeOperator<In, InError, Callback, Context>
 where
-	Callback: 'static + Clone + FnOnce(&mut Context),
+	Callback: 'static + Clone + FnOnce(&mut Context) + Send + Sync,
 {
 	fn clone(&self) -> Self {
 		Self {

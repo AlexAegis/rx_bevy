@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ErasedArcSubscriber, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	ErasedArcSubscriber, SignalBound, SignalContext, SubscriptionData, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -8,8 +8,8 @@ use rx_bevy_core::{
 /// used in contexts (combinator observables like [ZipObservable] and [CombineLatestObservable]) where multiple subscriptions has to be wrapped in one
 pub struct MulticastSubscription<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	subscriber: Option<ErasedArcSubscriber<In, InError, Context>>,
@@ -18,8 +18,8 @@ where
 
 impl<In, InError, Context> MulticastSubscription<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	pub fn new(shared_subscriber: ErasedArcSubscriber<In, InError, Context>) -> Self {
@@ -32,8 +32,8 @@ where
 
 impl<In, InError, Context> Default for MulticastSubscription<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn default() -> Self {
@@ -46,8 +46,8 @@ where
 
 impl<In, InError, Context> Clone for MulticastSubscription<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn clone(&self) -> Self {
@@ -60,8 +60,8 @@ where
 
 impl<In, InError, Context> WithContext for MulticastSubscription<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -69,8 +69,8 @@ where
 
 impl<In, InError, Context> Tickable for MulticastSubscription<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
@@ -82,8 +82,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for MulticastSubscription<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn is_closed(&self) -> bool {
@@ -117,8 +117,8 @@ where
 
 impl<In, InError, Context> Drop for MulticastSubscription<In, InError, Context>
 where
-	In: 'static + Clone,
-	InError: 'static + Clone,
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SignalContext,
 {
 	fn drop(&mut self) {

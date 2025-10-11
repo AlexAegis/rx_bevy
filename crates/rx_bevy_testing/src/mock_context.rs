@@ -1,14 +1,15 @@
 use std::{iter::Chain, slice::Iter};
 
 use rx_bevy_core::{
-	ArcSubscriber, SignalContext, SignalContextDropSafety, Subscriber, SubscriberNotification,
+	ArcSubscriber, SignalBound, SignalContext, SignalContextDropSafety, Subscriber,
+	SubscriberNotification,
 };
 
 #[derive(Debug)]
 pub struct MockContext<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	observed_notifications:
@@ -20,8 +21,8 @@ where
 
 impl<In, InError, DropSafety> MockContext<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	/// Pushes a notification onto the notification stack.
@@ -289,8 +290,8 @@ where
 
 impl<In, InError, DropSafety> SignalContext for MockContext<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	/// The DropSafety is parametric for the sake of testability, the context will always panic on drop if not closed to ensure proper tests.
@@ -316,8 +317,8 @@ where
 
 impl<In, InError, DropSafety> Default for MockContext<In, InError, DropSafety>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	DropSafety: SignalContextDropSafety,
 {
 	fn default() -> Self {

@@ -31,7 +31,7 @@ pub trait SignalContext {
 	/// can create additional subscriptions as they operate.
 	type Sharer<Destination>: DestinationSharer<Context = Self>
 	where
-		Destination: 'static + Subscriber<Context = Self>;
+		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self;
 }

@@ -7,48 +7,52 @@ use crate::{
 	Tickable, WithContext,
 };
 
-impl<S> WithContext for Arc<RwLock<S>>
+impl<Destination> WithContext for Arc<RwLock<Destination>>
 where
-	S: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
-	type Context = S::Context;
+	type Context = Destination::Context;
 }
 
-impl<S> ObserverInput for Arc<RwLock<S>>
+impl<Destination> ObserverInput for Arc<RwLock<Destination>>
 where
-	S: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
-	type In = S::In;
-	type InError = S::InError;
+	type In = Destination::In;
+	type InError = Destination::InError;
 }
 
-impl<T> DestinationSharer for Arc<RwLock<T>>
+impl<D> DestinationSharer for Arc<RwLock<D>>
 where
-	T: Subscriber + 'static,
+	D: 'static + Subscriber + Send + Sync,
 {
 	type Shared<Destination>
 		= Arc<RwLock<Destination>>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Send
+			+ Sync;
 
 	fn share<Destination>(
 		destination: Destination,
 		_context: &mut Self::Context,
 	) -> Self::Shared<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
+		Destination: 'static
+			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+			+ Send
+			+ Sync,
 	{
 		Arc::new(RwLock::new(destination))
 	}
 }
 
-impl<T> SharedDestination<T> for Arc<RwLock<T>>
+impl<Destination> SharedDestination<Destination> for Arc<RwLock<Destination>>
 where
-	T: Subscriber + 'static,
+	Destination: 'static + Subscriber + Send + Sync,
 {
-	type Access = T;
+	type Access = Destination;
 
 	fn access<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where
@@ -69,9 +73,9 @@ where
 	}
 }
 
-impl<S> Observer for Arc<RwLock<S>>
+impl<Destination> Observer for Arc<RwLock<Destination>>
 where
-	S: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -106,9 +110,9 @@ where
 	}
 }
 
-impl<S> Tickable for Arc<RwLock<S>>
+impl<Destination> Tickable for Arc<RwLock<Destination>>
 where
-	S: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		if let Ok(mut destination) = self.write() {
@@ -119,9 +123,9 @@ where
 	}
 }
 
-impl<S> SubscriptionLike for Arc<RwLock<S>>
+impl<Destination> SubscriptionLike for Arc<RwLock<Destination>>
 where
-	S: Subscriber,
+	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(destination) = self.read() {

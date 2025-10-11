@@ -1,16 +1,16 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
+	Tick, Tickable, WithContext,
 };
 
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	destination: Destination,
 	callback: OnNext,
@@ -21,8 +21,8 @@ impl<In, InError, OnNext, Destination> TapNextSubscriber<In, InError, OnNext, De
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	pub fn new(destination: Destination, callback: OnNext) -> Self {
 		Self {
@@ -38,8 +38,8 @@ impl<In, InError, OnNext, Destination> WithContext
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Context = Destination::Context;
 }
@@ -49,8 +49,8 @@ impl<In, InError, OnNext, Destination> Observer
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -74,8 +74,8 @@ impl<In, InError, OnNext, Destination> Tickable
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: SubscriptionLike,
 {
 	#[inline]
@@ -89,8 +89,8 @@ impl<In, InError, OnNext, Destination> SubscriptionLike
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 	Destination: SubscriptionLike,
 {
 	#[inline]
@@ -119,8 +119,8 @@ impl<In, InError, OnNext, Destination> ObservableOutput
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type Out = In;
 	type OutError = InError;
@@ -131,8 +131,8 @@ impl<In, InError, OnNext, Destination> ObserverInput
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	type In = In;
 	type InError = InError;

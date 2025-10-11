@@ -1,17 +1,17 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	DestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	DestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, SignalBound,
+	Subscriber, SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
 pub struct SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -39,10 +39,10 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination>
 	SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -77,10 +77,10 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination> WithContext
 	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -105,10 +105,10 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Observer
 	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -146,10 +146,10 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination> Tickable
 	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -177,10 +177,10 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination> SubscriptionLike
 	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -224,10 +224,10 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination> ObserverInput
 	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static
@@ -253,10 +253,10 @@ where
 impl<In, InError, Switcher, Sharer, InnerObservable, Destination> ObservableOutput
 	for SwitchMapSubscriber<In, InError, Switcher, Sharer, InnerObservable, Destination>
 where
-	In: 'static,
-	InError: 'static + Into<InnerObservable::OutError>,
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable,
+	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Sharer: 'static

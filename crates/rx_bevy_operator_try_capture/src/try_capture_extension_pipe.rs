@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, WithContext};
+use rx_bevy_core::{Observable, SignalBound};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::TryCaptureOperator;
@@ -6,8 +6,8 @@ use crate::TryCaptureOperator;
 /// Operator creator function
 pub fn try_capture<In, InError>() -> TryCaptureOperator<In, InError>
 where
-	In: 'static,
-	InError: 'static,
+	In: SignalBound,
+	InError: SignalBound,
 {
 	TryCaptureOperator::default()
 }
@@ -16,10 +16,7 @@ where
 pub trait ObservableExtensionTryCapture: Observable + Sized {
 	fn try_capture(
 		self,
-	) -> Pipe<
-		Self,
-		TryCaptureOperator<Self::Out, Self::OutError, <Self::Subscription as WithContext>::Context>,
-	> {
+	) -> Pipe<Self, TryCaptureOperator<Self::Out, Self::OutError, Self::Context>> {
 		Pipe::new(self, TryCaptureOperator::default())
 	}
 }

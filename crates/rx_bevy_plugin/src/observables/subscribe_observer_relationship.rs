@@ -1,6 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{component::Component, entity::Entity};
-use rx_bevy_common_bounds::SignalBound;
+use rx_bevy_core::SignalBound;
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;

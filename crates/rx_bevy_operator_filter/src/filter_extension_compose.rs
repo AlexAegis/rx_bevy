@@ -5,7 +5,7 @@ use crate::FilterOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionFilter: Operator + Sized {
-	fn filter<Filter: 'static + Clone + for<'a> Fn(&'a Self::Out) -> bool>(
+	fn filter<Filter: 'static + for<'a> Fn(&'a Self::Out) -> bool + Clone + Send + Sync>(
 		self,
 		filter: Filter,
 	) -> CompositeOperator<

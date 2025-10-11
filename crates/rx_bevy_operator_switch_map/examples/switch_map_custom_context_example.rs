@@ -1,9 +1,16 @@
-use rx_bevy::{DropUnsafeSignalContext, ErasedArcSubscriber, SignalContext, prelude::*};
+use rx_bevy::{
+	ArcSubscriber, DropUnsafeSignalContext, ErasedArcSubscriber, SignalContext, prelude::*,
+};
 use rx_bevy_operator_switch_map::switch_map_extension_pipe::ObservableExtensionSwitchMap;
 
 struct CustomContext;
 
 impl SignalContext for CustomContext {
+	type Sharer<Destination>
+		= ArcSubscriber<Destination>
+	where
+		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
+
 	type DropSafety = DropUnsafeSignalContext;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self {
