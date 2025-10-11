@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SignalContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tick, Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 /// An [FnObserver] requires you to define a callback for all three notifications
@@ -14,7 +14,7 @@ where
 	OnError: FnMut(InError, &mut Context) + Send + Sync,
 	OnComplete: FnMut(&mut Context) + Send + Sync,
 	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	on_next: OnNext,
 	on_error: OnError,
@@ -33,7 +33,7 @@ where
 	OnError: FnMut(InError, &mut Context) + Send + Sync,
 	OnComplete: FnMut(&mut Context) + Send + Sync,
 	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new(
 		on_next: OnNext,
@@ -61,13 +61,13 @@ where
 	OnError: FnMut(InError, &mut Context) + Send + Sync,
 	OnComplete: FnMut(&mut Context) + Send + Sync,
 	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> WithContext
+impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> WithSubscriptionContext
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: SignalBound,
@@ -76,7 +76,7 @@ where
 	OnError: FnMut(InError, &mut Context) + Send + Sync,
 	OnComplete: FnMut(&mut Context) + Send + Sync,
 	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -90,7 +90,7 @@ where
 	OnError: FnMut(InError, &mut Context) + Send + Sync,
 	OnComplete: FnMut(&mut Context) + Send + Sync,
 	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn next(&mut self, next: In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -121,7 +121,7 @@ where
 	OnError: FnMut(InError, &mut Context) + Send + Sync,
 	OnComplete: FnMut(&mut Context) + Send + Sync,
 	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		(self.on_tick)(tick, context);
@@ -137,7 +137,7 @@ where
 	OnError: FnMut(InError, &mut Context) + Send + Sync,
 	OnComplete: FnMut(&mut Context) + Send + Sync,
 	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {

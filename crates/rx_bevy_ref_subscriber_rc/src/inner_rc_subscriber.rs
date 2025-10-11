@@ -1,7 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 use short_type_name::short_type_name;
 
@@ -37,14 +37,14 @@ where
 		}
 	}
 
-	pub fn unsubscribe_if_can(&mut self, context: &mut <Self as WithContext>::Context) {
+	pub fn unsubscribe_if_can(&mut self, context: &mut <Self as WithSubscriptionContext>::Context) {
 		if self.unsubscribe_count == self.ref_count && !self.closed {
 			self.closed = true;
 			self.destination.unsubscribe(context);
 		}
 	}
 
-	pub fn complete_if_can(&mut self, context: &mut <Self as WithContext>::Context) {
+	pub fn complete_if_can(&mut self, context: &mut <Self as WithSubscriptionContext>::Context) {
 		if self.completion_count == self.ref_count && !self.closed {
 			self.destination.complete(context);
 			self.unsubscribe(context);
@@ -80,7 +80,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithContext for InnerRcSubscriber<Destination>
+impl<Destination> WithSubscriptionContext for InnerRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {

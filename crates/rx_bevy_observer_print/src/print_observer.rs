@@ -1,8 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SignalContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tickable, WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -10,7 +10,7 @@ pub struct PrintObserver<In, InError = (), Context = ()>
 where
 	In: Debug,
 	InError: Debug,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	prefix: Option<&'static str>,
 	teardown: SubscriptionData<Context>,
@@ -21,7 +21,7 @@ impl<In, InError, Context> PrintObserver<In, InError, Context>
 where
 	In: Debug,
 	InError: Debug,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new(message: &'static str) -> Self {
 		Self {
@@ -42,7 +42,7 @@ impl<In, InError, Context> Default for PrintObserver<In, InError, Context>
 where
 	In: SignalBound + Debug,
 	InError: SignalBound + Debug,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -57,7 +57,7 @@ impl<In, InError, Context> ObserverInput for PrintObserver<In, InError, Context>
 where
 	In: SignalBound + Debug,
 	InError: SignalBound + Debug,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
@@ -67,7 +67,7 @@ impl<In, InError, Context> Observer for PrintObserver<In, InError, Context>
 where
 	In: SignalBound + Debug,
 	InError: SignalBound + Debug,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, _context: &mut Self::Context) {
@@ -91,7 +91,7 @@ impl<In, InError, Context> Tickable for PrintObserver<In, InError, Context>
 where
 	In: SignalBound + Debug,
 	InError: SignalBound + Debug,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn tick(&mut self, tick: rx_bevy_core::Tick, _context: &mut Self::Context) {
@@ -99,11 +99,11 @@ where
 	}
 }
 
-impl<In, InError, Context> WithContext for PrintObserver<In, InError, Context>
+impl<In, InError, Context> WithSubscriptionContext for PrintObserver<In, InError, Context>
 where
 	In: SignalBound + Debug,
 	InError: SignalBound + Debug,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -112,7 +112,7 @@ impl<In, InError, Context> SubscriptionLike for PrintObserver<In, InError, Conte
 where
 	In: SignalBound + Debug,
 	InError: SignalBound + Debug,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {

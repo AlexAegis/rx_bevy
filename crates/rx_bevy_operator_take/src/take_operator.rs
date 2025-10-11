@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+	ObservableOutput, ObserverInput, Operator, SignalBound, SubscriptionContext, Subscriber,
 };
 
 use crate::TakeSubscriber;
@@ -25,7 +25,7 @@ impl<In, InError, Context> Operator for TakeOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>

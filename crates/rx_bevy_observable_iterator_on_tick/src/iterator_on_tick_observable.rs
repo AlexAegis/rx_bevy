@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalBound, SignalContext, Subscriber, SubscriptionHandle,
-	WithContext,
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext, SubscriptionHandle,
+	WithSubscriptionContext,
 };
 
 use crate::{OnTickIteratorSubscription, OnTickObservableOptions};
@@ -21,7 +21,7 @@ use crate::{OnTickIteratorSubscription, OnTickObservableOptions};
 pub struct IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	iterator: Iterator,
 	options: OnTickObservableOptions,
@@ -31,7 +31,7 @@ where
 impl<Iterator, Context> IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new(iterator: Iterator, options: OnTickObservableOptions) -> Self {
 		Self {
@@ -46,17 +46,17 @@ impl<Iterator, Context> ObservableOutput for IteratorOnTickObservable<Iterator, 
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Out = Iterator::Item;
 	type OutError = ();
 }
 
-impl<Iterator, Context> WithContext for IteratorOnTickObservable<Iterator, Context>
+impl<Iterator, Context> WithSubscriptionContext for IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -66,7 +66,7 @@ where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: SignalBound,
 	Iterator::IntoIter: Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Subscription = OnTickIteratorSubscription<Iterator, Context>;
 
@@ -109,7 +109,7 @@ mod test {
 	#[test]
 	fn iterator_observable_should_emit_its_values_then_complete() {
 		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSignalContext>::default();
+		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
 
 		let mut source = (1..=2).into_observable::<MockContext<_, _, _>>();
 		let _subscription = source.subscribe(mock_destination, &mut context);

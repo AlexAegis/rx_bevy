@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	ErasedDestinationSharer, SignalBound, SignalContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tick, Tickable, WithContext,
+	ErasedDestinationSharer, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -10,7 +10,7 @@ pub struct MulticastSubscription<In, InError, Context>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	subscriber: Option<<Context::ErasedSharer<In, InError> as ErasedDestinationSharer>::Shared>,
 	teardown: SubscriptionData<Context>,
@@ -20,7 +20,7 @@ impl<In, InError, Context> MulticastSubscription<In, InError, Context>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new(
 		shared_subscriber: <Context::ErasedSharer<In, InError> as ErasedDestinationSharer>::Shared,
@@ -36,7 +36,7 @@ impl<In, InError, Context> Default for MulticastSubscription<In, InError, Contex
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -50,7 +50,7 @@ impl<In, InError, Context> Clone for MulticastSubscription<In, InError, Context>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -60,11 +60,11 @@ where
 	}
 }
 
-impl<In, InError, Context> WithContext for MulticastSubscription<In, InError, Context>
+impl<In, InError, Context> WithSubscriptionContext for MulticastSubscription<In, InError, Context>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -73,7 +73,7 @@ impl<In, InError, Context> Tickable for MulticastSubscription<In, InError, Conte
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		if let Some(subscriber) = &mut self.subscriber {
@@ -86,7 +86,7 @@ impl<In, InError, Context> SubscriptionLike for MulticastSubscription<In, InErro
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
 		self.subscriber
@@ -121,7 +121,7 @@ impl<In, InError, Context> Drop for MulticastSubscription<In, InError, Context>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.teardown.is_closed() {

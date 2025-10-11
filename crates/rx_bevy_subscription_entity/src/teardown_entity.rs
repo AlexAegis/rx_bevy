@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
-use rx_bevy_core::{SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithContext};
+use rx_bevy_core::{SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext};
 
 use crate::ContextWithCommands;
 
@@ -14,7 +14,7 @@ where
 	_phantom_data: PhantomData<Context>,
 }
 
-impl<Context> WithContext for EntityTeardown<Context>
+impl<Context> WithSubscriptionContext for EntityTeardown<Context>
 where
 	Context: for<'c> ContextWithCommands<'c>,
 {

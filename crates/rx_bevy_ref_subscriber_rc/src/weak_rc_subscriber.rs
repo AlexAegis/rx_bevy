@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	DestinationSharedTypes, Observer, ObserverInput, SharedDestination, Subscriber,
-	SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::InnerRcSubscriber;
@@ -54,7 +54,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithContext for WeakRcSubscriber<Destination>
+impl<Destination> WithSubscriptionContext for WeakRcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {

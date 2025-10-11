@@ -1,4 +1,4 @@
-use crate::{Teardown, WithContext};
+use crate::{Teardown, WithSubscriptionContext};
 
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational.
@@ -11,7 +11,7 @@ use crate::{Teardown, WithContext};
 /// properly released on drop. Note that some subscriptionlikes do not need to
 /// do anything on drop. If that's the case, the `drop` fn should only contain
 /// a comment on why it doesn't need to do anything.
-pub trait SubscriptionLike: WithContext {
+pub trait SubscriptionLike: WithSubscriptionContext {
 	/// Returns if the subscription is closed or not. A subscription can be
 	/// closed by calling unsubscribe on it. Some special subscriptions made
 	/// by observables that only ever emit values during subscribe, will produce
@@ -39,8 +39,8 @@ pub trait SubscriptionLike: WithContext {
 	/// destinations `get_context_to_unsubscribe_on_drop` and leave the rest to
 	/// it. If it's implemented for a Subscription, this function provides a
 	/// chance to create a context from the Subscription itself, if that can't
-	/// be done, you should use the [SignalContext][crate::SignalContext]s
-	/// [`create_context_to_unsubscribe_on_drop`][crate::SignalContext::create_context_to_unsubscribe_on_drop]
+	/// be done, you should use the [SubscriptionContext][crate::SubscriptionContext]s
+	/// [`create_context_to_unsubscribe_on_drop`][crate::SubscriptionContext::create_context_to_unsubscribe_on_drop]
 	/// function. This function, depending on the context used can panic!
 	///
 	/// Some trivial contexts, like the unit `()` context when a context isn't

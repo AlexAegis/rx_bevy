@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct SkipSubscriber<In, InError, Destination>
@@ -32,7 +32,7 @@ where
 	}
 }
 
-impl<In, InError, Destination> WithContext for SkipSubscriber<In, InError, Destination>
+impl<In, InError, Destination> WithSubscriptionContext for SkipSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,

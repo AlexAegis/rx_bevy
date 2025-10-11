@@ -1,10 +1,10 @@
 use rx_bevy::{
-	ArcSubscriber, DropUnsafeSignalContext, ErasedArcSubscriber, SignalContext, prelude::*,
+	ArcSubscriber, DropUnsafeSubscriptionContext, ErasedArcSubscriber, SubscriptionContext, prelude::*,
 };
 
 struct CustomContext;
 
-impl SignalContext for CustomContext {
+impl SubscriptionContext for CustomContext {
 	type Sharer<Destination>
 		= ArcSubscriber<Destination>
 	where
@@ -16,7 +16,7 @@ impl SignalContext for CustomContext {
 		In: SignalBound,
 		InError: SignalBound;
 
-	type DropSafety = DropUnsafeSignalContext;
+	type DropSafety = DropUnsafeSubscriptionContext;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self {
 		panic!("Don't worry about me");

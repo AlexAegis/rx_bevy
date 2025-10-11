@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ where
 	}
 }
 
-impl<Inner, Destination> WithContext for CompositeSubscriber<Inner, Destination>
+impl<Inner, Destination> WithSubscriptionContext for CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
 	Destination: Observer,

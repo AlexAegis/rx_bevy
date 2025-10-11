@@ -4,10 +4,10 @@ use short_type_name::short_type_name;
 
 use crate::{
 	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
-	Tickable, WithContext,
+	Tickable, WithSubscriptionContext,
 };
 
-impl<Destination> WithContext for Arc<RwLock<Destination>>
+impl<Destination> WithSubscriptionContext for Arc<RwLock<Destination>>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {

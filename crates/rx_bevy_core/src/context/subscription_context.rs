@@ -7,14 +7,11 @@ use crate::{DestinationSharer, ErasedDestinationSharer, SignalBound, Subscriber}
 /// commonly: completion and error signals should trigger an unsubscribe call.
 /// And next signals sometimes trigger completion signals, so all contexts
 /// must be the same.
-#[doc(alias = "WithEnvironment")]
-pub trait WithContext {
-	type Context: SignalContext;
+pub trait WithSubscriptionContext {
+	type Context: SubscriptionContext;
 }
 
-/// TODO: Rename to SubscriptionContext
-#[doc(alias = "Environment")]
-pub trait SignalContext {
+pub trait SubscriptionContext {
 	/// Indicates if the context can be safely (or not) acquired during a drop
 	/// to perform a last minute unsubscription in case the subscription is not
 	/// already closed.
@@ -25,7 +22,7 @@ pub trait SignalContext {
 	/// providing a mechanic to environments where unsubscription at drop is
 	/// impossible, but going out of scope isn't a concern because it provides
 	/// hooks for when that would happen, like in an ECS.
-	type DropSafety: SignalContextDropSafety;
+	type DropSafety: SubscriptionContextDropSafety;
 
 	/// Defines how a new subscription should be created for subscribers that
 	/// can create additional subscriptions as they operate.
@@ -47,7 +44,7 @@ mod private {
 	pub trait Seal {}
 }
 
-pub trait SignalContextDropSafety: private::Seal + 'static {
+pub trait SubscriptionContextDropSafety: private::Seal + 'static {
 	/// Boolean to indicate if this context is safe to create during a drop
 	const DROP_SAFE: bool;
 }
@@ -63,15 +60,15 @@ pub trait SignalContextDropSafety: private::Seal + 'static {
 /// be referenced through the context - it should still panic, as it would
 /// cause a memory leak.
 ///
-/// An example of a [DropUnsafeSignalContext] is any Context used to interface
+/// An example of a [DropUnsafeSubscriptionContext] is any Context used to interface
 /// with an ECS system where the only way of freeing up (and acquiring)
 /// resources is through the context, which holds a reference of that short
 /// lived object that lets you interact with the ECS.
-pub struct DropUnsafeSignalContext;
+pub struct DropUnsafeSubscriptionContext;
 
-impl private::Seal for DropUnsafeSignalContext {}
+impl private::Seal for DropUnsafeSubscriptionContext {}
 
-impl SignalContextDropSafety for DropUnsafeSignalContext {
+impl SubscriptionContextDropSafety for DropUnsafeSubscriptionContext {
 	const DROP_SAFE: bool = false;
 }
 
@@ -85,17 +82,17 @@ impl SignalContextDropSafety for DropUnsafeSignalContext {
 ///
 /// If your context allows you to acquire resources that can only be freed
 /// through the context, then it is **NOT** "DropSafe" as that would lead to
-/// a memory leak. If that's the case, you should use [DropUnsafeSignalContext]
+/// a memory leak. If that's the case, you should use [DropUnsafeSubscriptionContext]
 /// and panic when `get_context_for_drop` is called!
 ///
-/// A trivial example of a [DropSafeSignalContext] is the unit context `()`,
+/// A trivial example of a [DropSafeSubscriptionContext] is the unit context `()`,
 /// because it's empty! It doesn't let you acquire resources outside of the
 /// subscription, so you don't need to release anything either!
 #[derive(Debug)]
-pub struct DropSafeSignalContext;
+pub struct DropSafeSubscriptionContext;
 
-impl private::Seal for DropSafeSignalContext {}
+impl private::Seal for DropSafeSubscriptionContext {}
 
-impl SignalContextDropSafety for DropSafeSignalContext {
+impl SubscriptionContextDropSafety for DropSafeSubscriptionContext {
 	const DROP_SAFE: bool = true;
 }

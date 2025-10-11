@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tickable, WithContext,
+	Tickable, WithSubscriptionContext,
 };
 
 pub struct EnumerateSubscriber<In, InError, Destination>
@@ -34,7 +34,7 @@ where
 	}
 }
 
-impl<In, InError, Destination> WithContext for EnumerateSubscriber<In, InError, Destination>
+impl<In, InError, Destination> WithSubscriptionContext for EnumerateSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,

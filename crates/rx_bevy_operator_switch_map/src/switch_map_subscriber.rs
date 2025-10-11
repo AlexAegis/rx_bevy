@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 use rx_bevy_ref_subscriber_switch::SwitchSubscriber;
 
@@ -58,7 +58,7 @@ where
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable, Destination> WithContext
+impl<In, InError, Switcher, InnerObservable, Destination> WithSubscriptionContext
 	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,

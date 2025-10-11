@@ -1,5 +1,6 @@
 use crate::{
-	SignalBound, SignalContext, Subscriber, SubscriptionHandle, TickableSubscription, WithContext,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionHandle, TickableSubscription,
+	WithSubscriptionContext,
 };
 
 /// # [ObservableOutput]
@@ -34,9 +35,9 @@ pub trait ObservableOutput {
 /// [Subscription][crate::SubscriptionLike] that will contain the one (or more)
 /// [Teardown][crate::Teardown]s that can be used to release resources
 /// associated with this subscription, after which it is always safe to drop
-/// regardless of the kind of [Context][crate::SignalContext] used.
+/// regardless of the kind of [Context][crate::SubscriptionContext] used.
 ///
-/// ## [Contexts][crate::SignalContext]
+/// ## [Contexts][crate::SubscriptionContext]
 ///
 /// Since everything is stored in subscription, the unit of execution is the
 /// subscription value. But not everything can be stored here: In some
@@ -65,7 +66,7 @@ pub trait ObservableOutput {
 ///
 /// Subscriptions that were not unsubscribed when they are dropped will try to
 /// unsubscribe themselves. If you use a
-/// [DropUnsafeSignalContext][crate::DropUnsafeSignalContext], one that can't
+/// [DropUnsafeSubscriptionContext][crate::DropUnsafeSubscriptionContext], one that can't
 /// just be created from the subscription itself (like unit `()`), this will
 /// result in a panic. But do not worry, such contexts are only ever
 /// explicitly used, and are usually used in managed environment where you
@@ -75,14 +76,14 @@ pub trait ObservableOutput {
 /// > Note that not assigning the subscription to a variable (or assining it to
 /// > `let _ =`) will cause it to be immediately dropped, hence `subscribe` is
 /// > `#[must_use]`!
-pub trait Observable: ObservableOutput + WithContext {
+pub trait Observable: ObservableOutput + WithSubscriptionContext {
 	/// The subscription produced by this [Observable]. As this is the only kind
 	/// of subscription that is handled directly by users, only here are
 	/// subscriptions required to implement [Drop] to ensure resources
 	/// are released when the subscription is dropped, and an unsubscribe can
 	/// be attempted. This attempt at unsubscribing on drop, if the subscription
 	/// wasn't already unsubscribed, can panic if the [Context] used is not
-	/// a [DropSafeSignalContext].
+	/// a [DropSafeSubscriptionContext].
 	type Subscription: TickableSubscription<Context = Self::Context> + Drop + Send + Sync;
 
 	#[must_use = "If unused, the subscription will immediately unsubscribe."]

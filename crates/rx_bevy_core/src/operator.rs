@@ -1,4 +1,4 @@
-use crate::{ObservableOutput, ObserverInput, SignalContext, Subscriber};
+use crate::{ObservableOutput, ObserverInput, SubscriptionContext, Subscriber};
 
 /// # [Operator]
 ///
@@ -44,7 +44,7 @@ use crate::{ObservableOutput, ObserverInput, SignalContext, Subscriber};
 /// operator.
 ///
 pub trait Operator: ObserverInput + ObservableOutput {
-	type Context: SignalContext;
+	type Context: SubscriptionContext;
 
 	type Subscriber<Destination>: 'static
 		+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>

@@ -2,8 +2,8 @@ use std::{cell::RefCell, rc::Rc};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_bevy_core::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, SignalContext, Subscriber,
-	SubscriptionHandle, SubscriptionLike, Teardown, WithContext,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, SubscriptionContext, Subscriber,
+	SubscriptionHandle, SubscriptionLike, Teardown, WithSubscriptionContext,
 };
 use rx_bevy_ref_subject::{MulticastSubscription, Subject};
 
@@ -14,7 +14,7 @@ pub struct ReplaySubject<const CAPACITY: usize, In, InError = (), Context = ()>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	subject: Subject<In, InError, Context>,
 	/// Refcell so even cloned subjects retain the same current value across clones
@@ -26,7 +26,7 @@ impl<const CAPACITY: usize, In, InError, Context> Default
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -41,7 +41,7 @@ impl<const CAPACITY: usize, In, InError, Context> ObserverInput
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
@@ -52,7 +52,7 @@ impl<const CAPACITY: usize, In, InError, Context> Observer
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn next(&mut self, next: In, context: &mut Context) {
 		self.values.borrow_mut().enqueue(next.clone());
@@ -75,18 +75,18 @@ impl<const CAPACITY: usize, In, InError, Context> ObservableOutput
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Out = In;
 	type OutError = InError;
 }
 
-impl<const CAPACITY: usize, In, InError, Context> WithContext
+impl<const CAPACITY: usize, In, InError, Context> WithSubscriptionContext
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -96,7 +96,7 @@ impl<const CAPACITY: usize, In, InError, Context> Observable
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
@@ -123,7 +123,7 @@ impl<const CAPACITY: usize, In, InError, Context> SubscriptionLike
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {

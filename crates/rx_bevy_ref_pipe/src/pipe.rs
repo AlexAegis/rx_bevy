@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, Operator, Subscriber, SubscriptionHandle, WithContext,
+	Observable, ObservableOutput, Operator, Subscriber, SubscriptionHandle, WithSubscriptionContext,
 };
 
 pub struct Pipe<Source, Op>
@@ -51,7 +51,7 @@ where
 			+ Operator<
 				In = <Self as ObservableOutput>::Out,
 				InError = <Self as ObservableOutput>::OutError,
-				Context = <<Pipe<Source, Op> as Observable>::Subscription as WithContext>::Context,
+				Context = <<Pipe<Source, Op> as Observable>::Subscription as WithSubscriptionContext>::Context,
 			>,
 	{
 		Pipe::<Self, NextOp>::new(self, operator)
@@ -67,7 +67,7 @@ where
 	type OutError = Op::OutError;
 }
 
-impl<Source, Op> WithContext for Pipe<Source, Op>
+impl<Source, Op> WithSubscriptionContext for Pipe<Source, Op>
 where
 	Source: 'static + Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,

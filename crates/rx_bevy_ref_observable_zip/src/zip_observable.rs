@@ -1,5 +1,6 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, Subscriber, SubscriptionData, SubscriptionHandle, WithContext,
+	Observable, ObservableOutput, Subscriber, SubscriptionData, SubscriptionHandle,
+	WithSubscriptionContext,
 };
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
@@ -62,7 +63,7 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<O1, O2> WithContext for Zip<O1, O2>
+impl<O1, O2> WithSubscriptionContext for Zip<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,

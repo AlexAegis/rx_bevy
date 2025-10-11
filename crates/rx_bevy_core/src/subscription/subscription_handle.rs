@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{SubscriptionLike, Tick, Tickable, TickableSubscription, WithContext};
+use crate::{SubscriptionLike, Tick, Tickable, TickableSubscription, WithSubscriptionContext};
 
 /// Subscriptions are made cloneable through a smart pointer.
 /// Subscriptions have to be clonable to allow their storage to keep them alive
@@ -34,7 +34,7 @@ where
 	}
 }
 
-impl<Subscription> WithContext for SubscriptionHandle<Subscription>
+impl<Subscription> WithSubscriptionContext for SubscriptionHandle<Subscription>
 where
 	Subscription: TickableSubscription,
 {

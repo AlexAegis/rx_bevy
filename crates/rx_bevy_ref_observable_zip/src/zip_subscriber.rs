@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	WithContext,
+	WithSubscriptionContext,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -157,7 +157,7 @@ where
 	}
 }
 
-impl<Destination, O1, O2> WithContext for ZipSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> WithSubscriptionContext for ZipSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<
 			In = (O1::Out, O2::Out),

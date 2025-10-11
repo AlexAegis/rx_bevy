@@ -1,14 +1,14 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalContext, Subscriber, SubscriptionHandle, WithContext,
+	Observable, ObservableOutput, SubscriptionContext, Subscriber, SubscriptionHandle, WithSubscriptionContext,
 };
 
 use crate::{IntervalObservableOptions, IntervalSubscription};
 
 pub struct IntervalObservable<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	options: IntervalObservableOptions,
 	_phantom_data: PhantomData<fn(Context)>,
@@ -16,7 +16,7 @@ where
 
 impl<Context> IntervalObservable<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new(options: IntervalObservableOptions) -> Self {
 		Self {
@@ -28,22 +28,22 @@ where
 
 impl<Context> ObservableOutput for IntervalObservable<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Out = usize;
 	type OutError = ();
 }
 
-impl<Context> WithContext for IntervalObservable<Context>
+impl<Context> WithSubscriptionContext for IntervalObservable<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
 
 impl<Context> Observable for IntervalObservable<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Subscription = IntervalSubscription<Context>;
 

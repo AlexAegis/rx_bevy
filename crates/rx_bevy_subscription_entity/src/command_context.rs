@@ -1,5 +1,5 @@
 use bevy_ecs::system::{Commands, Query, QueryLens};
-use rx_bevy_core::{DropUnsafeSignalContext, SignalBound, SignalContext, Subscriber};
+use rx_bevy_core::{DropUnsafeSubscriptionContext, SignalBound, Subscriber, SubscriptionContext};
 use short_type_name::short_type_name;
 
 use crate::{ContextWithCommands, EntitySubscriber, EntitySubscription};
@@ -32,8 +32,8 @@ impl<'c> CommandContext<'c> {
 	}
 }
 
-impl<'c> SignalContext for CommandContext<'c> {
-	type DropSafety = DropUnsafeSignalContext;
+impl<'c> SubscriptionContext for CommandContext<'c> {
+	type DropSafety = DropUnsafeSubscriptionContext;
 
 	type Sharer<Destination>
 		= EntitySubscriber<'c, Destination::In, Destination::InError>

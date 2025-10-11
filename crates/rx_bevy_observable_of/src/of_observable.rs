@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalBound, SignalContext, Subscriber, SubscriptionHandle,
-	WithContext,
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext, SubscriptionHandle,
+	WithSubscriptionContext,
 };
 use rx_bevy_subscription_inert::InertSubscription;
 
@@ -36,10 +36,10 @@ where
 	}
 }
 
-impl<Out, Context> WithContext for OfObservable<Out, Context>
+impl<Out, Context> WithSubscriptionContext for OfObservable<Out, Context>
 where
 	Out: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -47,7 +47,7 @@ where
 impl<Out, Context> Observable for OfObservable<Out, Context>
 where
 	Out: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Subscription = InertSubscription<Context>;
 
@@ -80,14 +80,14 @@ where
 mod tests {
 
 	use super::*;
-	use rx_bevy_core::{DropSafeSignalContext, SubscriptionLike};
+	use rx_bevy_core::{DropSafeSubscriptionContext, SubscriptionLike};
 	use rx_bevy_testing::{MockContext, MockObserver};
 
 	#[test]
 	fn should_emit_single_value() {
 		let value = 4;
 		let mut observable = OfObservable::new(value);
-		let mock_observer = MockObserver::<_, _, DropSafeSignalContext>::default();
+		let mock_observer = MockObserver::<_, _, DropSafeSubscriptionContext>::default();
 		let mut mock_context = MockContext::default();
 
 		let mut subscription = observable.subscribe(mock_observer, &mut mock_context);

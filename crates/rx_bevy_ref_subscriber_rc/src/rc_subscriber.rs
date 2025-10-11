@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	DestinationSharedTypes, DestinationSharer, Observer, ObserverInput, SharedDestination,
-	Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
@@ -112,7 +112,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithContext for RcSubscriber<Destination>
+impl<Destination> WithSubscriptionContext for RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -218,18 +218,18 @@ mod test {
 	use std::ops::RangeInclusive;
 
 	use rx_bevy_core::Observable;
-	use rx_bevy_core::{DropSafeSignalContext, Observer, SubscriptionLike};
+	use rx_bevy_core::{DropSafeSubscriptionContext, Observer, SubscriptionLike};
 	use rx_bevy_observable_iterator::IteratorObservable;
 	use rx_bevy_testing::{MockContext, MockObserver};
 
 	use crate::RcSubscriber;
 
 	fn setup() -> (
-		RcSubscriber<MockObserver<i32, (), DropSafeSignalContext>>,
-		MockContext<i32, (), DropSafeSignalContext>,
+		RcSubscriber<MockObserver<i32, (), DropSafeSubscriptionContext>>,
+		MockContext<i32, (), DropSafeSubscriptionContext>,
 	) {
 		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSignalContext>::default();
+		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
 
 		let rc_subscriber = RcSubscriber::new(mock_destination, &mut context);
 
@@ -353,7 +353,7 @@ mod test {
 
 		let mut iterator_a = IteratorObservable::<
 			RangeInclusive<i32>,
-			MockContext<i32, (), DropSafeSignalContext>,
+			MockContext<i32, (), DropSafeSubscriptionContext>,
 		>::new(1..=10);
 
 		let mut iterator_a_subscription = iterator_a.subscribe(rc_subscriber, &mut context);
@@ -372,7 +372,7 @@ mod test {
 
 		let mut iterator_a = IteratorObservable::<
 			RangeInclusive<i32>,
-			MockContext<i32, (), DropSafeSignalContext>,
+			MockContext<i32, (), DropSafeSubscriptionContext>,
 		>::new(1..=10);
 
 		let mut iterator_a_subscription = iterator_a.subscribe(rc_subscriber.clone(), &mut context);

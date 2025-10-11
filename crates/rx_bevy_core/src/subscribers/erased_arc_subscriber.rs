@@ -4,14 +4,14 @@ use short_type_name::short_type_name;
 
 use crate::{
 	ErasedDestinationSharer, ErasedSharedDestination, Observer, ObserverInput, SignalBound,
-	SignalContext, Subscriber, SubscriptionData, SubscriptionLike, Tickable, WithContext,
+	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Tickable, WithSubscriptionContext,
 };
 
 pub struct ErasedArcSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	destination:
 		Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context> + Send + Sync>>,
@@ -22,7 +22,7 @@ impl<In, InError, Context> ErasedDestinationSharer for ErasedArcSubscriber<In, I
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Shared = ErasedArcSubscriber<In, InError, Context>;
 
@@ -41,7 +41,7 @@ impl<In, InError, Context> ErasedSharedDestination for ErasedArcSubscriber<In, I
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
 
@@ -86,7 +86,7 @@ impl<In, InError, Context> ErasedArcSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
@@ -126,7 +126,7 @@ impl<In, InError, Context> Clone for ErasedArcSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -140,17 +140,17 @@ impl<In, InError, Context> ObserverInput for ErasedArcSubscriber<In, InError, Co
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Context> WithContext for ErasedArcSubscriber<In, InError, Context>
+impl<In, InError, Context> WithSubscriptionContext for ErasedArcSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -159,7 +159,7 @@ impl<In, InError, Context> Observer for ErasedArcSubscriber<In, InError, Context
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -200,7 +200,7 @@ impl<In, InError, Context> Tickable for ErasedArcSubscriber<In, InError, Context
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		if let Ok(mut lock) = self.destination.write() {
@@ -215,7 +215,7 @@ impl<In, InError, Context> SubscriptionLike for ErasedArcSubscriber<In, InError,
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(lock) = self.destination.read() {
@@ -268,7 +268,7 @@ impl<In, InError, Context> Drop for ErasedArcSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

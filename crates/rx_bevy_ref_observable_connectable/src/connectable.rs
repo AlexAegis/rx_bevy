@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, SubscriptionHandle, TickableSubscription, WithContext};
+use rx_bevy_core::{Observable, SubscriptionHandle, TickableSubscription, WithSubscriptionContext};
 
 pub trait Connectable: Observable {
 	// TODO: This does not need to be tickable
@@ -6,6 +6,6 @@ pub trait Connectable: Observable {
 
 	fn connect(
 		&mut self,
-		context: &mut <Self::ConnectionSubscription as WithContext>::Context,
+		context: &mut <Self::ConnectionSubscription as WithSubscriptionContext>::Context,
 	) -> SubscriptionHandle<Self::ConnectionSubscription>;
 }

@@ -1,4 +1,4 @@
-use rx_bevy_core::SignalContext;
+use rx_bevy_core::SubscriptionContext;
 
 use crate::{IteratorOnTickObservable, OnTickObservableOptions};
 
@@ -8,7 +8,7 @@ pub trait IntoIteratorOnTickObservableExtension: IntoIterator + Clone {
 		options: OnTickObservableOptions,
 	) -> IteratorOnTickObservable<Self, Context>
 	where
-		Context: SignalContext,
+		Context: SubscriptionContext,
 	{
 		IteratorOnTickObservable::new(self, options)
 	}

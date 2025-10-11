@@ -1,8 +1,8 @@
 use std::{iter::Chain, slice::Iter};
 
 use rx_bevy_core::{
-	ArcSubscriber, ErasedArcSubscriber, SignalBound, SignalContext, SignalContextDropSafety,
-	Subscriber, SubscriberNotification,
+	ArcSubscriber, ErasedArcSubscriber, SignalBound, Subscriber, SubscriberNotification,
+	SubscriptionContext, SubscriptionContextDropSafety,
 };
 
 #[derive(Debug)]
@@ -10,7 +10,7 @@ pub struct MockContext<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	observed_notifications:
 		Vec<SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>>,
@@ -23,7 +23,7 @@ impl<In, InError, DropSafety> MockContext<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	/// Pushes a notification onto the notification stack.
 	///
@@ -288,11 +288,11 @@ where
 	}
 }
 
-impl<In, InError, DropSafety> SignalContext for MockContext<In, InError, DropSafety>
+impl<In, InError, DropSafety> SubscriptionContext for MockContext<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	/// The DropSafety is parametric for the sake of testability, the context will always panic on drop if not closed to ensure proper tests.
 	type DropSafety = DropSafety;
@@ -325,7 +325,7 @@ impl<In, InError, DropSafety> Default for MockContext<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	fn default() -> Self {
 		Self {
@@ -342,13 +342,13 @@ mod test_mock_context {
 	#[cfg(test)]
 	mod test_nothing_happened_after_closed {
 
-		use rx_bevy_core::{DropSafeSignalContext, SubscriberNotification};
+		use rx_bevy_core::{DropSafeSubscriptionContext, SubscriberNotification};
 
 		use crate::MockContext;
 
 		#[test]
 		fn defaults_to_a_state_where_nothing_yet_happened() {
-			let mock_context = MockContext::<i32, String, DropSafeSignalContext>::default();
+			let mock_context = MockContext::<i32, String, DropSafeSubscriptionContext>::default();
 			assert!(
 				mock_context.nothing_happened_after_closed(),
 				"a freshly created default mock context thinks something happend after closing without even passing in a single notification"
@@ -357,7 +357,7 @@ mod test_mock_context {
 
 		#[test]
 		fn counts_incoming_notifications() {
-			let mut mock_context = MockContext::<i32, String, DropSafeSignalContext>::default();
+			let mut mock_context = MockContext::<i32, String, DropSafeSubscriptionContext>::default();
 			mock_context.push(SubscriberNotification::Unsubscribe);
 			assert!(
 				mock_context.nothing_happened_after_closed(),
@@ -374,13 +374,13 @@ mod test_mock_context {
 	#[cfg(test)]
 	mod test_notification_counting {
 
-		use rx_bevy_core::{DropSafeSignalContext, SubscriberNotification};
+		use rx_bevy_core::{DropSafeSubscriptionContext, SubscriberNotification};
 
 		use crate::MockContext;
 
 		#[test]
 		fn counts_different_notifications() {
-			let mut mock_context = MockContext::<i32, String, DropSafeSignalContext>::default();
+			let mut mock_context = MockContext::<i32, String, DropSafeSubscriptionContext>::default();
 			// This order of events is nonsensical, but that doesn't matter for this test.
 			mock_context.push(SubscriberNotification::Add(None));
 			mock_context.push(SubscriberNotification::Next(1));

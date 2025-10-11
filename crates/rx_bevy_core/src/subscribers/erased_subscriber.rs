@@ -1,6 +1,6 @@
 use crate::{
-	Observer, ObserverInput, SignalBound, SignalContext, Subscriber, SubscriptionLike, Teardown,
-	Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SubscriptionContext, Subscriber, SubscriptionLike, Teardown,
+	Tickable, WithSubscriptionContext,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
@@ -11,7 +11,7 @@ pub struct ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	destination: Box<dyn Subscriber<In = In, InError = InError, Context = Context>>,
 }
@@ -20,7 +20,7 @@ impl<In, InError, Context> ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
@@ -35,17 +35,17 @@ impl<In, InError, Context> ObserverInput for ErasedSubscriber<In, InError, Conte
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Context> WithContext for ErasedSubscriber<In, InError, Context>
+impl<In, InError, Context> WithSubscriptionContext for ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -54,7 +54,7 @@ impl<In, InError, Context> Observer for ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
@@ -76,7 +76,7 @@ impl<In, InError, Context> Tickable for ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
@@ -88,7 +88,7 @@ impl<In, InError, Context> SubscriptionLike for ErasedSubscriber<In, InError, Co
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -115,7 +115,7 @@ impl<In, InError, Context> Drop for ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

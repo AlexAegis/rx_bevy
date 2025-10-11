@@ -4,8 +4,8 @@ use bevy_ecs::{entity::Entity, event::Event};
 
 use rx_bevy_core::{
 	DestinationSharer, ErasedDestinationSharer, ErasedSharedDestination, Observer, ObserverInput,
-	SharedDestination, SignalBound, SignalContext, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	SharedDestination, SignalBound, SubscriptionContext, Subscriber, SubscriptionLike, Teardown, Tick,
+	Tickable, WithSubscriptionContext,
 };
 
 use crate::{CommandContext, ContextWithCommands};
@@ -178,7 +178,7 @@ where
 	type InError = InError;
 }
 
-impl<'c, In, InError> WithContext for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError> WithSubscriptionContext for EntitySubscriber<'c, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,

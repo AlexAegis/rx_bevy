@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, WithContext,
+	Observable, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
+	WithSubscriptionContext,
 };
 
 use crate::SwitchMapSubscriber;
@@ -93,7 +94,7 @@ where
 	type OutError = InnerObservable::OutError;
 }
 
-impl<In, InError, Switcher, InnerObservable> WithContext
+impl<In, InError, Switcher, InnerObservable> WithSubscriptionContext
 	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
 where
 	In: SignalBound,
@@ -129,7 +130,7 @@ mod test {
 	#[test]
 	fn t() {
 		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSignalContext>::default();
+		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
 
 		let mut source = (1..=2)
 			.into_observable::<MockContext<_, _, _>>()

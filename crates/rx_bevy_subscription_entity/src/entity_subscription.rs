@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::{component::Component, entity::Entity};
 
-use rx_bevy_core::{SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithContext};
+use rx_bevy_core::{SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext};
 
 use crate::ContextWithCommands;
 
@@ -28,7 +28,7 @@ where
 	}
 }
 
-impl<'c, Context> WithContext for EntitySubscription<'c, Context>
+impl<'c, Context> WithSubscriptionContext for EntitySubscription<'c, Context>
 where
 	Context: ContextWithCommands<'c>,
 {

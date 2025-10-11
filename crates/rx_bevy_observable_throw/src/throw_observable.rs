@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalBound, SignalContext, Subscriber, SubscriptionHandle,
-	WithContext,
+	Observable, ObservableOutput, SignalBound, SubscriptionContext, Subscriber, SubscriptionHandle,
+	WithSubscriptionContext,
 };
 use rx_bevy_subscription_inert::InertSubscription;
 
@@ -43,10 +43,10 @@ where
 	type OutError = OutError;
 }
 
-impl<OutError, Context> WithContext for ThrowObservable<OutError, Context>
+impl<OutError, Context> WithSubscriptionContext for ThrowObservable<OutError, Context>
 where
 	OutError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -54,7 +54,7 @@ where
 impl<OutError, Context> Observable for ThrowObservable<OutError, Context>
 where
 	OutError: SignalBound + Clone,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Subscription = InertSubscription<Context>;
 
@@ -76,14 +76,14 @@ where
 mod tests {
 	use super::*;
 
-	use rx_bevy_core::DropSafeSignalContext;
+	use rx_bevy_core::DropSafeSubscriptionContext;
 	use rx_bevy_testing::prelude::*;
 
 	#[test]
 	fn should_emit_single_value() {
 		let error = "error";
 		let mut observable = ThrowObservable::new(error);
-		let mock_observer = MockObserver::<_, _, DropSafeSignalContext>::default();
+		let mock_observer = MockObserver::<_, _, DropSafeSubscriptionContext>::default();
 		let mut mock_context = MockContext::default();
 
 		let _s = observable.subscribe(mock_observer, &mut mock_context);

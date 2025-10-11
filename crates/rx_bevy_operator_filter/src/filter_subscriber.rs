@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
@@ -33,7 +33,7 @@ where
 	}
 }
 
-impl<In, InError, Filter, Destination> WithContext
+impl<In, InError, Filter, Destination> WithSubscriptionContext
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
 	In: SignalBound,

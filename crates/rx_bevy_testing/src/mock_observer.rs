@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SignalContextDropSafety, SubscriberNotification,
-	SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionContextDropSafety,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::MockContext;
@@ -12,7 +12,7 @@ pub struct MockObserver<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	pub closed: bool,
 	_phantom_data: PhantomData<(In, InError, DropSafety)>,
@@ -22,7 +22,7 @@ impl<In, InError, DropSafety> ObserverInput for MockObserver<In, InError, DropSa
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	type In = In;
 	type InError = InError;
@@ -32,7 +32,7 @@ impl<In, InError, DropSafety> Observer for MockObserver<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		context.push(SubscriberNotification::Next(next));
@@ -52,18 +52,18 @@ impl<In, InError, DropSafety> Tickable for MockObserver<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		context.push(SubscriberNotification::Tick(tick));
 	}
 }
 
-impl<In, InError, DropSafety> WithContext for MockObserver<In, InError, DropSafety>
+impl<In, InError, DropSafety> WithSubscriptionContext for MockObserver<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	type Context = MockContext<In, InError, DropSafety>;
 }
@@ -72,7 +72,7 @@ impl<In, InError, DropSafety> SubscriptionLike for MockObserver<In, InError, Dro
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -102,7 +102,7 @@ impl<In, InError, DropSafety> Default for MockObserver<In, InError, DropSafety>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	DropSafety: SignalContextDropSafety,
+	DropSafety: SubscriptionContextDropSafety,
 {
 	fn default() -> Self {
 		Self {

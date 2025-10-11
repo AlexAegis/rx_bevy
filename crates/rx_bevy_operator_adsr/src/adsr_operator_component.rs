@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+	ObservableOutput, ObserverInput, Operator, SignalBound, SubscriptionContext, Subscriber,
 };
 
 use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
@@ -12,7 +12,7 @@ use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
 pub struct AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SignalContext + 'static,
+	Context: SubscriptionContext + 'static,
 {
 	options: AdsrOperatorOptions,
 	_phantom_data: PhantomData<(InError, fn(Context))>,
@@ -21,7 +21,7 @@ where
 impl<InError, Context> AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SignalContext + 'static,
+	Context: SubscriptionContext + 'static,
 {
 	pub fn new(options: AdsrOperatorOptions) -> Self {
 		Self {
@@ -34,7 +34,7 @@ where
 impl<InError, Context> Operator for AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SignalContext + 'static,
+	Context: SubscriptionContext + 'static,
 {
 	type Context = Context;
 
@@ -64,7 +64,7 @@ where
 impl<InError, Context> ObserverInput for AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SignalContext + 'static,
+	Context: SubscriptionContext + 'static,
 {
 	type In = bool;
 	type InError = InError;
@@ -73,7 +73,7 @@ where
 impl<InError, Context> ObservableOutput for AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SignalContext + 'static,
+	Context: SubscriptionContext + 'static,
 {
 	type Out = AdsrSignal;
 	type OutError = InError;

@@ -61,7 +61,7 @@ where
 	type InError = InError;
 }
 
-// impl<In, InError> SignalContext for CommandSubscriber<In, InError>
+// impl<In, InError> SubscriptionContext for CommandSubscriber<In, InError>
 // where
 // 	In: SignalBound,
 // 	InError: SignalBound,

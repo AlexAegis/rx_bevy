@@ -18,7 +18,7 @@ pub trait ObservableExtensionSkip: Observable + Sized {
 		SkipOperator<
 			Self::Out,
 			Self::OutError,
-			<Self::Subscription as rx_bevy_core::WithContext>::Context,
+			<Self::Subscription as rx_bevy_core::WithSubscriptionContext>::Context,
 		>,
 	> {
 		Pipe::new(self, SkipOperator::new(count))

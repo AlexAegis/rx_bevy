@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithContext,
+	Tickable, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -36,7 +36,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithContext for IdentitySubscriber<Destination>
+impl<Destination> WithSubscriptionContext for IdentitySubscriber<Destination>
 where
 	Destination: Subscriber,
 {

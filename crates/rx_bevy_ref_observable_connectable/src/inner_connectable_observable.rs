@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalContext, SubjectLike, Subscriber, SubscriptionCollection,
-	SubscriptionHandle, SubscriptionLike, Teardown, WithContext,
+	Observable, ObservableOutput, SubscriptionContext, SubjectLike, Subscriber, SubscriptionCollection,
+	SubscriptionHandle, SubscriptionLike, Teardown, WithSubscriptionContext,
 };
 
 use crate::{Connectable, ConnectableOptions};
@@ -131,7 +131,7 @@ where
 
 	fn connect(
 		&mut self,
-		context: &mut <Self::ConnectionSubscription as WithContext>::Context,
+		context: &mut <Self::ConnectionSubscription as WithSubscriptionContext>::Context,
 	) -> SubscriptionHandle<Self::ConnectionSubscription> {
 		self.get_active_connection().unwrap_or_else(|| {
 			let connector = self.get_connector(context).clone();
@@ -149,7 +149,7 @@ where
 	}
 }
 
-impl<Source, ConnectorCreator, Connector> WithContext
+impl<Source, ConnectorCreator, Connector> WithSubscriptionContext
 	for InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,

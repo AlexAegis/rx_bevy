@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+	ObservableOutput, ObserverInput, Operator, SignalBound, SubscriptionContext, Subscriber,
 };
 
 use crate::TapNextSubscriber;
@@ -32,7 +32,7 @@ where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone + Send + Sync,
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
@@ -65,7 +65,7 @@ where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Out = In;
 	type OutError = InError;
@@ -76,7 +76,7 @@ where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
@@ -87,7 +87,7 @@ where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Context) + Clone,
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::{
 	DestinationSharedTypes, DestinationSharer, Observer, ObserverInput, SharedDestination,
-	Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 /// A SharedSubscriber is a subscriber that guarantees that if you clone it,
@@ -82,7 +82,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithContext for SharedSubscriber<Destination>
+impl<Destination> WithSubscriptionContext for SharedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {

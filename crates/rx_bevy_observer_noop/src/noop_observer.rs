@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SignalContext, SubscriptionLike, Teardown, Tickable,
-	WithContext,
+	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionLike, Teardown, Tickable,
+	WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ impl<In, InError, Context> Observer for NoopObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn next(&mut self, _next: Self::In, _context: &mut Self::Context) {}
 
@@ -42,16 +42,16 @@ impl<In, InError, Context> Tickable for NoopObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, _tick: rx_bevy_core::Tick, _context: &mut Self::Context) {}
 }
 
-impl<In, InError, Context> WithContext for NoopObserver<In, InError, Context>
+impl<In, InError, Context> WithSubscriptionContext for NoopObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -60,7 +60,7 @@ impl<In, InError, Context> SubscriptionLike for NoopObserver<In, InError, Contex
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {

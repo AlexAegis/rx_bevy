@@ -1,6 +1,7 @@
 use bevy_time::{Timer, TimerMode};
 use rx_bevy_core::{
-	SignalContext, Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable, WithContext,
+	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Tick, Tickable,
+	WithSubscriptionContext,
 };
 
 use crate::IntervalObservableOptions;
@@ -8,7 +9,7 @@ use crate::IntervalObservableOptions;
 // TODO: Ensure that if a tick loops the timer over multiple times, all of them are counted and emitted
 pub struct IntervalSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	timer: Timer,
 	count: usize,
@@ -21,7 +22,7 @@ where
 
 impl<Context> IntervalSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new(
 		destination: impl Subscriber<In = usize, InError = (), Context = Context> + 'static,
@@ -41,16 +42,16 @@ where
 	}
 }
 
-impl<Context> WithContext for IntervalSubscription<Context>
+impl<Context> WithSubscriptionContext for IntervalSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
 
 impl<Context> Tickable for IntervalSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.timer.tick(tick.delta);
@@ -67,7 +68,7 @@ where
 
 impl<Context> SubscriptionLike for IntervalSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
 		self.teardown.is_closed()
@@ -93,7 +94,7 @@ where
 
 impl<Context> Drop for IntervalSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

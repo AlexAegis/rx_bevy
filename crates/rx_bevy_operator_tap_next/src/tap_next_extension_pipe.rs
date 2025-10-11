@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, SignalContext};
+use rx_bevy_core::{Observable, SubscriptionContext};
 use rx_bevy_ref_pipe::Pipe;
 
 use crate::TapNextOperator;
@@ -9,7 +9,7 @@ pub fn tap_next<In, InError, OnNext, Context>(
 ) -> TapNextOperator<In, InError, OnNext, Context>
 where
 	OnNext: for<'a> Fn(&'a In, &'a mut Context) + Clone + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	TapNextOperator::new(callback)
 }

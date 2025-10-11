@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct MapIntoSubscriber<In, InError, Out, OutError, Destination>
@@ -37,7 +37,7 @@ where
 	}
 }
 
-impl<In, InError, Out, OutError, Destination> WithContext
+impl<In, InError, Out, OutError, Destination> WithSubscriptionContext
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
 	In: SignalBound + Into<Out>,

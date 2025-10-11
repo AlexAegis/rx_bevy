@@ -1,11 +1,11 @@
-use rx_bevy_core::SignalContext;
+use rx_bevy_core::SubscriptionContext;
 
 use crate::IteratorObservable;
 
 pub trait IntoIteratorObservableExtension: IntoIterator + Clone {
 	fn into_observable<Context>(self) -> IteratorObservable<Self, Context>
 	where
-		Context: SignalContext,
+		Context: SubscriptionContext,
 	{
 		IteratorObservable::new(self)
 	}

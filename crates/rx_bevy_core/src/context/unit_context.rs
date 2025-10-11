@@ -1,10 +1,10 @@
 use crate::{
-	ArcSubscriber, DropSafeSignalContext, ErasedArcSubscriber, SignalBound, SignalContext,
-	Subscriber, WithContext,
+	ArcSubscriber, DropSafeSubscriptionContext, ErasedArcSubscriber, SignalBound, Subscriber,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
-impl SignalContext for () {
-	type DropSafety = DropSafeSignalContext;
+impl SubscriptionContext for () {
+	type DropSafety = DropSafeSubscriptionContext;
 
 	type Sharer<Destination>
 		= ArcSubscriber<Destination>
@@ -21,6 +21,6 @@ impl SignalContext for () {
 	fn create_context_to_unsubscribe_on_drop() -> Self {}
 }
 
-impl WithContext for () {
+impl WithSubscriptionContext for () {
 	type Context = ();
 }

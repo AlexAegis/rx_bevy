@@ -1,8 +1,8 @@
 use short_type_name::short_type_name;
 
 use crate::{
-	NotifiableSubscription, SignalContext, SubscriptionLike, SubscriptionNotification, Teardown,
-	Tick, Tickable, WithContext,
+	NotifiableSubscription, SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown,
+	Tick, Tickable, WithSubscriptionContext,
 };
 use std::fmt::Debug;
 
@@ -19,7 +19,7 @@ use std::fmt::Debug;
 /// subscription itself is dropped.
 pub struct SubscriptionData<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	is_closed: bool,
 	/// Must be stored as function reference or else Context would be forced to
@@ -33,7 +33,7 @@ where
 
 impl<Context> SubscriptionData<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new_from_resource(subscription: NotifiableSubscription<Context>) -> Self {
 		let is_closed = subscription.is_closed();
@@ -66,7 +66,7 @@ where
 
 impl<Context> Default for SubscriptionData<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -77,16 +77,16 @@ where
 	}
 }
 
-impl<Context> WithContext for SubscriptionData<Context>
+impl<Context> WithSubscriptionContext for SubscriptionData<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
 
 impl<Context> Tickable for SubscriptionData<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		for notifiable_subscription in self.notifiable_subscriptions.iter_mut() {
@@ -97,7 +97,7 @@ where
 
 impl<Context> SubscriptionLike for SubscriptionData<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -140,7 +140,7 @@ where
 
 impl<Context> Debug for SubscriptionData<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.write_fmt(format_args!(
@@ -154,7 +154,7 @@ where
 
 impl<Context> Drop for SubscriptionData<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

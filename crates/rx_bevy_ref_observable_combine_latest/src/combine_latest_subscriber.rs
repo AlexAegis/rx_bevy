@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	Tick, Tickable, WithSubscriptionContext,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -58,7 +58,7 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<Destination, O1, O2> WithContext for CombineLatestSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> WithSubscriptionContext for CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
 	O1: 'static + Send + Sync + Observable,

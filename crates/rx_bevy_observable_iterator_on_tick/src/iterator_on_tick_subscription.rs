@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	SignalBound, SignalContext, Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable,
-	WithContext,
+	SignalBound, SubscriptionContext, Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable,
+	WithSubscriptionContext,
 };
 
 use crate::OnTickObservableOptions;
@@ -9,7 +9,7 @@ pub struct OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
 	Iterator::Item: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	observed_ticks: usize,
 	iterator: Iterator::IntoIter,
@@ -23,7 +23,7 @@ impl<Iterator, Context> OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
 	Iterator::Item: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new(
 		mut destination: impl Subscriber<In = Iterator::Item, InError = (), Context = Context> + 'static,
@@ -48,11 +48,11 @@ where
 	}
 }
 
-impl<Iterator, Context> WithContext for OnTickIteratorSubscription<Iterator, Context>
+impl<Iterator, Context> WithSubscriptionContext for OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
 	Iterator::Item: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -61,7 +61,7 @@ impl<Iterator, Context> Tickable for OnTickIteratorSubscription<Iterator, Contex
 where
 	Iterator: IntoIterator,
 	Iterator::Item: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, _tick: Tick, context: &mut Self::Context) {
 		self.observed_ticks += 1;
@@ -81,7 +81,7 @@ impl<Iterator, Context> SubscriptionLike for OnTickIteratorSubscription<Iterator
 where
 	Iterator: IntoIterator,
 	Iterator::Item: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
 		self.teardown.is_closed()
@@ -109,7 +109,7 @@ impl<Iterator, Context> Drop for OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
 	Iterator::Item: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

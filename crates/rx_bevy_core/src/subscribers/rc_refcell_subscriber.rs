@@ -1,8 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike, Tickable, WithContext};
+use crate::{Observer, ObserverInput, Subscriber, SubscriptionLike, Tickable, WithSubscriptionContext};
 
-impl<S> WithContext for Rc<RefCell<S>>
+impl<S> WithSubscriptionContext for Rc<RefCell<S>>
 where
 	S: Subscriber,
 {

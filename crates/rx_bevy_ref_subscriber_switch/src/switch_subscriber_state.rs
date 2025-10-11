@@ -5,7 +5,7 @@ use std::{
 
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
-	SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct SwitchSubscriberState<InnerObservable, Destination>
@@ -224,7 +224,7 @@ where
 	type InError = InnerObservable::OutError;
 }
 
-impl<InnerObservable, Destination> WithContext
+impl<InnerObservable, Destination> WithSubscriptionContext
 	for SwitchSubscriberState<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionData, SubscriptionHandle,
-	WithContext,
+	WithSubscriptionContext,
 };
 use rx_bevy_operator_map_into::MapIntoSubscriber;
 use rx_bevy_ref_subscriber_rc::RcSubscriber;
@@ -75,7 +75,7 @@ where
 	type OutError = OutError;
 }
 
-impl<Out, OutError, O1, O2> WithContext for MergeObservable<Out, OutError, O1, O2>
+impl<Out, OutError, O1, O2> WithSubscriptionContext for MergeObservable<Out, OutError, O1, O2>
 where
 	Out: SignalBound,
 	OutError: SignalBound,

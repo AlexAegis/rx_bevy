@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionHandle, SubscriptionLike,
-	Teardown, WithContext,
+	Teardown, WithSubscriptionContext,
 };
 
 use crate::{
@@ -48,7 +48,7 @@ where
 	type OutError = Connector::OutError;
 }
 
-impl<Source, ConnectorCreator, Connector> WithContext
+impl<Source, ConnectorCreator, Connector> WithSubscriptionContext
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
@@ -147,7 +147,7 @@ where
 
 	fn connect(
 		&mut self,
-		context: &mut <Self::ConnectionSubscription as WithContext>::Context,
+		context: &mut <Self::ConnectionSubscription as WithSubscriptionContext>::Context,
 	) -> SubscriptionHandle<Self::ConnectionSubscription> {
 		print!("connectable connect about to lock..");
 

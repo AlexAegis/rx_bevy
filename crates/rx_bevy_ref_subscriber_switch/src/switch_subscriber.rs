@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, SignalContext, Subscriber, SubscriptionCollection,
-	SubscriptionLike, Teardown, Tick, Tickable, WithContext,
+	Observable, Observer, ObserverInput, Subscriber, SubscriptionCollection, SubscriptionContext,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::SwitchSubscriberState;
@@ -64,7 +64,8 @@ where
 	type InError = InnerObservable::OutError;
 }
 
-impl<InnerObservable, Destination> WithContext for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination> WithSubscriptionContext
+	for SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,

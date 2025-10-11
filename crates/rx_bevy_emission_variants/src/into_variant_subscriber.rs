@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -38,7 +38,7 @@ where
 	}
 }
 
-impl<O1, O2, Destination> WithContext for IntoVariant1of2Subscriber<O1, O2, Destination>
+impl<O1, O2, Destination> WithSubscriptionContext for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
@@ -49,7 +49,7 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
-	type Context = <Destination as WithContext>::Context;
+	type Context = <Destination as WithSubscriptionContext>::Context;
 }
 
 impl<O1, O2, Destination> Observer for IntoVariant1of2Subscriber<O1, O2, Destination>
@@ -117,7 +117,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Destination as WithContext>::Context) {
+	fn unsubscribe(&mut self, context: &mut <Destination as WithSubscriptionContext>::Context) {
 		self.destination.unsubscribe(context);
 	}
 
@@ -187,7 +187,7 @@ where
 	}
 }
 
-impl<O1, O2, Destination> WithContext for IntoVariant2of2Subscriber<O1, O2, Destination>
+impl<O1, O2, Destination> WithSubscriptionContext for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Observable,
@@ -198,7 +198,7 @@ where
 			InError = <Self as ObservableOutput>::OutError,
 		>,
 {
-	type Context = <Destination as WithContext>::Context;
+	type Context = <Destination as WithSubscriptionContext>::Context;
 }
 
 impl<O1, O2, Destination> Observer for IntoVariant2of2Subscriber<O1, O2, Destination>
@@ -266,7 +266,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Destination as WithContext>::Context) {
+	fn unsubscribe(&mut self, context: &mut <Destination as WithSubscriptionContext>::Context) {
 		self.destination.unsubscribe(context);
 	}
 

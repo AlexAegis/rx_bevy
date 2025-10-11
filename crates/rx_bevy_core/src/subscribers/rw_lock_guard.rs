@@ -1,13 +1,13 @@
 use std::sync::{RwLockReadGuard, RwLockWriteGuard};
 
-use crate::{ObserverInput, SignalBound, SignalContext, Subscriber, WithContext};
+use crate::{ObserverInput, SignalBound, SubscriptionContext, Subscriber, WithSubscriptionContext};
 
-impl<'a, In, InError, Context> WithContext
+impl<'a, In, InError, Context> WithSubscriptionContext
 	for RwLockReadGuard<'a, dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -17,18 +17,18 @@ impl<'a, In, InError, Context> ObserverInput
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<'a, In, InError, Context> WithContext
+impl<'a, In, InError, Context> WithSubscriptionContext
 	for RwLockWriteGuard<'a, dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -38,7 +38,7 @@ impl<'a, In, InError, Context> ObserverInput
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;

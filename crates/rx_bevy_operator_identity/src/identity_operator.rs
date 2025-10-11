@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+	ObservableOutput, ObserverInput, Operator, SignalBound, SubscriptionContext, Subscriber,
 };
 
 use crate::IdentitySubscriber;
@@ -53,7 +53,7 @@ impl<In, InError, Context> Operator for IdentityOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext + 'static,
+	Context: SubscriptionContext + 'static,
 {
 	type Context = Context;
 	type Subscriber<Destination>

@@ -4,7 +4,7 @@ use short_type_name::short_type_name;
 
 use crate::{
 	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
-	Teardown, Tickable, WithContext,
+	Teardown, Tickable, WithSubscriptionContext,
 };
 
 pub struct ArcSubscriber<Destination>
@@ -132,7 +132,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithContext for ArcSubscriber<Destination>
+impl<Destination> WithSubscriptionContext for ArcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {

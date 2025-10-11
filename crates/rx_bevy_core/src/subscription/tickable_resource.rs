@@ -1,5 +1,5 @@
 use crate::{
-	SignalContext, SubscriptionLike, SubscriptionNotification, TickableSubscription, WithContext,
+	SubscriptionContext, SubscriptionLike, SubscriptionNotification, TickableSubscription, WithSubscriptionContext,
 };
 
 /// A teardown is a closure which owns resources, by the nature of them being
@@ -20,7 +20,7 @@ use crate::{
 /// where you can add anything that is `Into<TickableResource>` such as Subscriptions.
 pub struct NotifiableSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	notify_fn:
 		Option<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context) + Send + Sync>>,
@@ -28,7 +28,7 @@ where
 
 impl<Context> NotifiableSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new<F>(f: F) -> Self
 	where
@@ -74,16 +74,16 @@ where
 	}
 }
 
-impl<Context> WithContext for NotifiableSubscription<Context>
+impl<Context> WithSubscriptionContext for NotifiableSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
 
 impl<Context> SubscriptionLike for NotifiableSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
 		self.notify_fn.is_none()
@@ -108,7 +108,7 @@ where
 
 impl<Context> Default for NotifiableSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self { notify_fn: None }
@@ -148,7 +148,7 @@ where
 
 impl<Context> Drop for NotifiableSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

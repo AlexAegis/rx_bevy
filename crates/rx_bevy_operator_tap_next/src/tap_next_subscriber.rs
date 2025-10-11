@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
@@ -33,7 +33,7 @@ where
 	}
 }
 
-impl<In, InError, OnNext, Destination> WithContext
+impl<In, InError, OnNext, Destination> WithSubscriptionContext
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithContext,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -35,7 +35,7 @@ where
 	}
 }
 
-impl<InError, Destination> WithContext for AdsrSubscriber<InError, Destination>
+impl<InError, Destination> WithSubscriptionContext for AdsrSubscriber<InError, Destination>
 where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 	InError: SignalBound,

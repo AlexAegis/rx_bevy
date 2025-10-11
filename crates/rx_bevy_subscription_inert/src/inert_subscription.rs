@@ -1,5 +1,5 @@
 use rx_bevy_core::{
-	SignalContext, SubscriptionLike, Teardown, Tick, Tickable, TickableSubscription, WithContext,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, TickableSubscription, WithSubscriptionContext,
 };
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
@@ -11,7 +11,7 @@ use rx_bevy_core::{
 /// they are unsubscribed, and that is guaranteed here.
 pub struct InertSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	tickable: Box<dyn Tickable<Context = Context> + Send + Sync>,
 	// TODO: Check every PhantomData for variance
@@ -19,7 +19,7 @@ where
 
 impl<Context> InertSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn new(
 		mut destination: impl TickableSubscription<Context = Context> + 'static + Send + Sync,
@@ -33,16 +33,16 @@ where
 	}
 }
 
-impl<Context> WithContext for InertSubscription<Context>
+impl<Context> WithSubscriptionContext for InertSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
 
 impl<Context> Tickable for InertSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.tickable.tick(tick, context);
@@ -51,7 +51,7 @@ where
 
 impl<Context> SubscriptionLike for InertSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
 		true
@@ -73,7 +73,7 @@ where
 
 impl<Context> Drop for InertSubscription<Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

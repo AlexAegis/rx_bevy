@@ -1,8 +1,8 @@
-use crate::{ObserverInput, SignalContext, Subscriber, WithContext};
+use crate::{ObserverInput, SubscriptionContext, Subscriber, WithSubscriptionContext};
 
 /// A [DestinationSharer] that can create a [SharedDestination] out of a
 /// destination subscriber.
-pub trait DestinationSharer: ObserverInput + WithContext {
+pub trait DestinationSharer: ObserverInput + WithSubscriptionContext {
 	type Shared<Destination>: SharedDestination<Destination>
 	where
 		Destination: 'static
@@ -68,6 +68,6 @@ impl<Destination> DestinationSharedTypes for Destination
 where
 	Destination: Subscriber + 'static,
 {
-	type Sharer = <Self::Context as SignalContext>::Sharer<Self>;
+	type Sharer = <Self::Context as SubscriptionContext>::Sharer<Self>;
 	type Shared = <Self::Sharer as DestinationSharer>::Shared<Self>;
 }

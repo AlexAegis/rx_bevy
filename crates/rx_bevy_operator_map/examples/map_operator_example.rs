@@ -5,6 +5,7 @@ use rx_bevy::prelude::*;
 fn main() {
 	let _s = (1..=5)
 		.into_observable()
-		.map(|i| (format!("the double of {i} is: "), i * 2))
+		.map(|i| i * 2)
+		.skip(1)
 		.subscribe(PrintObserver::new("map_operator"), &mut ());
 }

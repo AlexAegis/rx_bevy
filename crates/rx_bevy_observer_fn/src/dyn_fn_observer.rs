@@ -1,12 +1,12 @@
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SignalContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tick, Tickable, WithContext,
+	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 pub struct DynFnObserver<In, Error, Context>
 where
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	on_next: Option<Box<dyn FnMut(In, &mut Context) + Send + Sync>>,
 	on_error: Option<Box<dyn FnMut(Error, &mut Context) + Send + Sync>>,
@@ -20,7 +20,7 @@ impl<In, InError, Context> DynFnObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context) + Send + Sync>(
 		mut self,
@@ -67,17 +67,17 @@ impl<In, InError, Context> ObserverInput for DynFnObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Context> WithContext for DynFnObserver<In, InError, Context>
+impl<In, InError, Context> WithSubscriptionContext for DynFnObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 }
@@ -86,7 +86,7 @@ impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn next(&mut self, next: In, context: &mut Self::Context) {
 		if !self.is_closed()
@@ -123,7 +123,7 @@ impl<In, InError, Context> Tickable for DynFnObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut Self::Context) {
 		if let Some(on_tick) = &mut self.on_tick {
@@ -136,7 +136,7 @@ impl<In, InError, Context> SubscriptionLike for DynFnObserver<In, InError, Conte
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -164,7 +164,7 @@ impl<In, InError, Context> Default for DynFnObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {

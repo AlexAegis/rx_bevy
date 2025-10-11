@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, SignalContext, Subscriber,
+	ObservableOutput, ObserverInput, Operator, SignalBound, SubscriptionContext, Subscriber,
 };
 
 use crate::LiftResultSubscriber;
@@ -51,7 +51,7 @@ where
 	ResultInError: SignalBound,
 	InError: SignalBound,
 	InErrorToResultError: 'static + Fn(InError) -> ResultInError + Clone + Send + Sync,
-	Context: SignalContext,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>

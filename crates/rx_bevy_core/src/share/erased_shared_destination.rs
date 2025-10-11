@@ -1,10 +1,10 @@
-use crate::{ObserverInput, SignalContext, Subscriber, WithContext};
+use crate::{ObserverInput, SubscriptionContext, Subscriber, WithSubscriptionContext};
 
 /// An [ErasedDestinationSharer] that can create an [ErasedSharedDestination]
 /// out of a destination.
 ///
 /// Mainly used by subjects.
-pub trait ErasedDestinationSharer: ObserverInput + WithContext {
+pub trait ErasedDestinationSharer: ObserverInput + WithSubscriptionContext {
 	type Shared: ErasedSharedDestination<In = Self::In, InError = Self::InError, Context = Self::Context>;
 
 	fn share<Destination>(destination: Destination, context: &mut Self::Context) -> Self::Shared
@@ -57,7 +57,7 @@ where
 	Destination: Subscriber + 'static,
 {
 	type Sharer =
-		<Self::Context as SignalContext>::ErasedSharer<Destination::In, Destination::InError>;
+		<Self::Context as SubscriptionContext>::ErasedSharer<Destination::In, Destination::InError>;
 	type Shared = <Self::Sharer as ErasedDestinationSharer>::Shared;
 	type Access = <Self::Shared as ErasedSharedDestination>::Access;
 }

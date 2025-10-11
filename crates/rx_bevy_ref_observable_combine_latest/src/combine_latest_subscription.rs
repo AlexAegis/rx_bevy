@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	SubscriptionData, SubscriptionHandle, SubscriptionLike, Tick, Tickable, TickableSubscription,
-	WithContext,
+	WithSubscriptionContext,
 };
 
 pub struct CombineLatestSubscription<S1, S2>
@@ -67,7 +67,7 @@ where
 	}
 }
 
-impl<S1, S2> WithContext for CombineLatestSubscription<S1, S2>
+impl<S1, S2> WithSubscriptionContext for CombineLatestSubscription<S1, S2>
 where
 	S1: TickableSubscription,
 	S2: TickableSubscription<Context = S1::Context>,

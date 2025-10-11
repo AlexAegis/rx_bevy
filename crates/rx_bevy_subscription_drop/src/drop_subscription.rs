@@ -1,21 +1,21 @@
 use rx_bevy_core::{
-	DropSafeSignalContext, SignalContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
-	Tickable, TickableSubscription, WithContext,
+	DropSafeSubscriptionContext, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick,
+	Tickable, TickableSubscription, WithSubscriptionContext,
 };
 
 /// A DropSubscription is a type of Subscription Observables may use, it
-/// requires the subscriptions SignalContext to be irrelevant during
+/// requires the subscriptions SubscriptionContext to be irrelevant during
 /// unsubscription.
 pub struct DropSubscription<Context>
 where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
+	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
 	subscription_data: SubscriptionData<Context>,
 }
 
 impl<Context> DropSubscription<Context>
 where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
+	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
 	pub fn new<S>(subscription: S) -> Self
 	where
@@ -29,7 +29,7 @@ where
 
 impl<Context> Default for DropSubscription<Context>
 where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
+	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
 	fn default() -> Self {
 		Self {
@@ -38,16 +38,16 @@ where
 	}
 }
 
-impl<Context> WithContext for DropSubscription<Context>
+impl<Context> WithSubscriptionContext for DropSubscription<Context>
 where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
+	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
 	type Context = Context;
 }
 
 impl<Context> Tickable for DropSubscription<Context>
 where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
+	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		self.subscription_data.tick(tick, context);
@@ -56,7 +56,7 @@ where
 
 impl<Context> SubscriptionLike for DropSubscription<Context>
 where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
+	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
 	fn is_closed(&self) -> bool {
 		self.subscription_data.is_closed()
@@ -79,7 +79,7 @@ where
 
 impl<Context> Drop for DropSubscription<Context>
 where
-	Context: SignalContext<DropSafety = DropSafeSignalContext>,
+	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
 	fn drop(&mut self) {
 		// While we require the context to be drop-safe, some contexts (like

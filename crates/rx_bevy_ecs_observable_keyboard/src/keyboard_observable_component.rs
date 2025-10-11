@@ -50,13 +50,13 @@ impl ObservableComponent for KeyboardObservableComponent {
 // 	fn subscribe<'c, Destination>(
 // 		&mut self,
 // 		destination: Destination,
-// 		context: &mut <Destination as rx_bevy_core::SignalContext>::Context,
+// 		context: &mut <Destination as rx_bevy_core::SubscriptionContext>::Context,
 // 	) -> Self::Subscription
 // 	where
 // 		Destination: rx_bevy_core::Subscriber<
 // 				In = Self::Out,
 // 				InError = Self::OutError,
-// 				Context = <Self::Subscription as rx_bevy_core::SignalContext>::Context,
+// 				Context = <Self::Subscription as rx_bevy_core::SubscriptionContext>::Context,
 // 			>,
 // 	{
 // 	}
