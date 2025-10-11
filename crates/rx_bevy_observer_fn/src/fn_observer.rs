@@ -10,10 +10,10 @@ pub struct FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context),
-	OnError: FnMut(InError, &mut Context),
-	OnComplete: FnMut(&mut Context),
-	OnTick: FnMut(Tick, &mut Context),
+	OnNext: FnMut(In, &mut Context) + Send + Sync,
+	OnError: FnMut(InError, &mut Context) + Send + Sync,
+	OnComplete: FnMut(&mut Context) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
 	Context: SignalContext,
 {
 	on_next: OnNext,
@@ -21,7 +21,7 @@ where
 	on_complete: OnComplete,
 	on_tick: OnTick,
 	teardown: SubscriptionData<Context>,
-	_phantom_data: PhantomData<*mut (In, InError)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
@@ -29,10 +29,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context),
-	OnError: FnMut(InError, &mut Context),
-	OnComplete: FnMut(&mut Context),
-	OnTick: FnMut(Tick, &mut Context),
+	OnNext: FnMut(In, &mut Context) + Send + Sync,
+	OnError: FnMut(InError, &mut Context) + Send + Sync,
+	OnComplete: FnMut(&mut Context) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
 	Context: SignalContext,
 {
 	pub fn new(
@@ -57,10 +57,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> ObserverInput
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context),
-	OnError: FnMut(InError, &mut Context),
-	OnComplete: FnMut(&mut Context),
-	OnTick: FnMut(Tick, &mut Context),
+	OnNext: FnMut(In, &mut Context) + Send + Sync,
+	OnError: FnMut(InError, &mut Context) + Send + Sync,
+	OnComplete: FnMut(&mut Context) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
 	Context: SignalContext,
 {
 	type In = In;
@@ -72,10 +72,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> WithContext
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context),
-	OnError: FnMut(InError, &mut Context),
-	OnComplete: FnMut(&mut Context),
-	OnTick: FnMut(Tick, &mut Context),
+	OnNext: FnMut(In, &mut Context) + Send + Sync,
+	OnError: FnMut(InError, &mut Context) + Send + Sync,
+	OnComplete: FnMut(&mut Context) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
 	Context: SignalContext,
 {
 	type Context = Context;
@@ -86,10 +86,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Observer
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context),
-	OnError: FnMut(InError, &mut Context),
-	OnComplete: FnMut(&mut Context),
-	OnTick: FnMut(Tick, &mut Context),
+	OnNext: FnMut(In, &mut Context) + Send + Sync,
+	OnError: FnMut(InError, &mut Context) + Send + Sync,
+	OnComplete: FnMut(&mut Context) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
 	Context: SignalContext,
 {
 	fn next(&mut self, next: In, context: &mut Self::Context) {
@@ -117,10 +117,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Tickable
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context),
-	OnError: FnMut(InError, &mut Context),
-	OnComplete: FnMut(&mut Context),
-	OnTick: FnMut(Tick, &mut Context),
+	OnNext: FnMut(In, &mut Context) + Send + Sync,
+	OnError: FnMut(InError, &mut Context) + Send + Sync,
+	OnComplete: FnMut(&mut Context) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
 	Context: SignalContext,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
@@ -133,10 +133,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> SubscriptionLike
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context),
-	OnError: FnMut(InError, &mut Context),
-	OnComplete: FnMut(&mut Context),
-	OnTick: FnMut(Tick, &mut Context),
+	OnNext: FnMut(In, &mut Context) + Send + Sync,
+	OnError: FnMut(InError, &mut Context) + Send + Sync,
+	OnComplete: FnMut(&mut Context) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context) + Send + Sync,
 	Context: SignalContext,
 {
 	#[inline]

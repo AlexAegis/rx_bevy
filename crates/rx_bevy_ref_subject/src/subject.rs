@@ -155,10 +155,21 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		if !self.is_closed()
-			&& let Ok(mut multicast) = self.multicast.write()
-		{
-			multicast.unsubscribe(context);
+		if let Some((subscribers, teardown)) = {
+			let mut lock = self
+				.multicast
+				.write()
+				.expect("Subject multicast lock poisoned");
+
+			lock.close()
+		} {
+			for mut destination in subscribers {
+				destination.unsubscribe(context);
+			}
+
+			if let Some(mut teardown) = teardown {
+				teardown.unsubscribe(context);
+			}
 		}
 	}
 

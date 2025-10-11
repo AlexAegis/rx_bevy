@@ -1,3 +1,4 @@
+mod into_subscription_handle;
 mod subscription_data;
 mod subscription_handle;
 mod subscription_like;
@@ -7,6 +8,7 @@ mod tickable_resource;
 
 mod unit_subscription;
 
+pub use into_subscription_handle::*;
 pub use subscription_data::*;
 pub use subscription_handle::*;
 pub use subscription_like::*;
@@ -15,6 +17,7 @@ pub use teardown::*;
 pub use tickable_resource::*;
 
 pub mod prelude {
+	pub use super::into_subscription_handle::*;
 	pub use super::subscription_data::*;
 	pub use super::subscription_handle::*;
 	pub use super::subscription_like::*;

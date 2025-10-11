@@ -15,7 +15,7 @@ where
 	Context: SignalContext + 'static,
 {
 	options: AdsrOperatorOptions,
-	_phantom_data: PhantomData<(*mut InError, *mut Context)>,
+	_phantom_data: PhantomData<(InError, fn(Context))>,
 }
 
 impl<InError, Context> AdsrOperator<InError, Context>

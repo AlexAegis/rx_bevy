@@ -10,7 +10,7 @@ where
 {
 	pub(crate) connector_creator: ConnectorCreator,
 	pub(crate) unsubscribe_connector_on_disconnect: bool,
-	_phantom_data: PhantomData<*mut Connector>,
+	_phantom_data: PhantomData<Connector>,
 }
 
 impl<ConnectorCreator, Connector> ConnectableOptions<ConnectorCreator, Connector>

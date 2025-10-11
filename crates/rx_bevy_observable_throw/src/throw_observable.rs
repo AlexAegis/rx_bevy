@@ -88,6 +88,6 @@ mod tests {
 
 		let _s = observable.subscribe(mock_observer, &mut mock_context);
 
-		assert_eq!(mock_context.errors, vec![error]);
+		assert_eq!(mock_context.all_observed_errors(), vec![error]);
 	}
 }

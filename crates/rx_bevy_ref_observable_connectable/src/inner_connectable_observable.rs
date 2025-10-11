@@ -12,7 +12,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	/// Upon connection, the connector subject will subscribe to this source
 	/// observable
@@ -35,7 +34,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
@@ -88,7 +86,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	type Out = Connector::Out;
 	type OutError = Connector::OutError;
@@ -102,7 +99,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	type Subscription = Connector::Subscription;
 
@@ -130,7 +126,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	type ConnectionSubscription = Source::Subscription;
 
@@ -162,7 +157,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	type Context = Connector::Context;
 }
@@ -175,7 +169,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	fn is_closed(&self) -> bool {
 		self.is_connection_closed()

@@ -16,7 +16,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	connector: Arc<Mutex<InnerConnectableObservable<Source, ConnectorCreator, Connector>>>,
 }
@@ -28,7 +27,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
@@ -45,7 +43,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	type Out = Connector::Out;
 	type OutError = Connector::OutError;
@@ -58,7 +55,6 @@ where
 	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
 	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	type Context = Source::Context;
 }
@@ -70,7 +66,6 @@ where
 	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
 	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	type Subscription = Connector::Subscription;
 
@@ -101,7 +96,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	fn is_closed(&self) -> bool {
 		print!("connectable is_closed about to lock..");
@@ -148,7 +142,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	type ConnectionSubscription = Source::Subscription;
 
@@ -173,7 +166,6 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: Clone,
 {
 	fn clone(&self) -> Self {
 		Self {

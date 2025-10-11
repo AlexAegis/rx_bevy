@@ -58,7 +58,10 @@ impl<'c> SignalContext for CommandContext<'c> {
 mod test_command_context {
 	mod test_can_create_valid_system_that_can_create_context {
 
-		use bevy::app::App;
+		use bevy::app::{App, Update};
+		use bevy_ecs::system::{Commands, Query};
+
+		use crate::{CommandContext, EntitySubscription};
 
 		fn test_app() -> App {
 			let mut app = App::new();
@@ -67,7 +70,7 @@ mod test_command_context {
 		}
 
 		fn test_command_context_creating_system<'c>(
-			commands: Commands<'c>,
+			commands: Commands<'c, 'c>,
 			mut query: Query<&'c mut EntitySubscription<'c, CommandContext<'c>>>,
 		) {
 			let lens = query.as_query_lens();

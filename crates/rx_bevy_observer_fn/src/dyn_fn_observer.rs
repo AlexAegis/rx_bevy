@@ -8,11 +8,11 @@ pub struct DynFnObserver<In, Error, Context>
 where
 	Context: SignalContext,
 {
-	on_next: Option<Box<dyn FnMut(In, &mut Context)>>,
-	on_error: Option<Box<dyn FnMut(Error, &mut Context)>>,
-	on_complete: Option<Box<dyn FnOnce(&mut Context)>>,
-	on_tick: Option<Box<dyn FnMut(Tick, &mut Context)>>,
-	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context)>>,
+	on_next: Option<Box<dyn FnMut(In, &mut Context) + Send + Sync>>,
+	on_error: Option<Box<dyn FnMut(Error, &mut Context) + Send + Sync>>,
+	on_complete: Option<Box<dyn FnOnce(&mut Context) + Send + Sync>>,
+	on_tick: Option<Box<dyn FnMut(Tick, &mut Context) + Send + Sync>>,
+	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context) + Send + Sync>>,
 	teardown: SubscriptionData<Context>,
 }
 
@@ -22,12 +22,15 @@ where
 	InError: SignalBound,
 	Context: SignalContext,
 {
-	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context)>(mut self, on_next: OnNext) -> Self {
+	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context) + Send + Sync>(
+		mut self,
+		on_next: OnNext,
+	) -> Self {
 		self.on_next.replace(Box::new(on_next));
 		self
 	}
 
-	pub fn with_error<OnError: 'static + FnMut(InError, &mut Context)>(
+	pub fn with_error<OnError: 'static + FnMut(InError, &mut Context) + Send + Sync>(
 		mut self,
 		on_error: OnError,
 	) -> Self {
@@ -35,7 +38,7 @@ where
 		self
 	}
 
-	pub fn with_complete<OnComplete: 'static + FnOnce(&mut Context)>(
+	pub fn with_complete<OnComplete: 'static + FnOnce(&mut Context) + Send + Sync>(
 		mut self,
 		on_complete: OnComplete,
 	) -> Self {
@@ -51,7 +54,7 @@ where
 	/// used during the creation of the observer, which enables us to have
 	/// a nicer signature by leaving the context argument off from the method,
 	/// and making it chainable.
-	pub fn with_unsubscribe<OnUnsubscribe: 'static + FnOnce(&mut Context)>(
+	pub fn with_unsubscribe<OnUnsubscribe: 'static + FnOnce(&mut Context) + Send + Sync>(
 		mut self,
 		on_unsubscribe: OnUnsubscribe,
 	) -> Self {
