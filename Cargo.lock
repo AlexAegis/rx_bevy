@@ -4571,6 +4571,7 @@ dependencies = [
 name = "rx_bevy"
 version = "0.1.0"
 dependencies = [
+ "rx_bevy_context_ecs",
  "rx_bevy_core",
  "rx_bevy_ecs_observable_keyboard",
  "rx_bevy_observable_combine_latest",
@@ -4607,9 +4608,22 @@ dependencies = [
  "rx_bevy_subject_behavior",
  "rx_bevy_subject_replay",
  "rx_bevy_subscription_drop",
- "rx_bevy_subscription_entity",
  "rx_bevy_subscription_inert",
  "rx_bevy_testing",
+]
+
+[[package]]
+name = "rx_bevy_context_ecs"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_ecs",
+ "bevy_log",
+ "rx_bevy",
+ "rx_bevy_core",
+ "rx_bevy_testing",
+ "short_type_name",
+ "smallvec",
 ]
 
 [[package]]
@@ -4640,9 +4654,9 @@ dependencies = [
  "bevy_reflect",
  "examples_common",
  "rx_bevy",
+ "rx_bevy_context_ecs",
  "rx_bevy_core",
  "rx_bevy_plugin",
- "rx_bevy_subscription_entity",
  "rx_bevy_testing",
 ]
 
@@ -5115,20 +5129,6 @@ dependencies = [
  "rx_bevy",
  "rx_bevy_core",
  "rx_bevy_testing",
- "smallvec",
-]
-
-[[package]]
-name = "rx_bevy_subscription_entity"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_ecs",
- "bevy_log",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
- "short_type_name",
  "smallvec",
 ]
 

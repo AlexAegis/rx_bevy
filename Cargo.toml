@@ -123,7 +123,7 @@ rx_bevy_operator_tap_next = { path = "crates/rx_bevy_operator_tap_next" }
 rx_bevy_operator_try_capture = { path = "crates/rx_bevy_operator_try_capture" }
 # Subscriptions
 rx_bevy_subscription_drop = { path = "crates/rx_bevy_subscription_drop" }
-rx_bevy_subscription_entity = { path = "crates/rx_bevy_subscription_entity" }
+rx_bevy_context_ecs = { path = "crates/rx_bevy_context_ecs" }
 rx_bevy_subscription_inert = { path = "crates/rx_bevy_subscription_inert" }
 # Subjects
 rx_bevy_subject = { path = "crates/rx_bevy_subject" }

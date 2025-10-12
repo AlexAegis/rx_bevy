@@ -1,5 +1,5 @@
 [package]
-name = "rx_bevy_subscription_entity"
+name = "rx_bevy_context_ecs"
 description = "rx_bevy entity subscription, unsubscribes on despawn"
 version = "0.1.0"
 readme = "readme.md"

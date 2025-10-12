@@ -55,7 +55,7 @@ reflect = [
 [dependencies]
 rx_bevy_plugin = { workspace = true }
 rx_bevy_core = { workspace = true, features = ["bevy"] }
-rx_bevy_subscription_entity = { workspace = true }
+rx_bevy_context_ecs = { workspace = true }
 bevy_app = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_input = { workspace = true }
