@@ -65,6 +65,6 @@ impl<Destination> DestinationSharedTypes for Destination
 where
 	Destination: Subscriber + 'static,
 {
-	type Sharer = <Self::Context as SubscriptionContext>::DestinationAllocator<Self>;
+	type Sharer = <Self::Context as SubscriptionContext>::DestinationAllocator;
 	type Shared = <Self::Sharer as DestinationAllocator>::Shared<Self>;
 }

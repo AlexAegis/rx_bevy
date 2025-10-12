@@ -1,4 +1,6 @@
-use crate::{ObservableOutput, ObserverInput, Operator, OptionSubscriber, SignalBound, Subscriber};
+use crate::{ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber};
+
+use super::OptionSubscriber;
 
 /// [Operator]s with the same outputs as its inputs can be made optional.
 ///

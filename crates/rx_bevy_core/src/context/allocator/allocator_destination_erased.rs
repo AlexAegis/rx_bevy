@@ -62,10 +62,7 @@ impl<Destination> ErasedSharedDestinationTypes for Destination
 where
 	Destination: Subscriber + 'static,
 {
-	type Sharer = <Self::Context as SubscriptionContext>::ErasedDestinationAllocator<
-		Destination::In,
-		Destination::InError,
-	>;
+	type Sharer = <Self::Context as SubscriptionContext>::ErasedDestinationAllocator;
 	type Shared =
 		<Self::Sharer as ErasedDestinationAllocator>::Shared<Destination::In, Destination::InError>;
 	type Access = <Self::Shared as ErasedSharedDestination>::Access;

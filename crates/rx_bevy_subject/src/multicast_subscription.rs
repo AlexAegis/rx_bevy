@@ -15,10 +15,7 @@ where
 	Context: SubscriptionContext,
 {
 	subscriber: Option<
-		<Context::ErasedDestinationAllocator<In, InError> as ErasedDestinationAllocator>::Shared<
-			In,
-			InError,
-		>,
+		<Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>,
 	>,
 	teardown: SubscriptionData<Context>,
 }
@@ -30,7 +27,7 @@ where
 	Context: SubscriptionContext,
 {
 	pub fn new(
-		shared_subscriber: <Context::ErasedDestinationAllocator<In, InError> as ErasedDestinationAllocator>::Shared<In, InError>,
+		shared_subscriber: <Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>,
 	) -> Self {
 		Self {
 			subscriber: Some(shared_subscriber),

@@ -76,7 +76,7 @@ where
 mod tests {
 	use super::*;
 
-	use rx_bevy_core::DropSafeSubscriptionContext;
+	use rx_bevy_core::context::DropSafeSubscriptionContext;
 	use rx_bevy_testing::prelude::*;
 
 	#[test]

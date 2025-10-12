@@ -1,11 +1,8 @@
-use crate::{
-	ObservableSubscription, SignalBound, Subscriber, SubscriptionLike,
-	context::{
-		SubscriptionContextDropSafety,
-		allocator::{
-			DestinationAllocator, ErasedDestinationAllocator, ScheduledSubscriptionAllocator,
-			UnscheduledSubscriptionAllocator,
-		},
+use crate::context::{
+	SubscriptionContextDropSafety,
+	allocator::{
+		DestinationAllocator, ErasedDestinationAllocator, ScheduledSubscriptionAllocator,
+		UnscheduledSubscriptionAllocator,
 	},
 };
 
@@ -40,35 +37,19 @@ pub trait SubscriptionContext {
 
 	/// Defines how a new subscription should be created for subscribers that
 	/// can create additional subscriptions as they operate.
-	///
-	// TODO: Remove the gats, the context is enough in the new impls
-	type DestinationAllocator<Destination>: DestinationAllocator<Context = Self>
-	where
-		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
+	type DestinationAllocator: DestinationAllocator<Context = Self>;
 
 	/// Defines how a new subscription should be created for erased subscribers
 	/// that can create additional subscriptions as they operate.
-	type ErasedDestinationAllocator<In, InError>: ErasedDestinationAllocator<Context = Self>
-	where
-		In: SignalBound,
-		InError: SignalBound;
+	type ErasedDestinationAllocator: ErasedDestinationAllocator<Context = Self>;
 
 	/// Defines how an [ObservableSubscription][crate::ObservableSubscription]
 	/// is turned into a [SubscriptionHandle][crate::SubscriptionHandle] which
 	/// can create additional [WeakSubscriptionHandle][crate::WeakSubscriptionHandle]s
 	/// that can unsubscribe the handle, but can't tick it.
-	type ScheduledSubscriptionAllocator<Subscription>: ScheduledSubscriptionAllocator<
-		Context = Self,
-		UnscheduledHandle<Subscription> = <Self::UnscheduledSubscriptionAllocator<Subscription> as UnscheduledSubscriptionAllocator>::UnscheduledHandle<Subscription>
-	>
-	where
-		Subscription: 'static + ObservableSubscription<Context = Self> + Send + Sync;
+	type ScheduledSubscriptionAllocator: ScheduledSubscriptionAllocator<Context = Self>;
 
-	type UnscheduledSubscriptionAllocator<Subscription>: UnscheduledSubscriptionAllocator<
-		Context = Self,
-	>
-	where
-		Subscription: 'static + SubscriptionLike<Context = Self> + Send + Sync;
+	type UnscheduledSubscriptionAllocator: UnscheduledSubscriptionAllocator<Context = Self>;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self;
 }

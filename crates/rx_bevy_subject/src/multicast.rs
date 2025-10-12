@@ -26,10 +26,8 @@ where
 	Context: SubscriptionContext,
 {
 	subscribers: SmallVec<
-		[<Context::ErasedDestinationAllocator<In, InError> as ErasedDestinationAllocator>::Shared<
-			In,
-			InError,
-		>; 1],
+		[<Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>;
+			1],
 	>,
 	teardown: Option<SubscriptionData<Context>>,
 }
@@ -53,10 +51,13 @@ where
 		&mut self,
 	) -> Option<(
 		Vec<
-			<Context::ErasedDestinationAllocator<In, InError> as ErasedDestinationAllocator>::Shared<In, InError>,
+			<Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<
+				In,
+				InError,
+			>,
 		>,
 		Option<SubscriptionData<Context>>,
-	)>{
+	)> {
 		if self.is_closed() {
 			None
 		} else {

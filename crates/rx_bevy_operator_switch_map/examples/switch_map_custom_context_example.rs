@@ -10,26 +10,10 @@ use rx_bevy::{
 struct CustomContext;
 
 impl SubscriptionContext for CustomContext {
-	type DestinationAllocator<Destination>
-		= SubscriberHeapAllocator<Self>
-	where
-		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
-
-	type ErasedDestinationAllocator<In, InError>
-		= ErasedSubscriberHeapAllocator<Self>
-	where
-		In: SignalBound,
-		InError: SignalBound;
-
-	type ScheduledSubscriptionAllocator<Subscription>
-		= ScheduledSubscriptionHeapAllocator<Self>
-	where
-		Subscription: 'static + ObservableSubscription<Context = Self> + Send + Sync;
-
-	type UnscheduledSubscriptionAllocator<Subscription>
-		= UnscheduledSubscriptionHeapAllocator<Self>
-	where
-		Subscription: 'static + SubscriptionLike<Context = Self> + Send + Sync;
+	type DestinationAllocator = SubscriberHeapAllocator<Self>;
+	type ErasedDestinationAllocator = ErasedSubscriberHeapAllocator<Self>;
+	type ScheduledSubscriptionAllocator = ScheduledSubscriptionHeapAllocator<Self>;
+	type UnscheduledSubscriptionAllocator = UnscheduledSubscriptionHeapAllocator<Self>;
 
 	type DropSafety = DropUnsafeSubscriptionContext;
 

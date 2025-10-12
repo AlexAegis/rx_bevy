@@ -11,9 +11,7 @@ pub struct ConnectionHandle<Subscription>
 where
 	Subscription: 'static + SubscriptionLike + Send + Sync,
 {
-	handle: <<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator<
-		Subscription,
-	> as UnscheduledSubscriptionAllocator>::UnscheduledHandle<Subscription>,
+	handle: <<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator as UnscheduledSubscriptionAllocator>::UnscheduledHandle<Subscription>,
 }
 
 impl<Subscription> ConnectionHandle<Subscription>
@@ -22,9 +20,7 @@ where
 {
 	pub fn new(subscription: Subscription, context: &mut Subscription::Context) -> Self {
 		let handle =
-			<<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator<
-				Subscription,
-			> as UnscheduledSubscriptionAllocator>::allocate_unscheduled_subscription(
+			<<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator as UnscheduledSubscriptionAllocator>::allocate_unscheduled_subscription(
 				subscription, context
 			);
 		Self { handle }

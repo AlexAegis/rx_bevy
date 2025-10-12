@@ -80,7 +80,7 @@ where
 mod tests {
 
 	use super::*;
-	use rx_bevy_core::{DropSafeSubscriptionContext, SubscriptionLike};
+	use rx_bevy_core::{SubscriptionLike, context::DropSafeSubscriptionContext};
 	use rx_bevy_testing::{MockContext, MockObserver};
 
 	#[test]

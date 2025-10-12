@@ -42,26 +42,10 @@ impl<'c> CommandContext<'c> {
 impl<'c> SubscriptionContext for CommandContext<'c> {
 	type DropSafety = DropUnsafeSubscriptionContext;
 
-	type DestinationAllocator<Destination>
-		= SubscriberEntityAllocator<'c, Self>
-	where
-		Destination: 'static + Subscriber<Context = Self>;
-
-	type ErasedDestinationAllocator<In, InError>
-		= ErasedSubscriberEntityAllocator<'c, Self>
-	where
-		In: SignalBound,
-		InError: SignalBound;
-
-	type ScheduledSubscriptionAllocator<Subscription>
-		= ScheduledEntitySubscriptionAllocator<Subscription::Context>
-	where
-		Subscription: 'static + ObservableSubscription<Context = Self> + Send + Sync;
-
-	type UnscheduledSubscriptionAllocator<Subscription>
-		= UnscheduledEntitySubscriptionAllocator<Subscription::Context>
-	where
-		Subscription: 'static + SubscriptionLike<Context = Self> + Send + Sync;
+	type DestinationAllocator = SubscriberEntityAllocator<'c, Self>;
+	type ErasedDestinationAllocator = ErasedSubscriberEntityAllocator<'c, Self>;
+	type ScheduledSubscriptionAllocator = ScheduledEntitySubscriptionAllocator<Self>;
+	type UnscheduledSubscriptionAllocator = UnscheduledEntitySubscriptionAllocator<Self>;
 
 	fn create_context_to_unsubscribe_on_drop() -> Self {
 		panic!(

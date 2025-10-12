@@ -7,8 +7,6 @@ use crate::{
 pub type DynSubscriber<In, InError, Context> =
 	Box<dyn Subscriber<In = In, InError = InError, Context = Context>>;
 
-// TODO: Remove?
-#[deprecated(note = "unused")]
 pub struct ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
