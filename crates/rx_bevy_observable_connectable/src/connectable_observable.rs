@@ -17,8 +17,9 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription: 'static,
 {
-	connector: Arc<Mutex<InnerConnectableObservable<Source, ConnectorCreator, Connector>>>,
+	connector: InnerConnectableObservable<Source, ConnectorCreator, Connector>,
 }
 
 impl<Source, ConnectorCreator, Connector> ConnectableObservable<Source, ConnectorCreator, Connector>
@@ -31,7 +32,7 @@ where
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
-			connector: Arc::new(Mutex::new(InnerConnectableObservable::new(source, options))),
+			connector: InnerConnectableObservable::new(source, options),
 		}
 	}
 }
@@ -82,10 +83,10 @@ where
 			+ Sync,
 	{
 		print!("connectable subscribe about to lock..");
-		let mut connector = self.connector.lock().expect("cant lock");
-		println!(".. locked!");
+		// let mut connector = self.connector.lock().expect("cant lock");
+		// println!(".. locked!");
 
-		connector.subscribe(destination, context)
+		self.connector.subscribe(destination, context)
 	}
 }
 
@@ -100,38 +101,38 @@ where
 {
 	fn is_closed(&self) -> bool {
 		print!("connectable is_closed about to lock..");
-		let connector = self.connector.lock().expect("lockable");
-		println!(".. locked!");
+		//let connector = self.connector.lock().expect("lockable");
+		//println!(".. locked!");
 
-		connector.is_closed()
+		self.connector.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		print!("connectable unsubscribe about to lock..");
-		let mut connector = self.connector.lock().expect("lockable");
-		println!(".. locked!");
+		//let mut connector = self.connector.lock().expect("lockable");
+		//println!(".. locked!");
 
-		connector.unsubscribe(context);
+		self.connector.unsubscribe(context);
 	}
 
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
 		print!("connectable add_teardown about to lock..");
 
-		let mut connector = self.connector.lock().expect("lockable");
-		println!(".. locked!");
+		//let mut connector = self.connector.lock().expect("lockable");
+		//println!(".. locked!");
 
-		connector.add_teardown(teardown, context);
+		self.connector.add_teardown(teardown, context);
 	}
 
 	#[inline]
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
 		print!("connectable get_unsubscribe_context about to lock..");
 
-		let mut connector = self.connector.lock().expect("lockable");
-		println!(".. locked!");
+		//let mut connector = self.connector.lock().expect("lockable");
+		//println!(".. locked!");
 
-		connector.get_context_to_unsubscribe_on_drop()
+		self.connector.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -153,13 +154,13 @@ where
 	) -> ConnectionHandle<Self::ConnectionSubscription> {
 		print!("connectable connect about to lock..");
 
-		let mut connector = self.connector.lock().expect("cant lock");
-		println!(".. locked!");
+		//let mut connector = self.connector.lock().expect("cant lock");
+		//println!(".. locked!");
 
-		connector.connect(context)
+		self.connector.connect(context)
 	}
 }
-
+/*
 impl<Source, ConnectorCreator, Connector> Clone
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
@@ -175,3 +176,4 @@ where
 		}
 	}
 }
+*/

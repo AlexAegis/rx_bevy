@@ -1,0 +1,129 @@
+use std::sync::{Arc, RwLock};
+
+use crate::{
+	ObservableSubscription, ScheduledSubscriptionHandle, SubscriptionLike, Teardown, Tick,
+	Tickable, UnscheduledArcSubscriptionHandle, WeakArcSubscriptionHandle, WithSubscriptionContext,
+};
+use short_type_name::short_type_name;
+
+// TODO: Rename these to heap
+pub struct ArcSubscriptionHandle<Subscription>
+where
+	Subscription: ObservableSubscription + Send + Sync,
+{
+	subscription: Arc<RwLock<Subscription>>,
+}
+
+impl<Subscription> ArcSubscriptionHandle<Subscription>
+where
+	Subscription: ObservableSubscription + Send + Sync,
+{
+	pub fn new(subscription: Subscription) -> Self {
+		Self {
+			subscription: Arc::new(RwLock::new(subscription)),
+		}
+	}
+}
+
+impl<Subscription> ScheduledSubscriptionHandle for ArcSubscriptionHandle<Subscription>
+where
+	Subscription: ObservableSubscription + Send + Sync,
+{
+	type UnscheduledHandle = UnscheduledArcSubscriptionHandle<Subscription>;
+	type WeakHandle = WeakArcSubscriptionHandle<Subscription>;
+
+	fn downgrade(&mut self) -> Self::WeakHandle {
+		WeakArcSubscriptionHandle::new(&self.subscription)
+	}
+
+	fn clone(&self) -> Self::UnscheduledHandle {
+		UnscheduledArcSubscriptionHandle::new_from_handle_ref(&self.subscription)
+	}
+}
+
+impl<Subscription> WithSubscriptionContext for ArcSubscriptionHandle<Subscription>
+where
+	Subscription: ObservableSubscription + Send + Sync,
+{
+	type Context = Subscription::Context;
+}
+
+impl<Subscription> Tickable for ArcSubscriptionHandle<Subscription>
+where
+	Subscription: ObservableSubscription + Send + Sync,
+{
+	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+		if let Ok(mut lock) = self.subscription.write() {
+			lock.tick(tick, context);
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+		}
+	}
+}
+
+impl<Subscription> SubscriptionLike for ArcSubscriptionHandle<Subscription>
+where
+	Subscription: ObservableSubscription + Send + Sync,
+{
+	fn is_closed(&self) -> bool {
+		if let Ok(lock) = self.subscription.read() {
+			lock.is_closed()
+		} else {
+			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			true
+		}
+	}
+
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.subscription.write() {
+				lock.unsubscribe(context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				// TODO: research poisoned lock recovery, maybe it should panic?
+			}
+		}
+	}
+
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		if !self.is_closed() {
+			if let Ok(mut lock) = self.subscription.write() {
+				lock.add_teardown(teardown, context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			}
+		}
+	}
+
+	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+		if let Ok(mut lock) = self.subscription.write() {
+			lock.get_context_to_unsubscribe_on_drop()
+		} else {
+			panic!(
+				"Context can't be acquired in a {} as the destination RwLock is poisoned!",
+				short_type_name::<Self>()
+			)
+		}
+	}
+}
+
+impl<Subscription> From<Subscription> for ArcSubscriptionHandle<Subscription>
+where
+	Subscription: ObservableSubscription + Send + Sync,
+{
+	fn from(subscription: Subscription) -> Self {
+		Self::new(subscription)
+	}
+}
+
+impl<Subscription> Drop for ArcSubscriptionHandle<Subscription>
+where
+	Subscription: ObservableSubscription + Send + Sync,
+{
+	fn drop(&mut self) {
+		if !self.is_closed() {
+			let mut context = self.get_context_to_unsubscribe_on_drop();
+			self.unsubscribe(&mut context);
+		}
+	}
+}

@@ -3,8 +3,7 @@ use rx_bevy_core::{Observable, SubscriptionLike, WithSubscriptionContext};
 use crate::ConnectionHandle;
 
 pub trait Connectable: Observable {
-	// TODO: This does not need to be tickable
-	type ConnectionSubscription: SubscriptionLike;
+	type ConnectionSubscription: SubscriptionLike + Send + Sync;
 
 	fn connect(
 		&mut self,

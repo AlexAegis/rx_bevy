@@ -1,8 +1,14 @@
-use bevy_ecs::system::{Commands, Query, QueryLens};
-use rx_bevy_core::{DropUnsafeSubscriptionContext, SignalBound, Subscriber, SubscriptionContext};
+use bevy_ecs::system::Commands;
+use rx_bevy_core::{
+	DropUnsafeSubscriptionContext, ObservableSubscription, SignalBound, Subscriber,
+	SubscriptionContext, SubscriptionLike,
+};
 use short_type_name::short_type_name;
 
-use crate::{ContextWithCommands, EntitySubscriber, EntitySubscription};
+use crate::{
+	ContextWithCommands, EntitySubscriber, ScheduledEntitySubscriptionAllocator,
+	UnscheduledEntitySubscriptionAllocator,
+};
 
 pub struct CommandContext<'c> {
 	//subscription_component_query: QueryLens<'c, &'c mut EntitySubscription<'c, Self>>,
@@ -46,6 +52,16 @@ impl<'c> SubscriptionContext for CommandContext<'c> {
 		In: SignalBound,
 		InError: SignalBound;
 
+	type ScheduledSubscriptionAllocator<Subscription>
+		= ScheduledEntitySubscriptionAllocator<Subscription::Context>
+	where
+		Subscription: 'static + ObservableSubscription<Context = Self> + Send + Sync;
+
+	type UnscheduledSubscriptionAllocator<Subscription>
+		= UnscheduledEntitySubscriptionAllocator<Subscription::Context>
+	where
+		Subscription: 'static + SubscriptionLike<Context = Self> + Send + Sync;
+
 	fn create_context_to_unsubscribe_on_drop() -> Self {
 		panic!(
 			"{}::get_context_for_drop() was called, but its impossible to do! This is likely due to an unclosed subscription trying to unsubscribe during Drop, which should not happen!",
@@ -74,7 +90,7 @@ mod test_command_context {
 			mut query: Query<&'c mut EntitySubscription<'c, CommandContext<'c>>>,
 		) {
 			let lens = query.as_query_lens();
-			let context = CommandContext::new(commands, lens);
+			let context = CommandContext::new(commands);
 		}
 
 		#[test]

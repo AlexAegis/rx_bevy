@@ -17,8 +17,8 @@ fn main() {
 
 	source.next(1, &mut ());
 
+	// TODO: Pipes should not take values, only references!
 	let mut _subscription = connectable
-		.clone()
 		.finalize(|_| println!("connection finalize 0"))
 		.subscribe(PrintObserver::new("connectable_observable 0"), &mut ());
 
@@ -31,7 +31,6 @@ fn main() {
 	connection.unsubscribe(&mut ());
 
 	let _subscription_2 = connectable
-		.clone()
 		.finalize(|_| println!("connection finalize 1"))
 		.subscribe(PrintObserver::new("connectable_observable 1"), &mut ());
 

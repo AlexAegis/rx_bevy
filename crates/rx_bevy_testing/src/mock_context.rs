@@ -1,8 +1,9 @@
 use std::{iter::Chain, slice::Iter};
 
 use rx_bevy_core::{
-	ArcSubscriber, ErasedArcSubscriber, SignalBound, Subscriber, SubscriberNotification,
-	SubscriptionContext, SubscriptionContextDropSafety,
+	ArcSubscriber, ErasedArcSubscriber, ScheduledSubscriptionHeapAllocator, SignalBound,
+	Subscriber, SubscriberNotification, SubscriptionContext, SubscriptionContextDropSafety,
+	UnscheduledSubscriptionHeapAllocator,
 };
 
 #[derive(Debug)]
@@ -308,6 +309,16 @@ where
 		InForErasedSharer: SignalBound,
 		InErrorForErasedSharer: SignalBound;
 
+	type ScheduledSubscriptionAllocator<Subscription>
+		= ScheduledSubscriptionHeapAllocator<Self>
+	where
+		Subscription: 'static + rx_bevy_core::ObservableSubscription<Context = Self> + Send + Sync;
+
+	type UnscheduledSubscriptionAllocator<Subscription>
+		= UnscheduledSubscriptionHeapAllocator<Self>
+	where
+		Subscription: 'static + rx_bevy_core::SubscriptionLike<Context = Self> + Send + Sync;
+
 	fn create_context_to_unsubscribe_on_drop() -> Self {
 		// While this context could be constructed very easily (It has a
 		// [Default] implementation too! This is the reason why this method
@@ -357,7 +368,8 @@ mod test_mock_context {
 
 		#[test]
 		fn counts_incoming_notifications() {
-			let mut mock_context = MockContext::<i32, String, DropSafeSubscriptionContext>::default();
+			let mut mock_context =
+				MockContext::<i32, String, DropSafeSubscriptionContext>::default();
 			mock_context.push(SubscriberNotification::Unsubscribe);
 			assert!(
 				mock_context.nothing_happened_after_closed(),
@@ -380,7 +392,8 @@ mod test_mock_context {
 
 		#[test]
 		fn counts_different_notifications() {
-			let mut mock_context = MockContext::<i32, String, DropSafeSubscriptionContext>::default();
+			let mut mock_context =
+				MockContext::<i32, String, DropSafeSubscriptionContext>::default();
 			// This order of events is nonsensical, but that doesn't matter for this test.
 			mock_context.push(SubscriberNotification::Add(None));
 			mock_context.push(SubscriberNotification::Next(1));

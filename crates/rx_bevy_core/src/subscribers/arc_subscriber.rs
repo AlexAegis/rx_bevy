@@ -202,7 +202,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Destination::Context) {
+	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);

@@ -1,5 +1,6 @@
 mod bounds;
 mod context;
+mod heap_allocator;
 mod observable;
 mod observer;
 mod operator;
@@ -16,6 +17,7 @@ mod subscribers;
 // TODO: Organize these exports into submodules (roughly alreaday done by folders) so not everything is exported on the top level
 pub use bounds::*;
 pub use context::*;
+pub use heap_allocator::*;
 pub use observable::*;
 pub use observer::*;
 pub use operator::*;

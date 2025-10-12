@@ -1,30 +1,37 @@
-use std::sync::{Arc, RwLock};
-
-use rx_bevy_core::{SubscriptionLike, Teardown, WithSubscriptionContext};
+use rx_bevy_core::{
+	SubscriptionContext, SubscriptionLike, Teardown, UnscheduledSubscriptionAllocator,
+	WithSubscriptionContext,
+};
 
 /// Subscription that represents an active connection for a
 /// [ConnectableObservable][crate::ConnectableObservable].
 pub struct ConnectionHandle<Subscription>
 where
-	Subscription: SubscriptionLike,
+	Subscription: 'static + SubscriptionLike + Send + Sync,
 {
-	handle: Arc<RwLock<Subscription>>,
+	handle: <<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator<
+		Subscription,
+	> as UnscheduledSubscriptionAllocator>::UnscheduledHandle<Subscription>,
 }
 
 impl<Subscription> ConnectionHandle<Subscription>
 where
-	Subscription: SubscriptionLike,
+	Subscription: 'static + SubscriptionLike + Send + Sync,
 {
-	pub fn new(subscription: Subscription) -> Self {
-		Self {
-			handle: Arc::new(RwLock::new(subscription)),
-		}
+	pub fn new(subscription: Subscription, context: &mut Subscription::Context) -> Self {
+		let handle =
+			<<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator<
+				Subscription,
+			> as UnscheduledSubscriptionAllocator>::allocate_unscheduled_subscription(
+				subscription, context
+			);
+		Self { handle }
 	}
 }
 
 impl<Subscription> Clone for ConnectionHandle<Subscription>
 where
-	Subscription: SubscriptionLike,
+	Subscription: 'static + SubscriptionLike + Send + Sync,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -35,51 +42,37 @@ where
 
 impl<Subscription> WithSubscriptionContext for ConnectionHandle<Subscription>
 where
-	Subscription: SubscriptionLike,
+	Subscription: 'static + SubscriptionLike + Send + Sync,
 {
 	type Context = Subscription::Context;
 }
 
 impl<Subscription> SubscriptionLike for ConnectionHandle<Subscription>
 where
-	Subscription: SubscriptionLike,
+	Subscription: 'static + SubscriptionLike + Send + Sync,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
-		if let Ok(lock) = self.handle.read() {
-			lock.is_closed()
-		} else {
-			panic!("ConnectionHandle's lock is poisoned!")
-		}
+		self.handle.is_closed()
 	}
-
+	#[inline]
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		if let Ok(mut lock) = self.handle.write() {
-			lock.unsubscribe(context);
-		} else {
-			panic!("ConnectionHandle's lock is poisoned!");
-		}
+		self.handle.unsubscribe(context);
 	}
-
+	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
-		if let Ok(mut lock) = self.handle.write() {
-			lock.add_teardown(teardown, context);
-		} else {
-			panic!("ConnectionHandle's lock is poisoned!");
-		}
+		self.handle.add_teardown(teardown, context);
 	}
 
+	#[inline]
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		if let Ok(mut lock) = self.handle.write() {
-			lock.get_context_to_unsubscribe_on_drop()
-		} else {
-			panic!("ConnectionHandle's lock is poisoned!");
-		}
+		self.handle.get_context_to_unsubscribe_on_drop()
 	}
 }
 
 impl<Subscription> Drop for ConnectionHandle<Subscription>
 where
-	Subscription: SubscriptionLike,
+	Subscription: 'static + SubscriptionLike + Send + Sync,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

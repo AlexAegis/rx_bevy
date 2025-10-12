@@ -12,6 +12,7 @@ where
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription: 'static,
 {
 	/// Upon connection, the connector subject will subscribe to this source
 	/// observable
@@ -138,7 +139,7 @@ where
 			let connector = self.get_connector(context).clone();
 
 			let mut connection =
-				ConnectionHandle::new(self.source.subscribe(connector.clone(), context));
+				ConnectionHandle::new(self.source.subscribe(connector.clone(), context), context);
 
 			if self.options.unsubscribe_connector_on_disconnect {
 				connection.add(connector, context);

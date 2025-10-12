@@ -1,9 +1,11 @@
+mod allocation;
 mod command_context;
 mod context_with_commands;
 mod entity_subscriber;
 mod entity_subscription;
 mod teardown_entity;
 
+pub use allocation::*;
 pub use command_context::*;
 pub use context_with_commands::*;
 pub use entity_subscriber::*;
