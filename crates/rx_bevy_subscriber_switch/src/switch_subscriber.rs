@@ -1,8 +1,9 @@
 use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
-	Observable, Observer, ObserverInput, Subscriber, SubscriptionCollection, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observable, Observer, ObserverInput, Subscriber, SubscriptionCollection, SubscriptionLike,
+	Teardown, Tick, Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 use crate::SwitchSubscriberState;

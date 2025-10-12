@@ -1,8 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, SignalBound, SubscriptionData, SubscriptionLike, Teardown, Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]

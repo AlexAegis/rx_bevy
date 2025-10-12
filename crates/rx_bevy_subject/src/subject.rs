@@ -2,7 +2,8 @@ use std::sync::{Arc, RwLock};
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	SubscriptionLike, Teardown, Tick, Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 use crate::{Multicast, MulticastSubscription};

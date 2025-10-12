@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	WithSubscriptionContext,
+	context::WithSubscriptionContext,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 

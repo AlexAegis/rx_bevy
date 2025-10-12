@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, SubscriptionContext};
+use rx_bevy_core::{Observable, context::SubscriptionContext};
 use rx_bevy_observable_pipe::Pipe;
 
 use crate::TapNextOperator;

@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, Subscriber, SubscriptionContext, WithSubscriptionContext,
+	Observable, ObservableOutput, Subscriber,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 use crate::{IntervalObservableOptions, IntervalSubscription};

@@ -1,5 +1,6 @@
 use rx_bevy_core::{
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, ObservableSubscription, WithSubscriptionContext,
+	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately

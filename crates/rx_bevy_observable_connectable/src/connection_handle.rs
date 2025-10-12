@@ -1,6 +1,8 @@
 use rx_bevy_core::{
-	SubscriptionContext, SubscriptionLike, Teardown, UnscheduledSubscriptionAllocator,
-	WithSubscriptionContext,
+	SubscriptionLike, Teardown,
+	context::{
+		SubscriptionContext, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
+	},
 };
 
 /// Subscription that represents an active connection for a

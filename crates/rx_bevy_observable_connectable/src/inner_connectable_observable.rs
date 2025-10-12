@@ -1,6 +1,7 @@
 use rx_bevy_core::{
 	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionCollection,
-	SubscriptionContext, SubscriptionLike, Teardown, WithSubscriptionContext,
+	SubscriptionLike, Teardown,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 use crate::{Connectable, ConnectableOptions, ConnectionHandle};

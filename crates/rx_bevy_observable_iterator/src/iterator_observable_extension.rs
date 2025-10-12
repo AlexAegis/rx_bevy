@@ -1,4 +1,4 @@
-use rx_bevy_core::SubscriptionContext;
+use rx_bevy_core::context::SubscriptionContext;
 
 use crate::IteratorObservable;
 

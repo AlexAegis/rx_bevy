@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, SignalBound, Subscriber,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 use crate::{OnTickIteratorSubscription, OnTickObservableOptions};

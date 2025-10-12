@@ -1,7 +1,9 @@
 use rx_bevy_core::{
-	ErasedDestinationSharer, Observable, ObservableOutput, Observer, ObserverInput, SignalBound,
-	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
+	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
+	context::{
+		SubscriptionContext, WithSubscriptionContext, allocator::ErasedDestinationAllocator,
+	},
 };
 use smallvec::SmallVec;
 
@@ -23,8 +25,12 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	subscribers:
-		SmallVec<[<Context::ErasedSharer<In, InError> as ErasedDestinationSharer>::Shared; 1]>,
+	subscribers: SmallVec<
+		[<Context::ErasedDestinationAllocator<In, InError> as ErasedDestinationAllocator>::Shared<
+			In,
+			InError,
+		>; 1],
+	>,
 	teardown: Option<SubscriptionData<Context>>,
 }
 
@@ -46,9 +52,11 @@ where
 	pub(crate) fn close(
 		&mut self,
 	) -> Option<(
-		Vec<<Context::ErasedSharer<In, InError> as ErasedDestinationSharer>::Shared>,
+		Vec<
+			<Context::ErasedDestinationAllocator<In, InError> as ErasedDestinationAllocator>::Shared<In, InError>,
+		>,
 		Option<SubscriptionData<Context>>,
-	)> {
+	)>{
 		if self.is_closed() {
 			None
 		} else {
@@ -91,7 +99,7 @@ where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		let shared = Context::ErasedSharer::share(destination, context);
+		let shared = Context::ErasedDestinationAllocator::share(destination, context);
 		self.subscribers.push(shared.clone());
 		MulticastSubscription::new(shared)
 	}

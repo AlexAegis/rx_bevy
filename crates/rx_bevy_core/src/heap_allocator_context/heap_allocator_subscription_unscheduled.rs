@@ -1,8 +1,11 @@
 use std::marker::PhantomData;
 
+use super::handle::UnscheduledHeapSubscriptionHandle;
 use crate::{
-	SubscriptionContext, SubscriptionLike, UnscheduledArcSubscriptionHandle,
-	UnscheduledSubscriptionAllocator, WithSubscriptionContext,
+	SubscriptionLike,
+	context::{
+		SubscriptionContext, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
+	},
 };
 
 pub struct UnscheduledSubscriptionHeapAllocator<Context>
@@ -35,7 +38,7 @@ where
 	Context: SubscriptionContext,
 {
 	type UnscheduledHandle<Subscription>
-		= UnscheduledArcSubscriptionHandle<Subscription>
+		= UnscheduledHeapSubscriptionHandle<Subscription>
 	where
 		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync;
 
@@ -46,6 +49,6 @@ where
 	where
 		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync,
 	{
-		UnscheduledArcSubscriptionHandle::new(subscription)
+		UnscheduledHeapSubscriptionHandle::new(subscription)
 	}
 }

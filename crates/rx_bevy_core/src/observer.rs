@@ -1,4 +1,7 @@
-use crate::{SignalBound, SubscriptionContext, WithSubscriptionContext};
+use crate::{
+	SignalBound,
+	context::{SubscriptionContext, WithSubscriptionContext},
+};
 
 pub trait ObserverInput {
 	type In: SignalBound;

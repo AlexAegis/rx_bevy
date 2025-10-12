@@ -1,6 +1,7 @@
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, SignalBound, SubscriptionData, SubscriptionLike, Teardown, Tick,
+	Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]

@@ -1,4 +1,7 @@
-use crate::{SubscriptionContext, Tick, WithSubscriptionContext};
+use crate::{
+	Tick,
+	context::{SubscriptionContext, WithSubscriptionContext},
+};
 
 pub trait Tickable: WithSubscriptionContext {
 	/// A channel for push based scheduling, processing ticks issued by

@@ -5,7 +5,7 @@ use std::{
 
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
-	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, context::WithSubscriptionContext,
 };
 
 pub struct SwitchSubscriberState<InnerObservable, Destination>

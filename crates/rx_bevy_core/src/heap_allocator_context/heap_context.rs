@@ -1,7 +1,10 @@
+use super::{
+	ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
+	UnscheduledSubscriptionHeapAllocator,
+};
 use crate::{
-	ArcSubscriber, DropSafeSubscriptionContext, ErasedArcSubscriber, ObservableSubscription,
-	ScheduledSubscriptionHeapAllocator, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, UnscheduledSubscriptionHeapAllocator, WithSubscriptionContext,
+	ObservableSubscription, SignalBound, Subscriber, SubscriptionLike,
+	context::{DropSafeSubscriptionContext, SubscriptionContext, WithSubscriptionContext},
 };
 
 /// # Heap Context
@@ -15,13 +18,13 @@ use crate::{
 impl SubscriptionContext for () {
 	type DropSafety = DropSafeSubscriptionContext;
 
-	type Sharer<Destination>
-		= ArcSubscriber<Destination>
+	type DestinationAllocator<Destination>
+		= SubscriberHeapAllocator<Self>
 	where
 		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
 
-	type ErasedSharer<In, InError>
-		= ErasedArcSubscriber<In, InError, Self>
+	type ErasedDestinationAllocator<In, InError>
+		= ErasedSubscriberHeapAllocator<Self>
 	where
 		In: SignalBound,
 		InError: SignalBound;

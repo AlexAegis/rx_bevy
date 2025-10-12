@@ -1,5 +1,6 @@
 use crate::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable,
+	context::WithSubscriptionContext,
 };
 
 pub enum OptionSubscriber<InnerSubscriber, Destination>
@@ -28,7 +29,8 @@ where
 	type InError = InnerSubscriber::InError;
 }
 
-impl<InnerSubscriber, Destination> WithSubscriptionContext for OptionSubscriber<InnerSubscriber, Destination>
+impl<InnerSubscriber, Destination> WithSubscriptionContext
+	for OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
 	Destination: Subscriber<

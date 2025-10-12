@@ -1,10 +1,14 @@
 use rx_bevy_core::{
-	DestinationSharedTypes, DestinationSharer, Observer, ObserverInput, SharedDestination,
-	Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
+	context::{
+		WithSubscriptionContext,
+		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
+	},
 };
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
 
+/// TODO: move this back to core, it's no longer specialized
 pub struct RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
@@ -218,7 +222,7 @@ mod test {
 	use std::ops::RangeInclusive;
 
 	use rx_bevy_core::Observable;
-	use rx_bevy_core::{DropSafeSubscriptionContext, Observer, SubscriptionLike};
+	use rx_bevy_core::{Observer, SubscriptionLike, context::DropSafeSubscriptionContext};
 	use rx_bevy_observable_iterator::IteratorObservable;
 	use rx_bevy_testing::{MockContext, MockObserver};
 

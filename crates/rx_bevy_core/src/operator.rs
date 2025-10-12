@@ -1,4 +1,4 @@
-use crate::{ObservableOutput, ObserverInput, SubscriptionContext, Subscriber};
+use crate::{ObservableOutput, ObserverInput, Subscriber, context::SubscriptionContext};
 
 /// # [Operator]
 ///

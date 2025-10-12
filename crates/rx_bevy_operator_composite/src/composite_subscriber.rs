@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
+	context::WithSubscriptionContext,
 };
 
 #[derive(Debug)]

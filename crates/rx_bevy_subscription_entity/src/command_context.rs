@@ -1,13 +1,14 @@
 use bevy_ecs::system::Commands;
 use rx_bevy_core::{
-	DropUnsafeSubscriptionContext, ObservableSubscription, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionLike,
+	ObservableSubscription, SignalBound, Subscriber, SubscriptionLike,
+	context::{DropUnsafeSubscriptionContext, SubscriptionContext},
 };
 use short_type_name::short_type_name;
 
 use crate::{
-	ContextWithCommands, EntitySubscriber, ScheduledEntitySubscriptionAllocator,
-	UnscheduledEntitySubscriptionAllocator,
+	ContextWithCommands, EntitySubscriber, ErasedEntitySubscriber, ErasedSubscriberEntityAllocator,
+	SubscriberEntityAllocator,
+	allocator::{ScheduledEntitySubscriptionAllocator, UnscheduledEntitySubscriptionAllocator},
 };
 
 pub struct CommandContext<'c> {
@@ -41,13 +42,13 @@ impl<'c> CommandContext<'c> {
 impl<'c> SubscriptionContext for CommandContext<'c> {
 	type DropSafety = DropUnsafeSubscriptionContext;
 
-	type Sharer<Destination>
-		= EntitySubscriber<'c, Destination::In, Destination::InError>
+	type DestinationAllocator<Destination>
+		= SubscriberEntityAllocator<'c, Self>
 	where
 		Destination: 'static + Subscriber<Context = Self>;
 
-	type ErasedSharer<In, InError>
-		= EntitySubscriber<'c, In, InError>
+	type ErasedDestinationAllocator<In, InError>
+		= ErasedSubscriberEntityAllocator<'c, Self>
 	where
 		In: SignalBound,
 		InError: SignalBound;

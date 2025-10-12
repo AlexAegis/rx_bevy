@@ -1,18 +1,24 @@
-use crate::{ObserverInput, SubscriptionContext, Subscriber, WithSubscriptionContext};
+use crate::{
+	SignalBound, Subscriber,
+	context::{SubscriptionContext, WithSubscriptionContext},
+};
 
-/// An [ErasedDestinationSharer] that can create an [ErasedSharedDestination]
+/// An [ErasedSubscriberAllocator] that can create an [ErasedSharedDestination]
 /// out of a destination.
 ///
 /// Mainly used by subjects.
-pub trait ErasedDestinationSharer: ObserverInput + WithSubscriptionContext {
-	type Shared: ErasedSharedDestination<In = Self::In, InError = Self::InError, Context = Self::Context>;
-
-	fn share<Destination>(destination: Destination, context: &mut Self::Context) -> Self::Shared
+pub trait ErasedDestinationAllocator: WithSubscriptionContext {
+	type Shared<In, InError>: ErasedSharedDestination<In = In, InError = InError, Context = Self::Context>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		In: SignalBound,
+		InError: SignalBound;
+
+	fn share<Destination>(
+		destination: Destination,
+		context: &mut Self::Context,
+	) -> Self::Shared<Destination::In, Destination::InError>
+	where
+		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
 }
 
 /// An [ErasedSharedDestination] is a subscriber that can be cloned, where each
@@ -44,20 +50,23 @@ pub trait ErasedSharedDestination: Subscriber + Clone + Send + Sync {
 		F: FnMut(&mut Self::Access, &mut Self::Context);
 }
 
-pub trait ErasedDestinationSharedTypes: 'static + Subscriber {
-	type Sharer: ErasedDestinationSharer<In = Self::In, InError = Self::InError, Context = Self::Context>;
+pub trait ErasedSharedDestinationTypes: 'static + Subscriber {
+	type Sharer: ErasedDestinationAllocator<Context = Self::Context>;
 	type Shared: ?Sized
 		+ ErasedSharedDestination<In = Self::In, InError = Self::InError, Context = Self::Context>;
 	type Access: ?Sized
 		+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 }
 
-impl<Destination> ErasedDestinationSharedTypes for Destination
+impl<Destination> ErasedSharedDestinationTypes for Destination
 where
 	Destination: Subscriber + 'static,
 {
-	type Sharer =
-		<Self::Context as SubscriptionContext>::ErasedSharer<Destination::In, Destination::InError>;
-	type Shared = <Self::Sharer as ErasedDestinationSharer>::Shared;
+	type Sharer = <Self::Context as SubscriptionContext>::ErasedDestinationAllocator<
+		Destination::In,
+		Destination::InError,
+	>;
+	type Shared =
+		<Self::Sharer as ErasedDestinationAllocator>::Shared<Destination::In, Destination::InError>;
 	type Access = <Self::Shared as ErasedSharedDestination>::Access;
 }

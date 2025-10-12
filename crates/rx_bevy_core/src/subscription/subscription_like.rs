@@ -1,4 +1,4 @@
-use crate::{Teardown, WithSubscriptionContext};
+use crate::{Teardown, context::WithSubscriptionContext};
 
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational.

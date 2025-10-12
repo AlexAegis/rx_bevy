@@ -1,20 +1,22 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{
-	ObservableSubscription, ScheduledSubscriptionHandle, SubscriptionLike, Teardown, Tick,
-	Tickable, UnscheduledArcSubscriptionHandle, WeakArcSubscriptionHandle, WithSubscriptionContext,
-};
 use short_type_name::short_type_name;
 
-// TODO: Rename these to heap
-pub struct ArcSubscriptionHandle<Subscription>
+use crate::{
+	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable,
+	context::{WithSubscriptionContext, allocator::handle::ScheduledSubscriptionHandle},
+};
+
+use super::{UnscheduledHeapSubscriptionHandle, WeakHeapSubscriptionHandle};
+
+pub struct ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {
 	subscription: Arc<RwLock<Subscription>>,
 }
 
-impl<Subscription> ArcSubscriptionHandle<Subscription>
+impl<Subscription> ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {
@@ -25,30 +27,30 @@ where
 	}
 }
 
-impl<Subscription> ScheduledSubscriptionHandle for ArcSubscriptionHandle<Subscription>
+impl<Subscription> ScheduledSubscriptionHandle for ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {
-	type UnscheduledHandle = UnscheduledArcSubscriptionHandle<Subscription>;
-	type WeakHandle = WeakArcSubscriptionHandle<Subscription>;
+	type UnscheduledHandle = UnscheduledHeapSubscriptionHandle<Subscription>;
+	type WeakHandle = WeakHeapSubscriptionHandle<Subscription>;
 
 	fn downgrade(&mut self) -> Self::WeakHandle {
-		WeakArcSubscriptionHandle::new(&self.subscription)
+		WeakHeapSubscriptionHandle::new(&self.subscription)
 	}
 
 	fn clone(&self) -> Self::UnscheduledHandle {
-		UnscheduledArcSubscriptionHandle::new_from_handle_ref(&self.subscription)
+		UnscheduledHeapSubscriptionHandle::new_from_handle_ref(&self.subscription)
 	}
 }
 
-impl<Subscription> WithSubscriptionContext for ArcSubscriptionHandle<Subscription>
+impl<Subscription> WithSubscriptionContext for ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {
 	type Context = Subscription::Context;
 }
 
-impl<Subscription> Tickable for ArcSubscriptionHandle<Subscription>
+impl<Subscription> Tickable for ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {
@@ -61,7 +63,7 @@ where
 	}
 }
 
-impl<Subscription> SubscriptionLike for ArcSubscriptionHandle<Subscription>
+impl<Subscription> SubscriptionLike for ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {
@@ -107,7 +109,7 @@ where
 	}
 }
 
-impl<Subscription> From<Subscription> for ArcSubscriptionHandle<Subscription>
+impl<Subscription> From<Subscription> for ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {
@@ -116,7 +118,7 @@ where
 	}
 }
 
-impl<Subscription> Drop for ArcSubscriptionHandle<Subscription>
+impl<Subscription> Drop for ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {

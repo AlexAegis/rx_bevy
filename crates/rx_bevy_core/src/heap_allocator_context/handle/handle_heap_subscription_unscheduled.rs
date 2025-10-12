@@ -1,19 +1,23 @@
+// TODO: Check import groups, std -> dependencies -> crate -> super, similar to the nightly rustfmt option https://rust-lang.github.io/rustfmt/?version=v1.8.0&search=#group_imports
 use std::sync::{Arc, RwLock};
 
-use crate::{
-	SubscriptionLike, Teardown, UnscheduledSubscriptionHandle, WeakArcSubscriptionHandle,
-	WithSubscriptionContext,
-};
 use short_type_name::short_type_name;
 
-pub struct UnscheduledArcSubscriptionHandle<Subscription>
+use crate::{
+	SubscriptionLike, Teardown,
+	context::{WithSubscriptionContext, allocator::handle::UnscheduledSubscriptionHandle},
+};
+
+use super::WeakHeapSubscriptionHandle;
+
+pub struct UnscheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionLike + Send + Sync,
 {
 	subscription: Arc<RwLock<Subscription>>,
 }
 
-impl<Subscription> UnscheduledArcSubscriptionHandle<Subscription>
+impl<Subscription> UnscheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionLike + Send + Sync,
 {
@@ -30,25 +34,25 @@ where
 	}
 }
 
-impl<Subscription> UnscheduledSubscriptionHandle for UnscheduledArcSubscriptionHandle<Subscription>
+impl<Subscription> UnscheduledSubscriptionHandle for UnscheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionLike + Send + Sync,
 {
-	type WeakHandle = WeakArcSubscriptionHandle<Subscription>;
+	type WeakHandle = WeakHeapSubscriptionHandle<Subscription>;
 
 	fn downgrade(&mut self) -> Self::WeakHandle {
-		WeakArcSubscriptionHandle::new(&self.subscription)
+		WeakHeapSubscriptionHandle::new(&self.subscription)
 	}
 }
 
-impl<Subscription> WithSubscriptionContext for UnscheduledArcSubscriptionHandle<Subscription>
+impl<Subscription> WithSubscriptionContext for UnscheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionLike + Send + Sync,
 {
 	type Context = Subscription::Context;
 }
 
-impl<Subscription> Clone for UnscheduledArcSubscriptionHandle<Subscription>
+impl<Subscription> Clone for UnscheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionLike + Send + Sync,
 {
@@ -59,7 +63,7 @@ where
 	}
 }
 
-impl<Subscription> SubscriptionLike for UnscheduledArcSubscriptionHandle<Subscription>
+impl<Subscription> SubscriptionLike for UnscheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionLike + Send + Sync,
 {
@@ -105,7 +109,7 @@ where
 	}
 }
 
-impl<Subscription> Drop for UnscheduledArcSubscriptionHandle<Subscription>
+impl<Subscription> Drop for UnscheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionLike + Send + Sync,
 {

@@ -1,9 +1,13 @@
 use std::{iter::Chain, slice::Iter};
 
 use rx_bevy_core::{
-	ArcSubscriber, ErasedArcSubscriber, ScheduledSubscriptionHeapAllocator, SignalBound,
-	Subscriber, SubscriberNotification, SubscriptionContext, SubscriptionContextDropSafety,
-	UnscheduledSubscriptionHeapAllocator,
+	SignalBound, Subscriber, SubscriberNotification,
+	context::{SubscriptionContext, SubscriptionContextDropSafety},
+	heap_allocator_context::{
+		ErasedHeapSubscriber, ErasedSubscriberHeapAllocator, HeapSubscriber,
+		ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
+		UnscheduledSubscriptionHeapAllocator,
+	},
 };
 
 #[derive(Debug)]
@@ -298,13 +302,13 @@ where
 	/// The DropSafety is parametric for the sake of testability, the context will always panic on drop if not closed to ensure proper tests.
 	type DropSafety = DropSafety;
 
-	type Sharer<Destination>
-		= ArcSubscriber<Destination>
+	type DestinationAllocator<Destination>
+		= SubscriberHeapAllocator<Self>
 	where
 		Destination: 'static + Subscriber<Context = Self>;
 
-	type ErasedSharer<InForErasedSharer, InErrorForErasedSharer>
-		= ErasedArcSubscriber<InForErasedSharer, InErrorForErasedSharer, Self>
+	type ErasedDestinationAllocator<InForErasedSharer, InErrorForErasedSharer>
+		= ErasedSubscriberHeapAllocator<Self>
 	where
 		InForErasedSharer: SignalBound,
 		InErrorForErasedSharer: SignalBound;
@@ -353,7 +357,7 @@ mod test_mock_context {
 	#[cfg(test)]
 	mod test_nothing_happened_after_closed {
 
-		use rx_bevy_core::{DropSafeSubscriptionContext, SubscriberNotification};
+		use rx_bevy_core::{SubscriberNotification, context::DropSafeSubscriptionContext};
 
 		use crate::MockContext;
 
@@ -386,7 +390,7 @@ mod test_mock_context {
 	#[cfg(test)]
 	mod test_notification_counting {
 
-		use rx_bevy_core::{DropSafeSubscriptionContext, SubscriberNotification};
+		use rx_bevy_core::{SubscriberNotification, context::DropSafeSubscriptionContext};
 
 		use crate::MockContext;
 

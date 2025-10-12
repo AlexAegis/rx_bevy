@@ -3,17 +3,23 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, event::Event};
 
 use rx_bevy_core::{
-	DestinationSharer, ErasedDestinationSharer, ErasedSharedDestination, Observer, ObserverInput,
-	SharedDestination, SignalBound, SubscriptionContext, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
+	context::{
+		SubscriptionContext, WithSubscriptionContext,
+		allocator::{
+			DestinationAllocator, ErasedDestinationAllocator, ErasedSharedDestination,
+			SharedDestination,
+		},
+	},
 };
 
 use crate::{CommandContext, ContextWithCommands};
 
-pub struct EntitySubscriber<'c, In, InError>
+pub struct ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
 	/// Entity where observed signals are sent to
 	destination_entity: Entity,
@@ -21,13 +27,14 @@ where
 	// TODO: Determine from the context using a querylens
 	closed: bool,
 
-	_phantom_data: PhantomData<(&'c In, InError)>,
+	_phantom_data: PhantomData<(&'c fn(Context), In, InError)>,
 }
 
-impl<'c, In, InError> EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Context> ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
 	pub fn new(destination_entity: Entity) -> Self {
 		Self {
@@ -43,10 +50,11 @@ where
 	}
 }
 
-impl<'c, In, InError> Clone for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Context> Clone for ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -57,38 +65,13 @@ where
 	}
 }
 
-impl<'c, In, InError> DestinationSharer for EntitySubscriber<'c, In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Shared<Destination>
-		= EntitySubscriber<'c, In, InError>
-	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
-
-	fn share<Destination>(
-		destination: Destination,
-		context: &mut CommandContext<'c>,
-	) -> Self::Shared<Destination>
-	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
-	{
-		// TODO: Impl component that can actually store the destination
-		let destination_entity = context.commands().spawn(());
-
-		EntitySubscriber::new(destination_entity.id())
-	}
-}
-
-impl<'c, In, InError, Destination> SharedDestination<Destination>
-	for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Destination, Context> SharedDestination<Destination>
+	for ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Destination: 'static + Subscriber<In = In, InError = InError, Context = Self::Context>,
+	Context: 'c + ContextWithCommands<'c>,
 {
 	fn access<F>(&mut self, accessor: F)
 	where
@@ -115,34 +98,14 @@ where
 	}
 }
 
-impl<'c, In, InError> ErasedDestinationSharer for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Context> ErasedSharedDestination
+	for ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
-	type Shared = EntitySubscriber<'c, In, InError>;
-
-	fn share<Destination>(
-		destination: Destination,
-		context: &mut CommandContext<'c>,
-	) -> Self::Shared
-	where
-		Destination:
-			'static + Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>,
-	{
-		// TODO: Impl component that can actually store the destination
-		let destination_entity = context.commands().spawn(());
-
-		EntitySubscriber::new(destination_entity.id())
-	}
-}
-
-impl<'c, In, InError> ErasedSharedDestination for EntitySubscriber<'c, In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Access = EntitySubscriber<'c, In, InError>;
+	type Access = ErasedEntitySubscriber<'c, In, InError, Context>;
 
 	fn access<F>(&mut self, accessor: F)
 	where
@@ -169,21 +132,24 @@ where
 	}
 }
 
-impl<'c, In, InError> ObserverInput for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Context> ObserverInput for ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<'c, In, InError> WithSubscriptionContext for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Context> WithSubscriptionContext
+	for ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
-	type Context = CommandContext<'c>;
+	type Context = Context;
 }
 
 #[derive(Event, Clone)]
@@ -199,10 +165,11 @@ where
 #[derive(Event, Clone)]
 pub struct RxComplete;
 
-impl<'c, In, InError> Observer for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Context> Observer for ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.closed {
@@ -230,10 +197,11 @@ where
 	}
 }
 
-impl<'c, In, InError> Tickable for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Context> Tickable for ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
 		context
@@ -242,10 +210,11 @@ where
 	}
 }
 
-impl<'c, In, InError> SubscriptionLike for EntitySubscriber<'c, In, InError>
+impl<'c, In, InError, Context> SubscriptionLike for ErasedEntitySubscriber<'c, In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: 'c + ContextWithCommands<'c>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {

@@ -1,6 +1,6 @@
 use rx_bevy_core::{
-	SignalBound, SubscriptionContext, Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable,
-	WithSubscriptionContext,
+	SignalBound, Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 use crate::OnTickObservableOptions;

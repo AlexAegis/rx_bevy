@@ -1,10 +1,10 @@
+pub mod context;
+pub mod heap_allocator_context;
+
 mod bounds;
-mod context;
-mod heap_allocator;
 mod observable;
 mod observer;
 mod operator;
-mod share;
 mod signals;
 mod subject;
 mod subscriber;
@@ -15,13 +15,11 @@ mod operators;
 mod subscribers;
 
 // TODO: Organize these exports into submodules (roughly alreaday done by folders) so not everything is exported on the top level
+
 pub use bounds::*;
-pub use context::*;
-pub use heap_allocator::*;
 pub use observable::*;
 pub use observer::*;
 pub use operator::*;
-pub use share::*;
 pub use signals::*;
 pub use subject::*;
 pub use subscriber::*;
@@ -41,6 +39,5 @@ pub mod prelude {
 
 	pub use super::bounds::prelude::*;
 	pub use super::context::prelude::*;
-	pub use super::share::prelude::*;
 	pub use super::signals::prelude::*;
 }

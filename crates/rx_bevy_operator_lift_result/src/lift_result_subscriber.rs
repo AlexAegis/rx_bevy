@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithSubscriptionContext,
+	Tick, Tickable, context::WithSubscriptionContext,
 };
 
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>

@@ -1,20 +1,35 @@
 use rx_bevy::{
-	ArcSubscriber, DropUnsafeSubscriptionContext, ErasedArcSubscriber, SubscriptionContext, prelude::*,
+	context::{DropUnsafeSubscriptionContext, SubscriptionContext},
+	heap_allocator_context::{
+		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
+		UnscheduledSubscriptionHeapAllocator,
+	},
+	prelude::*,
 };
 
 struct CustomContext;
 
 impl SubscriptionContext for CustomContext {
-	type Sharer<Destination>
-		= ArcSubscriber<Destination>
+	type DestinationAllocator<Destination>
+		= SubscriberHeapAllocator<Self>
 	where
 		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
 
-	type ErasedSharer<In, InError>
-		= ErasedArcSubscriber<In, InError, Self>
+	type ErasedDestinationAllocator<In, InError>
+		= ErasedSubscriberHeapAllocator<Self>
 	where
 		In: SignalBound,
 		InError: SignalBound;
+
+	type ScheduledSubscriptionAllocator<Subscription>
+		= ScheduledSubscriptionHeapAllocator<Self>
+	where
+		Subscription: 'static + ObservableSubscription<Context = Self> + Send + Sync;
+
+	type UnscheduledSubscriptionAllocator<Subscription>
+		= UnscheduledSubscriptionHeapAllocator<Self>
+	where
+		Subscription: 'static + SubscriptionLike<Context = Self> + Send + Sync;
 
 	type DropSafety = DropUnsafeSubscriptionContext;
 

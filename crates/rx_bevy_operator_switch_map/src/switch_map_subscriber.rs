@@ -2,7 +2,8 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable,
+	context::WithSubscriptionContext,
 };
 use rx_bevy_subscriber_switch::SwitchSubscriber;
 

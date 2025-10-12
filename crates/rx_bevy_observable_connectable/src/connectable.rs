@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, SubscriptionLike, WithSubscriptionContext};
+use rx_bevy_core::{Observable, SubscriptionLike, context::WithSubscriptionContext};
 
 use crate::ConnectionHandle;
 

@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, SubscriptionContext, Subscriber,
+	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
+	context::SubscriptionContext,
 };
 
 use crate::LiftResultSubscriber;

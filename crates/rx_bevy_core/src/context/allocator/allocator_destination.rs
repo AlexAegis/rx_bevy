@@ -1,24 +1,21 @@
-use crate::{ObserverInput, SubscriptionContext, Subscriber, WithSubscriptionContext};
+use crate::{
+	Subscriber,
+	context::{SubscriptionContext, WithSubscriptionContext},
+};
 
-/// A [DestinationSharer] that can create a [SharedDestination] out of a
+/// A [SubscriberAllocator] that can create a [SharedDestination] out of a
 /// destination subscriber.
-pub trait DestinationSharer: ObserverInput + WithSubscriptionContext {
+pub trait DestinationAllocator: WithSubscriptionContext {
 	type Shared<Destination>: SharedDestination<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
 
 	fn share<Destination>(
 		destination: Destination,
 		context: &mut Self::Context,
 	) -> Self::Shared<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
 }
 
 /// A [SharedDestination] is a subscriber that can be cloned, where each clone
@@ -31,7 +28,7 @@ pub trait DestinationSharer: ObserverInput + WithSubscriptionContext {
 ///
 /// Since they always define a layer on the destination they share, an
 /// [`access`][SharedDestination::access] method is provided to inspect the
-/// destination it wraps. In the case of an `ErasedArcSubscriber` calling
+/// destination it wraps. In the case of an `ErasedHeapSubscriber` calling
 /// the `access_mut` method will attempt to write lock the destination for the
 /// duration of the call.
 pub trait SharedDestination<Destination>:
@@ -60,7 +57,7 @@ where
 }
 
 pub trait DestinationSharedTypes: 'static + Subscriber {
-	type Sharer: DestinationSharer<In = Self::In, InError = Self::InError, Context = Self::Context>;
+	type Sharer: DestinationAllocator<Context = Self::Context>;
 	type Shared: ?Sized + SharedDestination<Self>;
 }
 
@@ -68,6 +65,6 @@ impl<Destination> DestinationSharedTypes for Destination
 where
 	Destination: Subscriber + 'static,
 {
-	type Sharer = <Self::Context as SubscriptionContext>::Sharer<Self>;
-	type Shared = <Self::Sharer as DestinationSharer>::Shared<Self>;
+	type Sharer = <Self::Context as SubscriptionContext>::DestinationAllocator<Self>;
+	type Shared = <Self::Sharer as DestinationAllocator>::Shared<Self>;
 }

@@ -1,12 +1,14 @@
 use crate::{
-	Observer, ObserverInput, SignalBound, SubscriptionContext, Subscriber, SubscriptionLike, Teardown,
-	Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown, Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
 pub type DynSubscriber<In, InError, Context> =
 	Box<dyn Subscriber<In = In, InError = InError, Context = Context>>;
 
+// TODO: Remove?
+#[deprecated(note = "unused")]
 pub struct ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,

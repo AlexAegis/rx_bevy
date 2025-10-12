@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
-	WithSubscriptionContext,
+	context::WithSubscriptionContext,
 };
 
 use crate::SwitchMapSubscriber;

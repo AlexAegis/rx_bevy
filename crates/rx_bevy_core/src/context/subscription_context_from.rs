@@ -1,14 +1,14 @@
-use crate::WithSubscriptionContext;
+use crate::context::WithSubscriptionContext;
 
 /// For things that could be derived from its associated context.
 ///
 /// Things that impl [Default] automatically implement [FromContext] and
 /// use [Default::default()] to return a value.
-pub trait FromContext: WithSubscriptionContext {
+pub trait FromSubscriptionContext: WithSubscriptionContext {
 	fn from_context(context: &mut Self::Context) -> Self;
 }
 
-impl<T> FromContext for T
+impl<T> FromSubscriptionContext for T
 where
 	T: Default + WithSubscriptionContext,
 {

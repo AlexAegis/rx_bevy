@@ -1,15 +1,14 @@
-use std::{
-	marker::PhantomData,
-	sync::{Arc, RwLock},
-};
+use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_bevy_core::{
-	ObservableSubscription, ScheduledSubscriptionAllocator, SubscriptionContext, SubscriptionLike,
-	Teardown, UnscheduledSubscriptionHandle, WithSubscriptionContext,
+	ObservableSubscription, SubscriptionLike,
+	context::{
+		SubscriptionContext, WithSubscriptionContext, allocator::ScheduledSubscriptionAllocator,
+	},
 };
 
-use crate::{ScheduledEntitySubscriptionHandle, UnscheduledEntitySubscriptionHandle};
+use crate::handle::{ScheduledEntitySubscriptionHandle, UnscheduledEntitySubscriptionHandle};
 
 pub struct ScheduledEntitySubscriptionAllocator<Context>
 where

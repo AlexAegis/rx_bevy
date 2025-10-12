@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithSubscriptionContext,
+	Tick, Tickable, context::WithSubscriptionContext,
 };
 
 use crate::{EitherOut2, EitherOutError2};

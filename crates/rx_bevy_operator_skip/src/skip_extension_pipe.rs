@@ -1,4 +1,4 @@
-use rx_bevy_core::Observable;
+use rx_bevy_core::{Observable, context::WithSubscriptionContext};
 use rx_bevy_observable_pipe::Pipe;
 
 use crate::SkipOperator;
@@ -18,7 +18,7 @@ pub trait ObservableExtensionSkip: Observable + Sized {
 		SkipOperator<
 			Self::Out,
 			Self::OutError,
-			<Self::Subscription as rx_bevy_core::WithSubscriptionContext>::Context,
+			<Self::Subscription as WithSubscriptionContext>::Context,
 		>,
 	> {
 		Pipe::new(self, SkipOperator::new(count))

@@ -1,7 +1,12 @@
 use crate::{
-	DestinationSharer, ErasedDestinationSharer, ObservableSubscription,
-	ScheduledSubscriptionAllocator, SignalBound, Subscriber, SubscriptionContextDropSafety,
-	SubscriptionLike, UnscheduledSubscriptionAllocator,
+	ObservableSubscription, SignalBound, Subscriber, SubscriptionLike,
+	context::{
+		SubscriptionContextDropSafety,
+		allocator::{
+			DestinationAllocator, ErasedDestinationAllocator, ScheduledSubscriptionAllocator,
+			UnscheduledSubscriptionAllocator,
+		},
+	},
 };
 
 /// ## Why is there only a single associated context type?
@@ -36,14 +41,14 @@ pub trait SubscriptionContext {
 	/// Defines how a new subscription should be created for subscribers that
 	/// can create additional subscriptions as they operate.
 	///
-	/// TODO: Maybe call these Allocators? SubscriberAllocator/SubscriptionAllocator
-	type Sharer<Destination>: DestinationSharer<In = Destination::In, InError = Destination::InError, Context = Self>
+	// TODO: Remove the gats, the context is enough in the new impls
+	type DestinationAllocator<Destination>: DestinationAllocator<Context = Self>
 	where
 		Destination: 'static + Subscriber<Context = Self> + Send + Sync;
 
 	/// Defines how a new subscription should be created for erased subscribers
 	/// that can create additional subscriptions as they operate.
-	type ErasedSharer<In, InError>: ErasedDestinationSharer<In = In, InError = InError, Context = Self>
+	type ErasedDestinationAllocator<In, InError>: ErasedDestinationAllocator<Context = Self>
 	where
 		In: SignalBound,
 		InError: SignalBound;

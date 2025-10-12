@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, SignalBound, SubscriptionData, SubscriptionLike, Teardown, Tick,
+	Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 /// An [FnObserver] requires you to define a callback for all three notifications

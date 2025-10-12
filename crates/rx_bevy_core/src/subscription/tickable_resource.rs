@@ -1,5 +1,6 @@
 use crate::{
-	SubscriptionContext, SubscriptionLike, SubscriptionNotification, ObservableSubscription, WithSubscriptionContext,
+	ObservableSubscription, SubscriptionLike, SubscriptionNotification,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 /// A teardown is a closure which owns resources, by the nature of them being

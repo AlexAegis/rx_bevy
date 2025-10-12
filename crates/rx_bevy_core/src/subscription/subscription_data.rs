@@ -1,8 +1,8 @@
 use short_type_name::short_type_name;
 
 use crate::{
-	NotifiableSubscription, SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown,
-	Tick, Tickable, WithSubscriptionContext,
+	NotifiableSubscription, SubscriptionLike, SubscriptionNotification, Teardown, Tick, Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 use std::fmt::Debug;
 

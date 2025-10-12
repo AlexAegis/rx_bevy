@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionContextDropSafety,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionLike, Teardown, Tick,
+	Tickable,
+	context::{SubscriptionContextDropSafety, WithSubscriptionContext},
 };
 
 use crate::MockContext;

@@ -1,7 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
+	context::WithSubscriptionContext,
 };
 use short_type_name::short_type_name;
 

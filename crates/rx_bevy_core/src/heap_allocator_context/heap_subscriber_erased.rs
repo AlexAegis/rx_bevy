@@ -3,50 +3,32 @@ use std::sync::{Arc, RwLock};
 use short_type_name::short_type_name;
 
 use crate::{
-	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
-	Teardown, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, SignalBound, Subscriber, SubscriptionData, SubscriptionLike, Tickable,
+	context::{SubscriptionContext, WithSubscriptionContext, allocator::ErasedSharedDestination},
 };
 
-pub struct ArcSubscriber<Destination>
+pub struct ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
-	destination: Arc<RwLock<Destination>>,
+	destination:
+		Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context> + Send + Sync>>,
+	teardown: SubscriptionData<Context>,
 }
 
-impl<D> DestinationSharer for ArcSubscriber<D>
+impl<In, InError, Context> ErasedSharedDestination for ErasedHeapSubscriber<In, InError, Context>
 where
-	D: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
-	type Shared<Destination>
-		= ArcSubscriber<Destination>
-	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Send
-			+ Sync;
+	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
 
-	fn share<Destination>(
-		destination: Destination,
-		_context: &mut Self::Context,
-	) -> Self::Shared<Destination>
-	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Send
-			+ Sync,
-	{
-		ArcSubscriber::new(destination)
-	}
-}
-
-impl<Destination> SharedDestination<Destination> for ArcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber + Send + Sync,
-{
 	fn access<F>(&mut self, accessor: F)
 	where
-		F: Fn(&Destination),
+		F: Fn(&Self::Access),
 	{
 		if let Ok(destination) = self.destination.read() {
 			accessor(&*destination)
@@ -55,7 +37,7 @@ where
 
 	fn access_mut<F>(&mut self, mut accessor: F)
 	where
-		F: FnMut(&mut Destination),
+		F: FnMut(&mut Self::Access),
 	{
 		if let Ok(mut destination) = self.destination.write() {
 			accessor(&mut *destination)
@@ -64,7 +46,7 @@ where
 
 	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
 	where
-		F: Fn(&Destination, &mut Self::Context),
+		F: Fn(&Self::Access, &mut Self::Context),
 	{
 		if let Ok(destination) = self.destination.read() {
 			accessor(&*destination, context)
@@ -73,7 +55,7 @@ where
 
 	fn access_with_context_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
 	where
-		F: FnMut(&mut Destination, &mut Self::Context),
+		F: FnMut(&mut Self::Access, &mut Self::Context),
 	{
 		if let Ok(mut destination) = self.destination.write() {
 			accessor(&mut *destination, context)
@@ -81,18 +63,26 @@ where
 	}
 }
 
-impl<Destination> ArcSubscriber<Destination>
+impl<In, InError, Context> ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
-	pub fn new(destination: Destination) -> Self {
+	pub fn new<Destination>(destination: Destination) -> Self
+	where
+		Destination:
+			'static + Subscriber<In = In, InError = InError, Context = Context> + Send + Sync,
+	{
 		Self {
 			destination: Arc::new(RwLock::new(destination)),
+			teardown: SubscriptionData::default(),
 		}
 	}
-	pub fn read<F>(&mut self, reader: F)
+
+	pub fn read<F>(&self, reader: F)
 	where
-		F: Fn(&Destination),
+		F: Fn(&dyn Subscriber<Context = Context, In = In, InError = InError>),
 	{
 		if let Ok(lock) = self.destination.read() {
 			reader(&*lock);
@@ -103,7 +93,7 @@ where
 
 	pub fn write<F>(&self, mut writer: F)
 	where
-		F: FnMut(&mut Destination),
+		F: FnMut(&mut dyn Subscriber<Context = Context, In = In, InError = InError>),
 	{
 		if let Ok(mut lock) = self.destination.write() {
 			writer(&mut *lock);
@@ -113,35 +103,44 @@ where
 	}
 }
 
-impl<Destination> Clone for ArcSubscriber<Destination>
+impl<In, InError, Context> Clone for ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {
 			destination: self.destination.clone(),
+			teardown: SubscriptionData::default(), // New instance, new teardowns
 		}
 	}
 }
 
-impl<Destination> ObserverInput for ArcSubscriber<Destination>
+impl<In, InError, Context> ObserverInput for ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
-	type In = Destination::In;
-	type InError = Destination::InError;
+	type In = In;
+	type InError = InError;
 }
 
-impl<Destination> WithSubscriptionContext for ArcSubscriber<Destination>
+impl<In, InError, Context> WithSubscriptionContext for ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
-	type Context = Destination::Context;
+	type Context = Context;
 }
 
-impl<Destination> Observer for ArcSubscriber<Destination>
+impl<In, InError, Context> Observer for ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.is_closed() {
@@ -173,12 +172,16 @@ where
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
 		}
+		// Must always run
+		self.teardown.unsubscribe(context);
 	}
 }
 
-impl<Destination> Tickable for ArcSubscriber<Destination>
+impl<In, InError, Context> Tickable for ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
 		if let Ok(mut lock) = self.destination.write() {
@@ -189,9 +192,11 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for ArcSubscriber<Destination>
+impl<In, InError, Context> SubscriptionLike for ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(lock) = self.destination.read() {
@@ -210,9 +215,15 @@ where
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
 		}
+		// Must always run
+		self.teardown.unsubscribe(context);
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: crate::Teardown<Self::Context>,
+		context: &mut Self::Context,
+	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.add_teardown(teardown, context);
@@ -234,12 +245,16 @@ where
 	}
 }
 
-impl<Destination> Drop for ArcSubscriber<Destination>
+impl<In, InError, Context> Drop for ErasedHeapSubscriber<In, InError, Context>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
-		// Should not do anything on drop as it can be shared. Once the Arc
-		// itself releases the Destination, the drop of that will ensure cleanup.
+		if !self.is_closed() {
+			let mut context = self.get_context_to_unsubscribe_on_drop();
+			self.unsubscribe(&mut context);
+		}
 	}
 }

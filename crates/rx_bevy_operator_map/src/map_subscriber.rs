@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use derive_where::derive_where;
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, WithSubscriptionContext,
+	Tick, Tickable, context::WithSubscriptionContext,
 };
 
 #[derive_where(Debug)]

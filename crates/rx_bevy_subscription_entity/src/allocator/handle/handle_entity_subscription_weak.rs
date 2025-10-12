@@ -1,7 +1,10 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
-use rx_bevy_core::{SubscriptionLike, Teardown, WeakSubscriptionHandle, WithSubscriptionContext};
+use rx_bevy_core::{
+	SubscriptionLike, Teardown,
+	context::{WithSubscriptionContext, allocator::handle::WeakSubscriptionHandle},
+};
 
 pub struct WeakEntitySubscriptionHandle<Subscription>
 where

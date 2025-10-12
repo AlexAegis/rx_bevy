@@ -1,8 +1,6 @@
-use std::sync::{Arc, Mutex};
-
 use rx_bevy_core::{
 	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionLike, Teardown,
-	WithSubscriptionContext,
+	context::WithSubscriptionContext,
 };
 
 use crate::{

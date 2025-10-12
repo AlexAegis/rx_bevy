@@ -3,8 +3,8 @@ use std::sync::{Arc, RwLock};
 use short_type_name::short_type_name;
 
 use crate::{
-	DestinationSharer, Observer, ObserverInput, SharedDestination, Subscriber, SubscriptionLike,
-	Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, Subscriber, SubscriptionLike, Tickable,
+	context::{WithSubscriptionContext, allocator::SharedDestination},
 };
 
 impl<Destination> WithSubscriptionContext for Arc<RwLock<Destination>>
@@ -20,32 +20,6 @@ where
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
-}
-
-impl<D> DestinationSharer for Arc<RwLock<D>>
-where
-	D: 'static + Subscriber + Send + Sync,
-{
-	type Shared<Destination>
-		= Arc<RwLock<Destination>>
-	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Send
-			+ Sync;
-
-	fn share<Destination>(
-		destination: Destination,
-		_context: &mut Self::Context,
-	) -> Self::Shared<Destination>
-	where
-		Destination: 'static
-			+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-			+ Send
-			+ Sync,
-	{
-		Arc::new(RwLock::new(destination))
-	}
 }
 
 impl<Destination> SharedDestination<Destination> for Arc<RwLock<Destination>>
