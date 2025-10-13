@@ -51,7 +51,7 @@ where
 {
 	type Subscription = InertSubscription<Context>;
 
-	fn subscribe<'c, Destination>(
+	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
 		context: &mut Context,

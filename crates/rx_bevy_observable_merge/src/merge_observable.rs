@@ -104,7 +104,7 @@ where
 {
 	type Subscription = SubscriptionData<O1::Context>;
 
-	fn subscribe<'c, Destination>(
+	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Destination::Context,

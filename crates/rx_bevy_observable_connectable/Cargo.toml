@@ -41,6 +41,7 @@ reflect = [
 rx_bevy_core = { workspace = true }
 rx_bevy_observable_deferred = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
+short_type_name = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

@@ -1,7 +1,10 @@
+use std::sync::{Arc, RwLock};
+
 use rx_bevy_core::{
 	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionLike, Teardown,
-	context::WithSubscriptionContext,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
+use short_type_name::short_type_name;
 
 use crate::{
 	Connectable, ConnectableOptions, ConnectionHandle,
@@ -17,7 +20,12 @@ where
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: 'static,
 {
-	connector: InnerConnectableObservable<Source, ConnectorCreator, Connector>,
+	/// The only reason this field is behind an `Arc<RwLock>` is to be able to
+	/// pipe operators over a connectable observable.
+	/// ? It could very well be the case that piped operators are not even needed
+	/// ? for this ConnectableObservable as it is a low level component of other operators. (share)
+	/// ? if that's the case, revisit this and remove the arc
+	connector: Arc<RwLock<InnerConnectableObservable<Source, ConnectorCreator, Connector>>>,
 }
 
 impl<Source, ConnectorCreator, Connector> ConnectableObservable<Source, ConnectorCreator, Connector>
@@ -30,7 +38,25 @@ where
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
-			connector: InnerConnectableObservable::new(source, options),
+			connector: Arc::new(RwLock::new(InnerConnectableObservable::new(
+				source, options,
+			))),
+		}
+	}
+}
+
+impl<Source, ConnectorCreator, Connector> Clone
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
+where
+	Source: Observable,
+	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	Connector: 'static
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+{
+	fn clone(&self) -> Self {
+		Self {
+			connector: self.connector.clone(),
 		}
 	}
 }
@@ -80,11 +106,11 @@ where
 			+ Send
 			+ Sync,
 	{
-		print!("connectable subscribe about to lock..");
-		// let mut connector = self.connector.lock().expect("cant lock");
-		// println!(".. locked!");
-
-		self.connector.subscribe(destination, context)
+		if let Ok(mut lock) = self.connector.write() {
+			lock.subscribe(destination, context)
+		} else {
+			panic!("Poisoned connector lock: {}", short_type_name::<Self>());
+		}
 	}
 }
 
@@ -98,39 +124,39 @@ where
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 {
 	fn is_closed(&self) -> bool {
-		print!("connectable is_closed about to lock..");
-		//let connector = self.connector.lock().expect("lockable");
-		//println!(".. locked!");
-
-		self.connector.is_closed()
+		if let Ok(lock) = self.connector.read() {
+			lock.is_closed()
+		} else {
+			println!("Poisoned connector lock: {}", short_type_name::<Self>());
+			true
+		}
 	}
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
-		print!("connectable unsubscribe about to lock..");
-		//let mut connector = self.connector.lock().expect("lockable");
-		//println!(".. locked!");
-
-		self.connector.unsubscribe(context);
+		if let Ok(mut lock) = self.connector.write() {
+			lock.unsubscribe(context);
+		} else {
+			println!("Poisoned connector lock: {}", short_type_name::<Self>());
+		}
 	}
 
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
-		print!("connectable add_teardown about to lock..");
-
-		//let mut connector = self.connector.lock().expect("lockable");
-		//println!(".. locked!");
-
-		self.connector.add_teardown(teardown, context);
+		if let Ok(mut lock) = self.connector.write() {
+			lock.add_teardown(teardown, context);
+		} else {
+			println!("Poisoned connector lock: {}", short_type_name::<Self>());
+		}
 	}
 
 	#[inline]
 	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		print!("connectable get_unsubscribe_context about to lock..");
-
-		//let mut connector = self.connector.lock().expect("lockable");
-		//println!(".. locked!");
-
-		self.connector.get_context_to_unsubscribe_on_drop()
+		if let Ok(mut lock) = self.connector.write() {
+			lock.get_context_to_unsubscribe_on_drop()
+		} else {
+			println!("Poisoned connector lock: {}", short_type_name::<Self>());
+			Self::Context::create_context_to_unsubscribe_on_drop()
+		}
 	}
 }
 
@@ -150,12 +176,11 @@ where
 		&mut self,
 		context: &mut <Self::ConnectionSubscription as WithSubscriptionContext>::Context,
 	) -> ConnectionHandle<Self::ConnectionSubscription> {
-		print!("connectable connect about to lock..");
-
-		//let mut connector = self.connector.lock().expect("cant lock");
-		//println!(".. locked!");
-
-		self.connector.connect(context)
+		if let Ok(mut lock) = self.connector.write() {
+			lock.connect(context)
+		} else {
+			panic!("Poisoned connector lock: {}", short_type_name::<Self>());
+		}
 	}
 }
 /*

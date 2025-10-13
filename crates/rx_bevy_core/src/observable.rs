@@ -134,7 +134,6 @@ pub trait Observable: ObservableOutput + WithSubscriptionContext {
 		destination: Destination,
 		context: &mut Self::Context,
 	) -> Self::Subscription
-	// TODO: Consider not returning a handle, but keeping it in case the subscription needs to be shared, but internal usecases do not need subscriptions to be shareable
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
