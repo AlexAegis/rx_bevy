@@ -1,5 +1,6 @@
 pub mod context;
 pub mod heap_allocator_context;
+pub mod scheduler;
 
 mod bounds;
 mod observable;
