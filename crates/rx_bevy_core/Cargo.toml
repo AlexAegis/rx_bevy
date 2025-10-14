@@ -51,6 +51,7 @@ bevy_time = { workspace = true, optional = true }
 bevy_log = { workspace = true, optional = true }
 short_type_name = { workspace = true }
 serde = { workspace = true, optional = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_bevy = { workspace = true }

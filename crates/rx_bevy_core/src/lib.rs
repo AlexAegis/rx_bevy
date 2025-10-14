@@ -1,3 +1,4 @@
+pub mod bevy;
 pub mod context;
 pub mod heap_allocator_context;
 pub mod scheduler;

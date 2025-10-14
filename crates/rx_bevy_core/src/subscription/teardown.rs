@@ -56,7 +56,7 @@ impl<Context> Teardown<Context> {
 	/// It's private to ensure that it's not taken without either executing it
 	/// or placing it somewhere else where execution is also guaranteed.
 	#[inline]
-	pub(crate) fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context) + Send + Sync>> {
+	pub fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context) + Send + Sync>> {
 		self.teardown_fn.take()
 	}
 

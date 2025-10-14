@@ -4,7 +4,7 @@ use crate::{
 	NotifiableSubscription, SubscriptionLike, SubscriptionNotification, Teardown, Tick, Tickable,
 	context::{SubscriptionContext, WithSubscriptionContext},
 };
-use std::fmt::Debug;
+use std::{fmt::Debug, vec};
 
 /// The base subscription implementation commonly used by other subscription
 /// implementations.
@@ -60,6 +60,18 @@ where
 				(notifiable_subscription)(SubscriptionNotification::Unsubscribe, context)
 			}
 			self.notifiable_subscriptions.push(notifiable_subscription);
+		}
+	}
+
+	pub fn new_with_teardown(teardown: Teardown<Context>) -> Self {
+		if let Some(teardown) = teardown.take() {
+			Self {
+				is_closed: false,
+				finalizers: vec![teardown],
+				notifiable_subscriptions: Vec::new(),
+			}
+		} else {
+			Self::default()
 		}
 	}
 }

@@ -1,4 +1,4 @@
-use crate::{Teardown, Tick};
+use crate::{SignalBound, Teardown, Tick, context::SubscriptionContext};
 
 /// Represents a signal event in a materialized form.
 /// Useful for
@@ -20,7 +20,12 @@ pub enum SubscriptionNotification<Context> {
 
 /// Represents all signal events a subscriber can observe in a materialized form
 #[derive(Debug)]
-pub enum SubscriberNotification<In, InError, Context> {
+pub enum SubscriberNotification<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
 	Next(In),
 	Error(InError),
 	Complete,
@@ -31,6 +36,10 @@ pub enum SubscriberNotification<In, InError, Context> {
 
 impl<In, InError, Context> From<ObserverNotification<In, InError>>
 	for SubscriberNotification<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn from(value: ObserverNotification<In, InError>) -> Self {
 		match value {
@@ -44,6 +53,10 @@ impl<In, InError, Context> From<ObserverNotification<In, InError>>
 
 impl<In, InError, Context> From<SubscriptionNotification<Context>>
 	for SubscriberNotification<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn from(value: SubscriptionNotification<Context>) -> Self {
 		match value {

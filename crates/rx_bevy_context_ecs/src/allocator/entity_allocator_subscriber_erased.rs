@@ -5,28 +5,21 @@ use rx_bevy_core::{
 	context::{WithSubscriptionContext, allocator::ErasedDestinationAllocator},
 };
 
-use crate::{ContextWithCommands, ErasedEntitySubscriber};
+use crate::{BevySubscriberContext, ErasedEntitySubscriber};
 
-pub struct ErasedSubscriberEntityAllocator<'c, Context>
-where
-	Context: ContextWithCommands<'c>,
-{
-	_phantom_data: PhantomData<&'c fn(Context)>,
+pub struct ErasedSubscriberEntityAllocator<'world, 'state> {
+	_phantom_data: PhantomData<fn(&'world (), &'state ())>,
 }
 
-impl<'c, Context> WithSubscriptionContext for ErasedSubscriberEntityAllocator<'c, Context>
-where
-	Context: ContextWithCommands<'c>,
-{
-	type Context = Context;
+impl<'world, 'state> WithSubscriptionContext for ErasedSubscriberEntityAllocator<'world, 'state> {
+	type Context = BevySubscriberContext<'world, 'state>;
 }
 
-impl<'c, Context> ErasedDestinationAllocator for ErasedSubscriberEntityAllocator<'c, Context>
-where
-	Context: ContextWithCommands<'c>,
+impl<'world, 'state> ErasedDestinationAllocator
+	for ErasedSubscriberEntityAllocator<'world, 'state>
 {
 	type Shared<In, InError>
-		= ErasedEntitySubscriber<'c, In, InError, Context>
+		= ErasedEntitySubscriber<'world, 'state, In, InError>
 	where
 		In: SignalBound,
 		InError: SignalBound;

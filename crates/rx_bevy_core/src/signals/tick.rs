@@ -2,6 +2,7 @@ use std::time::Duration;
 
 #[cfg(feature = "bevy")]
 use crate::Clock;
+
 #[cfg(feature = "bevy")]
 use bevy_ecs::{event::Event, system::Res};
 #[cfg(feature = "bevy")]

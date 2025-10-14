@@ -1,25 +1,22 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event};
-
+use rx_bevy_core::context::SubscriptionContext;
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
+	Observer, ObserverInput, SignalBound, Subscriber, SubscriberNotification, SubscriptionLike,
+	Teardown, Tick, Tickable,
 	context::{
-		SubscriptionContext, WithSubscriptionContext,
-		allocator::{
-			DestinationAllocator, ErasedDestinationAllocator, ErasedSharedDestination,
-			SharedDestination,
-		},
+		WithSubscriptionContext,
+		allocator::{ErasedSharedDestination, SharedDestination},
 	},
 };
 
-use crate::{CommandContext, ContextWithCommands};
+use crate::BevySubscriberContext;
 
-pub struct ErasedEntitySubscriber<'c, In, InError, Context>
+pub struct ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
 	/// Entity where observed signals are sent to
 	destination_entity: Entity,
@@ -27,14 +24,13 @@ where
 	// TODO: Determine from the context using a querylens
 	closed: bool,
 
-	_phantom_data: PhantomData<(&'c fn(Context), In, InError)>,
+	_phantom_data: PhantomData<(fn((&'world (), &'state ())), In, InError)>,
 }
 
-impl<'c, In, InError, Context> ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError> ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
 	pub fn new(destination_entity: Entity) -> Self {
 		Self {
@@ -50,11 +46,10 @@ where
 	}
 }
 
-impl<'c, In, InError, Context> Clone for ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError> Clone for ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -65,13 +60,12 @@ where
 	}
 }
 
-impl<'c, In, InError, Destination, Context> SharedDestination<Destination>
-	for ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError, Destination> SharedDestination<Destination>
+	for ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Destination: 'static + Subscriber<In = In, InError = InError, Context = Self::Context>,
-	Context: 'c + ContextWithCommands<'c>,
 {
 	fn access<F>(&mut self, accessor: F)
 	where
@@ -98,14 +92,13 @@ where
 	}
 }
 
-impl<'c, In, InError, Context> ErasedSharedDestination
-	for ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError> ErasedSharedDestination
+	for ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
-	type Access = ErasedEntitySubscriber<'c, In, InError, Context>;
+	type Access = ErasedEntitySubscriber<'world, 'state, In, InError>;
 
 	fn access<F>(&mut self, accessor: F)
 	where
@@ -132,89 +125,77 @@ where
 	}
 }
 
-impl<'c, In, InError, Context> ObserverInput for ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError> ObserverInput
+	for ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<'c, In, InError, Context> WithSubscriptionContext
-	for ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError> WithSubscriptionContext
+	for ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
-	type Context = Context;
+	type Context = BevySubscriberContext<'world, 'state>;
 }
 
-#[derive(Event, Clone)]
-pub struct RxNext<In>(pub In)
-where
-	In: SignalBound;
-
-#[derive(Event, Clone)]
-pub struct RxError<InError>(pub InError)
-where
-	InError: SignalBound;
-
-#[derive(Event, Clone)]
-pub struct RxComplete;
-
-impl<'c, In, InError, Context> Observer for ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError> Observer for ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
 	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
 		if !self.closed {
-			context
-				.commands()
-				.trigger_targets(RxNext::<In>(next), self.destination_entity);
+			context.send_notification(
+				self.destination_entity,
+				SubscriberNotification::<Self::In, Self::InError, Self::Context>::Next(next),
+			);
 		}
 	}
 
 	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
 		if !self.closed {
-			context
-				.commands()
-				.trigger_targets(RxError::<InError>(error), self.destination_entity);
+			context.send_notification(
+				self.destination_entity,
+				SubscriberNotification::<Self::In, Self::InError, Self::Context>::Error(error),
+			);
 		}
 	}
 
 	fn complete(&mut self, context: &mut Self::Context) {
 		if !self.closed {
-			context
-				.commands()
-				.trigger_targets(RxComplete, self.destination_entity);
+			context.send_notification(
+				self.destination_entity,
+				SubscriberNotification::<Self::In, Self::InError, Self::Context>::Complete,
+			);
 			self.unsubscribe(context);
 		}
 	}
 }
 
-impl<'c, In, InError, Context> Tickable for ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError> Tickable for ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
 	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
-		context
-			.commands()
-			.trigger_targets(tick, self.destination_entity);
+		context.send_notification(
+			self.destination_entity,
+			SubscriberNotification::<In, InError, Self::Context>::Tick(tick),
+		);
 	}
 }
 
-impl<'c, In, InError, Context> SubscriptionLike for ErasedEntitySubscriber<'c, In, InError, Context>
+impl<'world, 'state, In, InError> SubscriptionLike
+	for ErasedEntitySubscriber<'world, 'state, In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Context: 'c + ContextWithCommands<'c>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -223,11 +204,17 @@ where
 
 	fn unsubscribe(&mut self, context: &mut Self::Context) {
 		self.closed = true;
-		// TODO: QueryLens of destination with self.access, call unsubscribe on destination
+		context.send_notification(
+			self.destination_entity,
+			SubscriberNotification::<In, InError, Self::Context>::Unsubscribe,
+		);
 	}
 
-	fn add_teardown(&mut self, _teardown: Teardown<Self::Context>, _context: &mut Self::Context) {
-		// TODO: Extend the Context to have a query (lens?) ref to the subscription component once there is a proper one, and add it there.
+	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+		context.send_notification(
+			self.destination_entity,
+			SubscriberNotification::<In, InError, Self::Context>::Add(Some(teardown)),
+		);
 	}
 
 	#[inline]

@@ -3,24 +3,19 @@ use std::marker::PhantomData;
 use bevy_ecs::entity::Entity;
 use rx_bevy_core::{
 	ObservableSubscription, SubscriptionLike,
-	context::{
-		SubscriptionContext, WithSubscriptionContext, allocator::ScheduledSubscriptionAllocator,
-	},
+	context::{WithSubscriptionContext, allocator::ScheduledSubscriptionAllocator},
 };
 
-use crate::handle::{ScheduledEntitySubscriptionHandle, UnscheduledEntitySubscriptionHandle};
+use crate::{
+	BevySubscriberContext,
+	handle::{ScheduledEntitySubscriptionHandle, UnscheduledEntitySubscriptionHandle},
+};
 
-pub struct ScheduledEntitySubscriptionAllocator<Context>
-where
-	Context: SubscriptionContext,
-{
-	_phantom_data: PhantomData<fn(Context)>,
+pub struct ScheduledEntitySubscriptionAllocator<'world, 'state> {
+	_phantom_data: PhantomData<fn(&'world (), &'state ())>,
 }
 
-impl<Context> Default for ScheduledEntitySubscriptionAllocator<Context>
-where
-	Context: SubscriptionContext,
-{
+impl<'world, 'state> Default for ScheduledEntitySubscriptionAllocator<'world, 'state> {
 	fn default() -> Self {
 		Self {
 			_phantom_data: PhantomData,
@@ -28,16 +23,14 @@ where
 	}
 }
 
-impl<Context> WithSubscriptionContext for ScheduledEntitySubscriptionAllocator<Context>
-where
-	Context: SubscriptionContext,
+impl<'world, 'state> WithSubscriptionContext
+	for ScheduledEntitySubscriptionAllocator<'world, 'state>
 {
-	type Context = Context;
+	type Context = BevySubscriberContext<'world, 'state>;
 }
 
-impl<Context> ScheduledSubscriptionAllocator for ScheduledEntitySubscriptionAllocator<Context>
-where
-	Context: SubscriptionContext,
+impl<'world, 'state> ScheduledSubscriptionAllocator
+	for ScheduledEntitySubscriptionAllocator<'world, 'state>
 {
 	type ScheduledHandle<Subscription>
 		= ScheduledEntitySubscriptionHandle<Subscription>
