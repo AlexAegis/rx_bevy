@@ -5,9 +5,11 @@ mod entity_subscriber_notification;
 mod entity_subscription;
 //mod world_state_context_classic;
 //mod world_state_context_neo;
+mod global_teardown_store;
 
 pub use allocator::*;
 pub use bevy_context::*;
+pub use global_teardown_store::*;
 //pub use command_context::*;
 pub use entity_subscriber_notification::*;
 pub use entity_subscription::*;

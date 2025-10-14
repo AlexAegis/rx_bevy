@@ -4,7 +4,7 @@ use short_type_name::short_type_name;
 
 use crate::{
 	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable,
-	context::{WithSubscriptionContext, allocator::SharedDestination},
+	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
 pub struct HeapSubscriber<Destination>
@@ -36,18 +36,24 @@ where
 		}
 	}
 
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
-	where
-		F: Fn(&Destination, &mut Self::Context),
+	fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 		if let Ok(destination) = self.destination.read() {
 			accessor(&*destination, context)
 		}
 	}
 
-	fn access_with_context_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
-	where
-		F: FnMut(&mut Destination, &mut Self::Context),
+	fn access_with_context_mut<F>(
+		&mut self,
+		mut accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 		if let Ok(mut destination) = self.destination.write() {
 			accessor(&mut *destination, context)
@@ -117,7 +123,11 @@ impl<Destination> Observer for HeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.next(next, context);
@@ -127,7 +137,11 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.error(error, context);
@@ -138,7 +152,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.complete(context);
@@ -154,7 +168,11 @@ impl<Destination> Tickable for HeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
-	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
+	fn tick(
+		&mut self,
+		tick: crate::Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if let Ok(mut lock) = self.destination.write() {
 			lock.tick(tick, context);
 		} else {
@@ -176,7 +194,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);
@@ -186,24 +204,17 @@ where
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.add_teardown(teardown, context);
 			} else {
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
-		}
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		if let Ok(mut lock) = self.destination.write() {
-			lock.get_context_to_unsubscribe_on_drop()
-		} else {
-			panic!(
-				"Context can't be acquired in a {} as the destination RwLock is poisoned!",
-				short_type_name::<Self>()
-			)
 		}
 	}
 }

@@ -29,7 +29,7 @@ where
 		mut destination: impl Subscriber<In = Iterator::Item, InError = (), Context = Context> + 'static,
 		iterator: Iterator,
 		options: OnTickObservableOptions,
-		context: &mut Context,
+		context: &mut Context::Item<'_>,
 	) -> Self {
 		let mut iter = iterator.into_iter();
 		if options.start_on_subscribe
@@ -63,7 +63,11 @@ where
 	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, _tick: Tick, context: &mut Self::Context) {
+	fn tick(
+		&mut self,
+		_tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.observed_ticks += 1;
 
 		if self.options.emit_at_every_nth_tick != 0
@@ -87,7 +91,7 @@ where
 		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.unsubscribe(context);
 		self.teardown.unsubscribe(context);
 	}
@@ -95,13 +99,9 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: rx_bevy_core::Teardown<Self::Context>,
-		context: &mut Self::Context,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -113,7 +113,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

@@ -13,20 +13,20 @@ use rx_bevy_core::{
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
-use crate::BevySubscriberContext;
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 
 #[derive(Component)]
-pub struct EntitySubscriber<'world, 'state, Destination>
+pub struct EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	destination_entity: Entity,
-	_phantom_data: PhantomData<(fn(&'world (), &'state ()), Destination)>,
+	_phantom_data: PhantomData<Destination>,
 }
 
-impl<'world, 'state, Destination> EntitySubscriber<'world, 'state, Destination>
+impl<Destination> EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	pub fn new(destination_entity: Entity) -> Self {
 		Self {
@@ -42,9 +42,9 @@ where
 	}
 }
 
-impl<'world, 'state, Destination> Clone for EntitySubscriber<'world, 'state, Destination>
+impl<Destination> Clone for EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -54,10 +54,9 @@ where
 	}
 }
 
-impl<'world, 'state, Destination> SharedDestination<Destination>
-	for EntitySubscriber<'world, 'state, Destination>
+impl<Destination> SharedDestination<Destination> for EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	fn access<F>(&mut self, _accessor: F)
 	where
@@ -73,40 +72,49 @@ where
 	{
 	}
 
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
-	where
-		F: Fn(&Destination, &mut Self::Context),
+	fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 	}
 
-	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
-	where
-		F: FnMut(&mut Destination, &mut Self::Context),
+	fn access_with_context_mut<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 	}
 }
 
-impl<'world, 'state, Destination> ObserverInput for EntitySubscriber<'world, 'state, Destination>
+impl<Destination> ObserverInput for EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
 }
 
-impl<'world, 'state, Destination> WithSubscriptionContext
-	for EntitySubscriber<'world, 'state, Destination>
+impl<Destination> WithSubscriptionContext for EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
-	type Context = BevySubscriberContext<'world, 'state>;
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<'world, 'state, Destination> Observer for EntitySubscriber<'world, 'state, Destination>
+impl<Destination> Observer for EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			context.send_notification(
 				self.destination_entity,
@@ -119,7 +127,11 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			context.send_notification(
 				self.destination_entity,
@@ -132,7 +144,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			context.send_notification(
 				self.destination_entity,
@@ -147,11 +159,11 @@ where
 	}
 }
 
-impl<'world, 'state, Destination> Tickable for EntitySubscriber<'world, 'state, Destination>
+impl<Destination> Tickable for EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		context.send_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Tick(
@@ -161,9 +173,9 @@ where
 	}
 }
 
-impl<'world, 'state, Destination> SubscriptionLike for EntitySubscriber<'world, 'state, Destination>
+impl<Destination> SubscriptionLike for EntitySubscriber<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriberContext<'world, 'state>>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -171,27 +183,23 @@ where
 		todo!("impl")
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		context.send_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Unsubscribe,
 		);
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		context.send_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Add(
 				Some(teardown),
 			),
 		);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		// This WILL panic. But do not worry, everything should be properly
-		// closed by the time a Drop would try to unsubscribe as they are
-		// automatically unsubscribed by an on_remove hook
-		Self::Context::create_context_to_unsubscribe_on_drop()
 	}
 }

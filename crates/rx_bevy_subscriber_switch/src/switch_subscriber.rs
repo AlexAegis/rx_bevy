@@ -38,7 +38,10 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	pub fn new(destination: Destination, context: &mut InnerObservable::Context) -> Self {
+	pub fn new(
+		destination: Destination,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+	) -> Self {
 		Self {
 			state: Arc::new(RwLock::new(SwitchSubscriberState::new(
 				destination,
@@ -95,7 +98,11 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			// TODO: Check if this clone is still necessary
 			let state_ref = self.state.clone();
@@ -108,7 +115,11 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed()
 			&& let Ok(mut state) = self.state.write()
 		{
@@ -116,7 +127,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed()
 			&& let Ok(mut state) = self.state.write()
 		{
@@ -139,7 +150,7 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if let Ok(mut state) = self.state.write() {
 			state.tick(tick, context);
 		}
@@ -169,7 +180,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		// Pre-checked to avoid runtime borrow conflicts
 		if !self.is_closed()
 			&& let Ok(mut state) = self.state.write()
@@ -178,7 +189,11 @@ where
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			if let Ok(mut state) = self.state.write() {
 				// Teardowns added from the outside are forwarded to the destination so
@@ -187,15 +202,6 @@ where
 			}
 		} else {
 			teardown.execute(context);
-		}
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		if let Ok(mut state) = self.state.write() {
-			state.get_context_to_unsubscribe_on_drop()
-		} else {
-			Self::Context::create_context_to_unsubscribe_on_drop()
 		}
 	}
 }

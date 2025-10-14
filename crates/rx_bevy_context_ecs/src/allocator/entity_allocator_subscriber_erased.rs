@@ -3,30 +3,27 @@ use std::marker::PhantomData;
 use rx_bevy_core::{
 	SignalBound, Subscriber,
 	context::{WithSubscriptionContext, allocator::ErasedDestinationAllocator},
+	prelude::SubscriptionContext,
 };
 
-use crate::{BevySubscriberContext, ErasedEntitySubscriber};
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, ErasedEntitySubscriber};
 
-pub struct ErasedSubscriberEntityAllocator<'world, 'state> {
-	_phantom_data: PhantomData<fn(&'world (), &'state ())>,
+pub struct ErasedSubscriberEntityAllocator;
+
+impl WithSubscriptionContext for ErasedSubscriberEntityAllocator {
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<'world, 'state> WithSubscriptionContext for ErasedSubscriberEntityAllocator<'world, 'state> {
-	type Context = BevySubscriberContext<'world, 'state>;
-}
-
-impl<'world, 'state> ErasedDestinationAllocator
-	for ErasedSubscriberEntityAllocator<'world, 'state>
-{
+impl ErasedDestinationAllocator for ErasedSubscriberEntityAllocator {
 	type Shared<In, InError>
-		= ErasedEntitySubscriber<'world, 'state, In, InError>
+		= ErasedEntitySubscriber<In, InError>
 	where
 		In: SignalBound,
 		InError: SignalBound;
 
 	fn share<Destination>(
 		destination: Destination,
-		_context: &mut Self::Context,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Shared<Destination::In, Destination::InError>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync,

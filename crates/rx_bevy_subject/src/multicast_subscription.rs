@@ -79,7 +79,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if let Some(subscriber) = &mut self.subscriber {
 			subscriber.tick(tick, context);
 		}
@@ -99,7 +99,7 @@ where
 			.unwrap_or(true)
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			if let Some(mut subscriber) = self.subscriber.take() {
 				subscriber.unsubscribe(context);
@@ -108,16 +108,16 @@ where
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if let Some(subscriber) = &mut self.subscriber {
 			subscriber.add_teardown(teardown, context);
 		} else {
 			teardown.execute(context);
 		}
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -129,7 +129,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.teardown.is_closed() {
-			let mut context = self.teardown.get_context_to_unsubscribe_on_drop();
+			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.teardown.unsubscribe(&mut context);
 		}
 		// Does not unsubscribe the subscriber on drop as it is shared.

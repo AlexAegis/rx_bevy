@@ -49,7 +49,7 @@ impl<Context> Tickable for DropSubscription<Context>
 where
 	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.subscription_data.tick(tick, context);
 	}
 }
@@ -62,18 +62,18 @@ where
 		self.subscription_data.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			self.subscription_data.unsubscribe(context);
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.subscription_data.add_teardown(teardown, context);
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 

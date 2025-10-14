@@ -1,4 +1,4 @@
-use rx_bevy_core::Operator;
+use rx_bevy_core::{Operator, prelude::SubscriptionContext};
 use rx_bevy_operator_composite::CompositeOperator;
 
 use crate::TapNextOperator;
@@ -7,7 +7,7 @@ use crate::TapNextOperator;
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
 	fn tap_next<
 		OnNext: 'static
-			+ for<'a> Fn(&'a Self::Out, &'a mut <Self as Operator>::Context)
+			+ Fn(&Self::Out, &mut <<Self as Operator>::Context as SubscriptionContext>::Item<'_>)
 			+ Clone
 			+ Send
 			+ Sync,

@@ -4,6 +4,7 @@ use bevy_ecs::entity::Entity;
 use rx_bevy_core::{
 	SubscriptionLike, Teardown,
 	context::{WithSubscriptionContext, allocator::handle::WeakSubscriptionHandle},
+	prelude::SubscriptionContext,
 };
 
 pub struct WeakEntitySubscriptionHandle<Subscription>
@@ -58,15 +59,15 @@ where
 		todo!("impl")
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		todo!("impl")
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
-		todo!("impl")
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		todo!("impl")
 	}
 }

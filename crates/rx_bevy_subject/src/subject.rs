@@ -76,7 +76,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Context,
+		context: &mut Context::Item<'_>,
 	) -> Self::Subscription
 	where
 		Destination:
@@ -103,7 +103,11 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -111,7 +115,11 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -119,7 +127,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -134,7 +142,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if let Ok(mut multicast) = self.multicast.write() {
 			multicast.tick(tick, context);
 		}
@@ -155,7 +163,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if let Some((subscribers, teardown)) = {
 			let mut lock = self
 				.multicast
@@ -174,16 +182,16 @@ where
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
 			multicast.add_teardown(teardown, context);
 		}
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		Self::Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 

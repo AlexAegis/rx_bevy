@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, context::WithSubscriptionContext,
+	Tick, Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
@@ -49,17 +49,25 @@ where
 	InError: SignalBound,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, _context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.is_getting_activated = next;
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.complete(context);
 	}
 }
@@ -70,7 +78,7 @@ where
 	InError: SignalBound,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		let next =
 			self.state
 				.calculate_output(self.options.envelope, self.is_getting_activated, tick);
@@ -92,18 +100,17 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

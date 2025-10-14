@@ -44,7 +44,7 @@ where
 
 	fn allocate_unscheduled_subscription<Subscription>(
 		subscription: Subscription,
-		_context: &mut Self::Context,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::UnscheduledHandle<Subscription>
 	where
 		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync,

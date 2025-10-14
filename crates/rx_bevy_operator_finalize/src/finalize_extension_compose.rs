@@ -1,11 +1,17 @@
-use rx_bevy_core::Operator;
+use rx_bevy_core::{Operator, prelude::SubscriptionContext};
 use rx_bevy_operator_composite::CompositeOperator;
 
 use crate::FinalizeOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionFinalize: Operator + Sized {
-	fn finalize<Callback: 'static + Clone + FnOnce(&mut Self::Context) + Send + Sync>(
+	fn finalize<
+		Callback: 'static
+			+ Clone
+			+ FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_>)
+			+ Send
+			+ Sync,
+	>(
 		self,
 		callback: Callback,
 	) -> CompositeOperator<Self, FinalizeOperator<Self::Out, Self::OutError, Callback, Self::Context>>

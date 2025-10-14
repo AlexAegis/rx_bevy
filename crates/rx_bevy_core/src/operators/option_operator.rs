@@ -1,4 +1,7 @@
-use crate::{ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber};
+use crate::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
+	context::SubscriptionContext,
+};
 
 use super::OptionSubscriber;
 
@@ -25,7 +28,7 @@ where
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Self::Context,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static

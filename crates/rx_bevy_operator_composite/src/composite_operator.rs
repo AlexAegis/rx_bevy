@@ -1,4 +1,6 @@
-use rx_bevy_core::{ObservableOutput, ObserverInput, Operator, Subscriber};
+use rx_bevy_core::{
+	ObservableOutput, ObserverInput, Operator, Subscriber, prelude::SubscriptionContext,
+};
 
 use crate::CompositeSubscriber;
 
@@ -61,7 +63,7 @@ where
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Self::Context,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static

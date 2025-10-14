@@ -53,7 +53,7 @@ impl<Context> Tickable for IntervalSubscription<Context>
 where
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.timer.tick(tick.delta);
 		let ticks = self
 			.timer
@@ -74,7 +74,7 @@ where
 		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.unsubscribe(context);
 		self.teardown.unsubscribe(context);
 	}
@@ -82,13 +82,9 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: rx_bevy_core::Teardown<Self::Context>,
-		context: &mut Self::Context,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -98,7 +94,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

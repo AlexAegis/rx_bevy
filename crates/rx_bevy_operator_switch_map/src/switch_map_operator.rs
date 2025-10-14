@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
-	context::WithSubscriptionContext,
+	context::WithSubscriptionContext, prelude::SubscriptionContext,
 };
 
 use crate::SwitchMapSubscriber;
@@ -58,7 +58,7 @@ where
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Self::Context,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static

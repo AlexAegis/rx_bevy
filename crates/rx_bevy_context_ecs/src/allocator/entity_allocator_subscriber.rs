@@ -3,27 +3,26 @@ use std::marker::PhantomData;
 use rx_bevy_core::{
 	Subscriber,
 	context::{WithSubscriptionContext, allocator::DestinationAllocator},
+	prelude::SubscriptionContext,
 };
 
-use crate::{BevySubscriberContext, EntitySubscriber};
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, EntitySubscriber};
 
-pub struct SubscriberEntityAllocator<'world, 'state> {
-	_phantom_data: PhantomData<fn(&'world (), &'state ())>,
+pub struct SubscriberEntityAllocator;
+
+impl WithSubscriptionContext for SubscriberEntityAllocator {
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<'world, 'state> WithSubscriptionContext for SubscriberEntityAllocator<'world, 'state> {
-	type Context = BevySubscriberContext<'world, 'state>;
-}
-
-impl<'world, 'state> DestinationAllocator for SubscriberEntityAllocator<'world, 'state> {
+impl DestinationAllocator for SubscriberEntityAllocator {
 	type Shared<Destination>
-		= EntitySubscriber<'world, 'state, Destination>
+		= EntitySubscriber<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
 
 	fn share<Destination>(
 		destination: Destination,
-		_context: &mut Self::Context,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Shared<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync,

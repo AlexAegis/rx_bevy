@@ -21,7 +21,7 @@ pub trait ScheduleOnSubscribe<Scheduler>: Observable {
 		&mut self,
 		destination: Destination,
 		scheduler: &mut Scheduler,
-		context: &mut Self::Context,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> <<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::UnscheduledHandle<Self::Subscription>
 	where
 		Destination: 'static
@@ -40,7 +40,7 @@ where
 		&mut self,
 		destination: Destination,
 		scheduler: &mut Scheduler,
-		context: &mut Self::Context,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> <<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::UnscheduledHandle<Self::Subscription>
 	where
 		Destination: 'static

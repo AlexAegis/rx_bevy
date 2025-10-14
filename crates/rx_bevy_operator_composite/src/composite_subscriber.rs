@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	context::WithSubscriptionContext,
+	context::WithSubscriptionContext, prelude::SubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -42,17 +42,25 @@ where
 	Destination: Observer,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.subscriber.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.subscriber.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.subscriber.complete(context);
 	}
 }
@@ -63,7 +71,7 @@ where
 	Destination: Observer,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.subscriber.tick(tick, context);
 	}
 }
@@ -79,18 +87,17 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.subscriber.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.subscriber.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.subscriber.get_context_to_unsubscribe_on_drop()
 	}
 }
 

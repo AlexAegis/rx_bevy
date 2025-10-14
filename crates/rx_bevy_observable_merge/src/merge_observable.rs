@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionData,
-	context::WithSubscriptionContext,
+	context::WithSubscriptionContext, prelude::SubscriptionContext,
 };
 use rx_bevy_operator_map_into::MapIntoSubscriber;
 use rx_bevy_subscriber_rc::RcSubscriber;
@@ -107,7 +107,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Subscription
 	where
 		Destination:

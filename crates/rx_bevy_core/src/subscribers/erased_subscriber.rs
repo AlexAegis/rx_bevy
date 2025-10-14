@@ -57,17 +57,25 @@ where
 	Context: SubscriptionContext,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.complete(context);
 	}
 }
@@ -79,7 +87,11 @@ where
 	Context: SubscriptionContext,
 {
 	#[inline]
-	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
+	fn tick(
+		&mut self,
+		tick: crate::Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -96,18 +108,17 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -119,7 +130,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

@@ -4,6 +4,7 @@ use rx_bevy_core::{
 	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionLike, Teardown, Tick,
 	Tickable,
 	context::{SubscriptionContextDropSafety, WithSubscriptionContext},
+	prelude::SubscriptionContext,
 };
 
 use crate::MockContext;
@@ -35,15 +36,23 @@ where
 	InError: SignalBound,
 	DropSafety: SubscriptionContextDropSafety,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		context.push(SubscriberNotification::Next(next));
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		context.push(SubscriberNotification::Error(error));
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		context.push(SubscriberNotification::Complete);
 		self.unsubscribe(context);
 	}
@@ -55,7 +64,7 @@ where
 	InError: SignalBound,
 	DropSafety: SubscriptionContextDropSafety,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		context.push(SubscriberNotification::Tick(tick));
 	}
 }
@@ -80,22 +89,21 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.closed = true;
 		context.push(SubscriberNotification::Unsubscribe);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if self.is_closed() {
 			teardown.execute(context);
 		}
 		context.push(SubscriberNotification::Add(None));
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		MockContext::default()
 	}
 }
 

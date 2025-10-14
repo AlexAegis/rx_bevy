@@ -3,7 +3,11 @@ use crate::{SignalBound, Teardown, Tick, context::SubscriptionContext};
 /// Represents a signal event in a materialized form.
 /// Useful for
 #[derive(Debug)]
-pub enum ObserverNotification<In, InError> {
+pub enum ObserverNotification<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
 	Next(In),
 	Error(InError),
 	Complete,
@@ -12,7 +16,10 @@ pub enum ObserverNotification<In, InError> {
 
 /// Represents a signal event in a materialized form
 #[derive(Debug)]
-pub enum SubscriptionNotification<Context> {
+pub enum SubscriptionNotification<Context>
+where
+	Context: SubscriptionContext,
+{
 	Unsubscribe,
 	Add(Teardown<Context>),
 	Tick(Tick),

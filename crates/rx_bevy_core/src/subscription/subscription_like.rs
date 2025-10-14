@@ -1,4 +1,7 @@
-use crate::{Teardown, context::WithSubscriptionContext};
+use crate::{
+	Teardown,
+	context::{SubscriptionContext, WithSubscriptionContext},
+};
 
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
 /// close it, rendering it no longer operational.
@@ -24,46 +27,32 @@ pub trait SubscriptionLike: WithSubscriptionContext {
 	/// as closed.
 	///
 	/// Once closed, a subscription stays closed.
-	fn unsubscribe(&mut self, context: &mut Self::Context);
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>);
 
 	/// Add additional teardowns to execute on unsubscribe. If the subscription
 	/// is already closed, the added teardown is immediately executed!
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context);
-
-	/// In case the subscription wasn't closed when it got dropped, it will
-	/// try to unsubscribe, as it must be guaranteed that a subscription
-	/// releases all its resources, otherwise a memory leak would occur.
-	/// For this unsubscribe to happen, a context must be provided.
-	///
-	/// If this is implemented for a Subscriber, it should just call the
-	/// destinations `get_context_to_unsubscribe_on_drop` and leave the rest to
-	/// it. If it's implemented for a Subscription, this function provides a
-	/// chance to create a context from the Subscription itself, if that can't
-	/// be done, you should use the [SubscriptionContext][crate::SubscriptionContext]s
-	/// [`create_context_to_unsubscribe_on_drop`][crate::SubscriptionContext::create_context_to_unsubscribe_on_drop]
-	/// function. This function, depending on the context used can panic!
-	///
-	/// Some trivial contexts, like the unit `()` context when a context isn't
-	/// needed, are always safe and will never panic when you drop a
-	/// subscription. But in an ECS context when the resources associated with
-	/// the subscription are stored in the ECS, a context is needed to release
-	/// those resources, and if that reference can't be accessed globally, a
-	/// panic must happen.
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context;
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	);
 }
 
 pub trait SubscriptionCollection: SubscriptionLike {
-	fn add<T>(&mut self, subscription: T, context: &mut Self::Context)
-	where
+	fn add<T>(
+		&mut self,
+		subscription: T,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
 		T: Into<Teardown<Self::Context>>,
 	{
 		let teardown: Teardown<Self::Context> = subscription.into();
 		self.add_teardown(teardown, context);
 	}
 
-	fn add_fn<F>(&mut self, f: F, context: &mut Self::Context)
+	fn add_fn<F>(&mut self, f: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_>)
 	where
-		F: 'static + FnOnce(&mut Self::Context) + Send + Sync,
+		F: 'static + FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_>) + Send + Sync,
 		Self: Sized,
 	{
 		let teardown = Teardown::<Self::Context>::new(f);

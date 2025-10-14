@@ -74,7 +74,7 @@ where
 //	In: SignalBound,
 //	InError: SignalBound,
 //{
-//	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+//	fn next(&mut self, next: Self::In, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 //		if !self.closed {
 //			context
 //				.commands
@@ -82,7 +82,7 @@ where
 //		}
 //	}
 //
-//	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+//	fn error(&mut self, error: Self::InError, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 //		if !self.closed {
 //			context
 //				.commands
@@ -90,7 +90,7 @@ where
 //		}
 //	}
 //
-//	fn complete(&mut self, context: &mut Self::Context) {
+//	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 //		if !self.closed {
 //			context
 //				.commands

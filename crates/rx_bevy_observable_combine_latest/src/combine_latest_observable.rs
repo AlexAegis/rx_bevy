@@ -1,5 +1,6 @@
 use rx_bevy_core::{
 	Observable, ObservableOutput, Subscriber, SubscriptionData, context::WithSubscriptionContext,
+	prelude::SubscriptionContext,
 };
 use rx_bevy_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
@@ -77,7 +78,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static

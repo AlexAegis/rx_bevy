@@ -4,33 +4,20 @@ use bevy_ecs::entity::Entity;
 use rx_bevy_core::{
 	SubscriptionLike,
 	context::{WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator},
+	prelude::SubscriptionContext,
 };
 
-use crate::BevySubscriberContext;
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 
 use super::handle::UnscheduledEntitySubscriptionHandle;
 
-pub struct UnscheduledEntitySubscriptionAllocator<'world, 'state> {
-	_phantom_data: PhantomData<fn(&BevySubscriberContext<'world, 'state>)>,
+pub struct UnscheduledEntitySubscriptionAllocator;
+
+impl WithSubscriptionContext for UnscheduledEntitySubscriptionAllocator {
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<'world, 'state> Default for UnscheduledEntitySubscriptionAllocator<'world, 'state> {
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<'world, 'state> WithSubscriptionContext
-	for UnscheduledEntitySubscriptionAllocator<'world, 'state>
-{
-	type Context = BevySubscriberContext<'world, 'state>;
-}
-
-impl<'world, 'state> UnscheduledSubscriptionAllocator
-	for UnscheduledEntitySubscriptionAllocator<'world, 'state>
-{
+impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator {
 	type UnscheduledHandle<S>
 		= UnscheduledEntitySubscriptionHandle<S>
 	where
@@ -38,7 +25,7 @@ impl<'world, 'state> UnscheduledSubscriptionAllocator
 
 	fn allocate_unscheduled_subscription<S>(
 		subscription: S,
-		_context: &mut Self::Context,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::UnscheduledHandle<S>
 	where
 		S: SubscriptionLike<Context = Self::Context> + Send + Sync,

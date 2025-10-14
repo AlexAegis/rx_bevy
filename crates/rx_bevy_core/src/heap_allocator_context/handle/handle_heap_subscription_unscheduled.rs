@@ -5,7 +5,10 @@ use short_type_name::short_type_name;
 
 use crate::{
 	SubscriptionLike, Teardown,
-	context::{WithSubscriptionContext, allocator::handle::UnscheduledSubscriptionHandle},
+	context::{
+		SubscriptionContext, WithSubscriptionContext,
+		allocator::handle::UnscheduledSubscriptionHandle,
+	},
 };
 
 use super::WeakHeapSubscriptionHandle;
@@ -76,7 +79,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.subscription.write() {
 				lock.unsubscribe(context);
@@ -87,24 +90,17 @@ where
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.subscription.write() {
 				lock.add_teardown(teardown, context);
 			} else {
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
-		}
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		if let Ok(mut lock) = self.subscription.write() {
-			lock.get_context_to_unsubscribe_on_drop()
-		} else {
-			panic!(
-				"Context can't be acquired in a {} as the destination RwLock is poisoned!",
-				short_type_name::<Self>()
-			)
 		}
 	}
 }
@@ -115,7 +111,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = Subscription::Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

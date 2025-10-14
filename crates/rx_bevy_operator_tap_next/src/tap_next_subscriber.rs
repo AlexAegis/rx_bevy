@@ -2,12 +2,12 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, context::WithSubscriptionContext,
+	Tick, Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
 };
 
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -19,7 +19,7 @@ where
 
 impl<In, InError, OnNext, Destination> TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -36,7 +36,7 @@ where
 impl<In, InError, OnNext, Destination> WithSubscriptionContext
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -47,24 +47,32 @@ where
 impl<In, InError, OnNext, Destination> Observer
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		(self.callback)(&next, context);
 		self.destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.complete(context);
 	}
 }
@@ -72,14 +80,14 @@ where
 impl<In, InError, OnNext, Destination> Tickable
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
 	Destination: SubscriptionLike,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -87,7 +95,7 @@ where
 impl<In, InError, OnNext, Destination> SubscriptionLike
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -99,25 +107,24 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
 impl<In, InError, OnNext, Destination> ObservableOutput
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -129,7 +136,7 @@ where
 impl<In, InError, OnNext, Destination> ObserverInput
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + for<'a> Fn(&'a In, &'a mut Destination::Context),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,

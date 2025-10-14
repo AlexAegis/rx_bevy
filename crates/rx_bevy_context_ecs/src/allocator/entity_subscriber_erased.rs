@@ -11,9 +11,9 @@ use rx_bevy_core::{
 	},
 };
 
-use crate::BevySubscriberContext;
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 
-pub struct ErasedEntitySubscriber<'world, 'state, In, InError>
+pub struct ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -24,10 +24,10 @@ where
 	// TODO: Determine from the context using a querylens
 	closed: bool,
 
-	_phantom_data: PhantomData<(fn((&'world (), &'state ())), In, InError)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<'world, 'state, In, InError> ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError> ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -46,7 +46,7 @@ where
 	}
 }
 
-impl<'world, 'state, In, InError> Clone for ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError> Clone for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -60,8 +60,8 @@ where
 	}
 }
 
-impl<'world, 'state, In, InError, Destination> SharedDestination<Destination>
-	for ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError, Destination> SharedDestination<Destination>
+	for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -79,26 +79,31 @@ where
 	{
 	}
 
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
-	where
-		F: Fn(&Destination, &mut Self::Context),
+	fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 	}
 
-	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
-	where
-		F: FnMut(&mut Destination, &mut Self::Context),
+	fn access_with_context_mut<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 	}
 }
 
-impl<'world, 'state, In, InError> ErasedSharedDestination
-	for ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError> ErasedSharedDestination for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	type Access = ErasedEntitySubscriber<'world, 'state, In, InError>;
+	type Access = ErasedEntitySubscriber<In, InError>;
 
 	fn access<F>(&mut self, accessor: F)
 	where
@@ -112,21 +117,26 @@ where
 	{
 	}
 
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
-	where
-		F: Fn(&Self::Access, &mut Self::Context),
+	fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 	}
 
-	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Self::Context)
-	where
-		F: FnMut(&mut Self::Access, &mut Self::Context),
+	fn access_with_context_mut<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 	}
 }
 
-impl<'world, 'state, In, InError> ObserverInput
-	for ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError> ObserverInput for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -135,21 +145,24 @@ where
 	type InError = InError;
 }
 
-impl<'world, 'state, In, InError> WithSubscriptionContext
-	for ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError> WithSubscriptionContext for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	type Context = BevySubscriberContext<'world, 'state>;
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<'world, 'state, In, InError> Observer for ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError> Observer for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.closed {
 			context.send_notification(
 				self.destination_entity,
@@ -158,7 +171,11 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.closed {
 			context.send_notification(
 				self.destination_entity,
@@ -167,7 +184,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.closed {
 			context.send_notification(
 				self.destination_entity,
@@ -178,12 +195,12 @@ where
 	}
 }
 
-impl<'world, 'state, In, InError> Tickable for ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError> Tickable for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		context.send_notification(
 			self.destination_entity,
 			SubscriberNotification::<In, InError, Self::Context>::Tick(tick),
@@ -191,8 +208,7 @@ where
 	}
 }
 
-impl<'world, 'state, In, InError> SubscriptionLike
-	for ErasedEntitySubscriber<'world, 'state, In, InError>
+impl<In, InError> SubscriptionLike for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -202,7 +218,7 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.closed = true;
 		context.send_notification(
 			self.destination_entity,
@@ -210,18 +226,14 @@ where
 		);
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		context.send_notification(
 			self.destination_entity,
 			SubscriberNotification::<In, InError, Self::Context>::Add(Some(teardown)),
 		);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		// This WILL panic. But do not worry, everything should be properly
-		// closed by the time a Drop would try to unsubscribe as they are
-		// automatically unsubscribed by an on_remove hook
-		Self::Context::create_context_to_unsubscribe_on_drop()
 	}
 }

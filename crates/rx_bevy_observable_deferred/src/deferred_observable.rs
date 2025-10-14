@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{Observable, ObservableOutput, Subscriber, context::WithSubscriptionContext};
+use rx_bevy_core::{
+	Observable, ObservableOutput, Subscriber, context::WithSubscriptionContext,
+	prelude::SubscriptionContext,
+};
 
 pub fn deferred_observable<F, Source>(observable_creator: F) -> DeferredObservable<F, Source>
 where
@@ -52,7 +55,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static

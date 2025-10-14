@@ -17,7 +17,7 @@ impl SubscriptionContext for CustomContext {
 
 	type DropSafety = DropUnsafeSubscriptionContext;
 
-	fn create_context_to_unsubscribe_on_drop() -> Self {
+	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c> {
 		panic!("Don't worry about me");
 	}
 }

@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
-use rx_bevy_core::{SubjectLike, context::FromSubscriptionContext};
+use rx_bevy_core::{SubjectLike, context::FromSubscriptionContext, prelude::SubscriptionContext};
 
 #[derive(Clone)]
 pub struct ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator: Fn(&mut Connector::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub(crate) connector_creator: ConnectorCreator,
@@ -15,7 +15,7 @@ where
 
 impl<ConnectorCreator, Connector> ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator: Fn(&mut Connector::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub fn new(connector_creator: ConnectorCreator) -> Self {
@@ -39,7 +39,11 @@ where
 	}
 }
 
-impl<Connector> Default for ConnectableOptions<fn(&mut Connector::Context) -> Connector, Connector>
+impl<Connector> Default
+	for ConnectableOptions<
+		fn(&mut <Connector::Context as SubscriptionContext>::Item<'_>) -> Connector,
+		Connector,
+	>
 where
 	Connector: 'static + FromSubscriptionContext + SubjectLike,
 {

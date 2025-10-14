@@ -224,7 +224,7 @@ impl<'w, 's> SubscriptionContext for CommandContext<'w, 's> {
 	type ScheduledSubscriptionAllocator = ScheduledEntitySubscriptionAllocator<Self>;
 	type UnscheduledSubscriptionAllocator = UnscheduledEntitySubscriptionAllocator<Self>;
 
-	fn create_context_to_unsubscribe_on_drop() -> Self {
+	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c> {
 		panic!(
 			"{}::create_context_to_unsubscribe_on_drop() was called, but its impossible to satisfy!
 This is likely due because an active subscription was dropped before it was unsubscribed, which

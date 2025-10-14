@@ -26,9 +26,10 @@ where
 	/// also be 'static when we want to use this as a `dyn SubscriptionLike`
 	/// trait object, due to variance as the accepting functions signature is
 	/// `impl SubscriptionLike<Context = Context> + 'static`
-	notifiable_subscriptions:
-		Vec<Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context) + Send + Sync>>,
-	finalizers: Vec<Box<dyn FnOnce(&mut Context) + Send + Sync>>,
+	notifiable_subscriptions: Vec<
+		Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_>) + Send + Sync>,
+	>,
+	finalizers: Vec<Box<dyn FnOnce(&mut Context::Item<'_>) + Send + Sync>>,
 }
 
 impl<Context> SubscriptionData<Context>
@@ -53,7 +54,7 @@ where
 	pub fn add_notifiable(
 		&mut self,
 		subscription: NotifiableSubscription<Context>,
-		context: &mut Context,
+		context: &mut Context::Item<'_>,
 	) {
 		if let Some(mut notifiable_subscription) = subscription.take() {
 			if self.is_closed() {
@@ -100,7 +101,7 @@ impl<Context> Tickable for SubscriptionData<Context>
 where
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		for notifiable_subscription in self.notifiable_subscriptions.iter_mut() {
 			(notifiable_subscription)(SubscriptionNotification::Tick(tick.clone()), context);
 		}
@@ -116,7 +117,7 @@ where
 		self.is_closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut Context) {
+	fn unsubscribe(&mut self, context: &mut Context::Item<'_>) {
 		if !self.is_closed() {
 			self.is_closed = true;
 
@@ -130,7 +131,11 @@ where
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if self.is_closed() {
 			// If this subscription is already closed, the newly added teardown
 			// is immediately executed.
@@ -138,15 +143,6 @@ where
 		} else if let Some(teardown_fn) = teardown.take() {
 			self.finalizers.push(teardown_fn);
 		}
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		// May or may not panic, depending on the context used.
-		// If you want to make sure it doesn't panic, use DropSafe contexts!
-		// If you do need to use DropUnsafe contexts, make sure you unsubscribe
-		// it before letting it go out of scope and drop!
-		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -170,7 +166,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

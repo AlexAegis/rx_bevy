@@ -18,7 +18,10 @@ impl<Subscription> ConnectionHandle<Subscription>
 where
 	Subscription: 'static + SubscriptionLike + Send + Sync,
 {
-	pub fn new(subscription: Subscription, context: &mut Subscription::Context) -> Self {
+	pub fn new(
+		subscription: Subscription,
+		context: &mut <Subscription::Context as SubscriptionContext>::Item<'_>,
+	) -> Self {
 		let handle =
 			<<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator as UnscheduledSubscriptionAllocator>::allocate_unscheduled_subscription(
 				subscription, context
@@ -54,17 +57,16 @@ where
 		self.handle.is_closed()
 	}
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.handle.unsubscribe(context);
 	}
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.handle.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.handle.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -74,7 +76,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = Subscription::Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

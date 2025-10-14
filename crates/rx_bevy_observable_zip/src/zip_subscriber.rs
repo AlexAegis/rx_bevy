@@ -1,6 +1,6 @@
 use rx_bevy_core::{
 	Observable, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	context::WithSubscriptionContext,
+	context::WithSubscriptionContext, prelude::SubscriptionContext,
 };
 use rx_bevy_emission_variants::{EitherOut2, EitherOutError2};
 
@@ -61,7 +61,10 @@ where
 		// else, don't do anything, the incoming value is ignored as the queue is full
 	}
 
-	fn check_if_can_complete(&mut self, context: &mut O1::Context) {
+	fn check_if_can_complete(
+		&mut self,
+		context: &mut <O1::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.destination.is_closed()
 			&& (self.o1_queue.is_completed() || self.o2_queue.is_completed())
 		{
@@ -99,7 +102,11 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		match next {
 			EitherOut2::O1(o1_next) => {
 				Self::push_next(&mut self.o1_queue, o1_next, &self.options);
@@ -126,7 +133,11 @@ where
 		self.check_if_can_complete(context);
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.destination.is_closed() {
 			self.destination.error(error, context);
 			self.unsubscribe(context)
@@ -134,7 +145,7 @@ where
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.check_if_can_complete(context);
 	}
 }
@@ -152,7 +163,7 @@ where
 	O2::Out: Clone,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -190,17 +201,16 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }

@@ -1,11 +1,10 @@
 use std::{iter::Chain, slice::Iter};
 
 use rx_bevy_core::{
-	SignalBound, Subscriber, SubscriberNotification,
+	SignalBound, SubscriberNotification,
 	context::{SubscriptionContext, SubscriptionContextDropSafety},
 	heap_allocator_context::{
-		ErasedHeapSubscriber, ErasedSubscriberHeapAllocator, HeapSubscriber,
-		ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
+		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
 		UnscheduledSubscriptionHeapAllocator,
 	},
 };
@@ -299,6 +298,8 @@ where
 	InError: SignalBound,
 	DropSafety: SubscriptionContextDropSafety,
 {
+	type Item<'c> = MockContext<In, InError, DropSafety>;
+
 	/// The DropSafety is parametric for the sake of testability, the context will always panic on drop if not closed to ensure proper tests.
 	type DropSafety = DropSafety;
 
@@ -307,7 +308,7 @@ where
 	type ScheduledSubscriptionAllocator = ScheduledSubscriptionHeapAllocator<Self>;
 	type UnscheduledSubscriptionAllocator = UnscheduledSubscriptionHeapAllocator<Self>;
 
-	fn create_context_to_unsubscribe_on_drop() -> Self {
+	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c> {
 		// While this context could be constructed very easily (It has a
 		// [Default] implementation too! This is the reason why this method
 		// exists by the way. It just doesn't have the same connotation!)

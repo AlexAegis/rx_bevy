@@ -23,6 +23,9 @@ pub trait WithSubscriptionContext {
 ///
 /// TODO: Rename to SubscriptionAllocationContext
 pub trait SubscriptionContext {
+	/// Historical footage of me figuring out this pattern to enable a trait to be used as a stored function parameter, avoiding lifetime problems https://tenor.com/view/i-have-an-idea-croods-the-croods-grug-gif-16310881167093655388
+	type Item<'c>: 'c;
+
 	/// Indicates if the context can be safely (or not) acquired during a drop
 	/// to perform a last minute unsubscription in case the subscription is not
 	/// already closed.
@@ -51,5 +54,5 @@ pub trait SubscriptionContext {
 
 	type UnscheduledSubscriptionAllocator: UnscheduledSubscriptionAllocator<Context = Self>;
 
-	fn create_context_to_unsubscribe_on_drop() -> Self;
+	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c>;
 }

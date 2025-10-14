@@ -1,6 +1,6 @@
 use crate::{
 	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable,
-	context::WithSubscriptionContext,
+	context::{SubscriptionContext, WithSubscriptionContext},
 };
 
 pub enum OptionSubscriber<InnerSubscriber, Destination>
@@ -55,14 +55,22 @@ where
 	InnerSubscriber::In: 'static,
 	InnerSubscriber::InError: 'static,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.next(next, context),
 			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.next(next, context),
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.error(error, context)
@@ -73,7 +81,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.complete(context),
 			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.complete(context),
@@ -92,7 +100,11 @@ where
 	InnerSubscriber::In: 'static,
 	InnerSubscriber::InError: 'static,
 {
-	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
+	fn tick(
+		&mut self,
+		tick: crate::Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.tick(tick, context),
 			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.tick(tick, context),
@@ -119,7 +131,10 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut InnerSubscriber::Context) {
+	fn unsubscribe(
+		&mut self,
+		context: &mut <InnerSubscriber::Context as SubscriptionContext>::Item<'_>,
+	) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.unsubscribe(context);
@@ -130,24 +145,17 @@ where
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => {
 				internal_subscriber.add_teardown(teardown, context);
 			}
 			OptionSubscriber::None(fallback_subscriber) => {
 				fallback_subscriber.add_teardown(teardown, context);
-			}
-		}
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		match self {
-			OptionSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.get_context_to_unsubscribe_on_drop()
-			}
-			OptionSubscriber::None(fallback_subscriber) => {
-				fallback_subscriber.get_context_to_unsubscribe_on_drop()
 			}
 		}
 	}
@@ -166,7 +174,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = InnerSubscriber::Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

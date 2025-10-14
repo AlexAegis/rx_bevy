@@ -1,5 +1,6 @@
 use rx_bevy_core::{
 	Observable, ObservableOutput, Operator, Subscriber, context::WithSubscriptionContext,
+	prelude::SubscriptionContext,
 };
 
 /// TODO: chance source to be a ref
@@ -87,7 +88,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static

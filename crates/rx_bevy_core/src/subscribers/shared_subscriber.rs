@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use crate::{
 	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
 	context::{
-		WithSubscriptionContext,
+		SubscriptionContext, WithSubscriptionContext,
 		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
 	},
 };
@@ -24,7 +24,10 @@ impl<Destination> SharedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
-	pub fn new(destination: Destination, context: &mut Destination::Context) -> Self {
+	pub fn new(
+		destination: Destination,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+	) -> Self {
 		Self {
 			shared_destination: <Destination as DestinationSharedTypes>::Sharer::share(
 				destination,
@@ -48,17 +51,23 @@ where
 		self.shared_destination.access_mut(accessor);
 	}
 
-	pub fn access_with_context<F>(&mut self, accessor: F, context: &mut Destination::Context)
-	where
-		F: Fn(&Destination, &mut Destination::Context),
+	pub fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: Fn(&Destination, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	{
 		self.shared_destination
 			.access_with_context(accessor, context);
 	}
 
-	pub fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Destination::Context)
-	where
-		F: FnMut(&mut Destination, &mut Destination::Context),
+	pub fn access_with_context_mut<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: FnMut(&mut Destination, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
 	{
 		self.shared_destination
 			.access_with_context_mut(accessor, context);
@@ -97,17 +106,25 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.shared_destination.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.shared_destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.shared_destination.complete(context);
 	}
 }
@@ -117,9 +134,10 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.access_with_context_mut(
-			move |destination: &mut Destination, context: &mut Destination::Context| {
+			move |destination: &mut Destination,
+			      context: &mut <Destination::Context as SubscriptionContext>::Item<'_>| {
 				destination.tick(tick.clone(), context)
 			},
 			context,
@@ -137,18 +155,17 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.shared_destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.shared_destination.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.shared_destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

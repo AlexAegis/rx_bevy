@@ -1,4 +1,4 @@
-use rx_bevy_core::{Observable, context::SubscriptionContext};
+use rx_bevy_core::{Observable, SignalBound, context::SubscriptionContext};
 use rx_bevy_observable_pipe::Pipe;
 
 use crate::TapNextOperator;
@@ -8,7 +8,9 @@ pub fn tap_next<In, InError, OnNext, Context>(
 	callback: OnNext,
 ) -> TapNextOperator<In, InError, OnNext, Context>
 where
-	OnNext: for<'a> Fn(&'a In, &'a mut Context) + Clone + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	OnNext: 'static + Fn(&In, &mut Context::Item<'_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
 	TapNextOperator::new(callback)
@@ -17,7 +19,11 @@ where
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionTapNext: Observable + Sized {
 	fn tap_next<
-		OnNext: 'static + for<'a> Fn(&'a Self::Out, &'a mut Self::Context) + Clone + Send + Sync,
+		OnNext: 'static
+			+ Fn(&Self::Out, &mut <Self::Context as SubscriptionContext>::Item<'_>)
+			+ Clone
+			+ Send
+			+ Sync,
 	>(
 		self,
 		callback: OnNext,

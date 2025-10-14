@@ -14,7 +14,7 @@ use crate::{
 pub struct ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
@@ -31,7 +31,7 @@ where
 impl<Source, ConnectorCreator, Connector> ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
@@ -49,7 +49,7 @@ impl<Source, ConnectorCreator, Connector> Clone
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
@@ -65,7 +65,7 @@ impl<Source, ConnectorCreator, Connector> ObservableOutput
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
@@ -78,7 +78,7 @@ impl<Source, ConnectorCreator, Connector> WithSubscriptionContext
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 {
@@ -89,7 +89,7 @@ impl<Source, ConnectorCreator, Connector> Observable
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 {
@@ -98,7 +98,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Destination::Context,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static
@@ -118,7 +118,7 @@ impl<Source, ConnectorCreator, Connector> SubscriptionLike
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut Source::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
@@ -132,7 +132,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if let Ok(mut lock) = self.connector.write() {
 			lock.unsubscribe(context);
 		} else {
@@ -141,21 +141,15 @@ where
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if let Ok(mut lock) = self.connector.write() {
 			lock.add_teardown(teardown, context);
 		} else {
 			println!("Poisoned connector lock: {}", short_type_name::<Self>());
-		}
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		if let Ok(mut lock) = self.connector.write() {
-			lock.get_context_to_unsubscribe_on_drop()
-		} else {
-			println!("Poisoned connector lock: {}", short_type_name::<Self>());
-			Self::Context::create_context_to_unsubscribe_on_drop()
 		}
 	}
 }
@@ -164,7 +158,7 @@ impl<Source, ConnectorCreator, Connector> Connectable
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut Connector::Context) -> Connector,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_>) -> Connector,
 	Connector: 'static
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
@@ -174,7 +168,7 @@ where
 
 	fn connect(
 		&mut self,
-		context: &mut <Self::ConnectionSubscription as WithSubscriptionContext>::Context,
+		context: &mut <<Self::ConnectionSubscription as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_>,
 	) -> ConnectionHandle<Self::ConnectionSubscription> {
 		if let Ok(mut lock) = self.connector.write() {
 			lock.connect(context)

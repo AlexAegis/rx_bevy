@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_bevy_core::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, context::WithSubscriptionContext,
+	Tick, Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -64,19 +64,27 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.next(EitherOut2::O1(next), context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination
 			.error(EitherOutError2::O1Error(error), context);
 		//self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.next(EitherOut2::CompleteO1, context);
 		self.destination.complete(context);
 		//self.destination.unsubscribe(context);
@@ -95,7 +103,7 @@ where
 		>,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -117,18 +125,20 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Destination as WithSubscriptionContext>::Context) {
+	fn unsubscribe(
+		&mut self,
+		context: &mut <<Destination as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -213,19 +223,27 @@ where
 		>,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.next(EitherOut2::O2(next), context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination
 			.error(EitherOutError2::O2Error(error), context);
 		//self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.next(EitherOut2::CompleteO2, context);
 		self.destination.complete(context);
 		//self.destination.unsubscribe(context);
@@ -244,7 +262,7 @@ where
 		>,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -266,18 +284,20 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Destination as WithSubscriptionContext>::Context) {
+	fn unsubscribe(
+		&mut self,
+		context: &mut <<Destination as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.destination.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 

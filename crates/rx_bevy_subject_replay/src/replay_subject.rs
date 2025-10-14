@@ -55,18 +55,18 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn next(&mut self, next: In, context: &mut Context) {
+	fn next(&mut self, next: In, context: &mut Context::Item<'_>) {
 		self.values.borrow_mut().enqueue(next.clone());
 		self.subject.next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Context) {
+	fn error(&mut self, error: Self::InError, context: &mut Context::Item<'_>) {
 		self.subject.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Context) {
+	fn complete(&mut self, context: &mut Context::Item<'_>) {
 		self.subject.complete(context);
 	}
 }
@@ -109,7 +109,7 @@ where
 	>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut Context,
+		context: &mut Context::Item<'_>,
 	) -> Self::Subscription {
 		for value in self.values.borrow().iter() {
 			destination.next(value.clone(), context);
@@ -132,17 +132,16 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut Context) {
+	fn unsubscribe(&mut self, context: &mut Context::Item<'_>) {
 		self.subject.unsubscribe(context);
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.subject.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		Self::Context::create_context_to_unsubscribe_on_drop()
 	}
 }

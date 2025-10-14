@@ -44,18 +44,24 @@ where
 		}
 	}
 
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut Self::Context)
-	where
-		F: Fn(&Self::Access, &mut Self::Context),
+	fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 		if let Ok(destination) = self.destination.read() {
 			accessor(&*destination, context)
 		}
 	}
 
-	fn access_with_context_mut<F>(&mut self, mut accessor: F, context: &mut Self::Context)
-	where
-		F: FnMut(&mut Self::Access, &mut Self::Context),
+	fn access_with_context_mut<F>(
+		&mut self,
+		mut accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>),
 	{
 		if let Ok(mut destination) = self.destination.write() {
 			accessor(&mut *destination, context)
@@ -142,7 +148,11 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.next(next, context);
@@ -152,7 +162,11 @@ where
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.error(error, context);
@@ -163,7 +177,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.complete(context);
@@ -183,7 +197,11 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: crate::Tick, context: &mut Self::Context) {
+	fn tick(
+		&mut self,
+		tick: crate::Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if let Ok(mut lock) = self.destination.write() {
 			lock.tick(tick, context);
 		} else {
@@ -207,7 +225,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);
@@ -222,7 +240,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: crate::Teardown<Self::Context>,
-		context: &mut Self::Context,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
@@ -230,17 +248,6 @@ where
 			} else {
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
-		}
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		if let Ok(mut lock) = self.destination.write() {
-			lock.get_context_to_unsubscribe_on_drop()
-		} else {
-			panic!(
-				"Context can't be acquired in a {} as the destination RwLock is poisoned!",
-				short_type_name::<Self>()
-			)
 		}
 	}
 }
@@ -253,7 +260,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

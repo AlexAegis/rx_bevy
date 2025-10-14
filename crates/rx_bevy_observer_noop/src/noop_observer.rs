@@ -26,16 +26,25 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	fn next(&mut self, _next: Self::In, _context: &mut Self::Context) {}
+	fn next(
+		&mut self,
+		_next: Self::In,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
+	}
 
-	fn error(&mut self, _error: Self::InError, _context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		_error: Self::InError,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		#[cfg(feature = "panic_on_error")]
 		{
 			panic!("noop observer observed an error!")
 		}
 	}
 
-	fn complete(&mut self, _context: &mut Self::Context) {}
+	fn complete(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {}
 }
 
 impl<In, InError, Context> Tickable for NoopObserver<In, InError, Context>
@@ -44,7 +53,12 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, _tick: rx_bevy_core::Tick, _context: &mut Self::Context) {}
+	fn tick(
+		&mut self,
+		_tick: rx_bevy_core::Tick,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
+	}
 }
 
 impl<In, InError, Context> WithSubscriptionContext for NoopObserver<In, InError, Context>
@@ -68,18 +82,17 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, _context: &mut Self::Context) {
+	fn unsubscribe(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		self.closed = true;
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		teardown.execute(context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		Context::create_context_to_unsubscribe_on_drop()
 	}
 }
 

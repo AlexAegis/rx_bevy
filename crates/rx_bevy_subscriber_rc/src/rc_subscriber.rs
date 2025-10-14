@@ -4,6 +4,7 @@ use rx_bevy_core::{
 		WithSubscriptionContext,
 		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
 	},
+	prelude::SubscriptionContext,
 };
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
@@ -22,7 +23,10 @@ impl<Destination> RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	pub fn new(destination: Destination, context: &mut Destination::Context) -> Self {
+	pub fn new(
+		destination: Destination,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+	) -> Self {
 		Self {
 			shared_destination:
 				<InnerRcSubscriber<Destination> as DestinationSharedTypes>::Sharer::share(
@@ -53,17 +57,29 @@ where
 		self.shared_destination.access_mut(accessor);
 	}
 
-	pub fn access_with_context<F>(&mut self, accessor: F, context: &mut Destination::Context)
-	where
-		F: Fn(&InnerRcSubscriber<Destination>, &mut Destination::Context),
+	pub fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: Fn(
+			&InnerRcSubscriber<Destination>,
+			&mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		),
 	{
 		self.shared_destination
 			.access_with_context(accessor, context);
 	}
 
-	pub fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut Destination::Context)
-	where
-		F: FnMut(&mut InnerRcSubscriber<Destination>, &mut Destination::Context),
+	pub fn access_with_context_mut<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+	) where
+		F: FnMut(
+			&mut InnerRcSubscriber<Destination>,
+			&mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		),
 	{
 		self.shared_destination
 			.access_with_context_mut(accessor, context);
@@ -127,20 +143,28 @@ impl<Destination> Observer for RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	fn next(&mut self, next: Self::In, context: &mut Self::Context) {
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_this_clone_closed() {
 			self.shared_destination.next(next, context);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut Self::Context) {
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_this_clone_closed() {
 			self.shared_destination.error(error, context);
 			self.unsubscribe(context);
 		}
 	}
 
-	fn complete(&mut self, context: &mut Self::Context) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_this_clone_closed() {
 			self.completed = true;
 			self.shared_destination.access_mut(|destination| {
@@ -156,7 +180,7 @@ impl<Destination> Tickable for RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	fn tick(&mut self, tick: Tick, context: &mut Self::Context) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		// TODO: verify how shared destinations behave if all of them are getting ticked, ticks might need an id, and consumers of ticks would probably need to check if a tick had been processed before using them
 		//if !self.is_this_clone_closed() {
 		self.shared_destination.tick(tick, context);
@@ -173,7 +197,7 @@ where
 		self.shared_destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.unsubscribed {
 			self.unsubscribed = true;
 			self.shared_destination.access_mut(|destination| {
@@ -184,13 +208,12 @@ where
 	}
 
 	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		self.shared_destination.add_teardown(teardown, context);
-	}
-
-	#[inline]
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		self.shared_destination.get_context_to_unsubscribe_on_drop()
 	}
 }
 
@@ -200,7 +223,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.unsubscribed {
-			let mut context = self.get_context_to_unsubscribe_on_drop();
+			let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 		self.shared_destination.access_mut(|destination| {

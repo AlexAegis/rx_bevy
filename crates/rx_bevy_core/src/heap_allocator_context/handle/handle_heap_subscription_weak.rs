@@ -70,7 +70,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut Self::Context) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
 			if let Some(subscription) = self.subscription.upgrade() {
 				if let Ok(mut lock) = subscription.write() {
@@ -82,7 +82,11 @@ where
 		}
 	}
 
-	fn add_teardown(&mut self, teardown: Teardown<Self::Context>, context: &mut Self::Context) {
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+	) {
 		if !self.is_closed() {
 			if let Some(subscription) = self.subscription.upgrade() {
 				if let Ok(mut lock) = subscription.write() {
@@ -91,21 +95,6 @@ where
 					println!("Poisoned destination lock: {}", short_type_name::<Self>());
 				}
 			}
-		}
-	}
-
-	fn get_context_to_unsubscribe_on_drop(&mut self) -> Self::Context {
-		if let Some(subscription) = self.subscription.upgrade() {
-			if let Ok(mut lock) = subscription.write() {
-				lock.get_context_to_unsubscribe_on_drop()
-			} else {
-				panic!(
-					"Context can't be acquired in a {} as the destination RwLock is poisoned!",
-					short_type_name::<Self>()
-				)
-			}
-		} else {
-			Self::Context::create_context_to_unsubscribe_on_drop()
 		}
 	}
 }

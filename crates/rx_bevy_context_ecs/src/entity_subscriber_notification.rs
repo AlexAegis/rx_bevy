@@ -1,7 +1,7 @@
 use bevy_ecs::{entity::Entity, event::Event};
-use rx_bevy_core::{SignalBound, SubscriberNotification, Tick};
+use rx_bevy_core::{SignalBound, SubscriberNotification, Tick, prelude::SubscriptionContext};
 
-use crate::BevySubscriberContext;
+use crate::BevySubscriptionContextProvider;
 
 #[derive(Event, Clone)]
 pub enum CommandSubscriberNotification<In, InError>
@@ -17,26 +17,26 @@ where
 	Add(Entity),
 }
 
-pub trait IntoCommandSubscriberNotification<'world, 'state, In, InError>
+pub trait IntoCommandSubscriberNotification<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
 	fn into_command_subscriber_notification(
 		self,
-		context: &mut BevySubscriberContext<'world, 'state>,
+		context: &mut <BevySubscriptionContextProvider as SubscriptionContext>::Item<'_>,
 	) -> CommandSubscriberNotification<In, InError>;
 }
 
-impl<'world, 'state, In, InError> IntoCommandSubscriberNotification<'world, 'state, In, InError>
-	for SubscriberNotification<In, InError, BevySubscriberContext<'world, 'state>>
+impl<In, InError> IntoCommandSubscriberNotification<In, InError>
+	for SubscriberNotification<In, InError, BevySubscriptionContextProvider>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
 	fn into_command_subscriber_notification(
 		self,
-		context: &mut BevySubscriberContext<'world, 'state>,
+		context: &mut <BevySubscriptionContextProvider as SubscriptionContext>::Item<'_>,
 	) -> CommandSubscriberNotification<In, InError> {
 		match self {
 			SubscriberNotification::Next(next) => CommandSubscriberNotification::Next(next),
