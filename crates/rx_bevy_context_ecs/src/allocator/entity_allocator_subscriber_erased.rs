@@ -6,17 +6,24 @@ use rx_bevy_core::{
 	prelude::SubscriptionContext,
 };
 
-use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, ErasedEntitySubscriber};
+use crate::{
+	BevySubscriptionContextProvider, ErasedEntitySubscriber,
+	context::EntitySubscriptionContextAccessProvider,
+};
 
-pub struct ErasedSubscriberEntityAllocator;
-
-impl WithSubscriptionContext for ErasedSubscriberEntityAllocator {
-	type Context = BevySubscriptionContextProvider;
+pub struct ErasedSubscriberEntityAllocator<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
+	_phantom_data: PhantomData<fn(ContextAccess)>,
 }
 
-impl ErasedDestinationAllocator for ErasedSubscriberEntityAllocator {
+impl<ContextAccess> ErasedDestinationAllocator for ErasedSubscriberEntityAllocator<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
 	type Shared<In, InError>
-		= ErasedEntitySubscriber<In, InError>
+		= ErasedEntitySubscriber<In, InError, ContextAccess>
 	where
 		In: SignalBound,
 		InError: SignalBound;
@@ -29,5 +36,23 @@ impl ErasedDestinationAllocator for ErasedSubscriberEntityAllocator {
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync,
 	{
 		todo!("impl")
+	}
+}
+
+impl<ContextAccess> WithSubscriptionContext for ErasedSubscriberEntityAllocator<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
+	type Context = BevySubscriptionContextProvider<ContextAccess>;
+}
+
+impl<ContextAccess> Default for ErasedSubscriberEntityAllocator<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
+	fn default() -> Self {
+		Self {
+			_phantom_data: PhantomData,
+		}
 	}
 }

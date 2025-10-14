@@ -7,6 +7,7 @@ use rx_bevy_core::{
 		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
 		UnscheduledSubscriptionHeapAllocator,
 	},
+	prelude::SubscriptionContextAccess,
 };
 
 #[derive(Debug)]
@@ -319,6 +320,15 @@ where
 			short_type_name::short_type_name::<Self>()
 		)
 	}
+}
+
+impl<In, InError, DropSafety> SubscriptionContextAccess for MockContext<In, InError, DropSafety>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	DropSafety: SubscriptionContextDropSafety,
+{
+	type SubscriptionContextProvider = MockContext<In, InError, DropSafety>;
 }
 
 impl<In, InError, DropSafety> Default for MockContext<In, InError, DropSafety>

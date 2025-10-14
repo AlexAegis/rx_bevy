@@ -7,17 +7,22 @@ use rx_bevy_core::{
 	prelude::SubscriptionContext,
 };
 
-use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
+use crate::{BevySubscriptionContextProvider, context::EntitySubscriptionContextAccessProvider};
 
 use super::handle::UnscheduledEntitySubscriptionHandle;
 
-pub struct UnscheduledEntitySubscriptionAllocator;
-
-impl WithSubscriptionContext for UnscheduledEntitySubscriptionAllocator {
-	type Context = BevySubscriptionContextProvider;
+pub struct UnscheduledEntitySubscriptionAllocator<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
+	_phantom_data: PhantomData<fn(ContextAccess)>,
 }
 
-impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator {
+impl<ContextAccess> UnscheduledSubscriptionAllocator
+	for UnscheduledEntitySubscriptionAllocator<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
 	type UnscheduledHandle<S>
 		= UnscheduledEntitySubscriptionHandle<S>
 	where
@@ -32,5 +37,24 @@ impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator
 	{
 		// TODO: Spawn subscription! Or spawn it somewhere else and just use the entity
 		UnscheduledEntitySubscriptionHandle::new(Entity::PLACEHOLDER)
+	}
+}
+
+impl<ContextAccess> WithSubscriptionContext
+	for UnscheduledEntitySubscriptionAllocator<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
+	type Context = BevySubscriptionContextProvider<ContextAccess>;
+}
+
+impl<ContextAccess> Default for UnscheduledEntitySubscriptionAllocator<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
+	fn default() -> Self {
+		Self {
+			_phantom_data: PhantomData,
+		}
 	}
 }

@@ -21,10 +21,10 @@ pub trait WithSubscriptionContext {
 ///
 /// The context defines how new subscriptions can be acquired in an observable.
 ///
-/// TODO: Rename to SubscriptionAllocationContext
+/// TODO: Rename to SubscriptionAllocationContextProvider?
 pub trait SubscriptionContext {
 	/// Historical footage of me figuring out this pattern to enable a trait to be used as a stored function parameter, avoiding lifetime problems https://tenor.com/view/i-have-an-idea-croods-the-croods-grug-gif-16310881167093655388
-	type Item<'c>: 'c;
+	type Item<'c>: 'c + SubscriptionContextAccess<SubscriptionContextProvider = Self>;
 
 	/// Indicates if the context can be safely (or not) acquired during a drop
 	/// to perform a last minute unsubscription in case the subscription is not
@@ -55,4 +55,9 @@ pub trait SubscriptionContext {
 	type UnscheduledSubscriptionAllocator: UnscheduledSubscriptionAllocator<Context = Self>;
 
 	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c>;
+}
+
+/// Used as a back reference to the provider
+pub trait SubscriptionContextAccess {
+	type SubscriptionContextProvider: SubscriptionContext;
 }

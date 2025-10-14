@@ -1,32 +1,32 @@
-use std::{marker::PhantomData, process::Command};
+use std::marker::PhantomData;
 
-use bevy_ecs::{
-	component::Component,
-	entity::Entity,
-	event::Event,
-	system::{Commands, Query, StaticSystemParam, SystemParam},
-};
+use bevy_ecs::{component::Component, entity::Entity};
 
 use rx_bevy_core::{
-	Observer, ObserverInput, SignalBound, Subscriber, SubscriberNotification, SubscriptionLike,
-	Teardown, Tick, Tickable,
+	Observer, ObserverInput, Subscriber, SubscriberNotification, SubscriptionLike, Teardown, Tick,
+	Tickable,
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
-use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
+use crate::{
+	BevySubscriptionContextProvider, EntitySubscriptionContextAccessItem,
+	context::EntitySubscriptionContextAccessProvider,
+};
 
 #[derive(Component)]
-pub struct EntitySubscriber<Destination>
+pub struct EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	destination_entity: Entity,
-	_phantom_data: PhantomData<Destination>,
+	_phantom_data: PhantomData<(Destination, fn(ContextAccess))>,
 }
 
-impl<Destination> EntitySubscriber<Destination>
+impl<Destination, ContextAccess> EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	pub fn new(destination_entity: Entity) -> Self {
 		Self {
@@ -42,9 +42,10 @@ where
 	}
 }
 
-impl<Destination> Clone for EntitySubscriber<Destination>
+impl<Destination, ContextAccess> Clone for EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -54,9 +55,11 @@ where
 	}
 }
 
-impl<Destination> SharedDestination<Destination> for EntitySubscriber<Destination>
+impl<Destination, ContextAccess> SharedDestination<Destination>
+	for EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	fn access<F>(&mut self, _accessor: F)
 	where
@@ -91,24 +94,28 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for EntitySubscriber<Destination>
+impl<Destination, ContextAccess> ObserverInput for EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithSubscriptionContext for EntitySubscriber<Destination>
+impl<Destination, ContextAccess> WithSubscriptionContext
+	for EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
-	type Context = BevySubscriptionContextProvider;
+	type Context = BevySubscriptionContextProvider<ContextAccess>;
 }
 
-impl<Destination> Observer for EntitySubscriber<Destination>
+impl<Destination, ContextAccess> Observer for EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	fn next(
 		&mut self,
@@ -116,7 +123,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) {
 		if !self.is_closed() {
-			context.send_notification(
+			context.send_subscriber_notification(
 				self.destination_entity,
 				SubscriberNotification::<
 					Destination::In,
@@ -133,7 +140,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) {
 		if !self.is_closed() {
-			context.send_notification(
+			context.send_subscriber_notification(
 				self.destination_entity,
 				SubscriberNotification::<
 					Destination::In,
@@ -146,7 +153,7 @@ where
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
 		if !self.is_closed() {
-			context.send_notification(
+			context.send_subscriber_notification(
 				self.destination_entity,
 				SubscriberNotification::<
 					Destination::In,
@@ -159,12 +166,13 @@ where
 	}
 }
 
-impl<Destination> Tickable for EntitySubscriber<Destination>
+impl<Destination, ContextAccess> Tickable for EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
-		context.send_notification(
+		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Tick(
 				tick,
@@ -173,9 +181,10 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for EntitySubscriber<Destination>
+impl<Destination, ContextAccess> SubscriptionLike for EntitySubscriber<Destination, ContextAccess>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -184,7 +193,7 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
-		context.send_notification(
+		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Unsubscribe,
 		);
@@ -195,7 +204,7 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
 	) {
-		context.send_notification(
+		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Add(
 				Some(teardown),

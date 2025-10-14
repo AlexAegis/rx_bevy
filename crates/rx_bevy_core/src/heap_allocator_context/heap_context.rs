@@ -2,7 +2,10 @@ use super::{
 	ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
 	UnscheduledSubscriptionHeapAllocator,
 };
-use crate::context::{DropSafeSubscriptionContext, SubscriptionContext, WithSubscriptionContext};
+use crate::context::{
+	DropSafeSubscriptionContext, SubscriptionContext, SubscriptionContextAccess,
+	WithSubscriptionContext,
+};
 
 /// # Heap Context
 ///
@@ -27,4 +30,8 @@ impl SubscriptionContext for () {
 
 impl WithSubscriptionContext for () {
 	type Context = ();
+}
+
+impl SubscriptionContextAccess for () {
+	type SubscriptionContextProvider = ();
 }
