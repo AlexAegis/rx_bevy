@@ -22,18 +22,40 @@ pub struct SubscriberComponent<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	pub(crate) destination: Destination,
+	pub(crate) destination: Option<Destination>,
 }
 
 impl<Destination> SubscriberComponent<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
-	Destination::In: Clone,
-	Destination::InError: Clone,
 {
 	pub(crate) fn new(subscriber: Destination) -> Self {
 		Self {
-			destination: subscriber,
+			destination: Some(subscriber),
+		}
+	}
+
+	/// Takes the destination out of the component, and puts trust in the
+	/// callers self counciousness to be returned later.
+	pub(crate) fn steal_destination(&mut self) -> Destination {
+		self.destination.take().unwrap_or_else(|| {
+			panic!(
+				"{}'s shared destination in {} was already stolen!",
+				short_type_name::<Self>(),
+				short_type_name::<SubscriberComponent<Destination>>()
+			)
+		})
+	}
+
+	pub(crate) fn return_stolen_destination(&mut self, destination: Destination) {
+		let _old_destination = self.destination.replace(destination);
+
+		#[cfg(feature = "debug")]
+		if _old_destination.is_some() {
+			panic!(
+				"A stolen destination was returned to {} but it does not belong here!",
+				short_type_name::<Self>(),
+			);
 		}
 	}
 }
@@ -62,26 +84,23 @@ where
 		.take()
 		.expect("notification was already consumed!");
 
+	let destination = subscriber_component.destination.as_mut().expect(
+		"destination should only be None during a shared subscripstions access through one",
+	);
 	match event {
-		SubscriberNotificationEvent::Next(next) => {
-			subscriber_component.destination.next(next, &mut context)
-		}
-		SubscriberNotificationEvent::Error(error) => {
-			subscriber_component.destination.error(error, &mut context)
-		}
+		SubscriberNotificationEvent::Next(next) => destination.next(next, &mut context),
+		SubscriberNotificationEvent::Error(error) => destination.error(error, &mut context),
 		SubscriberNotificationEvent::Complete => {
-			subscriber_component.destination.complete(&mut context);
+			destination.complete(&mut context);
 		}
 		SubscriberNotificationEvent::Tick(tick) => {
-			subscriber_component.destination.tick(tick, &mut context);
+			destination.tick(tick, &mut context);
 		}
 		SubscriberNotificationEvent::Add(Some(teardown)) => {
-			subscriber_component
-				.destination
-				.add_teardown(teardown, &mut context);
+			destination.add_teardown(teardown, &mut context);
 		}
 		SubscriberNotificationEvent::Unsubscribe => {
-			subscriber_component.destination.unsubscribe(&mut context);
+			destination.unsubscribe(&mut context);
 		}
 		_ => {}
 	}

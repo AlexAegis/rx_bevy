@@ -1,7 +1,10 @@
+use std::marker::PhantomData;
+
 use bevy_ecs::{
+	component::{Component, Mutable},
 	entity::Entity,
-	system::{Commands, SystemParam},
-	world::DeferredWorld,
+	system::SystemParam,
+	world::{DeferredWorld, Mut},
 };
 use rx_core_traits::{
 	SignalBound, SubscriberNotification, SubscriptionNotification,
@@ -41,8 +44,48 @@ Please submit an issue at https://github.com/AlexAegis/rx_bevy/issues/new?templa
 
 #[derive(SystemParam)]
 pub struct BevySubscriptionContext<'w, 's> {
-	pub commands: Commands<'w, 's>,
 	pub deferred_world: DeferredWorld<'w>,
+	_phantom_data: PhantomData<&'s ()>,
+}
+
+impl<'w, 's> BevySubscriptionContext<'w, 's> {
+	pub fn reborrow(&mut self) -> BevySubscriptionContext<'_, '_> {
+		BevySubscriptionContext {
+			deferred_world: self.deferred_world.reborrow(),
+			_phantom_data: PhantomData,
+		}
+	}
+
+	pub fn get_expected_component<C>(&mut self, destination_entity: Entity) -> &C
+	where
+		C: Component,
+	{
+		let Some(subscriber_component) = self.deferred_world.get::<C>(destination_entity) else {
+			panic!(
+				"{} is missing an expected component: {}!",
+				destination_entity,
+				short_type_name::<C>(),
+			);
+		};
+
+		subscriber_component
+	}
+
+	pub fn get_expected_component_mut<C>(&mut self, destination_entity: Entity) -> Mut<'_, C>
+	where
+		C: Component<Mutability = Mutable>,
+	{
+		let Some(subscriber_component) = self.deferred_world.get_mut::<C>(destination_entity)
+		else {
+			panic!(
+				"{} is missing an expected component: {}!",
+				destination_entity,
+				short_type_name::<C>(),
+			);
+		};
+
+		subscriber_component
+	}
 }
 
 impl<'w, 's> BevySubscriptionContext<'w, 's> {
@@ -56,7 +99,9 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	{
 		let notification_event: ConsumableSubscriberNotificationEvent<In, InError> =
 			notification.into();
-		self.commands.trigger_targets(notification_event, target);
+		self.deferred_world
+			.commands()
+			.trigger_targets(notification_event, target);
 	}
 
 	pub fn send_subscription_notification(
@@ -65,7 +110,9 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		notification: SubscriptionNotification<BevySubscriptionContextProvider>,
 	) {
 		let notification_event: SubscriptionNotificationEvent = notification.into();
-		self.commands.trigger_targets(notification_event, target);
+		self.deferred_world
+			.commands()
+			.trigger_targets(notification_event, target);
 	}
 }
 

@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{component::Component, entity::Entity};
-
 use rx_core_traits::{
 	Observer, ObserverInput, Subscriber, SubscriberNotification, SubscriptionLike, Teardown, Tick,
 	Tickable,
@@ -67,28 +66,33 @@ where
 	where
 		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
-		// TODO: Maybe make the deferred world the context! genius
-		let world = context.deferred_world.reborrow();
-		if let Some(subscriber_component) =
-			world.get::<SubscriberComponent<Destination>>(self.destination_entity)
-		{
-			// accessor(&subscriber_component.destination, context);
-		}
+		let stolen_destination = context
+			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+			.steal_destination();
+
+		accessor(&stolen_destination, context);
+
+		context
+			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+			.return_stolen_destination(stolen_destination);
 	}
 
 	fn access_with_context_mut<F>(
 		&mut self,
-		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		mut accessor: F,
+		context: &mut BevySubscriptionContext<'_, '_>,
 	) where
-		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
+		F: FnMut(&mut Destination, &mut BevySubscriptionContext<'_, '_>),
 	{
-		if let Some(subscriber_component) = context
-			.deferred_world
-			.get_mut::<SubscriberComponent<Destination>>(self.destination_entity)
-		{
-			// accessor(&subscriber_component.destination, context);
-		}
+		let mut stolen_destination = context
+			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+			.steal_destination();
+
+		accessor(&mut stolen_destination, context);
+
+		context
+			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+			.return_stolen_destination(stolen_destination);
 	}
 }
 

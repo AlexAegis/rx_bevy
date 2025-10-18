@@ -11,7 +11,7 @@ use rx_core_traits::{
 	},
 };
 
-use crate::BevySubscriptionContextProvider;
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, SubscriberComponent};
 
 pub struct ErasedEntitySubscriber<In, InError>
 where
@@ -78,22 +78,37 @@ where
 		}
 	}
 
-	fn access_with_context<F>(
-		&mut self,
-		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) where
+	fn access_with_context<F>(&mut self, accessor: F, context: &mut BevySubscriptionContext<'_, '_>)
+	where
 		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
+		let stolen_destination = context
+			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+			.steal_destination();
+
+		accessor(&stolen_destination, context);
+
+		context
+			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+			.return_stolen_destination(stolen_destination);
 	}
 
 	fn access_with_context_mut<F>(
 		&mut self,
-		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		mut accessor: F,
+		context: &mut BevySubscriptionContext<'_, '_>,
 	) where
 		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
+		let mut stolen_destination = context
+			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+			.steal_destination();
+
+		accessor(&mut stolen_destination, context);
+
+		context
+			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+			.return_stolen_destination(stolen_destination);
 	}
 }
 
