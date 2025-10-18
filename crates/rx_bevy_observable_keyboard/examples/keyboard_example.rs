@@ -3,7 +3,6 @@ use bevy_egui::EguiPlugin;
 use bevy_input::keyboard::KeyboardInput;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
-use rx_bevy_observable_keyboard::{KeyboardObservableComponent, KeyboardObservableOptions};
 
 fn main() -> AppExit {
 	App::new()
@@ -13,7 +12,6 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
-			RxPlugin,
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)

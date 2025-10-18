@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use bevy_ecs::{
 	entity::Entity,
 	system::{Commands, SystemParam},
+	world::DeferredWorld,
 };
 use rx_core_traits::{
 	SignalBound, SubscriberNotification, SubscriptionNotification,
@@ -54,8 +55,14 @@ pub struct BevySubscriptionContext<'w, 's, ContextAccess>
 where
 	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
-	commands: Commands<'w, 's>,
+	pub commands: Commands<'w, 's>,
+	pub deferred_world: DeferredWorld<'w>,
 	_phantom_data: PhantomData<fn() -> ContextAccess>,
+}
+
+impl<'w, 's, ContextAccess> BevySubscriptionContext<'w, 's, ContextAccess> where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider
+{
 }
 
 impl<'w, 's, ContextAccess> SubscriptionContextAccess
