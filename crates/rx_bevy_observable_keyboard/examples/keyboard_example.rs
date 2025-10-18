@@ -3,6 +3,7 @@ use bevy_egui::EguiPlugin;
 use bevy_input::keyboard::KeyboardInput;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
+use rx_bevy_context::SubscriberNotificationEvent;
 
 fn main() -> AppExit {
 	App::new()
@@ -25,8 +26,9 @@ fn main() -> AppExit {
 		.run()
 }
 
+/// TODO: Bring back the ObserverNotificationEvent..
 fn next_number_observer(
-	next: Trigger<RxNext<KeyboardInput>>,
+	next: Trigger<SubscriberNotificationEvent<KeyboardInput>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) {
@@ -41,7 +43,7 @@ fn next_number_observer(
 
 fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
 	println!("Unsubscribe subscription!");
-	commands.unsubscribe(example_entities.subscription);
+	commands.despawn(example_entities.subscription);
 }
 
 #[derive(Resource, Reflect)]

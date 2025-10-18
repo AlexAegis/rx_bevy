@@ -13,9 +13,7 @@ use derive_where::derive_where;
 use rx_bevy_common::Clock;
 use rx_core_traits::Tick;
 
-use crate::{
-	ObservableSubscriptionNotificationEvent, SubscriptionNotificationEvent, SubscriptionSchedule,
-};
+use crate::{ObservableSubscriptionNotificationEvent, SubscriptionSchedule};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.

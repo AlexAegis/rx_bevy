@@ -57,7 +57,13 @@ where
 {
 	pub commands: Commands<'w, 's>,
 	pub deferred_world: DeferredWorld<'w>,
-	_phantom_data: PhantomData<fn() -> ContextAccess>,
+	// TODO: SystemParam doesn't like this either, time to simplify. And it's not like they could be merged, so it's useless
+	//asd: StaticSystemParam<
+	//	'w,
+	//	's,
+	//	<ContextAccess as EntitySubscriptionContextAccessProvider>::Item<'w, 's>,
+	//>,
+	_phantom_data: PhantomData<fn(ContextAccess)>,
 }
 
 impl<'w, 's, ContextAccess> BevySubscriptionContext<'w, 's, ContextAccess> where
@@ -107,6 +113,4 @@ where
 		let notification_event: SubscriptionNotificationEvent<ContextAccess> = notification.into();
 		self.commands.trigger_targets(notification_event, target);
 	}
-
-	fn query_destination(&mut self, target: Entity) {}
 }

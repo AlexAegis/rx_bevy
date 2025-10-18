@@ -90,6 +90,9 @@ fn observable_on_insert<O, ContextAccess>(
 	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
 	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
+	#[cfg(feature = "debug")]
+	crate::register_observable_debug_systems::<O, ContextAccess>(&mut deferred_world);
+
 	deferred_world.commands().spawn((
 		// TODO(bevy-0.17): This is actually not needed, it's only here to not let these observes occupy the top level in the worldentityinspector. reconsider to only use either this or the other relationship if it's still producing warnings on despawn in 0.17
 		ChildOf(hook_context.entity),

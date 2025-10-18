@@ -2,6 +2,6 @@ mod bounds;
 
 pub use bounds::*;
 
-mod prelude {
+pub mod prelude {
 	pub use super::bounds::*;
 }

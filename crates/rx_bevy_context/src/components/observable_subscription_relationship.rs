@@ -1,6 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{component::Component, entity::Entity};
-use rx_core_traits::{Observable, SignalBound};
+use rx_core_traits::Observable;
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;

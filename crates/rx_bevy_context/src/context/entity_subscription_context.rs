@@ -35,8 +35,4 @@ pub trait EntitySubscriptionContextAccessItem<'w, 's>:
 			BevySubscriptionContextProvider<Self::AccessProvider>,
 		>,
 	);
-
-	fn query_destination(&mut self, target: Entity) {
-		// TODO
-	}
 }

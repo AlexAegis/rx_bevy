@@ -1,4 +1,4 @@
-use std::{any::TypeId, marker::PhantomData};
+use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
 use rx_core_traits::SignalBound;
@@ -22,10 +22,7 @@ where
 	pub(crate) destination_entity: Entity,
 	/// This entity can only be spawned from this events constructors
 	pub(crate) subscription_entity: Entity,
-	// /// Contains the [TypeId] of a `SubscriptionSchedule::<S>` component.
-	// /// It is required to erase this type to be able to
-	// #[cfg_attr(feature = "reflect", reflect(ignore))]
-	// schedule: Option<TypeId>,
+
 	_phantom_data: PhantomData<(Out, OutError)>,
 }
 
@@ -49,7 +46,6 @@ where
 				observable_entity,
 				destination_entity,
 				subscription_entity,
-				// schedule: Some(TypeId::of::<SubscriptionSchedule<S>>()),
 				_phantom_data: PhantomData,
 			},
 			subscription_entity,

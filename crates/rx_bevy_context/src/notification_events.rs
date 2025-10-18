@@ -6,6 +6,19 @@ use thiserror::Error;
 
 use crate::{BevySubscriptionContextProvider, context::EntitySubscriptionContextAccessProvider};
 
+/// User facing event to be used with ECS Observers.
+/// TODO: Maybe the ContextAccess generic should be removed, using DeferredWorld is enough
+// #[derive(Event)]
+// pub enum RxSignal<In, InError>
+// where
+// 	In: SignalBound,
+// 	InError: SignalBound,
+// {
+// 	Next(In),
+// 	Error(InError),
+// 	Complete,
+// }
+
 #[derive(Event)]
 pub enum SubscriberNotificationEvent<In, InError, ContextAccess>
 where

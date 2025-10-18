@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{
-	component::{Component, HookContext, Mutable, StorageType},
-	entity::Entity,
+	component::{Component, HookContext},
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
