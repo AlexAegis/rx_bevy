@@ -1,4 +1,4 @@
-use rx_bevy_core::{DebugBound, ObservableOutput, ObserverInput, SignalBound};
+use rx_core_traits::{DebugBound, ObservableOutput, ObserverInput, SignalBound};
 
 use crate::{
 	CommandSubscriber, SubscriberChannelHandlerRegistrationContext,

@@ -1,5 +1,5 @@
 use bevy_ecs::system::Commands;
-use rx_bevy_core::{Observer, SignalBound};
+use rx_core_traits::{Observer, SignalBound};
 
 use crate::RxSubscriberEvent;
 

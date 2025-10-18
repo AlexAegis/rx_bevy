@@ -1,0 +1,125 @@
+use bevy_ecs::{component::Component, entity::Entity};
+
+use rx_core_traits::{
+	SubscriberNotification, SubscriptionData, SubscriptionLike, SubscriptionNotification, Teardown,
+	Tick, Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
+};
+
+use crate::{
+	BevySubscriptionContextProvider, EntitySubscriptionContextAccessItem,
+	context::EntitySubscriptionContextAccessProvider,
+};
+
+// TODO: Delete
+#[derive(Component)]
+pub struct EntitySubscription<ContextAccess>
+where
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
+	/// Despawning this stops the subscription, and is equivalent of an Unsubscribe
+	/// As this subscriber is stored in this entity!
+	self_entity: Entity,
+	subscription: SubscriptionData<BevySubscriptionContextProvider<ContextAccess>>,
+}
+
+impl<ContextAccess> EntitySubscription<ContextAccess>
+where
+	ContextAccess: EntitySubscriptionContextAccessProvider,
+{
+	pub fn new(self_entity: Entity) -> Self {
+		Self {
+			self_entity,
+
+			subscription: SubscriptionData::default(),
+		}
+	}
+
+	pub fn new_with_teardown(
+		self_entity: Entity,
+		teardown: Teardown<BevySubscriptionContextProvider<ContextAccess>>,
+	) -> Self {
+		Self {
+			self_entity,
+			subscription: SubscriptionData::new_with_teardown(teardown),
+		}
+	}
+
+	#[inline]
+	pub fn get_self_entity(&self) -> Entity {
+		self.self_entity
+	}
+}
+
+impl<ContextAccess> WithSubscriptionContext for EntitySubscription<ContextAccess>
+where
+	ContextAccess: EntitySubscriptionContextAccessProvider,
+{
+	type Context = BevySubscriptionContextProvider<ContextAccess>;
+}
+
+impl<ContextAccess> SubscriptionLike for EntitySubscription<ContextAccess>
+where
+	ContextAccess: EntitySubscriptionContextAccessProvider,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		// TODO: query from context
+		true
+		//self.subscription.is_closed()
+	}
+
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+		context.send_subscription_notification(
+			self.self_entity,
+			SubscriptionNotification::Unsubscribe,
+		);
+	}
+
+	#[inline]
+	fn add_teardown(
+		&mut self,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		context.send_subscription_notification(
+			self.self_entity,
+			SubscriptionNotification::Add(teardown),
+		);
+	}
+}
+
+impl<ContextAccess> Tickable for EntitySubscription<ContextAccess>
+where
+	ContextAccess: EntitySubscriptionContextAccessProvider,
+{
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		//self.subscription.tick(tick, context);
+	}
+}
+
+impl<ContextAccess> Drop for EntitySubscription<ContextAccess>
+where
+	ContextAccess: EntitySubscriptionContextAccessProvider,
+{
+	fn drop(&mut self) {
+		// Only panics when the `dev_panic_on_dropped_active_subscriptions`
+		// feature is active, otherwise it just prints a warning.
+
+		if !self.is_closed() {
+			let message = format!(
+				"{} was dropped without unsubscribing first!",
+				short_type_name::short_type_name::<Self>()
+			);
+			#[cfg(not(feature = "dev_panic_on_dropped_active_subscriptions"))]
+			bevy_log::warn!("{}", message);
+
+			#[cfg(feature = "dev_panic_on_dropped_active_subscriptions")]
+			panic!("{}", message);
+		}
+	}
+}

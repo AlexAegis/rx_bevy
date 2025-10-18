@@ -8,7 +8,7 @@ use bevy_ecs::{
 	observer::Observer,
 	system::{Commands, IntoObserverSystem},
 };
-use rx_bevy_core::SignalBound;
+use rx_core_traits::SignalBound;
 use short_type_name::short_type_name;
 
 use crate::{

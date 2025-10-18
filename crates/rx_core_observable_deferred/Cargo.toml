@@ -1,0 +1,37 @@
+[package]
+name = "rx_core_observable_deferred"
+description = "deferred observable for rx_bevy"
+version = "0.1.0"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev"]
+dev = ["rx_bevy/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
+example = [
+    "dev",
+    "rx_bevy/example",
+    "rx_core_traits/example",
+    "rx_core_testing/example",
+]
+reflect = ["dep:bevy_reflect", "rx_bevy/reflect", "rx_core_traits/reflect"]
+bevy = ["rx_core_traits/bevy", "rx_bevy/bevy", "rx_core_testing/bevy"]
+
+[dependencies]
+rx_core_traits = { workspace = true }
+rx_core_subscription_drop = { workspace = true }
+bevy_reflect = { workspace = true, optional = true }
+
+[dev-dependencies]
+rx_bevy = { workspace = true }
+rx_core_testing = { workspace = true }

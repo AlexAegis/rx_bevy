@@ -1,5 +1,5 @@
 use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::Commands};
-use rx_bevy_core::SignalBound;
+use rx_core_traits::SignalBound;
 
 use crate::{RelativeEntity, Subscribe};
 

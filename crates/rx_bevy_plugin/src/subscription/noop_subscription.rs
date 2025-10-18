@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 
-use rx_bevy_core::{ObservableOutput, SignalBound};
+use rx_core_traits::{ObservableOutput, SignalBound};
 
 use crate::{CommandSubscriber, RxSubscription, SubscriptionChannelHandlerRegistrationContext};
 

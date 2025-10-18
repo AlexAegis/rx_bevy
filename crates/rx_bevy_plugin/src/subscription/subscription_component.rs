@@ -3,7 +3,7 @@ use bevy_ecs::{
 	component::{Component, HookContext},
 	world::DeferredWorld,
 };
-use rx_bevy_core::{ObservableOutput, SignalBound};
+use rx_core_traits::{ObservableOutput, SignalBound};
 
 use crate::RxSubscription;
 

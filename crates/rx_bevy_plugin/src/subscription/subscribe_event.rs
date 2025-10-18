@@ -2,7 +2,7 @@ use std::{any::TypeId, marker::PhantomData};
 
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
 use bevy_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
-use rx_bevy_core::SignalBound;
+use rx_core_traits::SignalBound;
 
 use crate::{RelativeEntity, SubscriptionSchedule};
 

@@ -11,7 +11,7 @@ use bevy_ecs::{
 use bevy_log::trace;
 use derive_where::derive_where;
 
-use rx_bevy_core::{DebugBound, ObservableOutput, SignalBound, Tick};
+use rx_core_traits::{DebugBound, ObservableOutput, SignalBound, Tick};
 use short_type_name::short_type_name;
 
 use crate::{

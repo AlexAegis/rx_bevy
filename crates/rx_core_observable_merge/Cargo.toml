@@ -1,0 +1,43 @@
+[package]
+name = "rx_core_observable_merge"
+description = "merge observable for rx_bevy"
+version = "0.1.0"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev"]
+dev = [
+    "rx_bevy/dev",
+    "rx_core_traits/dev",
+    "rx_core_operator_map_into/dev",
+    "rx_core_subscriber_rc/dev",
+    "rx_core_testing/dev",
+]
+example = [
+    "dev",
+    "rx_bevy/example",
+    "rx_core_traits/example",
+    "rx_core_operator_map_into/example",
+    "rx_core_subscriber_rc/example",
+    "rx_core_testing/example",
+]
+
+[dependencies]
+rx_core_traits = { workspace = true }
+rx_core_operator_map_into = { workspace = true }
+rx_core_subscriber_rc = { workspace = true }
+
+[dev-dependencies]
+rx_bevy = { workspace = true }
+rx_core_testing = { workspace = true }

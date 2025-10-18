@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 
-use rx_bevy_core::{ObserverInput, SignalBound};
+use rx_core_traits::{ObserverInput, SignalBound};
 
 #[cfg(feature = "debug")]
 use derive_where::derive_where;
@@ -99,7 +99,7 @@ where
 //		}
 //	}
 //
-//	fn tick(&mut self, tick: rx_bevy_core::Tick, context: &mut ChannelContext) {
+//	fn tick(&mut self, tick: rx_core_traits::Tick, context: &mut ChannelContext) {
 //		if !self.closed {
 //			context
 //				.commands

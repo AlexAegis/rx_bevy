@@ -23,18 +23,18 @@ dev = [
     "examples_common/dev",
     "inspector",
     "rx_bevy/dev",
-    "rx_bevy_core/dev",
-    "rx_bevy_observable_interval/dev",
-    "rx_bevy_operator_composite/dev",
-    "rx_bevy_testing/dev",
+    "rx_core_traits/dev",
+    "rx_core_observable_interval/dev",
+    "rx_core_operator_composite/dev",
+    "rx_core_testing/dev",
     "short_type_name/dev",
 ]
 debug = [
     "bevy/track_location",
     "bevy_reflect/debug",
     "dep:bevy_input",
-    "rx_bevy_core/debug",
-    "rx_bevy_observable_interval/debug",
+    "rx_core_traits/debug",
+    "rx_core_observable_interval/debug",
 ]
 serialize = [
     "bevy/serialize",
@@ -42,7 +42,7 @@ serialize = [
     "bevy_input/serialize",
     "bevy_platform/serialize",
     "bevy_time/serialize",
-    "rx_bevy_core/serialize",
+    "rx_core_traits/serialize",
 ]
 example = [
     "bevy/bevy_asset",
@@ -61,10 +61,10 @@ example = [
     "inspector",
     "reflect",
     "rx_bevy/example",
-    "rx_bevy_core/example",
-    "rx_bevy_observable_interval/example",
-    "rx_bevy_operator_composite/example",
-    "rx_bevy_testing/example",
+    "rx_core_traits/example",
+    "rx_core_observable_interval/example",
+    "rx_core_operator_composite/example",
+    "rx_core_testing/example",
 ]
 inspector = [
     "reflect",
@@ -75,16 +75,16 @@ inspector = [
 reflect = [
     "dep:bevy_reflect",
     "rx_bevy/reflect",
-    "rx_bevy_core/reflect",
-    "rx_bevy_observable_interval/reflect",
-    "rx_bevy_operator_composite/reflect",
+    "rx_core_traits/reflect",
+    "rx_core_observable_interval/reflect",
+    "rx_core_operator_composite/reflect",
 ]
 
 [dependencies]
 bevy_erased_component_registry = { workspace = true }
 # rx_bevy dependencies
-rx_bevy_core = { workspace = true, features = ["bevy"] }
-rx_bevy_operator_composite = { workspace = true, features = ["bevy"] }
+rx_core_traits = { workspace = true, features = ["bevy"] }
+rx_core_operator_composite = { workspace = true, features = ["bevy"] }
 # bevy dependencies
 bevy_app = { workspace = true }
 bevy_derive = { workspace = true }
@@ -107,6 +107,6 @@ thiserror = { workspace = true }
 [dev-dependencies]
 bevy = { workspace = true }
 rx_bevy = { workspace = true, features = ["bevy"] }
-rx_bevy_testing = { workspace = true, features = ["bevy"] }
+rx_core_testing = { workspace = true, features = ["bevy"] }
 examples_common = { workspace = true }
-rx_bevy_observable_interval = { workspace = true }
+rx_core_observable_interval = { workspace = true }

@@ -94,7 +94,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a15f179cd60c4584b8a8c596927aadc462e27f2ca70c04e0071964a73ba7a75"
 dependencies = [
  "cfg-if",
- "getrandom 0.3.3",
+ "getrandom 0.3.4",
  "once_cell",
  "version_check",
  "zerocopy",
@@ -1742,9 +1742,9 @@ dependencies = [
 
 [[package]]
 name = "cfg-if"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fd1289c04a9ea8cb22300a459a72a385d7c73d3259e2ed7dcb2af674838cfa9"
+checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "cfg_aliases"
@@ -2533,12 +2533,12 @@ dependencies = [
 
 [[package]]
 name = "gethostname"
-version = "1.0.2"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc257fdb4038301ce4b9cd1b3b51704509692bb3ff716a410cbd07925d9dae55"
+checksum = "1bd49230192a3797a9a4d6abe9b3eed6f7fa4c8a8a4947977c6f80025f92cbd8"
 dependencies = [
  "rustix 1.1.2",
- "windows-targets 0.52.6",
+ "windows-link",
 ]
 
 [[package]]
@@ -2550,20 +2550,20 @@ dependencies = [
  "cfg-if",
  "js-sys",
  "libc",
- "wasi 0.11.1+wasi-snapshot-preview1",
+ "wasi",
  "wasm-bindgen",
 ]
 
 [[package]]
 name = "getrandom"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26145e563e54f2cadc477553f1ec5ee650b00862f0a58bcd12cbdc5f0ea2d2f4"
+checksum = "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd"
 dependencies = [
  "cfg-if",
  "libc",
  "r-efi",
- "wasi 0.14.7+wasi-0.2.4",
+ "wasip2",
 ]
 
 [[package]]
@@ -2765,9 +2765,9 @@ dependencies = [
 
 [[package]]
 name = "half"
-version = "2.7.0"
+version = "2.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e54c115d4f30f52c67202f079c5f9d8b49db4691f460fdb0b4c2e838261b2ba5"
+checksum = "6ea2d84b969582b4b1864a92dc5d27cd2b77b622a8d79306834f1be5ba20d84b"
 dependencies = [
  "cfg-if",
  "crunchy",
@@ -2998,9 +2998,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.11.4"
+version = "2.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b0f83760fb341a774ed326568e19f5a863af4a952def8c39f9ab92fd95b88e5"
+checksum = "6717a8d2a5a929a1a2eb43a12812498ed141a0bcfb7e8f7844fbdbe4303bba9f"
 dependencies = [
  "equivalent",
  "hashbrown 0.16.0",
@@ -3116,7 +3116,7 @@ version = "0.1.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9afb3de4395d6b3e67a780b6de64b51c978ecf11cb9a462c66be7d4ca9039d33"
 dependencies = [
- "getrandom 0.3.3",
+ "getrandom 0.3.4",
  "libc",
 ]
 
@@ -3374,14 +3374,14 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "1.0.4"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78bed444cc8a2160f01cbcf811ef18cac863ad68ae8ca62092e8db51d51c761c"
+checksum = "69d83b0086dc8ecf3ce9ae2874b2d1290252e2a30720bea58a5c6639b0092873"
 dependencies = [
  "libc",
  "log",
- "wasi 0.11.1+wasi-snapshot-preview1",
- "windows-sys 0.59.0",
+ "wasi",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4300,7 +4300,7 @@ version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "99d9a13982dcf210057a8a78572b2217b667c3beacbf3a0d8b454f6f82837d38"
 dependencies = [
- "getrandom 0.3.3",
+ "getrandom 0.3.4",
 ]
 
 [[package]]
@@ -4568,49 +4568,49 @@ dependencies = [
 name = "rx_bevy"
 version = "0.1.0"
 dependencies = [
- "rx_bevy_context_ecs",
- "rx_bevy_core",
- "rx_bevy_ecs_observable_keyboard",
- "rx_bevy_observable_combine_latest",
- "rx_bevy_observable_connectable",
- "rx_bevy_observable_deferred",
- "rx_bevy_observable_interval",
- "rx_bevy_observable_iterator",
- "rx_bevy_observable_iterator_on_tick",
- "rx_bevy_observable_merge",
- "rx_bevy_observable_of",
- "rx_bevy_observable_pipe",
- "rx_bevy_observable_throw",
- "rx_bevy_observable_zip",
- "rx_bevy_observer_fn",
- "rx_bevy_observer_noop",
- "rx_bevy_observer_print",
- "rx_bevy_operator_adsr",
- "rx_bevy_operator_composite",
- "rx_bevy_operator_enumerate",
- "rx_bevy_operator_filter",
- "rx_bevy_operator_filter_map",
- "rx_bevy_operator_finalize",
- "rx_bevy_operator_identity",
- "rx_bevy_operator_lift_option",
- "rx_bevy_operator_lift_result",
- "rx_bevy_operator_map",
- "rx_bevy_operator_map_into",
- "rx_bevy_operator_skip",
- "rx_bevy_operator_switch_map",
- "rx_bevy_operator_take",
- "rx_bevy_operator_tap_next",
- "rx_bevy_operator_try_capture",
- "rx_bevy_subject",
- "rx_bevy_subject_behavior",
- "rx_bevy_subject_replay",
- "rx_bevy_subscription_drop",
- "rx_bevy_subscription_inert",
- "rx_bevy_testing",
+ "rx_bevy_context",
+ "rx_bevy_observable_keyboard",
+ "rx_core_observable_combine_latest",
+ "rx_core_observable_connectable",
+ "rx_core_observable_deferred",
+ "rx_core_observable_interval",
+ "rx_core_observable_iterator",
+ "rx_core_observable_iterator_on_tick",
+ "rx_core_observable_merge",
+ "rx_core_observable_of",
+ "rx_core_observable_pipe",
+ "rx_core_observable_throw",
+ "rx_core_observable_zip",
+ "rx_core_observer_fn",
+ "rx_core_observer_noop",
+ "rx_core_observer_print",
+ "rx_core_operator_adsr",
+ "rx_core_operator_composite",
+ "rx_core_operator_enumerate",
+ "rx_core_operator_filter",
+ "rx_core_operator_filter_map",
+ "rx_core_operator_finalize",
+ "rx_core_operator_identity",
+ "rx_core_operator_lift_option",
+ "rx_core_operator_lift_result",
+ "rx_core_operator_map",
+ "rx_core_operator_map_into",
+ "rx_core_operator_skip",
+ "rx_core_operator_switch_map",
+ "rx_core_operator_take",
+ "rx_core_operator_tap_next",
+ "rx_core_operator_try_capture",
+ "rx_core_subject",
+ "rx_core_subject_behavior",
+ "rx_core_subject_replay",
+ "rx_core_subscription_drop",
+ "rx_core_subscription_inert",
+ "rx_core_testing",
+ "rx_core_traits",
 ]
 
 [[package]]
-name = "rx_bevy_context_ecs"
+name = "rx_bevy_context"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -4621,31 +4621,15 @@ dependencies = [
  "bevy_reflect",
  "derive-where",
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
+ "rx_core_testing",
+ "rx_core_traits",
  "short_type_name",
  "smallvec",
  "thiserror 2.0.17",
 ]
 
 [[package]]
-name = "rx_bevy_core"
-version = "0.1.0"
-dependencies = [
- "bevy_ecs",
- "bevy_log",
- "bevy_reflect",
- "bevy_time",
- "derive-where",
- "rx_bevy",
- "rx_bevy_testing",
- "serde",
- "short_type_name",
- "smallvec",
-]
-
-[[package]]
-name = "rx_bevy_ecs_observable_keyboard"
+name = "rx_bevy_observable_keyboard"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -4657,390 +4641,10 @@ dependencies = [
  "bevy_reflect",
  "examples_common",
  "rx_bevy",
- "rx_bevy_context_ecs",
- "rx_bevy_core",
+ "rx_bevy_context",
  "rx_bevy_plugin",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_emission_variants"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "derive-where",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observable_combine_latest"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_emission_variants",
- "rx_bevy_subscriber_rc",
- "rx_bevy_subscription_drop",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observable_connectable"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_deferred",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
-name = "rx_bevy_observable_deferred"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subscription_drop",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observable_interval"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_egui",
- "bevy_reflect",
- "bevy_time",
- "examples_common",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observable_iterator"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subscription_inert",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
-name = "rx_bevy_observable_iterator_on_tick"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subscription_inert",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
-name = "rx_bevy_observable_merge"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_operator_map_into",
- "rx_bevy_subscriber_rc",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observable_of"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subscription_inert",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observable_pipe"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observable_throw"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subscription_inert",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observable_zip"
-version = "0.1.0"
-dependencies = [
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_emission_variants",
- "rx_bevy_subscriber_rc",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observer_fn"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observer_noop"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_observer_print"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_adsr"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_ecs",
- "bevy_egui",
- "bevy_log",
- "bevy_math",
- "bevy_reflect",
- "bevy_time",
- "bitflags 2.9.4",
- "examples_common",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_ecs_observable_keyboard",
- "rx_bevy_plugin",
- "rx_bevy_testing",
- "serde",
- "smallvec",
-]
-
-[[package]]
-name = "rx_bevy_operator_composite"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
-name = "rx_bevy_operator_enumerate"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_filter"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_filter_map"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_operator_lift_option",
- "rx_bevy_operator_map",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_finalize"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
-name = "rx_bevy_operator_identity"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_lift_option"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_lift_result"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_map"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "derive-where",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
-name = "rx_bevy_operator_map_into"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_skip"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_switch_map"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_operator_finalize",
- "rx_bevy_operator_map",
- "rx_bevy_subscriber_switch",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
-name = "rx_bevy_operator_take"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
-]
-
-[[package]]
-name = "rx_bevy_operator_tap_next"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
- "short_type_name",
-]
-
-[[package]]
-name = "rx_bevy_operator_try_capture"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_pipe",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
+ "rx_core_testing",
+ "rx_core_traits",
 ]
 
 [[package]]
@@ -5063,96 +4667,492 @@ dependencies = [
  "derive-where",
  "examples_common",
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_interval",
- "rx_bevy_operator_composite",
- "rx_bevy_testing",
+ "rx_core_observable_interval",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
  "short_type_name",
  "smallvec",
  "thiserror 2.0.17",
 ]
 
 [[package]]
-name = "rx_bevy_subject"
+name = "rx_core_emission_variants"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "derive-where",
+ "rx_bevy",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_combine_latest"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_emission_variants",
+ "rx_core_subscriber_rc",
+ "rx_core_subscription_drop",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_connectable"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_deferred",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+]
+
+[[package]]
+name = "rx_core_observable_deferred"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_subscription_drop",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_interval"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_egui",
+ "bevy_reflect",
+ "bevy_time",
+ "examples_common",
+ "rx_bevy",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_iterator"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_subscription_inert",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+]
+
+[[package]]
+name = "rx_core_observable_iterator_on_tick"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_subscription_inert",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+]
+
+[[package]]
+name = "rx_core_observable_merge"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subscription_drop",
- "rx_bevy_testing",
+ "rx_core_operator_map_into",
+ "rx_core_subscriber_rc",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_of"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_subscription_inert",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_pipe"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_throw"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_subscription_inert",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_zip"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_core_emission_variants",
+ "rx_core_subscriber_rc",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observer_fn"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observer_noop"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observer_print"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_adsr"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_log",
+ "bevy_math",
+ "bevy_reflect",
+ "bevy_time",
+ "bitflags 2.9.4",
+ "examples_common",
+ "rx_bevy",
+ "rx_bevy_observable_keyboard",
+ "rx_bevy_plugin",
+ "rx_core_testing",
+ "rx_core_traits",
+ "serde",
  "smallvec",
 ]
 
 [[package]]
-name = "rx_bevy_subject_behavior"
+name = "rx_core_operator_composite"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subject",
- "rx_bevy_subscription_drop",
- "rx_bevy_testing",
+ "rx_core_observable_pipe",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
 ]
 
 [[package]]
-name = "rx_bevy_subject_replay"
+name = "rx_core_operator_enumerate"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_filter"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_filter_map"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_operator_lift_option",
+ "rx_core_operator_map",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_finalize"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+]
+
+[[package]]
+name = "rx_core_operator_identity"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_lift_option"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_lift_result"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_map"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "derive-where",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+]
+
+[[package]]
+name = "rx_core_operator_map_into"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_skip"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_switch_map"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_operator_finalize",
+ "rx_core_operator_map",
+ "rx_core_subscriber_switch",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+]
+
+[[package]]
+name = "rx_core_operator_take"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_tap_next"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+]
+
+[[package]]
+name = "rx_core_operator_try_capture"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_bevy",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_subject"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_core_subscription_drop",
+ "rx_core_testing",
+ "rx_core_traits",
+ "smallvec",
+]
+
+[[package]]
+name = "rx_core_subject_behavior"
+version = "0.1.0"
+dependencies = [
+ "rx_bevy",
+ "rx_core_subject",
+ "rx_core_subscription_drop",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_subject_replay"
 version = "0.1.0"
 dependencies = [
  "ringbuffer",
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_subject",
- "rx_bevy_subscription_drop",
- "rx_bevy_testing",
+ "rx_core_subject",
+ "rx_core_subscription_drop",
+ "rx_core_testing",
+ "rx_core_traits",
 ]
 
 [[package]]
-name = "rx_bevy_subscriber_rc"
+name = "rx_core_subscriber_rc"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_observable_iterator",
- "rx_bevy_testing",
+ "rx_core_observable_iterator",
+ "rx_core_testing",
+ "rx_core_traits",
  "short_type_name",
 ]
 
 [[package]]
-name = "rx_bevy_subscriber_switch"
+name = "rx_core_subscriber_switch"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
+ "rx_core_testing",
+ "rx_core_traits",
 ]
 
 [[package]]
-name = "rx_bevy_subscription_drop"
+name = "rx_core_subscription_drop"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
+ "rx_core_testing",
+ "rx_core_traits",
  "smallvec",
 ]
 
 [[package]]
-name = "rx_bevy_subscription_inert"
+name = "rx_core_subscription_inert"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
- "rx_bevy_core",
- "rx_bevy_testing",
+ "rx_core_testing",
+ "rx_core_traits",
  "short_type_name",
 ]
 
 [[package]]
-name = "rx_bevy_testing"
+name = "rx_core_testing"
 version = "0.1.0"
 dependencies = [
  "rx_bevy",
- "rx_bevy_core",
+ "rx_core_traits",
  "short_type_name",
+]
+
+[[package]]
+name = "rx_core_traits"
+version = "0.1.0"
+dependencies = [
+ "bevy_ecs",
+ "bevy_log",
+ "bevy_reflect",
+ "bevy_time",
+ "derive-where",
+ "rx_bevy",
+ "rx_core_testing",
+ "serde",
+ "short_type_name",
+ "smallvec",
 ]
 
 [[package]]
@@ -5936,7 +5936,7 @@ version = "1.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f87b8aa10b915a06587d0dec516c282ff295b475d94abf425d62b57710070a2"
 dependencies = [
- "getrandom 0.3.3",
+ "getrandom 0.3.4",
  "js-sys",
  "serde",
  "wasm-bindgen",
@@ -6003,15 +6003,6 @@ name = "wasi"
 version = "0.11.1+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
-
-[[package]]
-name = "wasi"
-version = "0.14.7+wasi-0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "883478de20367e224c0090af9cf5f9fa85bed63a95c1abf3afc5c083ebc06e8c"
-dependencies = [
- "wasip2",
-]
 
 [[package]]
 name = "wasip2"
@@ -6225,9 +6216,9 @@ dependencies = [
 
 [[package]]
 name = "webbrowser"
-version = "1.0.5"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aaf4f3c0ba838e82b4e5ccc4157003fb8c324ee24c058470ffb82820becbde98"
+checksum = "00f1243ef785213e3a32fa0396093424a3a6ea566f9948497e5a2309261a4c97"
 dependencies = [
  "core-foundation 0.10.1",
  "jni",
