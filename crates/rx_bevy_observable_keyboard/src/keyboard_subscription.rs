@@ -1,54 +1,40 @@
-use std::marker::PhantomData;
-
-use bevy_ecs::system::{Res, SystemParam};
 use bevy_input::{ButtonInput, keyboard::KeyCode};
-use rx_bevy_context::{
-	BevySubscriptionContext, BevySubscriptionContextProvider,
-	EntitySubscriptionContextAccessProvider,
-};
+use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
 	Subscriber, SubscriptionLike, Tick, Tickable,
 	prelude::{SubscriptionContext, WithSubscriptionContext},
 };
 
-pub struct KeyboardSubscription<Destination, ContextAccess>
+pub struct KeyboardSubscription<Destination>
 where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-	Destination: Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	destination: Destination,
 	closed: bool,
-	_phantom_data: PhantomData<fn(ContextAccess)>,
 }
 
-impl<Destination, ContextAccess> KeyboardSubscription<Destination, ContextAccess>
+impl<Destination> KeyboardSubscription<Destination>
 where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-	Destination: Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
 			destination,
 			closed: false,
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Destination, ContextAccess> WithSubscriptionContext
-	for KeyboardSubscription<Destination, ContextAccess>
+impl<Destination> WithSubscriptionContext for KeyboardSubscription<Destination>
 where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-	Destination: Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
-	type Context = BevySubscriptionContextProvider<ContextAccess>;
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<Destination, ContextAccess> SubscriptionLike
-	for KeyboardSubscription<Destination, ContextAccess>
+impl<Destination> SubscriptionLike for KeyboardSubscription<Destination>
 where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-	Destination: Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	fn is_closed(&self) -> bool {
 		self.closed
@@ -68,12 +54,11 @@ where
 	}
 }
 
-impl<Destination, ContextAccess> Tickable for KeyboardSubscription<Destination, ContextAccess>
+impl<Destination> Tickable for KeyboardSubscription<Destination>
 where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-	Destination: Subscriber<In = KeyCode, Context = BevySubscriptionContextProvider<ContextAccess>>,
+	Destination: Subscriber<In = KeyCode, Context = BevySubscriptionContextProvider>,
 {
-	fn tick(&mut self, _tick: Tick, context: &mut BevySubscriptionContext<'_, '_, ContextAccess>) {
+	fn tick(&mut self, _tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
 		let just_pressed_key_codes = {
 			let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
 			button_input.get_just_pressed().cloned().collect::<Vec<_>>()
@@ -85,15 +70,12 @@ where
 	}
 }
 
-impl<Destination, ContextAccess> Drop for KeyboardSubscription<Destination, ContextAccess>
+impl<Destination> Drop for KeyboardSubscription<Destination>
 where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-	Destination: Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
+	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	fn drop(&mut self) {
-		let mut context =
-			BevySubscriptionContextProvider::<ContextAccess>::create_context_to_unsubscribe_on_drop(
-			);
+		let mut context = BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
 		self.unsubscribe(&mut context);
 	}
 }

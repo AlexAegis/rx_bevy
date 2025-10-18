@@ -13,7 +13,7 @@ use derive_where::derive_where;
 use rx_bevy_common::Clock;
 use rx_core_traits::Tick;
 
-use crate::{ObservableSubscriptionNotificationEvent, SubscriptionSchedule};
+use crate::{SubscriptionNotificationEvent, SubscriptionSchedule};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -65,7 +65,7 @@ pub fn tick_subscriptions_system<S: ScheduleLabel, C: Clock>(
 
 	if !subscriptions.is_empty() {
 		commands.trigger_targets(
-			ObservableSubscriptionNotificationEvent::Tick(Tick {
+			SubscriptionNotificationEvent::Tick(Tick {
 				now: time.elapsed(),
 				delta: time.delta(),
 			}),

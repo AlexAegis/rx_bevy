@@ -4,44 +4,36 @@ use rx_core_traits::{
 };
 use thiserror::Error;
 
-use crate::{BevySubscriptionContextProvider, context::EntitySubscriptionContextAccessProvider};
+use crate::BevySubscriptionContextProvider;
 
-/// User facing event to be used with ECS Observers.
-/// TODO: Maybe the ContextAccess generic should be removed, using DeferredWorld is enough
-// #[derive(Event)]
-// pub enum RxSignal<In, InError>
-// where
-// 	In: SignalBound,
-// 	InError: SignalBound,
-// {
-// 	Next(In),
-// 	Error(InError),
-// 	Complete,
-// }
-
-#[derive(Event)]
-pub enum SubscriberNotificationEvent<In, InError, ContextAccess>
+/// Shorthand for [SubscriberNotificationEvent]
+pub type RxSignal<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+= SubscriberNotificationEvent<In, InError>;
+
+#[derive(Debug, Event)]
+pub enum SubscriberNotificationEvent<In, InError = ()>
+where
+	In: SignalBound,
+	InError: SignalBound,
 {
 	Next(In),
 	Error(InError),
 	Complete,
 	Tick(Tick),
 	Unsubscribe,
-	Add(Option<Teardown<BevySubscriptionContextProvider<ContextAccess>>>),
+	Add(Option<Teardown<BevySubscriptionContextProvider>>),
 }
 
-impl<In, InError, ContextAccess> Into<SubscriberNotificationEvent<In, InError, ContextAccess>>
-	for SubscriberNotification<In, InError, BevySubscriptionContextProvider<ContextAccess>>
+impl<In, InError> Into<SubscriberNotificationEvent<In, InError>>
+	for SubscriberNotification<In, InError, BevySubscriptionContextProvider>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
-	fn into(self) -> SubscriberNotificationEvent<In, InError, ContextAccess> {
+	fn into(self) -> SubscriberNotificationEvent<In, InError> {
 		match self {
 			SubscriberNotification::Next(next) => SubscriberNotificationEvent::Next(next),
 			SubscriberNotification::Error(error) => SubscriberNotificationEvent::Error(error),
@@ -53,37 +45,23 @@ where
 	}
 }
 
-/// TODO: This is currently unused
 #[derive(Event)]
-pub enum SubscriptionNotificationEvent<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
+pub enum SubscriptionNotificationEvent {
 	Tick(Tick),
 	Unsubscribe,
-	Add(Teardown<BevySubscriptionContextProvider<ContextAccess>>),
+	Add(Teardown<BevySubscriptionContextProvider>),
 }
 
-impl<ContextAccess> Into<SubscriptionNotificationEvent<ContextAccess>>
-	for SubscriptionNotification<BevySubscriptionContextProvider<ContextAccess>>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+impl Into<SubscriptionNotificationEvent>
+	for SubscriptionNotification<BevySubscriptionContextProvider>
 {
-	fn into(self) -> SubscriptionNotificationEvent<ContextAccess> {
+	fn into(self) -> SubscriptionNotificationEvent {
 		match self {
 			SubscriptionNotification::Tick(tick) => SubscriptionNotificationEvent::Tick(tick),
 			SubscriptionNotification::Unsubscribe => SubscriptionNotificationEvent::Unsubscribe,
 			SubscriptionNotification::Add(teardown) => SubscriptionNotificationEvent::Add(teardown),
 		}
 	}
-}
-
-/// A simplified subscription notification that doesn't allow allow adding new
-/// teardowns, but also doesn't need to know about the context used.
-#[derive(Event)]
-pub enum ObservableSubscriptionNotificationEvent {
-	Tick(Tick),
-	Unsubscribe,
 }
 
 #[derive(Error, Debug)]

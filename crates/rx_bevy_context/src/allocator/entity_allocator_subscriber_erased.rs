@@ -1,29 +1,17 @@
-use std::marker::PhantomData;
-
 use rx_core_traits::{
 	SignalBound, Subscriber,
 	context::{WithSubscriptionContext, allocator::ErasedDestinationAllocator},
 	prelude::SubscriptionContext,
 };
 
-use crate::{
-	BevySubscriptionContextProvider, ErasedEntitySubscriber,
-	context::EntitySubscriptionContextAccessProvider,
-};
+use crate::{BevySubscriptionContextProvider, ErasedEntitySubscriber};
 
-pub struct ErasedSubscriberEntityAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	_phantom_data: PhantomData<fn(ContextAccess)>,
-}
+#[derive(Default)]
+pub struct ErasedSubscriberEntityAllocator;
 
-impl<ContextAccess> ErasedDestinationAllocator for ErasedSubscriberEntityAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
+impl ErasedDestinationAllocator for ErasedSubscriberEntityAllocator {
 	type Shared<In, InError>
-		= ErasedEntitySubscriber<In, InError, ContextAccess>
+		= ErasedEntitySubscriber<In, InError>
 	where
 		In: SignalBound,
 		InError: SignalBound;
@@ -39,20 +27,6 @@ where
 	}
 }
 
-impl<ContextAccess> WithSubscriptionContext for ErasedSubscriberEntityAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	type Context = BevySubscriptionContextProvider<ContextAccess>;
-}
-
-impl<ContextAccess> Default for ErasedSubscriberEntityAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
+impl WithSubscriptionContext for ErasedSubscriberEntityAllocator {
+	type Context = BevySubscriptionContextProvider;
 }

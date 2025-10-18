@@ -11,16 +11,12 @@ use rx_core_traits::{
 	},
 };
 
-use crate::{
-	BevySubscriptionContextProvider, EntitySubscriptionContextAccessItem,
-	context::EntitySubscriptionContextAccessProvider,
-};
+use crate::BevySubscriptionContextProvider;
 
-pub struct ErasedEntitySubscriber<In, InError, ContextAccess>
+pub struct ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	/// Entity where observed signals are sent to
 	destination_entity: Entity,
@@ -28,14 +24,13 @@ where
 	// TODO: Determine from the context using a querylens
 	closed: bool,
 
-	_phantom_data: PhantomData<(In, InError, fn(ContextAccess))>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, ContextAccess> ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError> ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	pub fn new(destination_entity: Entity) -> Self {
 		Self {
@@ -51,11 +46,10 @@ where
 	}
 }
 
-impl<In, InError, ContextAccess> Clone for ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError> Clone for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -66,13 +60,12 @@ where
 	}
 }
 
-impl<In, InError, Destination, ContextAccess> SharedDestination<Destination>
-	for ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError, Destination> SharedDestination<Destination>
+	for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Destination: 'static + Subscriber<In = In, InError = InError, Context = Self::Context>,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	fn access<F>(&mut self, accessor: F)
 	where
@@ -105,14 +98,12 @@ where
 	}
 }
 
-impl<In, InError, ContextAccess> ErasedSharedDestination
-	for ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError> ErasedSharedDestination for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
-	type Access = ErasedEntitySubscriber<In, InError, ContextAccess>;
+	type Access = ErasedEntitySubscriber<In, InError>;
 
 	fn access<F>(&mut self, accessor: F)
 	where
@@ -145,32 +136,27 @@ where
 	}
 }
 
-impl<In, InError, ContextAccess> ObserverInput
-	for ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError> ObserverInput for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, ContextAccess> WithSubscriptionContext
-	for ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError> WithSubscriptionContext for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
-	type Context = BevySubscriptionContextProvider<ContextAccess>;
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<In, InError, ContextAccess> Observer for ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError> Observer for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	fn next(
 		&mut self,
@@ -209,13 +195,16 @@ where
 	}
 }
 
-impl<In, InError, ContextAccess> Tickable for ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError> Tickable for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<In, InError, Self::Context>::Tick(tick),
@@ -223,12 +212,10 @@ where
 	}
 }
 
-impl<In, InError, ContextAccess> SubscriptionLike
-	for ErasedEntitySubscriber<In, InError, ContextAccess>
+impl<In, InError> SubscriptionLike for ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {

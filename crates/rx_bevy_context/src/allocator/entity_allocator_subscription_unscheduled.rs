@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
 	SubscriptionLike,
@@ -7,22 +5,14 @@ use rx_core_traits::{
 	prelude::SubscriptionContext,
 };
 
-use crate::{BevySubscriptionContextProvider, context::EntitySubscriptionContextAccessProvider};
+use crate::BevySubscriptionContextProvider;
 
 use super::handle::UnscheduledEntitySubscriptionHandle;
 
-pub struct UnscheduledEntitySubscriptionAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	_phantom_data: PhantomData<fn(ContextAccess)>,
-}
+#[derive(Default)]
+pub struct UnscheduledEntitySubscriptionAllocator;
 
-impl<ContextAccess> UnscheduledSubscriptionAllocator
-	for UnscheduledEntitySubscriptionAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
+impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator {
 	type UnscheduledHandle<S>
 		= UnscheduledEntitySubscriptionHandle<S>
 	where
@@ -40,21 +30,6 @@ where
 	}
 }
 
-impl<ContextAccess> WithSubscriptionContext
-	for UnscheduledEntitySubscriptionAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	type Context = BevySubscriptionContextProvider<ContextAccess>;
-}
-
-impl<ContextAccess> Default for UnscheduledEntitySubscriptionAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
+impl WithSubscriptionContext for UnscheduledEntitySubscriptionAllocator {
+	type Context = BevySubscriptionContextProvider;
 }

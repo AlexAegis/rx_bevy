@@ -9,18 +9,17 @@ use std::marker::PhantomData;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{BevySubscriptionContextProvider, EntitySubscriptionContextAccessProvider};
+use crate::BevySubscriptionContextProvider;
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref, DerefMut)]
-#[relationship_target(relationship=SubscriptionOf::<O, ContextAccess>, linked_spawn)]
+#[relationship_target(relationship=SubscriptionOf::<O>, linked_spawn)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct ObservableSubscriptions<O, ContextAccess>
+pub struct ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	#[relationship]
 	#[deref]
@@ -29,20 +28,18 @@ where
 	_phantom_data: PhantomData<O>,
 }
 
-impl<O, ContextAccess> ObservableSubscriptions<O, ContextAccess>
+impl<O> ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	pub fn get_subscription_entities(&self) -> Vec<Entity> {
 		self.subscriptions.clone()
 	}
 }
 
-impl<O, ContextAccess> Default for ObservableSubscriptions<O, ContextAccess>
+impl<O> Default for ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	fn default() -> Self {
 		Self {
@@ -53,13 +50,12 @@ where
 }
 
 #[derive(Component, Deref, DerefMut)]
-#[relationship(relationship_target=ObservableSubscriptions::<O, ContextAccess>)]
+#[relationship(relationship_target=ObservableSubscriptions::<O>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscriptionOf<O, ContextAccess>
+pub struct SubscriptionOf<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	#[relationship]
 	#[deref]
@@ -68,10 +64,9 @@ where
 	_phantom_data: PhantomData<O>,
 }
 
-impl<O, ContextAccess> SubscriptionOf<O, ContextAccess>
+impl<O> SubscriptionOf<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	pub fn new(observable_entity: Entity) -> Self {
 		Self {

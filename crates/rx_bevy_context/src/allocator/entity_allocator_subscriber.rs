@@ -1,29 +1,17 @@
-use std::marker::PhantomData;
-
 use rx_core_traits::{
 	Subscriber,
 	context::{WithSubscriptionContext, allocator::DestinationAllocator},
 	prelude::SubscriptionContext,
 };
 
-use crate::{
-	BevySubscriptionContextProvider, EntitySubscriber,
-	context::EntitySubscriptionContextAccessProvider,
-};
+use crate::{BevySubscriptionContextProvider, EntitySubscriber};
 
-pub struct SubscriberEntityAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	_phantom_data: PhantomData<fn(ContextAccess)>,
-}
+#[derive(Default)]
+pub struct SubscriberEntityAllocator;
 
-impl<ContextAccess> DestinationAllocator for SubscriberEntityAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
+impl DestinationAllocator for SubscriberEntityAllocator {
 	type Shared<Destination>
-		= EntitySubscriber<Destination, ContextAccess>
+		= EntitySubscriber<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
 
@@ -38,20 +26,6 @@ where
 	}
 }
 
-impl<ContextAccess> WithSubscriptionContext for SubscriberEntityAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	type Context = BevySubscriptionContextProvider<ContextAccess>;
-}
-
-impl<ContextAccess> Default for SubscriberEntityAllocator<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
+impl WithSubscriptionContext for SubscriberEntityAllocator {
+	type Context = BevySubscriptionContextProvider;
 }

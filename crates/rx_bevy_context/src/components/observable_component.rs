@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use bevy_ecs::{
 	component::{Component, HookContext},
 	entity::Entity,
@@ -16,45 +14,38 @@ use short_type_name::short_type_name;
 use thiserror::Error;
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider,
-	EntitySubscriptionContextAccessProvider, ErasedEntitySubscriber, ObservableSubscriptions,
-	Subscribe, SubscribeObserverOf, SubscribeObserverRef, SubscriptionComponent, SubscriptionOf,
+	BevySubscriptionContext, BevySubscriptionContextProvider, ErasedEntitySubscriber,
+	ObservableSubscriptions, Subscribe, SubscribeObserverOf, SubscribeObserverRef,
+	SubscriptionComponent, SubscriptionOf,
 };
 
 #[derive(Component)]
-#[component(on_insert=observable_on_insert::<O, ContextAccess>, on_remove=observable_on_remove::<O, ContextAccess>)]
-#[require(ObservableSubscriptions::<O, ContextAccess>)]
-pub struct ObservableComponent<O, ContextAccess>
+#[component(on_insert=observable_on_insert::<O>, on_remove=observable_on_remove::<O>)]
+#[require(ObservableSubscriptions::<O>)]
+pub struct ObservableComponent<O>
 where
-	O: Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: EntitySubscriptionContextAccessProvider,
+	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	observable: O,
-	_phantom_data: PhantomData<fn(ContextAccess)>,
 }
 
-impl<O, ContextAccess> ObservableComponent<O, ContextAccess>
+impl<O> ObservableComponent<O>
 where
-	O: Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: EntitySubscriptionContextAccessProvider,
+	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	pub fn new(observable: O) -> Self {
-		Self {
-			observable,
-			_phantom_data: PhantomData,
-		}
+		Self { observable }
 	}
 }
 
-fn subscribe_event_observer<'w, 's, O, ContextAccess>(
+fn subscribe_event_observer<'w, 's, O>(
 	on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut commands: Commands,
-	mut observable_query: Query<&mut ObservableComponent<O, ContextAccess>>,
-	mut context: BevySubscriptionContext<'w, 's, ContextAccess>,
+	mut observable_query: Query<&mut ObservableComponent<O>>,
+	mut context: BevySubscriptionContext<'w, 's>,
 ) -> Result<(), BevyError>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let event = on_subscribe.event();
 
@@ -67,7 +58,7 @@ where
 	};
 
 	let subscription = observable.observable.subscribe(
-		ErasedEntitySubscriber::<O::Out, O::OutError, ContextAccess>::new(event.destination_entity),
+		ErasedEntitySubscriber::<O::Out, O::OutError>::new(event.destination_entity),
 		&mut context,
 	);
 
@@ -76,47 +67,41 @@ where
 	// It also already contains the [SubscriptionSchedule] component.
 	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
 	subscription_entity_commands.insert((
-		SubscriptionComponent::<O, ContextAccess>::new(subscription),
-		SubscriptionOf::<O, ContextAccess>::new(event.observable_entity),
+		SubscriptionComponent::<O>::new(subscription),
+		SubscriptionOf::<O>::new(event.observable_entity),
 	));
 
 	Ok(())
 }
 
-fn observable_on_insert<O, ContextAccess>(
-	mut deferred_world: DeferredWorld,
-	hook_context: HookContext,
-) where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+fn observable_on_insert<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+where
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	#[cfg(feature = "debug")]
-	crate::register_observable_debug_systems::<O, ContextAccess>(&mut deferred_world);
+	crate::register_observable_debug_systems::<O>(&mut deferred_world);
 
 	deferred_world.commands().spawn((
 		// TODO(bevy-0.17): This is actually not needed, it's only here to not let these observes occupy the top level in the worldentityinspector. reconsider to only use either this or the other relationship if it's still producing warnings on despawn in 0.17
 		ChildOf(hook_context.entity),
-		SubscribeObserverOf::<O, ContextAccess>::new(hook_context.entity),
+		SubscribeObserverOf::<O>::new(hook_context.entity),
 		Name::new(format!("Subscribe Observer {}", short_type_name::<O>())),
-		Observer::new(subscribe_event_observer::<O, ContextAccess>)
+		Observer::new(subscribe_event_observer::<O>)
 			.with_entity(hook_context.entity)
 			.with_error_handler(default_on_subscribe_error_handler),
 	));
 }
 
 /// Remove related components along with the observable
-fn observable_on_remove<O, ContextAccess>(
-	mut deferred_world: DeferredWorld,
-	hook_context: HookContext,
-) where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+fn observable_on_remove<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+where
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	deferred_world
 		.commands()
 		.entity(hook_context.entity)
-		.remove::<ObservableSubscriptions<O, ContextAccess>>()
-		.remove::<SubscribeObserverRef<O, ContextAccess>>();
+		.remove::<ObservableSubscriptions<O>>()
+		.remove::<SubscribeObserverRef<O>>();
 }
 
 /// Errors that can happen during a [Subscribe] event.

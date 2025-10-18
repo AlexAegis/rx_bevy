@@ -1,7 +1,5 @@
-use std::marker::PhantomData;
-
 use bevy_input::keyboard::KeyCode;
-use rx_bevy_context::{BevySubscriptionContextProvider, EntitySubscriptionContextAccessProvider};
+use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::{
 	Observable, ObservableOutput, Subscriber, SubscriptionData,
 	prelude::{SubscriptionContext, WithSubscriptionContext},
@@ -10,32 +8,19 @@ use rx_core_traits::{
 use crate::KeyboardSubscription;
 
 /// A simplistic observable to demonstrate accessing world state from within a subscription
-pub struct KeyboardObservable<ContextAccess>
-where
-	ContextAccess: EntitySubscriptionContextAccessProvider,
-{
-	_phantom_data: PhantomData<fn(ContextAccess)>,
-}
+#[derive(Default)]
+pub struct KeyboardObservable;
 
-impl<ContextAccess> ObservableOutput for KeyboardObservable<ContextAccess>
-where
-	ContextAccess: EntitySubscriptionContextAccessProvider,
-{
+impl ObservableOutput for KeyboardObservable {
 	type Out = KeyCode;
 	type OutError = ();
 }
 
-impl<ContextAccess> WithSubscriptionContext for KeyboardObservable<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
-	type Context = BevySubscriptionContextProvider<ContextAccess>;
+impl WithSubscriptionContext for KeyboardObservable {
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<ContextAccess> Observable for KeyboardObservable<ContextAccess>
-where
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
-{
+impl Observable for KeyboardObservable {
 	/// TODO: Maybe the destination generic should make a comeback
 	type Subscription = SubscriptionData<Self::Context>;
 
@@ -50,7 +35,7 @@ where
 			+ Send
 			+ Sync,
 	{
-		let subscription = KeyboardSubscription::<Destination, ContextAccess>::new(destination);
+		let subscription = KeyboardSubscription::<Destination>::new(destination);
 		SubscriptionData::new_with_teardown(subscription.into())
 	}
 }

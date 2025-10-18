@@ -14,8 +14,8 @@ use rx_core_traits::Observable;
 use short_type_name::short_type_name;
 
 use crate::{
-	BevySubscriptionContextProvider, EntitySubscriptionContextAccessProvider, ObservableComponent,
-	ObservableSubscriptions, SubscriptionOf, SubscriptionSchedule,
+	BevySubscriptionContextProvider, ObservableComponent, ObservableSubscriptions, SubscriptionOf,
+	SubscriptionSchedule,
 };
 
 pub struct DebugInspectorPlugin;
@@ -44,19 +44,17 @@ pub(crate) fn run_debug_systems(
 	}
 }
 
-pub(crate) fn register_observable_debug_systems<O, ContextAccess>(
-	deferred_world: &mut DeferredWorld,
-) where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+pub(crate) fn register_observable_debug_systems<O>(deferred_world: &mut DeferredWorld)
+where
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let observable_debug_system_id = deferred_world
 		.commands()
-		.register_system(observable_entity_debug_print::<O, ContextAccess>);
+		.register_system(observable_entity_debug_print::<O>);
 
 	let subscription_debug_system_id = deferred_world
 		.commands()
-		.register_system(subscription_entity_debug_print::<O, ContextAccess>);
+		.register_system(subscription_entity_debug_print::<O>);
 
 	let mut debug_registry = deferred_world
 		.get_resource_mut::<DebugSystemRegistry>()
@@ -70,19 +68,18 @@ pub(crate) fn register_observable_debug_systems<O, ContextAccess>(
 		.push(subscription_debug_system_id);
 }
 
-pub(crate) fn observable_entity_debug_print<O, ContextAccess>(
+pub(crate) fn observable_entity_debug_print<O>(
 	observable_query: Query<
 		(
 			Entity,
-			Option<&SubscriptionOf<O, ContextAccess>>,
-			Option<&ObservableSubscriptions<O, ContextAccess>>,
+			Option<&SubscriptionOf<O>>,
+			Option<&ObservableSubscriptions<O>>,
 			Option<&SubscriptionSchedule<Update>>,
 		),
-		With<ObservableComponent<O, ContextAccess>>,
+		With<ObservableComponent<O>>,
 	>,
 ) where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
 		observable_query.iter()
@@ -101,20 +98,18 @@ pub(crate) fn observable_entity_debug_print<O, ContextAccess>(
 	}
 }
 
-impl<O, ContextAccess> Display for &SubscriptionOf<O, ContextAccess>
+impl<O> Display for &SubscriptionOf<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "\tSubscription of: {}", self.get_observable_entity())
 	}
 }
 
-impl<O, ContextAccess> Display for &ObservableSubscriptions<O, ContextAccess>
+impl<O> Display for &ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "\tSubscriptions: {:?}", self.get_subscription_entities())
@@ -130,16 +125,15 @@ where
 	}
 }
 
-pub(crate) fn subscription_entity_debug_print<O, ContextAccess>(
+pub(crate) fn subscription_entity_debug_print<O>(
 	subscription_query: Query<(
 		Entity,
-		&SubscriptionOf<O, ContextAccess>,
-		Option<&ObservableSubscriptions<O, ContextAccess>>,
+		&SubscriptionOf<O>,
+		Option<&ObservableSubscriptions<O>>,
 		Option<&SubscriptionSchedule<Update>>,
 	)>,
 ) where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
-	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
 		subscription_query.iter()
