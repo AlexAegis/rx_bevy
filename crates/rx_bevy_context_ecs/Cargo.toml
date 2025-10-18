@@ -44,6 +44,7 @@ example = [
 dev_panic_on_dropped_active_subscriptions = [
     "rx_bevy_core/dev_panic_on_dropped_active_subscriptions",
 ]
+reflect = ["dep:bevy_reflect"]
 
 [dependencies]
 # TODO: disable default features in all dependencies
@@ -51,8 +52,11 @@ rx_bevy_core = { workspace = true, features = ["bevy"] }
 bevy_ecs = { workspace = true }
 bevy_app = { workspace = true }
 bevy_log = { workspace = true }
+bevy_reflect = { workspace = true, optional = true }
 smallvec = { workspace = true }
 short_type_name = { workspace = true }
+derive-where = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }

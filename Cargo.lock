@@ -4617,11 +4617,14 @@ dependencies = [
  "bevy_app",
  "bevy_ecs",
  "bevy_log",
+ "bevy_reflect",
+ "derive-where",
  "rx_bevy",
  "rx_bevy_core",
  "rx_bevy_testing",
  "short_type_name",
  "smallvec",
+ "thiserror 2.0.17",
 ]
 
 [[package]]

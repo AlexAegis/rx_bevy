@@ -51,6 +51,7 @@ impl SubscriptionContextDropSafety for DropSafeSubscriptionContext {
 	const DROP_SAFE: bool = true;
 }
 
+/// 🦭
 mod private {
 	pub trait Seal {}
 }
