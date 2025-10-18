@@ -6,14 +6,73 @@ use thiserror::Error;
 
 use crate::BevySubscriptionContextProvider;
 
-/// Shorthand for [SubscriberNotificationEvent]
-pub type RxSignal<In, InError>
+#[derive(Event, Clone, Debug)]
+pub enum RxSignal<In, InError = ()>
 where
 	In: SignalBound,
 	InError: SignalBound,
-= SubscriberNotificationEvent<In, InError>;
+{
+	Next(In),
+	Error(InError),
+	Complete,
+}
 
-#[derive(Debug, Event)]
+impl<In, InError> From<RxSignal<In, InError>> for SubscriberNotificationEvent<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	fn from(value: RxSignal<In, InError>) -> Self {
+		match value {
+			RxSignal::Next(next) => SubscriberNotificationEvent::Next(next),
+			RxSignal::Error(error) => SubscriberNotificationEvent::Error(error),
+			RxSignal::Complete => SubscriberNotificationEvent::Complete,
+		}
+	}
+}
+
+/// Shorthand for [SubscriberNotificationEvent]
+// TODO: use this or don't pub type RxSignal<In, InError> = InternalSubscriberNotificationEvent<In, InError>;
+
+#[derive(Event, Clone, Debug)]
+pub(crate) struct ConsumableSubscriberNotificationEvent<In, InError = ()>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	notification: Option<SubscriberNotificationEvent<In, InError>>,
+}
+
+impl<In, InError> ConsumableSubscriberNotificationEvent<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	pub fn take(&mut self) -> Option<SubscriberNotificationEvent<In, InError>> {
+		self.notification.take()
+	}
+}
+
+impl<In, InError> From<SubscriberNotification<In, InError, BevySubscriptionContextProvider>>
+	for ConsumableSubscriberNotificationEvent<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	fn from(value: SubscriberNotification<In, InError, BevySubscriptionContextProvider>) -> Self {
+		let notification_event: SubscriberNotificationEvent<In, InError> = value.into();
+
+		ConsumableSubscriberNotificationEvent {
+			notification: Some(notification_event),
+		}
+	}
+}
+
+/// Since events are passed around as references and signals must be owned, we
+/// can levarage the fact that these events are sent only once, and only to
+/// one destination and let the `In` and `InError` signals be taken out of the
+/// event.
+#[derive(Event, Clone, Debug)]
 pub enum SubscriberNotificationEvent<In, InError = ()>
 where
 	In: SignalBound,
@@ -27,14 +86,14 @@ where
 	Add(Option<Teardown<BevySubscriptionContextProvider>>),
 }
 
-impl<In, InError> Into<SubscriberNotificationEvent<In, InError>>
-	for SubscriberNotification<In, InError, BevySubscriptionContextProvider>
+impl<In, InError> From<SubscriberNotification<In, InError, BevySubscriptionContextProvider>>
+	for SubscriberNotificationEvent<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn into(self) -> SubscriberNotificationEvent<In, InError> {
-		match self {
+	fn from(value: SubscriberNotification<In, InError, BevySubscriptionContextProvider>) -> Self {
+		match value {
 			SubscriberNotification::Next(next) => SubscriberNotificationEvent::Next(next),
 			SubscriberNotification::Error(error) => SubscriberNotificationEvent::Error(error),
 			SubscriberNotification::Complete => SubscriberNotificationEvent::Complete,
@@ -45,7 +104,7 @@ where
 	}
 }
 
-#[derive(Event)]
+#[derive(Event, Clone, Debug)]
 pub enum SubscriptionNotificationEvent {
 	Tick(Tick),
 	Unsubscribe,
@@ -70,4 +129,10 @@ pub enum SubscriptionNotificationEventError {
 		"Tried to send a SubscriptionNotification to {0}. But it does not exist on entity {1}."
 	)]
 	NotASubscription(String, Entity),
+}
+
+#[derive(Error, Debug)]
+pub enum SubscriberNotificationEventError {
+	#[error("Tried to send a SubscriberNotification to {0}. But it does not exist on entity {1}.")]
+	NotASubscriber(String, Entity),
 }

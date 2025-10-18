@@ -1,4 +1,4 @@
-use std::{iter::Chain, slice::Iter};
+use std::{any::Any, iter::Chain, slice::Iter};
 
 use rx_core_traits::{
 	SignalBound, SubscriberNotification,
@@ -9,6 +9,44 @@ use rx_core_traits::{
 	},
 	prelude::SubscriptionContextAccess,
 };
+
+// TODO: Finish idea, it's for the ability to test things on drop, a global context is a must
+#[derive(Default)]
+pub struct ErasedMockContext {
+	context: Option<Box<dyn Any>>,
+}
+
+impl ErasedMockContext {
+	pub const fn new() -> Self {
+		ErasedMockContext { context: None }
+	}
+
+	pub fn assign<In, InError, DropSafety>(&mut self, context: MockContext<In, InError, DropSafety>)
+	where
+		In: SignalBound,
+		InError: SignalBound,
+		DropSafety: SubscriptionContextDropSafety,
+	{
+		self.context = Some(Box::new(context));
+	}
+
+	pub fn take<In, InError, DropSafety>(&mut self) -> Box<MockContext<In, InError, DropSafety>>
+	where
+		In: SignalBound,
+		InError: SignalBound,
+		DropSafety: SubscriptionContextDropSafety,
+	{
+		if let Some(context_ref) = self.context.take() {
+			context_ref
+				.downcast::<MockContext<In, InError, DropSafety>>()
+				.expect("global mock context was initialized with different types!")
+		} else {
+			panic!("No MockContext was set globally!");
+		}
+	}
+}
+
+pub const GLOBAL_SAFE_DROP_MOCK_CONTEXT: ErasedMockContext = ErasedMockContext::new();
 
 #[derive(Debug)]
 pub struct MockContext<In, InError, DropSafety>
@@ -309,16 +347,23 @@ where
 	type ScheduledSubscriptionAllocator = ScheduledSubscriptionHeapAllocator<Self>;
 	type UnscheduledSubscriptionAllocator = UnscheduledSubscriptionHeapAllocator<Self>;
 
+	/// While this context could be constructed very easily
+	/// letting subscriptions implicitly unsubscribe on drop would lead to
+	/// tests that you cannot trust!
 	fn create_context_to_unsubscribe_on_drop<'w, 's>() -> Self::Item<'w, 's> {
-		// While this context could be constructed very easily (It has a
-		// [Default] implementation too! This is the reason why this method
-		// exists by the way. It just doesn't have the same connotation!)
-		// letting subscriptions implicitly unsubscribe on drop would lead to
-		// tests that you cannot trust!
-		panic!(
-			"An unclosed Subscription was dropped during a test! For tests, the context must be explicitly supplied as it stores the data used for asserts! {}",
-			short_type_name::short_type_name::<Self>()
-		)
+		if DropSafety::DROP_SAFE {
+			// TODO: impl a global store and  use from that
+			// *GLOBAL_SAFE_DROP_MOCK_CONTEXT.take::<In, InError, DropSafety>()
+			panic!(
+				"An unclosed Subscription was dropped during a test, but only in a SAFE context! Still, for tests, the context must be explicitly supplied as it stores the data used for asserts! {}",
+				short_type_name::short_type_name::<Self>()
+			)
+		} else {
+			panic!(
+				"An unclosed Subscription was dropped during a test in an UNSAFE context! For tests, the context must be explicitly supplied as it stores the data used for asserts! {}",
+				short_type_name::short_type_name::<Self>()
+			)
+		}
 	}
 }
 

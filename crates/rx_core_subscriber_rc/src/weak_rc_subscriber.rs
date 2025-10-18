@@ -19,37 +19,6 @@ where
 	pub(crate) closed: bool,
 }
 
-impl<Destination> WeakRcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	pub fn access_destination<F>(&mut self, accessor: F)
-	where
-		F: Fn(&InnerRcSubscriber<Destination>),
-	{
-		self.shared_destination.access(accessor);
-	}
-
-	pub fn access_destination_mut<F>(&mut self, accessor: F)
-	where
-		F: FnMut(&mut InnerRcSubscriber<Destination>),
-	{
-		self.shared_destination.access_mut(accessor);
-	}
-}
-
-impl<Destination> Clone for WeakRcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn clone(&self) -> Self {
-		Self {
-			closed: self.closed,
-			shared_destination: self.shared_destination.clone(),
-		}
-	}
-}
-
 impl<Destination> ObserverInput for WeakRcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
@@ -97,7 +66,11 @@ impl<Destination> Tickable for WeakRcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.shared_destination.tick(tick, context);
 	}
 }
@@ -134,12 +107,15 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			// TODO: Figure out why Access can't be resolved into its actual type: : &mut InnerRcSubscriber<Destination>
-			self.access_destination_mut(|destination| {
-				let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
-				destination.complete_if_can(&mut context);
-				destination.unsubscribe_if_can(&mut context);
-			});
+			let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
+
+			self.shared_destination.access_with_context_mut(
+				|destination, context| {
+					destination.complete_if_can(context);
+					destination.unsubscribe_if_can(context);
+				},
+				&mut context,
+			);
 		}
 	}
 }

@@ -18,24 +18,6 @@ impl<Destination> SharedDestination<Destination> for HeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
-	fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&Destination),
-	{
-		if let Ok(destination) = self.destination.read() {
-			accessor(&*destination)
-		}
-	}
-
-	fn access_mut<F>(&mut self, mut accessor: F)
-	where
-		F: FnMut(&mut Destination),
-	{
-		if let Ok(mut destination) = self.destination.write() {
-			accessor(&mut *destination)
-		}
-	}
-
 	fn access_with_context<F>(
 		&mut self,
 		accessor: F,
@@ -58,6 +40,13 @@ where
 		if let Ok(mut destination) = self.destination.write() {
 			accessor(&mut *destination, context)
 		}
+	}
+
+	fn clone_with_context(
+		&self,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self {
+		self.clone()
 	}
 }
 

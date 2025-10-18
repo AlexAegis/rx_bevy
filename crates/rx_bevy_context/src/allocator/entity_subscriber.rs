@@ -8,7 +8,7 @@ use rx_core_traits::{
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
-use crate::BevySubscriptionContextProvider;
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, SubscriberComponent};
 
 #[derive(Component)]
 pub struct EntitySubscriber<Destination>
@@ -53,27 +53,27 @@ impl<Destination> SharedDestination<Destination> for EntitySubscriber<Destinatio
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
-	fn access<F>(&mut self, _accessor: F)
-	where
-		F: Fn(&Destination),
-	{
-		// TODO: This is only used when the rcsubscriber drops and tries to subtract counts from the destination, its behavior might have to be changed because of this
-		panic!("can't access without a context!")
+	fn clone_with_context(
+		&self,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self {
+		Self {
+			destination_entity: self.destination_entity,
+			_phantom_data: PhantomData,
+		}
 	}
 
-	fn access_mut<F>(&mut self, _accessor: F)
+	fn access_with_context<F>(&mut self, accessor: F, context: &mut BevySubscriptionContext<'_, '_>)
 	where
-		F: FnMut(&mut Destination),
-	{
-	}
-
-	fn access_with_context<F>(
-		&mut self,
-		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) where
 		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
+		// TODO: Maybe make the deferred world the context! genius
+		let world = context.deferred_world.reborrow();
+		if let Some(subscriber_component) =
+			world.get::<SubscriberComponent<Destination>>(self.destination_entity)
+		{
+			// accessor(&subscriber_component.destination, context);
+		}
 	}
 
 	fn access_with_context_mut<F>(
@@ -83,6 +83,12 @@ where
 	) where
 		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
+		if let Some(subscriber_component) = context
+			.deferred_world
+			.get_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+		{
+			// accessor(&subscriber_component.destination, context);
+		}
 	}
 }
 

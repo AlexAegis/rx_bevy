@@ -43,18 +43,32 @@ where
 		self.unsubscribed || self.completed
 	}
 
-	pub fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&InnerRcSubscriber<Destination>),
-	{
-		self.shared_destination.access(accessor);
-	}
+	pub fn clone_with_context(
+		&self,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self {
+		let mut shared_destination = self.shared_destination.clone_with_context(context);
 
-	pub fn access_mut<F>(&mut self, accessor: F)
-	where
-		F: FnMut(&mut InnerRcSubscriber<Destination>),
-	{
-		self.shared_destination.access_mut(accessor);
+		shared_destination.access_with_context_mut(
+			|destination, _context| {
+				destination.ref_count += 1;
+
+				if self.completed {
+					destination.completion_count += 1;
+				}
+
+				if self.unsubscribed {
+					destination.unsubscribe_count += 1;
+				}
+			},
+			context,
+		);
+
+		Self {
+			completed: self.completed,
+			unsubscribed: self.unsubscribed,
+			shared_destination,
+		}
 	}
 
 	pub fn access_with_context<F>(
@@ -89,37 +103,13 @@ where
 	/// the reference counts, and only attempts to complete or unsubscribe it
 	/// when it too completes or unsubscribes. And can still be used as a
 	/// subscriber
-	pub fn downgrade(&self) -> WeakRcSubscriber<Destination> {
+	pub fn downgrade(
+		&self,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> WeakRcSubscriber<Destination> {
 		WeakRcSubscriber {
-			shared_destination: self.shared_destination.clone(),
+			shared_destination: self.shared_destination.clone_with_context(context),
 			closed: self.completed || self.unsubscribed,
-		}
-	}
-}
-
-impl<Destination> Clone for RcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn clone(&self) -> Self {
-		let mut shared_destination = self.shared_destination.clone();
-
-		shared_destination.access_mut(|destination| {
-			destination.ref_count += 1;
-
-			if self.completed {
-				destination.completion_count += 1;
-			}
-
-			if self.unsubscribed {
-				destination.unsubscribe_count += 1;
-			}
-		});
-
-		Self {
-			completed: self.completed,
-			unsubscribed: self.unsubscribed,
-			shared_destination,
 		}
 	}
 }
@@ -167,9 +157,12 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_this_clone_closed() {
 			self.completed = true;
-			self.shared_destination.access_mut(|destination| {
-				destination.completion_count += 1;
-			});
+			self.shared_destination.access_with_context_mut(
+				|destination, _context| {
+					destination.completion_count += 1;
+				},
+				context,
+			);
 			self.shared_destination.complete(context);
 			self.unsubscribe(context);
 		}
@@ -204,9 +197,12 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.unsubscribed {
 			self.unsubscribed = true;
-			self.shared_destination.access_mut(|destination| {
-				destination.unsubscribe_count += 1;
-			});
+			self.shared_destination.access_with_context_mut(
+				|destination, _context| {
+					destination.unsubscribe_count += 1;
+				},
+				context,
+			);
 			self.shared_destination.unsubscribe(context);
 		}
 	}
@@ -230,17 +226,23 @@ where
 			let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
-		self.shared_destination.access_mut(|destination| {
-			destination.ref_count -= 1;
 
-			if self.completed {
-				destination.completion_count -= 1;
-			}
-
-			if self.unsubscribed {
-				destination.unsubscribe_count -= 1;
-			}
-		});
+		// let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
+		//
+		// self.shared_destination.access_with_context_mut(
+		// 	|destination, _context| {
+		// 		destination.ref_count -= 1;
+		//
+		// 		if self.completed {
+		// 			destination.completion_count -= 1;
+		// 		}
+		//
+		// 		if self.unsubscribed {
+		// 			destination.unsubscribe_count -= 1;
+		// 		}
+		// 	},
+		// 	&mut context,
+		// );
 	}
 }
 
@@ -248,10 +250,10 @@ where
 mod test {
 	use std::ops::RangeInclusive;
 
-	use rx_core_traits::Observable;
-	use rx_core_traits::{Observer, SubscriptionLike, context::DropSafeSubscriptionContext};
 	use rx_core_observable_iterator::IteratorObservable;
 	use rx_core_testing::{MockContext, MockObserver};
+	use rx_core_traits::Observable;
+	use rx_core_traits::{Observer, SubscriptionLike, context::DropSafeSubscriptionContext};
 
 	use crate::RcSubscriber;
 
@@ -269,12 +271,14 @@ mod test {
 
 	#[test]
 	fn rc_subscriber_starts_with_ref_1() {
-		let (mut rc_subscriber, mut _context) = setup();
+		let (mut rc_subscriber, mut context) = setup();
 
 		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
+
+		rc_subscriber.unsubscribe(&mut context);
 	}
 
 	#[test]
@@ -290,7 +294,7 @@ mod test {
 	#[test]
 	fn rc_subscriber_clone_unsubscribing_should_not_unsubscribe_destination() {
 		let (mut rc_subscriber, mut context) = setup();
-		let mut rc_subscriber_clone = rc_subscriber.clone();
+		let mut rc_subscriber_clone = rc_subscriber.clone_with_context(&mut context);
 
 		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
@@ -310,7 +314,7 @@ mod test {
 	#[test]
 	fn rc_subscriber_clones_unsubscribe() {
 		let (mut rc_subscriber, mut context) = setup();
-		let mut rc_subscriber_clone = rc_subscriber.clone();
+		let mut rc_subscriber_clone = rc_subscriber.clone_with_context(&mut context);
 
 		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
@@ -337,7 +341,7 @@ mod test {
 	#[test]
 	fn rc_subscriber_clones_unsubscribe_drop_removes_ref_count() {
 		let (mut rc_subscriber, mut context) = setup();
-		let mut rc_subscriber_clone = rc_subscriber.clone();
+		let mut rc_subscriber_clone = rc_subscriber.clone_with_context(&mut context);
 
 		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
@@ -406,7 +410,8 @@ mod test {
 			MockContext<i32, (), DropSafeSubscriptionContext>,
 		>::new(1..=10);
 
-		let mut iterator_a_subscription = iterator_a.subscribe(rc_subscriber.clone(), &mut context);
+		let mut iterator_a_subscription =
+			iterator_a.subscribe(rc_subscriber.clone_with_context(&mut context), &mut context);
 
 		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
@@ -431,7 +436,7 @@ mod test {
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
-		let mut rc_clone_1 = rc_subscriber.clone();
+		let mut rc_clone_1 = rc_subscriber.clone_with_context(&mut context);
 		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
@@ -442,7 +447,7 @@ mod test {
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
-		let mut rc_clone_2 = rc_subscriber.clone();
+		let mut rc_clone_2 = rc_subscriber.clone_with_context(&mut context);
 		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 1);

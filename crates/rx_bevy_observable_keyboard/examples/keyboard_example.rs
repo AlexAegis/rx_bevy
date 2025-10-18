@@ -3,7 +3,8 @@ use bevy_egui::EguiPlugin;
 use bevy_input::keyboard::KeyboardInput;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
-use rx_bevy_context::SubscriberNotificationEvent;
+use rx_bevy_context::{ObservableComponent, RelativeEntity, SubscriberNotificationEvent};
+use rx_bevy_observable_keyboard::KeyboardObservable;
 
 fn main() -> AppExit {
 	App::new()
@@ -43,7 +44,7 @@ fn next_number_observer(
 
 fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
 	println!("Unsubscribe subscription!");
-	commands.despawn(example_entities.subscription);
+	commands.entity(example_entities.subscription).despawn();
 }
 
 #[derive(Resource, Reflect)]
@@ -59,13 +60,13 @@ fn setup(mut commands: Commands) {
 
 	let mut keyboard_observable_entity_commands = commands.spawn((
 		Name::new("KeyboardObservable"),
-		KeyboardObservableComponent::new(KeyboardObservableOptions {}),
+		ObservableComponent::new(KeyboardObservable::default()),
 	));
 
 	keyboard_observable_entity_commands.observe(next_number_observer);
 
 	let subscription = keyboard_observable_entity_commands
-		.subscribe_to_this_scheduled::<KeyboardInput, (), Update>(RelativeEntity::This);
+		.subscribe_to_this::<KeyboardInput, (), Update>(RelativeEntity::This);
 
 	commands.insert_resource(ExampleEntities { subscription });
 }

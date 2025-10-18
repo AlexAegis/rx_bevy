@@ -134,13 +134,14 @@ mod test {
 
 		let mut source = (1..=2)
 			.into_observable::<MockContext<_, _, _>>()
-			.switch_map(|_| (10..=12).into_observable::<()>());
-		let _subscription = source.subscribe(mock_destination, &mut context);
+			.switch_map(|_| (10..=12).into_observable::<MockContext<_, _, _>>());
+		let mut subscription = source.subscribe(mock_destination, &mut context);
 		println!("{context:?}");
 		assert!(
 			context.nothing_happened_after_closed(),
 			"something happened after unsubscribe"
 		);
 		assert_eq!(context.all_observed_values(), vec![10, 11, 12, 10, 11, 12]);
+		subscription.unsubscribe(&mut context);
 	}
 }

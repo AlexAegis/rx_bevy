@@ -37,18 +37,14 @@ where
 		}
 	}
 
-	pub fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&Destination),
-	{
-		self.shared_destination.access(accessor);
-	}
-
-	pub fn access_mut<F>(&mut self, accessor: F)
-	where
-		F: FnMut(&mut Destination),
-	{
-		self.shared_destination.access_mut(accessor);
+	pub fn clone_with_context<F>(
+		&mut self,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self {
+		Self {
+			shared_destination: self.shared_destination.clone_with_context(context),
+			_phantom_data: PhantomData,
+		}
 	}
 
 	pub fn access_with_context<F>(
@@ -67,22 +63,13 @@ where
 		accessor: F,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: FnMut(&mut Destination, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
+		F: FnMut(
+			&mut Destination,
+			&mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
+		),
 	{
 		self.shared_destination
 			.access_with_context_mut(accessor, context);
-	}
-}
-
-impl<Destination> Clone for SharedSubscriber<Destination>
-where
-	Destination: 'static + Subscriber + Send + Sync,
-{
-	fn clone(&self) -> Self {
-		Self {
-			shared_destination: self.shared_destination.clone(),
-			_phantom_data: PhantomData,
-		}
 	}
 }
 
@@ -134,7 +121,11 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.access_with_context_mut(
 			move |destination: &mut Destination,
 			      context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>| {

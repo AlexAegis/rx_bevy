@@ -33,19 +33,15 @@ pub trait DestinationAllocator: WithSubscriptionContext {
 /// duration of the call.
 pub trait SharedDestination<Destination>:
 	Subscriber<In = Destination::In, InError = Destination::InError, Context = Destination::Context>
-	+ Clone
 	+ Send
 	+ Sync
 where
 	Destination: ?Sized + 'static + Subscriber,
 {
-	fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&Destination);
-
-	fn access_mut<F>(&mut self, accessor: F)
-	where
-		F: FnMut(&mut Destination);
+	fn clone_with_context(
+		&self,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self;
 
 	fn access_with_context<F>(
 		&mut self,

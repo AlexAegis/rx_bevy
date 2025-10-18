@@ -11,8 +11,8 @@ use rx_core_traits::{
 use short_type_name::short_type_name;
 
 use crate::{
-	ErasedSubscriberEntityAllocator, ScheduledEntitySubscriptionAllocator,
-	SubscriberEntityAllocator, SubscriberNotificationEvent, SubscriptionNotificationEvent,
+	ConsumableSubscriberNotificationEvent, ErasedSubscriberEntityAllocator,
+	ScheduledEntitySubscriptionAllocator, SubscriberEntityAllocator, SubscriptionNotificationEvent,
 	UnscheduledEntitySubscriptionAllocator,
 };
 
@@ -54,7 +54,8 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		In: SignalBound,
 		InError: SignalBound,
 	{
-		let notification_event: SubscriberNotificationEvent<In, InError> = notification.into();
+		let notification_event: ConsumableSubscriberNotificationEvent<In, InError> =
+			notification.into();
 		self.commands.trigger_targets(notification_event, target);
 	}
 

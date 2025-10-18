@@ -38,6 +38,21 @@ where
 	}
 }
 
+/// Clone is implemented for Teardown for other API's (Cloning
+/// [SubscriberNotification][crate::SubscriberNotification]) but the actual
+/// teardown function is not cloned.
+///
+/// It most not be cloned as it owns resources and the uniquiness of that must
+/// be ensured.
+impl<Context> Clone for Teardown<Context>
+where
+	Context: SubscriptionContext,
+{
+	fn clone(&self) -> Self {
+		Self { teardown_fn: None }
+	}
+}
+
 impl<Context> Teardown<Context>
 where
 	Context: SubscriptionContext,
@@ -107,9 +122,10 @@ where
 			teardown_fn: if subscription.is_closed() {
 				None
 			} else {
-				let closure = move |context: &mut <S::Context as SubscriptionContext>::Item<'_, '_>| {
-					subscription.unsubscribe(context)
-				};
+				let closure = move |context: &mut <S::Context as SubscriptionContext>::Item<
+					'_,
+					'_,
+				>| { subscription.unsubscribe(context) };
 				Some(Box::new(closure))
 			},
 		}

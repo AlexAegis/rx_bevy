@@ -1,11 +1,11 @@
-use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber, SubscriptionData, context::WithSubscriptionContext,
-	prelude::SubscriptionContext,
-};
 use rx_core_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
 };
 use rx_core_subscriber_rc::RcSubscriber;
+use rx_core_traits::{
+	Observable, ObservableOutput, Subscriber, SubscriptionData, context::WithSubscriptionContext,
+	prelude::SubscriptionContext,
+};
 
 use crate::CombineLatestSubscriber;
 
@@ -92,12 +92,12 @@ where
 		);
 
 		let s1 = self.observable_1.subscribe(
-			IntoVariant1of2Subscriber::new(rc_subscriber.clone()),
+			IntoVariant1of2Subscriber::new(rc_subscriber.clone_with_context(context)),
 			context,
 		);
 
 		let s2 = self.observable_2.subscribe(
-			IntoVariant2of2Subscriber::new(rc_subscriber.clone()),
+			IntoVariant2of2Subscriber::new(rc_subscriber.clone_with_context(context)),
 			context,
 		);
 

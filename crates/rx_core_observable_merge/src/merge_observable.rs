@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
+use rx_core_operator_map_into::MapIntoSubscriber;
+use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
 	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionData,
 	context::WithSubscriptionContext, prelude::SubscriptionContext,
 };
-use rx_core_operator_map_into::MapIntoSubscriber;
-use rx_core_subscriber_rc::RcSubscriber;
 
 pub fn merge<Out, OutError, O1, O2>(
 	observable_1: O1,
@@ -115,9 +115,10 @@ where
 	{
 		let rc_subscriber = RcSubscriber::new(destination, context);
 
-		let s1 = self
-			.observable_1
-			.subscribe(MapIntoSubscriber::new(rc_subscriber.clone()), context);
+		let s1 = self.observable_1.subscribe(
+			MapIntoSubscriber::new(rc_subscriber.clone_with_context(context)),
+			context,
+		);
 
 		let s2 = self
 			.observable_2

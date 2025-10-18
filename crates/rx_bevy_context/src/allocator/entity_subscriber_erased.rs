@@ -67,16 +67,15 @@ where
 	InError: SignalBound,
 	Destination: 'static + Subscriber<In = In, InError = InError, Context = Self::Context>,
 {
-	fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&Destination),
-	{
-	}
-
-	fn access_mut<F>(&mut self, accessor: F)
-	where
-		F: FnMut(&mut Destination),
-	{
+	fn clone_with_context(
+		&self,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self {
+		Self {
+			closed: self.closed,
+			destination_entity: self.destination_entity,
+			_phantom_data: PhantomData,
+		}
 	}
 
 	fn access_with_context<F>(

@@ -26,22 +26,11 @@ impl<Destination> SharedDestination<Destination> for Arc<RwLock<Destination>>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
-	fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&Destination),
-	{
-		if let Ok(destination) = self.read() {
-			accessor(&*destination)
-		}
-	}
-
-	fn access_mut<F>(&mut self, mut accessor: F)
-	where
-		F: FnMut(&mut Destination),
-	{
-		if let Ok(mut destination) = self.write() {
-			accessor(&mut *destination)
-		}
+	fn clone_with_context(
+		&self,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self {
+		self.clone()
 	}
 
 	fn access_with_context<F>(

@@ -40,7 +40,10 @@ where
 
 	pub fn unsubscribe_if_can(
 		&mut self,
-		context: &mut <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
+		context: &mut <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::Item<
+			'_,
+			'_,
+		>,
 	) {
 		if self.unsubscribe_count == self.ref_count && !self.closed {
 			self.closed = true;
@@ -50,7 +53,10 @@ where
 
 	pub fn complete_if_can(
 		&mut self,
-		context: &mut <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
+		context: &mut <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::Item<
+			'_,
+			'_,
+		>,
 	) {
 		if self.completion_count == self.ref_count && !self.closed {
 			self.destination.complete(context);
@@ -133,7 +139,11 @@ impl<Destination> Tickable for InnerRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -174,21 +184,9 @@ where
 		}
 
 		debug_assert_eq!(
-			self.ref_count,
-			0,
-			"The ref count of {} did not reach 0 on drop.",
-			short_type_name::<Self>()
-		);
-		debug_assert_eq!(
-			self.completion_count,
-			0,
-			"The completion count of {} did not reach 0 on drop.",
-			short_type_name::<Self>()
-		);
-		debug_assert_eq!(
 			self.unsubscribe_count,
-			0,
-			"The unsubscribe count of {} did not reach 0 on drop.",
+			self.ref_count,
+			"The unsubscribe_count did not reach the ref_count of {} on drop.",
 			short_type_name::<Self>()
 		);
 	}
