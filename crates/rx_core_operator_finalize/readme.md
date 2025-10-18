@@ -11,7 +11,7 @@ cargo run -p rx_core_operator_finalize --features example --example finalize_ope
 ```
 
 ````rs
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The finalize operators closure will only be called once per subscription!
 ///

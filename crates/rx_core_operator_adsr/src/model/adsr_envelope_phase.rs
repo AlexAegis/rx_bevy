@@ -1,25 +1,9 @@
-#[cfg(feature = "serialize")]
-use serde::{Deserialize, Serialize};
-
-#[cfg(all(feature = "serialize", feature = "reflect"))]
-use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
-
 /// AdsrEnvelopePhase mimics an ADSR envelope, where actions don't necessarily
 /// Fire the moment they start, it needs to be activated for an `attackTime`
 /// time to do that.
 /// After firing, it may still getting activated, as long as this happens
 /// the phase is sustained and once it stops it enters the release phase
 #[derive(Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Debug)]
-#[cfg_attr(
-	feature = "reflect",
-	derive(bevy_reflect::Reflect),
-	reflect(Debug, Clone)
-)]
-#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-#[cfg_attr(
-	all(feature = "serialize", feature = "reflect"),
-	reflect(Serialize, Deserialize)
-)]
 pub enum AdsrEnvelopePhase {
 	/// The default state, nothing is happening here
 	#[default]

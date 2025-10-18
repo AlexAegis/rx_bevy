@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_subscription_drop"
-description = "rx_bevy drop safe subscription that can be safely unsubscribed by dropping"
+description = "rx_core drop safe subscription that can always be safely unsubscribed by just dropping it"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -17,12 +17,12 @@ workspace = true
 
 [features]
 default = ["dev", "debug"]
-dev = ["rx_bevy/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
+dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
 debug = ["rx_core_traits/debug"]
 example = [
     "debug",
     "dev",
-    "rx_bevy/example",
+    "rx_core/example",
     "rx_core_traits/example",
     "rx_core_testing/example",
 ]
@@ -32,5 +32,5 @@ rx_core_traits = { workspace = true }
 smallvec = { workspace = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+rx_core = { workspace = true }
 rx_core_testing = { workspace = true }

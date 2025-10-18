@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// An [FnObserver] requires you to define a callback for all three notifications
 fn main() {

@@ -3,40 +3,6 @@ env_files = [".env"]
 
 ## Project dependencies
 
-[tasks.install-pnpm]
-condition = { fail_message = "npm is not installed, skipping" }
-condition_script = ["""
-command -v npm > /dev/null
-"""]
-description = "Installs pnpm"
-workspace = false
-private = true
-command = "npm"
-args = ["install", "-g", "pnpm"]
-
-[tasks.self-update-pnpm]
-condition = { fail_message = "node is not installed, skipping" }
-condition_script = ["""
-command -v pnpm > /dev/null
-"""]
-description = "Updates pnpm"
-workspace = false
-private = true
-command = "pnpm"
-args = ["self-update"]
-
-[tasks.install-node-project]
-condition = { fail_message = "pnpm is not installed, skipping" }
-condition_script = ["""
-command -v pnpm > /dev/null
-"""]
-dependencies = ["install-pnpm", "self-update-pnpm"]
-description = "Installs node project using pnpm"
-workspace = false
-private = true
-command = "pnpm"
-args = ["install"]
-
 [tasks.install-clippy]
 description = "Install rustup component clippy"
 workspace = false
@@ -143,17 +109,6 @@ dependencies = ["install-rustfmt"]
 command = "cargo"
 args = ["fmt", "--all", "--", "--check"]
 
-[tasks.lint-md]
-condition = { fail_message = "Node is not installed, skipping" }
-condition_script = ["""
-command -v node > /dev/null
-"""]
-description = "Run remark.js to lint markdown files"
-workspace = false
-dependencies = ["install-node-project"]
-command = "pnpm"
-args = ["run", "lint:md"]
-
 [tasks.format]
 description = "Formats the entire workspace"
 workspace = false
@@ -251,13 +206,12 @@ dependencies = [
     "install-cargo-expand",
     "install-web-support",
     "script-link-assets",
-    "install-node-project",
 ]
 
 [tasks.lint]
 description = "Run clippy and format checking in parallel"
 workspace = false
-run_task = { name = ["lint-format", "lint-clippy", "lint-md"], parallel = true }
+run_task = { name = ["lint-format", "lint-clippy"], parallel = true }
 
 [tasks.all]
 description = "Run every task"

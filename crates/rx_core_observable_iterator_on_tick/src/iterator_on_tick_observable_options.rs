@@ -1,8 +1,4 @@
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
-
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct OnTickObservableOptions {
 	/// Whether or not the first emission, `0` should happen on subscribe
 	/// or on the first tick after.

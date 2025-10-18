@@ -1,22 +1,4 @@
-use bevy_ecs::event::Event;
-
-#[cfg(feature = "serialize")]
-use serde::{Deserialize, Serialize};
-
-#[cfg(all(feature = "serialize", feature = "reflect"))]
-use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
-
-#[derive(Event, Clone, Debug)]
-#[cfg_attr(
-	feature = "reflect",
-	derive(bevy_reflect::Reflect),
-	reflect(Debug, Clone)
-)]
-#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-#[cfg_attr(
-	all(feature = "serialize", feature = "reflect"),
-	reflect(Serialize, Deserialize)
-)]
+#[derive(Clone, Debug)]
 pub enum AdsrSignalEvent {
 	/// Fired immediately upon activation
 	Start,

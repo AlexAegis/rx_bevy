@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// An [IteratorObservable] turns the items from an [IntoIterator] and emits
 /// them immediately upon subscription

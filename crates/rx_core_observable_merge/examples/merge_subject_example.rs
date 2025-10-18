@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The tap operator is used to peek inside a stream without changing its behavior
 fn main() {

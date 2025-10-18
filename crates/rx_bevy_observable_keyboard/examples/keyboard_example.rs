@@ -5,10 +5,6 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
 use rx_bevy_observable_keyboard::{KeyboardObservableComponent, KeyboardObservableOptions};
 
-use rx_bevy_plugin::{
-	CommandsUnsubscribeExtension, EntityCommandSubscribeExtension, RelativeEntity, RxNext, RxPlugin,
-};
-
 fn main() -> AppExit {
 	App::new()
 		.add_plugins((

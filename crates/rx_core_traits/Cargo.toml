@@ -1,8 +1,7 @@
 [package]
-# TODO: Rename to just `rx_core` along with all other crates
 name = "rx_core_traits"
 version = "0.1.0"
-description = "rx_bevy's core traits and implementations"
+description = "rx_core's core traits and implementations"
 readme = "readme.md"
 publish = false
 
@@ -20,21 +19,12 @@ workspace = true
 default = ["dev_panic_on_dropped_active_subscriptions"]
 dev = [
     "dev_panic_on_dropped_active_subscriptions",
-    "rx_bevy/dev",
+    "rx_core/dev",
     "rx_core_testing/dev",
     "short_type_name/dev",
 ]
-example = ["dev", "rx_bevy/example", "rx_core_testing/example"]
-bevy = [
-    "dep:bevy_ecs",
-    "dep:bevy_time",
-    "dep:bevy_log",
-    "rx_bevy/bevy",
-    "rx_core_testing/bevy",
-]
-serialize = ["dep:serde"]
+example = ["dev", "rx_core/example", "rx_core_testing/example"]
 debug = []
-reflect = ["dep:bevy_reflect", "rx_bevy/reflect"]
 # Keep this turned on for development, turn it off for production!
 # Depending on the context a subscription needs to perform an unsubscribe,
 # not all subscriptions can be automatically unsubscribed when they are dropped
@@ -46,14 +36,9 @@ dev_panic_on_dropped_active_subscriptions = []
 
 [dependencies]
 smallvec = { workspace = true }
-bevy_reflect = { workspace = true, optional = true }
-bevy_ecs = { workspace = true, optional = true }
-bevy_time = { workspace = true, optional = true }
-bevy_log = { workspace = true, optional = true }
 short_type_name = { workspace = true }
-serde = { workspace = true, optional = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+rx_core = { workspace = true }
 rx_core_testing = { workspace = true }

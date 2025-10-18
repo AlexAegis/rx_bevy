@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [MapOperator] is used to transform incoming values into something else,
 /// in this case into a tuple of a string and number!

@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_operator_tap_next"
-description = "tap next operator for rx_bevy, for the simple use cases where you don't want to define an entire observable to peek into a observable."
+description = "tap next operator for rx_core, for the simple use cases where you don't want to define an entire observable to peek into one."
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -18,16 +18,15 @@ workspace = true
 [features]
 default = ["pipe", "compose"]
 dev = [
-    "rx_bevy/dev",
+    "rx_core/dev",
     "rx_core_traits/dev",
     "rx_core_operator_composite/dev",
     "rx_core_observable_pipe/dev",
     "rx_core_testing/dev",
 ]
 example = [
-    "bevy",
     "dev",
-    "rx_bevy/example",
+    "rx_core/example",
     "rx_core_traits/example",
     "rx_core_operator_composite?/example",
     "rx_core_observable_pipe?/example",
@@ -35,31 +34,18 @@ example = [
 ]
 pipe = [
     "dep:rx_core_observable_pipe",
-    "rx_bevy/pipe",
+    "rx_core/pipe",
     "rx_core_operator_composite?/pipe",
 ]
-compose = ["dep:rx_core_operator_composite", "rx_bevy/compose"]
-bevy = [
-    "rx_bevy/bevy",
-    "rx_core_traits/bevy",
-    "rx_core_operator_composite?/bevy",
-    "rx_core_testing/bevy",
-]
-reflect = [
-    "dep:bevy_reflect",
-    "rx_bevy/reflect",
-    "rx_core_traits/reflect",
-    "rx_core_operator_composite?/reflect",
-]
-trace = ["dep:short_type_name", "rx_bevy/trace"]
+compose = ["dep:rx_core_operator_composite", "rx_core/compose"]
+trace = ["dep:short_type_name", "rx_core/trace"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
 rx_core_observable_pipe = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
-bevy_reflect = { workspace = true, optional = true }
 short_type_name = { workspace = true, optional = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+rx_core = { workspace = true }
 rx_core_testing = { workspace = true }

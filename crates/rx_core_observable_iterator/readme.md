@@ -11,7 +11,7 @@ This crate provides functionality to convert iterators into observables using th
 ## Usage
 
 ```rust
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 // Convert ranges into observables
 (1..=5).into_observable::<()>().subscribe(PrintObserver::new("range"));

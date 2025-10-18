@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// A [ConnectableObservable] holds an internal connector [SubjectLike], upon
 /// subscription you subscribe not to the source observable, but to this

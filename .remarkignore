@@ -1,7 +1,0 @@
-# managed-by-autotool
-
-dist
-.cache
-.turbo
-node_modules
-CHANGELOG.md

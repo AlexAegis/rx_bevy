@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [TryCaptureOperator] is used to pack incoming values and errors into a
 /// Result. When used, upstream errors are guaranteed not to reach downstream.

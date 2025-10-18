@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [FinalizeOperator]s closure will be called upon **either** when the
 /// source [Observable] completes, or when the subscription gets unsubscribed.

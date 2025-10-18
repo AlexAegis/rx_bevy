@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// [FilterOperator] is used to only let through incoming values that are
 /// matching the predicate

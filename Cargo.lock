@@ -23,10 +23,6 @@ name = "accesskit"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "becf0eb5215b6ecb0a739c31c21bd83c4f326524c9b46b7e882d77559b60a529"
-dependencies = [
- "enumn",
- "serde",
-]
 
 [[package]]
 name = "accesskit_consumer"
@@ -442,7 +438,6 @@ dependencies = [
  "bevy_derive",
  "bevy_ecs",
  "bevy_reflect",
- "serde",
 ]
 
 [[package]]
@@ -871,7 +866,6 @@ dependencies = [
  "bevy_utils",
  "derive_more",
  "log",
- "serde",
  "smol_str",
  "thiserror 2.0.17",
 ]
@@ -926,7 +920,6 @@ dependencies = [
  "bevy_tasks",
  "bevy_time",
  "bevy_transform",
- "bevy_ui",
  "bevy_utils",
  "bevy_window",
  "bevy_winit",
@@ -1223,34 +1216,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_sprite"
-version = "0.16.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ccae7bab2cb956fb0434004c359e432a3a1a074a6ef4eb471f1fb099f0b620b"
-dependencies = [
- "bevy_app",
- "bevy_asset",
- "bevy_color",
- "bevy_core_pipeline",
- "bevy_derive",
- "bevy_ecs",
- "bevy_image",
- "bevy_math",
- "bevy_platform",
- "bevy_reflect",
- "bevy_render",
- "bevy_transform",
- "bevy_utils",
- "bitflags 2.9.4",
- "bytemuck",
- "derive_more",
- "fixedbitset",
- "nonmax",
- "radsort",
- "tracing",
-]
-
-[[package]]
 name = "bevy_state"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1301,36 +1266,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_text"
-version = "0.16.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d76c85366159f5f54110f33321c76d8429cfd8f39638f26793a305dae568b60"
-dependencies = [
- "bevy_app",
- "bevy_asset",
- "bevy_color",
- "bevy_derive",
- "bevy_ecs",
- "bevy_image",
- "bevy_log",
- "bevy_math",
- "bevy_platform",
- "bevy_reflect",
- "bevy_render",
- "bevy_sprite",
- "bevy_transform",
- "bevy_utils",
- "bevy_window",
- "cosmic-text",
- "serde",
- "smallvec",
- "sys-locale",
- "thiserror 2.0.17",
- "tracing",
- "unicode-bidi",
-]
-
-[[package]]
 name = "bevy_time"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1361,41 +1296,6 @@ dependencies = [
  "derive_more",
  "serde",
  "thiserror 2.0.17",
-]
-
-[[package]]
-name = "bevy_ui"
-version = "0.16.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea4a4d2ba51865bc3039af29a26b4f52c48b54cc758369f52004caf4b6f03770"
-dependencies = [
- "accesskit",
- "bevy_a11y",
- "bevy_app",
- "bevy_asset",
- "bevy_color",
- "bevy_core_pipeline",
- "bevy_derive",
- "bevy_ecs",
- "bevy_image",
- "bevy_input",
- "bevy_math",
- "bevy_platform",
- "bevy_reflect",
- "bevy_render",
- "bevy_sprite",
- "bevy_text",
- "bevy_transform",
- "bevy_utils",
- "bevy_window",
- "bytemuck",
- "derive_more",
- "nonmax",
- "serde",
- "smallvec",
- "taffy",
- "thiserror 2.0.17",
- "tracing",
 ]
 
 [[package]]
@@ -1453,7 +1353,6 @@ dependencies = [
  "cfg-if",
  "crossbeam-channel",
  "raw-window-handle",
- "serde",
  "tracing",
  "wasm-bindgen",
  "web-sys",
@@ -1905,29 +1804,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cosmic-text"
-version = "0.13.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e418dd4f5128c3e93eab12246391c54a20c496811131f85754dc8152ee207892"
-dependencies = [
- "bitflags 2.9.4",
- "fontdb",
- "log",
- "rangemap",
- "rustc-hash",
- "rustybuzz",
- "self_cell",
- "smol_str",
- "swash",
- "sys-locale",
- "ttf-parser 0.21.1",
- "unicode-bidi",
- "unicode-linebreak",
- "unicode-script",
- "unicode-segmentation",
-]
-
-[[package]]
 name = "crc32fast"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2187,17 +2063,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "enumn"
-version = "0.1.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f9ed6b3789237c8a0c1c505af1c7eb2c560df6186f01b098c3a1064ea532f38"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "epaint"
 version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2410,38 +2275,6 @@ name = "foldhash"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
-
-[[package]]
-name = "font-types"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "511e2c18a516c666d27867d2f9821f76e7d591f762e9fc41dd6cc5c90fe54b0b"
-dependencies = [
- "bytemuck",
-]
-
-[[package]]
-name = "fontconfig-parser"
-version = "0.5.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbc773e24e02d4ddd8395fd30dc147524273a83e54e0f312d986ea30de5f5646"
-dependencies = [
- "roxmltree",
-]
-
-[[package]]
-name = "fontdb"
-version = "0.16.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0299020c3ef3f60f526a4f64ab4a3d4ce116b1acbf24cdd22da0068e5d81dc3"
-dependencies = [
- "fontconfig-parser",
- "log",
- "memmap2",
- "slotmap",
- "tinyvec",
- "ttf-parser 0.20.0",
-]
 
 [[package]]
 name = "foreign-types"
@@ -2746,12 +2579,6 @@ checksum = "fdf242682df893b86f33a73828fb09ca4b2d3bb6cc95249707fc684d27484b91"
 dependencies = [
  "bitflags 2.9.4",
 ]
-
-[[package]]
-name = "grid"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36119f3a540b086b4e436bb2b588cf98a68863470e0e880f4d0842f112a3183a"
 
 [[package]]
 name = "guillotiere"
@@ -3969,7 +3796,7 @@ version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36820e9051aca1014ddc75770aab4d68bc1e9e632f0f5627c4086bc216fb583b"
 dependencies = [
- "ttf-parser 0.25.1",
+ "ttf-parser",
 ]
 
 [[package]]
@@ -4320,12 +4147,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d6831663a5098ea164f89cff59c6284e95f4e3c76ce9848d4529f5ccca9bde"
 
 [[package]]
-name = "rangemap"
-version = "1.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f93e7e49bb0bf967717f7bd674458b3d6b0c5f48ec7e3038166026a69fc22223"
-
-[[package]]
 name = "rav1e"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4399,16 +4220,6 @@ checksum = "22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
-]
-
-[[package]]
-name = "read-fonts"
-version = "0.35.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6717cf23b488adf64b9d711329542ba34de147df262370221940dfabc2c91358"
-dependencies = [
- "bytemuck",
- "font-types",
 ]
 
 [[package]]
@@ -4495,12 +4306,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "roxmltree"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
-
-[[package]]
 name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4539,23 +4344,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
-name = "rustybuzz"
-version = "0.14.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cfb9cf8877777222e4a3bc7eb247e398b56baba500c38c1c46842431adc8b55c"
-dependencies = [
- "bitflags 2.9.4",
- "bytemuck",
- "libm",
- "smallvec",
- "ttf-parser 0.21.1",
- "unicode-bidi-mirroring",
- "unicode-ccc",
- "unicode-properties",
- "unicode-script",
-]
-
-[[package]]
 name = "ruzstd"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4570,6 +4358,64 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy_context",
  "rx_bevy_observable_keyboard",
+ "rx_core",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_bevy_common"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_bevy_context"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_app",
+ "bevy_derive",
+ "bevy_ecs",
+ "bevy_input",
+ "bevy_log",
+ "bevy_reflect",
+ "bevy_time",
+ "derive-where",
+ "rx_bevy",
+ "rx_bevy_common",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+ "smallvec",
+ "thiserror 2.0.17",
+]
+
+[[package]]
+name = "rx_bevy_observable_keyboard"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_input",
+ "bevy_reflect",
+ "examples_common",
+ "rx_bevy",
+ "rx_bevy_context",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core"
+version = "0.1.0"
+dependencies = [
  "rx_core_observable_combine_latest",
  "rx_core_observable_connectable",
  "rx_core_observable_deferred",
@@ -4610,79 +4456,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_context"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_app",
- "bevy_derive",
- "bevy_ecs",
- "bevy_log",
- "bevy_reflect",
- "derive-where",
- "rx_bevy",
- "rx_core_testing",
- "rx_core_traits",
- "short_type_name",
- "smallvec",
- "thiserror 2.0.17",
-]
-
-[[package]]
-name = "rx_bevy_observable_keyboard"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_app",
- "bevy_ecs",
- "bevy_egui",
- "bevy_input",
- "bevy_reflect",
- "examples_common",
- "rx_bevy",
- "rx_bevy_context",
- "rx_bevy_plugin",
- "rx_core_testing",
- "rx_core_traits",
-]
-
-[[package]]
-name = "rx_bevy_plugin"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_app",
- "bevy_derive",
- "bevy_ecs",
- "bevy_egui",
- "bevy_erased_component_registry",
- "bevy_input",
- "bevy_log",
- "bevy_platform",
- "bevy_ptr",
- "bevy_reflect",
- "bevy_time",
- "derive-where",
- "examples_common",
- "rx_bevy",
- "rx_core_observable_interval",
- "rx_core_operator_composite",
- "rx_core_testing",
- "rx_core_traits",
- "short_type_name",
- "smallvec",
- "thiserror 2.0.17",
-]
-
-[[package]]
 name = "rx_core_emission_variants"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
  "derive-where",
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4691,8 +4469,7 @@ dependencies = [
 name = "rx_core_observable_combine_latest"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_emission_variants",
  "rx_core_subscriber_rc",
  "rx_core_subscription_drop",
@@ -4704,8 +4481,7 @@ dependencies = [
 name = "rx_core_observable_connectable"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_deferred",
  "rx_core_testing",
  "rx_core_traits",
@@ -4716,8 +4492,7 @@ dependencies = [
 name = "rx_core_observable_deferred"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
@@ -4727,13 +4502,8 @@ dependencies = [
 name = "rx_core_observable_interval"
 version = "0.1.0"
 dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_egui",
- "bevy_reflect",
  "bevy_time",
- "examples_common",
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4742,8 +4512,7 @@ dependencies = [
 name = "rx_core_observable_iterator"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
@@ -4754,8 +4523,7 @@ dependencies = [
 name = "rx_core_observable_iterator_on_tick"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
@@ -4766,7 +4534,7 @@ dependencies = [
 name = "rx_core_observable_merge"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_operator_map_into",
  "rx_core_subscriber_rc",
  "rx_core_testing",
@@ -4777,8 +4545,7 @@ dependencies = [
 name = "rx_core_observable_of"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
@@ -4788,7 +4555,7 @@ dependencies = [
 name = "rx_core_observable_pipe"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4797,8 +4564,7 @@ dependencies = [
 name = "rx_core_observable_throw"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
@@ -4808,7 +4574,7 @@ dependencies = [
 name = "rx_core_observable_zip"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_emission_variants",
  "rx_core_subscriber_rc",
  "rx_core_testing",
@@ -4819,8 +4585,7 @@ dependencies = [
 name = "rx_core_observer_fn"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4829,8 +4594,7 @@ dependencies = [
 name = "rx_core_observer_noop"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4839,8 +4603,7 @@ dependencies = [
 name = "rx_core_observer_print"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4849,22 +4612,12 @@ dependencies = [
 name = "rx_core_operator_adsr"
 version = "0.1.0"
 dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_ecs",
- "bevy_egui",
- "bevy_log",
  "bevy_math",
- "bevy_reflect",
  "bevy_time",
  "bitflags 2.9.4",
- "examples_common",
- "rx_bevy",
- "rx_bevy_observable_keyboard",
- "rx_bevy_plugin",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
- "serde",
  "smallvec",
 ]
 
@@ -4872,8 +4625,7 @@ dependencies = [
 name = "rx_core_operator_composite"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_testing",
  "rx_core_traits",
@@ -4884,8 +4636,7 @@ dependencies = [
 name = "rx_core_operator_enumerate"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4896,8 +4647,7 @@ dependencies = [
 name = "rx_core_operator_filter"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4908,8 +4658,7 @@ dependencies = [
 name = "rx_core_operator_filter_map"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_operator_lift_option",
@@ -4922,8 +4671,7 @@ dependencies = [
 name = "rx_core_operator_finalize"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4935,8 +4683,7 @@ dependencies = [
 name = "rx_core_operator_identity"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4945,8 +4692,7 @@ dependencies = [
 name = "rx_core_operator_lift_option"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4957,8 +4703,7 @@ dependencies = [
 name = "rx_core_operator_lift_result"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4969,9 +4714,8 @@ dependencies = [
 name = "rx_core_operator_map"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
  "derive-where",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4983,8 +4727,7 @@ dependencies = [
 name = "rx_core_operator_map_into"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4995,8 +4738,7 @@ dependencies = [
 name = "rx_core_operator_skip"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -5007,8 +4749,7 @@ dependencies = [
 name = "rx_core_operator_switch_map"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_operator_finalize",
@@ -5023,8 +4764,7 @@ dependencies = [
 name = "rx_core_operator_take"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -5035,8 +4775,7 @@ dependencies = [
 name = "rx_core_operator_tap_next"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -5048,8 +4787,7 @@ dependencies = [
 name = "rx_core_operator_try_capture"
 version = "0.1.0"
 dependencies = [
- "bevy_reflect",
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -5060,7 +4798,7 @@ dependencies = [
 name = "rx_core_subject"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
@@ -5071,7 +4809,7 @@ dependencies = [
 name = "rx_core_subject_behavior"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_subject",
  "rx_core_subscription_drop",
  "rx_core_testing",
@@ -5083,7 +4821,7 @@ name = "rx_core_subject_replay"
 version = "0.1.0"
 dependencies = [
  "ringbuffer",
- "rx_bevy",
+ "rx_core",
  "rx_core_subject",
  "rx_core_subscription_drop",
  "rx_core_testing",
@@ -5094,7 +4832,7 @@ dependencies = [
 name = "rx_core_subscriber_rc"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_observable_iterator",
  "rx_core_testing",
  "rx_core_traits",
@@ -5105,7 +4843,7 @@ dependencies = [
 name = "rx_core_subscriber_switch"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -5114,7 +4852,7 @@ dependencies = [
 name = "rx_core_subscription_drop"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
@@ -5124,7 +4862,7 @@ dependencies = [
 name = "rx_core_subscription_inert"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
  "rx_core_traits",
  "short_type_name",
@@ -5134,7 +4872,7 @@ dependencies = [
 name = "rx_core_testing"
 version = "0.1.0"
 dependencies = [
- "rx_bevy",
+ "rx_core",
  "rx_core_traits",
  "short_type_name",
 ]
@@ -5143,14 +4881,9 @@ dependencies = [
 name = "rx_core_traits"
 version = "0.1.0"
 dependencies = [
- "bevy_ecs",
- "bevy_log",
- "bevy_reflect",
- "bevy_time",
  "derive-where",
- "rx_bevy",
+ "rx_core",
  "rx_core_testing",
- "serde",
  "short_type_name",
  "smallvec",
 ]
@@ -5194,12 +4927,6 @@ dependencies = [
  "smithay-client-toolkit",
  "tiny-skia",
 ]
-
-[[package]]
-name = "self_cell"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f7d95a54511e0c7be3f51e8867aa8cf35148d7b9445d44de2f943e2b206e749"
 
 [[package]]
 name = "semver"
@@ -5326,16 +5053,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "skrifa"
-version = "0.37.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c31071dedf532758ecf3fed987cdb4bd9509f900e026ab684b4ecb81ea49841"
-dependencies = [
- "bytemuck",
- "read-fonts",
-]
-
-[[package]]
 name = "slab"
 version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5355,9 +5072,6 @@ name = "smallvec"
 version = "1.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "smithay-client-toolkit"
@@ -5464,17 +5178,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0193cc4331cfd2f3d2011ef287590868599a2f33c3e69bc22c1a3d3acf9e02fb"
 
 [[package]]
-name = "swash"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47846491253e976bdd07d0f9cc24b7daf24720d11309302ccbbc6e6b6e53550a"
-dependencies = [
- "skrifa",
- "yazi",
- "zeno",
-]
-
-[[package]]
 name = "syn"
 version = "2.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5497,15 +5200,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sys-locale"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8eab9a99a024a169fe8a903cf9d4a3b3601109bcc13bd9e3c6fff259138626c4"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "system-deps"
 version = "6.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5516,18 +5210,6 @@ dependencies = [
  "pkg-config",
  "toml",
  "version-compare",
-]
-
-[[package]]
-name = "taffy"
-version = "0.7.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab4f4d046dd956a47a7e1a2947083d7ac3e6aa3cfaaead36173ceaa5ab11878c"
-dependencies = [
- "arrayvec",
- "grid",
- "serde",
- "slotmap",
 ]
 
 [[package]]
@@ -5818,18 +5500,6 @@ dependencies = [
 
 [[package]]
 name = "ttf-parser"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17f77d76d837a7830fe1d4f12b7b4ba4192c1888001c7164257e4bc6d21d96b4"
-
-[[package]]
-name = "ttf-parser"
-version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c591d83f69777866b9126b24c6dd9a18351f177e49d625920d19f989fd31cf8"
-
-[[package]]
-name = "ttf-parser"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31"
@@ -5853,46 +5523,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8c1ae7cc0fdb8b842d65d127cb981574b0d2b249b74d1c7a2986863dc134f71"
 
 [[package]]
-name = "unicode-bidi"
-version = "0.3.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c1cb5db39152898a79168971543b1cb5020dff7fe43c8dc468b0885f5e29df5"
-
-[[package]]
-name = "unicode-bidi-mirroring"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23cb788ffebc92c5948d0e997106233eeb1d8b9512f93f41651f52b6c5f5af86"
-
-[[package]]
-name = "unicode-ccc"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1df77b101bcc4ea3d78dafc5ad7e4f58ceffe0b2b16bf446aeb50b6cb4157656"
-
-[[package]]
 name = "unicode-ident"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f63a545481291138910575129486daeaf8ac54aee4387fe7906919f7830c7d9d"
-
-[[package]]
-name = "unicode-linebreak"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b09c83c3c29d37506a3e260c08c03743a6bb66a9cd432c6934ab501a190571f"
-
-[[package]]
-name = "unicode-properties"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e70f2a8b45122e719eb623c01822704c4e0907e7e426a05927e1a1cfff5b75d0"
-
-[[package]]
-name = "unicode-script"
-version = "0.5.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fb421b350c9aff471779e262955939f565ec18b86c15364e6bdf0d662ca7c1f"
 
 [[package]]
 name = "unicode-segmentation"
@@ -6897,12 +6531,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6fd8403733700263c6eb89f192880191f1b83e332f7a20371ddcf421c4a337c7"
 
 [[package]]
-name = "yazi"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e01738255b5a16e78bbb83e7fbba0a1e7dd506905cfc53f4622d89015a03fbb5"
-
-[[package]]
 name = "yoke"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6925,12 +6553,6 @@ dependencies = [
  "syn",
  "synstructure",
 ]
-
-[[package]]
-name = "zeno"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6df3dc4292935e51816d896edcd52aa30bc297907c26167fec31e2b0c6a32524"
 
 [[package]]
 name = "zerocopy"

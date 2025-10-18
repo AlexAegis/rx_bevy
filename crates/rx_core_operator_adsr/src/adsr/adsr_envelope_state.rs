@@ -3,12 +3,6 @@ use std::time::Duration;
 use bevy_time::Stopwatch;
 use rx_core_traits::Tick;
 
-#[cfg(feature = "serialize")]
-use serde::{Deserialize, Serialize};
-
-#[cfg(all(feature = "serialize", feature = "reflect"))]
-use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
-
 use crate::{
 	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, AdsrSignal,
 	determine_phase_transition,
@@ -17,16 +11,6 @@ use crate::{
 /// An AdsrSignalTransformer takes in a [bool] input and over time turns it
 /// into an AdsrSignal
 #[derive(Default, Debug, Clone)]
-#[cfg_attr(
-	feature = "reflect",
-	derive(bevy_reflect::Reflect),
-	reflect(Debug, Clone)
-)]
-#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-#[cfg_attr(
-	all(feature = "serialize", feature = "reflect"),
-	reflect(Serialize, Deserialize)
-)]
 pub struct AdsrEnvelopeState {
 	adsr_envelope_phase: AdsrEnvelopePhase,
 	activation_time_absolute: Option<Duration>,

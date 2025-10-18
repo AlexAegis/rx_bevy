@@ -101,7 +101,7 @@ where
 #[cfg(test)]
 mod test {
 
-	use rx_bevy::prelude::*;
+	use rx_core::prelude::*;
 	use rx_core_testing::prelude::*;
 
 	#[test]

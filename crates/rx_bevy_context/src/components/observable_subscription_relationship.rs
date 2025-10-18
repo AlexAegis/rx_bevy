@@ -29,6 +29,16 @@ where
 	_phantom_data: PhantomData<O>,
 }
 
+impl<O, ContextAccess> ObservableSubscriptions<O, ContextAccess>
+where
+	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
+	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
+{
+	pub fn get_subscription_entities(&self) -> Vec<Entity> {
+		self.subscriptions.clone()
+	}
+}
+
 impl<O, ContextAccess> Default for ObservableSubscriptions<O, ContextAccess>
 where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider<ContextAccess>> + Send + Sync,
@@ -68,5 +78,9 @@ where
 			observable_entity,
 			_phantom_data: PhantomData,
 		}
+	}
+
+	pub fn get_observable_entity(&self) -> Entity {
+		self.observable_entity
 	}
 }

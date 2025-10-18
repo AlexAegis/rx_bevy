@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_operator_filter_map"
-description = "filter_map operator for rx_bevy"
+description = "filter_map operator for rx_core"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -18,7 +18,7 @@ workspace = true
 [features]
 default = ["compose", "pipe"]
 dev = [
-    "rx_bevy/dev",
+    "rx_core/dev",
     "rx_core_traits/dev",
     "rx_core_operator_composite/dev",
     "rx_core_operator_lift_option/dev",
@@ -28,7 +28,7 @@ dev = [
 ]
 example = [
     "dev",
-    "rx_bevy/example",
+    "rx_core/example",
     "rx_core_traits/example",
     "rx_core_operator_composite/example",
     "rx_core_operator_lift_option/example",
@@ -37,32 +37,16 @@ example = [
     "rx_core_testing/example",
 ]
 compose = [
-    "rx_bevy/compose",
+    "rx_core/compose",
     "rx_core_operator_lift_option/compose",
     "rx_core_operator_map/compose",
 ]
 pipe = [
     "dep:rx_core_observable_pipe",
-    "rx_bevy/pipe",
+    "rx_core/pipe",
     "rx_core_operator_composite/pipe",
     "rx_core_operator_lift_option/pipe",
     "rx_core_operator_map/pipe",
-]
-bevy = [
-    "rx_bevy/bevy",
-    "rx_core_testing/bevy",
-    "rx_core_traits/bevy",
-    "rx_core_operator_composite/bevy",
-    "rx_core_operator_map/bevy",
-    "rx_core_operator_lift_option/bevy",
-]
-reflect = [
-    "dep:bevy_reflect",
-    "rx_bevy/reflect",
-    "rx_core_traits/reflect",
-    "rx_core_operator_composite/reflect",
-    "rx_core_operator_lift_option/reflect",
-    "rx_core_operator_map/reflect",
 ]
 
 
@@ -72,8 +56,7 @@ rx_core_operator_composite = { workspace = true }
 rx_core_operator_map = { workspace = true }
 rx_core_operator_lift_option = { workspace = true }
 rx_core_observable_pipe = { workspace = true, optional = true }
-bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+rx_core = { workspace = true }
 rx_core_testing = { workspace = true }

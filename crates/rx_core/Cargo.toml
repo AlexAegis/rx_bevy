@@ -1,0 +1,262 @@
+[package]
+name = "rx_core"
+version = "0.1.0"
+description = "COntextful Reactive Extensions"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = [
+    "all_observables",
+    "all_observers",
+    "all_operators",
+    "all_subjects",
+    "all_subscriptions",
+    "compose",
+    "pipe",
+]
+dev = [
+    "rx_core_observable_combine_latest?/dev",
+    "rx_core_observable_connectable?/dev",
+    "rx_core_observable_deferred?/dev",
+    "rx_core_observable_interval?/dev",
+    "rx_core_observable_iterator?/dev",
+    "rx_core_observable_iterator_on_tick?/dev",
+    "rx_core_observable_merge?/dev",
+    "rx_core_observable_of?/dev",
+    "rx_core_observable_pipe?/dev",
+    "rx_core_observable_throw?/dev",
+    "rx_core_observable_zip?/dev",
+    "rx_core_observer_fn?/dev",
+    "rx_core_observer_noop?/dev",
+    "rx_core_observer_print?/dev",
+    "rx_core_operator_adsr?/dev",
+    "rx_core_operator_composite?/dev",
+    "rx_core_operator_enumerate?/dev",
+    "rx_core_operator_filter?/dev",
+    "rx_core_operator_filter_map?/dev",
+    "rx_core_operator_finalize?/dev",
+    "rx_core_operator_identity?/dev",
+    "rx_core_operator_lift_option?/dev",
+    "rx_core_operator_lift_result?/dev",
+    "rx_core_operator_map?/dev",
+    "rx_core_operator_map_into?/dev",
+    "rx_core_operator_skip?/dev",
+    "rx_core_operator_switch_map?/dev",
+    "rx_core_operator_take?/dev",
+    "rx_core_operator_tap_next?/dev",
+    "rx_core_operator_try_capture?/dev",
+    "rx_core_subject?/dev",
+    "rx_core_subject_behavior?/dev",
+    "rx_core_subject_replay?/dev",
+    "rx_core_testing/dev",
+    "rx_core_traits/dev",
+]
+example = [
+    "dev",
+    "rx_core_observable_combine_latest?/example",
+    "rx_core_observable_connectable?/example",
+    "rx_core_observable_deferred?/example",
+    "rx_core_observable_interval?/example",
+    "rx_core_observable_iterator?/example",
+    "rx_core_observable_iterator_on_tick?/example",
+    "rx_core_observable_merge?/example",
+    "rx_core_observable_of?/example",
+    "rx_core_observable_pipe?/example",
+    "rx_core_observable_throw?/example",
+    "rx_core_observable_zip?/example",
+    "rx_core_observer_fn?/example",
+    "rx_core_observer_noop?/example",
+    "rx_core_observer_print?/example",
+    "rx_core_operator_adsr?/example",
+    "rx_core_operator_composite?/example",
+    "rx_core_operator_enumerate?/example",
+    "rx_core_operator_filter?/example",
+    "rx_core_operator_filter_map?/example",
+    "rx_core_operator_finalize?/example",
+    "rx_core_operator_identity?/example",
+    "rx_core_operator_lift_option?/example",
+    "rx_core_operator_lift_result?/example",
+    "rx_core_operator_map?/example",
+    "rx_core_operator_map_into?/example",
+    "rx_core_operator_skip?/example",
+    "rx_core_operator_switch_map?/example",
+    "rx_core_operator_take?/example",
+    "rx_core_operator_tap_next?/example",
+    "rx_core_operator_try_capture?/example",
+    "rx_core_subject?/example",
+    "rx_core_subject_behavior?/example",
+    "rx_core_subject_replay?/example",
+    "rx_core_testing/example",
+    "rx_core_traits/example",
+]
+trace = [
+    "rx_core_observable_iterator?/trace",
+    "rx_core_observable_iterator_on_tick?/trace",
+    "rx_core_operator_finalize?/trace",
+    "rx_core_operator_map?/trace",
+    "rx_core_operator_switch_map?/trace",
+    "rx_core_operator_tap_next?/trace",
+    "rx_core_subscription_inert?/trace",
+]
+pipe = [
+    "dep:rx_core_observable_pipe",
+    "rx_core_operator_composite?/pipe",
+    "rx_core_operator_enumerate?/pipe",
+    "rx_core_operator_filter?/pipe",
+    "rx_core_operator_filter_map?/pipe",
+    "rx_core_operator_finalize?/pipe",
+    "rx_core_operator_lift_option?/pipe",
+    "rx_core_operator_lift_result?/pipe",
+    "rx_core_operator_map?/pipe",
+    "rx_core_operator_map_into?/pipe",
+    "rx_core_operator_skip?/pipe",
+    "rx_core_operator_switch_map?/pipe",
+    "rx_core_operator_take?/pipe",
+    "rx_core_operator_tap_next?/pipe",
+    "rx_core_operator_try_capture?/pipe",
+]
+compose = [
+    "dep:rx_core_operator_composite",
+    "rx_core_operator_enumerate?/compose",
+    "rx_core_operator_filter?/compose",
+    "rx_core_operator_filter_map?/compose",
+    "rx_core_operator_finalize?/compose",
+    "rx_core_operator_lift_option?/compose",
+    "rx_core_operator_lift_result?/compose",
+    "rx_core_operator_map?/compose",
+    "rx_core_operator_map_into?/compose",
+    "rx_core_operator_skip?/compose",
+    "rx_core_operator_switch_map?/compose",
+    "rx_core_operator_take?/compose",
+    "rx_core_operator_tap_next?/compose",
+    "rx_core_operator_try_capture?/compose",
+]
+# Observables
+all_observables = [
+    "observable_combine_latest",
+    "observable_connectable",
+    "observable_deferred",
+    "observable_iterator",
+    "observable_iterator_on_tick",
+    "observable_merge",
+    "observable_of",
+    "observable_throw",
+    "observable_zip",
+]
+observable_combine_latest = ["dep:rx_core_observable_combine_latest"]
+observable_connectable = ["dep:rx_core_observable_connectable"]
+observable_deferred = ["dep:rx_core_observable_deferred"]
+observable_interval = ["dep:rx_core_observable_interval"]
+observable_iterator = ["dep:rx_core_observable_iterator"]
+observable_iterator_on_tick = ["dep:rx_core_observable_iterator_on_tick"]
+observable_merge = ["dep:rx_core_observable_merge"]
+observable_of = ["dep:rx_core_observable_of"]
+observable_throw = ["dep:rx_core_observable_throw"]
+observable_zip = ["dep:rx_core_observable_zip"]
+# Observers
+all_observers = ["observer_noop", "observer_print", "observer_fn"]
+observer_fn = ["dep:rx_core_observer_fn"]
+observer_noop = ["dep:rx_core_observer_noop"]
+observer_print = ["dep:rx_core_observer_print"]
+# Operators
+all_operators = [
+    "operator_adsr",
+    "operator_composite",
+    "operator_enumerate",
+    "operator_filter",
+    "operator_filter_map",
+    "operator_finalize",
+    "operator_identity",
+    "operator_lift_option",
+    "operator_lift_result",
+    "operator_map",
+    "operator_map_into",
+    "operator_skip",
+    "operator_switch_map",
+    "operator_take",
+    "operator_tap_next",
+    "operator_try_capture",
+]
+operator_adsr = ["dep:rx_core_operator_adsr"]
+operator_composite = ["dep:rx_core_operator_composite"]
+operator_enumerate = ["dep:rx_core_operator_enumerate"]
+operator_filter = ["dep:rx_core_operator_filter"]
+operator_filter_map = ["dep:rx_core_operator_filter_map"]
+operator_finalize = ["dep:rx_core_operator_finalize"]
+operator_identity = ["dep:rx_core_operator_identity"]
+operator_lift_option = ["dep:rx_core_operator_lift_option"]
+operator_lift_result = ["dep:rx_core_operator_lift_result"]
+operator_map = ["dep:rx_core_operator_map"]
+operator_map_into = ["dep:rx_core_operator_map_into"]
+operator_skip = ["dep:rx_core_operator_skip"]
+operator_switch_map = ["dep:rx_core_operator_switch_map"]
+operator_take = ["dep:rx_core_operator_take"]
+operator_tap_next = ["dep:rx_core_operator_tap_next"]
+operator_try_capture = ["dep:rx_core_operator_try_capture"]
+# Subjects
+all_subjects = ["subject", "subject_behavior", "subject_replay"]
+subject = ["dep:rx_core_subject"]
+subject_behavior = ["dep:rx_core_subject_behavior"]
+subject_replay = ["dep:rx_core_subject_replay"]
+# Subscriptions
+all_subscriptions = ["subscription_drop", "subscription_inert"]
+subscription_drop = ["dep:rx_core_subscription_drop"]
+subscription_inert = ["dep:rx_core_subscription_inert"]
+
+[dependencies]
+rx_core_traits = { workspace = true }
+# Observables
+rx_core_observable_combine_latest = { workspace = true, optional = true }
+rx_core_observable_connectable = { workspace = true, optional = true }
+rx_core_observable_deferred = { workspace = true, optional = true }
+rx_core_observable_interval = { workspace = true, optional = true }
+rx_core_observable_iterator = { workspace = true, optional = true }
+rx_core_observable_iterator_on_tick = { workspace = true, optional = true }
+rx_core_observable_merge = { workspace = true, optional = true }
+rx_core_observable_of = { workspace = true, optional = true }
+rx_core_observable_throw = { workspace = true, optional = true }
+rx_core_observable_zip = { workspace = true, optional = true }
+# Pipe
+rx_core_observable_pipe = { workspace = true, optional = true }
+# Observers
+rx_core_observer_fn = { workspace = true, optional = true }
+rx_core_observer_noop = { workspace = true, optional = true }
+rx_core_observer_print = { workspace = true, optional = true }
+# Operators
+rx_core_operator_adsr = { workspace = true, optional = true }
+rx_core_operator_composite = { workspace = true, optional = true }
+rx_core_operator_enumerate = { workspace = true, optional = true }
+rx_core_operator_filter = { workspace = true, optional = true }
+rx_core_operator_filter_map = { workspace = true, optional = true }
+rx_core_operator_finalize = { workspace = true, optional = true }
+rx_core_operator_identity = { workspace = true, optional = true }
+rx_core_operator_lift_option = { workspace = true, optional = true }
+rx_core_operator_lift_result = { workspace = true, optional = true }
+rx_core_operator_map = { workspace = true, optional = true }
+rx_core_operator_map_into = { workspace = true, optional = true }
+rx_core_operator_skip = { workspace = true, optional = true }
+rx_core_operator_switch_map = { workspace = true, optional = true }
+rx_core_operator_take = { workspace = true, optional = true }
+rx_core_operator_tap_next = { workspace = true, optional = true }
+rx_core_operator_try_capture = { workspace = true, optional = true }
+# Subjects
+rx_core_subject = { workspace = true, optional = true }
+rx_core_subject_behavior = { workspace = true, optional = true }
+rx_core_subject_replay = { workspace = true, optional = true }
+# Subscriptions
+rx_core_subscription_drop = { workspace = true, optional = true }
+rx_core_subscription_inert = { workspace = true, optional = true }
+
+[dev-dependencies]
+rx_core_testing = { workspace = true }

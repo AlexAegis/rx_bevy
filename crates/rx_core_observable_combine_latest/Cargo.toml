@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_observable_combine_latest"
-description = "combine_latest observable for rx_bevy"
+description = "combine_latest observable for rx_core"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -18,25 +18,19 @@ workspace = true
 [features]
 default = ["dev"]
 dev = [
-    "rx_bevy/dev",
-    "rx_core_traits/dev",
+    "rx_core/dev",
     "rx_core_emission_variants/dev",
     "rx_core_subscriber_rc/dev",
     "rx_core_testing/dev",
+    "rx_core_traits/dev",
 ]
 example = [
     "dev",
-    "rx_bevy/example",
-    "rx_core_traits/example",
+    "rx_core/example",
     "rx_core_emission_variants/example",
     "rx_core_subscriber_rc/example",
     "rx_core_testing/example",
-]
-reflect = [
-    "dep:bevy_reflect",
-    "rx_bevy/reflect",
-    "rx_core_traits/reflect",
-    "rx_core_emission_variants/reflect",
+    "rx_core_traits/example",
 ]
 
 [dependencies]
@@ -44,8 +38,7 @@ rx_core_traits = { workspace = true }
 rx_core_emission_variants = { workspace = true }
 rx_core_subscription_drop = { workspace = true }
 rx_core_subscriber_rc = { workspace = true }
-bevy_reflect = { workspace = true, optional = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+rx_core = { workspace = true }
 rx_core_testing = { workspace = true }

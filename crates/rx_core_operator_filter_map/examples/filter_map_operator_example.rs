@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [FilterMapOperator] is used to transform incoming values into an [Option]
 /// of something else, combining the [FilterOperator] and [MapOperator]

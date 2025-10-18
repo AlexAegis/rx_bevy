@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 use rx_core_subject::Subject;
 
 fn main() {

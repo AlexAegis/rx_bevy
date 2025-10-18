@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The map operator is used to transform incoming values into something else
 fn main() {

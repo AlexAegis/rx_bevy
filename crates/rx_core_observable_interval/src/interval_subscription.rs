@@ -6,7 +6,7 @@ use rx_core_traits::{
 
 use crate::IntervalObservableOptions;
 
-// TODO: Ensure that if a tick loops the timer over multiple times, all of them are counted and emitted
+// TODO: Remove bevy-time dependency, it's a small crate but it's versioned together with the rest of bevy, and even it could just stay on a version, I don't want to ppl see two bevy versions in their lockfile/cargo output, that'd be confusing
 pub struct IntervalSubscription<Context>
 where
 	Context: SubscriptionContext,

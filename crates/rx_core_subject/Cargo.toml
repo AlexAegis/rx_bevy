@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_subject"
-description = "rx_bevy's subject implementation"
+description = "subject for rx_core. An observable and an observer combined, a one way street to push events from outside of an observable."
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -17,10 +17,10 @@ workspace = true
 
 [features]
 default = []
-dev = ["rx_bevy/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
+dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
 example = [
     "dev",
-    "rx_bevy/example",
+    "rx_core/example",
     "rx_core_traits/example",
     "rx_core_testing/example",
 ]
@@ -31,5 +31,5 @@ rx_core_traits = { workspace = true }
 rx_core_subscription_drop = { workspace = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+rx_core = { workspace = true }
 rx_core_testing = { workspace = true }

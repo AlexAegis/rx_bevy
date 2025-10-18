@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
 
+use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
 	Observable, ObservableOutput, SignalBound, Subscriber,
 	context::{SubscriptionContext, WithSubscriptionContext},
 };
-use rx_core_subscription_inert::InertSubscription;
 
 /// Emits all values from an iterator then immediately completes.
 ///
@@ -89,7 +89,7 @@ where
 #[cfg(test)]
 mod test {
 
-	use rx_bevy::prelude::*;
+	use rx_core::prelude::*;
 	use rx_core_testing::prelude::*;
 
 	#[test]

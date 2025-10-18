@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 use rx_core_testing::MockClock;
 
 /// An [IteratorOnTickObservable] emits a single value from an iterator on every

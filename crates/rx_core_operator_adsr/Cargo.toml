@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_operator_adsr"
-description = "rx_bevy adsr operator"
+description = "adsr operator for rx_core"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -16,72 +16,27 @@ license-file.workspace = true
 workspace = true
 
 [features]
-default = ["dev", "reflect", "debug"]
-dev = [
-    "bevy/dynamic_linking",
-    "examples_common/dev",
-    "rx_bevy/dev",
-    "rx_core_traits/dev",
-    "rx_bevy_observable_keyboard/dev",
-    "rx_core_testing/dev",
-]
-debug = [
-    "bevy/track_location",
-    "rx_core_traits/debug",
-    "rx_bevy_observable_keyboard/debug",
-]
-bevy = ["rx_bevy/bevy", "rx_core_traits/bevy", "rx_core_testing/bevy"]
+default = ["dev", "debug"]
+dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
+debug = ["rx_core_traits/debug"]
 example = [
-    "bevy/bevy_asset",
-    "bevy/bevy_core_pipeline",
-    "bevy/bevy_gltf",
-    "bevy/bevy_pbr",
-    "bevy/bevy_picking",
-    "bevy/bevy_render",
-    "bevy/bevy_scene",
-    "bevy/bevy_winit",
-    "bevy/tonemapping_luts",
-    "bevy/x11",
     "debug",
     "dev",
-    "reflect",
-    "rx_bevy/example",
+    "rx_core/example",
     "rx_core_traits/example",
-    "rx_bevy_observable_keyboard/example",
     "rx_core_testing/example",
-]
-reflect = [
-    "dep:bevy_reflect",
-    "rx_bevy/reflect",
-    "rx_core_traits/reflect",
-    "rx_bevy_observable_keyboard/reflect",
-]
-serialize = [
-    "bevy/serialize",
-    "bevy_ecs/serialize",
-    "bevy_math/serialize",
-    "bevy_time/serialize",
-    "dep:serde",
-    "rx_core_traits/serialize",
 ]
 
 [dependencies]
 rx_core_traits = { workspace = true }
-bevy_time = { workspace = true }
-bevy_ecs = { workspace = true }
-bevy_log = { workspace = true }
-bevy_math = { workspace = true }
-bevy_reflect = { workspace = true, optional = true }
-serde = { workspace = true, optional = true }
 bitflags = { workspace = true }
 smallvec = { workspace = true }
+bevy_math = { workspace = true, features = [
+    "std",
+    "curve",
+], default-features = false }
+bevy_time = { workspace = true }
 
 [dev-dependencies]
-bevy = { workspace = true }
-rx_bevy = { workspace = true, features = ["bevy"] }
-rx_core_testing = { workspace = true, features = ["bevy"] }
-rx_bevy_plugin = { workspace = true }
-examples_common = { workspace = true }
-bevy-inspector-egui = { workspace = true }
-bevy_egui = { workspace = true }
-rx_bevy_observable_keyboard = { workspace = true }
+rx_core = { workspace = true }
+rx_core_testing = { workspace = true }

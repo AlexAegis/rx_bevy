@@ -4,11 +4,7 @@ use rx_core_traits::{
 
 use crate::CompositeSubscriber;
 
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
-
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct CompositeOperator<PrevOp, Op>
 where
 	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,

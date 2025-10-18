@@ -14,8 +14,8 @@ use short_type_name::short_type_name;
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextProvider,
-	EntitySubscriptionContextAccessProvider, SubscriptionNotificationEvent,
-	SubscriptionNotificationEventError,
+	EntitySubscriptionContextAccessProvider, ObservableSubscriptionNotificationEvent,
+	SubscriptionNotificationEvent, SubscriptionNotificationEventError,
 };
 
 #[derive(Component)]
@@ -44,7 +44,7 @@ where
 }
 
 fn subscription_notification_observer<O, ContextAccess>(
-	subscription_notification: Trigger<SubscriptionNotificationEvent<ContextAccess>>,
+	subscription_notification: Trigger<ObservableSubscriptionNotificationEvent>,
 	mut subscription_query: Query<&mut SubscriptionComponent<O, ContextAccess>>,
 	mut context: StaticSystemParam<BevySubscriptionContext<ContextAccess>>,
 ) -> Result<(), BevyError>

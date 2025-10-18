@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [TakeOperator] is used to limit how much events can be observed before
 /// a forced completion

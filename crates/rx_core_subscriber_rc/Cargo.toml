@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_subscriber_rc"
-description = "Non bevy compatible, reference implementation of a reference counted subscriber"
+description = "A reference counted subscriber for rx_core that unsubscribes its destination only when all of its clones are unsubscribed."
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -17,10 +17,10 @@ workspace = true
 
 [features]
 default = []
-dev = ["rx_bevy/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
+dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
 example = [
     "dev",
-    "rx_bevy/example",
+    "rx_core/example",
     "rx_core_traits/example",
     "rx_core_testing/example",
 ]
@@ -30,6 +30,6 @@ rx_core_traits = { workspace = true }
 short_type_name = { workspace = true }
 
 [dev-dependencies]
-rx_bevy = { workspace = true }
+rx_core = { workspace = true }
 rx_core_testing = { workspace = true }
 rx_core_observable_iterator = { workspace = true }

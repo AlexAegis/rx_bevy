@@ -1,5 +1,7 @@
 use bevy_ecs::{entity::Entity, event::Event};
-use rx_core_traits::{SignalBound, SubscriberNotification, SubscriptionNotification, Teardown, Tick};
+use rx_core_traits::{
+	SignalBound, SubscriberNotification, SubscriptionNotification, Teardown, Tick,
+};
 use thiserror::Error;
 
 use crate::{BevySubscriptionContextProvider, context::EntitySubscriptionContextAccessProvider};
@@ -38,6 +40,7 @@ where
 	}
 }
 
+/// TODO: This is currently unused
 #[derive(Event)]
 pub enum SubscriptionNotificationEvent<ContextAccess>
 where
@@ -60,6 +63,14 @@ where
 			SubscriptionNotification::Add(teardown) => SubscriptionNotificationEvent::Add(teardown),
 		}
 	}
+}
+
+/// A simplified subscription notification that doesn't allow allow adding new
+/// teardowns, but also doesn't need to know about the context used.
+#[derive(Event)]
+pub enum ObservableSubscriptionNotificationEvent {
+	Tick(Tick),
+	Unsubscribe,
 }
 
 #[derive(Error, Debug)]

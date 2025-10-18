@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// By default, a connectable observable unsubscribes from its source when the
 /// connection is unsubscribed

@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [EnumerateOperator] counts emissions, and downstream receives this
 /// counter in a tuple with the emitted value as (T, usize)

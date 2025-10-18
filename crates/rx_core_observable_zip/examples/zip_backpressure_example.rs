@@ -1,4 +1,4 @@
-use rx_bevy::{QueueOverflowBehavior, ZipSubscriberOptions, prelude::*};
+use rx_core::{QueueOverflowBehavior, ZipSubscriberOptions, prelude::*};
 
 /// The [ZipObservable] combines values from multiple observables, grouping
 /// their emissions in the order they were emitted. That is, the first emission

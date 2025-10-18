@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [LiftResultOperator] is used to unpack an incoming Result<T, E> into T
 /// if it's Ok(T) and next it, and if it's an Err(E), downstream will receive it

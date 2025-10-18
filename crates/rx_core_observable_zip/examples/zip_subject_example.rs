@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [ZipObservable] combines values from multiple observables, grouping
 /// their emissions in the order they were emitted. That is, the first emission

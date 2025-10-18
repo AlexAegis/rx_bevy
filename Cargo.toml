@@ -78,15 +78,10 @@ examples_common = { path = "crates/examples_common" }
 feature_checker = { path = "crates/feature_checker" }
 bevy_erased_component_registry = { path = "crates/bevy_erased_component_registry" }
 # Core
-rx_bevy = { path = "crates/rx_bevy" }
+rx_core = { path = "crates/rx_core" }
 rx_core_traits = { path = "crates/rx_core_traits" }
 rx_core_emission_variants = { path = "crates/rx_core_emission_variants" }
 rx_core_testing = { path = "crates/rx_core_testing" }
-# Bevy
-rx_bevy_context = { path = "crates/rx_bevy_context" }
-rx_bevy_plugin = { path = "crates/rx_bevy_plugin" }
-# ECS Observables
-rx_bevy_observable_keyboard = { path = "crates/rx_bevy_observable_keyboard" }
 # Observables
 rx_core_observable_connectable = { path = "crates/rx_core_observable_connectable" }
 rx_core_observable_combine_latest = { path = "crates/rx_core_observable_combine_latest" }
@@ -104,7 +99,6 @@ rx_core_observer_fn = { path = "crates/rx_core_observer_fn" }
 rx_core_observer_noop = { path = "crates/rx_core_observer_noop" }
 rx_core_observer_print = { path = "crates/rx_core_observer_print" }
 # Subscribers
-rx_bevy_subscriber_entity = { path = "crates/rx_bevy_subscriber_entity" }
 rx_core_subscriber_rc = { path = "crates/rx_core_subscriber_rc" }
 rx_core_subscriber_switch = { path = "crates/rx_core_subscriber_switch" }
 # Operators
@@ -131,3 +125,9 @@ rx_core_subscription_inert = { path = "crates/rx_core_subscription_inert" }
 rx_core_subject = { path = "crates/rx_core_subject" }
 rx_core_subject_behavior = { path = "crates/rx_core_subject_behavior" }
 rx_core_subject_replay = { path = "crates/rx_core_subject_replay" }
+# Bevy
+rx_bevy = { path = "crates/rx_bevy" }
+rx_bevy_common = { path = "crates/rx_bevy_common" }
+rx_bevy_context = { path = "crates/rx_bevy_context" }
+# Bevy Observables
+rx_bevy_observable_keyboard = { path = "crates/rx_bevy_observable_keyboard" }

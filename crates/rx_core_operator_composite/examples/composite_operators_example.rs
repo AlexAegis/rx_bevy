@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// Composite operators offer an easy way to create complex operators, but they
 /// do increase type complexity, good for prototyping and smaller things, but

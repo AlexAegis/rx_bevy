@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [SkipOperator] is used to skip the first `n` emissions of an observable,
 /// letting everything else through after.

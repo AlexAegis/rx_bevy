@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 use rx_core_observable_interval::{IntervalObservable, IntervalObservableOptions};
 use rx_core_testing::MockClock;
 
@@ -10,7 +10,7 @@ fn main() {
 	let mut mock_clock = MockClock::default();
 	let mut context = ();
 
-	let mut interval_observable = IntervalObservable::new(IntervalObservableOptions {
+	let mut interval_observable = IntervalObservable::<()>::new(IntervalObservableOptions {
 		duration: Duration::from_secs(1),
 		start_on_subscribe: false,
 		max_emissions_per_tick: 3,

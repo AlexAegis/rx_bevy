@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [IdentityOperator] does nothing. The only purpose it has
 /// is to define inputs for a [CompositeOperator]: an [Operator] that made out

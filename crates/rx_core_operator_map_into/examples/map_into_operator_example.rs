@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 #[derive(Debug)]
 pub struct Foo(pub i32);

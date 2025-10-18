@@ -7,36 +7,18 @@ use bevy_math::{
 	curve::{EaseFunction, EasingCurve},
 };
 
-#[cfg(feature = "serialize")]
-use serde::{Deserialize, Serialize};
-
-#[cfg(all(feature = "serialize", feature = "reflect"))]
-use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
-
 // TODO: Maybe this could actually be a DAHDSR (delay, attack, hold, decay, sustain, release) envelope. (But keep the name Adsr, it's more known)
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(
-	feature = "reflect",
-	derive(bevy_reflect::Reflect),
-	reflect(Debug, Clone)
-)]
-#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-#[cfg_attr(
-	all(feature = "serialize", feature = "reflect"),
-	reflect(Serialize, Deserialize)
-)]
 pub struct AdsrEnvelope {
 	pub attack_time: Duration,
 	/// How does the attack duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	pub attack_easing: Option<EaseFunction>,
 	pub decay_time: Duration,
 	/// How does the decay duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	pub decay_easing: Option<EaseFunction>,
 	/// What value should be reached by decay. Should be between 0.0 and 1.0,
 	/// TODO: If there is any behavior regarding values outside of this range, mention it here
@@ -47,7 +29,6 @@ pub struct AdsrEnvelope {
 	/// How does the release duration shape the envelope
 	/// Input range between 0.0 and 1.0
 	/// Default: Linear mapping
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	pub release_easing: Option<EaseFunction>,
 }
 
@@ -155,13 +136,8 @@ impl AdsrEnvelope {
 }
 
 /*
-/// TODO: Impl, this is for connecting adsr envelopes back to booleans so it will need something else like a connector thing
+/// TODO: Impl, this is for transforming adsr envelopes back to booleans, this will likely be a second operator_adsr_actuator
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(
-	feature = "reflect",
-	derive(bevy_reflect::Reflect),
-	reflect(Debug, Clone)
-)]
 pub struct ActionActuationPreferences {
 	trigger_rule: ActionTriggerRule,
 	release_rule: ActionReleaseRule,
@@ -177,11 +153,6 @@ pub struct ActionActuationPreferences {
 ///
 /// Synonyms: `Rising Edge` | `Gate On` | `Trigger`
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(
-	feature = "reflect",
-	derive(bevy_reflect::Reflect),
-	reflect(Debug, Clone)
-)]
 pub enum ActionTriggerRule {
 	/// Immediately when the source actions gate is opened, this action also
 	/// starts getting activated without having to wait until the source action's
@@ -214,11 +185,6 @@ pub enum ActionTriggerRule {
 /// By `default` these rules map the source's activation directly.
 /// Synonyms: `Falling Edge` | `Gate Off`
 #[derive(Debug, Clone, Copy, Default)]
-#[cfg_attr(
-	feature = "reflect",
-	derive(bevy_reflect::Reflect),
-	reflect(Debug, Clone)
-)]
 pub enum ActionReleaseRule {
 	/// Stop this action from getting activated when the source has also
 	/// stopped getting activated

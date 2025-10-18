@@ -1,15 +1,5 @@
-use bevy_log::trace;
 use bitflags::{bitflags, bitflags_match};
 use smallvec::SmallVec;
-
-#[cfg(feature = "serialize")]
-use serde::{Deserialize, Serialize};
-
-#[cfg(feature = "reflect")]
-use bevy_reflect::prelude::ReflectDefault;
-
-#[cfg(all(feature = "serialize", feature = "reflect"))]
-use bevy_reflect::{ReflectDeserialize, ReflectSerialize};
 
 use crate::{AdsrEnvelopePhase, AdsrSignalEvent};
 
@@ -17,16 +7,6 @@ use crate::{AdsrEnvelopePhase, AdsrSignalEvent};
 /// other transitions are only present for a single frame, and can be used
 /// in the same fashion as `just_pressed`
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[cfg_attr(
-	feature = "reflect",
-	derive(bevy_reflect::Reflect),
-	reflect(Debug, Clone, Default)
-)]
-#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-#[cfg_attr(
-	all(feature = "serialize", feature = "reflect"),
-	reflect(Serialize, Deserialize)
-)]
 pub struct AdsrEnvelopePhaseTransition(u8);
 
 bitflags! {
@@ -137,11 +117,6 @@ pub fn determine_phase_transition(
 	// 	accumulator |= get_last_phase_transition_on_enter(to_phase);
 	// }
 
-	trace!(
-		"Accumulator {:?}",
-		accumulator.iter_names().collect::<Vec<_>>()
-	);
-
 	accumulator
 }
 
@@ -149,7 +124,7 @@ pub fn determine_phase_transition(
 mod test {
 	use std::time::Duration;
 
-	use bevy::time::Stopwatch;
+	use bevy_time::Stopwatch;
 
 	use crate::{
 		AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, determine_phase_transition,

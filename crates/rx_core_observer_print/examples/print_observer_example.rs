@@ -1,4 +1,4 @@
-use rx_bevy::prelude::*;
+use rx_core::prelude::*;
 
 /// The [PrintObserver] prints incoming next, error and complete notifications
 /// with the supplied message prepended to it

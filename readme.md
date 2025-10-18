@@ -20,11 +20,6 @@ required cargo extensions and rustup components used in this repository.
 - [Git LFS](https://git-lfs.github.com/)
 - [Latest Rust Stable](https://rustup.rs/)
 
-### What is that `package.json` file doing here?
-
-Remark, the markdown formatter I use is JS based, and my configuration is a
-JavaScript package.
-
 ### `cargo-make` tasks
 
 - `cargo make all` to run everything that could make ci fail (Everything below)
