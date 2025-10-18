@@ -7,7 +7,7 @@ use rx_bevy_core::{
 
 use crate::{IntervalObservableOptions, IntervalSubscription};
 
-pub struct IntervalObservable<Context>
+pub struct IntervalObservable<Context = ()>
 where
 	Context: SubscriptionContext,
 {
@@ -51,7 +51,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination:

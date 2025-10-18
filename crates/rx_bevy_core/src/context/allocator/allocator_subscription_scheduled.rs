@@ -34,7 +34,7 @@ pub trait ScheduledSubscriptionAllocator: WithSubscriptionContext {
 
 	fn allocate_scheduled_subscription<Subscription>(
 		subscription: Subscription,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::ScheduledHandle<Subscription>
 	where
 		Subscription: ObservableSubscription<Context = Self::Context> + Send + Sync;

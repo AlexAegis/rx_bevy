@@ -10,7 +10,7 @@ pub fn tap_next<In, InError, OnNext, Context>(
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_>) + Clone + Send + Sync,
+	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
 	TapNextOperator::new(callback)
@@ -20,7 +20,7 @@ where
 pub trait ObservableExtensionTapNext: Observable + Sized {
 	fn tap_next<
 		OnNext: 'static
-			+ Fn(&Self::Out, &mut <Self::Context as SubscriptionContext>::Item<'_>)
+			+ Fn(&Self::Out, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
 			+ Clone
 			+ Send
 			+ Sync,

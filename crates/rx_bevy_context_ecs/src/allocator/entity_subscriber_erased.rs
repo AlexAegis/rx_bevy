@@ -89,18 +89,18 @@ where
 	fn access_with_context<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 	}
 
 	fn access_with_context_mut<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 	}
 }
@@ -129,18 +129,18 @@ where
 	fn access_with_context<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 	}
 
 	fn access_with_context_mut<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 	}
 }
@@ -175,7 +175,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.closed {
 			context.send_subscriber_notification(
@@ -188,7 +188,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.closed {
 			context.send_subscriber_notification(
@@ -198,7 +198,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.closed {
 			context.send_subscriber_notification(
 				self.destination_entity,
@@ -215,7 +215,7 @@ where
 	InError: SignalBound,
 	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<In, InError, Self::Context>::Tick(tick),
@@ -235,7 +235,7 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.closed = true;
 		context.send_subscriber_notification(
 			self.destination_entity,
@@ -246,7 +246,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		context.send_subscriber_notification(
 			self.destination_entity,

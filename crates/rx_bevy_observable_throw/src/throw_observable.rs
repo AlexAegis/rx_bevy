@@ -61,7 +61,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination:

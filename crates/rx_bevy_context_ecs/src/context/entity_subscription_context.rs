@@ -1,17 +1,17 @@
 use bevy_ecs::{entity::Entity, system::SystemParam};
 use rx_bevy_core::{
-	ObserverNotification, SignalBound, SubscriberNotification, SubscriptionNotification,
+	SignalBound, SubscriberNotification, SubscriptionNotification,
 	prelude::SubscriptionContextAccess,
 };
 
 use crate::BevySubscriptionContextProvider;
 
 pub trait EntitySubscriptionContextAccessProvider {
-	type Item<'c>: EntitySubscriptionContextAccessItem<'c, AccessProvider = Self>;
+	type Item<'w, 's>: EntitySubscriptionContextAccessItem<'w, 's, AccessProvider = Self>;
 }
 
-pub trait EntitySubscriptionContextAccessItem<'c>:
-	'c + SystemParam + SubscriptionContextAccess
+pub trait EntitySubscriptionContextAccessItem<'w, 's>:
+	SystemParam + SubscriptionContextAccess
 {
 	type AccessProvider: 'static + EntitySubscriptionContextAccessProvider;
 
@@ -35,14 +35,6 @@ pub trait EntitySubscriptionContextAccessItem<'c>:
 			BevySubscriptionContextProvider<Self::AccessProvider>,
 		>,
 	);
-
-	fn send_observer_notification<In, InError>(
-		&mut self,
-		target: Entity,
-		notification: ObserverNotification<In, InError>,
-	) where
-		In: SignalBound,
-		InError: SignalBound;
 
 	fn query_destination(&mut self, target: Entity) {
 		// TODO

@@ -20,7 +20,7 @@ where
 {
 	pub fn new(
 		subscription: Subscription,
-		context: &mut <Subscription::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Subscription::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		let handle =
 			<<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator as UnscheduledSubscriptionAllocator>::allocate_unscheduled_subscription(
@@ -57,14 +57,14 @@ where
 		self.handle.is_closed()
 	}
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.handle.unsubscribe(context);
 	}
 	#[inline]
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.handle.add_teardown(teardown, context);
 	}

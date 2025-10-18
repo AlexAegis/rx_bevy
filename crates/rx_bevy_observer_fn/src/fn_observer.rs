@@ -11,10 +11,10 @@ pub struct FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_>) + Send + Sync,
+	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	on_next: OnNext,
@@ -30,10 +30,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_>) + Send + Sync,
+	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	pub fn new(
@@ -58,10 +58,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> ObserverInput
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_>) + Send + Sync,
+	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	type In = In;
@@ -73,10 +73,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> WithSubscription
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_>) + Send + Sync,
+	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	type Context = Context;
@@ -87,13 +87,13 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Observer
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_>) + Send + Sync,
+	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
-	fn next(&mut self, next: In, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn next(&mut self, next: In, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			(self.on_next)(next, context);
 		}
@@ -102,14 +102,14 @@ where
 	fn error(
 		&mut self,
 		error: InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			(self.on_error)(error, context);
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			(self.on_complete)(context);
 			self.unsubscribe(context);
@@ -122,13 +122,13 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Tickable
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_>) + Send + Sync,
+	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		(self.on_tick)(tick, context);
 	}
 }
@@ -138,10 +138,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> SubscriptionLike
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_>) + Send + Sync,
+	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -150,7 +150,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.teardown.unsubscribe(context);
 	}
 
@@ -158,7 +158,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
 	}

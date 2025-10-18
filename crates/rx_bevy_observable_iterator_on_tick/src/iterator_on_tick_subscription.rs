@@ -29,7 +29,7 @@ where
 		mut destination: impl Subscriber<In = Iterator::Item, InError = (), Context = Context> + 'static,
 		iterator: Iterator,
 		options: OnTickObservableOptions,
-		context: &mut Context::Item<'_>,
+		context: &mut Context::Item<'_, '_>,
 	) -> Self {
 		let mut iter = iterator.into_iter();
 		if options.start_on_subscribe
@@ -66,7 +66,7 @@ where
 	fn tick(
 		&mut self,
 		_tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.observed_ticks += 1;
 
@@ -91,7 +91,7 @@ where
 		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 		self.teardown.unsubscribe(context);
 	}
@@ -99,7 +99,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: rx_bevy_core::Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
 	}

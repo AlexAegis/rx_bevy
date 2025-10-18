@@ -22,7 +22,7 @@ pub struct Teardown<Context>
 where
 	Context: SubscriptionContext,
 {
-	teardown_fn: Option<Box<dyn FnOnce(&mut Context::Item<'_>) + Send + Sync>>,
+	teardown_fn: Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
 }
 
 impl<Context> Debug for Teardown<Context>
@@ -44,14 +44,14 @@ where
 {
 	pub fn new<F>(f: F) -> Self
 	where
-		F: 'static + FnOnce(&mut Context::Item<'_>) + Send + Sync,
+		F: 'static + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
 	{
 		Self {
 			teardown_fn: Some(Box::new(f)),
 		}
 	}
 
-	pub fn new_from_box(f: Box<dyn FnOnce(&mut Context::Item<'_>) + Send + Sync>) -> Self {
+	pub fn new_from_box(f: Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>) -> Self {
 		Self {
 			teardown_fn: Some(f),
 		}
@@ -65,14 +65,14 @@ where
 	/// It's private to ensure that it's not taken without either executing it
 	/// or placing it somewhere else where execution is also guaranteed.
 	#[inline]
-	pub fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context::Item<'_>) + Send + Sync>> {
+	pub fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>> {
 		self.teardown_fn.take()
 	}
 
 	/// Immediately consumes and calls the teardowns closure, leaving a None
 	/// behind, rendering the teardown permamently closed.
 	#[inline]
-	pub fn execute(mut self, context: &mut Context::Item<'_>) {
+	pub fn execute(mut self, context: &mut Context::Item<'_, '_>) {
 		if let Some(teardown) = self.teardown_fn.take() {
 			(teardown)(context);
 		}
@@ -107,7 +107,7 @@ where
 			teardown_fn: if subscription.is_closed() {
 				None
 			} else {
-				let closure = move |context: &mut <S::Context as SubscriptionContext>::Item<'_>| {
+				let closure = move |context: &mut <S::Context as SubscriptionContext>::Item<'_, '_>| {
 					subscription.unsubscribe(context)
 				};
 				Some(Box::new(closure))

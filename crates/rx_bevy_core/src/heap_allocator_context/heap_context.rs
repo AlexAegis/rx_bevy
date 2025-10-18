@@ -16,7 +16,7 @@ use crate::context::{
 /// Use this if subscriptions don't need to be allocated through a context
 /// reference. For example if you would want everything to be stored in an ECS.
 impl SubscriptionContext for () {
-	type Item<'c> = ();
+	type Item<'w, 's> = ();
 	type DropSafety = DropSafeSubscriptionContext;
 
 	type DestinationAllocator = SubscriberHeapAllocator<Self>;
@@ -25,7 +25,7 @@ impl SubscriptionContext for () {
 	type UnscheduledSubscriptionAllocator = UnscheduledSubscriptionHeapAllocator<Self>;
 
 	#[inline]
-	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c> {}
+	fn create_context_to_unsubscribe_on_drop<'w, 's>() -> Self::Item<'w, 's> {}
 }
 
 impl WithSubscriptionContext for () {

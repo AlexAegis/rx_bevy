@@ -12,7 +12,7 @@ pub struct TapNextOperator<In, InError, OnNext, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_>) + Clone + Send + Sync,
+	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
 	on_next: OnNext,
@@ -23,7 +23,7 @@ impl<In, InError, OnNext, Context> TapNextOperator<In, InError, OnNext, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_>) + Clone + Send + Sync,
+	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
 	pub fn new(on_next: OnNext) -> Self {
@@ -38,7 +38,7 @@ impl<In, InError, OnNext, Context> Operator for TapNextOperator<In, InError, OnN
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_>) + Clone + Send + Sync,
+	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
 	type Context = Context;
@@ -54,7 +54,7 @@ where
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static
@@ -71,7 +71,7 @@ impl<In, InError, OnNext, Context> ObservableOutput
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_>) + Clone + Send + Sync,
+	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
 	type Out = In;
@@ -82,7 +82,7 @@ impl<In, InError, OnNext, Context> ObserverInput for TapNextOperator<In, InError
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_>) + Clone + Send + Sync,
+	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
 	type In = In;
@@ -93,7 +93,7 @@ impl<In, InError, OnNext, Context> Clone for TapNextOperator<In, InError, OnNext
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_>) + Clone + Send + Sync,
+	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {

@@ -14,7 +14,7 @@ use rx_bevy_subscription_inert::InertSubscription;
 /// the subscriptions of this observable are always safe to drop, regardless of
 /// context.
 #[derive(Clone, Debug)]
-pub struct IteratorObservable<Iterator, Context>
+pub struct IteratorObservable<Iterator, Context = ()>
 where
 	Iterator: Clone + IntoIterator,
 	Context: SubscriptionContext,
@@ -66,7 +66,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static

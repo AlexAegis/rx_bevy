@@ -12,7 +12,7 @@ pub trait DestinationAllocator: WithSubscriptionContext {
 
 	fn share<Destination>(
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Shared<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
@@ -47,13 +47,19 @@ where
 	where
 		F: FnMut(&mut Destination);
 
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_>)
-	where
-		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>);
+	fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) where
+		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 
-	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_>)
-	where
-		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>);
+	fn access_with_context_mut<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) where
+		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 }
 
 pub trait DestinationSharedTypes: 'static + Subscriber {

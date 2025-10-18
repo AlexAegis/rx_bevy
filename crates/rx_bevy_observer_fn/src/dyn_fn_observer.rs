@@ -9,11 +9,11 @@ pub struct DynFnObserver<In, Error, Context>
 where
 	Context: SubscriptionContext,
 {
-	on_next: Option<Box<dyn FnMut(In, &mut Context::Item<'_>) + Send + Sync>>,
-	on_error: Option<Box<dyn FnMut(Error, &mut Context::Item<'_>) + Send + Sync>>,
-	on_complete: Option<Box<dyn FnOnce(&mut Context::Item<'_>) + Send + Sync>>,
-	on_tick: Option<Box<dyn FnMut(Tick, &mut Context::Item<'_>) + Send + Sync>>,
-	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context::Item<'_>) + Send + Sync>>,
+	on_next: Option<Box<dyn FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync>>,
+	on_error: Option<Box<dyn FnMut(Error, &mut Context::Item<'_, '_>) + Send + Sync>>,
+	on_complete: Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
+	on_tick: Option<Box<dyn FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync>>,
+	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
 	teardown: SubscriptionData<Context>,
 }
 
@@ -23,7 +23,7 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context::Item<'_>) + Send + Sync>(
+	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync>(
 		mut self,
 		on_next: OnNext,
 	) -> Self {
@@ -31,7 +31,7 @@ where
 		self
 	}
 
-	pub fn with_error<OnError: 'static + FnMut(InError, &mut Context::Item<'_>) + Send + Sync>(
+	pub fn with_error<OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync>(
 		mut self,
 		on_error: OnError,
 	) -> Self {
@@ -39,7 +39,7 @@ where
 		self
 	}
 
-	pub fn with_complete<OnComplete: 'static + FnOnce(&mut Context::Item<'_>) + Send + Sync>(
+	pub fn with_complete<OnComplete: 'static + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>(
 		mut self,
 		on_complete: OnComplete,
 	) -> Self {
@@ -56,7 +56,7 @@ where
 	/// a nicer signature by leaving the context argument off from the method,
 	/// and making it chainable.
 	pub fn with_unsubscribe<
-		OnUnsubscribe: 'static + FnOnce(&mut Context::Item<'_>) + Send + Sync,
+		OnUnsubscribe: 'static + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
 	>(
 		mut self,
 		on_unsubscribe: OnUnsubscribe,
@@ -91,7 +91,7 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	fn next(&mut self, next: In, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn next(&mut self, next: In, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed()
 			&& let Some(on_next) = &mut self.on_next
 		{
@@ -102,7 +102,7 @@ where
 	fn error(
 		&mut self,
 		error: InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			if let Some(on_error) = &mut self.on_error {
@@ -115,7 +115,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			if let Some(on_complete) = self.on_complete.take() {
 				(on_complete)(context);
@@ -135,7 +135,7 @@ where
 	fn tick(
 		&mut self,
 		tick: rx_bevy_core::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if let Some(on_tick) = &mut self.on_tick {
 			(on_tick)(tick, context);
@@ -154,7 +154,7 @@ where
 		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut Context::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
 		if let Some(on_unsubscribe) = self.on_unsubscribe.take() {
 			(on_unsubscribe)(context);
 		}
@@ -164,7 +164,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
 	}

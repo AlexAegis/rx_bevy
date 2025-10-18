@@ -58,7 +58,7 @@ impl<Subscription> Tickable for ScheduledEntitySubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionLike + Send + Sync,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		todo!("impl")
 	}
 }
@@ -71,14 +71,14 @@ where
 		todo!("impl")
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		todo!("impl")
 	}
 
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		todo!("impl")
 	}

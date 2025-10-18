@@ -7,7 +7,7 @@ use crate::TapNextOperator;
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
 	fn tap_next<
 		OnNext: 'static
-			+ Fn(&Self::Out, &mut <<Self as Operator>::Context as SubscriptionContext>::Item<'_>)
+			+ Fn(&Self::Out, &mut <<Self as Operator>::Context as SubscriptionContext>::Item<'_, '_>)
 			+ Clone
 			+ Send
 			+ Sync,

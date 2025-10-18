@@ -299,7 +299,7 @@ where
 	InError: SignalBound,
 	DropSafety: SubscriptionContextDropSafety,
 {
-	type Item<'c> = MockContext<In, InError, DropSafety>;
+	type Item<'w, 's> = MockContext<In, InError, DropSafety>;
 
 	/// The DropSafety is parametric for the sake of testability, the context will always panic on drop if not closed to ensure proper tests.
 	type DropSafety = DropSafety;
@@ -309,7 +309,7 @@ where
 	type ScheduledSubscriptionAllocator = ScheduledSubscriptionHeapAllocator<Self>;
 	type UnscheduledSubscriptionAllocator = UnscheduledSubscriptionHeapAllocator<Self>;
 
-	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c> {
+	fn create_context_to_unsubscribe_on_drop<'w, 's>() -> Self::Item<'w, 's> {
 		// While this context could be constructed very easily (It has a
 		// [Default] implementation too! This is the reason why this method
 		// exists by the way. It just doesn't have the same connotation!)

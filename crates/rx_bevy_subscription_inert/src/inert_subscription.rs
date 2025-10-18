@@ -24,7 +24,7 @@ where
 {
 	pub fn new(
 		mut destination: impl ObservableSubscription<Context = Context> + 'static + Send + Sync,
-		context: &mut Context::Item<'_>,
+		context: &mut Context::Item<'_, '_>,
 	) -> Self {
 		destination.unsubscribe(context);
 
@@ -45,7 +45,7 @@ impl<Context> Tickable for InertSubscription<Context>
 where
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.tickable.tick(tick, context);
 	}
 }
@@ -58,14 +58,14 @@ where
 		true
 	}
 
-	fn unsubscribe(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		// Does not need to do anything on unsubscribe
 	}
 
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		// The added teardown is executed immediately as this subscription is always closed.
 		teardown.execute(context);

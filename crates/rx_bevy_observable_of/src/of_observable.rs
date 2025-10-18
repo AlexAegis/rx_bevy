@@ -54,7 +54,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut Context::Item<'_>,
+		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static

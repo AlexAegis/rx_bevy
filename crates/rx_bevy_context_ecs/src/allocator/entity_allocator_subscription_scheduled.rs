@@ -37,7 +37,7 @@ where
 
 	fn allocate_scheduled_subscription<Subscription>(
 		subscription: Subscription,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::ScheduledHandle<Subscription>
 	where
 		Subscription: ObservableSubscription<Context = Self::Context> + Send + Sync,

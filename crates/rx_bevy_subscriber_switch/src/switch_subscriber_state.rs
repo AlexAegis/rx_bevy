@@ -49,7 +49,7 @@ where
 {
 	pub fn new(
 		destination: Destination,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
 			destination: SharedSubscriber::new(destination, context),
@@ -63,14 +63,14 @@ where
 
 	pub(crate) fn unsubscribe_inner_subscription(
 		&mut self,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.clear_inner_state(context);
 	}
 
 	fn clear_inner_state(
 		&mut self,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if let Some(mut inner_subscription) = self.inner_subscription.take() {
 			inner_subscription.unsubscribe(context);
@@ -81,7 +81,7 @@ where
 
 	pub(crate) fn unsubscribe_outer(
 		&mut self,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if self.closed {
 			return;
@@ -94,7 +94,7 @@ where
 	pub(crate) fn create_next_subscription(
 		state_ref: Arc<RwLock<Self>>,
 		mut next: InnerObservable,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		let subscription = next.subscribe(state_ref.clone(), context);
 		if let Ok(mut state) = state_ref.write() {
@@ -108,7 +108,7 @@ where
 
 	pub(crate) fn complete_if_can(
 		&mut self,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if self.is_complete && self.inner_subscription.is_none() {
 			self.destination.complete(context);
@@ -119,7 +119,7 @@ where
 	pub(crate) fn error(
 		&mut self,
 		error: InnerObservable::OutError,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.error(error, context);
 		self.unsubscribe_outer(context);
@@ -128,7 +128,7 @@ where
 	pub(crate) fn tick(
 		&mut self,
 		tick: Tick,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.tick(tick, context);
 	}
@@ -152,7 +152,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.next(next, context);
 	}
@@ -160,12 +160,12 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.error(error, context);
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.clear_inner_state(context);
 		self.complete_if_can(context);
 	}
@@ -186,7 +186,7 @@ where
 		+ Sync,
 	Destination: SubscriptionCollection,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -214,12 +214,12 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.clear_inner_state(context);
 	}
 }

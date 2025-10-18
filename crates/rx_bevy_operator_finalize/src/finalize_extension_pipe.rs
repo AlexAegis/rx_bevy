@@ -10,7 +10,7 @@ pub fn finalize<Out, OutError, Callback, Context>(
 where
 	Out: SignalBound,
 	OutError: SignalBound,
-	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_>) + Send + Sync,
+	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	FinalizeOperator::new(callback)
@@ -21,7 +21,7 @@ pub trait ObservableExtensionFinalize: Observable + Sized {
 	fn finalize<
 		Callback: 'static
 			+ Clone
-			+ FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_>)
+			+ FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
 			+ Send
 			+ Sync,
 	>(

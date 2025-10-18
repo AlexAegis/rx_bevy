@@ -74,7 +74,7 @@ where
 	}
 
 	#[inline]
-	pub fn add_teardown(&mut self, teardown: Teardown<Context>, context: &mut Context::Item<'_>) {
+	pub fn add_teardown(&mut self, teardown: Teardown<Context>, context: &mut Context::Item<'_, '_>) {
 		if let Some(teardowns) = &mut self.teardown {
 			teardowns.add_teardown(teardown, context);
 		} else {
@@ -94,7 +94,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination:
@@ -115,7 +115,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		for destination in self.subscribers.iter_mut() {
 			destination.next(next.clone(), context);
@@ -126,7 +126,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		for mut destination in self.subscribers.drain(..) {
 			destination.error(error.clone(), context);
@@ -134,7 +134,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		for mut destination in self.subscribers.drain(..) {
 			destination.complete(context);
 			destination.unsubscribe(context);
@@ -148,7 +148,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		for destination in self.subscribers.iter_mut() {
 			destination.tick(tick.clone(), context);
 		}

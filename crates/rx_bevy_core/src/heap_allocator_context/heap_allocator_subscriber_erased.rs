@@ -34,7 +34,7 @@ where
 
 	fn share<Destination>(
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Shared<Destination::In, Destination::InError>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync,

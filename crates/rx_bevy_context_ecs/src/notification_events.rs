@@ -1,8 +1,6 @@
-use bevy_ecs::event::Event;
-use rx_bevy_core::{
-	ObserverNotification, SignalBound, SubscriberNotification, SubscriptionNotification, Teardown,
-	Tick,
-};
+use bevy_ecs::{entity::Entity, event::Event};
+use rx_bevy_core::{SignalBound, SubscriberNotification, SubscriptionNotification, Teardown, Tick};
+use thiserror::Error;
 
 use crate::{BevySubscriptionContextProvider, context::EntitySubscriptionContextAccessProvider};
 
@@ -64,29 +62,10 @@ where
 	}
 }
 
-#[derive(Event)]
-pub enum ObserverNotificationEvent<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	Next(In),
-	Error(InError),
-	Complete,
-	Tick(Tick),
-}
-
-impl<In, InError> Into<ObserverNotificationEvent<In, InError>> for ObserverNotification<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	fn into(self) -> ObserverNotificationEvent<In, InError> {
-		match self {
-			ObserverNotification::Next(next) => ObserverNotificationEvent::Next(next),
-			ObserverNotification::Error(error) => ObserverNotificationEvent::Error(error),
-			ObserverNotification::Complete => ObserverNotificationEvent::Complete,
-			ObserverNotification::Tick(tick) => ObserverNotificationEvent::Tick(tick),
-		}
-	}
+#[derive(Error, Debug)]
+pub enum SubscriptionNotificationEventError {
+	#[error(
+		"Tried to send a SubscriptionNotification to {0}. But it does not exist on entity {1}."
+	)]
+	NotASubscription(String, Entity),
 }

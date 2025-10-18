@@ -5,7 +5,7 @@ use rx_bevy_core::{SubjectLike, context::FromSubscriptionContext, prelude::Subsc
 #[derive(Clone)]
 pub struct ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator: Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_>) -> Connector,
+	ConnectorCreator: Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub(crate) connector_creator: ConnectorCreator,
@@ -15,7 +15,7 @@ where
 
 impl<ConnectorCreator, Connector> ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator: Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_>) -> Connector,
+	ConnectorCreator: Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub fn new(connector_creator: ConnectorCreator) -> Self {
@@ -41,7 +41,7 @@ where
 
 impl<Connector> Default
 	for ConnectableOptions<
-		fn(&mut <Connector::Context as SubscriptionContext>::Item<'_>) -> Connector,
+		fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 		Connector,
 	>
 where

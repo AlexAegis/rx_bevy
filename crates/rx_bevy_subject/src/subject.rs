@@ -76,7 +76,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Context::Item<'_>,
+		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination:
@@ -106,7 +106,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
@@ -118,7 +118,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
@@ -127,7 +127,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()
 		{
@@ -142,7 +142,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if let Ok(mut multicast) = self.multicast.write() {
 			multicast.tick(tick, context);
 		}
@@ -163,7 +163,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if let Some((subscribers, teardown)) = {
 			let mut lock = self
 				.multicast
@@ -185,7 +185,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed()
 			&& let Ok(mut multicast) = self.multicast.write()

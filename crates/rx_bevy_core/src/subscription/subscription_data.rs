@@ -27,9 +27,9 @@ where
 	/// trait object, due to variance as the accepting functions signature is
 	/// `impl SubscriptionLike<Context = Context> + 'static`
 	notifiable_subscriptions: Vec<
-		Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_>) + Send + Sync>,
+		Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>) + Send + Sync>,
 	>,
-	finalizers: Vec<Box<dyn FnOnce(&mut Context::Item<'_>) + Send + Sync>>,
+	finalizers: Vec<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
 }
 
 impl<Context> SubscriptionData<Context>
@@ -54,7 +54,7 @@ where
 	pub fn add_notifiable(
 		&mut self,
 		subscription: NotifiableSubscription<Context>,
-		context: &mut Context::Item<'_>,
+		context: &mut Context::Item<'_, '_>,
 	) {
 		if let Some(mut notifiable_subscription) = subscription.take() {
 			if self.is_closed() {
@@ -101,7 +101,7 @@ impl<Context> Tickable for SubscriptionData<Context>
 where
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		for notifiable_subscription in self.notifiable_subscriptions.iter_mut() {
 			(notifiable_subscription)(SubscriptionNotification::Tick(tick.clone()), context);
 		}
@@ -117,7 +117,7 @@ where
 		self.is_closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut Context::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
 		if !self.is_closed() {
 			self.is_closed = true;
 
@@ -134,7 +134,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if self.is_closed() {
 			// If this subscription is already closed, the newly added teardown

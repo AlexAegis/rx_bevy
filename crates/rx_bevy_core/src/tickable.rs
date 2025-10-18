@@ -16,7 +16,7 @@ pub trait Tickable: WithSubscriptionContext {
 	/// Do not block the propagation of a tick by checking if something is
 	/// closed. Even a closed subscriber must forward ticks in case there is
 	/// a downstream subscription still expecting the tick.
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>);
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 }
 
 /// For usecases where the context is not used at all, some convenience

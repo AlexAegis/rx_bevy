@@ -52,6 +52,7 @@ rx_bevy_core = { workspace = true, features = ["bevy"] }
 bevy_ecs = { workspace = true }
 bevy_app = { workspace = true }
 bevy_log = { workspace = true }
+bevy_derive = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
 smallvec = { workspace = true }
 short_type_name = { workspace = true }

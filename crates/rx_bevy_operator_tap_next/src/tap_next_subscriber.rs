@@ -7,7 +7,7 @@ use rx_bevy_core::{
 
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -19,7 +19,7 @@ where
 
 impl<In, InError, OnNext, Destination> TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -36,7 +36,7 @@ where
 impl<In, InError, OnNext, Destination> WithSubscriptionContext
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -47,7 +47,7 @@ where
 impl<In, InError, OnNext, Destination> Observer
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -56,7 +56,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		(self.callback)(&next, context);
 		self.destination.next(next, context);
@@ -66,13 +66,13 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
 	}
 }
@@ -80,14 +80,14 @@ where
 impl<In, InError, OnNext, Destination> Tickable
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
 	Destination: SubscriptionLike,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -95,7 +95,7 @@ where
 impl<In, InError, OnNext, Destination> SubscriptionLike
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -107,7 +107,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
 
@@ -115,7 +115,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.add_teardown(teardown, context);
 	}
@@ -124,7 +124,7 @@ where
 impl<In, InError, OnNext, Destination> ObservableOutput
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,
@@ -136,7 +136,7 @@ where
 impl<In, InError, OnNext, Destination> ObserverInput
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,

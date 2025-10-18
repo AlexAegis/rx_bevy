@@ -59,7 +59,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn next(&mut self, next: In, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn next(&mut self, next: In, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		let n = next.clone();
 		self.value.replace(next);
 		self.subject.next(n, context);
@@ -69,13 +69,13 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.subject.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.subject.complete(context);
 	}
 }
@@ -112,7 +112,7 @@ where
 	>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut Context::Item<'_>,
+		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription {
 		destination.next(self.value.borrow().clone(), context);
 		self.subject.subscribe(destination, context)
@@ -131,7 +131,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.subject.unsubscribe(context);
 	}
 
@@ -139,7 +139,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.subject.add_teardown(teardown, context);
 	}

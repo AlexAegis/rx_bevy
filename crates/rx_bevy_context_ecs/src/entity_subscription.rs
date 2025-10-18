@@ -10,6 +10,7 @@ use crate::{
 	context::EntitySubscriptionContextAccessProvider,
 };
 
+// TODO: Delete
 #[derive(Component)]
 pub struct EntitySubscription<ContextAccess>
 where
@@ -68,7 +69,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		context.send_subscription_notification(
 			self.self_entity,
 			SubscriptionNotification::Unsubscribe,
@@ -79,7 +80,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		context.send_subscription_notification(
 			self.self_entity,
@@ -92,7 +93,11 @@ impl<ContextAccess> Tickable for EntitySubscription<ContextAccess>
 where
 	ContextAccess: EntitySubscriptionContextAccessProvider,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		//self.subscription.tick(tick, context);
 	}
 }

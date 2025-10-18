@@ -40,7 +40,7 @@ where
 
 	pub fn unsubscribe_if_can(
 		&mut self,
-		context: &mut <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if self.unsubscribe_count == self.ref_count && !self.closed {
 			self.closed = true;
@@ -50,7 +50,7 @@ where
 
 	pub fn complete_if_can(
 		&mut self,
-		context: &mut <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if self.completion_count == self.ref_count && !self.closed {
 			self.destination.complete(context);
@@ -101,7 +101,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.closed {
 			self.destination.next(next, context);
@@ -111,7 +111,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.closed {
 			self.destination.error(error, context);
@@ -124,7 +124,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.complete_if_can(context);
 	}
 }
@@ -133,7 +133,7 @@ impl<Destination> Tickable for InnerRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -148,7 +148,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.unsubscribe_if_can(context);
 	}
 
@@ -156,7 +156,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.add_teardown(teardown, context);
 	}

@@ -59,7 +59,7 @@ pub trait Operator: ObserverInput + ObservableOutput {
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static

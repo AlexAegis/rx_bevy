@@ -27,14 +27,14 @@ pub trait SubscriptionLike: WithSubscriptionContext {
 	/// as closed.
 	///
 	/// Once closed, a subscription stays closed.
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>);
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 
 	/// Add additional teardowns to execute on unsubscribe. If the subscription
 	/// is already closed, the added teardown is immediately executed!
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	);
 }
 
@@ -42,7 +42,7 @@ pub trait SubscriptionCollection: SubscriptionLike {
 	fn add<T>(
 		&mut self,
 		subscription: T,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
 		T: Into<Teardown<Self::Context>>,
 	{
@@ -50,9 +50,9 @@ pub trait SubscriptionCollection: SubscriptionLike {
 		self.add_teardown(teardown, context);
 	}
 
-	fn add_fn<F>(&mut self, f: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_>)
+	fn add_fn<F>(&mut self, f: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
 	where
-		F: 'static + FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_>) + Send + Sync,
+		F: 'static + FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_, '_>) + Send + Sync,
 		Self: Sized,
 	{
 		let teardown = Teardown::<Self::Context>::new(f);

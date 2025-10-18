@@ -24,7 +24,7 @@ where
 	Context: SubscriptionContext,
 {
 	notify_fn: Option<
-		Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_>) + Send + Sync>,
+		Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>) + Send + Sync>,
 	>,
 }
 
@@ -34,7 +34,7 @@ where
 {
 	pub fn new<F>(f: F) -> Self
 	where
-		F: 'static + FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_>) + Send + Sync,
+		F: 'static + FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>) + Send + Sync,
 	{
 		Self {
 			notify_fn: Some(Box::new(f)),
@@ -42,7 +42,7 @@ where
 	}
 
 	pub fn new_from_box(
-		f: Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_>) + Send + Sync>,
+		f: Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>) + Send + Sync>,
 	) -> Self {
 		Self { notify_fn: Some(f) }
 	}
@@ -58,7 +58,7 @@ where
 	pub(crate) fn take(
 		mut self,
 	) -> Option<
-		Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_>) + Send + Sync>,
+		Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>) + Send + Sync>,
 	> {
 		self.notify_fn.take()
 	}
@@ -69,7 +69,7 @@ where
 	pub fn execute(
 		&mut self,
 		action: SubscriptionNotification<Context>,
-		context: &mut Context::Item<'_>,
+		context: &mut Context::Item<'_, '_>,
 	) {
 		if let Some(teardown) = &mut self.notify_fn {
 			(teardown)(action, context);
@@ -97,14 +97,14 @@ where
 		self.notify_fn.is_none()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.execute(SubscriptionNotification::Unsubscribe, context);
 	}
 
 	fn add_teardown(
 		&mut self,
 		teardown: super::Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.execute(SubscriptionNotification::Add(teardown), context);
 	}
@@ -134,7 +134,7 @@ where
 				None
 			} else {
 				let closure =
-					move |action, context: &mut <S::Context as SubscriptionContext>::Item<'_>| {
+					move |action, context: &mut <S::Context as SubscriptionContext>::Item<'_, '_>| {
 						match action {
 							SubscriptionNotification::Tick(tick) => {
 								subscription.tick(tick, context);

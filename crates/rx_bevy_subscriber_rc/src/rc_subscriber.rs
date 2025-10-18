@@ -25,7 +25,7 @@ where
 {
 	pub fn new(
 		destination: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
 			shared_destination:
@@ -60,11 +60,11 @@ where
 	pub fn access_with_context<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
 		F: Fn(
 			&InnerRcSubscriber<Destination>,
-			&mut <Destination::Context as SubscriptionContext>::Item<'_>,
+			&mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 		),
 	{
 		self.shared_destination
@@ -74,11 +74,11 @@ where
 	pub fn access_with_context_mut<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
 		F: FnMut(
 			&mut InnerRcSubscriber<Destination>,
-			&mut <Destination::Context as SubscriptionContext>::Item<'_>,
+			&mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 		),
 	{
 		self.shared_destination
@@ -146,7 +146,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_this_clone_closed() {
 			self.shared_destination.next(next, context);
@@ -156,7 +156,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_this_clone_closed() {
 			self.shared_destination.error(error, context);
@@ -164,7 +164,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_this_clone_closed() {
 			self.completed = true;
 			self.shared_destination.access_mut(|destination| {
@@ -180,7 +180,7 @@ impl<Destination> Tickable for RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		// TODO: verify how shared destinations behave if all of them are getting ticked, ticks might need an id, and consumers of ticks would probably need to check if a tick had been processed before using them
 		//if !self.is_this_clone_closed() {
 		self.shared_destination.tick(tick, context);
@@ -197,7 +197,7 @@ where
 		self.shared_destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.unsubscribed {
 			self.unsubscribed = true;
 			self.shared_destination.access_mut(|destination| {
@@ -211,7 +211,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.shared_destination.add_teardown(teardown, context);
 	}

@@ -18,7 +18,7 @@ pub trait UnscheduledSubscriptionAllocator: WithSubscriptionContext {
 
 	fn allocate_unscheduled_subscription<Subscription>(
 		subscription: Subscription,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::UnscheduledHandle<Subscription>
 	where
 		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync;

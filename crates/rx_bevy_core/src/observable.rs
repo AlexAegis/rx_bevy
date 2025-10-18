@@ -132,7 +132,7 @@ pub trait Observable: ObservableOutput + WithSubscriptionContext {
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static

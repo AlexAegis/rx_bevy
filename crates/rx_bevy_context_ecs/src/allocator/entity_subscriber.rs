@@ -78,18 +78,18 @@ where
 	fn access_with_context<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 	}
 
 	fn access_with_context_mut<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 	}
 }
@@ -120,7 +120,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			context.send_subscriber_notification(
@@ -137,7 +137,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			context.send_subscriber_notification(
@@ -151,7 +151,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			context.send_subscriber_notification(
 				self.destination_entity,
@@ -171,7 +171,7 @@ where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider<ContextAccess>>,
 	ContextAccess: 'static + EntitySubscriptionContextAccessProvider,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Tick(
@@ -192,7 +192,7 @@ where
 		todo!("impl")
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Unsubscribe,
@@ -202,7 +202,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		context.send_subscriber_notification(
 			self.destination_entity,

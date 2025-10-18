@@ -15,7 +15,7 @@ pub trait ErasedDestinationAllocator: WithSubscriptionContext {
 
 	fn share<Destination>(
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Shared<Destination::In, Destination::InError>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
@@ -41,13 +41,13 @@ pub trait ErasedSharedDestination: Subscriber + Clone + Send + Sync {
 	where
 		F: FnMut(&mut Self::Access);
 
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_>)
+	fn access_with_context<F>(&mut self, accessor: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
 	where
-		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>);
+		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 
-	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_>)
+	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
 	where
-		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>);
+		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 }
 
 pub trait ErasedSharedDestinationTypes: 'static + Subscriber {

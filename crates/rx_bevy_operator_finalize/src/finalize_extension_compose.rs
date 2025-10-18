@@ -8,7 +8,7 @@ pub trait CompositeOperatorExtensionFinalize: Operator + Sized {
 	fn finalize<
 		Callback: 'static
 			+ Clone
-			+ FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_>)
+			+ FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
 			+ Send
 			+ Sync,
 	>(

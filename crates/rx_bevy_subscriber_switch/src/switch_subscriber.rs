@@ -40,7 +40,7 @@ where
 {
 	pub fn new(
 		destination: Destination,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
 			state: Arc::new(RwLock::new(SwitchSubscriberState::new(
@@ -101,7 +101,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			// TODO: Check if this clone is still necessary
@@ -118,7 +118,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed()
 			&& let Ok(mut state) = self.state.write()
@@ -127,7 +127,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed()
 			&& let Ok(mut state) = self.state.write()
 		{
@@ -150,7 +150,7 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if let Ok(mut state) = self.state.write() {
 			state.tick(tick, context);
 		}
@@ -180,7 +180,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		// Pre-checked to avoid runtime borrow conflicts
 		if !self.is_closed()
 			&& let Ok(mut state) = self.state.write()
@@ -192,7 +192,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			if let Ok(mut state) = self.state.write() {

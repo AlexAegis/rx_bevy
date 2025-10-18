@@ -47,9 +47,9 @@ where
 	fn access_with_context<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 		if let Ok(destination) = self.destination.read() {
 			accessor(&*destination, context)
@@ -59,9 +59,9 @@ where
 	fn access_with_context_mut<F>(
 		&mut self,
 		mut accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 		if let Ok(mut destination) = self.destination.write() {
 			accessor(&mut *destination, context)
@@ -151,7 +151,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
@@ -165,7 +165,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
@@ -177,7 +177,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.complete(context);
@@ -200,7 +200,7 @@ where
 	fn tick(
 		&mut self,
 		tick: crate::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if let Ok(mut lock) = self.destination.write() {
 			lock.tick(tick, context);
@@ -225,7 +225,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);
@@ -240,7 +240,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: crate::Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {

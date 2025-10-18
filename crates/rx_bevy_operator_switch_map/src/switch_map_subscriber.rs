@@ -49,7 +49,7 @@ where
 	pub fn new(
 		destination: Destination,
 		switcher: Switcher,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
 			destination: SwitchSubscriber::new(destination, context),
@@ -100,7 +100,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.next((self.switcher)(next), context);
 	}
@@ -109,13 +109,13 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.error(error.into(), context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
 	}
 }
@@ -138,7 +138,7 @@ where
 	Destination: SubscriptionCollection,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -166,7 +166,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
 
@@ -174,7 +174,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		println!("add teardown switch map sub");
 		self.destination.add_teardown(teardown, context);

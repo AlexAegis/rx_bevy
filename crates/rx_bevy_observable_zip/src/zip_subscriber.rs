@@ -63,7 +63,7 @@ where
 
 	fn check_if_can_complete(
 		&mut self,
-		context: &mut <O1::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <O1::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.destination.is_closed()
 			&& (self.o1_queue.is_completed() || self.o2_queue.is_completed())
@@ -105,7 +105,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		match next {
 			EitherOut2::O1(o1_next) => {
@@ -136,7 +136,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.destination.is_closed() {
 			self.destination.error(error, context);
@@ -145,7 +145,7 @@ where
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.check_if_can_complete(context);
 	}
 }
@@ -163,7 +163,7 @@ where
 	O2::Out: Clone,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -201,7 +201,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
 
@@ -209,7 +209,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.add_teardown(teardown, context);
 	}

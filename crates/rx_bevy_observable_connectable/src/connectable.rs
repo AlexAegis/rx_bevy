@@ -9,6 +9,6 @@ pub trait Connectable: Observable {
 
 	fn connect(
 		&mut self,
-		context: &mut <<Self::ConnectionSubscription as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <<Self::ConnectionSubscription as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> ConnectionHandle<Self::ConnectionSubscription>;
 }

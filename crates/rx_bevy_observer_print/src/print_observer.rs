@@ -73,7 +73,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		println!("{}next: {:?}", self.get_prefix(), next);
 	}
@@ -82,14 +82,14 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		println!("{}error: {:?}", self.get_prefix(), error);
 		self.teardown.unsubscribe(context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		println!("{}completed", self.get_prefix());
 		self.teardown.unsubscribe(context);
 	}
@@ -105,7 +105,7 @@ where
 	fn tick(
 		&mut self,
 		tick: rx_bevy_core::Tick,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		println!("{}tick: {:?}", self.get_prefix(), tick);
 	}
@@ -131,7 +131,7 @@ where
 		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.teardown.is_closed() {
 			self.teardown.unsubscribe(context);
 			println!("{}unsubscribed", self.get_prefix());
@@ -142,7 +142,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
 	}

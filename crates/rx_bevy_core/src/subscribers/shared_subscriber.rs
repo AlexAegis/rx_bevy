@@ -26,7 +26,7 @@ where
 {
 	pub fn new(
 		destination: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
 			shared_destination: <Destination as DestinationSharedTypes>::Sharer::share(
@@ -54,9 +54,9 @@ where
 	pub fn access_with_context<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: Fn(&Destination, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+		F: Fn(&Destination, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 		self.shared_destination
 			.access_with_context(accessor, context);
@@ -65,9 +65,9 @@ where
 	pub fn access_with_context_mut<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: FnMut(&mut Destination, &mut <Destination::Context as SubscriptionContext>::Item<'_>),
+		F: FnMut(&mut Destination, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 		self.shared_destination
 			.access_with_context_mut(accessor, context);
@@ -109,7 +109,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.shared_destination.next(next, context);
 	}
@@ -118,13 +118,13 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.shared_destination.error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.shared_destination.complete(context);
 	}
 }
@@ -134,10 +134,10 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.access_with_context_mut(
 			move |destination: &mut Destination,
-			      context: &mut <Destination::Context as SubscriptionContext>::Item<'_>| {
+			      context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>| {
 				destination.tick(tick.clone(), context)
 			},
 			context,
@@ -155,7 +155,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.shared_destination.unsubscribe(context);
 	}
 
@@ -163,7 +163,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.shared_destination.add_teardown(teardown, context);
 	}

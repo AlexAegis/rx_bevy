@@ -6,7 +6,7 @@ use rx_bevy_core::SignalBound;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{RelativeEntity, SubscriptionSchedule};
+use crate::SubscriptionSchedule;
 
 #[derive(Event, Clone)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
@@ -22,9 +22,8 @@ where
 	pub(crate) destination_entity: Entity,
 	/// This entity can only be spawned from this events constructors
 	pub(crate) subscription_entity: Entity,
-	// TODO: REMOVE This is probably not needed anymore, as any internal subscriptions made should be ticked by the subscribers and not a plugin
-	// /// Contains the [TypeId] of a `SubscriptionSchedule::<S>` component, for
-	// /// later component cloning while preserving scheduling
+	// /// Contains the [TypeId] of a `SubscriptionSchedule::<S>` component.
+	// /// It is required to erase this type to be able to
 	// #[cfg_attr(feature = "reflect", reflect(ignore))]
 	// schedule: Option<TypeId>,
 	_phantom_data: PhantomData<(Out, OutError)>,

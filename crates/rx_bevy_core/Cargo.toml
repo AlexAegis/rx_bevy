@@ -1,4 +1,5 @@
 [package]
+# TODO: Rename to just `rx_core` along with all other crates
 name = "rx_bevy_core"
 version = "0.1.0"
 description = "rx_bevy's core traits and implementations"

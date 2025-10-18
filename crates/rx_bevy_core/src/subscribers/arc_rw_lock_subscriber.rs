@@ -47,9 +47,9 @@ where
 	fn access_with_context<F>(
 		&mut self,
 		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 		if let Ok(destination) = self.read() {
 			accessor(&*destination, context)
@@ -59,9 +59,9 @@ where
 	fn access_with_context_mut<F>(
 		&mut self,
 		mut accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) where
-		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_>),
+		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
 		if let Ok(mut destination) = self.write() {
 			accessor(&mut *destination, context)
@@ -76,7 +76,7 @@ where
 	fn next(
 		&mut self,
 		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			if let Ok(mut destination) = self.write() {
@@ -90,7 +90,7 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			if let Ok(mut destination) = self.write() {
@@ -102,7 +102,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			if let Ok(mut destination) = self.write() {
 				destination.complete(context);
@@ -121,7 +121,7 @@ where
 	fn tick(
 		&mut self,
 		tick: crate::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if let Ok(mut destination) = self.write() {
 			destination.tick(tick, context);
@@ -144,7 +144,7 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			if let Ok(mut destination) = self.write() {
 				destination.unsubscribe(context);
@@ -157,7 +157,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: crate::Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			if let Ok(mut destination) = self.write() {

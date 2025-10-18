@@ -23,8 +23,20 @@ pub trait WithSubscriptionContext {
 ///
 /// TODO: Rename to SubscriptionAllocationContextProvider?
 pub trait SubscriptionContext {
+	/// The actual context reference that will be passed into subscriptions
+	/// and subscribers. The lifetime parameters allow for decoupling the
+	/// lifetime of the context definition and the lifetime of the context
+	/// value passed into subscribers, subscriptions and teardown callbacks.
+	///
 	/// Historical footage of me figuring out this pattern to enable a trait to be used as a stored function parameter, avoiding lifetime problems https://tenor.com/view/i-have-an-idea-croods-the-croods-grug-gif-16310881167093655388
-	type Item<'c>: 'c + SubscriptionContextAccess<SubscriptionContextProvider = Self>;
+	///
+	/// The only remaining vestige of this crate being bevy related is that
+	/// there are two lifetime parameters here instead of just one. If there
+	/// would only be one lifetime parameter here, bevy's `'world` and `'state`
+	/// lifetimes would merge into one and result downstream in a
+	/// `<'world: 'state, 'world: 'state>` lifetime requirement, which is
+	/// incompatible with systems.
+	type Item<'w, 's>: SubscriptionContextAccess<SubscriptionContextProvider = Self>;
 
 	/// Indicates if the context can be safely (or not) acquired during a drop
 	/// to perform a last minute unsubscription in case the subscription is not
@@ -54,7 +66,7 @@ pub trait SubscriptionContext {
 
 	type UnscheduledSubscriptionAllocator: UnscheduledSubscriptionAllocator<Context = Self>;
 
-	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c>;
+	fn create_context_to_unsubscribe_on_drop<'w, 's>() -> Self::Item<'w, 's>;
 }
 
 /// Used as a back reference to the provider

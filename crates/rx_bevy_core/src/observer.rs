@@ -10,9 +10,9 @@ pub trait ObserverInput {
 
 pub trait Observer: ObserverInput + WithSubscriptionContext {
 	/// TODO: Maybe rename all contextual functions to xy_with_context and add default implemented functions for a plain next where the context is just the default, but it should disallow overriding the default impl, so maybe on a sealed trait?
-	fn next(&mut self, next: Self::In, context: &mut <Self::Context as SubscriptionContext>::Item<'_>);
-	fn error(&mut self, error: Self::InError, context: &mut <Self::Context as SubscriptionContext>::Item<'_>);
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_>);
+	fn next(&mut self, next: Self::In, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
+	fn error(&mut self, error: Self::InError, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 }
 
 /// For usecases where the context is not used at all, some convenience

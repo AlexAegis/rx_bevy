@@ -29,14 +29,14 @@ where
 	fn next(
 		&mut self,
 		_next: Self::In,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 	}
 
 	fn error(
 		&mut self,
 		_error: Self::InError,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		#[cfg(feature = "panic_on_error")]
 		{
@@ -44,7 +44,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {}
+	fn complete(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {}
 }
 
 impl<In, InError, Context> Tickable for NoopObserver<In, InError, Context>
@@ -56,7 +56,7 @@ where
 	fn tick(
 		&mut self,
 		_tick: rx_bevy_core::Tick,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 	}
 }
@@ -82,7 +82,7 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_>) {
+	fn unsubscribe(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.closed = true;
 	}
 
@@ -90,7 +90,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		teardown.execute(context);
 	}
