@@ -1,11 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{
-	component::{Component, HookContext},
-	entity::Entity,
-	observer::Observer,
-	world::DeferredWorld,
-};
+use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_traits::{
 	ObservableSubscription, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
 	Teardown, Tick, Tickable, WithSubscriptionContext,
@@ -13,14 +8,14 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContextProvider, observable_subscription_notification_observer,
+	BevySubscriptionContextProvider, scheduled_subscription_add_notification_observer_on_insert,
 	subscription_unsubscribe_on_remove,
 };
 
 use super::{UnscheduledEntitySubscriptionHandle, WeakEntitySubscriptionHandle};
 
 #[derive(Component)]
-#[component(on_insert=observable_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
+#[component(on_insert=scheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
 pub struct ScheduledEntitySubscriptionHandle<Subscription>
 where
 	Subscription:
@@ -29,20 +24,6 @@ where
 	subscription_entity: Entity,
 	closed: bool,
 	_phantom_data: PhantomData<Subscription>,
-}
-
-pub(crate) fn observable_subscription_add_notification_observer_on_insert<Subscription>(
-	mut deferred_world: DeferredWorld,
-	hook_context: HookContext,
-) where
-	Subscription:
-		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	let mut commands = deferred_world.commands();
-	let mut entity_commands = commands.entity(hook_context.entity);
-	entity_commands.insert(Observer::new(
-		observable_subscription_notification_observer::<Subscription>,
-	));
 }
 
 impl<Subscription> ScheduledEntitySubscriptionHandle<Subscription>
@@ -94,6 +75,8 @@ where
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
+		// Tick must not be stopped even if it's closed, in case a
+		// downstream subscription is expecting it
 		context.send_subscription_notification(
 			self.subscription_entity,
 			SubscriptionNotification::Tick(tick),
@@ -111,11 +94,13 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.closed = true;
-		context.send_subscription_notification(
-			self.subscription_entity,
-			SubscriptionNotification::Unsubscribe,
-		);
+		if !self.is_closed() {
+			self.closed = true;
+			context.send_subscription_notification(
+				self.subscription_entity,
+				SubscriptionNotification::Unsubscribe,
+			);
+		}
 	}
 
 	fn add_teardown(
@@ -123,10 +108,14 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		context.send_subscription_notification(
-			self.subscription_entity,
-			SubscriptionNotification::Add(teardown),
-		);
+		if !self.is_closed() {
+			context.send_subscription_notification(
+				self.subscription_entity,
+				SubscriptionNotification::Add(teardown),
+			);
+		} else {
+			teardown.execute(context);
+		}
 	}
 }
 

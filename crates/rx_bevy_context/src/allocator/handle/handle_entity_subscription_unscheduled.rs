@@ -3,7 +3,6 @@ use bevy_ecs::{
 	entity::Entity,
 	error::BevyError,
 	observer::{Observer, Trigger},
-	system::StaticSystemParam,
 	world::DeferredWorld,
 };
 use rx_core_traits::{
@@ -12,7 +11,7 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider,
+	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriptionNotificationEvent, subscription_unsubscribe_on_remove,
 };
 
@@ -36,17 +35,16 @@ pub(crate) fn unscheduled_erased_subscription_add_notification_observer_on_inser
 	));
 }
 
-pub(crate) fn unscheduled_erased_subscription_notification_observer(
+fn unscheduled_erased_subscription_notification_observer(
 	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
-	mut context: StaticSystemParam<BevySubscriptionContext>,
+	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
 	let subscription_entity = subscription_notification.target();
-	let n = subscription_notification
-		.event_mut()
-		.take()
-		.expect("not to have been consumed");
+	let notification = subscription_notification.event_mut().consume();
 
-	context.send_subscription_notification(subscription_entity, n);
+	let mut context = context_param.into_context(subscription_entity);
+
+	context.send_subscription_notification(subscription_entity, notification);
 	Ok(())
 }
 
@@ -86,11 +84,13 @@ impl SubscriptionLike for UnscheduledEntitySubscriptionHandle {
 	}
 
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		self.closed = true;
-		context.send_subscription_notification(
-			self.subscription_entity,
-			SubscriptionNotification::Unsubscribe,
-		);
+		if !self.is_closed() {
+			self.closed = true;
+			context.send_subscription_notification(
+				self.subscription_entity,
+				SubscriptionNotification::Unsubscribe,
+			);
+		}
 	}
 
 	fn add_teardown(
@@ -98,10 +98,14 @@ impl SubscriptionLike for UnscheduledEntitySubscriptionHandle {
 		teardown: Teardown<Self::Context>,
 		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
-		context.send_subscription_notification(
-			self.subscription_entity,
-			SubscriptionNotification::Add(teardown),
-		);
+		if !self.is_closed() {
+			context.send_subscription_notification(
+				self.subscription_entity,
+				SubscriptionNotification::Add(teardown),
+			);
+		} else {
+			teardown.execute(context);
+		}
 	}
 }
 

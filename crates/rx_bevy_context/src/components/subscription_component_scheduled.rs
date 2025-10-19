@@ -4,7 +4,7 @@ use bevy_ecs::{
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::{Query, StaticSystemParam},
+	system::Query,
 	world::DeferredWorld,
 };
 use rx_core_traits::{
@@ -13,14 +13,14 @@ use rx_core_traits::{
 use short_type_name::short_type_name;
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider,
-	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
+	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
+	ConsumableSubscriptionNotificationEvent, SubscriptionIsClosed, SubscriptionNotificationEvent,
 	SubscriptionNotificationEventError,
 };
 
 #[derive(Component)]
-#[component(on_insert=observable_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
-#[require(Name::new(short_type_name::<Self>()))]
+#[component(on_insert=scheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
+#[require(SubscriptionIsClosed, Name::new(short_type_name::<Self>()))]
 pub struct ScheduledSubscriptionComponent<Subscription>
 where
 	Subscription:
@@ -30,7 +30,7 @@ where
 	subscription: Subscription,
 }
 
-pub(crate) fn observable_subscription_add_notification_observer_on_insert<Subscription>(
+pub(crate) fn scheduled_subscription_add_notification_observer_on_insert<Subscription>(
 	mut deferred_world: DeferredWorld,
 	hook_context: HookContext,
 ) where
@@ -40,14 +40,14 @@ pub(crate) fn observable_subscription_add_notification_observer_on_insert<Subscr
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
 	entity_commands.insert(Observer::new(
-		observable_subscription_notification_observer::<Subscription>,
+		scheduled_subscription_notification_observer::<Subscription>,
 	));
 }
 
-pub(crate) fn observable_subscription_notification_observer<Subscription>(
+pub(crate) fn scheduled_subscription_notification_observer<Subscription>(
 	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
 	mut subscription_query: Query<&mut ScheduledSubscriptionComponent<Subscription>>,
-	mut context: StaticSystemParam<BevySubscriptionContext>,
+	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError>
 where
 	Subscription:
@@ -62,10 +62,9 @@ where
 		.into());
 	};
 
-	let event = subscription_notification
-		.event_mut()
-		.take()
-		.expect("notification was already consumed!");
+	let mut context = context_param.into_context(subscription_entity);
+
+	let event = subscription_notification.event_mut().consume();
 
 	let subscription = &mut subscription_component.subscription;
 	match event {
@@ -115,6 +114,7 @@ where
 	Subscription:
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
+	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
 		self.subscription.tick(tick, context);
 	}
@@ -125,6 +125,7 @@ where
 	Subscription:
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.subscription.is_closed()
 	}
@@ -138,6 +139,7 @@ where
 			.try_despawn();
 	}
 
+	#[inline]
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

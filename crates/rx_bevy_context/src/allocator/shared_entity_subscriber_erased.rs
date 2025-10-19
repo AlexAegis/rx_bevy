@@ -2,12 +2,11 @@ use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, Subscriber, SubscriberNotification, SubscriptionLike,
-	Teardown, Tick, Tickable, WithSubscriptionContext,
-	allocator::{ErasedSharedDestination, SharedDestination},
+	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionLike, Teardown, Tick,
+	Tickable, WithSubscriptionContext, allocator::ErasedSharedDestination,
 };
 
-use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, SubscriberComponent};
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 
 /// This subscriber acts like the ArcSubscriber does. It does not contain
 /// anything but a destination where observed signals are just simply forwarded
@@ -56,55 +55,6 @@ where
 	}
 }
 
-impl<In, InError, Destination> SharedDestination<Destination>
-	for SharedErasedEntitySubscriber<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: 'static + Subscriber<In = In, InError = InError, Context = Self::Context>,
-{
-	fn clone_with_context(&self, _context: &mut BevySubscriptionContext<'_, '_>) -> Self {
-		Self {
-			closed: self.closed,
-			destination_entity: self.destination_entity,
-			_phantom_data: PhantomData,
-		}
-	}
-
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut BevySubscriptionContext<'_, '_>)
-	where
-		F: Fn(&Destination, &mut BevySubscriptionContext<'_, '_>),
-	{
-		let stolen_destination = context
-			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
-			.steal_destination();
-
-		accessor(&stolen_destination, context);
-
-		context
-			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
-			.return_stolen_destination(stolen_destination);
-	}
-
-	fn access_with_context_mut<F>(
-		&mut self,
-		mut accessor: F,
-		context: &mut BevySubscriptionContext<'_, '_>,
-	) where
-		F: FnMut(&mut Destination, &mut BevySubscriptionContext<'_, '_>),
-	{
-		let mut stolen_destination = context
-			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
-			.steal_destination();
-
-		accessor(&mut stolen_destination, context);
-
-		context
-			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
-			.return_stolen_destination(stolen_destination);
-	}
-}
-
 impl<In, InError> ErasedSharedDestination for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
@@ -135,7 +85,7 @@ where
 	InError: SignalBound,
 {
 	fn next(&mut self, next: Self::In, context: &mut BevySubscriptionContext<'_, '_>) {
-		if !self.closed {
+		if !self.is_closed() {
 			context.send_subscriber_notification(
 				self.destination_entity,
 				SubscriberNotification::<Self::In, Self::InError, Self::Context>::Next(next),
@@ -144,7 +94,7 @@ where
 	}
 
 	fn error(&mut self, error: Self::InError, context: &mut BevySubscriptionContext<'_, '_>) {
-		if !self.closed {
+		if !self.is_closed() {
 			context.send_subscriber_notification(
 				self.destination_entity,
 				SubscriberNotification::<Self::In, Self::InError, Self::Context>::Error(error),
@@ -153,7 +103,7 @@ where
 	}
 
 	fn complete(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		if !self.closed {
+		if !self.is_closed() {
 			context.send_subscriber_notification(
 				self.destination_entity,
 				SubscriberNotification::<Self::In, Self::InError, Self::Context>::Complete,
@@ -169,6 +119,8 @@ where
 	InError: SignalBound,
 {
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+		// Tick must not be stopped even if it's closed, in case a
+		// downstream subscription is expecting it
 		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<In, InError, Self::Context>::Tick(tick),
@@ -187,11 +139,13 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		self.closed = true;
-		context.send_subscriber_notification(
-			self.destination_entity,
-			SubscriberNotification::<In, InError, Self::Context>::Unsubscribe,
-		);
+		if !self.is_closed() {
+			self.closed = true;
+			context.send_subscriber_notification(
+				self.destination_entity,
+				SubscriberNotification::<In, InError, Self::Context>::Unsubscribe,
+			);
+		}
 	}
 
 	fn add_teardown(

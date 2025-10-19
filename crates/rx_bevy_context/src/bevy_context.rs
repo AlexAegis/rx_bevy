@@ -40,10 +40,41 @@ Please submit an issue at https://github.com/AlexAegis/rx_bevy/issues/new?templa
 	}
 }
 
-// TODO: Maybe this could store some more data like the current entity?
+/// Use this to acquire the context using the `into_context` fn which extends
+/// this system param with additional data. Since a context can be unique for
+/// each pushed signal could have it's own "unique" context.
+///
+/// Currently this is only used for "cosmetic" reasons and isn't actually
+/// required for correct operation. But by passing in an Entity too, we can
+/// place internally spawned entities relative to another one. The subscriber
+/// component on these internally spawned entities are capable of despawning
+/// themselves so that's also not a reason to have this. It's purely cosmetic.
 #[derive(SystemParam)]
+pub struct BevySubscriptionContextParam<'w, 's> {
+	pub deferred_world: DeferredWorld<'w>,
+	_phantom_data: PhantomData<&'s ()>,
+}
+
+impl<'w, 's> BevySubscriptionContextParam<'w, 's> {
+	pub fn reborrow(&mut self) -> BevySubscriptionContextParam<'_, '_> {
+		BevySubscriptionContextParam {
+			deferred_world: self.deferred_world.reborrow(),
+			_phantom_data: PhantomData,
+		}
+	}
+
+	pub fn into_context(self, subscription_entity: Entity) -> BevySubscriptionContext<'w, 's> {
+		BevySubscriptionContext {
+			deferred_world: self.deferred_world,
+			subscription_entity,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
 pub struct BevySubscriptionContext<'w, 's> {
 	pub deferred_world: DeferredWorld<'w>,
+	subscription_entity: Entity,
 	_phantom_data: PhantomData<&'s ()>,
 }
 
@@ -51,8 +82,13 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn reborrow(&mut self) -> BevySubscriptionContext<'_, '_> {
 		BevySubscriptionContext {
 			deferred_world: self.deferred_world.reborrow(),
+			subscription_entity: self.subscription_entity,
 			_phantom_data: PhantomData,
 		}
+	}
+
+	pub fn get_subscription_entity(&self) -> Entity {
+		self.subscription_entity
 	}
 
 	pub fn get_expected_component<C>(&mut self, destination_entity: Entity) -> &C
@@ -85,9 +121,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 
 		subscriber_component
 	}
-}
 
-impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn send_subscriber_notification<In, InError>(
 		&mut self,
 		target: Entity,

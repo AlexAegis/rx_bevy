@@ -4,21 +4,21 @@ use bevy_ecs::{
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::{Query, StaticSystemParam},
+	system::Query,
 	world::DeferredWorld,
 };
 use rx_core_traits::{SubscriptionLike, Teardown, WithSubscriptionContext};
 use short_type_name::short_type_name;
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider,
-	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
+	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
+	ConsumableSubscriptionNotificationEvent, SubscriptionIsClosed, SubscriptionNotificationEvent,
 	SubscriptionNotificationEventError, subscription_unsubscribe_on_remove,
 };
 
 #[derive(Component)]
 #[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
-#[require(Name::new(short_type_name::<Subscription>()))]
+#[require(SubscriptionIsClosed, Name::new(short_type_name::<Subscription>()))]
 pub struct UnscheduledSubscriptionComponent<Subscription>
 where
 	Subscription:
@@ -45,7 +45,7 @@ fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
 fn unscheduled_subscription_notification_observer<Subscription>(
 	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
 	mut subscription_query: Query<&mut UnscheduledSubscriptionComponent<Subscription>>,
-	mut context: StaticSystemParam<BevySubscriptionContext>,
+	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError>
 where
 	Subscription:
@@ -60,10 +60,9 @@ where
 		.into());
 	};
 
-	let event = subscription_notification
-		.event_mut()
-		.take()
-		.expect("notification was already consumed!");
+	let mut context = context_param.into_context(subscription_entity);
+
+	let event = subscription_notification.event_mut().consume();
 
 	match event {
 		SubscriptionNotificationEvent::Unsubscribe => {
@@ -104,6 +103,7 @@ where
 	Subscription:
 		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.subscription.is_closed()
 	}
@@ -119,6 +119,7 @@ where
 		}
 	}
 
+	#[inline]
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

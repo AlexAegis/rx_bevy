@@ -4,7 +4,7 @@ use bevy_ecs::{
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::{Query, StaticSystemParam},
+	system::Query,
 	world::DeferredWorld,
 };
 use rx_core_traits::{
@@ -14,19 +14,22 @@ use rx_core_traits::{
 use short_type_name::short_type_name;
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider,
+	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriberNotificationEvent, SubscriberNotificationEvent,
-	SubscriberNotificationEventError, SubscriptionNotificationEvent,
+	SubscriberNotificationEventError, SubscriptionIsClosed, SubscriptionNotificationEvent,
 };
 
 #[derive(Component)]
 #[component(on_insert=subscriber_on_insert::<Destination>, on_remove=subscriber_on_remove::<Destination>)]
-#[require(Name::new(format!("Subscriber ({})", short_type_name::<Destination>())))]
+#[require(SubscriptionIsClosed, Name::new(format!("Subscriber ({})", short_type_name::<Destination>())))]
 pub struct SubscriberComponent<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	this_entity: Entity,
+	/// This isn't actually optional, it is just to let SharedDestination steal
+	/// it for a moment and then put it back. And even that only happens with
+	/// the RcSubscriber.
 	pub(crate) destination: Option<Destination>,
 }
 
@@ -86,12 +89,12 @@ where
 	}
 }
 
-fn subscriber_notification_observer<Destination>(
+fn subscriber_notification_observer<'w, 's, Destination>(
 	mut subscriber_notification: Trigger<
 		ConsumableSubscriberNotificationEvent<Destination::In, Destination::InError>,
 	>,
 	mut subscriber_query: Query<&mut SubscriberComponent<Destination>>,
-	mut context: StaticSystemParam<BevySubscriptionContext>,
+	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
@@ -104,6 +107,8 @@ where
 		)
 		.into());
 	};
+
+	let mut context = context_param.into_context(subscriber_entity);
 
 	let event = subscriber_notification
 		.event_mut()
@@ -173,7 +178,10 @@ impl<Destination> Tickable for SubscriberComponent<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
+	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+		// Tick must not be stopped even if it's closed, in case a
+		// downstream subscription is expecting it
 		self.get_destination_mut().tick(tick, context);
 	}
 }
@@ -182,14 +190,17 @@ impl<Destination> RxObserver for SubscriberComponent<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
+	#[inline]
 	fn next(&mut self, next: Self::In, context: &mut BevySubscriptionContext<'_, '_>) {
 		self.get_destination_mut().next(next, context);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError, context: &mut BevySubscriptionContext<'_, '_>) {
 		self.get_destination_mut().error(error, context);
 	}
 
+	#[inline]
 	fn complete(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		self.get_destination_mut().complete(context);
 	}
@@ -199,6 +210,7 @@ impl<Destination> SubscriptionLike for SubscriberComponent<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.get_destination().is_closed()
 	}

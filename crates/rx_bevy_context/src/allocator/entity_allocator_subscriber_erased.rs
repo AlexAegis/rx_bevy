@@ -1,3 +1,4 @@
+use bevy_ecs::hierarchy::ChildOf;
 use rx_core_traits::{
 	SignalBound, Subscriber, WithSubscriptionContext, allocator::ErasedDestinationAllocator,
 };
@@ -24,12 +25,16 @@ impl ErasedDestinationAllocator for ErasedSubscriberEntityAllocator {
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync,
 	{
+		let subscription_entity = context.get_subscription_entity();
 		let subscriber_entity = context.deferred_world.commands().spawn_empty().id();
 		context
 			.deferred_world
 			.commands()
 			.entity(subscriber_entity)
-			.insert(SubscriberComponent::new(destination, subscriber_entity));
+			.insert((
+				ChildOf(subscription_entity),
+				SubscriberComponent::new(destination, subscriber_entity),
+			));
 
 		SharedErasedEntitySubscriber::new(subscriber_entity)
 	}

@@ -14,8 +14,8 @@ use short_type_name::short_type_name;
 use thiserror::Error;
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider, ObservableSubscriptions,
-	ScheduledSubscriptionComponent, SharedErasedEntitySubscriber, Subscribe, SubscribeObserverOf,
+	BevySubscriptionContextParam, BevySubscriptionContextProvider, EntityObserver,
+	ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
 	SubscribeObserverRef, SubscriptionOf,
 };
 
@@ -42,7 +42,7 @@ pub fn subscribe_event_observer<'w, 's, O>(
 	on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut commands: Commands,
 	mut observable_query: Query<&mut ObservableComponent<O>>,
-	mut context: BevySubscriptionContext<'w, 's>,
+	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
@@ -57,8 +57,10 @@ where
 		.into());
 	};
 
+	let mut context = context_param.into_context(event.subscription_entity);
+
 	let subscription = observable.observable.subscribe(
-		SharedErasedEntitySubscriber::<O::Out, O::OutError>::new(event.destination_entity),
+		EntityObserver::<O::Out, O::OutError>::new(event.destination_entity),
 		&mut context,
 	);
 

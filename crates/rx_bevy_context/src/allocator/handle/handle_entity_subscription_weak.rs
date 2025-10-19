@@ -52,11 +52,13 @@ impl SubscriptionLike for WeakEntitySubscriptionHandle {
 	}
 
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		self.closed = true;
-		context.send_subscription_notification(
-			self.subscription_entity,
-			SubscriptionNotification::Unsubscribe,
-		);
+		if !self.is_closed() {
+			self.closed = true;
+			context.send_subscription_notification(
+				self.subscription_entity,
+				SubscriptionNotification::Unsubscribe,
+			);
+		}
 	}
 
 	fn add_teardown(
@@ -64,10 +66,14 @@ impl SubscriptionLike for WeakEntitySubscriptionHandle {
 		teardown: Teardown<Self::Context>,
 		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
-		context.send_subscription_notification(
-			self.subscription_entity,
-			SubscriptionNotification::Add(teardown),
-		);
+		if !self.is_closed() {
+			context.send_subscription_notification(
+				self.subscription_entity,
+				SubscriptionNotification::Add(teardown),
+			);
+		} else {
+			teardown.execute(context);
+		}
 	}
 }
 

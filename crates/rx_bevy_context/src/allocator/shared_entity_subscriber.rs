@@ -162,6 +162,8 @@ where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+		// Tick must not be stopped even if it's closed, in case a
+		// downstream subscription is expecting it
 		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Tick(
