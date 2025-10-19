@@ -40,19 +40,19 @@ where
 	type ScheduledHandle<Subscription>
 		= ScheduledHeapSubscriptionHandle<Subscription>
 	where
-		Subscription: ObservableSubscription<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + ObservableSubscription<Context = Self::Context> + Send + Sync;
 
 	type UnscheduledHandle<Subscription>
 		= UnscheduledHeapSubscriptionHandle<Subscription>
 	where
-		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
 
-	fn allocate_scheduled_subscription<Subscription>(
+	fn allocate_scheduled_subscription<Subscription, Schedule>(
 		subscription: Subscription,
 		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::ScheduledHandle<Subscription>
 	where
-		Subscription: ObservableSubscription<Context = Self::Context> + Send + Sync,
+		Subscription: 'static + ObservableSubscription<Context = Self::Context> + Send + Sync,
 	{
 		ScheduledHeapSubscriptionHandle::new(subscription)
 	}

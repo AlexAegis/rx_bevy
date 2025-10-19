@@ -13,11 +13,11 @@ use super::handle::UnscheduledEntitySubscriptionHandle;
 pub struct UnscheduledEntitySubscriptionAllocator;
 
 impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator {
-	type UnscheduledHandle<S>
-		= UnscheduledEntitySubscriptionHandle<S>
+	type UnscheduledHandle<Subscription>
+		= UnscheduledEntitySubscriptionHandle<Subscription>
 	// TODO: Use a component
 	where
-		S: SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
 
 	fn allocate_unscheduled_subscription<S>(
 		subscription: S,

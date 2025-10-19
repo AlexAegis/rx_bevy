@@ -15,8 +15,8 @@ use thiserror::Error;
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextProvider, ErasedEntitySubscriber,
-	ObservableSubscriptions, Subscribe, SubscribeObserverOf, SubscribeObserverRef,
-	SubscriptionComponent, SubscriptionOf,
+	ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
+	SubscribeObserverRef, SubscriptionOf,
 };
 
 #[derive(Component)]
@@ -67,7 +67,7 @@ where
 	// It also already contains the [SubscriptionSchedule] component.
 	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
 	subscription_entity_commands.insert((
-		SubscriptionComponent::<O>::new(subscription),
+		ScheduledSubscriptionComponent::<O::Subscription>::new(subscription),
 		SubscriptionOf::<O>::new(event.observable_entity),
 	));
 

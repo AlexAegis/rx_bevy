@@ -1,5 +1,7 @@
+use std::any::TypeId;
 use std::marker::PhantomData;
 
+use bevy_ecs::component::{Component, ComponentId};
 use bevy_ecs::entity::Entity;
 use rx_core_traits::context::SubscriptionContext;
 use rx_core_traits::{
@@ -13,6 +15,7 @@ use rx_core_traits::{
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, SubscriberComponent};
 
+#[derive(Component)]
 pub struct ErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
@@ -20,10 +23,7 @@ where
 {
 	/// Entity where observed signals are sent to
 	destination_entity: Entity,
-
-	// TODO: Determine from the context using a querylens
 	closed: bool,
-
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -119,16 +119,11 @@ where
 {
 	type Access = ErasedEntitySubscriber<In, InError>;
 
-	fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&Self::Access),
-	{
-	}
-
-	fn access_mut<F>(&mut self, accessor: F)
-	where
-		F: FnMut(&mut Self::Access),
-	{
+	fn clone_with_context(
+		&self,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self {
+		self.clone()
 	}
 
 	fn access_with_context<F>(
@@ -138,6 +133,16 @@ where
 	) where
 		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
+		todo!("implement me!");
+		//let stolen_destination = context
+		//	.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+		//	.steal_destination();
+		//
+		//accessor(&stolen_destination, context);
+		//
+		//context
+		//	.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
+		//	.return_stolen_destination(stolen_destination);
 	}
 
 	fn access_with_context_mut<F>(
@@ -147,6 +152,7 @@ where
 	) where
 		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
 	{
+		todo!("implement me!");
 	}
 }
 

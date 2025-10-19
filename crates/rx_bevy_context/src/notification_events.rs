@@ -105,6 +105,29 @@ where
 }
 
 #[derive(Event, Clone, Debug)]
+pub(crate) struct ConsumableSubscriptionNotificationEvent {
+	notification: Option<SubscriptionNotificationEvent>,
+}
+
+impl ConsumableSubscriptionNotificationEvent {
+	pub fn take(&mut self) -> Option<SubscriptionNotificationEvent> {
+		self.notification.take()
+	}
+}
+
+impl From<SubscriptionNotification<BevySubscriptionContextProvider>>
+	for ConsumableSubscriptionNotificationEvent
+{
+	fn from(value: SubscriptionNotification<BevySubscriptionContextProvider>) -> Self {
+		let notification_event: SubscriptionNotificationEvent = value.into();
+
+		ConsumableSubscriptionNotificationEvent {
+			notification: Some(notification_event),
+		}
+	}
+}
+
+#[derive(Event, Clone, Debug)]
 pub enum SubscriptionNotificationEvent {
 	Tick(Tick),
 	Unsubscribe,

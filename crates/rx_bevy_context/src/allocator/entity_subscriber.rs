@@ -15,6 +15,7 @@ where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	destination_entity: Entity,
+	closed: bool,
 	_phantom_data: PhantomData<Destination>,
 }
 
@@ -25,11 +26,11 @@ where
 	pub fn new(destination_entity: Entity) -> Self {
 		Self {
 			destination_entity,
+			closed: false,
 			_phantom_data: PhantomData,
 		}
 	}
 
-	// TODO: There's a trait for an entity getter, impl that
 	#[inline]
 	pub fn get_destination_entity(&self) -> Entity {
 		self.destination_entity
@@ -43,6 +44,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			destination_entity: self.destination_entity.clone(),
+			closed: self.closed,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -58,6 +60,7 @@ where
 	) -> Self {
 		Self {
 			destination_entity: self.destination_entity,
+			closed: self.closed,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -188,11 +191,11 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		// TODO: query from destination
-		todo!("impl")
+		self.closed
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+		self.closed = true;
 		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Unsubscribe,

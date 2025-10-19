@@ -9,7 +9,7 @@ use crate::{
 /// A [SubscriptionScheduler] holds ScheduledHandles (the only unique reference
 /// to a subscription that can be ticked) and ticks them.
 pub trait SubscriptionScheduler: Tickable {
-	fn schedule<Subscription>(
+	fn schedule<Subscription, Schedule>(
 		&mut self,
 		subscription: <<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::ScheduledHandle<Subscription>,
 	) where
@@ -17,7 +17,7 @@ pub trait SubscriptionScheduler: Tickable {
 }
 
 pub trait ScheduleOnSubscribe<Scheduler>: Observable {
-	fn subscribe_on<Destination>(
+	fn subscribe_on<Destination, Schedule>(
 		&mut self,
 		destination: Destination,
 		scheduler: &mut Scheduler,
@@ -36,7 +36,7 @@ where
 	O::Subscription: Send + Sync,
 	Scheduler: SubscriptionScheduler<Context = Self::Context>,
 {
-	fn subscribe_on<Destination>(
+	fn subscribe_on<Destination, Schedule>(
 		&mut self,
 		destination: Destination,
 		scheduler: &mut Scheduler,
@@ -46,12 +46,12 @@ where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
-			+ Sync,
+			+ Sync
 	{
 		let subscription = self.subscribe(destination, context);
-		let scheduled_handle = subscription.into_scheduled_handle(context);
+		let scheduled_handle = subscription.into_scheduled_handle::<Schedule>(context);
 		let unscheduled_handle = scheduled_handle.clone();
-		scheduler.schedule(scheduled_handle);
+		scheduler.schedule::<_, Schedule>(scheduled_handle);
 		unscheduled_handle
 	}
 }

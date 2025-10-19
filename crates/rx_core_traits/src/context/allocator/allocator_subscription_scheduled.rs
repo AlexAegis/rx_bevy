@@ -19,7 +19,7 @@ pub trait ScheduledSubscriptionAllocator: WithSubscriptionContext {
 			UnscheduledHandle = Self::UnscheduledHandle<Subscription>,
 		>
 	where
-		Subscription: ObservableSubscription<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + ObservableSubscription<Context = Self::Context> + Send + Sync;
 
 	/// ScheduledHandles can be turned into UnscheduledHandles. This type here
 	/// allows the [SubscriptionContext][crate::SubscriptionContext] to ensure
@@ -30,12 +30,12 @@ pub trait ScheduledSubscriptionAllocator: WithSubscriptionContext {
 	/// [SubscriptionContext][crate::SubscriptionContext].
 	type UnscheduledHandle<Subscription>: UnscheduledSubscriptionHandle<Context = Self::Context>
 	where
-		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
 
-	fn allocate_scheduled_subscription<Subscription>(
+	fn allocate_scheduled_subscription<Subscription, Schedule>(
 		subscription: Subscription,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::ScheduledHandle<Subscription>
 	where
-		Subscription: ObservableSubscription<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + ObservableSubscription<Context = Self::Context> + Send + Sync;
 }

@@ -14,7 +14,7 @@ use crate::{
 pub trait UnscheduledSubscriptionAllocator: WithSubscriptionContext {
 	type UnscheduledHandle<Subscription>: UnscheduledSubscriptionHandle<Context = Self::Context>
 	where
-		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
 
 	fn allocate_unscheduled_subscription<Subscription>(
 		subscription: Subscription,

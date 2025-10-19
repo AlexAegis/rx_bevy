@@ -40,14 +40,14 @@ where
 	type UnscheduledHandle<Subscription>
 		= UnscheduledHeapSubscriptionHandle<Subscription>
 	where
-		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
 
 	fn allocate_unscheduled_subscription<Subscription>(
 		subscription: Subscription,
 		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::UnscheduledHandle<Subscription>
 	where
-		Subscription: SubscriptionLike<Context = Self::Context> + Send + Sync,
+		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync,
 	{
 		UnscheduledHeapSubscriptionHandle::new(subscription)
 	}

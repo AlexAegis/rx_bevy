@@ -26,22 +26,11 @@ where
 {
 	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
 
-	fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&Self::Access),
-	{
-		if let Ok(destination) = self.destination.read() {
-			accessor(&*destination)
-		}
-	}
-
-	fn access_mut<F>(&mut self, mut accessor: F)
-	where
-		F: FnMut(&mut Self::Access),
-	{
-		if let Ok(mut destination) = self.destination.write() {
-			accessor(&mut *destination)
-		}
+	fn clone_with_context(
+		&self,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self {
+		self.clone()
 	}
 
 	fn access_with_context<F>(

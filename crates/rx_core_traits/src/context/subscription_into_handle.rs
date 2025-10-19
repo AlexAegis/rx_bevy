@@ -7,15 +7,15 @@ use crate::{
 };
 
 pub trait SubscriptionIntoScheduledHandle: ObservableSubscription + Sized + Send + Sync {
-	fn into_scheduled_handle(self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) -> <<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::ScheduledHandle<Self>;
+	fn into_scheduled_handle<Schedule>(self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) -> <<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::ScheduledHandle<Self> ;
 }
 
 impl<S> SubscriptionIntoScheduledHandle for S
 where
 	S: ObservableSubscription + Sized + Send + Sync,
 {
-	fn into_scheduled_handle(self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) -> <<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::ScheduledHandle<Self>{
-		<<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::allocate_scheduled_subscription(self, context)
+	fn into_scheduled_handle<Schedule>(self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) -> <<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::ScheduledHandle<Self>{
+		<<Self::Context as SubscriptionContext>::ScheduledSubscriptionAllocator as ScheduledSubscriptionAllocator>::allocate_scheduled_subscription::<S, Schedule>(self, context)
 	}
 }
 

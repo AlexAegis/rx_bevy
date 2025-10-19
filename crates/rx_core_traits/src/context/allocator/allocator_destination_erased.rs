@@ -29,24 +29,27 @@ pub trait ErasedDestinationAllocator: WithSubscriptionContext {
 /// destination it wraps. In the case of an `Arc<RwLock<Destination>>` calling
 /// the `access_mut` method will attempt to write lock the destination for the
 /// duration of the call.
-pub trait ErasedSharedDestination: Subscriber + Clone + Send + Sync {
+pub trait ErasedSharedDestination: Subscriber + Send + Sync {
 	type Access: ?Sized
 		+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 
-	fn access<F>(&mut self, accessor: F)
-	where
-		F: Fn(&Self::Access);
+	fn clone_with_context(
+		&self,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) -> Self;
 
-	fn access_mut<F>(&mut self, accessor: F)
-	where
-		F: FnMut(&mut Self::Access);
-
-	fn access_with_context<F>(&mut self, accessor: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
-	where
+	fn access_with_context<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) where
 		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 
-	fn access_with_context_mut<F>(&mut self, accessor: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
-	where
+	fn access_with_context_mut<F>(
+		&mut self,
+		accessor: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) where
 		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
 }
 

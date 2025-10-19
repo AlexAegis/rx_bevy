@@ -1,22 +1,22 @@
-use std::marker::PhantomData;
+use std::{any::Any, marker::PhantomData};
 
 use bevy_ecs::{
-	component::{Component, Mutable},
+	component::{Component, ComponentId, Mutable},
 	entity::Entity,
 	system::SystemParam,
 	world::{DeferredWorld, Mut},
 };
 use rx_core_traits::{
-	SignalBound, SubscriberNotification, SubscriptionNotification,
+	SignalBound, Subscriber, SubscriberNotification, SubscriptionNotification,
 	context::{DropUnsafeSubscriptionContext, SubscriptionContext},
 	prelude::SubscriptionContextAccess,
 };
 use short_type_name::short_type_name;
 
 use crate::{
-	ConsumableSubscriberNotificationEvent, ErasedSubscriberEntityAllocator,
-	ScheduledEntitySubscriptionAllocator, SubscriberEntityAllocator, SubscriptionNotificationEvent,
-	UnscheduledEntitySubscriptionAllocator,
+	ConsumableSubscriberNotificationEvent, ConsumableSubscriptionNotificationEvent,
+	ErasedSubscriberEntityAllocator, ScheduledEntitySubscriptionAllocator,
+	SubscriberEntityAllocator, UnscheduledEntitySubscriptionAllocator,
 };
 
 pub struct BevySubscriptionContextProvider;
@@ -86,6 +86,39 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 
 		subscriber_component
 	}
+
+	pub fn get_expected_subscriber_erased<In, InError>(
+		&mut self,
+		destination_entity: Entity,
+		component_id: ComponentId,
+	) -> &Box<dyn Subscriber<In = In, InError = InError, Context = BevySubscriptionContextProvider>>
+	where
+		In: SignalBound,
+		InError: SignalBound,
+	{
+		let Some(subscriber_component_ptr) = self
+			.deferred_world
+			.get_by_id(destination_entity, component_id)
+		else {
+			panic!(
+				"{} is missing an expected component: {:?}!",
+				destination_entity, component_id,
+			);
+		};
+
+		// SAFETY: idk lol // TODO
+		let subscriber_component = unsafe {
+			subscriber_component_ptr.deref::<Box<
+				dyn Subscriber<
+						In = In,
+						InError = InError,
+						Context = BevySubscriptionContextProvider,
+					>,
+			>>()
+		};
+
+		subscriber_component
+	}
 }
 
 impl<'w, 's> BevySubscriptionContext<'w, 's> {
@@ -109,7 +142,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		target: Entity,
 		notification: SubscriptionNotification<BevySubscriptionContextProvider>,
 	) {
-		let notification_event: SubscriptionNotificationEvent = notification.into();
+		let notification_event: ConsumableSubscriptionNotificationEvent = notification.into();
 		self.deferred_world
 			.commands()
 			.trigger_targets(notification_event, target);

@@ -15,6 +15,7 @@ use crate::{
 	SubscriberNotificationEventError, SubscriptionNotificationEvent,
 };
 
+// TODO: Maybe delete in facor of entity_subscriber. Or amybe not?
 #[derive(Component)]
 #[component(on_insert=subscriber_on_insert::<Destination>, on_remove=subscriber_on_remove::<Destination>)]
 #[require(Name::new(format!("Subscriber ({})", short_type_name::<Destination>())))]
@@ -29,7 +30,7 @@ impl<Destination> SubscriberComponent<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	pub(crate) fn new(subscriber: Destination) -> Self {
+	pub fn new(subscriber: Destination) -> Self {
 		Self {
 			destination: Some(subscriber),
 		}
@@ -99,10 +100,10 @@ where
 		SubscriberNotificationEvent::Add(Some(teardown)) => {
 			destination.add_teardown(teardown, &mut context);
 		}
+		SubscriberNotificationEvent::Add(None) => {}
 		SubscriberNotificationEvent::Unsubscribe => {
 			destination.unsubscribe(&mut context);
 		}
-		_ => {}
 	}
 
 	Ok(())
