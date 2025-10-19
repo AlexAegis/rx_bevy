@@ -4,18 +4,22 @@ mod filter_subscriber;
 pub use filter_operator::*;
 pub use filter_subscriber::*;
 
+pub mod operator {
+	pub use super::filter_operator::*;
+}
+
 #[cfg(feature = "compose")]
-pub mod filter_extension_compose;
+mod filter_extension_compose;
+
+#[cfg(feature = "compose")]
+pub mod extension_composite {
+	pub use super::filter_extension_compose::*;
+}
 
 #[cfg(feature = "pipe")]
-pub mod filter_extension_pipe;
+mod filter_extension_pipe;
 
-pub mod prelude {
-	pub use super::filter_operator::*;
-
-	#[cfg(feature = "compose")]
-	pub use super::filter_extension_compose::*;
-
-	#[cfg(feature = "pipe")]
+#[cfg(feature = "pipe")]
+pub mod extension_pipe {
 	pub use super::filter_extension_pipe::*;
 }

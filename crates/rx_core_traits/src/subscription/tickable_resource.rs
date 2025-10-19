@@ -1,6 +1,6 @@
 use crate::{
 	ObservableSubscription, SubscriptionLike, SubscriptionNotification,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 /// A teardown is a closure which owns resources, by the nature of them being
@@ -34,7 +34,10 @@ where
 {
 	pub fn new<F>(f: F) -> Self
 	where
-		F: 'static + FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>) + Send + Sync,
+		F: 'static
+			+ FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>)
+			+ Send
+			+ Sync,
 	{
 		Self {
 			notify_fn: Some(Box::new(f)),
@@ -42,7 +45,9 @@ where
 	}
 
 	pub fn new_from_box(
-		f: Box<dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>) + Send + Sync>,
+		f: Box<
+			dyn FnMut(SubscriptionNotification<Context>, &mut Context::Item<'_, '_>) + Send + Sync,
+		>,
 	) -> Self {
 		Self { notify_fn: Some(f) }
 	}
@@ -134,7 +139,8 @@ where
 				None
 			} else {
 				let closure =
-					move |action, context: &mut <S::Context as SubscriptionContext>::Item<'_, '_>| {
+					move |action,
+					      context: &mut <S::Context as SubscriptionContext>::Item<'_, '_>| {
 						match action {
 							SubscriptionNotification::Tick(tick) => {
 								subscription.tick(tick, context);

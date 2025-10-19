@@ -1,9 +1,7 @@
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	context::{
-		SubscriptionContext, WithSubscriptionContext, allocator::ErasedDestinationAllocator,
-	},
+	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
+	WithSubscriptionContext, allocator::ErasedDestinationAllocator,
 };
 use smallvec::SmallVec;
 
@@ -74,7 +72,11 @@ where
 	}
 
 	#[inline]
-	pub fn add_teardown(&mut self, teardown: Teardown<Context>, context: &mut Context::Item<'_, '_>) {
+	pub fn add_teardown(
+		&mut self,
+		teardown: Teardown<Context>,
+		context: &mut Context::Item<'_, '_>,
+	) {
 		if let Some(teardowns) = &mut self.teardown {
 			teardowns.add_teardown(teardown, context);
 		} else {
@@ -148,7 +150,11 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		for destination in self.subscribers.iter_mut() {
 			destination.tick(tick.clone(), context);
 		}

@@ -2,10 +2,10 @@ use std::marker::PhantomData;
 
 use rx_core_traits::{
 	Observable, ObservableOutput, SignalBound, Subscriber,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
-use crate::{OnTickIteratorSubscription, OnTickObservableOptions};
+use crate::{OnTickIteratorSubscription, observable::OnTickObservableOptions};
 
 /// Emits an iterators values one at a time at every nth tick, regardless how
 /// long each tick was. Mostly meant for debugging purposes, or just to observe

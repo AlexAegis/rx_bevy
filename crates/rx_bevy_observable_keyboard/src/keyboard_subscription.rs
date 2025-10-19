@@ -2,7 +2,7 @@ use bevy_input::{ButtonInput, keyboard::KeyCode};
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
 	Subscriber, SubscriptionLike, Tick, Tickable,
-	prelude::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 pub struct KeyboardSubscription<Destination>

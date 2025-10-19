@@ -1,5 +1,4 @@
 use rx_core::prelude::*;
-use rx_core_operator_lift_option::prelude::ObservableExtensionLiftOption;
 
 /// The [LiftOptionOperator] is used to unpack an incoming Option<T> into T if it's Some(T)
 /// When the incoming option is None, the downstream won't be notified.

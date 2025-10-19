@@ -1,5 +1,4 @@
 use rx_core::prelude::*;
-use rx_core_operator_switch_map::switch_map_extension_pipe::ObservableExtensionSwitchMap;
 
 fn main() {
 	let mut context = ();

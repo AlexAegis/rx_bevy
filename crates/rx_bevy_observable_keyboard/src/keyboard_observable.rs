@@ -2,7 +2,7 @@ use bevy_input::keyboard::KeyCode;
 use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::{
 	Observable, ObservableOutput, Subscriber, SubscriptionData,
-	prelude::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 use crate::KeyboardSubscription;

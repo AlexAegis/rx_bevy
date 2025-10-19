@@ -5,7 +5,4 @@ mod rw_lock_guard;
 mod shared_subscriber;
 
 pub use erased_subscriber::*;
-
 pub use shared_subscriber::*;
-
-pub mod prelude {}

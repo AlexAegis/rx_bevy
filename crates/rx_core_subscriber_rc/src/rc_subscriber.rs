@@ -1,10 +1,7 @@
 use rx_core_traits::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	context::{
-		WithSubscriptionContext,
-		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
-	},
-	prelude::SubscriptionContext,
+	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
+	Tickable, WithSubscriptionContext,
+	allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
 };
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
@@ -250,10 +247,8 @@ where
 mod test {
 	use std::ops::RangeInclusive;
 
-	use rx_core_observable_iterator::IteratorObservable;
+	use rx_core::prelude::*;
 	use rx_core_testing::{MockContext, MockObserver};
-	use rx_core_traits::Observable;
-	use rx_core_traits::{Observer, SubscriptionLike, context::DropSafeSubscriptionContext};
 
 	use crate::RcSubscriber;
 

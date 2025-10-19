@@ -1,18 +1,10 @@
 use std::marker::PhantomData;
 
-use rx_core_traits::{
-	Observable, ObservableOutput, SignalBound, Subscriber,
-	context::{SubscriptionContext, WithSubscriptionContext},
-};
 use rx_core_subscription_inert::InertSubscription;
-
-/// Observable creator for [ThrowObservable]
-pub fn throw<Error, Context>(error: Error) -> ThrowObservable<Error, Context>
-where
-	Error: SignalBound + Clone,
-{
-	ThrowObservable::new(error)
-}
+use rx_core_traits::{
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
+	WithSubscriptionContext,
+};
 
 #[derive(Clone)]
 pub struct ThrowObservable<OutError, Context>
@@ -76,8 +68,8 @@ where
 mod tests {
 	use super::*;
 
-	use rx_core_traits::context::DropSafeSubscriptionContext;
 	use rx_core_testing::prelude::*;
+	use rx_core_traits::DropSafeSubscriptionContext;
 
 	#[test]
 	fn should_emit_single_value() {

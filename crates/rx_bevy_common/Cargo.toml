@@ -21,10 +21,12 @@ dev = []
 debug = ["rx_core_traits/debug"]
 example = ["rx_core_traits/example", "rx_core_testing/example"]
 reflect = ["dep:bevy_reflect"]
+serialize = ["dep:serde"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
 bevy_reflect = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_core_testing = { workspace = true }

@@ -1,5 +1,4 @@
 use rx_core::prelude::*;
-use rx_core_subject_replay::ReplaySubject;
 
 fn main() {
 	let mut subject = ReplaySubject::<2, i32>::default();

@@ -2,152 +2,184 @@ pub use rx_core_traits::*;
 
 pub mod observable {
 	#[cfg(feature = "observable_combine_latest")]
-	pub use rx_core_observable_combine_latest::*;
+	pub use rx_core_observable_combine_latest::observable::*;
 	#[cfg(feature = "observable_connectable")]
-	pub use rx_core_observable_connectable::*;
+	pub use rx_core_observable_connectable::observable::*;
 	#[cfg(feature = "observable_deferred")]
-	pub use rx_core_observable_deferred::*;
+	pub use rx_core_observable_deferred::observable::*;
+	#[cfg(feature = "observable_interval")]
+	pub use rx_core_observable_interval::observable::*;
 	#[cfg(feature = "observable_iterator")]
-	pub use rx_core_observable_iterator::*;
+	pub use rx_core_observable_iterator::observable::*;
 	#[cfg(feature = "observable_iterator_on_tick")]
-	pub use rx_core_observable_iterator_on_tick::*;
+	pub use rx_core_observable_iterator_on_tick::observable::*;
 	#[cfg(feature = "observable_merge")]
-	pub use rx_core_observable_merge::*;
+	pub use rx_core_observable_merge::observable::*;
 	#[cfg(feature = "observable_of")]
-	pub use rx_core_observable_of::*;
+	pub use rx_core_observable_of::observable::*;
+	#[cfg(feature = "observable_pipe")]
+	pub use rx_core_observable_pipe::observable::*;
 	#[cfg(feature = "observable_throw")]
-	pub use rx_core_observable_throw::*;
+	pub use rx_core_observable_throw::observable::*;
 	#[cfg(feature = "observable_zip")]
-	pub use rx_core_observable_zip::*;
-
-	#[cfg(feature = "pipe")]
-	pub use rx_core_observable_pipe::*;
+	pub use rx_core_observable_zip::observable::*;
 }
 
-pub mod observer {
-	#[cfg(feature = "observer_fn")]
-	pub use rx_core_observer_fn::*;
-	#[cfg(feature = "observer_noop")]
-	pub use rx_core_observer_noop::*;
-	#[cfg(feature = "observer_print")]
-	pub use rx_core_observer_print::*;
+#[cfg(feature = "observable_fn")]
+pub mod observable_fn {
+	#[cfg(feature = "observable_combine_latest")]
+	pub use rx_core_observable_combine_latest::observable_fn::*;
+	#[cfg(feature = "observable_deferred")]
+	pub use rx_core_observable_deferred::observable_fn::*;
+	#[cfg(feature = "observable_merge")]
+	pub use rx_core_observable_merge::observable_fn::*;
+	#[cfg(feature = "observable_of")]
+	pub use rx_core_observable_of::observable_fn::*;
+	#[cfg(feature = "observable_throw")]
+	pub use rx_core_observable_throw::observable_fn::*;
+	#[cfg(feature = "observable_zip")]
+	pub use rx_core_observable_zip::observable_fn::*;
+}
+
+#[cfg(feature = "compose")]
+pub mod extension_composite {
+	#[cfg(feature = "operator_composite")]
+	pub use rx_core_operator_composite::extension_composite::*;
+	#[cfg(feature = "operator_enumerate")]
+	pub use rx_core_operator_enumerate::extension_composite::*;
+	#[cfg(feature = "operator_filter")]
+	pub use rx_core_operator_filter::extension_composite::*;
+	#[cfg(feature = "operator_filter_map")]
+	pub use rx_core_operator_filter_map::extension_composite::*;
+	#[cfg(feature = "operator_finalize")]
+	pub use rx_core_operator_finalize::extension_composite::*;
+	#[cfg(feature = "operator_lift_option")]
+	pub use rx_core_operator_lift_option::extension_composite::*;
+	#[cfg(feature = "operator_lift_result")]
+	pub use rx_core_operator_lift_result::extension_composite::*;
+	#[cfg(feature = "operator_map")]
+	pub use rx_core_operator_map::extension_composite::*;
+	#[cfg(feature = "operator_map_into")]
+	pub use rx_core_operator_map_into::extension_composite::*;
+	#[cfg(feature = "operator_skip")]
+	pub use rx_core_operator_skip::extension_composite::*;
+	#[cfg(feature = "operator_switch_map")]
+	pub use rx_core_operator_switch_map::extension_composite::*;
+	#[cfg(feature = "operator_take")]
+	pub use rx_core_operator_take::extension_composite::*;
+	#[cfg(feature = "operator_tap_next")]
+	pub use rx_core_operator_tap_next::extension_composite::*;
+	#[cfg(feature = "operator_try_capture")]
+	pub use rx_core_operator_try_capture::extension_composite::*;
+}
+
+#[cfg(feature = "pipe")]
+pub mod extension_pipe {
+	#[cfg(feature = "observable_pipe")]
+	pub use rx_core_observable_pipe::extension_pipe::*;
+	#[cfg(feature = "operator_enumerate")]
+	pub use rx_core_operator_enumerate::extension_pipe::*;
+	#[cfg(feature = "operator_filter")]
+	pub use rx_core_operator_filter::extension_pipe::*;
+	#[cfg(feature = "operator_filter_map")]
+	pub use rx_core_operator_filter_map::extension_pipe::*;
+	#[cfg(feature = "operator_finalize")]
+	pub use rx_core_operator_finalize::extension_pipe::*;
+	#[cfg(feature = "operator_lift_option")]
+	pub use rx_core_operator_lift_option::extension_pipe::*;
+	#[cfg(feature = "operator_lift_result")]
+	pub use rx_core_operator_lift_result::extension_pipe::*;
+	#[cfg(feature = "operator_map")]
+	pub use rx_core_operator_map::extension_pipe::*;
+	#[cfg(feature = "operator_map_into")]
+	pub use rx_core_operator_map_into::extension_pipe::*;
+	#[cfg(feature = "operator_skip")]
+	pub use rx_core_operator_skip::extension_pipe::*;
+	#[cfg(feature = "operator_switch_map")]
+	pub use rx_core_operator_switch_map::extension_pipe::*;
+	#[cfg(feature = "operator_take")]
+	pub use rx_core_operator_take::extension_pipe::*;
+	#[cfg(feature = "operator_tap_next")]
+	pub use rx_core_operator_tap_next::extension_pipe::*;
+	#[cfg(feature = "operator_try_capture")]
+	pub use rx_core_operator_try_capture::extension_pipe::*;
 }
 
 pub mod operator {
 	#[cfg(feature = "operator_adsr")]
-	pub use rx_core_operator_adsr::*;
+	pub use rx_core_operator_adsr::operator::*;
 	#[cfg(feature = "operator_composite")]
-	pub use rx_core_operator_composite::*;
+	pub use rx_core_operator_composite::operator::*;
 	#[cfg(feature = "operator_enumerate")]
-	pub use rx_core_operator_enumerate::*;
+	pub use rx_core_operator_enumerate::operator::*;
 	#[cfg(feature = "operator_filter")]
-	pub use rx_core_operator_filter::*;
+	pub use rx_core_operator_filter::operator::*;
 	#[cfg(feature = "operator_filter_map")]
-	pub use rx_core_operator_filter_map::*;
+	pub use rx_core_operator_filter_map::operator::*;
 	#[cfg(feature = "operator_finalize")]
-	pub use rx_core_operator_finalize::*;
+	pub use rx_core_operator_finalize::operator::*;
 	#[cfg(feature = "operator_identity")]
-	pub use rx_core_operator_identity::*;
+	pub use rx_core_operator_identity::operator::*;
 	#[cfg(feature = "operator_lift_option")]
-	pub use rx_core_operator_lift_option::*;
+	pub use rx_core_operator_lift_option::operator::*;
 	#[cfg(feature = "operator_lift_result")]
-	pub use rx_core_operator_lift_result::*;
+	pub use rx_core_operator_lift_result::operator::*;
 	#[cfg(feature = "operator_map")]
-	pub use rx_core_operator_map::*;
+	pub use rx_core_operator_map::operator::*;
 	#[cfg(feature = "operator_map_into")]
-	pub use rx_core_operator_map_into::*;
+	pub use rx_core_operator_map_into::operator::*;
 	#[cfg(feature = "operator_skip")]
-	pub use rx_core_operator_skip::*;
+	pub use rx_core_operator_skip::operator::*;
 	#[cfg(feature = "operator_switch_map")]
-	pub use rx_core_operator_switch_map::*;
+	pub use rx_core_operator_switch_map::operator::*;
 	#[cfg(feature = "operator_take")]
-	pub use rx_core_operator_take::*;
+	pub use rx_core_operator_take::operator::*;
 	#[cfg(feature = "operator_tap_next")]
-	pub use rx_core_operator_tap_next::*;
+	pub use rx_core_operator_tap_next::operator::*;
 	#[cfg(feature = "operator_try_capture")]
-	pub use rx_core_operator_try_capture::*;
+	pub use rx_core_operator_try_capture::operator::*;
+}
+
+pub mod observer {
+	#[cfg(feature = "observer_fn")]
+	pub use rx_core_observer_fn::observer::*;
+	#[cfg(feature = "observer_noop")]
+	pub use rx_core_observer_noop::observer::*;
+	#[cfg(feature = "observer_print")]
+	pub use rx_core_observer_print::observer::*;
+}
+
+pub mod subscription {
+	#[cfg(feature = "subscription_drop")]
+	pub use rx_core_subscription_drop::subscription::*;
+	#[cfg(feature = "subscription_inert")]
+	pub use rx_core_subscription_inert::subscription::*;
 }
 
 pub mod subject {
 	#[cfg(feature = "subject")]
-	pub use rx_core_subject::*;
+	pub use rx_core_subject::subject::*;
 	#[cfg(feature = "subject_behavior")]
-	pub use rx_core_subject_behavior::*;
+	pub use rx_core_subject_behavior::subject::*;
 	#[cfg(feature = "subject_replay")]
-	pub use rx_core_subject_replay::*;
+	pub use rx_core_subject_replay::subject::*;
 }
 
 pub mod prelude {
-	pub use rx_core_traits::prelude::*;
+	pub use rx_core_traits::*;
 
-	// Observables
-	#[cfg(feature = "observable_combine_latest")]
-	pub use rx_core_observable_combine_latest::prelude::*;
-	#[cfg(feature = "observable_connectable")]
-	pub use rx_core_observable_connectable::prelude::*;
-	#[cfg(feature = "observable_deferred")]
-	pub use rx_core_observable_deferred::prelude::*;
-	#[cfg(feature = "observable_iterator")]
-	pub use rx_core_observable_iterator::prelude::*;
-	#[cfg(feature = "observable_iterator_on_tick")]
-	pub use rx_core_observable_iterator_on_tick::prelude::*;
-	#[cfg(feature = "observable_merge")]
-	pub use rx_core_observable_merge::prelude::*;
-	#[cfg(feature = "observable_of")]
-	pub use rx_core_observable_of::prelude::*;
-	#[cfg(feature = "observable_throw")]
-	pub use rx_core_observable_throw::prelude::*;
-	#[cfg(feature = "observable_zip")]
-	pub use rx_core_observable_zip::prelude::*;
-	// Pipe
+	pub use super::observable::*;
+	pub use super::observer::*;
+	pub use super::operator::*;
+	pub use super::subject::*;
+	pub use super::subscription::*;
+
+	#[cfg(feature = "observable_fn")]
+	pub use super::observable_fn::*;
+
+	#[cfg(feature = "compose")]
+	pub use super::extension_composite::*;
+
 	#[cfg(feature = "pipe")]
-	pub use rx_core_observable_pipe::prelude::*;
-	// Observers
-	#[cfg(feature = "observer_fn")]
-	pub use rx_core_observer_fn::prelude::*;
-	#[cfg(feature = "observer_noop")]
-	pub use rx_core_observer_noop::prelude::*;
-	#[cfg(feature = "observer_print")]
-	pub use rx_core_observer_print::prelude::*;
-	// Operators
-	#[cfg(feature = "operator_adsr")]
-	pub use rx_core_operator_adsr::prelude::*;
-	#[cfg(feature = "operator_composite")]
-	pub use rx_core_operator_composite::prelude::*;
-	#[cfg(feature = "operator_enumerate")]
-	pub use rx_core_operator_enumerate::prelude::*;
-	#[cfg(feature = "operator_filter")]
-	pub use rx_core_operator_filter::prelude::*;
-	#[cfg(feature = "operator_filter_map")]
-	pub use rx_core_operator_filter_map::prelude::*;
-	#[cfg(feature = "operator_finalize")]
-	pub use rx_core_operator_finalize::prelude::*;
-	#[cfg(feature = "operator_identity")]
-	pub use rx_core_operator_identity::prelude::*;
-	#[cfg(feature = "operator_lift_option")]
-	pub use rx_core_operator_lift_option::prelude::*;
-	#[cfg(feature = "operator_lift_result")]
-	pub use rx_core_operator_lift_result::prelude::*;
-	#[cfg(feature = "operator_map")]
-	pub use rx_core_operator_map::prelude::*;
-	#[cfg(feature = "operator_map_into")]
-	pub use rx_core_operator_map_into::prelude::*;
-	#[cfg(feature = "operator_skip")]
-	pub use rx_core_operator_skip::prelude::*;
-	#[cfg(feature = "operator_switch_map")]
-	pub use rx_core_operator_switch_map::prelude::*;
-	#[cfg(feature = "operator_take")]
-	pub use rx_core_operator_take::prelude::*;
-	#[cfg(feature = "operator_tap_next")]
-	pub use rx_core_operator_tap_next::prelude::*;
-	#[cfg(feature = "operator_try_capture")]
-	pub use rx_core_operator_try_capture::prelude::*;
-
-	// Subjects
-	#[cfg(feature = "subject")]
-	pub use rx_core_subject::prelude::*;
-	#[cfg(feature = "subject_behavior")]
-	pub use rx_core_subject_behavior::prelude::*;
-	#[cfg(feature = "subject_replay")]
-	pub use rx_core_subject_replay::prelude::*;
+	pub use super::extension_pipe::*;
 }

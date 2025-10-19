@@ -1,5 +1,4 @@
 use rx_core::prelude::*;
-use rx_core_observable_combine_latest::combine_latest;
 
 /// The [CombineLatestObserver] combines the latest values from multiple observables
 /// Notice that in the output, 1, and 2 is not present, that's because

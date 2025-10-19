@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
+use rx_core_subscriber_switch::SwitchSubscriber;
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
 	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable,
-	context::WithSubscriptionContext, prelude::SubscriptionContext,
+	SubscriptionContext, WithSubscriptionContext,
 };
-use rx_core_subscriber_switch::SwitchSubscriber;
 
 pub struct SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where

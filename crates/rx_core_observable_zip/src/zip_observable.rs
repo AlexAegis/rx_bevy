@@ -3,23 +3,13 @@ use rx_core_emission_variants::{
 };
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber, SubscriptionData, context::WithSubscriptionContext,
-	prelude::SubscriptionContext,
+	Observable, ObservableOutput, Subscriber, SubscriptionData,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
-use crate::{ZipSubscriber, ZipSubscriberOptions};
+use crate::{ZipSubscriber, observable::ZipSubscriberOptions};
 
-pub fn zip<O1, O2>(observable_1: O1, observable_2: O2) -> Zip<O1, O2>
-where
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	Zip::new(observable_1, observable_2)
-}
-
-pub struct Zip<O1, O2>
+pub struct ZipObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
@@ -31,7 +21,7 @@ where
 	observable_2: O2,
 }
 
-impl<O1, O2> Zip<O1, O2>
+impl<O1, O2> ZipObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
@@ -52,7 +42,7 @@ where
 	}
 }
 
-impl<O1, O2> ObservableOutput for Zip<O1, O2>
+impl<O1, O2> ObservableOutput for ZipObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
@@ -63,7 +53,7 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<O1, O2> WithSubscriptionContext for Zip<O1, O2>
+impl<O1, O2> WithSubscriptionContext for ZipObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
@@ -73,7 +63,7 @@ where
 	type Context = O1::Context;
 }
 
-impl<O1, O2> Observable for Zip<O1, O2>
+impl<O1, O2> Observable for ZipObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,

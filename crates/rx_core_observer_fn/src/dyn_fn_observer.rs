@@ -1,7 +1,6 @@
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriptionData, SubscriptionLike, Teardown, Tick,
-	Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]

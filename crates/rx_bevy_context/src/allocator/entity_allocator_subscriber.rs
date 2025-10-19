@@ -1,7 +1,5 @@
 use rx_core_traits::{
-	Subscriber,
-	context::{WithSubscriptionContext, allocator::DestinationAllocator},
-	prelude::SubscriptionContext,
+	Subscriber, SubscriptionContext, WithSubscriptionContext, allocator::DestinationAllocator,
 };
 
 use crate::{BevySubscriptionContextProvider, EntitySubscriber};

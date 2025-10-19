@@ -1,7 +1,6 @@
 use rx_core_traits::{
-	SignalBound, Subscriber,
-	context::{WithSubscriptionContext, allocator::ErasedDestinationAllocator},
-	prelude::SubscriptionContext,
+	SignalBound, Subscriber, SubscriptionContext, WithSubscriptionContext,
+	allocator::ErasedDestinationAllocator,
 };
 
 use crate::{BevySubscriptionContextProvider, ErasedEntitySubscriber};

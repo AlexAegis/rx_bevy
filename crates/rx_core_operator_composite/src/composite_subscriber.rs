@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_core_traits::{
 	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	context::WithSubscriptionContext, prelude::SubscriptionContext,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -71,7 +71,11 @@ where
 	Destination: Observer,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.subscriber.tick(tick, context);
 	}
 }

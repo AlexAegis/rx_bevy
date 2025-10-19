@@ -1,12 +1,13 @@
 mod composite_operator;
-mod composite_operator_extension_pipe;
+mod composite_operator_extension_composite;
 mod composite_subscriber;
 
-pub use composite_operator::*;
-pub use composite_operator_extension_pipe::*;
 pub use composite_subscriber::*;
 
-pub mod prelude {
+pub mod operator {
 	pub use super::composite_operator::*;
-	pub use super::composite_operator_extension_pipe::*;
+}
+
+pub mod extension_composite {
+	pub use super::composite_operator_extension_composite::*;
 }

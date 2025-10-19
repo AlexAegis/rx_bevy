@@ -3,23 +3,13 @@ use rx_core_emission_variants::{
 };
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber, SubscriptionData, context::WithSubscriptionContext,
-	prelude::SubscriptionContext,
+	Observable, ObservableOutput, Subscriber, SubscriptionData,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 use crate::CombineLatestSubscriber;
 
-pub fn combine_latest<O1, O2>(observable_1: O1, observable_2: O2) -> CombineLatest<O1, O2>
-where
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	CombineLatest::new(observable_1, observable_2)
-}
-
-pub struct CombineLatest<O1, O2>
+pub struct CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
@@ -30,7 +20,7 @@ where
 	observable_2: O2,
 }
 
-impl<O1, O2> CombineLatest<O1, O2>
+impl<O1, O2> CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
@@ -45,7 +35,7 @@ where
 	}
 }
 
-impl<O1, O2> ObservableOutput for CombineLatest<O1, O2>
+impl<O1, O2> ObservableOutput for CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
@@ -56,7 +46,7 @@ where
 	type OutError = EitherOutError2<O1, O2>;
 }
 
-impl<O1, O2> WithSubscriptionContext for CombineLatest<O1, O2>
+impl<O1, O2> WithSubscriptionContext for CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
@@ -66,7 +56,7 @@ where
 	type Context = O1::Context;
 }
 
-impl<O1, O2> Observable for CombineLatest<O1, O2>
+impl<O1, O2> Observable for CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
 	O2: 'static + Send + Sync + Observable<Context = O1::Context>,

@@ -1,7 +1,7 @@
+use rx_core_operator_composite::operator::CompositeOperator;
 use rx_core_traits::{Operator, SignalBound};
-use rx_core_operator_composite::CompositeOperator;
 
-use crate::MapIntoOperator;
+use crate::operator::MapIntoOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionInto: Operator + Sized {

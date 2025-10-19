@@ -4,13 +4,11 @@ mod connectable_observable_options;
 mod connection_handle;
 mod inner_connectable_observable;
 
-pub use connectable::*;
-pub use connectable_observable::*;
-pub use connectable_observable_options::*;
-pub use connection_handle::*;
+pub use inner_connectable_observable::*;
 
-pub mod prelude {
+pub mod observable {
 	pub use super::connectable::*;
 	pub use super::connectable_observable::*;
 	pub use super::connectable_observable_options::*;
+	pub use super::connection_handle::*;
 }

@@ -57,7 +57,11 @@ impl<Subscription> Tickable for ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: ObservableSubscription + Send + Sync,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		if let Ok(mut lock) = self.subscription.write() {
 			lock.tick(tick, context);
 		} else {

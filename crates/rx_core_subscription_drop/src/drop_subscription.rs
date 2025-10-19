@@ -1,6 +1,6 @@
 use rx_core_traits::{
-	ObservableSubscription, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	context::{DropSafeSubscriptionContext, SubscriptionContext, WithSubscriptionContext},
+	DropSafeSubscriptionContext, ObservableSubscription, SubscriptionContext, SubscriptionData,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 /// A DropSubscription is a type of Subscription Observables may use, it
@@ -49,7 +49,11 @@ impl<Context> Tickable for DropSubscription<Context>
 where
 	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.subscription_data.tick(tick, context);
 	}
 }

@@ -2,17 +2,9 @@ use std::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Observable, ObservableOutput, SignalBound, Subscriber,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
+	WithSubscriptionContext,
 };
-
-/// Observable creator for [OfObservable]
-pub fn of<T>(value: T) -> OfObservable<T, ()>
-where
-	T: Clone,
-{
-	OfObservable::new(value)
-}
 
 /// Emits a single value then immediately completes
 #[derive(Clone)]
@@ -80,8 +72,8 @@ where
 mod tests {
 
 	use super::*;
-	use rx_core_traits::{SubscriptionLike, context::DropSafeSubscriptionContext};
 	use rx_core_testing::{MockContext, MockObserver};
+	use rx_core_traits::{DropSafeSubscriptionContext, SubscriptionLike};
 
 	#[test]
 	fn should_emit_single_value() {

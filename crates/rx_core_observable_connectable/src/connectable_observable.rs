@@ -2,13 +2,13 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_traits::{
 	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionLike, Teardown,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 use short_type_name::short_type_name;
 
 use crate::{
-	Connectable, ConnectableOptions, ConnectionHandle,
-	inner_connectable_observable::InnerConnectableObservable,
+	InnerConnectableObservable,
+	observable::{Connectable, ConnectableOptions, ConnectionHandle},
 };
 
 pub struct ConnectableObservable<Source, ConnectorCreator, Connector>

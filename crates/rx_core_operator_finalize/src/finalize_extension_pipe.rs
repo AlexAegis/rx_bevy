@@ -1,7 +1,7 @@
-use rx_core_traits::{Observable, SignalBound, prelude::SubscriptionContext};
-use rx_core_observable_pipe::Pipe;
+use rx_core_observable_pipe::observable::Pipe;
+use rx_core_traits::{Observable, SignalBound, SubscriptionContext};
 
-use crate::FinalizeOperator;
+use crate::operator::FinalizeOperator;
 
 /// Operator creator function
 pub fn finalize<Out, OutError, Callback, Context>(

@@ -1,6 +1,6 @@
 use rx_core_traits::Operator;
 
-use crate::CompositeOperator;
+use crate::operator::CompositeOperator;
 
 pub trait CompositeOperatorExtension: Operator + Sized {
 	fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>

@@ -1,6 +1,6 @@
-use rx_core_traits::context::SubscriptionContext;
+use rx_core_traits::SubscriptionContext;
 
-use crate::{IteratorOnTickObservable, OnTickObservableOptions};
+use crate::observable::{IteratorOnTickObservable, OnTickObservableOptions};
 
 pub trait IntoIteratorOnTickObservableExtension: IntoIterator + Clone {
 	fn into_observable_on_every_nth_tick<Context>(

@@ -9,11 +9,3 @@ pub use subscription_like::*;
 pub use subscription_tickable::*;
 pub use teardown::*;
 pub use tickable_resource::*;
-
-pub mod prelude {
-	pub use super::subscription_data::*;
-	pub use super::subscription_like::*;
-	pub use super::subscription_tickable::*;
-	pub use super::teardown::*;
-	pub use super::tickable_resource::*;
-}

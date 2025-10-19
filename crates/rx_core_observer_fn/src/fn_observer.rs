@@ -1,9 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriptionData, SubscriptionLike, Teardown, Tick,
-	Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 /// An [FnObserver] requires you to define a callback for all three notifications
@@ -93,7 +92,11 @@ where
 	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
-	fn next(&mut self, next: In, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn next(
+		&mut self,
+		next: In,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		if !self.is_closed() {
 			(self.on_next)(next, context);
 		}
@@ -128,7 +131,11 @@ where
 	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		(self.on_tick)(tick, context);
 	}
 }

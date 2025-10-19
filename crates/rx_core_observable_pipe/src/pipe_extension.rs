@@ -1,6 +1,6 @@
 use rx_core_traits::{Observable, Operator};
 
-use crate::Pipe;
+use crate::observable::Pipe;
 
 /// Provides a convenient function to pipe an operator from an observable
 /// It's most useful for composite operators

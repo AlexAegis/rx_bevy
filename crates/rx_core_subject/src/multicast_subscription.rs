@@ -1,8 +1,6 @@
 use rx_core_traits::{
-	SignalBound, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	context::{
-		SubscriptionContext, WithSubscriptionContext, allocator::ErasedDestinationAllocator,
-	},
+	SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
+	WithSubscriptionContext, allocator::ErasedDestinationAllocator,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -79,7 +77,11 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		if let Some(subscriber) = &mut self.subscriber {
 			subscriber.tick(tick, context);
 		}

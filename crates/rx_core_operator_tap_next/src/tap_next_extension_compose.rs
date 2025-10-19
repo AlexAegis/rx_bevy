@@ -1,7 +1,7 @@
-use rx_core_traits::{Operator, prelude::SubscriptionContext};
-use rx_core_operator_composite::CompositeOperator;
+use rx_core_operator_composite::operator::CompositeOperator;
+use rx_core_traits::{Operator, SubscriptionContext};
 
-use crate::TapNextOperator;
+use crate::operator::TapNextOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {

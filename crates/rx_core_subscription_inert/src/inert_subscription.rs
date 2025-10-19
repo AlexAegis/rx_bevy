@@ -1,6 +1,6 @@
 use rx_core_traits::{
-	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	ObservableSubscription, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithSubscriptionContext,
 };
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
@@ -45,7 +45,11 @@ impl<Context> Tickable for InertSubscription<Context>
 where
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.tickable.tick(tick, context);
 	}
 }

@@ -23,6 +23,7 @@ default = [
     "all_subjects",
     "all_subscriptions",
     "compose",
+    "observable_fn",
     "pipe",
 ]
 dev = [
@@ -110,7 +111,7 @@ trace = [
     "rx_core_subscription_inert?/trace",
 ]
 pipe = [
-    "dep:rx_core_observable_pipe",
+    "observable_pipe",
     "rx_core_operator_composite?/pipe",
     "rx_core_operator_enumerate?/pipe",
     "rx_core_operator_filter?/pipe",
@@ -127,7 +128,7 @@ pipe = [
     "rx_core_operator_try_capture?/pipe",
 ]
 compose = [
-    "dep:rx_core_operator_composite",
+    "operator_composite",
     "rx_core_operator_enumerate?/compose",
     "rx_core_operator_filter?/compose",
     "rx_core_operator_filter_map?/compose",
@@ -147,10 +148,12 @@ all_observables = [
     "observable_combine_latest",
     "observable_connectable",
     "observable_deferred",
+    "observable_interval",
     "observable_iterator",
     "observable_iterator_on_tick",
     "observable_merge",
     "observable_of",
+    "observable_pipe",
     "observable_throw",
     "observable_zip",
 ]
@@ -162,8 +165,18 @@ observable_iterator = ["dep:rx_core_observable_iterator"]
 observable_iterator_on_tick = ["dep:rx_core_observable_iterator_on_tick"]
 observable_merge = ["dep:rx_core_observable_merge"]
 observable_of = ["dep:rx_core_observable_of"]
+observable_pipe = ["dep:rx_core_observable_pipe"]
 observable_throw = ["dep:rx_core_observable_throw"]
 observable_zip = ["dep:rx_core_observable_zip"]
+# Observable Creation Functions
+observable_fn = [
+    "rx_core_observable_combine_latest?/observable_fn",
+    "rx_core_observable_deferred?/observable_fn",
+    "rx_core_observable_merge?/observable_fn",
+    "rx_core_observable_of?/observable_fn",
+    "rx_core_observable_throw?/observable_fn",
+    "rx_core_observable_zip?/observable_fn",
+]
 # Observers
 all_observers = ["observer_noop", "observer_print", "observer_fn"]
 observer_fn = ["dep:rx_core_observer_fn"]

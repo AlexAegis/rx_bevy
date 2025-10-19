@@ -1,11 +1,12 @@
 use std::marker::PhantomData;
 
-use rx_core_traits::{SubjectLike, context::FromSubscriptionContext, prelude::SubscriptionContext};
+use rx_core_traits::{FromSubscriptionContext, SubjectLike, SubscriptionContext};
 
 #[derive(Clone)]
 pub struct ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator: Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
+	ConnectorCreator:
+		Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub(crate) connector_creator: ConnectorCreator,
@@ -15,7 +16,8 @@ where
 
 impl<ConnectorCreator, Connector> ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator: Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
+	ConnectorCreator:
+		Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub fn new(connector_creator: ConnectorCreator) -> Self {

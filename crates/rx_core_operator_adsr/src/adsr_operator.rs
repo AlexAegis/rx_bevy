@@ -1,11 +1,10 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
-	context::SubscriptionContext,
+	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
 };
 
-use crate::{AdsrOperatorOptions, AdsrSignal, AdsrSubscriber};
+use crate::{AdsrSignal, AdsrSubscriber, operator::AdsrOperatorOptions};
 
 // TODO: Currently this is a regular operator, not an operatorComponent, which would make it hard to control it from bevy
 #[derive(Clone)]

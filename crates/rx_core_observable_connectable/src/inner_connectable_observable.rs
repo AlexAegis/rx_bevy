@@ -1,10 +1,10 @@
 use rx_core_traits::{
 	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionCollection,
 	SubscriptionLike, Teardown,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
-use crate::{Connectable, ConnectableOptions, ConnectionHandle};
+use crate::observable::{Connectable, ConnectableOptions, ConnectionHandle};
 
 pub struct InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where

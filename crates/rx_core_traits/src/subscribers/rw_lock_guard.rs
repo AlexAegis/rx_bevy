@@ -2,7 +2,7 @@ use std::sync::{RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{
 	ObserverInput, SignalBound, Subscriber,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 impl<'a, In, InError, Context> WithSubscriptionContext

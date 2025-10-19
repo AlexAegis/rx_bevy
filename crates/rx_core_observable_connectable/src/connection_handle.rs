@@ -1,8 +1,6 @@
 use rx_core_traits::{
-	SubscriptionLike, Teardown,
-	context::{
-		SubscriptionContext, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
-	},
+	SubscriptionContext, SubscriptionLike, Teardown, WithSubscriptionContext,
+	allocator::UnscheduledSubscriptionAllocator,
 };
 
 /// Subscription that represents an active connection for a

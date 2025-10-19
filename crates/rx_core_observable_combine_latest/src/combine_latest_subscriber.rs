@@ -1,8 +1,9 @@
+use rx_core_emission_variants::{EitherOut2, EitherOutError2};
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
+	Tick, Tickable,
+	SubscriptionContext, WithSubscriptionContext,
 };
-use rx_core_emission_variants::{EitherOut2, EitherOutError2};
 
 pub struct CombineLatestSubscriber<Destination, O1, O2>
 where

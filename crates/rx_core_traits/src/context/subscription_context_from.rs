@@ -1,4 +1,4 @@
-use crate::context::{SubscriptionContext, WithSubscriptionContext};
+use crate::{SubscriptionContext, WithSubscriptionContext};
 
 /// For things that could be derived from its associated context.
 ///

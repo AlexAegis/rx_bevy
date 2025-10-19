@@ -3,26 +3,9 @@ use std::marker::PhantomData;
 use rx_core_operator_map_into::MapIntoSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionData,
-	context::WithSubscriptionContext, prelude::SubscriptionContext,
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext, SubscriptionData,
+	WithSubscriptionContext,
 };
-
-pub fn merge<Out, OutError, O1, O2>(
-	observable_1: O1,
-	observable_2: O2,
-) -> MergeObservable<Out, OutError, O1, O2>
-where
-	Out: SignalBound,
-	OutError: SignalBound,
-	O1: Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
-{
-	MergeObservable::new(observable_1, observable_2)
-}
 
 pub struct MergeObservable<Out, OutError, O1, O2>
 where

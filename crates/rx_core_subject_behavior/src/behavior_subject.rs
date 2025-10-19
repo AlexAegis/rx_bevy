@@ -1,11 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
+use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
 	SubscriptionLike, Teardown,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
-use rx_core_subject::{MulticastSubscription, Subject};
 
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.

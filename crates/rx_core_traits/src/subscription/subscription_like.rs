@@ -1,6 +1,6 @@
 use crate::{
 	Teardown,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which will
@@ -50,9 +50,15 @@ pub trait SubscriptionCollection: SubscriptionLike {
 		self.add_teardown(teardown, context);
 	}
 
-	fn add_fn<F>(&mut self, f: F, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
-	where
-		F: 'static + FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_, '_>) + Send + Sync,
+	fn add_fn<F>(
+		&mut self,
+		f: F,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) where
+		F: 'static
+			+ FnOnce(&mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
+			+ Send
+			+ Sync,
 		Self: Sized,
 	{
 		let teardown = Teardown::<Self::Context>::new(f);

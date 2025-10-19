@@ -4370,6 +4370,7 @@ dependencies = [
  "bevy_reflect",
  "rx_core_testing",
  "rx_core_traits",
+ "serde",
 ]
 
 [[package]]

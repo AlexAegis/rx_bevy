@@ -2,10 +2,11 @@ use std::marker::PhantomData;
 
 use rx_core_traits::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
+	Tick, Tickable,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
-use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrOperatorOptions, AdsrSignal};
+use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, operator::AdsrOperatorOptions};
 
 // TODO: It'd be nice to control the envelope live, I guess that could be done by querying the subscriber itself, but it would be nicer to control the operator itself, in case there are many observers
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -78,7 +79,11 @@ where
 	InError: SignalBound,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		let next =
 			self.state
 				.calculate_output(self.options.envelope, self.is_getting_activated, tick);

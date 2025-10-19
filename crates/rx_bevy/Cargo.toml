@@ -60,6 +60,8 @@ observable_merge = ["rx_core/observable_merge"]
 observable_of = ["rx_core/observable_of"]
 observable_throw = ["rx_core/observable_throw"]
 observable_zip = ["rx_core/observable_zip"]
+# Observable Creation Functions
+observable_fn = ["rx_core/observable_fn"]
 # Observers
 all_observers = ["observer_noop", "observer_print", "observer_fn"]
 observer_fn = ["rx_core/observer_fn"]
@@ -113,7 +115,7 @@ subscription_inert = ["rx_core/subscription_inert"]
 [dependencies]
 rx_core = { workspace = true }
 rx_core_traits = { workspace = true }
-rx_bevy_context = { workspace = true, optional = true }
+rx_bevy_context = { workspace = true }
 # Observables
 rx_bevy_observable_keyboard = { workspace = true, optional = true }
 

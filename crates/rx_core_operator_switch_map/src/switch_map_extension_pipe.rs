@@ -1,7 +1,7 @@
+use rx_core_observable_pipe::observable::Pipe;
 use rx_core_traits::{Observable, SignalBound};
-use rx_core_observable_pipe::Pipe;
 
-use crate::SwitchMapOperator;
+use crate::operator::SwitchMapOperator;
 
 /// Operator creator function
 pub fn switch_map<In, InError, Switcher, InnerObservable>(

@@ -1,7 +1,7 @@
+use rx_core_operator_composite::operator::CompositeOperator;
 use rx_core_traits::Operator;
-use rx_core_operator_composite::CompositeOperator;
 
-use crate::TryCaptureOperator;
+use crate::operator::TryCaptureOperator;
 
 /// Provides a convenient function to pipe the operator from another operator  
 pub trait CompositeOperatorExtensionTryCapture: Operator + Sized {

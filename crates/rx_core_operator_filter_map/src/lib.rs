@@ -1,19 +1,21 @@
 mod filter_map_operator;
 
-pub use filter_map_operator::*;
+pub mod operator {
+	pub use super::filter_map_operator::*;
+}
 
 #[cfg(feature = "compose")]
-pub mod filter_map_extension_compose;
+mod filter_map_extension_compose;
+
+#[cfg(feature = "compose")]
+pub mod extension_composite {
+	pub use super::filter_map_extension_compose::*;
+}
 
 #[cfg(feature = "pipe")]
-pub mod filter_map_extension_pipe;
+mod filter_map_extension_pipe;
 
-pub mod prelude {
-	pub use super::filter_map_operator::*;
-
-	#[cfg(feature = "compose")]
-	pub use super::filter_map_extension_compose::*;
-
-	#[cfg(feature = "pipe")]
+#[cfg(feature = "pipe")]
+pub mod extension_pipe {
 	pub use super::filter_map_extension_pipe::*;
 }

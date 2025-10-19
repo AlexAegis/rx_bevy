@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_core_traits::{
 	Observable, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
-	context::WithSubscriptionContext, prelude::SubscriptionContext,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 use crate::SwitchMapSubscriber;

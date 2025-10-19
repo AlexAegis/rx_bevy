@@ -5,8 +5,8 @@ use std::{
 
 use rx_core_traits::{
 	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
-	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, context::WithSubscriptionContext,
-	prelude::SubscriptionContext,
+	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 pub struct SwitchSubscriberState<InnerObservable, Destination>
@@ -186,7 +186,11 @@ where
 		+ Sync,
 	Destination: SubscriptionCollection,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.destination.tick(tick, context);
 	}
 }

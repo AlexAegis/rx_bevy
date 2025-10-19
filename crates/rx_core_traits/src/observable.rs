@@ -1,6 +1,6 @@
 use crate::{
 	ObservableSubscription, SignalBound, Subscriber,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 /// # [ObservableOutput]

@@ -3,8 +3,7 @@ use bevy_egui::EguiPlugin;
 use bevy_input::keyboard::KeyboardInput;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
-use rx_bevy_context::{ObservableComponent, RelativeEntity, SubscriberNotificationEvent};
-use rx_bevy_observable_keyboard::KeyboardObservable;
+use rx_bevy::prelude::*;
 
 fn main() -> AppExit {
 	App::new()

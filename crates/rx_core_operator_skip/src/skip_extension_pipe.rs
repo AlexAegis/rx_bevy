@@ -1,7 +1,7 @@
-use rx_core_traits::{Observable, context::WithSubscriptionContext};
-use rx_core_observable_pipe::Pipe;
+use rx_core_observable_pipe::observable::Pipe;
+use rx_core_traits::{Observable, WithSubscriptionContext};
 
-use crate::SkipOperator;
+use crate::operator::SkipOperator;
 
 /// Operator creator function
 pub fn skip<In, InError>(count: usize) -> SkipOperator<In, InError> {

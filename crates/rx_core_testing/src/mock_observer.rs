@@ -1,10 +1,9 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionLike, Teardown, Tick,
-	Tickable,
-	context::{SubscriptionContextDropSafety, WithSubscriptionContext},
-	prelude::SubscriptionContext,
+	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionContext,
+	SubscriptionContextDropSafety, SubscriptionLike, Teardown, Tick, Tickable,
+	WithSubscriptionContext,
 };
 
 use crate::MockContext;

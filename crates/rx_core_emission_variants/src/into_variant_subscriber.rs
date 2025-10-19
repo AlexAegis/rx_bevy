@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
+	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionContext,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -103,7 +103,11 @@ where
 		>,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.destination.tick(tick, context);
 	}
 }
@@ -262,7 +266,11 @@ where
 		>,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.destination.tick(tick, context);
 	}
 }

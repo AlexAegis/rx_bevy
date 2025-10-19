@@ -1,5 +1,4 @@
 use rx_core::prelude::*;
-use rx_core_subject::Subject;
 
 fn main() {
 	let mut subject = Subject::<i32>::default();

@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
 	SubscriptionLike, Teardown, Tick, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -142,7 +142,11 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		if let Ok(mut multicast) = self.multicast.write() {
 			multicast.tick(tick, context);
 		}

@@ -1,9 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_core_traits::{
-	Observable, Observer, ObserverInput, Subscriber, SubscriptionCollection, SubscriptionLike,
-	Teardown, Tick, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	Observable, Observer, ObserverInput, Subscriber, SubscriptionCollection, SubscriptionContext,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::SwitchSubscriberState;
@@ -150,7 +149,11 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		if let Ok(mut state) = self.state.write() {
 			state.tick(tick, context);
 		}

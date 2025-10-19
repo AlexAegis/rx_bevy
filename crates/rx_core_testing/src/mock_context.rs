@@ -1,13 +1,12 @@
 use std::{any::Any, iter::Chain, slice::Iter};
 
 use rx_core_traits::{
-	SignalBound, SubscriberNotification,
-	context::{SubscriptionContext, SubscriptionContextDropSafety},
+	SignalBound, SubscriberNotification, SubscriptionContext, SubscriptionContextAccess,
+	SubscriptionContextDropSafety,
 	heap_allocator_context::{
 		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
 		UnscheduledSubscriptionHeapAllocator,
 	},
-	prelude::SubscriptionContextAccess,
 };
 
 // TODO: Finish idea, it's for the ability to test things on drop, a global context is a must
@@ -397,7 +396,7 @@ mod test_mock_context {
 	#[cfg(test)]
 	mod test_nothing_happened_after_closed {
 
-		use rx_core_traits::{SubscriberNotification, context::DropSafeSubscriptionContext};
+		use rx_core_traits::{DropSafeSubscriptionContext, SubscriberNotification};
 
 		use crate::MockContext;
 
@@ -430,7 +429,7 @@ mod test_mock_context {
 	#[cfg(test)]
 	mod test_notification_counting {
 
-		use rx_core_traits::{SubscriberNotification, context::DropSafeSubscriptionContext};
+		use rx_core_traits::{DropSafeSubscriptionContext, SubscriberNotification};
 
 		use crate::MockContext;
 

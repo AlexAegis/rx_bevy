@@ -1,15 +1,10 @@
-use rx_bevy::{
-	context::{DropUnsafeSubscriptionContext, SubscriptionContext},
-	heap_allocator_context::{
-		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
-		UnscheduledSubscriptionHeapAllocator,
-	},
-	prelude::*,
-};
+use rx_core::{context::*, heap_allocator_context::*, prelude::*};
 
 struct CustomContext;
 
 impl SubscriptionContext for CustomContext {
+	type Item<'w, 's> = CustomContext;
+
 	type DestinationAllocator = SubscriberHeapAllocator<Self>;
 	type ErasedDestinationAllocator = ErasedSubscriberHeapAllocator<Self>;
 	type ScheduledSubscriptionAllocator = ScheduledSubscriptionHeapAllocator<Self>;
@@ -17,9 +12,13 @@ impl SubscriptionContext for CustomContext {
 
 	type DropSafety = DropUnsafeSubscriptionContext;
 
-	fn create_context_to_unsubscribe_on_drop<'c>() -> Self::Item<'c> {
+	fn create_context_to_unsubscribe_on_drop<'w, 's>() -> Self::Item<'w, 's> {
 		panic!("Don't worry about me");
 	}
+}
+
+impl SubscriptionContextAccess for CustomContext {
+	type SubscriptionContextProvider = CustomContext;
 }
 
 /// Since all subscriptions present here are inert, it's safe to use an drop-unsafe context

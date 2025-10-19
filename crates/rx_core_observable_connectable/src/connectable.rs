@@ -1,8 +1,6 @@
-use rx_core_traits::{
-	Observable, SubscriptionLike, context::WithSubscriptionContext, prelude::SubscriptionContext,
-};
+use rx_core_traits::{Observable, SubscriptionContext, SubscriptionLike, WithSubscriptionContext};
 
-use crate::ConnectionHandle;
+use crate::observable::ConnectionHandle;
 
 pub trait Connectable: Observable {
 	type ConnectionSubscription: SubscriptionLike + Send + Sync;

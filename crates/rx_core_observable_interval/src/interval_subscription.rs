@@ -1,10 +1,10 @@
 use bevy_time::{Timer, TimerMode};
 use rx_core_traits::{
 	Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
-use crate::IntervalObservableOptions;
+use crate::observable::IntervalObservableOptions;
 
 // TODO: Remove bevy-time dependency, it's a small crate but it's versioned together with the rest of bevy, and even it could just stay on a version, I don't want to ppl see two bevy versions in their lockfile/cargo output, that'd be confusing
 pub struct IntervalSubscription<Context>

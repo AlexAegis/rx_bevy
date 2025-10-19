@@ -1,8 +1,7 @@
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
-	SubscriptionLike,
-	context::{WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator},
-	prelude::SubscriptionContext,
+	SubscriptionContext, SubscriptionLike, WithSubscriptionContext,
+	allocator::UnscheduledSubscriptionAllocator,
 };
 
 use crate::BevySubscriptionContextProvider;

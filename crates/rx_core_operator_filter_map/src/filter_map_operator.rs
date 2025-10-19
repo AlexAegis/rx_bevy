@@ -1,12 +1,11 @@
 use std::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
-	context::SubscriptionContext,
-};
 use rx_core_operator_composite::CompositeSubscriber;
 use rx_core_operator_lift_option::LiftOptionSubscriber;
 use rx_core_operator_map::MapSubscriber;
+use rx_core_traits::{
+	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
+};
 
 pub type FilterMapSubscriber<In, InError, Mapper, Out, Destination> = CompositeSubscriber<
 	MapSubscriber<

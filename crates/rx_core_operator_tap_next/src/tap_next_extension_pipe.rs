@@ -1,7 +1,7 @@
-use rx_core_traits::{Observable, SignalBound, context::SubscriptionContext};
-use rx_core_observable_pipe::Pipe;
+use rx_core_observable_pipe::observable::Pipe;
+use rx_core_traits::{Observable, SignalBound, SubscriptionContext};
 
-use crate::TapNextOperator;
+use crate::operator::TapNextOperator;
 
 /// Operator creator function
 pub fn tap_next<In, InError, OnNext, Context>(

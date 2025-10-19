@@ -1,7 +1,7 @@
+use rx_core_observable_pipe::observable::Pipe;
 use rx_core_traits::Observable;
-use rx_core_observable_pipe::Pipe;
 
-use crate::TakeOperator;
+use crate::operator::TakeOperator;
 
 /// Operator creator function
 pub fn take<In, InError>(count: usize) -> TakeOperator<In, InError> {

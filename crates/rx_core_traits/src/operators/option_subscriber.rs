@@ -1,6 +1,6 @@
 use crate::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tickable,
+	WithSubscriptionContext,
 };
 
 pub enum OptionSubscriber<InnerSubscriber, Destination>

@@ -7,11 +7,9 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use rx_core_traits::{
-	ObservableSubscription, SubscriptionLike, SubscriptionNotification, Teardown, Tick, Tickable,
-	context::{
-		SubscriptionContext, WithSubscriptionContext,
-		allocator::handle::ScheduledSubscriptionHandle,
-	},
+	ObservableSubscription, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
+	Teardown, Tick, Tickable, WithSubscriptionContext,
+	allocator::handle::ScheduledSubscriptionHandle,
 };
 
 use crate::{

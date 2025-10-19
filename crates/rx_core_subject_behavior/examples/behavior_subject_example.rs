@@ -1,5 +1,4 @@
 use rx_core::prelude::*;
-use rx_core_subject_behavior::BehaviorSubject;
 
 fn main() {
 	let mut subject = BehaviorSubject::<i32>::new(10);

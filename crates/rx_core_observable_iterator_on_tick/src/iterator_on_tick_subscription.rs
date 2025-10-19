@@ -1,9 +1,9 @@
 use rx_core_traits::{
 	SignalBound, Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
-use crate::OnTickObservableOptions;
+use crate::observable::OnTickObservableOptions;
 
 pub struct OnTickIteratorSubscription<Iterator, Context>
 where

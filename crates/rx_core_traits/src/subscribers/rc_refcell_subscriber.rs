@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
 	Observer, ObserverInput, Subscriber, SubscriptionLike, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 impl<S> WithSubscriptionContext for Rc<RefCell<S>>

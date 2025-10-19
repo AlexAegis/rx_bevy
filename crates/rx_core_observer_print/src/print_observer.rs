@@ -2,7 +2,7 @@ use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_traits::{
 	Observer, ObserverInput, SignalBound, SubscriptionData, SubscriptionLike, Teardown, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]

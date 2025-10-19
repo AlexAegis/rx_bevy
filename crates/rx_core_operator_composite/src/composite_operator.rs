@@ -1,6 +1,4 @@
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, Subscriber, prelude::SubscriptionContext,
-};
+use rx_core_traits::{ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionContext};
 
 use crate::CompositeSubscriber;
 

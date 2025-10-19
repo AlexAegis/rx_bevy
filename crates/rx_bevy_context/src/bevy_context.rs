@@ -1,4 +1,4 @@
-use std::{any::Any, marker::PhantomData};
+use std::marker::PhantomData;
 
 use bevy_ecs::{
 	component::{Component, ComponentId, Mutable},
@@ -7,9 +7,8 @@ use bevy_ecs::{
 	world::{DeferredWorld, Mut},
 };
 use rx_core_traits::{
-	SignalBound, Subscriber, SubscriberNotification, SubscriptionNotification,
-	context::{DropUnsafeSubscriptionContext, SubscriptionContext},
-	prelude::SubscriptionContextAccess,
+	DropUnsafeSubscriptionContext, SignalBound, Subscriber, SubscriberNotification,
+	SubscriptionContext, SubscriptionContextAccess, SubscriptionNotification,
 };
 use short_type_name::short_type_name;
 

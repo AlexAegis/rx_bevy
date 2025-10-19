@@ -2,10 +2,10 @@ use std::marker::PhantomData;
 
 use rx_core_traits::{
 	Observable, ObservableOutput, Subscriber,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
-use crate::{IntervalObservableOptions, IntervalSubscription};
+use crate::{IntervalSubscription, observable::IntervalObservableOptions};
 
 pub struct IntervalObservable<Context = ()>
 where

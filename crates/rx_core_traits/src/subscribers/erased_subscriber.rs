@@ -1,6 +1,6 @@
 use crate::{
 	Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.

@@ -2,14 +2,10 @@ use std::marker::PhantomData;
 
 use bevy_ecs::component::Component;
 use bevy_ecs::entity::Entity;
-use rx_core_traits::context::SubscriptionContext;
 use rx_core_traits::{
 	Observer, ObserverInput, SignalBound, Subscriber, SubscriberNotification, SubscriptionLike,
-	Teardown, Tick, Tickable,
-	context::{
-		WithSubscriptionContext,
-		allocator::{ErasedSharedDestination, SharedDestination},
-	},
+	Teardown, Tick, Tickable, WithSubscriptionContext,
+	allocator::{ErasedSharedDestination, SharedDestination},
 };
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, SubscriberComponent};
@@ -66,10 +62,7 @@ where
 	InError: SignalBound,
 	Destination: 'static + Subscriber<In = In, InError = InError, Context = Self::Context>,
 {
-	fn clone_with_context(
-		&self,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self {
+	fn clone_with_context(&self, _context: &mut BevySubscriptionContext<'_, '_>) -> Self {
 		Self {
 			closed: self.closed,
 			destination_entity: self.destination_entity,
@@ -79,7 +72,7 @@ where
 
 	fn access_with_context<F>(&mut self, accessor: F, context: &mut BevySubscriptionContext<'_, '_>)
 	where
-		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
+		F: Fn(&Destination, &mut BevySubscriptionContext<'_, '_>),
 	{
 		let stolen_destination = context
 			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
@@ -97,7 +90,7 @@ where
 		mut accessor: F,
 		context: &mut BevySubscriptionContext<'_, '_>,
 	) where
-		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
+		F: FnMut(&mut Destination, &mut BevySubscriptionContext<'_, '_>),
 	{
 		let mut stolen_destination = context
 			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
@@ -140,11 +133,7 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: Self::In, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.closed {
 			context.send_subscriber_notification(
 				self.destination_entity,
@@ -153,11 +142,7 @@ where
 		}
 	}
 
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: Self::InError, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.closed {
 			context.send_subscriber_notification(
 				self.destination_entity,
@@ -166,7 +151,7 @@ where
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.closed {
 			context.send_subscriber_notification(
 				self.destination_entity,
@@ -182,11 +167,7 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
 		context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<In, InError, Self::Context>::Tick(tick),
@@ -204,7 +185,7 @@ where
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		self.closed = true;
 		context.send_subscriber_notification(
 			self.destination_entity,
@@ -215,7 +196,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
 		context.send_subscriber_notification(
 			self.destination_entity,

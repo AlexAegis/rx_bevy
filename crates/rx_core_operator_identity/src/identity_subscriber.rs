@@ -1,6 +1,7 @@
 use rx_core_traits::{
 	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
+	Tickable,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -76,7 +77,11 @@ where
 	Destination: Subscriber,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.destination.tick(tick, context);
 	}
 }

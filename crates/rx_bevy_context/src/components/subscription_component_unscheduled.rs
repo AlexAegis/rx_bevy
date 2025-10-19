@@ -8,7 +8,7 @@ use bevy_ecs::{
 };
 use rx_core_traits::{
 	SubscriptionLike, Teardown,
-	prelude::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 use short_type_name::short_type_name;
 

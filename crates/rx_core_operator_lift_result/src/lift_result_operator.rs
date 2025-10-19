@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
-	context::SubscriptionContext,
+	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
 };
 
 use crate::LiftResultSubscriber;

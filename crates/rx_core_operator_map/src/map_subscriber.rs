@@ -3,7 +3,8 @@ use std::marker::PhantomData;
 use derive_where::derive_where;
 use rx_core_traits::{
 	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable, context::WithSubscriptionContext, prelude::SubscriptionContext,
+	Tick, Tickable,
+	SubscriptionContext, WithSubscriptionContext,
 };
 
 #[derive_where(Debug)]
@@ -106,7 +107,11 @@ where
 		>,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		self.destination.tick(tick, context);
 	}
 }

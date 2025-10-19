@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use rx_core_traits::{
 	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionCollection,
-	context::SubscriptionContext,
+	SubscriptionContext,
 };
 
 #[derive(Debug)]

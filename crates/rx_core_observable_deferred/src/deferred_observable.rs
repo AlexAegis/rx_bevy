@@ -1,17 +1,9 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber, context::WithSubscriptionContext,
-	prelude::SubscriptionContext,
+	Observable, ObservableOutput, Subscriber,
+	SubscriptionContext, WithSubscriptionContext,
 };
-
-pub fn deferred_observable<F, Source>(observable_creator: F) -> DeferredObservable<F, Source>
-where
-	Source: Observable,
-	F: Clone + Fn() -> Source,
-{
-	DeferredObservable::new(observable_creator)
-}
 
 /// Defers the creation of its source [Observable] until subscribe
 #[derive(Clone)]

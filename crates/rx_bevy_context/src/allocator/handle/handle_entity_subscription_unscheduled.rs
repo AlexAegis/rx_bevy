@@ -2,11 +2,8 @@ use std::marker::PhantomData;
 
 use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_traits::{
-	SubscriptionLike, SubscriptionNotification, Teardown,
-	context::{
-		SubscriptionContext, WithSubscriptionContext,
-		allocator::handle::UnscheduledSubscriptionHandle,
-	},
+	SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown,
+	WithSubscriptionContext, allocator::handle::UnscheduledSubscriptionHandle,
 };
 
 use crate::{

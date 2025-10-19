@@ -1,7 +1,7 @@
+use rx_core_observable_pipe::observable::Pipe;
 use rx_core_traits::{Observable, SignalBound};
-use rx_core_observable_pipe::Pipe;
 
-use crate::EnumerateOperator;
+use crate::operator::EnumerateOperator;
 
 /// Operator creator function
 pub fn enumerate<In, InError>() -> EnumerateOperator<In, InError>

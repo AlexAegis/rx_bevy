@@ -1,9 +1,8 @@
 use rx_core_traits::{
-	Observable, ObservableOutput, Operator, Subscriber, context::WithSubscriptionContext,
-	prelude::SubscriptionContext,
+	Observable, ObservableOutput, Operator, Subscriber, SubscriptionContext,
+	WithSubscriptionContext,
 };
 
-/// TODO: chance source to be a ref
 pub struct Pipe<Source, Op>
 where
 	Source: 'static + Observable,

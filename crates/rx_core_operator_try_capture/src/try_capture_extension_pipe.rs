@@ -1,7 +1,7 @@
+use rx_core_observable_pipe::observable::Pipe;
 use rx_core_traits::{Observable, SignalBound};
-use rx_core_observable_pipe::Pipe;
 
-use crate::TryCaptureOperator;
+use crate::operator::TryCaptureOperator;
 
 /// Operator creator function
 pub fn try_capture<In, InError>() -> TryCaptureOperator<In, InError>

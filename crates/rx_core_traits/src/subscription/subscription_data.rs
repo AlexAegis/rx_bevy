@@ -2,7 +2,7 @@ use short_type_name::short_type_name;
 
 use crate::{
 	NotifiableSubscription, SubscriptionLike, SubscriptionNotification, Teardown, Tick, Tickable,
-	context::{SubscriptionContext, WithSubscriptionContext},
+	SubscriptionContext, WithSubscriptionContext,
 };
 use std::{fmt::Debug, vec};
 
@@ -101,7 +101,11 @@ impl<Context> Tickable for SubscriptionData<Context>
 where
 	Context: SubscriptionContext,
 {
-	fn tick(&mut self, tick: Tick, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
 		for notifiable_subscription in self.notifiable_subscriptions.iter_mut() {
 			(notifiable_subscription)(SubscriptionNotification::Tick(tick.clone()), context);
 		}
