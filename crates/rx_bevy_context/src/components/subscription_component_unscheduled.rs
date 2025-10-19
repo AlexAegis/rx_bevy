@@ -1,15 +1,13 @@
 use bevy_ecs::{
 	component::{Component, HookContext},
+	entity::Entity,
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
 	system::{Query, StaticSystemParam},
 	world::DeferredWorld,
 };
-use rx_core_traits::{
-	SubscriptionLike, Teardown,
-	SubscriptionContext, WithSubscriptionContext,
-};
+use rx_core_traits::{SubscriptionLike, Teardown, WithSubscriptionContext};
 use short_type_name::short_type_name;
 
 use crate::{
@@ -19,7 +17,7 @@ use crate::{
 };
 
 #[derive(Component)]
-#[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove::<Subscription>)]
+#[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
 #[require(Name::new(short_type_name::<Subscription>()))]
 pub struct UnscheduledSubscriptionComponent<Subscription>
 where
@@ -27,9 +25,10 @@ where
 		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	subscription: Subscription,
+	this_entity: Entity,
 }
 
-pub(crate) fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
+fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
 	mut deferred_world: DeferredWorld,
 	hook_context: HookContext,
 ) where
@@ -43,7 +42,7 @@ pub(crate) fn unscheduled_subscription_add_notification_observer_on_insert<Subsc
 	));
 }
 
-pub(crate) fn unscheduled_subscription_notification_observer<Subscription>(
+fn unscheduled_subscription_notification_observer<Subscription>(
 	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
 	mut subscription_query: Query<&mut UnscheduledSubscriptionComponent<Subscription>>,
 	mut context: StaticSystemParam<BevySubscriptionContext>,
@@ -66,12 +65,13 @@ where
 		.take()
 		.expect("notification was already consumed!");
 
-	let subscription = &mut subscription_component.subscription;
 	match event {
-		SubscriptionNotificationEvent::Unsubscribe => subscription.unsubscribe(&mut context),
+		SubscriptionNotificationEvent::Unsubscribe => {
+			subscription_component.unsubscribe(&mut context)
+		}
 		SubscriptionNotificationEvent::Tick(_tick) => {} // These subscriptions are non-tickable, so this event is ignored
 		SubscriptionNotificationEvent::Add(teardown) => {
-			subscription.add_teardown(teardown, &mut context)
+			subscription_component.add_teardown(teardown, &mut context)
 		}
 	};
 
@@ -83,8 +83,11 @@ where
 	Subscription:
 		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	pub fn new(subscription: Subscription) -> Self {
-		Self { subscription }
+	pub fn new(subscription: Subscription, this_entity: Entity) -> Self {
+		Self {
+			subscription,
+			this_entity,
+		}
 	}
 }
 
@@ -105,14 +108,21 @@ where
 		self.subscription.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.subscription.unsubscribe(context);
+	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+		if !self.is_closed() {
+			self.subscription.unsubscribe(context);
+			context
+				.deferred_world
+				.commands()
+				.entity(self.this_entity)
+				.try_despawn();
+		}
 	}
 
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
 		self.subscription.add_teardown(teardown, context);
 	}

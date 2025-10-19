@@ -14,8 +14,8 @@ use short_type_name::short_type_name;
 use thiserror::Error;
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider, ErasedEntitySubscriber,
-	ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
+	BevySubscriptionContext, BevySubscriptionContextProvider, ObservableSubscriptions,
+	ScheduledSubscriptionComponent, SharedErasedEntitySubscriber, Subscribe, SubscribeObserverOf,
 	SubscribeObserverRef, SubscriptionOf,
 };
 
@@ -38,7 +38,7 @@ where
 	}
 }
 
-fn subscribe_event_observer<'w, 's, O>(
+pub fn subscribe_event_observer<'w, 's, O>(
 	on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut commands: Commands,
 	mut observable_query: Query<&mut ObservableComponent<O>>,
@@ -58,7 +58,7 @@ where
 	};
 
 	let subscription = observable.observable.subscribe(
-		ErasedEntitySubscriber::<O::Out, O::OutError>::new(event.destination_entity),
+		SharedErasedEntitySubscriber::<O::Out, O::OutError>::new(event.destination_entity),
 		&mut context,
 	);
 
@@ -67,7 +67,10 @@ where
 	// It also already contains the [SubscriptionSchedule] component.
 	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
 	subscription_entity_commands.insert((
-		ScheduledSubscriptionComponent::<O::Subscription>::new(subscription),
+		ScheduledSubscriptionComponent::<O::Subscription>::new(
+			subscription,
+			event.subscription_entity,
+		),
 		SubscriptionOf::<O>::new(event.observable_entity),
 	));
 

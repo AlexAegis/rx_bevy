@@ -1,14 +1,13 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{
-	component::{Component, ComponentId, Mutable},
+	component::{Component, Mutable},
 	entity::Entity,
 	system::SystemParam,
 	world::{DeferredWorld, Mut},
 };
 use rx_core_traits::{
-	DropUnsafeSubscriptionContext, SignalBound, Subscriber, SubscriberNotification,
-	SubscriptionContext, SubscriptionContextAccess, SubscriptionNotification,
+	DropUnsafeSubscriptionContext, SignalBound, SubscriptionContext, SubscriptionContextAccess,
 };
 use short_type_name::short_type_name;
 
@@ -41,6 +40,7 @@ Please submit an issue at https://github.com/AlexAegis/rx_bevy/issues/new?templa
 	}
 }
 
+// TODO: Maybe this could store some more data like the current entity?
 #[derive(SystemParam)]
 pub struct BevySubscriptionContext<'w, 's> {
 	pub deferred_world: DeferredWorld<'w>,
@@ -85,46 +85,13 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 
 		subscriber_component
 	}
-
-	pub fn get_expected_subscriber_erased<In, InError>(
-		&mut self,
-		destination_entity: Entity,
-		component_id: ComponentId,
-	) -> &Box<dyn Subscriber<In = In, InError = InError, Context = BevySubscriptionContextProvider>>
-	where
-		In: SignalBound,
-		InError: SignalBound,
-	{
-		let Some(subscriber_component_ptr) = self
-			.deferred_world
-			.get_by_id(destination_entity, component_id)
-		else {
-			panic!(
-				"{} is missing an expected component: {:?}!",
-				destination_entity, component_id,
-			);
-		};
-
-		// SAFETY: idk lol // TODO
-		let subscriber_component = unsafe {
-			subscriber_component_ptr.deref::<Box<
-				dyn Subscriber<
-						In = In,
-						InError = InError,
-						Context = BevySubscriptionContextProvider,
-					>,
-			>>()
-		};
-
-		subscriber_component
-	}
 }
 
 impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn send_subscriber_notification<In, InError>(
 		&mut self,
 		target: Entity,
-		notification: SubscriberNotification<In, InError, BevySubscriptionContextProvider>,
+		notification: impl Into<ConsumableSubscriberNotificationEvent<In, InError>>,
 	) where
 		In: SignalBound,
 		InError: SignalBound,
@@ -139,7 +106,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn send_subscription_notification(
 		&mut self,
 		target: Entity,
-		notification: SubscriptionNotification<BevySubscriptionContextProvider>,
+		notification: impl Into<ConsumableSubscriptionNotificationEvent>,
 	) {
 		let notification_event: ConsumableSubscriptionNotificationEvent = notification.into();
 		self.deferred_world

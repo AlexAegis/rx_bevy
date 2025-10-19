@@ -7,7 +7,7 @@ use crate::{
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::ErasedSharedDestination},
 };
 
-pub struct ErasedHeapSubscriber<In, InError, Context>
+pub struct SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -18,7 +18,8 @@ where
 	teardown: SubscriptionData<Context>,
 }
 
-impl<In, InError, Context> ErasedSharedDestination for ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> ErasedSharedDestination
+	for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -26,7 +27,7 @@ where
 {
 }
 
-impl<In, InError, Context> ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -66,7 +67,7 @@ where
 	}
 }
 
-impl<In, InError, Context> Clone for ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> Clone for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -80,7 +81,7 @@ where
 	}
 }
 
-impl<In, InError, Context> ObserverInput for ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> ObserverInput for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -90,7 +91,8 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Context> WithSubscriptionContext for ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> WithSubscriptionContext
+	for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -99,7 +101,7 @@ where
 	type Context = Context;
 }
 
-impl<In, InError, Context> Observer for ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> Observer for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -148,7 +150,7 @@ where
 	}
 }
 
-impl<In, InError, Context> Tickable for ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> Tickable for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -167,7 +169,7 @@ where
 	}
 }
 
-impl<In, InError, Context> SubscriptionLike for ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> SubscriptionLike for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -209,7 +211,7 @@ where
 	}
 }
 
-impl<In, InError, Context> Drop for ErasedHeapSubscriber<In, InError, Context>
+impl<In, InError, Context> Drop for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,

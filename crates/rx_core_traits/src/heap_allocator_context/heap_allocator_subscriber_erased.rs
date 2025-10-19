@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use super::ErasedHeapSubscriber;
+use super::SharedHeapSubscriberErased;
 use crate::{
 	SignalBound, Subscriber,
 	context::{
@@ -27,7 +27,7 @@ where
 	Context: SubscriptionContext,
 {
 	type Shared<In, InError>
-		= ErasedHeapSubscriber<In, InError, Context>
+		= SharedHeapSubscriberErased<In, InError, Context>
 	where
 		In: SignalBound,
 		InError: SignalBound;
@@ -39,6 +39,6 @@ where
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync,
 	{
-		ErasedHeapSubscriber::new(destination)
+		SharedHeapSubscriberErased::new(destination)
 	}
 }

@@ -1,6 +1,5 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::component::Component;
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
 	Observer, ObserverInput, SignalBound, Subscriber, SubscriberNotification, SubscriptionLike,
@@ -10,8 +9,10 @@ use rx_core_traits::{
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, SubscriberComponent};
 
-#[derive(Component)]
-pub struct ErasedEntitySubscriber<In, InError>
+/// This subscriber acts like the ArcSubscriber does. It does not contain
+/// anything but a destination where observed signals are just simply forwarded
+/// to.
+pub struct SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -22,7 +23,7 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError> ErasedEntitySubscriber<In, InError>
+impl<In, InError> SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -41,7 +42,7 @@ where
 	}
 }
 
-impl<In, InError> Clone for ErasedEntitySubscriber<In, InError>
+impl<In, InError> Clone for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -56,7 +57,7 @@ where
 }
 
 impl<In, InError, Destination> SharedDestination<Destination>
-	for ErasedEntitySubscriber<In, InError>
+	for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -104,14 +105,14 @@ where
 	}
 }
 
-impl<In, InError> ErasedSharedDestination for ErasedEntitySubscriber<In, InError>
+impl<In, InError> ErasedSharedDestination for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
 }
 
-impl<In, InError> ObserverInput for ErasedEntitySubscriber<In, InError>
+impl<In, InError> ObserverInput for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -120,7 +121,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError> WithSubscriptionContext for ErasedEntitySubscriber<In, InError>
+impl<In, InError> WithSubscriptionContext for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -128,7 +129,7 @@ where
 	type Context = BevySubscriptionContextProvider;
 }
 
-impl<In, InError> Observer for ErasedEntitySubscriber<In, InError>
+impl<In, InError> Observer for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -162,7 +163,7 @@ where
 	}
 }
 
-impl<In, InError> Tickable for ErasedEntitySubscriber<In, InError>
+impl<In, InError> Tickable for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -175,7 +176,7 @@ where
 	}
 }
 
-impl<In, InError> SubscriptionLike for ErasedEntitySubscriber<In, InError>
+impl<In, InError> SubscriptionLike for SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,

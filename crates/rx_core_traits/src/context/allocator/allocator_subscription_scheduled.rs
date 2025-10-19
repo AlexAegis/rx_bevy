@@ -1,7 +1,7 @@
 use crate::{
 	ObservableSubscription, SubscriptionLike,
 	context::{
-		SubscriptionContext, WithSubscriptionContext,
+		WithSubscriptionContext,
 		allocator::handle::{ScheduledSubscriptionHandle, UnscheduledSubscriptionHandle},
 	},
 };
@@ -31,11 +31,4 @@ pub trait ScheduledSubscriptionAllocator: WithSubscriptionContext {
 	type UnscheduledHandle<Subscription>: UnscheduledSubscriptionHandle<Context = Self::Context>
 	where
 		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
-
-	fn allocate_scheduled_subscription<Subscription, Schedule>(
-		subscription: Subscription,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::ScheduledHandle<Subscription>
-	where
-		Subscription: 'static + ObservableSubscription<Context = Self::Context> + Send + Sync;
 }

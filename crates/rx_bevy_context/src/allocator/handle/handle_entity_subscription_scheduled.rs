@@ -20,7 +20,7 @@ use crate::{
 use super::{UnscheduledEntitySubscriptionHandle, WeakEntitySubscriptionHandle};
 
 #[derive(Component)]
-#[component(on_insert=observable_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove::<Subscription>)]
+#[component(on_insert=observable_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
 pub struct ScheduledEntitySubscriptionHandle<Subscription>
 where
 	Subscription:
@@ -64,8 +64,8 @@ where
 	Subscription:
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	type WeakHandle = WeakEntitySubscriptionHandle<Subscription>;
-	type UnscheduledHandle = UnscheduledEntitySubscriptionHandle<Subscription>;
+	type WeakHandle = WeakEntitySubscriptionHandle;
+	type UnscheduledHandle = UnscheduledEntitySubscriptionHandle;
 
 	fn downgrade(&mut self) -> Self::WeakHandle {
 		WeakEntitySubscriptionHandle::new(self.subscription_entity)

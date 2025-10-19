@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{any::TypeId, marker::PhantomData};
 
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
 use rx_core_traits::SignalBound;
@@ -23,6 +23,11 @@ where
 	/// This entity can only be spawned from this events constructors
 	pub(crate) subscription_entity: Entity,
 
+	/// The subscriptions schedule is erased to avoid making a separate
+	/// observer for subscription events of all schedules, just one. All it
+	/// would be used for is to create the marker component anyway.
+	erased_subscription_schedule: TypeId,
+
 	_phantom_data: PhantomData<(Out, OutError)>,
 }
 
@@ -39,13 +44,15 @@ where
 	where
 		S: ScheduleLabel,
 	{
-		let subscription_entity = commands.spawn(SubscriptionSchedule::<S>::default()).id();
+		// let subscription_entity = commands.spawn(SubscriptionSchedule::<S>::default()).id();
+		let subscription_entity = commands.spawn_empty().id();
 
 		(
 			Self {
 				observable_entity,
 				destination_entity,
 				subscription_entity,
+				erased_subscription_schedule: TypeId::of::<SubscriptionSchedule<S>>(),
 				_phantom_data: PhantomData,
 			},
 			subscription_entity,

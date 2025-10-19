@@ -4,7 +4,7 @@ use rx_core_traits::{SignalBound, SubscriberNotification};
 use crate::{BevySubscriptionContextProvider, SubscriberNotificationEvent};
 
 #[derive(Event, Clone, Debug)]
-pub(crate) struct ConsumableSubscriberNotificationEvent<In, InError = ()>
+pub struct ConsumableSubscriberNotificationEvent<In, InError = ()>
 where
 	In: SignalBound,
 	InError: SignalBound,

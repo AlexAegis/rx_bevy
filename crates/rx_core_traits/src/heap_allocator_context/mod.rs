@@ -5,12 +5,12 @@ mod heap_allocator_subscriber_erased;
 mod heap_allocator_subscription_scheduled;
 mod heap_allocator_subscription_unscheduled;
 mod heap_context;
-mod heap_subscriber;
-mod heap_subscriber_erased;
+mod shared_heap_subscriber;
+mod shared_heap_subscriber_erased;
 
 pub use heap_allocator_subscriber::*;
 pub use heap_allocator_subscriber_erased::*;
 pub use heap_allocator_subscription_scheduled::*;
 pub use heap_allocator_subscription_unscheduled::*;
-pub use heap_subscriber::*;
-pub use heap_subscriber_erased::*;
+pub use shared_heap_subscriber::*;
+pub use shared_heap_subscriber_erased::*;

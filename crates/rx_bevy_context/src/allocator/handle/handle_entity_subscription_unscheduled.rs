@@ -1,89 +1,91 @@
-use std::marker::PhantomData;
-
-use bevy_ecs::{component::Component, entity::Entity};
+use bevy_ecs::{
+	component::{Component, HookContext},
+	entity::Entity,
+	error::BevyError,
+	observer::{Observer, Trigger},
+	system::StaticSystemParam,
+	world::DeferredWorld,
+};
 use rx_core_traits::{
 	SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown,
 	WithSubscriptionContext, allocator::handle::UnscheduledSubscriptionHandle,
 };
 
 use crate::{
-	BevySubscriptionContextProvider, subscription_unsubscribe_on_remove,
-	unscheduled_subscription_add_notification_observer_on_insert,
+	BevySubscriptionContext, BevySubscriptionContextProvider,
+	ConsumableSubscriptionNotificationEvent, subscription_unsubscribe_on_remove,
 };
 
 use super::WeakEntitySubscriptionHandle;
 
 #[derive(Component)]
-#[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove::<Subscription>)]
-pub struct UnscheduledEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+#[component(on_insert=unscheduled_erased_subscription_add_notification_observer_on_insert, on_remove=subscription_unsubscribe_on_remove)]
+pub struct UnscheduledEntitySubscriptionHandle {
 	subscription_entity: Entity,
 	closed: bool,
-	_phantom_data: PhantomData<Subscription>,
 }
 
-impl<Subscription> UnscheduledEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+pub(crate) fn unscheduled_erased_subscription_add_notification_observer_on_insert(
+	mut deferred_world: DeferredWorld,
+	hook_context: HookContext,
+) {
+	let mut commands = deferred_world.commands();
+	let mut entity_commands = commands.entity(hook_context.entity);
+	entity_commands.insert(Observer::new(
+		unscheduled_erased_subscription_notification_observer,
+	));
+}
+
+pub(crate) fn unscheduled_erased_subscription_notification_observer(
+	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
+	mut context: StaticSystemParam<BevySubscriptionContext>,
+) -> Result<(), BevyError> {
+	let subscription_entity = subscription_notification.target();
+	let n = subscription_notification
+		.event_mut()
+		.take()
+		.expect("not to have been consumed");
+
+	context.send_subscription_notification(subscription_entity, n);
+	Ok(())
+}
+
+impl UnscheduledEntitySubscriptionHandle {
 	pub(crate) fn new(subscription_entity: Entity) -> Self {
 		Self {
 			subscription_entity,
 			closed: false,
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Subscription> UnscheduledSubscriptionHandle
-	for UnscheduledEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	type WeakHandle = WeakEntitySubscriptionHandle<Subscription>;
+impl UnscheduledSubscriptionHandle for UnscheduledEntitySubscriptionHandle {
+	type WeakHandle = WeakEntitySubscriptionHandle;
 
 	fn downgrade(&mut self) -> Self::WeakHandle {
 		WeakEntitySubscriptionHandle::new(self.subscription_entity)
 	}
 }
 
-impl<Subscription> WithSubscriptionContext for UnscheduledEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	type Context = Subscription::Context;
+impl WithSubscriptionContext for UnscheduledEntitySubscriptionHandle {
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<Subscription> Clone for UnscheduledEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+impl Clone for UnscheduledEntitySubscriptionHandle {
 	fn clone(&self) -> Self {
 		Self {
 			subscription_entity: self.subscription_entity,
 			closed: self.closed,
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Subscription> SubscriptionLike for UnscheduledEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+impl SubscriptionLike for UnscheduledEntitySubscriptionHandle {
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		self.closed = true;
 		context.send_subscription_notification(
 			self.subscription_entity,
@@ -94,7 +96,7 @@ where
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
 		context.send_subscription_notification(
 			self.subscription_entity,
@@ -103,14 +105,11 @@ where
 	}
 }
 
-impl<Subscription> Drop for UnscheduledEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+impl Drop for UnscheduledEntitySubscriptionHandle {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = Subscription::Context::create_context_to_unsubscribe_on_drop();
+			let mut context =
+				BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

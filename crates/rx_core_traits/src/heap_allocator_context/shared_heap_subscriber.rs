@@ -7,14 +7,14 @@ use crate::{
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
-pub struct HeapSubscriber<Destination>
+pub struct SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	destination: Arc<RwLock<Destination>>,
 }
 
-impl<Destination> SharedDestination<Destination> for HeapSubscriber<Destination>
+impl<Destination> SharedDestination<Destination> for SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -50,7 +50,7 @@ where
 	}
 }
 
-impl<Destination> HeapSubscriber<Destination>
+impl<Destination> SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -82,7 +82,7 @@ where
 	}
 }
 
-impl<Destination> Clone for HeapSubscriber<Destination>
+impl<Destination> Clone for SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -93,7 +93,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for HeapSubscriber<Destination>
+impl<Destination> ObserverInput for SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -101,14 +101,14 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithSubscriptionContext for HeapSubscriber<Destination>
+impl<Destination> WithSubscriptionContext for SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	type Context = Destination::Context;
 }
 
-impl<Destination> Observer for HeapSubscriber<Destination>
+impl<Destination> Observer for SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -153,7 +153,7 @@ where
 	}
 }
 
-impl<Destination> Tickable for HeapSubscriber<Destination>
+impl<Destination> Tickable for SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -170,7 +170,7 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for HeapSubscriber<Destination>
+impl<Destination> SubscriptionLike for SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -208,7 +208,7 @@ where
 	}
 }
 
-impl<Destination> Drop for HeapSubscriber<Destination>
+impl<Destination> Drop for SharedHeapSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {

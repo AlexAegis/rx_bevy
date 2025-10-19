@@ -1,12 +1,16 @@
 use bevy_ecs::{
 	component::{Component, HookContext},
+	entity::Entity,
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
 	system::{Query, StaticSystemParam},
 	world::DeferredWorld,
 };
-use rx_core_traits::Subscriber;
+use rx_core_traits::{
+	Observer as RxObserver, ObserverInput, Subscriber, SubscriptionLike, Tick, Tickable,
+	WithSubscriptionContext,
+};
 use short_type_name::short_type_name;
 
 use crate::{
@@ -15,7 +19,6 @@ use crate::{
 	SubscriberNotificationEventError, SubscriptionNotificationEvent,
 };
 
-// TODO: Maybe delete in facor of entity_subscriber. Or amybe not?
 #[derive(Component)]
 #[component(on_insert=subscriber_on_insert::<Destination>, on_remove=subscriber_on_remove::<Destination>)]
 #[require(Name::new(format!("Subscriber ({})", short_type_name::<Destination>())))]
@@ -23,6 +26,7 @@ pub struct SubscriberComponent<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
+	this_entity: Entity,
 	pub(crate) destination: Option<Destination>,
 }
 
@@ -30,10 +34,31 @@ impl<Destination> SubscriberComponent<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	pub fn new(subscriber: Destination) -> Self {
+	pub fn new(subscriber: Destination, this_entity: Entity) -> Self {
 		Self {
+			this_entity,
 			destination: Some(subscriber),
 		}
+	}
+
+	fn get_destination(&self) -> &Destination {
+		self.destination.as_ref().unwrap_or_else(|| {
+			panic!(
+				"{}'s shared destination in {} is stolen!",
+				short_type_name::<Self>(),
+				short_type_name::<SubscriberComponent<Destination>>()
+			)
+		})
+	}
+
+	fn get_destination_mut(&mut self) -> &mut Destination {
+		self.destination.as_mut().unwrap_or_else(|| {
+			panic!(
+				"{}'s shared destination in {} is stolen!",
+				short_type_name::<Self>(),
+				short_type_name::<SubscriberComponent<Destination>>()
+			)
+		})
 	}
 
 	/// Takes the destination out of the component, and puts trust in the
@@ -85,24 +110,23 @@ where
 		.take()
 		.expect("notification was already consumed!");
 
-	let destination = subscriber_component.destination.as_mut().expect(
-		"destination should only be None during a shared subscripstions access through one",
-	);
 	match event {
-		SubscriberNotificationEvent::Next(next) => destination.next(next, &mut context),
-		SubscriberNotificationEvent::Error(error) => destination.error(error, &mut context),
+		SubscriberNotificationEvent::Next(next) => subscriber_component.next(next, &mut context),
+		SubscriberNotificationEvent::Error(error) => {
+			subscriber_component.error(error, &mut context)
+		}
 		SubscriberNotificationEvent::Complete => {
-			destination.complete(&mut context);
+			subscriber_component.complete(&mut context);
 		}
 		SubscriberNotificationEvent::Tick(tick) => {
-			destination.tick(tick, &mut context);
+			subscriber_component.tick(tick, &mut context);
 		}
 		SubscriberNotificationEvent::Add(Some(teardown)) => {
-			destination.add_teardown(teardown, &mut context);
+			subscriber_component.add_teardown(teardown, &mut context);
 		}
 		SubscriberNotificationEvent::Add(None) => {}
 		SubscriberNotificationEvent::Unsubscribe => {
-			destination.unsubscribe(&mut context);
+			subscriber_component.unsubscribe(&mut context);
 		}
 	}
 
@@ -128,4 +152,71 @@ where
 		SubscriptionNotificationEvent::Unsubscribe,
 		hook_context.entity,
 	);
+}
+
+impl<Destination> ObserverInput for SubscriberComponent<Destination>
+where
+	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	type In = Destination::In;
+	type InError = Destination::InError;
+}
+
+impl<Destination> WithSubscriptionContext for SubscriberComponent<Destination>
+where
+	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	type Context = BevySubscriptionContextProvider;
+}
+
+impl<Destination> Tickable for SubscriberComponent<Destination>
+where
+	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+		self.get_destination_mut().tick(tick, context);
+	}
+}
+
+impl<Destination> RxObserver for SubscriberComponent<Destination>
+where
+	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	fn next(&mut self, next: Self::In, context: &mut BevySubscriptionContext<'_, '_>) {
+		self.get_destination_mut().next(next, context);
+	}
+
+	fn error(&mut self, error: Self::InError, context: &mut BevySubscriptionContext<'_, '_>) {
+		self.get_destination_mut().error(error, context);
+	}
+
+	fn complete(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+		self.get_destination_mut().complete(context);
+	}
+}
+
+impl<Destination> SubscriptionLike for SubscriberComponent<Destination>
+where
+	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	fn is_closed(&self) -> bool {
+		self.get_destination().is_closed()
+	}
+
+	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+		self.get_destination_mut().unsubscribe(context);
+		context
+			.deferred_world
+			.commands()
+			.entity(self.this_entity)
+			.try_despawn();
+	}
+
+	fn add_teardown(
+		&mut self,
+		teardown: rx_core_traits::Teardown<Self::Context>,
+		context: &mut BevySubscriptionContext<'_, '_>,
+	) {
+		self.get_destination_mut().add_teardown(teardown, context);
+	}
 }

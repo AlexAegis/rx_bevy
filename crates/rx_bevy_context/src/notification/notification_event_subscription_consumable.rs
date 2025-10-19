@@ -4,7 +4,7 @@ use rx_core_traits::SubscriptionNotification;
 use crate::{BevySubscriptionContextProvider, SubscriptionNotificationEvent};
 
 #[derive(Event, Clone, Debug)]
-pub(crate) struct ConsumableSubscriptionNotificationEvent {
+pub struct ConsumableSubscriptionNotificationEvent {
 	notification: Option<SubscriptionNotificationEvent>,
 }
 
@@ -22,6 +22,14 @@ impl From<SubscriptionNotification<BevySubscriptionContextProvider>>
 
 		ConsumableSubscriptionNotificationEvent {
 			notification: Some(notification_event),
+		}
+	}
+}
+
+impl From<SubscriptionNotificationEvent> for ConsumableSubscriptionNotificationEvent {
+	fn from(value: SubscriptionNotificationEvent) -> Self {
+		ConsumableSubscriptionNotificationEvent {
+			notification: Some(value),
 		}
 	}
 }

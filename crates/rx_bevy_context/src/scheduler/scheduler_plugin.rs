@@ -44,6 +44,7 @@ where
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
+		// use bevy_erased_component_registry::AppRegisterErasedComponentExtension;
 		// app.register_erased_component::<SubscriptionSchedule<S>>();
 		app.add_systems(self.schedule.clone(), tick_subscriptions_system::<S, C>);
 	}

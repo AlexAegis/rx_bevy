@@ -1,28 +1,37 @@
 use rx_core_traits::{
-	SignalBound, Subscriber, SubscriptionContext, WithSubscriptionContext,
-	allocator::ErasedDestinationAllocator,
+	SignalBound, Subscriber, WithSubscriptionContext, allocator::ErasedDestinationAllocator,
 };
 
-use crate::{BevySubscriptionContextProvider, ErasedEntitySubscriber};
+use crate::{
+	BevySubscriptionContext, BevySubscriptionContextProvider, SharedErasedEntitySubscriber,
+	SubscriberComponent,
+};
 
 #[derive(Default)]
 pub struct ErasedSubscriberEntityAllocator;
 
 impl ErasedDestinationAllocator for ErasedSubscriberEntityAllocator {
 	type Shared<In, InError>
-		= ErasedEntitySubscriber<In, InError>
+		= SharedErasedEntitySubscriber<In, InError>
 	where
 		In: SignalBound,
 		InError: SignalBound;
 
 	fn share<Destination>(
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		context: &mut BevySubscriptionContext<'_, '_>,
 	) -> Self::Shared<Destination::In, Destination::InError>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync,
 	{
-		todo!("impl")
+		let subscriber_entity = context.deferred_world.commands().spawn_empty().id();
+		context
+			.deferred_world
+			.commands()
+			.entity(subscriber_entity)
+			.insert(SubscriberComponent::new(destination, subscriber_entity));
+
+		SharedErasedEntitySubscriber::new(subscriber_entity)
 	}
 }
 

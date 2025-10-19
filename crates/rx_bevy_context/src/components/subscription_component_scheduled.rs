@@ -1,5 +1,6 @@
 use bevy_ecs::{
 	component::{Component, HookContext},
+	entity::Entity,
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
@@ -7,8 +8,7 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use rx_core_traits::{
-	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 use short_type_name::short_type_name;
 
@@ -19,13 +19,14 @@ use crate::{
 };
 
 #[derive(Component)]
-#[component(on_insert=observable_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove::<Subscription>)]
+#[component(on_insert=observable_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
 #[require(Name::new(short_type_name::<Self>()))]
 pub struct ScheduledSubscriptionComponent<Subscription>
 where
 	Subscription:
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
+	this_entity: Entity,
 	subscription: Subscription,
 }
 
@@ -78,13 +79,10 @@ where
 	Ok(())
 }
 
-pub(crate) fn subscription_unsubscribe_on_remove<Subscription>(
+pub(crate) fn subscription_unsubscribe_on_remove(
 	mut deferred_world: DeferredWorld,
 	hook_context: HookContext,
-) where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+) {
 	deferred_world.commands().trigger_targets(
 		SubscriptionNotificationEvent::Unsubscribe,
 		hook_context.entity,
@@ -96,8 +94,11 @@ where
 	Subscription:
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	pub(crate) fn new(subscription: Subscription) -> Self {
-		Self { subscription }
+	pub(crate) fn new(subscription: Subscription, this_entity: Entity) -> Self {
+		Self {
+			subscription,
+			this_entity,
+		}
 	}
 }
 
@@ -114,11 +115,7 @@ where
 	Subscription:
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
 		self.subscription.tick(tick, context);
 	}
 }
@@ -132,14 +129,19 @@ where
 		self.subscription.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		self.subscription.unsubscribe(context);
+		context
+			.deferred_world
+			.commands()
+			.entity(self.this_entity)
+			.try_despawn();
 	}
 
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
 		self.subscription.add_teardown(teardown, context);
 	}

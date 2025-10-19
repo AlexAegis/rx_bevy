@@ -1,10 +1,10 @@
-use bevy_ecs::entity::Entity;
 use rx_core_traits::{
-	SubscriptionContext, SubscriptionLike, WithSubscriptionContext,
-	allocator::UnscheduledSubscriptionAllocator,
+	SubscriptionLike, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
 };
 
-use crate::BevySubscriptionContextProvider;
+use crate::{
+	BevySubscriptionContext, BevySubscriptionContextProvider, UnscheduledSubscriptionComponent,
+};
 
 use super::handle::UnscheduledEntitySubscriptionHandle;
 
@@ -13,19 +13,29 @@ pub struct UnscheduledEntitySubscriptionAllocator;
 
 impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator {
 	type UnscheduledHandle<Subscription>
-		= UnscheduledEntitySubscriptionHandle<Subscription>
+		= UnscheduledEntitySubscriptionHandle
 	where
 		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
 
 	fn allocate_unscheduled_subscription<S>(
 		subscription: S,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		context: &mut BevySubscriptionContext<'_, '_>,
 	) -> Self::UnscheduledHandle<S>
 	where
-		S: SubscriptionLike<Context = Self::Context> + Send + Sync,
+		S: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync,
 	{
-		// TODO: Spawn subscription! Or spawn it somewhere else and just use the entity
-		UnscheduledEntitySubscriptionHandle::new(Entity::PLACEHOLDER)
+		let subscription_entity = context.deferred_world.commands().spawn_empty().id();
+
+		context
+			.deferred_world
+			.commands()
+			.entity(subscription_entity)
+			.insert(UnscheduledSubscriptionComponent::new(
+				subscription,
+				subscription_entity,
+			));
+
+		UnscheduledEntitySubscriptionHandle::new(subscription_entity)
 	}
 }
 

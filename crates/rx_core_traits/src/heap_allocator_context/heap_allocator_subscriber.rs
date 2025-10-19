@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use super::HeapSubscriber;
+use super::SharedHeapSubscriber;
 use crate::{
 	Subscriber,
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::DestinationAllocator},
@@ -25,7 +25,7 @@ where
 	Context: SubscriptionContext,
 {
 	type Shared<Destination>
-		= HeapSubscriber<Destination>
+		= SharedHeapSubscriber<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
 
@@ -36,6 +36,6 @@ where
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync,
 	{
-		HeapSubscriber::new(destination)
+		SharedHeapSubscriber::new(destination)
 	}
 }

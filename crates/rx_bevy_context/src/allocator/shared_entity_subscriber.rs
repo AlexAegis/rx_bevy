@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{component::Component, entity::Entity};
+use bevy_ecs::entity::Entity;
 use rx_core_traits::{
 	Observer, ObserverInput, Subscriber, SubscriberNotification, SubscriptionLike, Teardown, Tick,
 	Tickable, WithSubscriptionContext, allocator::SharedDestination,
@@ -8,17 +8,19 @@ use rx_core_traits::{
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, SubscriberComponent};
 
-#[derive(Component)]
-pub struct EntitySubscriber<Destination>
+/// An easily clonable subscriber that does not own its destination, only points
+/// to it. It is not a component and is only used internally in other subscribers.
+pub struct SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	destination_entity: Entity,
+	/// TODO: The shared heap subs use this field, but we don't know the type of destination. so maybe add a new component SubscriptionClosed(bool)
 	closed: bool,
 	_phantom_data: PhantomData<Destination>,
 }
 
-impl<Destination> EntitySubscriber<Destination>
+impl<Destination> SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
@@ -36,7 +38,7 @@ where
 	}
 }
 
-impl<Destination> Clone for EntitySubscriber<Destination>
+impl<Destination> Clone for SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
@@ -49,7 +51,7 @@ where
 	}
 }
 
-impl<Destination> SharedDestination<Destination> for EntitySubscriber<Destination>
+impl<Destination> SharedDestination<Destination> for SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
@@ -95,7 +97,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for EntitySubscriber<Destination>
+impl<Destination> ObserverInput for SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
@@ -103,14 +105,14 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> WithSubscriptionContext for EntitySubscriber<Destination>
+impl<Destination> WithSubscriptionContext for SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	type Context = BevySubscriptionContextProvider;
 }
 
-impl<Destination> Observer for EntitySubscriber<Destination>
+impl<Destination> Observer for SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
@@ -155,7 +157,7 @@ where
 	}
 }
 
-impl<Destination> Tickable for EntitySubscriber<Destination>
+impl<Destination> Tickable for SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
@@ -169,7 +171,7 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for EntitySubscriber<Destination>
+impl<Destination> SubscriptionLike for SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {

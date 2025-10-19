@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_traits::{
 	SubscriptionLike, SubscriptionNotification, Teardown, WithSubscriptionContext,
@@ -8,7 +6,7 @@ use rx_core_traits::{
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextProvider,
-	unscheduled_subscription_add_notification_observer_on_insert,
+	handle::unscheduled_erased_subscription_add_notification_observer_on_insert,
 };
 
 /// There's no required name component here as this handle component is expected
@@ -18,64 +16,37 @@ use crate::{
 /// unsubscribe the subscribtion, but it does have a notification observer that
 /// can cause the actual subscription to be unsubscribed.
 #[derive(Component)]
-#[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>)]
-pub struct WeakEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+#[component(on_insert=unscheduled_erased_subscription_add_notification_observer_on_insert)]
+pub struct WeakEntitySubscriptionHandle {
 	subscription_entity: Entity,
 	closed: bool,
-	_phantom_data: PhantomData<Subscription>,
 }
 
-impl<Subscription> WeakEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+impl WeakEntitySubscriptionHandle {
 	pub fn new(subscription_entity: Entity) -> Self {
 		Self {
 			subscription_entity,
 			closed: false,
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Subscription> WeakSubscriptionHandle for WeakEntitySubscriptionHandle<Subscription> where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync
-{
+impl WeakSubscriptionHandle for WeakEntitySubscriptionHandle {}
+
+impl WithSubscriptionContext for WeakEntitySubscriptionHandle {
+	type Context = BevySubscriptionContextProvider;
 }
 
-impl<Subscription> WithSubscriptionContext for WeakEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	type Context = Subscription::Context;
-}
-
-impl<Subscription> Clone for WeakEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+impl Clone for WeakEntitySubscriptionHandle {
 	fn clone(&self) -> Self {
 		Self {
 			subscription_entity: self.subscription_entity.clone(),
 			closed: self.closed,
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Subscription> SubscriptionLike for WeakEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+impl SubscriptionLike for WeakEntitySubscriptionHandle {
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
@@ -100,11 +71,7 @@ where
 	}
 }
 
-impl<Subscription> Drop for WeakEntitySubscriptionHandle<Subscription>
-where
-	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
+impl Drop for WeakEntitySubscriptionHandle {
 	fn drop(&mut self) {
 		// Does not own its subscription so it must not do anything with it on drop.
 		// It's not like it could from here anyway, but at least we
