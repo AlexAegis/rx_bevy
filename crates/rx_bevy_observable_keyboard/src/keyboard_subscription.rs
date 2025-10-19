@@ -1,8 +1,7 @@
 use bevy_input::{ButtonInput, keyboard::KeyCode};
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
-	Subscriber, SubscriptionLike, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	Subscriber, SubscriptionContext, SubscriptionLike, Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct KeyboardSubscription<Destination>
@@ -64,6 +63,7 @@ where
 			button_input.get_just_pressed().cloned().collect::<Vec<_>>()
 		};
 
+		println!("ticked!");
 		for key_code in just_pressed_key_codes {
 			self.destination.next(key_code, context);
 		}

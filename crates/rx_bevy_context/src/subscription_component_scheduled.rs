@@ -4,7 +4,6 @@ use bevy_ecs::{
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::Query,
 	world::DeferredWorld,
 };
 use rx_core_traits::{
@@ -15,7 +14,6 @@ use short_type_name::short_type_name;
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
-	SubscriptionNotificationEventError,
 };
 
 #[derive(Component)]
@@ -27,7 +25,41 @@ where
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	this_entity: Entity,
-	subscription: Subscription,
+	/// Stealable!
+	subscription: Option<Subscription>,
+}
+
+impl<Subscription> ScheduledSubscriptionComponent<Subscription>
+where
+	Subscription:
+		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	pub fn new(subscription: Subscription, this_entity: Entity) -> Self {
+		Self {
+			subscription: Some(subscription),
+			this_entity,
+		}
+	}
+
+	fn get_subscription(&self) -> &Subscription {
+		self.subscription.as_ref().expect("Subscription is stolen!")
+	}
+
+	fn get_subscription_mut(&mut self) -> &mut Subscription {
+		self.subscription.as_mut().expect("Subscription is stolen!")
+	}
+
+	pub fn steal_subscription(&mut self) -> Subscription {
+		self.subscription
+			.take()
+			.expect("Subscription was already stolen!")
+	}
+
+	pub fn return_stolen_subscription(&mut self, subscription: Subscription) {
+		if self.subscription.replace(subscription).is_some() {
+			panic!("An subscription was returned but it wasn't stolen from here!")
+		}
+	}
 }
 
 pub(crate) fn scheduled_subscription_add_notification_observer_on_insert<Subscription>(
@@ -46,7 +78,6 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert<Subscri
 
 pub(crate) fn scheduled_subscription_notification_observer<Subscription>(
 	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
-	mut subscription_query: Query<&mut ScheduledSubscriptionComponent<Subscription>>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError>
 where
@@ -54,26 +85,33 @@ where
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let subscription_entity = subscription_notification.target();
-	let Ok(mut subscription_component) = subscription_query.get_mut(subscription_entity) else {
-		return Err(SubscriptionNotificationEventError::NotASubscription(
-			short_type_name::<Subscription>(),
-			subscription_entity,
-		)
-		.into());
-	};
-
 	let mut context = context_param.into_context(subscription_entity);
+	let mut stolen_scheduled_subscription =
+		context.steal_scheduled_subscription::<Subscription>(subscription_entity)?;
 
 	let event = subscription_notification.event_mut().consume();
 
-	let subscription = &mut subscription_component.subscription;
 	match event {
-		SubscriptionNotificationEvent::Unsubscribe => subscription.unsubscribe(&mut context),
-		SubscriptionNotificationEvent::Tick(tick) => subscription.tick(tick, &mut context),
+		SubscriptionNotificationEvent::Unsubscribe => {
+			stolen_scheduled_subscription.unsubscribe(&mut context);
+			context
+				.deferred_world
+				.commands()
+				.entity(subscription_entity)
+				.despawn();
+		}
+		SubscriptionNotificationEvent::Tick(tick) => {
+			stolen_scheduled_subscription.tick(tick, &mut context);
+		}
 		SubscriptionNotificationEvent::Add(teardown) => {
-			subscription.add_teardown(teardown, &mut context)
+			stolen_scheduled_subscription.add_teardown(teardown, &mut context);
 		}
 	};
+
+	context.return_stolen_scheduled_subscription::<Subscription>(
+		subscription_entity,
+		stolen_scheduled_subscription,
+	)?;
 
 	Ok(())
 }
@@ -86,19 +124,6 @@ pub(crate) fn subscription_unsubscribe_on_remove(
 		SubscriptionNotificationEvent::Unsubscribe,
 		hook_context.entity,
 	);
-}
-
-impl<Subscription> ScheduledSubscriptionComponent<Subscription>
-where
-	Subscription:
-		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	pub fn new(subscription: Subscription, this_entity: Entity) -> Self {
-		Self {
-			subscription,
-			this_entity,
-		}
-	}
 }
 
 impl<Subscription> WithSubscriptionContext for ScheduledSubscriptionComponent<Subscription>
@@ -116,7 +141,8 @@ where
 {
 	#[inline]
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
-		self.subscription.tick(tick, context);
+		let subscription = self.get_subscription_mut();
+		subscription.tick(tick, context);
 	}
 }
 
@@ -127,11 +153,13 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.subscription.is_closed()
+		let subscription = self.get_subscription();
+		subscription.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		self.subscription.unsubscribe(context);
+		let subscription = self.get_subscription_mut();
+		subscription.unsubscribe(context);
 		context
 			.deferred_world
 			.commands()
@@ -145,6 +173,7 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
-		self.subscription.add_teardown(teardown, context);
+		let subscription = self.get_subscription_mut();
+		subscription.add_teardown(teardown, context);
 	}
 }

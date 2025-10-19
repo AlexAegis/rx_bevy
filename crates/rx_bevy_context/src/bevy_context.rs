@@ -3,18 +3,22 @@ use std::marker::PhantomData;
 use bevy_ecs::{
 	component::{Component, Mutable},
 	entity::Entity,
+	error::BevyError,
 	system::SystemParam,
 	world::{DeferredWorld, Mut},
 };
 use rx_core_traits::{
-	DropUnsafeSubscriptionContext, SignalBound, SubscriptionContext, SubscriptionContextAccess,
+	DropUnsafeSubscriptionContext, ObservableSubscription, SignalBound, Subscriber,
+	SubscriptionContext, SubscriptionContextAccess, SubscriptionLike,
 };
 use short_type_name::short_type_name;
+use thiserror::Error;
 
 use crate::{
 	ConsumableSubscriberNotificationEvent, ConsumableSubscriptionNotificationEvent,
 	ErasedSubscriberEntityAllocator, ScheduledEntitySubscriptionAllocator,
-	SubscriberEntityAllocator, UnscheduledEntitySubscriptionAllocator,
+	ScheduledSubscriptionComponent, SubscriberComponent, SubscriberEntityAllocator,
+	UnscheduledEntitySubscriptionAllocator, UnscheduledSubscriptionComponent,
 };
 
 pub struct BevySubscriptionContextProvider;
@@ -122,6 +126,17 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		subscriber_component
 	}
 
+	pub fn try_get_component_mut<C>(&mut self, entity: Entity) -> Result<Mut<'_, C>, BevyError>
+	where
+		C: Component<Mutability = Mutable>,
+	{
+		if let Some(observable_ref) = self.deferred_world.get_mut::<C>(entity) {
+			Ok(observable_ref)
+		} else {
+			Err(ContextAccessError::NotAnObservable(short_type_name::<C>(), entity).into())
+		}
+	}
+
 	pub fn send_subscriber_notification<In, InError>(
 		&mut self,
 		target: Entity,
@@ -147,8 +162,106 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 			.commands()
 			.trigger_targets(notification_event, target);
 	}
+
+	pub fn steal_scheduled_subscription<Subscription>(
+		&mut self,
+		entity: Entity,
+	) -> Result<Subscription, BevyError>
+	where
+		Subscription: 'static
+			+ ObservableSubscription<Context = BevySubscriptionContextProvider>
+			+ Send
+			+ Sync,
+	{
+		let mut scheduled_subscription_component =
+			self.try_get_component_mut::<ScheduledSubscriptionComponent<Subscription>>(entity)?;
+
+		Ok(scheduled_subscription_component.steal_subscription())
+	}
+
+	pub fn return_stolen_scheduled_subscription<Subscription>(
+		&mut self,
+		entity: Entity,
+		subscription: Subscription,
+	) -> Result<(), BevyError>
+	where
+		Subscription: 'static
+			+ ObservableSubscription<Context = BevySubscriptionContextProvider>
+			+ Send
+			+ Sync,
+	{
+		let mut scheduled_subscription_component =
+			self.try_get_component_mut::<ScheduledSubscriptionComponent<Subscription>>(entity)?;
+		scheduled_subscription_component.return_stolen_subscription(subscription);
+
+		Ok(())
+	}
+
+	pub fn steal_unscheduled_subscription<Subscription>(
+		&mut self,
+		entity: Entity,
+	) -> Result<Subscription, BevyError>
+	where
+		Subscription:
+			'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	{
+		let mut unscheduled_subscription_component =
+			self.try_get_component_mut::<UnscheduledSubscriptionComponent<Subscription>>(entity)?;
+
+		Ok(unscheduled_subscription_component.steal_subscription())
+	}
+
+	pub fn return_stolen_unscheduled_subscription<Subscription>(
+		&mut self,
+		entity: Entity,
+		subscription: Subscription,
+	) -> Result<(), BevyError>
+	where
+		Subscription:
+			'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	{
+		let mut unscheduled_subscription_component =
+			self.try_get_component_mut::<UnscheduledSubscriptionComponent<Subscription>>(entity)?;
+		unscheduled_subscription_component.return_stolen_subscription(subscription);
+
+		Ok(())
+	}
+
+	pub fn steal_subscriber_destination<Destination>(
+		&mut self,
+		entity: Entity,
+	) -> Result<Destination, BevyError>
+	where
+		Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	{
+		let mut subscriber_component =
+			self.try_get_component_mut::<SubscriberComponent<Destination>>(entity)?;
+
+		Ok(subscriber_component.steal_destination())
+	}
+
+	pub fn return_stolen_subscriber_destination<Destination>(
+		&mut self,
+		entity: Entity,
+		destination: Destination,
+	) -> Result<(), BevyError>
+	where
+		Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	{
+		let mut subscriber_component =
+			self.try_get_component_mut::<SubscriberComponent<Destination>>(entity)?;
+		subscriber_component.return_stolen_destination(destination);
+
+		Ok(())
+	}
 }
 
 impl<'w, 's> SubscriptionContextAccess for BevySubscriptionContext<'w, 's> {
 	type SubscriptionContextProvider = BevySubscriptionContextProvider;
+}
+
+#[derive(Error, Debug)]
+pub enum ContextAccessError {
+	#[error("Tried to get {0}. But it does not exist on entity {1}.")]
+	NotAnObservable(String, Entity),
 }

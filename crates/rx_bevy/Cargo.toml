@@ -116,6 +116,7 @@ subscription_inert = ["rx_core/subscription_inert"]
 rx_core = { workspace = true }
 rx_core_traits = { workspace = true }
 rx_bevy_context = { workspace = true }
+rx_bevy_plugin = { workspace = true }
 # Observables
 rx_bevy_observable_keyboard = { workspace = true, optional = true }
 

@@ -26,9 +26,8 @@ fn main() -> AppExit {
 		.run()
 }
 
-/// TODO: Bring back the ObserverNotificationEvent..
 fn next_number_observer(
-	next: Trigger<SubscriberNotificationEvent<KeyboardInput>>,
+	next: Trigger<ConsumableSubscriberNotificationEvent<KeyboardInput>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) {
@@ -57,15 +56,22 @@ fn setup(mut commands: Commands) {
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
-	let mut keyboard_observable_entity_commands = commands.spawn((
-		Name::new("KeyboardObservable"),
-		ObservableComponent::new(KeyboardObservable::default()),
-	));
+	let keyboard_observable_entity = commands
+		.spawn((
+			Name::new("KeyboardObservable"),
+			KeyboardObservable::default().into_component(),
+		))
+		.id();
 
-	keyboard_observable_entity_commands.observe(next_number_observer);
+	let keyboard_event_observer = commands
+		.spawn((Name::new("KeyboardObserver"),))
+		.observe(next_number_observer)
+		.id();
 
-	let subscription = keyboard_observable_entity_commands
-		.subscribe_to_this::<KeyboardInput, (), Update>(RelativeEntity::This);
+	let subscription = commands.subscribe::<KeyboardInput, (), Update>(
+		keyboard_observable_entity,
+		keyboard_event_observer,
+	);
 
 	commands.insert_resource(ExampleEntities { subscription });
 }

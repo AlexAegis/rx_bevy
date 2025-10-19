@@ -5,12 +5,12 @@ use bevy_ecs::{
 	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::{Commands, Query},
 	world::DeferredWorld,
 };
 use bevy_log::error;
 use rx_bevy_context::{
-	BevySubscriptionContextParam, BevySubscriptionContextProvider, ScheduledSubscriptionComponent,
+	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
+	ScheduledSubscriptionComponent,
 };
 use rx_core_traits::{Observable, SubscriptionLike};
 use short_type_name::short_type_name;
@@ -28,7 +28,8 @@ pub struct ObservableComponent<O>
 where
 	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	observable: O,
+	/// Stealable
+	observable: Option<O>,
 }
 
 impl<O> ObservableComponent<O>
@@ -36,53 +37,22 @@ where
 	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	pub fn new(observable: O) -> Self {
-		Self { observable }
-	}
-}
-
-pub fn subscribe_event_observer<'w, 's, O>(
-	on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
-	mut commands: Commands,
-	mut observable_query: Query<&mut ObservableComponent<O>>,
-	context_param: BevySubscriptionContextParam<'w, 's>,
-) -> Result<(), BevyError>
-where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	let event = on_subscribe.event();
-
-	let Ok(mut observable) = observable_query.get_mut(event.observable_entity) else {
-		return Err(SubscribeError::NotAnObservable(
-			short_type_name::<O>(),
-			event.observable_entity,
-		)
-		.into());
-	};
-
-	let mut context = context_param.into_context(event.subscription_entity);
-	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
-
-	let subscription = observable.observable.subscribe(
-		EntityObserver::<O::Out, O::OutError>::new(event.destination_entity),
-		&mut context,
-	);
-
-	if !subscription.is_closed() {
-		// Instead of spawning a new entity here, a pre-spawned one is used that the user
-		// already has access to.
-		// It also already contains the [SubscriptionSchedule] component.
-		subscription_entity_commands.insert((
-			ScheduledSubscriptionComponent::<O::Subscription>::new(
-				subscription,
-				event.subscription_entity,
-			),
-			SubscriptionOf::<O>::new(event.observable_entity),
-		));
-	} else {
-		subscription_entity_commands.try_despawn();
+		Self {
+			observable: Some(observable),
+		}
 	}
 
-	Ok(())
+	pub(crate) fn steal_observable(&mut self) -> O {
+		self.observable
+			.take()
+			.expect("Observable was already stolen!")
+	}
+
+	pub(crate) fn return_stolen_observable(&mut self, observable: O) {
+		if self.observable.replace(observable).is_some() {
+			panic!("An observable was returned but it wasn't stolen from here!")
+		}
+	}
 }
 
 fn observable_on_insert<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
@@ -101,6 +71,47 @@ where
 			.with_entity(hook_context.entity)
 			.with_error_handler(default_on_subscribe_error_handler),
 	));
+}
+
+pub fn subscribe_event_observer<'w, 's, O>(
+	on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
+	context_param: BevySubscriptionContextParam<'w, 's>,
+) -> Result<(), BevyError>
+where
+	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	let event = on_subscribe.event();
+
+	let mut context = context_param.into_context(event.subscription_entity);
+
+	let mut stolen_observable = context.steal_observable::<O>(event.observable_entity)?;
+
+	let subscription = stolen_observable.subscribe(
+		EntityObserver::<O::Out, O::OutError>::new(event.destination_entity),
+		&mut context, // I have to access the context, passing it into something that was accessed from the context
+	);
+
+	context.return_stolen_observable(event.observable_entity, stolen_observable)?;
+
+	let mut commands = context.deferred_world.commands();
+	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
+
+	if !subscription.is_closed() {
+		// Instead of spawning a new entity here, a pre-spawned one is used that the user
+		// already has access to.
+		// It also already contains the [SubscriptionSchedule] component.
+		subscription_entity_commands.insert((
+			ScheduledSubscriptionComponent::<O::Subscription>::new(
+				subscription,
+				event.subscription_entity,
+			),
+			SubscriptionOf::<O>::new(event.observable_entity),
+		));
+	} else {
+		subscription_entity_commands.try_despawn();
+	}
+
+	Ok(())
 }
 
 /// Remove related components along with the observable
@@ -135,5 +146,46 @@ pub(crate) fn default_on_subscribe_error_handler(error: BevyError, error_context
 			error_context.kind(),
 			error_context.name()
 		);
+	}
+}
+
+pub trait BevySubscriptionContextExt {
+	fn steal_observable<O>(&mut self, entity: Entity) -> Result<O, BevyError>
+	where
+		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync;
+
+	fn return_stolen_observable<O>(
+		&mut self,
+		entity: Entity,
+		observable: O,
+	) -> Result<(), BevyError>
+	where
+		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync;
+}
+
+impl<'w, 's> BevySubscriptionContextExt for BevySubscriptionContext<'w, 's> {
+	fn steal_observable<O>(&mut self, entity: Entity) -> Result<O, BevyError>
+	where
+		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	{
+		let mut obserable_component =
+			self.try_get_component_mut::<ObservableComponent<O>>(entity)?;
+		Ok(obserable_component.steal_observable())
+	}
+
+	fn return_stolen_observable<O>(
+		&mut self,
+		entity: Entity,
+		observable: O,
+	) -> Result<(), BevyError>
+	where
+		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	{
+		let mut obserable_component =
+			self.try_get_component_mut::<ObservableComponent<O>>(entity)?;
+
+		obserable_component.return_stolen_observable(observable);
+
+		Ok(())
 	}
 }

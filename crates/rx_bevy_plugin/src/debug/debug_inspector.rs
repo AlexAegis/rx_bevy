@@ -54,16 +54,14 @@ where
 		.commands()
 		.register_system(subscription_entity_debug_print::<O>);
 
-	let mut debug_registry = deferred_world
-		.get_resource_mut::<DebugSystemRegistry>()
-		.unwrap();
-
-	debug_registry
-		.debug_systems
-		.push(observable_debug_system_id);
-	debug_registry
-		.debug_systems
-		.push(subscription_debug_system_id);
+	if let Some(mut debug_registry) = deferred_world.get_resource_mut::<DebugSystemRegistry>() {
+		debug_registry
+			.debug_systems
+			.push(observable_debug_system_id);
+		debug_registry
+			.debug_systems
+			.push(subscription_debug_system_id);
+	};
 }
 
 pub(crate) fn observable_entity_debug_print<O>(

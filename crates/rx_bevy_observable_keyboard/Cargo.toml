@@ -58,5 +58,10 @@ bevy = { workspace = true }
 rx_bevy = { workspace = true }
 rx_core_testing = { workspace = true }
 examples_common = { workspace = true }
-bevy-inspector-egui = { workspace = true }
+bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
 bevy_egui = { workspace = true }
+
+[[example]]
+name = "observable_keyboard_example"
+path = "examples/observable_keyboard_example.rs"
+required-features = ["example"]

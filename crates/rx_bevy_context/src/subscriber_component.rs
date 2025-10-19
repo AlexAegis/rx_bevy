@@ -4,7 +4,6 @@ use bevy_ecs::{
 	error::BevyError,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::Query,
 	world::DeferredWorld,
 };
 use rx_core_traits::{
@@ -16,7 +15,7 @@ use short_type_name::short_type_name;
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriberNotificationEvent, SubscriberNotificationEvent,
-	SubscriberNotificationEventError, SubscriptionNotificationEvent,
+	SubscriptionNotificationEvent,
 };
 
 #[derive(Component)]
@@ -93,22 +92,16 @@ fn subscriber_notification_observer<'w, 's, Destination>(
 	mut subscriber_notification: Trigger<
 		ConsumableSubscriberNotificationEvent<Destination::In, Destination::InError>,
 	>,
-	mut subscriber_query: Query<&mut SubscriberComponent<Destination>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let subscriber_entity = subscriber_notification.target();
-	let Ok(mut subscriber_component) = subscriber_query.get_mut(subscriber_entity) else {
-		return Err(SubscriberNotificationEventError::NotASubscriber(
-			short_type_name::<Destination>(),
-			subscriber_entity,
-		)
-		.into());
-	};
-
 	let mut context = context_param.into_context(subscriber_entity);
+
+	let mut stolen_destination =
+		context.steal_subscriber_destination::<Destination>(subscriber_entity)?;
 
 	let event = subscriber_notification
 		.event_mut()
@@ -116,24 +109,29 @@ where
 		.expect("notification was already consumed!");
 
 	match event {
-		SubscriberNotificationEvent::Next(next) => subscriber_component.next(next, &mut context),
-		SubscriberNotificationEvent::Error(error) => {
-			subscriber_component.error(error, &mut context)
-		}
+		SubscriberNotificationEvent::Next(next) => stolen_destination.next(next, &mut context),
+		SubscriberNotificationEvent::Error(error) => stolen_destination.error(error, &mut context),
 		SubscriberNotificationEvent::Complete => {
-			subscriber_component.complete(&mut context);
+			stolen_destination.complete(&mut context);
 		}
 		SubscriberNotificationEvent::Tick(tick) => {
-			subscriber_component.tick(tick, &mut context);
+			stolen_destination.tick(tick, &mut context);
 		}
 		SubscriberNotificationEvent::Add(Some(teardown)) => {
-			subscriber_component.add_teardown(teardown, &mut context);
+			stolen_destination.add_teardown(teardown, &mut context);
 		}
 		SubscriberNotificationEvent::Add(None) => {}
 		SubscriberNotificationEvent::Unsubscribe => {
-			subscriber_component.unsubscribe(&mut context);
+			stolen_destination.unsubscribe(&mut context);
+			context
+				.deferred_world
+				.commands()
+				.entity(subscriber_entity)
+				.despawn();
 		}
 	}
+
+	context.return_stolen_subscriber_destination(subscriber_entity, stolen_destination)?;
 
 	Ok(())
 }

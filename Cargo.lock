@@ -4358,6 +4358,7 @@ version = "0.1.0"
 dependencies = [
  "rx_bevy_context",
  "rx_bevy_observable_keyboard",
+ "rx_bevy_plugin",
  "rx_core",
  "rx_core_testing",
  "rx_core_traits",
