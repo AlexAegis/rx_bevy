@@ -24,38 +24,6 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Access = dyn Subscriber<In = In, InError = InError, Context = Context>;
-
-	fn clone_with_context(
-		&self,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self {
-		self.clone()
-	}
-
-	fn access_with_context<F>(
-		&mut self,
-		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) where
-		F: Fn(&Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
-	{
-		if let Ok(destination) = self.destination.read() {
-			accessor(&*destination, context)
-		}
-	}
-
-	fn access_with_context_mut<F>(
-		&mut self,
-		mut accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) where
-		F: FnMut(&mut Self::Access, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>),
-	{
-		if let Ok(mut destination) = self.destination.write() {
-			accessor(&mut *destination, context)
-		}
-	}
 }
 
 impl<In, InError, Context> ErasedHeapSubscriber<In, InError, Context>

@@ -15,7 +15,6 @@ pub struct UnscheduledEntitySubscriptionAllocator;
 impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator {
 	type UnscheduledHandle<Subscription>
 		= UnscheduledEntitySubscriptionHandle<Subscription>
-	// TODO: Use a component
 	where
 		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
 

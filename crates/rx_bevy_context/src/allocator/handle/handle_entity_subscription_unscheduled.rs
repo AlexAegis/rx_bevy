@@ -67,7 +67,6 @@ impl<Subscription> Clone for UnscheduledEntitySubscriptionHandle<Subscription>
 where
 	Subscription:
 		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
-	Subscription: Clone,
 {
 	fn clone(&self) -> Self {
 		Self {

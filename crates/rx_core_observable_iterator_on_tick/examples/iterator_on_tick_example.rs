@@ -10,7 +10,7 @@ use rx_core_testing::MockClock;
 fn main() {
 	let mut context = ();
 
-	let iterator_observable = IteratorOnTickObservable::new(
+	let iterator_observable = IteratorOnTickObservable::<_, ()>::new(
 		0..=7,
 		OnTickObservableOptions {
 			start_on_subscribe: true,
