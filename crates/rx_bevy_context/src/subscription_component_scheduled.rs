@@ -14,13 +14,13 @@ use short_type_name::short_type_name;
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ConsumableSubscriptionNotificationEvent, SubscriptionIsClosed, SubscriptionNotificationEvent,
+	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
 	SubscriptionNotificationEventError,
 };
 
 #[derive(Component)]
 #[component(on_insert=scheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
-#[require(SubscriptionIsClosed, Name::new(short_type_name::<Self>()))]
+#[require(Name::new(short_type_name::<Self>()))]
 pub struct ScheduledSubscriptionComponent<Subscription>
 where
 	Subscription:
@@ -93,7 +93,7 @@ where
 	Subscription:
 		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	pub(crate) fn new(subscription: Subscription, this_entity: Entity) -> Self {
+	pub fn new(subscription: Subscription, this_entity: Entity) -> Self {
 		Self {
 			subscription,
 			this_entity,

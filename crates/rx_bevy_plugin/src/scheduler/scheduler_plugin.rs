@@ -11,9 +11,10 @@ use bevy_ecs::{
 use bevy_time::Time;
 use derive_where::derive_where;
 use rx_bevy_common::Clock;
+use rx_bevy_context::{ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent};
 use rx_core_traits::Tick;
 
-use crate::{SubscriptionNotificationEvent, SubscriptionSchedule};
+use crate::SubscriptionSchedule;
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -46,31 +47,29 @@ where
 	fn build(&self, app: &mut App) {
 		// use bevy_erased_component_registry::AppRegisterErasedComponentExtension;
 		// app.register_erased_component::<SubscriptionSchedule<S>>();
-		app.add_systems(self.schedule.clone(), tick_subscriptions_system::<S, C>);
+		app.add_systems(
+			self.schedule.clone(),
+			tick_scheduled_subscriptions_system::<S, C>,
+		);
 	}
 }
 
 /// Sends a tick notification for all subscriptions scheduled with this schedule
-pub fn tick_subscriptions_system<S: ScheduleLabel, C: Clock>(
+pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
 	mut commands: Commands,
 	time: Res<Time<C>>,
-	subscription_query: Query<
-		Entity,
-		(
-			With<SubscriptionSchedule<S>>,
-			With<Observer>, // The tick Observer, which is optional for non tickable Subscribers
-		),
-	>,
+	subscription_query: Query<Entity, (With<SubscriptionSchedule<S>>, With<Observer>)>,
 ) {
 	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
 
 	if !subscriptions.is_empty() {
-		commands.trigger_targets(
+		let consumable_notification: ConsumableSubscriptionNotificationEvent =
 			SubscriptionNotificationEvent::Tick(Tick {
 				now: time.elapsed(),
 				delta: time.delta(),
-			}),
-			subscriptions,
-		);
+			})
+			.into();
+
+		commands.trigger_targets(consumable_notification, subscriptions);
 	}
 }

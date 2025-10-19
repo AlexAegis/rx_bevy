@@ -1,6 +1,6 @@
 [package]
-name = "rx_bevy_context"
-description = "rx_bevy allocation context"
+name = "rx_bevy_plugin"
+description = "rx_bevy plugin"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -48,6 +48,7 @@ reflect = ["dep:bevy_reflect"]
 
 [dependencies]
 # TODO: disable default features in all dependencies
+rx_bevy_context = { workspace = true }
 rx_core_traits = { workspace = true }
 rx_bevy_common = { workspace = true }
 bevy_ecs = { workspace = true }

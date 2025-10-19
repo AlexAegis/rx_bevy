@@ -12,13 +12,13 @@ use short_type_name::short_type_name;
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ConsumableSubscriptionNotificationEvent, SubscriptionIsClosed, SubscriptionNotificationEvent,
+	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
 	SubscriptionNotificationEventError, subscription_unsubscribe_on_remove,
 };
 
 #[derive(Component)]
 #[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
-#[require(SubscriptionIsClosed, Name::new(short_type_name::<Subscription>()))]
+#[require(Name::new(short_type_name::<Subscription>()))]
 pub struct UnscheduledSubscriptionComponent<Subscription>
 where
 	Subscription:

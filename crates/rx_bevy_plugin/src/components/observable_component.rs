@@ -9,14 +9,16 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use bevy_log::error;
-use rx_core_traits::Observable;
+use rx_bevy_context::{
+	BevySubscriptionContextParam, BevySubscriptionContextProvider, ScheduledSubscriptionComponent,
+};
+use rx_core_traits::{Observable, SubscriptionLike};
 use short_type_name::short_type_name;
 use thiserror::Error;
 
 use crate::{
-	BevySubscriptionContextParam, BevySubscriptionContextProvider, EntityObserver,
-	ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
-	SubscribeObserverRef, SubscriptionOf,
+	EntityObserver, ObservableSubscriptions, Subscribe, SubscribeObserverOf, SubscribeObserverRef,
+	SubscriptionOf,
 };
 
 #[derive(Component)]
@@ -58,23 +60,27 @@ where
 	};
 
 	let mut context = context_param.into_context(event.subscription_entity);
+	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
 
 	let subscription = observable.observable.subscribe(
 		EntityObserver::<O::Out, O::OutError>::new(event.destination_entity),
 		&mut context,
 	);
 
-	// Instead of spawning a new entity here, a pre-spawned one is used that the user
-	// already has access to.
-	// It also already contains the [SubscriptionSchedule] component.
-	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
-	subscription_entity_commands.insert((
-		ScheduledSubscriptionComponent::<O::Subscription>::new(
-			subscription,
-			event.subscription_entity,
-		),
-		SubscriptionOf::<O>::new(event.observable_entity),
-	));
+	if !subscription.is_closed() {
+		// Instead of spawning a new entity here, a pre-spawned one is used that the user
+		// already has access to.
+		// It also already contains the [SubscriptionSchedule] component.
+		subscription_entity_commands.insert((
+			ScheduledSubscriptionComponent::<O::Subscription>::new(
+				subscription,
+				event.subscription_entity,
+			),
+			SubscriptionOf::<O>::new(event.observable_entity),
+		));
+	} else {
+		subscription_entity_commands.try_despawn();
+	}
 
 	Ok(())
 }

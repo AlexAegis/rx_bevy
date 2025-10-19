@@ -1,23 +1,13 @@
 mod allocator;
 mod bevy_context;
-mod components;
 mod notification;
-mod observer;
-mod plugin;
-mod scheduler;
-mod subscription;
+mod subscriber_component;
+mod subscription_component_scheduled;
+mod subscription_component_unscheduled;
 
 pub use allocator::*;
 pub use bevy_context::*;
-pub use components::*;
 pub use notification::*;
-pub use observer::*;
-pub use plugin::*;
-pub use scheduler::*;
-pub use subscription::*;
-
-#[cfg(feature = "debug")]
-mod debug;
-
-#[cfg(feature = "debug")]
-pub use debug::*;
+pub use subscriber_component::*;
+pub use subscription_component_scheduled::*;
+pub use subscription_component_unscheduled::*;

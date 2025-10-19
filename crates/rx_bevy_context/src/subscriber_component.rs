@@ -16,12 +16,12 @@ use short_type_name::short_type_name;
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriberNotificationEvent, SubscriberNotificationEvent,
-	SubscriberNotificationEventError, SubscriptionIsClosed, SubscriptionNotificationEvent,
+	SubscriberNotificationEventError, SubscriptionNotificationEvent,
 };
 
 #[derive(Component)]
 #[component(on_insert=subscriber_on_insert::<Destination>, on_remove=subscriber_on_remove::<Destination>)]
-#[require(SubscriptionIsClosed, Name::new(format!("Subscriber ({})", short_type_name::<Destination>())))]
+#[require( Name::new(format!("Subscriber ({})", short_type_name::<Destination>())))]
 pub struct SubscriberComponent<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,

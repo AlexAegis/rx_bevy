@@ -24,7 +24,7 @@ impl<Destination> SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 {
-	pub fn new(destination_entity: Entity) -> Self {
+	pub(crate) fn new(destination_entity: Entity) -> Self {
 		Self {
 			destination_entity,
 			closed: false,
@@ -67,6 +67,8 @@ where
 	where
 		F: Fn(&Destination, &mut BevySubscriptionContext<'_, '_>),
 	{
+		// SAFETY: The allocator ensures [SharedEntitySubscriber] only points to entities
+		// with a []
 		let stolen_destination = context
 			.get_expected_component_mut::<SubscriberComponent<Destination>>(self.destination_entity)
 			.steal_destination();

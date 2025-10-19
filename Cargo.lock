@@ -4414,6 +4414,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_bevy_plugin"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_app",
+ "bevy_derive",
+ "bevy_ecs",
+ "bevy_input",
+ "bevy_log",
+ "bevy_reflect",
+ "bevy_time",
+ "derive-where",
+ "rx_bevy",
+ "rx_bevy_common",
+ "rx_bevy_context",
+ "rx_core_testing",
+ "rx_core_traits",
+ "short_type_name",
+ "smallvec",
+ "thiserror 2.0.17",
+]
+
+[[package]]
 name = "rx_core"
 version = "0.1.0"
 dependencies = [

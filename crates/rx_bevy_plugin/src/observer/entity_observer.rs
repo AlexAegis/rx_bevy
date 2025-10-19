@@ -1,12 +1,11 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
+use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
 	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionLike, Teardown, Tick,
 	Tickable, WithSubscriptionContext,
 };
-
-use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 
 /// This is not a component, but a wrapper for an Entity to be used as a generic
 /// destination for subscriptions. The entity here will receive all signals as

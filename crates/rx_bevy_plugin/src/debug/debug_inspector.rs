@@ -10,13 +10,11 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
+use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::Observable;
 use short_type_name::short_type_name;
 
-use crate::{
-	BevySubscriptionContextProvider, ObservableComponent, ObservableSubscriptions, SubscriptionOf,
-	SubscriptionSchedule,
-};
+use crate::{ObservableComponent, ObservableSubscriptions, SubscriptionOf, SubscriptionSchedule};
 
 pub struct DebugInspectorPlugin;
 

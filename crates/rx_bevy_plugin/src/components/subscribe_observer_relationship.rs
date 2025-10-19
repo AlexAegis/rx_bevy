@@ -9,51 +9,42 @@ use std::marker::PhantomData;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::BevySubscriptionContextProvider;
+use rx_bevy_context::BevySubscriptionContextProvider;
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref, DerefMut)]
-#[relationship_target(relationship=SubscriptionOf::<O>, linked_spawn)]
+#[relationship_target(relationship=SubscribeObserverOf::<O>, linked_spawn)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct ObservableSubscriptions<O>
+pub struct SubscribeObserverRef<O>
 where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	#[relationship]
 	#[deref]
-	subscriptions: Vec<Entity>,
+	subscribe_observer_entity: Entity,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<O>,
 }
 
-impl<O> ObservableSubscriptions<O>
+impl<O> SubscribeObserverRef<O>
 where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	pub fn get_subscription_entities(&self) -> Vec<Entity> {
-		self.subscriptions.clone()
-	}
-}
-
-impl<O> Default for ObservableSubscriptions<O>
-where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	fn default() -> Self {
+	pub fn new(subscribe_observer_entity: Entity) -> Self {
 		Self {
-			subscriptions: Vec::new(),
+			subscribe_observer_entity,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
 #[derive(Component, Deref, DerefMut)]
-#[relationship(relationship_target=ObservableSubscriptions::<O>)]
+#[relationship(relationship_target=SubscribeObserverRef::<O>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscriptionOf<O>
+pub struct SubscribeObserverOf<O>
 where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
@@ -64,7 +55,7 @@ where
 	_phantom_data: PhantomData<O>,
 }
 
-impl<O> SubscriptionOf<O>
+impl<O> SubscribeObserverOf<O>
 where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
@@ -73,9 +64,5 @@ where
 			observable_entity,
 			_phantom_data: PhantomData,
 		}
-	}
-
-	pub fn get_observable_entity(&self) -> Entity {
-		self.observable_entity
 	}
 }
