@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 
-use bevy_app::{App, Plugin};
+use bevy_app::{App, AppExit, Last, Plugin};
 use bevy_ecs::{
 	entity::Entity,
+	event::EventReader,
 	observer::Observer,
 	query::With,
 	schedule::ScheduleLabel,
@@ -51,6 +52,24 @@ where
 			self.schedule.clone(),
 			tick_scheduled_subscriptions_system::<S, C>,
 		);
+
+		app.add_systems(Last, unsubscribe_on_app_exit::<S>);
+	}
+}
+
+/// This isn't correct, but the best I got.
+fn unsubscribe_on_app_exit<S: ScheduleLabel>(
+	app_exit: EventReader<AppExit>,
+	mut commands: Commands,
+	subscription_query: Query<Entity, (With<SubscriptionSchedule<S>>, With<Observer>)>,
+) {
+	if !app_exit.is_empty() {
+		println!("AppExit");
+		let subscriptions = subscription_query.iter().collect::<Vec<_>>();
+		let consumable_notification: ConsumableSubscriptionNotificationEvent =
+			SubscriptionNotificationEvent::Unsubscribe.into();
+
+		commands.trigger_targets(consumable_notification, subscriptions);
 	}
 }
 

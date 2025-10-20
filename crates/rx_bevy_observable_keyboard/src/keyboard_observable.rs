@@ -36,6 +36,6 @@ impl Observable for KeyboardObservable {
 			+ Sync,
 	{
 		let subscription = KeyboardSubscription::<Destination>::new(destination);
-		SubscriptionData::new_with_teardown(subscription.into())
+		SubscriptionData::new_from_resource(subscription.into())
 	}
 }

@@ -60,6 +60,7 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
+	#[track_caller]
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
 		context.send_subscriber_notification(
 			self.destination,
@@ -73,6 +74,7 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
+	#[track_caller]
 	fn next(&mut self, next: Self::In, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.is_closed() {
 			context.send_subscriber_notification(
@@ -82,6 +84,7 @@ where
 		}
 	}
 
+	#[track_caller]
 	fn error(&mut self, error: Self::InError, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.is_closed() {
 			context.send_subscriber_notification(
@@ -93,6 +96,7 @@ where
 		}
 	}
 
+	#[track_caller]
 	fn complete(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.is_closed() {
 			context.send_subscriber_notification(
@@ -108,10 +112,12 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.closed
 	}
 
+	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.is_closed() {
 			self.closed = true;

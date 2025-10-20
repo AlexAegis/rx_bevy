@@ -62,6 +62,7 @@ where
 	}
 }
 
+#[track_caller]
 pub(crate) fn scheduled_subscription_add_notification_observer_on_insert<Subscription>(
 	mut deferred_world: DeferredWorld,
 	hook_context: HookContext,
@@ -76,6 +77,7 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert<Subscri
 	));
 }
 
+#[track_caller]
 pub(crate) fn scheduled_subscription_notification_observer<Subscription>(
 	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,

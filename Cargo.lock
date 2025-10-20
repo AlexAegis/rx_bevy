@@ -4356,6 +4356,10 @@ dependencies = [
 name = "rx_bevy"
 version = "0.1.0"
 dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_egui",
+ "examples_common",
  "rx_bevy_context",
  "rx_bevy_observable_keyboard",
  "rx_bevy_plugin",

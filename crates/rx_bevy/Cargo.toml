@@ -25,8 +25,21 @@ default = [
     "pipe",
 ]
 dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
+debug = []
 example = [
+    "bevy/bevy_asset",
+    "bevy/bevy_core_pipeline",
+    "bevy/bevy_gltf",
+    "bevy/bevy_pbr",
+    "bevy/bevy_picking",
+    "bevy/bevy_render",
+    "bevy/bevy_scene",
+    "bevy/bevy_winit",
+    "bevy/tonemapping_luts",
+    "bevy/x11",
+    "debug",
     "dev",
+    "reflect",
     "rx_core/example",
     "rx_core_traits/example",
     "rx_core_testing/example",
@@ -122,3 +135,12 @@ rx_bevy_observable_keyboard = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_core_testing = { workspace = true }
+bevy = { workspace = true }
+examples_common = { workspace = true }
+bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
+bevy_egui = { workspace = true }
+
+[[example]]
+name = "interval_keyboard_example"
+path = "examples/interval_keyboard_example.rs"
+required-features = ["example"]

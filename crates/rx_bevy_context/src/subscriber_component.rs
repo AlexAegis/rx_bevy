@@ -103,10 +103,7 @@ where
 	let mut stolen_destination =
 		context.steal_subscriber_destination::<Destination>(subscriber_entity)?;
 
-	let event = subscriber_notification
-		.event_mut()
-		.take()
-		.expect("notification was already consumed!");
+	let event = subscriber_notification.event_mut().consume();
 
 	match event {
 		SubscriberNotificationEvent::Next(next) => stolen_destination.next(next, &mut context),

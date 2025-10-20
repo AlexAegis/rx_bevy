@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
+use derive_where::derive_where;
 use rx_core_traits::SignalBound;
 
 #[cfg(feature = "reflect")]
@@ -9,6 +10,7 @@ use bevy_reflect::Reflect;
 use crate::SubscriptionSchedule;
 
 #[derive(Event, Clone)]
+#[derive_where(Debug)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct Subscribe<Out, OutError>
 where

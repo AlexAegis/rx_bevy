@@ -1,8 +1,8 @@
 use short_type_name::short_type_name;
 
 use crate::{
-	NotifiableSubscription, SubscriptionLike, SubscriptionNotification, Teardown, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	NotifiableSubscription, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
+	Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 use std::{fmt::Debug, vec};
 
@@ -101,6 +101,7 @@ impl<Context> Tickable for SubscriptionData<Context>
 where
 	Context: SubscriptionContext,
 {
+	#[track_caller]
 	fn tick(
 		&mut self,
 		tick: Tick,
@@ -121,6 +122,7 @@ where
 		self.is_closed
 	}
 
+	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
 		if !self.is_closed() {
 			self.is_closed = true;

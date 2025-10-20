@@ -17,8 +17,10 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	pub fn take(&mut self) -> Option<SubscriberNotificationEvent<In, InError>> {
-		self.notification.take()
+	pub fn consume(&mut self) -> SubscriberNotificationEvent<In, InError> {
+		self.notification
+			.take()
+			.expect("Notification was already consumed!")
 	}
 }
 

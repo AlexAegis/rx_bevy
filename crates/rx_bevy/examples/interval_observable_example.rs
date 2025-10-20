@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -68,7 +70,22 @@ fn setup(mut commands: Commands) {
 						KeyCode::KeyW | KeyCode::KeyA | KeyCode::KeyS | KeyCode::KeyD
 					)
 				})
-				.map(|key_code| format!("KEYCODE {:?}", key_code))
+				.switch_map(|key_code| {
+					// TODO: SwitchMap is unresponsive!!!
+					let duration = match key_code {
+						KeyCode::KeyW => Duration::from_millis(5),
+						KeyCode::KeyA => Duration::from_millis(100),
+						KeyCode::KeyS => Duration::from_millis(500),
+						KeyCode::KeyD => Duration::from_millis(2000),
+						_ => Duration::from_millis(500),
+					};
+					IntervalObservable::new(IntervalObservableOptions {
+						duration,
+						start_on_subscribe: true,
+						max_emissions_per_tick: 4,
+					})
+				})
+				.map(|key_code| format!("Ticking! {:?}", key_code))
 				.into_component(),
 		))
 		.id();
