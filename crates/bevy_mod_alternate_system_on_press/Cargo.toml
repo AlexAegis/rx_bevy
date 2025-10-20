@@ -1,5 +1,5 @@
 [package]
-name = "feature_checker"
+name = "bevy_mod_alternate_system_on_press"
 version = "0.1.0"
 description = ""
 readme = "readme.md"
@@ -21,4 +21,5 @@ dev = []
 example = ["dev"]
 
 [dependencies]
-cargo_metadata = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_input = { workspace = true }

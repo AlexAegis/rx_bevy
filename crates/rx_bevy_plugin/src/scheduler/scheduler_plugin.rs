@@ -1,19 +1,20 @@
 use std::marker::PhantomData;
 
-use bevy_app::{App, AppExit, Last, Plugin};
+use bevy_app::{App, AppExit, Last, Plugin, PostUpdate};
 use bevy_ecs::{
 	entity::Entity,
-	event::EventReader,
 	observer::Observer,
 	query::With,
-	schedule::ScheduleLabel,
+	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_event},
 	system::{Commands, Query, Res},
 };
 use bevy_time::Time;
+use bevy_window::exit_on_all_closed;
 use derive_where::derive_where;
 use rx_bevy_common::Clock;
 use rx_bevy_context::{ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent};
 use rx_core_traits::Tick;
+use short_type_name::short_type_name;
 
 use crate::SubscriptionSchedule;
 
@@ -53,24 +54,31 @@ where
 			tick_scheduled_subscriptions_system::<S, C>,
 		);
 
-		app.add_systems(Last, unsubscribe_on_app_exit::<S>);
+		app.add_systems(
+			PostUpdate,
+			unsubscribe_everything::<S>
+				.after(exit_on_all_closed)
+				.run_if(on_event::<AppExit>),
+		);
 	}
 }
 
 /// This isn't correct, but the best I got.
-fn unsubscribe_on_app_exit<S: ScheduleLabel>(
-	app_exit: EventReader<AppExit>,
+/// TODO: USE AN EXCLUSIVE SYSTEM, the command has no chance to be flushed as this is running in the very last frame
+fn unsubscribe_everything<S: ScheduleLabel>(
 	mut commands: Commands,
 	subscription_query: Query<Entity, (With<SubscriptionSchedule<S>>, With<Observer>)>,
 ) {
-	if !app_exit.is_empty() {
-		println!("AppExit");
-		let subscriptions = subscription_query.iter().collect::<Vec<_>>();
-		let consumable_notification: ConsumableSubscriptionNotificationEvent =
-			SubscriptionNotificationEvent::Unsubscribe.into();
+	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
+	let consumable_notification: ConsumableSubscriptionNotificationEvent =
+		SubscriptionNotificationEvent::Unsubscribe.into();
+	println!(
+		"Unsubscribe everything in schedule {}! {:?}",
+		short_type_name::<S>(),
+		subscriptions
+	);
 
-		commands.trigger_targets(consumable_notification, subscriptions);
-	}
+	commands.trigger_targets(consumable_notification, subscriptions);
 }
 
 /// Sends a tick notification for all subscriptions scheduled with this schedule

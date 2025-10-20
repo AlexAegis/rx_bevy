@@ -59,8 +59,9 @@ where
 		if let Some(mut notifiable_subscription) = subscription.take() {
 			if self.is_closed() {
 				(notifiable_subscription)(SubscriptionNotification::Unsubscribe, context)
+			} else {
+				self.notifiable_subscriptions.push(notifiable_subscription);
 			}
-			self.notifiable_subscriptions.push(notifiable_subscription);
 		}
 	}
 
@@ -172,6 +173,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
+			println!("SUB DROP!!");
 			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}

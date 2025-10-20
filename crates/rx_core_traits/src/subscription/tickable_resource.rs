@@ -76,7 +76,12 @@ where
 		action: SubscriptionNotification<Context>,
 		context: &mut Context::Item<'_, '_>,
 	) {
-		if let Some(teardown) = &mut self.notify_fn {
+		let notify_fn = match action {
+			SubscriptionNotification::Unsubscribe => &mut self.notify_fn.take(),
+			_ => &mut self.notify_fn,
+		};
+
+		if let Some(teardown) = notify_fn {
 			(teardown)(action, context);
 		}
 	}

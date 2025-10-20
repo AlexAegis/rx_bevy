@@ -6,7 +6,7 @@ use rx_core_traits::{
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextProvider,
-	handle::unscheduled_erased_subscription_add_notification_observer_on_insert,
+	handle::erased_subscription_add_notification_observer_on_insert,
 };
 
 /// There's no required name component here as this handle component is expected
@@ -16,7 +16,7 @@ use crate::{
 /// unsubscribe the subscribtion, but it does have a notification observer that
 /// can cause the actual subscription to be unsubscribed.
 #[derive(Component)]
-#[component(on_insert=unscheduled_erased_subscription_add_notification_observer_on_insert)]
+#[component(on_insert=erased_subscription_add_notification_observer_on_insert)]
 pub struct WeakEntitySubscriptionHandle {
 	subscription_entity: Entity,
 	closed: bool,

@@ -17,7 +17,7 @@ use crate::{
 };
 
 #[derive(Component)]
-#[component(on_insert=scheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
+#[component(on_insert=scheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=scheduled_subscription_unsubscribe_on_remove::<Subscription>)]
 #[require(Name::new(short_type_name::<Self>()))]
 pub struct ScheduledSubscriptionComponent<Subscription>
 where
@@ -62,7 +62,6 @@ where
 	}
 }
 
-#[track_caller]
 pub(crate) fn scheduled_subscription_add_notification_observer_on_insert<Subscription>(
 	mut deferred_world: DeferredWorld,
 	hook_context: HookContext,
@@ -77,7 +76,6 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert<Subscri
 	));
 }
 
-#[track_caller]
 pub(crate) fn scheduled_subscription_notification_observer<Subscription>(
 	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
@@ -118,14 +116,24 @@ where
 	Ok(())
 }
 
-pub(crate) fn subscription_unsubscribe_on_remove(
-	mut deferred_world: DeferredWorld,
+fn scheduled_subscription_unsubscribe_on_remove<Subscription>(
+	deferred_world: DeferredWorld,
 	hook_context: HookContext,
-) {
-	deferred_world.commands().trigger_targets(
-		SubscriptionNotificationEvent::Unsubscribe,
-		hook_context.entity,
-	);
+) where
+	Subscription:
+		'static + ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	let context_param: BevySubscriptionContextParam = deferred_world.into();
+	let mut context = context_param.into_context(hook_context.entity);
+
+	println!("subscription, unsub on remove?? {}", hook_context.entity);
+	let mut stolen_subscription = context
+		.steal_scheduled_subscription::<Subscription>(hook_context.entity)
+		.unwrap();
+	stolen_subscription.unsubscribe(&mut context);
+	context
+		.return_stolen_scheduled_subscription(hook_context.entity, stolen_subscription)
+		.unwrap();
 }
 
 impl<Subscription> WithSubscriptionContext for ScheduledSubscriptionComponent<Subscription>
@@ -159,7 +167,9 @@ where
 		subscription.is_closed()
 	}
 
+	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+		println!("UNSUB SCHEDULED HANDLE");
 		let subscription = self.get_subscription_mut();
 		subscription.unsubscribe(context);
 		context

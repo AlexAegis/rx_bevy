@@ -1,5 +1,5 @@
 use bevy_ecs::{
-	component::{Component, HookContext},
+	component::{Component, HookContext, Mutable},
 	entity::Entity,
 	error::BevyError,
 	observer::{Observer, Trigger},
@@ -12,30 +12,28 @@ use rx_core_traits::{
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ConsumableSubscriptionNotificationEvent, subscription_unsubscribe_on_remove,
+	ConsumableSubscriptionNotificationEvent, handle::ErasedEntitySubscriptionHandle,
 };
 
 use super::WeakEntitySubscriptionHandle;
 
 #[derive(Component)]
-#[component(on_insert=unscheduled_erased_subscription_add_notification_observer_on_insert, on_remove=subscription_unsubscribe_on_remove)]
+#[component(on_insert=erased_subscription_add_notification_observer_on_insert, on_remove=erased_subscription_unsubscribe_on_remove::<Self>)]
 pub struct UnscheduledEntitySubscriptionHandle {
 	subscription_entity: Entity,
 	closed: bool,
 }
 
-pub(crate) fn unscheduled_erased_subscription_add_notification_observer_on_insert(
+pub(crate) fn erased_subscription_add_notification_observer_on_insert(
 	mut deferred_world: DeferredWorld,
 	hook_context: HookContext,
 ) {
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
-	entity_commands.insert(Observer::new(
-		unscheduled_erased_subscription_notification_observer,
-	));
+	entity_commands.insert(Observer::new(erased_subscription_notification_observer));
 }
 
-fn unscheduled_erased_subscription_notification_observer(
+fn erased_subscription_notification_observer(
 	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
@@ -48,12 +46,40 @@ fn unscheduled_erased_subscription_notification_observer(
 	Ok(())
 }
 
+pub(crate) fn erased_subscription_unsubscribe_on_remove<C>(
+	deferred_world: DeferredWorld,
+	hook_context: HookContext,
+) where
+	C: Component<Mutability = Mutable> + ErasedEntitySubscriptionHandle,
+{
+	let context_param: BevySubscriptionContextParam = deferred_world.into();
+	let mut context = context_param.into_context(hook_context.entity);
+
+	let target_subscription_entity = context
+		.deferred_world
+		.get_mut::<C>(hook_context.entity)
+		.unwrap()
+		.close_and_get_subscription_entity();
+
+	context.send_subscription_notification(
+		target_subscription_entity,
+		SubscriptionNotification::Unsubscribe,
+	);
+}
+
 impl UnscheduledEntitySubscriptionHandle {
 	pub(crate) fn new(subscription_entity: Entity) -> Self {
 		Self {
 			subscription_entity,
 			closed: false,
 		}
+	}
+}
+
+impl ErasedEntitySubscriptionHandle for UnscheduledEntitySubscriptionHandle {
+	fn close_and_get_subscription_entity(&mut self) -> Entity {
+		self.closed = true;
+		self.subscription_entity
 	}
 }
 

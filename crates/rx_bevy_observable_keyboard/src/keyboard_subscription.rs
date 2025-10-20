@@ -42,8 +42,10 @@ where
 
 	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.closed = true;
-		self.destination.unsubscribe(context);
+		if !self.is_closed() {
+			self.closed = true;
+			self.destination.unsubscribe(context);
+		}
 	}
 
 	#[track_caller]
@@ -79,7 +81,10 @@ where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	fn drop(&mut self) {
-		let mut context = BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
-		self.unsubscribe(&mut context);
+		if !self.is_closed() {
+			let mut context =
+				BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
+			self.unsubscribe(&mut context);
+		}
 	}
 }

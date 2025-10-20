@@ -12,11 +12,10 @@ use short_type_name::short_type_name;
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
-	subscription_unsubscribe_on_remove,
 };
 
 #[derive(Component)]
-#[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=subscription_unsubscribe_on_remove)]
+#[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=unscheduled_subscription_unsubscribe_on_remove::<Subscription>)]
 #[require(Name::new(short_type_name::<Subscription>()))]
 pub struct UnscheduledSubscriptionComponent<Subscription>
 where
@@ -26,6 +25,25 @@ where
 	this_entity: Entity,
 	/// Stealable!
 	subscription: Option<Subscription>,
+}
+
+fn unscheduled_subscription_unsubscribe_on_remove<Subscription>(
+	deferred_world: DeferredWorld,
+	hook_context: HookContext,
+) where
+	Subscription:
+		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	let context_param: BevySubscriptionContextParam = deferred_world.into();
+	let mut context = context_param.into_context(hook_context.entity);
+
+	let mut stolen_subscription = context
+		.steal_unscheduled_subscription::<Subscription>(hook_context.entity)
+		.unwrap();
+	stolen_subscription.unsubscribe(&mut context);
+	context
+		.return_stolen_unscheduled_subscription(hook_context.entity, stolen_subscription)
+		.unwrap();
 }
 
 impl<Subscription> UnscheduledSubscriptionComponent<Subscription>

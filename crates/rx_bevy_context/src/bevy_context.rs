@@ -33,6 +33,8 @@ impl SubscriptionContext for BevySubscriptionContextProvider {
 	type ScheduledSubscriptionAllocator = ScheduledEntitySubscriptionAllocator;
 	type UnscheduledSubscriptionAllocator = UnscheduledEntitySubscriptionAllocator;
 
+	#[track_caller]
+	#[inline]
 	fn create_context_to_unsubscribe_on_drop<'w, 's>() -> Self::Item<'w, 's> {
 		panic!(
 			"{}::create_context_to_unsubscribe_on_drop() was called, but its impossible to satisfy!
@@ -71,6 +73,15 @@ impl<'w, 's> BevySubscriptionContextParam<'w, 's> {
 		BevySubscriptionContext {
 			deferred_world: self.deferred_world,
 			subscription_entity,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<'w, 's> From<DeferredWorld<'w>> for BevySubscriptionContextParam<'w, 's> {
+	fn from(deferred_world: DeferredWorld<'w>) -> Self {
+		Self {
+			deferred_world,
 			_phantom_data: PhantomData,
 		}
 	}

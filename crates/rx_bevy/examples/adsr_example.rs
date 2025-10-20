@@ -6,9 +6,8 @@ use bevy_egui::EguiPlugin;
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
-use rx_bevy_observable_keyboard::{KeyboardObservableComponent, KeyboardObservableOptions};
-
-use rx_core_operator_adsr::AdsrSignal;
+use rx_bevy::prelude::*;
+use rx_bevy_context::RxSignal;
 
 fn main() -> AppExit {
 	App::new()
@@ -20,7 +19,6 @@ fn main() -> AppExit {
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 		))
-		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
 		.add_systems(
 			Update,
@@ -32,7 +30,7 @@ fn main() -> AppExit {
 		.run()
 }
 
-fn next_bool_observer(next: Trigger<RxNext<bool>>, name_query: Query<&Name>, time: Res<Time>) {
+fn next_bool_observer(next: Trigger<RxSignal<bool>>, name_query: Query<&Name>, time: Res<Time>) {
 	println!(
 		"bool value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
 		next.event(),
@@ -43,7 +41,7 @@ fn next_bool_observer(next: Trigger<RxNext<bool>>, name_query: Query<&Name>, tim
 }
 
 fn next_keyboard_input_observer(
-	next: Trigger<RxNext<KeyboardInput>>,
+	next: Trigger<RxSignal<KeyboardInput>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) {
@@ -57,7 +55,7 @@ fn next_keyboard_input_observer(
 }
 
 fn next_adsr_observer(
-	next: Trigger<RxNext<AdsrSignal>>,
+	next: Trigger<RxSignal<AdsrSignal>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) {
@@ -92,32 +90,7 @@ fn setup(
 
 	let mut keyboard_observable_entity_commands = commands.spawn((
 		Name::new("KeyboardObservable"),
-		KeyboardObservableComponent::new(KeyboardObservableOptions {}),
-		// PipeComponent::new(
-		// 	RelativeEntity::This,
-		// 	MapOperator::<KeyboardInput, (), _, bool>::new(|input: KeyboardInput| {
-		// 		if input.key_code == KeyCode::Space {
-		// 			input.state == ButtonState::Pressed
-		// 		} else {
-		// 			false
-		// 		}
-		// 	}),
-		// ),
-		// PipeComponent::new(
-		// 	RelativeEntity::This,
-		// 	AdsrOperator::<()>::new(AdsrOperatorOptions {
-		// 		emit_none_more_than_once: false,
-		// 		envelope: AdsrEnvelope {
-		// 			attack_time: Duration::from_millis(400),
-		// 			attack_easing: Some(EaseFunction::CubicOut),
-		// 			decay_time: Duration::from_millis(200),
-		// 			decay_easing: Some(EaseFunction::BackInOut),
-		// 			release_time: Duration::from_millis(800),
-		// 			release_easing: Some(EaseFunction::Linear),
-		// 			sustain_volume: 0.6,
-		// 		},
-		// 	}),
-		// ),
+		KeyboardObservable::default().into_component(),
 	));
 
 	keyboard_observable_entity_commands.observe(next_keyboard_input_observer);
@@ -133,9 +106,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
 		))
 		.observe(handle_move_signal)
-		.subscribe_to_that_scheduled::<AdsrSignal, (), Update>(RelativeEntity::Other(
-			keyboard_observable_entity,
-		));
+		.subscribes_to::<AdsrSignal, (), Update>(RelativeEntity::Other(keyboard_observable_entity));
 
 	commands.insert_resource(ExampleEntities {
 		subscription: target_subscription,
@@ -143,7 +114,7 @@ fn setup(
 }
 
 fn handle_move_signal(
-	next: Trigger<RxNext<AdsrSignal>>,
+	next: Trigger<RxSignal<AdsrSignal>>,
 	mut transform_query: Query<&mut Transform>,
 ) {
 	if let Ok(mut transform) = transform_query.get_mut(next.target()) {

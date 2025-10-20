@@ -13,7 +13,7 @@ pub struct ScheduledEntitySubscriptionAllocator;
 
 impl ScheduledSubscriptionAllocator for ScheduledEntitySubscriptionAllocator {
 	type ScheduledHandle<Subscription>
-		= ScheduledEntitySubscriptionHandle<Subscription>
+		= ScheduledEntitySubscriptionHandle
 	where
 		Subscription: 'static + ObservableSubscription<Context = Self::Context> + Send + Sync;
 

@@ -5,6 +5,8 @@ use bevy_time::Virtual;
 use crate::RxScheduler;
 
 /// A collection of default plugins
+/// Contains schedulers for Update and PostUpdate on Virtual clocks.
+/// More can be added with the [RxScheduler] plugin!
 pub struct RxPlugin;
 
 impl Plugin for RxPlugin {
