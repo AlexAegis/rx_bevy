@@ -26,7 +26,10 @@ where
 		mut destination: impl ObservableSubscription<Context = Context> + 'static + Send + Sync,
 		context: &mut Context::Item<'_, '_>,
 	) -> Self {
-		destination.unsubscribe(context);
+		// Immediately unsubscribes if it's not already closed.
+		if !destination.is_closed() {
+			destination.unsubscribe(context);
+		}
 
 		Self {
 			tickable: Box::new(destination),
@@ -81,9 +84,6 @@ where
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
+		// Does not need to do anything on drop, as it contains nothing.
 	}
 }

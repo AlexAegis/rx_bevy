@@ -1,4 +1,4 @@
-use rx_core::{context::*, heap_allocator_context::*, prelude::*};
+use rx_core::{heap_allocator_context::*, prelude::*};
 
 struct CustomContext;
 

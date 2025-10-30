@@ -122,13 +122,14 @@ where
 }
 
 #[cfg(test)]
-mod test {
+mod switch_map_operator {
 
 	use rx_core::prelude::*;
 	use rx_core_testing::prelude::*;
 
 	#[test]
-	fn t() {
+	fn it_re_subscribes_to_the_inner_observable_as_many_times_as_many_upstream_emissions_there_are()
+	{
 		let mut context = MockContext::default();
 		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
 
@@ -136,7 +137,6 @@ mod test {
 			.into_observable::<MockContext<_, _, _>>()
 			.switch_map(|_| (10..=12).into_observable::<MockContext<_, _, _>>());
 		let mut subscription = source.subscribe(mock_destination, &mut context);
-		println!("{context:?}");
 		assert!(
 			context.nothing_happened_after_closed(),
 			"something happened after unsubscribe"

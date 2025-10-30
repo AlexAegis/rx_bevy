@@ -1,7 +1,7 @@
 use bevy_time::{Timer, TimerMode};
 use rx_core_traits::{
-	Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Tick, Tickable,
+	WithSubscriptionContext,
 };
 
 use crate::observable::IntervalObservableOptions;

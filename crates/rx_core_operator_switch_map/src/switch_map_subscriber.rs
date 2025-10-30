@@ -3,8 +3,8 @@ use std::marker::PhantomData;
 use rx_core_subscriber_switch::SwitchSubscriber;
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionCollection, SubscriptionLike, Teardown, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	SubscriptionCollection, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithSubscriptionContext,
 };
 
 pub struct SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
@@ -23,7 +23,6 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	// TODO: Check if it would be enough to use this in a bevy context by just swapping the SwitchSubscriber impl to an ECS based one.
 	destination: SwitchSubscriber<InnerObservable, Destination>,
 	switcher: Switcher,
 	_phantom_data: PhantomData<(In, InError)>,
@@ -180,7 +179,6 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		println!("add teardown switch map sub");
 		self.destination.add_teardown(teardown, context);
 	}
 }

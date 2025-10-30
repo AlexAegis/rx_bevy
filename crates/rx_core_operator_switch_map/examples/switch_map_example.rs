@@ -8,7 +8,8 @@ fn main() {
 		.finalize(|_context| println!("finalize: upstream"))
 		.tap_next(|n, _context| println!("emit (source): {n}"))
 		.switch_map(|next| {
-			IteratorObservable::new(next..=3)
+			(next..=3)
+				.into_observable()
 				.map(move |i| format!("from {next} through 3, current: {i}"))
 				.finalize(|_context| println!("finalize: inner"))
 				.tap_next(|n, _context| println!("emit (inner): '{n}'"))

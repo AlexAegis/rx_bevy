@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
+	Observable, ObservableOutput, Subscriber, SubscriptionContext, WithSubscriptionContext,
 };
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};

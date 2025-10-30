@@ -13,4 +13,5 @@ pub use model::*;
 pub mod operator {
 	pub use super::adsr_operator::*;
 	pub use super::adsr_operator_options::*;
+	pub use super::model::*;
 }

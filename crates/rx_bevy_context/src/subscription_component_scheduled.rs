@@ -159,7 +159,6 @@ impl SubscriptionLike for ScheduledSubscriptionComponent {
 
 	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		println!("UNSUB SCHEDULED HANDLE");
 		let subscription = self.get_subscription_mut();
 		subscription.unsubscribe(context);
 		context

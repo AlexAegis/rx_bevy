@@ -103,14 +103,11 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			// TODO: Check if this clone is still necessary
-			let state_ref = self.state.clone();
-
-			if let Ok(mut state) = state_ref.write() {
+			if let Ok(mut state) = self.state.write() {
 				state.unsubscribe_inner_subscription(context);
 			};
 
-			SwitchSubscriberState::create_next_subscription(state_ref, next, context);
+			SwitchSubscriberState::create_next_subscription(&self.state, next, context);
 		}
 	}
 
@@ -224,6 +221,6 @@ where
 {
 	#[inline]
 	fn drop(&mut self) {
-		// Should not do anything on drop
+		// Should not do anything on drop, as it is just a shared reference to its inner state
 	}
 }

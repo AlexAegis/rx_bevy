@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Observable, ObservableOutput, SignalBound, Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
+	WithSubscriptionContext,
 };
 
 /// Emits all values from an iterator then immediately completes.
@@ -104,6 +104,6 @@ mod test {
 			context.nothing_happened_after_closed(),
 			"something happened after unsubscribe"
 		);
-		assert_eq!(context.all_observed_values(), vec![10, 11, 12, 10, 11, 12]);
+		assert_eq!(context.all_observed_values(), vec![1, 2]);
 	}
 }

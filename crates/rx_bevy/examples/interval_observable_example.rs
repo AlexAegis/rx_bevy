@@ -30,7 +30,7 @@ fn main() -> AppExit {
 			Update,
 			(
 				toggle_subscription_system::<KeyCode, ()>(KeyCode::KeyK, |e| e.keyboard_observable),
-				toggle_subscription_system::<i32, ()>(KeyCode::KeyI, |e| e.interval_observable),
+				toggle_subscription_system::<usize, ()>(KeyCode::KeyI, |e| e.interval_observable),
 				toggle_subscription_system::<String, ()>(KeyCode::KeyL, |e| {
 					e.keyboard_switch_map_to_interval_observable
 				}),
@@ -135,6 +135,7 @@ fn setup(mut commands: Commands) {
 		.spawn(Name::new("ExampleObserver"))
 		.observe(print_next_observer::<String>)
 		.observe(print_next_observer::<i32>)
+		.observe(print_next_observer::<usize>)
 		.observe(print_next_observer::<KeyCode>)
 		.id();
 

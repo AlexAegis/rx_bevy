@@ -114,10 +114,13 @@ fn setup(
 }
 
 fn handle_move_signal(
-	next: Trigger<RxSignal<AdsrSignal>>,
+	mut next: Trigger<RxSignal<AdsrSignal>>,
 	mut transform_query: Query<&mut Transform>,
 ) {
-	if let Ok(mut transform) = transform_query.get_mut(next.target()) {
-		transform.translation += Vec3::X * 0.05 * next.event().value;
+	// TODO: This is kinda inconvenient to access the event, edge observers should receive a non-consumable variant
+	if let SubscriberNotificationEvent::Next(adsr_signal) = next.event_mut().consume() {
+		if let Ok(mut transform) = transform_query.get_mut(next.target()) {
+			transform.translation += Vec3::X * 0.05 * adsr_signal.value;
+		}
 	}
 }

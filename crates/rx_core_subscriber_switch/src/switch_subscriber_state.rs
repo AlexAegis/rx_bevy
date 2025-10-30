@@ -5,8 +5,8 @@ use std::{
 
 use rx_core_traits::{
 	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
-	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
+	WithSubscriptionContext,
 };
 
 pub struct SwitchSubscriberState<InnerObservable, Destination>
@@ -26,7 +26,7 @@ where
 {
 	pub(crate) destination: SharedSubscriber<Destination>,
 	pub(crate) inner_subscription: Option<<InnerObservable as Observable>::Subscription>,
-	teardown: SubscriptionData<Destination::Context>,
+	teardown: Option<SubscriptionData<Destination::Context>>,
 	pub(crate) closed: bool,
 	pub(crate) is_complete: bool,
 	_phantom_data: PhantomData<InnerObservable>,
@@ -54,7 +54,7 @@ where
 		Self {
 			destination: SharedSubscriber::new(destination, context),
 			inner_subscription: None,
-			teardown: SubscriptionData::default(),
+			teardown: Some(SubscriptionData::default()),
 			closed: false,
 			is_complete: false,
 			_phantom_data: PhantomData,
@@ -75,8 +75,9 @@ where
 		if let Some(mut inner_subscription) = self.inner_subscription.take() {
 			inner_subscription.unsubscribe(context);
 		}
-		self.teardown.unsubscribe(context);
-		self.teardown = SubscriptionData::default();
+		if let Some(mut teardown) = self.teardown.take() {
+			teardown.unsubscribe(context);
+		}
 	}
 
 	pub(crate) fn unsubscribe_outer(
@@ -92,7 +93,7 @@ where
 	}
 
 	pub(crate) fn create_next_subscription(
-		state_ref: Arc<RwLock<Self>>,
+		state_ref: &Arc<RwLock<Self>>,
 		mut next: InnerObservable,
 		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
@@ -220,7 +221,9 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		self.teardown.add_teardown(teardown, context);
+		self.teardown
+			.get_or_insert_default()
+			.add_teardown(teardown, context);
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {

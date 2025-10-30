@@ -173,7 +173,6 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			println!("SUB DROP!!");
 			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}

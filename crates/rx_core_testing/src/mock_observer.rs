@@ -53,7 +53,6 @@ where
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		context.push(SubscriberNotification::Complete);
-		self.unsubscribe(context);
 	}
 }
 
