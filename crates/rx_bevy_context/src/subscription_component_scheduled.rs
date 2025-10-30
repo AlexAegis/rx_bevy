@@ -17,7 +17,7 @@ use crate::{
 	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
 };
 
-// TODO(bevy-0.18+): This component does not need to be erased, it's only erased to facilitate mass unsubscribe on exit, which currently can't be done using commands as there is no teardown schedule in bevy similar to the startup schedule. https://github.com/bevyengine/bevy/issues/7067
+// TODO(bevy-0.18+): This component does not need to be erased, it's only erased to facilitate mass unsubscribe on exit, which currently can't be done using commands as there is no teardown schedule in bevy similar to the startup schedule. https://github.com/AlexAegis/rx_bevy/issues/2 https://github.com/bevyengine/bevy/issues/7067
 #[derive(Component)]
 #[component(on_insert=scheduled_subscription_add_notification_observer_on_insert, on_remove=scheduled_subscription_unsubscribe_on_remove)]
 #[require(Name::new(short_type_name::<Self>()))]

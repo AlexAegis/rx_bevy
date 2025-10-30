@@ -57,24 +57,10 @@ where
 
 		app.add_systems(
 			Last,
-			trigger_unsubscribe_all_subscriptions::<S>
+			unsubscribe_all_subscriptions
 				.after(exit_on_all_closed)
 				.run_if(on_event::<AppExit>),
 		);
-	}
-}
-
-/// Sends a tick notification for all subscriptions scheduled with this schedule
-pub fn trigger_unsubscribe_all_subscriptions<S: ScheduleLabel>(
-	mut commands: Commands,
-	subscription_query: Query<Entity, With<SubscriptionSchedule<S>>>,
-) {
-	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
-
-	if !subscriptions.is_empty() {
-		let consumable_notification: ConsumableSubscriptionNotificationEvent =
-			SubscriptionNotificationEvent::Unsubscribe.into();
-		commands.trigger_targets(consumable_notification, subscriptions);
 	}
 }
 
