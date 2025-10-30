@@ -61,6 +61,7 @@ smallvec = { workspace = true }
 short_type_name = { workspace = true }
 derive-where = { workspace = true }
 thiserror = { workspace = true }
+stealcell = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }

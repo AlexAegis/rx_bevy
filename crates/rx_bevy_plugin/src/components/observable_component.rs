@@ -87,14 +87,15 @@ where
 
 	let mut context = context_param.into_context(event.subscription_entity);
 
-	let mut stolen_observable = context.steal_observable::<O>(event.observable_entity)?;
-
-	let subscription = stolen_observable.subscribe(
-		EntityObserver::<O::Out, O::OutError>::new(event.destination_entity),
-		&mut context, // I have to access the context, passing it into something that was accessed from the context
-	);
-
-	context.return_stolen_observable(event.observable_entity, stolen_observable)?;
+	let subscription = {
+		let mut stolen_observable = context.steal_observable::<O>(event.observable_entity)?;
+		let subscription = stolen_observable.subscribe(
+			EntityObserver::<O::Out, O::OutError>::new(event.destination_entity),
+			&mut context, // I have to access the context, passing it into something that was accessed from the context
+		);
+		context.return_stolen_observable(event.observable_entity, stolen_observable)?;
+		subscription
+	};
 
 	let mut commands = context.deferred_world.commands();
 	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
@@ -104,10 +105,7 @@ where
 		// already has access to.
 		// It also already contains the [SubscriptionSchedule] component.
 		subscription_entity_commands.insert((
-			ScheduledSubscriptionComponent::<O::Subscription>::new(
-				subscription,
-				event.subscription_entity,
-			),
+			ScheduledSubscriptionComponent::new(subscription, event.subscription_entity),
 			SubscriptionOf::<O>::new(event.observable_entity),
 		));
 	} else {

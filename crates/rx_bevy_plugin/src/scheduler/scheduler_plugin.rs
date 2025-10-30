@@ -1,20 +1,23 @@
 use std::marker::PhantomData;
 
-use bevy_app::{App, AppExit, Last, Plugin, PostUpdate};
+use bevy_app::{App, AppExit, Last, Plugin};
 use bevy_ecs::{
 	entity::Entity,
 	observer::Observer,
 	query::With,
 	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_event},
 	system::{Commands, Query, Res},
+	world::{DeferredWorld, World},
 };
 use bevy_time::Time;
 use bevy_window::exit_on_all_closed;
 use derive_where::derive_where;
 use rx_bevy_common::Clock;
-use rx_bevy_context::{ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent};
+use rx_bevy_context::{
+	BevySubscriptionContextParam, ConsumableSubscriptionNotificationEvent,
+	ScheduledSubscriptionComponent, SubscriptionNotificationEvent,
+};
 use rx_core_traits::Tick;
-use short_type_name::short_type_name;
 
 use crate::SubscriptionSchedule;
 
@@ -47,38 +50,63 @@ where
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
-		// use bevy_erased_component_registry::AppRegisterErasedComponentExtension;
-		// app.register_erased_component::<SubscriptionSchedule<S>>();
 		app.add_systems(
 			self.schedule.clone(),
 			tick_scheduled_subscriptions_system::<S, C>,
 		);
 
 		app.add_systems(
-			PostUpdate,
-			unsubscribe_everything::<S>
+			Last,
+			trigger_unsubscribe_all_subscriptions::<S>
 				.after(exit_on_all_closed)
 				.run_if(on_event::<AppExit>),
 		);
 	}
 }
 
-/// This isn't correct, but the best I got.
-/// TODO: USE AN EXCLUSIVE SYSTEM, the command has no chance to be flushed as this is running in the very last frame
-fn unsubscribe_everything<S: ScheduleLabel>(
+/// Sends a tick notification for all subscriptions scheduled with this schedule
+pub fn trigger_unsubscribe_all_subscriptions<S: ScheduleLabel>(
 	mut commands: Commands,
-	subscription_query: Query<Entity, (With<SubscriptionSchedule<S>>, With<Observer>)>,
+	subscription_query: Query<Entity, With<SubscriptionSchedule<S>>>,
 ) {
 	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
-	let consumable_notification: ConsumableSubscriptionNotificationEvent =
-		SubscriptionNotificationEvent::Unsubscribe.into();
-	println!(
-		"Unsubscribe everything in schedule {}! {:?}",
-		short_type_name::<S>(),
-		subscriptions
-	);
 
-	commands.trigger_targets(consumable_notification, subscriptions);
+	if !subscriptions.is_empty() {
+		let consumable_notification: ConsumableSubscriptionNotificationEvent =
+			SubscriptionNotificationEvent::Unsubscribe.into();
+		commands.trigger_targets(consumable_notification, subscriptions);
+	}
+}
+
+fn unsubscribe_all_subscriptions(world: &mut World) {
+	let mut subscription_query = world.query::<(Entity, &mut ScheduledSubscriptionComponent)>();
+	let mut subscriptions = subscription_query
+		.iter_mut(world)
+		.map(|(entity, mut subscription_context)| {
+			(entity, subscription_context.steal_subscription())
+		})
+		.collect::<Vec<_>>();
+
+	let mut deferred_world = DeferredWorld::from(world);
+	{
+		let context_param: BevySubscriptionContextParam = deferred_world.reborrow().into();
+		// The entity doesn't really matter during an unsubscription, and it's only there anyway to
+		// organize new spawned internal subscriptions
+		let mut context = context_param.into_context(Entity::PLACEHOLDER);
+
+		for (_, subscription) in subscriptions.iter_mut() {
+			subscription.unsubscribe(&mut context);
+		}
+	}
+
+	// No need to return stolen subscriptions, the app is closed. We're doing it anyway :)
+	for (subscription_entity, subscription) in subscriptions {
+		let mut subscription_component = deferred_world
+			.get_mut::<ScheduledSubscriptionComponent>(subscription_entity)
+			.unwrap();
+
+		subscription_component.return_stolen_subscription(subscription);
+	}
 }
 
 /// Sends a tick notification for all subscriptions scheduled with this schedule

@@ -12,6 +12,7 @@ use rx_core_traits::{
 	SubscriptionContext, SubscriptionContextAccess, SubscriptionLike,
 };
 use short_type_name::short_type_name;
+use stealcell::Stolen;
 use thiserror::Error;
 
 use crate::{
@@ -174,35 +175,34 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 			.trigger_targets(notification_event, target);
 	}
 
-	pub fn steal_scheduled_subscription<Subscription>(
+	pub fn steal_scheduled_subscription(
 		&mut self,
 		entity: Entity,
-	) -> Result<Subscription, BevyError>
-	where
-		Subscription: 'static
-			+ ObservableSubscription<Context = BevySubscriptionContextProvider>
-			+ Send
-			+ Sync,
-	{
+	) -> Result<
+		Stolen<
+			Box<
+				dyn ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
+			>,
+		>,
+		BevyError,
+	> {
 		let mut scheduled_subscription_component =
-			self.try_get_component_mut::<ScheduledSubscriptionComponent<Subscription>>(entity)?;
+			self.try_get_component_mut::<ScheduledSubscriptionComponent>(entity)?;
 
 		Ok(scheduled_subscription_component.steal_subscription())
 	}
 
-	pub fn return_stolen_scheduled_subscription<Subscription>(
+	pub fn return_stolen_scheduled_subscription(
 		&mut self,
 		entity: Entity,
-		subscription: Subscription,
-	) -> Result<(), BevyError>
-	where
-		Subscription: 'static
-			+ ObservableSubscription<Context = BevySubscriptionContextProvider>
-			+ Send
-			+ Sync,
-	{
+		subscription: Stolen<
+			Box<
+				dyn ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
+			>,
+		>,
+	) -> Result<(), BevyError> {
 		let mut scheduled_subscription_component =
-			self.try_get_component_mut::<ScheduledSubscriptionComponent<Subscription>>(entity)?;
+			self.try_get_component_mut::<ScheduledSubscriptionComponent>(entity)?;
 		scheduled_subscription_component.return_stolen_subscription(subscription);
 
 		Ok(())

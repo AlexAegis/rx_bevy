@@ -78,6 +78,7 @@ cargo_metadata = { version = "0.23.0" }
 short_type_name = { path = "crates/short_type_name" }
 examples_common = { path = "crates/examples_common" }
 feature_checker = { path = "crates/feature_checker" }
+stealcell = { path = "crates/stealcell" }
 bevy_erased_component_registry = { path = "crates/bevy_erased_component_registry" }
 bevy_mod_alternate_system_on_press = { path = "crates/bevy_mod_alternate_system_on_press" }
 # Core
