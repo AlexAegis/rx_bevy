@@ -1,0 +1,39 @@
+name: Feature Request
+description: Feature request for rx_core/rx_bevy.
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+assignees:
+  - AlexAegis
+body:
+  - type: checkboxes
+    attributes:
+      label: Pre-request checklist
+      description: Be sure to do the following before submitting an issue
+      options:
+        - label: I've checked that this issue has not been requested already, both in open and closed issues.
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What problem does this solve or what need does it fill?
+      description: |
+        A description of why this particular feature should be added.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What solution would you like?
+      description: The solution you propose for the problem presented.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What alternative(s) have you considered?
+      description: Other solutions to solve and/or work around the problem presented.
+  - type: textarea
+    id: addition
+    attributes:
+      label: Additional context
+      placeholder: Add any other context about the feature here.

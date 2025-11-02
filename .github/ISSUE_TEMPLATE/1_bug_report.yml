@@ -1,0 +1,49 @@
+name: Bug Report
+description: Bug report for rx_core/rx_bevy.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees:
+  - AlexAegis
+body:
+  - type: checkboxes
+    attributes:
+      label: Pre-report checklist
+      description: Be sure to do the following before submitting an issue
+      options:
+        - label: I've checked that this issue has not been reported already, both in open and closed issues.
+          required: true
+        - label: I made sure using `cargo update` that I'm using the latest versions on rx_bevy and rx_core crates.
+          required: true
+        - label: I've created a minimal, single-file reproduction showcasing the issue.
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: |
+        A clear and concise description of the behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expect to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Reproduction code (main.rs)
+      description: Code to create a minimal reproduction.
+      render: rust
+  - type: input
+    id: repro-link
+    attributes:
+      label: Reproduction URL
+      description: Use a git repo to show a minimal, single-file reproduction of the issue. Please also paste (at least the relevant parts) example code in the "Reproduction code" section above.
+  - type: textarea
+    id: addition
+    attributes:
+      label: Additional context
+      placeholder: Add any other context about the problem here.

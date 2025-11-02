@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and general discussions around rx_bevy
+    url: https://github.com/AlexAegis/rx_bevy/discussions
+    about: For general discussions, or questions please use discussions.
