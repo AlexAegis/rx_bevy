@@ -161,7 +161,6 @@ where
 				context,
 			);
 			self.shared_destination.complete(context);
-			self.unsubscribe(context);
 		}
 	}
 }

@@ -99,7 +99,6 @@ where
 				.write()
 				.unwrap_or_else(|_| panic!("{}", poisoned_destination_message::<Self>()));
 			destination.complete(context);
-			destination.unsubscribe(context);
 		}
 	}
 }

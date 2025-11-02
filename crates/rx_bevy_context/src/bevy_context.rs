@@ -10,6 +10,7 @@ use bevy_ecs::{
 use rx_core_traits::{
 	DropUnsafeSubscriptionContext, ObservableSubscription, SignalBound, Subscriber,
 	SubscriptionContext, SubscriptionContextAccess, SubscriptionLike,
+	heap_allocator_context::{ErasedSubscriberHeapAllocator, SubscriberHeapAllocator},
 };
 use short_type_name::short_type_name;
 use stealcell::Stolen;
@@ -17,8 +18,7 @@ use thiserror::Error;
 
 use crate::{
 	ConsumableSubscriberNotificationEvent, ConsumableSubscriptionNotificationEvent,
-	ErasedSubscriberEntityAllocator, ScheduledEntitySubscriptionAllocator,
-	ScheduledSubscriptionComponent, SubscriberComponent, SubscriberEntityAllocator,
+	ScheduledEntitySubscriptionAllocator, ScheduledSubscriptionComponent, SubscriberComponent,
 	UnscheduledEntitySubscriptionAllocator, UnscheduledSubscriptionComponent,
 };
 
@@ -29,8 +29,8 @@ impl SubscriptionContext for BevySubscriptionContextProvider {
 
 	type DropSafety = DropUnsafeSubscriptionContext;
 
-	type DestinationAllocator = SubscriberEntityAllocator; // TODO: Test is maybe the regular heap alloctor is okay here  SubscriberHeapAllocator<Self>;
-	type ErasedDestinationAllocator = ErasedSubscriberEntityAllocator;
+	type DestinationAllocator = SubscriberHeapAllocator<Self>;
+	type ErasedDestinationAllocator = ErasedSubscriberHeapAllocator<Self>;
 	type ScheduledSubscriptionAllocator = ScheduledEntitySubscriptionAllocator;
 	type UnscheduledSubscriptionAllocator = UnscheduledEntitySubscriptionAllocator;
 

@@ -115,7 +115,6 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			(self.on_complete)(context);
-			self.unsubscribe(context);
 		}
 	}
 }

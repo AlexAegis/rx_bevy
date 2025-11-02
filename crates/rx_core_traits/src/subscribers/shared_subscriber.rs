@@ -16,6 +16,8 @@ pub struct SharedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
+	/// To track if this individual share is closed or not.
+	is_closed: bool,
 	shared_destination: <Destination as DestinationSharedTypes>::Shared,
 	_phantom_data: PhantomData<Destination>,
 }
@@ -29,6 +31,7 @@ where
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
+			is_closed: destination.is_closed(),
 			shared_destination: <Destination as DestinationSharedTypes>::Sharer::share(
 				destination,
 				context,
@@ -37,11 +40,12 @@ where
 		}
 	}
 
-	pub fn clone_with_context<F>(
+	pub fn clone_with_context(
 		&mut self,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
+			is_closed: self.shared_destination.is_closed(),
 			shared_destination: self.shared_destination.clone_with_context(context),
 			_phantom_data: PhantomData,
 		}
@@ -142,12 +146,15 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.shared_destination.is_closed()
+		self.is_closed
 	}
 
 	#[inline]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.shared_destination.unsubscribe(context);
+		if !self.is_closed() {
+			self.is_closed = true;
+			self.shared_destination.unsubscribe(context);
+		}
 	}
 
 	#[inline]

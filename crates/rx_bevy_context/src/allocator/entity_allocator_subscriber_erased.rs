@@ -8,6 +8,7 @@ use crate::{
 	SubscriberComponent,
 };
 
+#[deprecated = "maybe giving these an entity is a bad idea, it is with the switch, has to be tried with subjects too"]
 #[derive(Default)]
 pub struct ErasedSubscriberEntityAllocator;
 

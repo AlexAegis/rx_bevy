@@ -38,7 +38,7 @@ fn erased_subscription_notification_observer(
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
 	let subscription_entity = subscription_notification.target();
-	let notification = subscription_notification.event_mut().consume();
+	let notification = subscription_notification.event_mut().clone().consume();
 
 	let mut context = context_param.into_context(subscription_entity);
 

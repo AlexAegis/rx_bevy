@@ -145,7 +145,6 @@ where
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.complete(context);
-				lock.unsubscribe(context);
 			} else {
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}

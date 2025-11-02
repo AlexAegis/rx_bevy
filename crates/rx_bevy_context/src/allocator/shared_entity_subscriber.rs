@@ -10,6 +10,7 @@ use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, Subscriber
 
 /// An easily clonable subscriber that does not own its destination, only points
 /// to it. It is not a component and is only used internally in other subscribers.
+#[deprecated = "maybe giving these an entity is a bad idea, it is with the switch, has to be tried with subjects too"]
 pub struct SharedEntitySubscriber<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
@@ -161,7 +162,6 @@ where
 					Self::Context,
 				>::Complete,
 			);
-			self.unsubscribe(context);
 		}
 	}
 }

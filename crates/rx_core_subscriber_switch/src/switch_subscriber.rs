@@ -1,11 +1,8 @@
-use std::sync::{Arc, RwLock};
-
+use crate::ExternallyManagedSubscriber;
 use rx_core_traits::{
-	Observable, Observer, ObserverInput, Subscriber, SubscriptionCollection, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
-
-use crate::SwitchSubscriberState;
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
 pub struct SwitchSubscriber<InnerObservable, Destination>
@@ -21,7 +18,9 @@ where
 		>,
 	Destination: SubscriptionCollection,
 {
-	state: Arc<RwLock<SwitchSubscriberState<InnerObservable, Destination>>>,
+	pub(crate) destination: SharedSubscriber<ExternallyManagedSubscriber<Destination>>,
+	pub(crate) inner_subscription: Option<<InnerObservable as Observable>::Subscription>,
+	pub(crate) is_closed: bool,
 }
 
 impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>
@@ -42,10 +41,22 @@ where
 		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
-			state: Arc::new(RwLock::new(SwitchSubscriberState::new(
-				destination,
+			destination: SharedSubscriber::new(
+				ExternallyManagedSubscriber::new(destination),
 				context,
-			))),
+			),
+			inner_subscription: None,
+			is_closed: false,
+		}
+	}
+
+	#[inline]
+	fn unsubscribe_inner(
+		&mut self,
+		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		if let Some(mut inner_subscription) = self.inner_subscription.take() {
+			inner_subscription.unsubscribe(context);
 		}
 	}
 }
@@ -99,19 +110,23 @@ where
 {
 	fn next(
 		&mut self,
-		next: Self::In,
+		mut next: Self::In,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			let mut inner_state = self
-				.state
-				.write()
-				.map(|mut state| state.extract_inner_state())
-				.expect("SwitchSubscriber inner states lock is poisoned!");
+			self.unsubscribe_inner(context);
+			self.destination.access_with_context_mut(
+				|inner, _context| {
+					inner.inner_is_complete = false;
+					inner.outer_is_complete = false;
+				},
+				context,
+			);
 
-			inner_state.unsubscribe(context);
+			let subscription =
+				next.subscribe(self.destination.clone_with_context(context), context);
 
-			SwitchSubscriberState::create_next_subscription(&self.state, next, context);
+			self.inner_subscription = Some(subscription);
 		}
 	}
 
@@ -120,19 +135,21 @@ where
 		error: Self::InError,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.is_closed()
-			&& let Ok(mut state) = self.state.write()
-		{
-			state.error(error, context);
+		if !self.is_closed() {
+			self.unsubscribe_inner(context);
+			self.destination.error(error, context);
 		}
 	}
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		if !self.is_closed()
-			&& let Ok(mut state) = self.state.write()
-		{
-			state.is_complete = true;
-			state.complete_if_can(context);
+		if !self.is_closed() {
+			self.destination.access_with_context_mut(
+				|inner, context| {
+					inner.outer_is_complete = true;
+					inner.complete_if_can(context);
+				},
+				context,
+			);
 		}
 	}
 }
@@ -155,10 +172,11 @@ where
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if let Ok(mut state) = self.state.write() {
-			println!("ticking switchsub");
-			// TODO: Deadlocks when the inner state is ticked
-			state.tick(tick, context);
+		if let Some(inner_subscription) = &mut self.inner_subscription {
+			inner_subscription.tick(tick.clone(), context);
+		} else {
+			// The inner observable will tick downstream, only directly tick downstream if there is no inner
+			self.destination.tick(tick, context);
 		}
 	}
 }
@@ -179,22 +197,23 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		if let Ok(state) = self.state.read() {
-			state.closed
-		} else {
-			true
-		}
+		self.is_closed
 	}
 
+	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		// Pre-checked to avoid runtime lock conflicts
+		// An upstream unsubscribe stops everything!
 		if !self.is_closed() {
-			let mut extraced_inner_subscription = self
-				.state
-				.write()
-				.map(|mut state| state.unsubscribe_outer_extract_inner(context))
-				.expect("SwitchSubscriber state lock is poisoned!");
-			extraced_inner_subscription.unsubscribe(context);
+			self.is_closed = true;
+
+			self.unsubscribe_inner(context);
+			self.destination.unsubscribe(context);
+			self.destination.access_with_context_mut(
+				|inner, context| {
+					inner.downstream_destination.unsubscribe(context);
+				},
+				context,
+			);
 		}
 	}
 
@@ -204,11 +223,14 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			if let Ok(mut state) = self.state.write() {
-				// Teardowns added from the outside are forwarded to the destination so
-				// that they won't execute just because an inner subscription unsubscribed.
-				state.destination.add_teardown(teardown, context);
-			}
+			let mut teardown = Some(teardown);
+			self.destination.access_with_context_mut(
+				|inner, context| {
+					let teardown = teardown.take().unwrap();
+					inner.add_downstream_teardown(teardown, context);
+				},
+				context,
+			);
 		} else {
 			teardown.execute(context);
 		}
@@ -230,6 +252,10 @@ where
 {
 	#[inline]
 	fn drop(&mut self) {
-		// Should not do anything on drop, as it is just a shared reference to its inner state
+		if !self.is_closed() {
+			let mut context = InnerObservable::Context::create_context_to_unsubscribe_on_drop();
+			println!("????????????????????????????????????");
+			self.unsubscribe(&mut context);
+		}
 	}
 }

@@ -9,6 +9,7 @@ pub struct ConsumableSubscriptionNotificationEvent {
 }
 
 impl ConsumableSubscriptionNotificationEvent {
+	// TODO: re-evaluate the need for this
 	pub fn consume(&mut self) -> SubscriptionNotificationEvent {
 		self.notification
 			.take()

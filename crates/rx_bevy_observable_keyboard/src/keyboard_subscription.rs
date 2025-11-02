@@ -35,6 +35,7 @@ impl<Destination> SubscriptionLike for KeyboardSubscription<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
+	#[inline]
 	#[track_caller]
 	fn is_closed(&self) -> bool {
 		self.closed

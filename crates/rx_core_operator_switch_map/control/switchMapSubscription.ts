@@ -31,11 +31,11 @@ inner.next(1);
 console.log("--- step 3");
 source.next(2);
 console.log("--- step 4");
-
-inner.next(2);
+source.complete();
 console.log("--- step 5");
+inner.next(2);
+console.log("--- step 6");
 
 source.complete(); // only the first finalize ran!!
-console.log("--- step 6");
 
 source.unsubscribe(); // no finalize ran!!

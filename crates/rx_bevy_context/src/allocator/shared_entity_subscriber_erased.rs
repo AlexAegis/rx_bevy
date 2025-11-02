@@ -11,6 +11,7 @@ use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 /// This subscriber acts like the ArcSubscriber does. It does not contain
 /// anything but a destination where observed signals are just simply forwarded
 /// to.
+#[deprecated = "maybe giving these an entity is a bad idea, it is with the switch, has to be tried with subjects too"]
 pub struct SharedErasedEntitySubscriber<In, InError>
 where
 	In: SignalBound,
@@ -108,7 +109,6 @@ where
 				self.destination_entity,
 				SubscriberNotification::<Self::In, Self::InError, Self::Context>::Complete,
 			);
-			self.unsubscribe(context);
 		}
 	}
 }

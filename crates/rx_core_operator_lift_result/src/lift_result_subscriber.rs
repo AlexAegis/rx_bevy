@@ -1,9 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
@@ -90,13 +89,11 @@ where
 	) {
 		self.destination
 			.error((self.in_error_to_result_error)(error), context);
-		self.destination.unsubscribe(context);
 	}
 
 	#[inline]
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
-		self.destination.unsubscribe(context);
 	}
 }
 

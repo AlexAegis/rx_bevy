@@ -1,8 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
 use rx_core_traits::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
+	Tickable, WithSubscriptionContext,
 };
 use short_type_name::short_type_name;
 
@@ -60,7 +60,6 @@ where
 	) {
 		if self.completion_count == self.ref_count && !self.closed {
 			self.destination.complete(context);
-			self.unsubscribe(context);
 		}
 	}
 }

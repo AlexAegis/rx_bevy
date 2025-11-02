@@ -1,8 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriptionData, SubscriptionLike, Teardown, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Teardown, Tickable, WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -82,16 +82,14 @@ where
 	fn error(
 		&mut self,
 		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		println!("{}error: {:?}", self.get_prefix(), error);
-		self.teardown.unsubscribe(context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		println!("{}completed", self.get_prefix());
-		self.teardown.unsubscribe(context);
 	}
 }
 

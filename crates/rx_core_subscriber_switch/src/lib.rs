@@ -1,8 +1,8 @@
+mod externally_managed_subscriber;
 mod switch_subscriber;
-mod switch_subscriber_state;
 
+pub use externally_managed_subscriber::*;
 pub use switch_subscriber::*;
-pub use switch_subscriber_state::*;
 
 pub mod prelude {
 	pub use super::switch_subscriber::*;

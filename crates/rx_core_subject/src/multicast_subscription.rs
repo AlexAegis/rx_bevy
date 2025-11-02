@@ -12,6 +12,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	is_closed: bool,
 	subscriber: Option<
 		<Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>,
 	>,
@@ -28,6 +29,7 @@ where
 		shared_subscriber: <Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>,
 	) -> Self {
 		Self {
+			is_closed: shared_subscriber.is_closed(),
 			subscriber: Some(shared_subscriber),
 			teardown: SubscriptionData::default(),
 		}
@@ -42,6 +44,7 @@ where
 {
 	fn default() -> Self {
 		Self {
+			is_closed: false,
 			subscriber: None,
 			teardown: SubscriptionData::default(),
 		}
@@ -56,6 +59,7 @@ where
 {
 	fn clone(&self) -> Self {
 		Self {
+			is_closed: self.is_closed,
 			subscriber: self.subscriber.clone(),
 			teardown: SubscriptionData::default(),
 		}
@@ -95,17 +99,12 @@ where
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
-		self.teardown.is_closed()
-			&& self
-				.subscriber
-				.as_ref()
-				.map(|subscriber| subscriber.is_closed())
-				.unwrap_or(true)
+		self.is_closed
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		println!("multicast  sub unsub! is closed {}", self.is_closed());
 		if !self.is_closed() {
+			self.is_closed = true;
 			if let Some(mut subscriber) = self.subscriber.take() {
 				subscriber.unsubscribe(context);
 			}

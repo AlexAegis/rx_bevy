@@ -125,8 +125,6 @@ where
 			if let Some(on_complete) = self.on_complete.take() {
 				(on_complete)(context);
 			}
-
-			self.unsubscribe(context);
 		}
 	}
 }

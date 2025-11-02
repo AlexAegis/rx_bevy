@@ -107,7 +107,7 @@ where
 	let mut stolen_subscription =
 		context.steal_unscheduled_subscription::<Subscription>(subscription_entity)?;
 
-	let event = subscription_notification.event_mut().consume();
+	let event = subscription_notification.event_mut().clone().consume();
 
 	match event {
 		SubscriptionNotificationEvent::Unsubscribe => stolen_subscription.unsubscribe(&mut context),

@@ -1,9 +1,8 @@
 use std::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -79,7 +78,6 @@ where
 	) {
 		if !self.is_closed() {
 			self.destination.error(error, context);
-			self.unsubscribe(context);
 		}
 	}
 
@@ -87,7 +85,6 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			self.destination.complete(context);
-			self.unsubscribe(context);
 		}
 	}
 }

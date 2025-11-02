@@ -13,6 +13,7 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
+	is_closed: bool,
 	destination:
 		Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context> + Send + Sync>>,
 	teardown: SubscriptionData<Context>,
@@ -39,6 +40,7 @@ where
 			'static + Subscriber<In = In, InError = InError, Context = Context> + Send + Sync,
 	{
 		Self {
+			is_closed: destination.is_closed(),
 			destination: Arc::new(RwLock::new(destination)),
 			teardown: SubscriptionData::default(),
 		}
@@ -75,6 +77,7 @@ where
 {
 	fn clone(&self) -> Self {
 		Self {
+			is_closed: self.is_closed,
 			destination: self.destination.clone(),
 			teardown: SubscriptionData::default(), // New instance, new teardowns
 		}
@@ -129,7 +132,6 @@ where
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.error(error, context);
-				lock.unsubscribe(context);
 			} else {
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
@@ -140,13 +142,10 @@ where
 		if !self.is_closed() {
 			if let Ok(mut lock) = self.destination.write() {
 				lock.complete(context);
-				lock.unsubscribe(context);
 			} else {
 				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
 		}
-		// Must always run
-		self.teardown.unsubscribe(context);
 	}
 }
 
@@ -176,16 +175,12 @@ where
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
-		if let Ok(lock) = self.destination.read() {
-			lock.is_closed()
-		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			true
-		}
+		self.is_closed
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
+			self.is_closed = true;
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);
 			} else {
@@ -218,9 +213,6 @@ where
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
+		// Should not do anything on drop as it's shared!
 	}
 }

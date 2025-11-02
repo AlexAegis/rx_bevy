@@ -91,11 +91,20 @@ pub(crate) fn scheduled_subscription_notification_observer(
 	let subscription_entity = subscription_notification.target();
 	let mut context = context_param.into_context(subscription_entity);
 
+	if !context
+		.deferred_world
+		.entities()
+		.contains(subscription_entity)
+	{
+		// Subscription got despawned!
+		return Ok(());
+	}
 	let mut scheduled_subscription_component =
 		context.try_get_component_mut::<ScheduledSubscriptionComponent>(subscription_entity)?;
-	let mut stolen_scheduled_subscription = scheduled_subscription_component.steal_subscription();
 
-	let event = subscription_notification.event_mut().consume();
+	let mut stolen_scheduled_subscription = scheduled_subscription_component.steal_subscription();
+	// Cloned because every subscription gets the same event.
+	let event = subscription_notification.event_mut().clone().consume();
 
 	match event {
 		SubscriptionNotificationEvent::Unsubscribe => {
