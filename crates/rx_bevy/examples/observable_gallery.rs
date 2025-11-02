@@ -44,14 +44,20 @@ fn print_next_observer<T>(mut next: Trigger<RxSignal<T>>, name_query: Query<&Nam
 where
 	T: SignalBound + Debug,
 {
-	println!(
-		"{}\t value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
-		short_type_name::<T>(),
-		next.event_mut().consume(),
-		next.target(),
-		name_query.get(next.target()).unwrap(),
-		time.elapsed_secs()
-	);
+	let event = next.event_mut().consume();
+	match event {
+		SubscriberNotificationEvent::Tick(_) => {}
+		e => {
+			println!(
+				"{}\t value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
+				short_type_name::<T>(),
+				e,
+				next.target(),
+				name_query.get(next.target()).unwrap(),
+				time.elapsed_secs()
+			);
+		}
+	}
 }
 
 fn toggle_subscription_system<Out: SignalBound, OutError: SignalBound>(
@@ -165,25 +171,26 @@ fn setup(mut commands: Commands) {
 				.filter(|key_code| {
 					matches!(
 						key_code,
-						KeyCode::KeyW | KeyCode::KeyA | KeyCode::KeyS | KeyCode::KeyD
+						KeyCode::Digit1 | KeyCode::Digit2 | KeyCode::Digit3 | KeyCode::Digit4
 					)
 				})
 				.switch_map(|key_code| {
-					// TODO: SwitchMap is unresponsive!!!
 					let duration = match key_code {
-						KeyCode::KeyW => Duration::from_millis(5),
-						KeyCode::KeyA => Duration::from_millis(100),
-						KeyCode::KeyS => Duration::from_millis(500),
-						KeyCode::KeyD => Duration::from_millis(2000),
+						KeyCode::Digit1 => Duration::from_millis(5),
+						KeyCode::Digit2 => Duration::from_millis(100),
+						KeyCode::Digit3 => Duration::from_millis(500),
+						KeyCode::Digit4 => Duration::from_millis(2000),
 						_ => Duration::from_millis(500),
 					};
+					println!("Switching to a new inner observable with duration: {duration:?}");
 					IntervalObservable::new(IntervalObservableOptions {
 						duration,
 						start_on_subscribe: true,
 						max_emissions_per_tick: 4,
 					})
+					.tap_next(|n, _| println!("inner next {n}"))
 				})
-				.map(|key_code| format!("Ticking! {:?}", key_code))
+				.map(|value| format!("Inner observable says: {:?}", value))
 				.into_component(),
 		))
 		.id();

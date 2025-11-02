@@ -21,23 +21,24 @@ use crate::{ObservableOutput, ObserverInput, Subscriber, context::SubscriptionCo
 ///
 /// ## Pipes
 ///
-/// To efficiently nest operators, the `Pipe` observable from `rx_bevy_pipe` can
-/// be used. It provides a convenient set of functions for observables to chain
-/// operators after observables, resulting in a new observable! A chaining api
-/// is much more comfortable to use than nesting function calls, but under the
-/// hood it's the same nested structure. Using 3 operators means you have an
-/// Observable in a Pipe in a Pipe in a Pipe.
+/// To efficiently nest operators, the `Pipe` observable from
+/// `rx_core_observable_pipe` can be used. It provides a convenient set of
+/// functions for observables to chain operators after observables, resulting
+/// in a new observable! A chaining api is much more comfortable to use than
+/// nesting function calls, but under the hood it's the same nested structure.
+/// Using 3 operators means you have an Observable in a Pipe in a Pipe in a
+/// Pipe.
 ///
-/// > This is provided in the `rx_bevy` crate through the `pipe` feature.
+/// > This is provided in the `rx_core` crate through the `pipe` feature.
 ///
 /// ## Composite Operator
 ///
 /// Pipes only make sense when you wrap an observable to create a new, more
-/// complex observable. But in some context you only want to define a new
-/// operator, without having to write a new one. To this, you can use the
-/// `rx_core_operator_composite` crate.
+/// complex observable. But in sometimes you just want to define a new
+/// operator, without having to write a new one. To achieve this, you can use
+/// the `rx_core_operator_composite` crate.
 ///
-/// > This is provided in the `rx_bevy` crate through the `compose` feature.
+/// > This is provided in the `rx_core` crate through the `compose` feature.
 ///
 /// Keep in mind that while creating new operators this way is very comfortable
 /// and quick, when it comes to performance it may be better to write a new

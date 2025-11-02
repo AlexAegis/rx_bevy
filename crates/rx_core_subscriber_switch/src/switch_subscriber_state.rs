@@ -4,10 +4,46 @@ use std::{
 };
 
 use rx_core_traits::{
-	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
-	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	WithSubscriptionContext,
+	Observable, ObservableSubscription, Observer, ObserverInput, SharedSubscriber, Subscriber,
+	SubscriptionCollection, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
+	Tick, Tickable, WithSubscriptionContext,
 };
+
+pub(crate) struct SwitchSubscriberExtractedInnerSubscription<Subscription>
+where
+	Subscription: ObservableSubscription,
+{
+	pub(crate) inner_subscription: Option<Subscription>,
+	teardown: Option<SubscriptionData<Subscription::Context>>,
+}
+
+impl<Subscription> SwitchSubscriberExtractedInnerSubscription<Subscription>
+where
+	Subscription: ObservableSubscription,
+{
+	pub fn unsubscribe(
+		&mut self,
+		context: &mut <Subscription::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		if let Some(mut inner_subscription) = self.inner_subscription.take() {
+			inner_subscription.unsubscribe(context);
+		}
+		if let Some(mut teardown) = self.teardown.take() {
+			teardown.unsubscribe(context);
+		}
+	}
+}
+
+impl<Subscription> Drop for SwitchSubscriberExtractedInnerSubscription<Subscription>
+where
+	Subscription: ObservableSubscription,
+{
+	fn drop(&mut self) {
+		if self.inner_subscription.is_some() || self.teardown.is_some() {
+			panic!("SwitchSubscriberExtractedInnerSubscription dropped without unsubscribing!");
+		}
+	}
+}
 
 pub struct SwitchSubscriberState<InnerObservable, Destination>
 where
@@ -61,35 +97,27 @@ where
 		}
 	}
 
-	pub(crate) fn unsubscribe_inner_subscription(
+	#[inline]
+	#[must_use]
+	pub(crate) fn extract_inner_state(
 		&mut self,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.clear_inner_state(context);
-	}
-
-	fn clear_inner_state(
-		&mut self,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		if let Some(mut inner_subscription) = self.inner_subscription.take() {
-			inner_subscription.unsubscribe(context);
-		}
-		if let Some(mut teardown) = self.teardown.take() {
-			teardown.unsubscribe(context);
+	) -> SwitchSubscriberExtractedInnerSubscription<<InnerObservable as Observable>::Subscription>
+	{
+		SwitchSubscriberExtractedInnerSubscription {
+			inner_subscription: self.inner_subscription.take(),
+			teardown: self.teardown.take(),
 		}
 	}
 
-	pub(crate) fn unsubscribe_outer(
+	#[must_use]
+	pub(crate) fn unsubscribe_outer_extract_inner(
 		&mut self,
 		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		if self.closed {
-			return;
-		}
+	) -> SwitchSubscriberExtractedInnerSubscription<<InnerObservable as Observable>::Subscription>
+	{
 		self.closed = true;
-		self.clear_inner_state(context);
 		self.destination.unsubscribe(context);
+		self.extract_inner_state()
 	}
 
 	pub(crate) fn create_next_subscription(
@@ -98,6 +126,7 @@ where
 		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		let subscription = next.subscribe(state_ref.clone(), context);
+
 		if let Ok(mut state) = state_ref.write() {
 			if subscription.is_closed() {
 				state.complete_if_can(context);
@@ -113,25 +142,9 @@ where
 	) {
 		if self.is_complete && self.inner_subscription.is_none() {
 			self.destination.complete(context);
-			self.unsubscribe_outer(context);
+			self.unsubscribe_outer_extract_inner(context)
+				.unsubscribe(context);
 		}
-	}
-
-	pub(crate) fn error(
-		&mut self,
-		error: InnerObservable::OutError,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.error(error, context);
-		self.unsubscribe_outer(context);
-	}
-
-	pub(crate) fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
 	}
 }
 
@@ -164,10 +177,12 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.destination.error(error, context);
+		self.unsubscribe_outer_extract_inner(context)
+			.unsubscribe(context);
 	}
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.clear_inner_state(context);
+		self.extract_inner_state().unsubscribe(context);
 		self.complete_if_can(context);
 	}
 }
@@ -192,7 +207,13 @@ where
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		self.destination.tick(tick, context);
+		println!("SWITCH SUB STATE TICK");
+		if let Some(inner_subscription) = &mut self.inner_subscription {
+			inner_subscription.tick(tick.clone(), context);
+		} else {
+			// The inner observable will tick downstream, only directly tick downstream if there is no inner
+			self.destination.tick(tick, context);
+		}
 	}
 }
 
@@ -227,7 +248,7 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.clear_inner_state(context);
+		self.extract_inner_state().unsubscribe(context);
 	}
 }
 

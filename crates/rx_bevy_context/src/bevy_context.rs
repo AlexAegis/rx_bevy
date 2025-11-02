@@ -29,7 +29,7 @@ impl SubscriptionContext for BevySubscriptionContextProvider {
 
 	type DropSafety = DropUnsafeSubscriptionContext;
 
-	type DestinationAllocator = SubscriberEntityAllocator;
+	type DestinationAllocator = SubscriberEntityAllocator; // TODO: Test is maybe the regular heap alloctor is okay here  SubscriberHeapAllocator<Self>;
 	type ErasedDestinationAllocator = ErasedSubscriberEntityAllocator;
 	type ScheduledSubscriptionAllocator = ScheduledEntitySubscriptionAllocator;
 	type UnscheduledSubscriptionAllocator = UnscheduledEntitySubscriptionAllocator;

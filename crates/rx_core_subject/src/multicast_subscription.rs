@@ -95,13 +95,16 @@ where
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
-		self.subscriber
-			.as_ref()
-			.map(|s| s.is_closed())
-			.unwrap_or(true)
+		self.teardown.is_closed()
+			&& self
+				.subscriber
+				.as_ref()
+				.map(|subscriber| subscriber.is_closed())
+				.unwrap_or(true)
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+		println!("multicast  sub unsub! is closed {}", self.is_closed());
 		if !self.is_closed() {
 			if let Some(mut subscriber) = self.subscriber.take() {
 				subscriber.unsubscribe(context);

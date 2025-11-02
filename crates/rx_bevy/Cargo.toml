@@ -143,6 +143,6 @@ short_type_name = { workspace = true }
 bevy_mod_alternate_system_on_press = { workspace = true }
 
 [[example]]
-name = "interval_keyboard_example"
-path = "examples/interval_keyboard_example.rs"
+name = "observable_gallery"
+path = "examples/observable_gallery.rs"
 required-features = ["example"]

@@ -65,24 +65,6 @@ where
 			Some((subscribers, teardown))
 		}
 	}
-
-	#[inline]
-	pub fn is_closed(&self) -> bool {
-		self.teardown.is_none()
-	}
-
-	#[inline]
-	pub fn add_teardown(
-		&mut self,
-		teardown: Teardown<Context>,
-		context: &mut Context::Item<'_, '_>,
-	) {
-		if let Some(teardowns) = &mut self.teardown {
-			teardowns.add_teardown(teardown, context);
-		} else {
-			teardown.execute(context);
-		}
-	}
 }
 
 impl<In, InError, Context> Observable for Multicast<In, InError, Context>
@@ -141,6 +123,7 @@ where
 			destination.complete(context);
 			destination.unsubscribe(context);
 		}
+		self.unsubscribe(context);
 	}
 }
 
@@ -162,6 +145,37 @@ where
 	}
 }
 
+impl<In, InError, Context> SubscriptionLike for Multicast<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		self.teardown.is_none()
+	}
+
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+		if let Some((subscribers, teardown)) = self.close() {
+			for mut destination in subscribers {
+				destination.unsubscribe(context);
+			}
+
+			if let Some(mut teardown) = teardown {
+				teardown.unsubscribe(context);
+			}
+		}
+	}
+
+	fn add_teardown(&mut self, teardown: Teardown<Context>, context: &mut Context::Item<'_, '_>) {
+		if let Some(teardowns) = &mut self.teardown {
+			teardowns.add_teardown(teardown, context);
+		} else {
+			teardown.execute(context);
+		}
+	}
+}
 impl<In, InError, Context> ObserverInput for Multicast<In, InError, Context>
 where
 	In: SignalBound + Clone,
@@ -203,4 +217,18 @@ where
 	Context: SubscriptionContext,
 {
 	type Context = Context;
+}
+
+impl<In, InError, Context> Drop for Multicast<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	fn drop(&mut self) {
+		if !self.is_closed() {
+			let mut context = Context::create_context_to_unsubscribe_on_drop();
+			self.unsubscribe(&mut context);
+		}
+	}
 }

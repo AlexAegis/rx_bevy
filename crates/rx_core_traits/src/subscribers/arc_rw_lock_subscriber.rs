@@ -22,6 +22,10 @@ where
 	type InError = Destination::InError;
 }
 
+fn poisoned_destination_message<T>() -> String {
+	format!("Poisoned destination lock: {}", short_type_name::<T>())
+}
+
 impl<Destination> SharedDestination<Destination> for Arc<RwLock<Destination>>
 where
 	Destination: 'static + Subscriber + Send + Sync,
@@ -68,11 +72,10 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			if let Ok(mut destination) = self.write() {
-				destination.next(next, context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
+			let mut destination = self
+				.write()
+				.unwrap_or_else(|_| panic!("{}", poisoned_destination_message::<Self>()));
+			destination.next(next, context);
 		}
 	}
 
@@ -82,23 +85,21 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			if let Ok(mut destination) = self.write() {
-				destination.error(error, context);
-				destination.unsubscribe(context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
+			let mut destination = self
+				.write()
+				.unwrap_or_else(|_| panic!("{}", poisoned_destination_message::<Self>()));
+			destination.error(error, context);
+			destination.unsubscribe(context);
 		}
 	}
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			if let Ok(mut destination) = self.write() {
-				destination.complete(context);
-				destination.unsubscribe(context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
+			let mut destination = self
+				.write()
+				.unwrap_or_else(|_| panic!("{}", poisoned_destination_message::<Self>()));
+			destination.complete(context);
+			destination.unsubscribe(context);
 		}
 	}
 }
@@ -112,11 +113,10 @@ where
 		tick: crate::Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if let Ok(mut destination) = self.write() {
-			destination.tick(tick, context);
-		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
-		}
+		let mut destination = self
+			.write()
+			.unwrap_or_else(|_| panic!("{}", poisoned_destination_message::<Self>()));
+		destination.tick(tick, context);
 	}
 }
 
@@ -125,21 +125,18 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn is_closed(&self) -> bool {
-		if let Ok(destination) = self.read() {
-			destination.is_closed()
-		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			true
-		}
+		let destination = self
+			.read()
+			.unwrap_or_else(|_| panic!("{}", poisoned_destination_message::<Self>()));
+		destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			if let Ok(mut destination) = self.write() {
-				destination.unsubscribe(context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
+			let mut destination = self
+				.write()
+				.unwrap_or_else(|_| panic!("{}", poisoned_destination_message::<Self>()));
+			destination.unsubscribe(context);
 		}
 	}
 
@@ -149,11 +146,11 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			if let Ok(mut destination) = self.write() {
-				destination.add_teardown(teardown, context);
-			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
-			}
+			let mut destination = self
+				.write()
+				.unwrap_or_else(|_| panic!("{}", poisoned_destination_message::<Self>()));
+
+			destination.add_teardown(teardown, context);
 		}
 	}
 }

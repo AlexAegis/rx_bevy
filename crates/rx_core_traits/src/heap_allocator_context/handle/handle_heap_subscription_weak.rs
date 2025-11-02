@@ -71,13 +71,13 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		if !self.is_closed() {
-			if let Some(subscription) = self.subscription.upgrade() {
-				if let Ok(mut lock) = subscription.write() {
-					lock.unsubscribe(context);
-				} else {
-					println!("Poisoned destination lock: {}", short_type_name::<Self>());
-				}
+		if !self.is_closed()
+			&& let Some(subscription) = self.subscription.upgrade()
+		{
+			if let Ok(mut lock) = subscription.write() {
+				lock.unsubscribe(context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
 		}
 	}
@@ -87,13 +87,13 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.is_closed() {
-			if let Some(subscription) = self.subscription.upgrade() {
-				if let Ok(mut lock) = subscription.write() {
-					lock.add_teardown(teardown, context);
-				} else {
-					println!("Poisoned destination lock: {}", short_type_name::<Self>());
-				}
+		if !self.is_closed()
+			&& let Some(subscription) = self.subscription.upgrade()
+		{
+			if let Ok(mut lock) = subscription.write() {
+				lock.add_teardown(teardown, context);
+			} else {
+				println!("Poisoned destination lock: {}", short_type_name::<Self>());
 			}
 		}
 	}

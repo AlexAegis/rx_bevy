@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-const ALREADY_STOLEN: &'static str = "value already stolen!";
+const ALREADY_STOLEN: &str = "value already stolen!";
 
 /// Allows you to "steal" its value, taking complete ownership over it, and you
 /// must pinky-promise to return it. Non-returned values will panic once dropped!

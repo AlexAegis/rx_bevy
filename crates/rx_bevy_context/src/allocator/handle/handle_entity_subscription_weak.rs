@@ -40,7 +40,7 @@ impl WithSubscriptionContext for WeakEntitySubscriptionHandle {
 impl Clone for WeakEntitySubscriptionHandle {
 	fn clone(&self) -> Self {
 		Self {
-			subscription_entity: self.subscription_entity.clone(),
+			subscription_entity: self.subscription_entity,
 			closed: self.closed,
 		}
 	}

@@ -62,17 +62,16 @@ impl<Destination> Tickable for KeyboardSubscription<Destination>
 where
 	Destination: Subscriber<In = KeyCode, Context = BevySubscriptionContextProvider>,
 {
-	// TODO: put #[track_caller] everywhere
 	#[track_caller]
-	fn tick(&mut self, _tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
 		let just_pressed_key_codes = {
 			let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
 			button_input.get_just_pressed().cloned().collect::<Vec<_>>()
 		};
-
 		for key_code in just_pressed_key_codes {
 			self.destination.next(key_code, context);
 		}
+		self.destination.tick(tick, context);
 	}
 }
 

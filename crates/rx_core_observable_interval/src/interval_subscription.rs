@@ -67,6 +67,7 @@ where
 			self.destination.next(self.count + i as usize, context);
 		}
 		self.count += ticks as usize;
+		self.destination.tick(tick, context);
 	}
 }
 
@@ -79,7 +80,9 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
+		if !self.destination.is_closed() {
+			self.destination.unsubscribe(context);
+		}
 		self.teardown.unsubscribe(context);
 	}
 

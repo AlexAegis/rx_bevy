@@ -103,9 +103,13 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			if let Ok(mut state) = self.state.write() {
-				state.unsubscribe_inner_subscription(context);
-			};
+			let mut inner_state = self
+				.state
+				.write()
+				.map(|mut state| state.extract_inner_state())
+				.expect("SwitchSubscriber inner states lock is poisoned!");
+
+			inner_state.unsubscribe(context);
 
 			SwitchSubscriberState::create_next_subscription(&self.state, next, context);
 		}
@@ -152,6 +156,8 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if let Ok(mut state) = self.state.write() {
+			println!("ticking switchsub");
+			// TODO: Deadlocks when the inner state is ticked
 			state.tick(tick, context);
 		}
 	}
@@ -181,11 +187,14 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		// Pre-checked to avoid runtime borrow conflicts
-		if !self.is_closed()
-			&& let Ok(mut state) = self.state.write()
-		{
-			state.unsubscribe_outer(context);
+		// Pre-checked to avoid runtime lock conflicts
+		if !self.is_closed() {
+			let mut extraced_inner_subscription = self
+				.state
+				.write()
+				.map(|mut state| state.unsubscribe_outer_extract_inner(context))
+				.expect("SwitchSubscriber state lock is poisoned!");
+			extraced_inner_subscription.unsubscribe(context);
 		}
 	}
 

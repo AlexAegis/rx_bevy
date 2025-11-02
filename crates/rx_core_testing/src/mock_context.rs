@@ -99,12 +99,15 @@ where
 	pub fn nth_notification(
 		&self,
 		n: usize,
-	) -> Option<&SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>> {
+	) -> &SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>> {
 		if n < self.observed_notifications.len() {
-			self.observed_notifications.get(n)
+			self.observed_notifications
+				.get(n)
+				.unwrap_or_else(|| panic!("Notification not found at index {}!", n))
 		} else {
 			self.observed_notifications_after_close
 				.get(n - self.observed_notifications.len())
+				.unwrap_or_else(|| panic!("Notification not found at index {}!", n))
 		}
 	}
 

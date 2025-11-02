@@ -2,8 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionLike, Teardown, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::{Multicast, MulticastSubscription};

@@ -36,6 +36,13 @@ where
 	pub fn get_destination_entity(&self) -> Entity {
 		self.destination_entity
 	}
+
+	pub fn destination_exists(&self, context: &mut BevySubscriptionContext) -> bool {
+		context
+			.deferred_world
+			.entities()
+			.contains(self.destination_entity)
+	}
 }
 
 impl<Destination> Clone for SharedEntitySubscriber<Destination>
@@ -44,7 +51,7 @@ where
 {
 	fn clone(&self) -> Self {
 		Self {
-			destination_entity: self.destination_entity.clone(),
+			destination_entity: self.destination_entity,
 			closed: self.closed,
 			_phantom_data: PhantomData,
 		}
@@ -190,7 +197,11 @@ where
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Unsubscribe,
 		);
-		//  TODO: DESPAWN SELF!
+		context
+			.deferred_world
+			.commands()
+			.entity(self.destination_entity)
+			.despawn();
 	}
 
 	fn add_teardown(

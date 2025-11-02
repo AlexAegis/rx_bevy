@@ -27,15 +27,11 @@ impl DestinationAllocator for SubscriberEntityAllocator {
 	{
 		let subscription_entity = context.get_subscription_entity();
 
-		let subscriber_entity = context.deferred_world.commands().spawn_empty().id();
-		context
-			.deferred_world
-			.commands()
+		let mut commands = context.deferred_world.commands();
+		let subscriber_entity = commands.spawn(ChildOf(subscription_entity)).id();
+		commands
 			.entity(subscriber_entity)
-			.insert((
-				ChildOf(subscription_entity),
-				SubscriberComponent::new(destination, subscriber_entity),
-			));
+			.insert(SubscriberComponent::new(destination, subscriber_entity));
 
 		SharedEntitySubscriber::new(subscriber_entity)
 	}

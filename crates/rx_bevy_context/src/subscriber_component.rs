@@ -15,7 +15,6 @@ use short_type_name::short_type_name;
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriberNotificationEvent, SubscriberNotificationEvent,
-	SubscriptionNotificationEvent,
 };
 
 #[derive(Component)]
@@ -139,19 +138,26 @@ where
 {
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
-	entity_commands.insert(Observer::new(
-		subscriber_notification_observer::<Destination>,
-	));
+	entity_commands.insert(
+		Observer::new(subscriber_notification_observer::<Destination>)
+			.with_entity(hook_context.entity),
+	);
 }
 
-fn subscriber_on_remove<Destination>(mut deferred_world: DeferredWorld, hook_context: HookContext)
+fn subscriber_on_remove<Destination>(deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	deferred_world.commands().trigger_targets(
-		SubscriptionNotificationEvent::Unsubscribe,
-		hook_context.entity,
-	);
+	let context_param: BevySubscriptionContextParam = deferred_world.into();
+	let mut context = context_param.into_context(hook_context.entity);
+	// TODO: flip these api's from context to the component
+	let mut stolen_destination = context
+		.steal_subscriber_destination::<Destination>(hook_context.entity)
+		.unwrap();
+	stolen_destination.unsubscribe(&mut context);
+	context
+		.return_stolen_subscriber_destination(hook_context.entity, stolen_destination)
+		.unwrap();
 }
 
 impl<Destination> ObserverInput for SubscriberComponent<Destination>
