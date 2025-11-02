@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use rx_core_operator_composite::CompositeSubscriber;
 use rx_core_operator_lift_option::LiftOptionSubscriber;

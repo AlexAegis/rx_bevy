@@ -4,7 +4,7 @@ use rx_core_traits::Observable;
 
 #[cfg(feature = "debug")]
 use std::fmt::Debug;
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;

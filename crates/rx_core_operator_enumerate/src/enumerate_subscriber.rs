@@ -1,9 +1,8 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
+	SubscriptionLike, Teardown, Tickable, WithSubscriptionContext,
 };
 
 pub struct EnumerateSubscriber<In, InError, Destination>

@@ -1,8 +1,7 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
+	Observable, ObservableOutput, Subscriber, SubscriptionContext, WithSubscriptionContext,
 };
 
 /// Defers the creation of its source [Observable] until subscribe

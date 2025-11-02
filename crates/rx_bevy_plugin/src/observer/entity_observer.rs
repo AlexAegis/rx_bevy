@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};

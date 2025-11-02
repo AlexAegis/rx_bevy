@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use rx_core_operator_map_into::MapIntoSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;

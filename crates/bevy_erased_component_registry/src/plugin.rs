@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use bevy_app::{App, Plugin, Startup};
 use bevy_ecs::{component::Component, system::ResMut, world::FromWorld};

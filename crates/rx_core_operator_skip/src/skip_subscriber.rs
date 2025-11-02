@@ -1,9 +1,8 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct SkipSubscriber<In, InError, Destination>

@@ -1,3 +1,5 @@
+#![cfg_attr(not(test), no_std)]
+
 mod combine_latest_observable;
 mod combine_latest_subscriber;
 

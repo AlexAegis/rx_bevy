@@ -1,3 +1,5 @@
+#![no_std]
+
 mod deferred_observable;
 
 pub mod observable {

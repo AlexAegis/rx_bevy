@@ -1,8 +1,8 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, SignalBound, Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
+	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
+	WithSubscriptionContext,
 };
 
 use crate::{OnTickIteratorSubscription, observable::OnTickObservableOptions};

@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use rx_core_traits::{
 	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,

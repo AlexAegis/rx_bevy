@@ -26,7 +26,7 @@ mod test {
 
 	pub mod foo {
 		pub mod bar {
-			use std::marker::PhantomData;
+			use core::marker::PhantomData;
 
 			pub struct Zed;
 

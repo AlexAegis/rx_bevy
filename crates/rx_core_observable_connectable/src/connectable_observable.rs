@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use rx_core_traits::{
-	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionLike, Teardown,
-	SubscriptionContext, WithSubscriptionContext,
+	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionContext, SubscriptionLike,
+	Teardown, WithSubscriptionContext,
 };
 use short_type_name::short_type_name;
 

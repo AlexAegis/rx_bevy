@@ -1,8 +1,8 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
+	Tickable, WithSubscriptionContext,
 };
 
 #[derive(Debug)]

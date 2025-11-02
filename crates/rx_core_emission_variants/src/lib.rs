@@ -1,3 +1,5 @@
+#![no_std]
+
 mod either_observable;
 mod either_out;
 mod either_out_error;

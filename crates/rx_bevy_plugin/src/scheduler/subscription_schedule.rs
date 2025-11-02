@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use bevy_ecs::{component::Component, schedule::ScheduleLabel};
 use derive_where::derive_where;

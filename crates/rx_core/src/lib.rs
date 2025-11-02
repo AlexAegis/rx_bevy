@@ -1,3 +1,5 @@
+#![no_std]
+
 pub use rx_core_traits::*;
 
 pub mod observable {

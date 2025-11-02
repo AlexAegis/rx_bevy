@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
 use derive_where::derive_where;

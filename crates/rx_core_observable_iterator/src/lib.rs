@@ -1,3 +1,5 @@
+#![cfg_attr(not(test), no_std)]
+
 mod iterator_observable;
 mod iterator_observable_extension;
 
