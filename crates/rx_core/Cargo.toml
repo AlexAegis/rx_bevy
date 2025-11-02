@@ -52,6 +52,7 @@ dev = [
     "rx_core_operator_lift_result?/dev",
     "rx_core_operator_map?/dev",
     "rx_core_operator_map_into?/dev",
+    "rx_core_operator_scan?/dev",
     "rx_core_operator_skip?/dev",
     "rx_core_operator_switch_map?/dev",
     "rx_core_operator_take?/dev",
@@ -90,6 +91,7 @@ example = [
     "rx_core_operator_lift_result?/example",
     "rx_core_operator_map?/example",
     "rx_core_operator_map_into?/example",
+    "rx_core_operator_scan?/example",
     "rx_core_operator_skip?/example",
     "rx_core_operator_switch_map?/example",
     "rx_core_operator_take?/example",
@@ -121,6 +123,7 @@ pipe = [
     "rx_core_operator_lift_result?/pipe",
     "rx_core_operator_map?/pipe",
     "rx_core_operator_map_into?/pipe",
+    "rx_core_operator_scan?/pipe",
     "rx_core_operator_skip?/pipe",
     "rx_core_operator_switch_map?/pipe",
     "rx_core_operator_take?/pipe",
@@ -137,6 +140,7 @@ compose = [
     "rx_core_operator_lift_result?/compose",
     "rx_core_operator_map?/compose",
     "rx_core_operator_map_into?/compose",
+    "rx_core_operator_scan?/compose",
     "rx_core_operator_skip?/compose",
     "rx_core_operator_switch_map?/compose",
     "rx_core_operator_take?/compose",
@@ -195,6 +199,7 @@ all_operators = [
     "operator_lift_result",
     "operator_map",
     "operator_map_into",
+    "operator_scan",
     "operator_skip",
     "operator_switch_map",
     "operator_take",
@@ -212,6 +217,7 @@ operator_lift_option = ["dep:rx_core_operator_lift_option"]
 operator_lift_result = ["dep:rx_core_operator_lift_result"]
 operator_map = ["dep:rx_core_operator_map"]
 operator_map_into = ["dep:rx_core_operator_map_into"]
+operator_scan = ["dep:rx_core_operator_scan"]
 operator_skip = ["dep:rx_core_operator_skip"]
 operator_switch_map = ["dep:rx_core_operator_switch_map"]
 operator_take = ["dep:rx_core_operator_take"]
@@ -258,6 +264,7 @@ rx_core_operator_lift_option = { workspace = true, optional = true }
 rx_core_operator_lift_result = { workspace = true, optional = true }
 rx_core_operator_map = { workspace = true, optional = true }
 rx_core_operator_map_into = { workspace = true, optional = true }
+rx_core_operator_scan = { workspace = true, optional = true }
 rx_core_operator_skip = { workspace = true, optional = true }
 rx_core_operator_switch_map = { workspace = true, optional = true }
 rx_core_operator_take = { workspace = true, optional = true }

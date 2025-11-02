@@ -31,7 +31,7 @@ fn main() -> AppExit {
 			(
 				toggle_subscription_system::<KeyCode, ()>(KeyCode::KeyK, |e| e.keyboard_observable),
 				toggle_subscription_system::<usize, ()>(KeyCode::KeyI, |e| e.interval_observable),
-				toggle_subscription_system::<String, ()>(KeyCode::KeyL, |e| {
+				toggle_subscription_system::<usize, ()>(KeyCode::KeyL, |e| {
 					e.keyboard_switch_map_to_interval_observable
 				}),
 				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
@@ -185,12 +185,12 @@ fn setup(mut commands: Commands) {
 					println!("Switching to a new inner observable with duration: {duration:?}");
 					IntervalObservable::new(IntervalObservableOptions {
 						duration,
-						start_on_subscribe: true,
+						start_on_subscribe: false,
 						max_emissions_per_tick: 4,
 					})
 					.tap_next(|n, _| println!("inner next {n}"))
 				})
-				.map(|value| format!("Inner observable says: {:?}", value))
+				.scan(|acc, _next| acc + 1, 0 as usize)
 				.into_component(),
 		))
 		.id();
