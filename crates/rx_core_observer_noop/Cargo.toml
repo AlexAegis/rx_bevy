@@ -3,7 +3,7 @@ name = "rx_core_observer_noop"
 description = "noop observer for rx_core, it doesn't do anything"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

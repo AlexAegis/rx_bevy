@@ -1,6 +1,6 @@
 name: Feature Request
 description: Feature request for rx_core/rx_bevy.
-title: "[Feature]: "
+title: "Feature: "
 labels: ["enhancement", "triage"]
 assignees:
   - AlexAegis

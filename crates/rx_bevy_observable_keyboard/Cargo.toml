@@ -3,7 +3,7 @@ name = "rx_bevy_observable_keyboard"
 description = "rx_bevy keyboard observable"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

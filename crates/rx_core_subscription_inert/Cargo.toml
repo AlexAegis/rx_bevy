@@ -3,7 +3,7 @@ name = "rx_core_subscription_inert"
 description = "rx_core inert subscription that can can safely be dropped even with a drop-unsafe context as it starts closed"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

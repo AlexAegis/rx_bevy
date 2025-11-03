@@ -3,7 +3,7 @@ name = "rx_core_subscription_drop"
 description = "rx_core drop safe subscription that can always be safely unsubscribed by just dropping it"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

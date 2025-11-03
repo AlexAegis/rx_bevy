@@ -1,6 +1,6 @@
 name: Bug Report
 description: Bug report for rx_core/rx_bevy.
-title: "[Bug]: "
+title: "Bug: "
 labels: ["bug", "triage"]
 assignees:
   - AlexAegis

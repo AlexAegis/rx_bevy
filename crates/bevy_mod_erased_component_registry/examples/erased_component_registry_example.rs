@@ -2,10 +2,10 @@ use std::{any::TypeId, fmt::Debug, marker::PhantomData};
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
-use bevy_erased_component_registry::{
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_mod_erased_component_registry::{
 	AppRegisterErasedComponentExtension, EntityCommandInsertErasedComponentByTypeIdExtension,
 };
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::send_event;
 
 /// Press space a few times and see the entities spawned in the world inspector

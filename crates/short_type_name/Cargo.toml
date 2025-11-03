@@ -3,7 +3,7 @@ name = "short_type_name"
 description = "truncates a qualified type name"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

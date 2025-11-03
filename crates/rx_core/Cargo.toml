@@ -3,7 +3,7 @@ name = "rx_core"
 version = "0.1.0"
 description = "COntextful Reactive Extensions"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

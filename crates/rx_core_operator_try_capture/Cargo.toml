@@ -3,7 +3,7 @@ name = "rx_core_operator_try_capture"
 description = "try_capture operator for rx_core"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

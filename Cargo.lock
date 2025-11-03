@@ -721,22 +721,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_erased_component_registry"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_app",
- "bevy_ecs",
- "bevy_egui",
- "bevy_platform",
- "bevy_ptr",
- "derive-where",
- "examples_common",
- "rand 0.9.2",
-]
-
-[[package]]
 name = "bevy_gilrs"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1015,6 +999,22 @@ version = "0.1.0"
 dependencies = [
  "bevy_ecs",
  "bevy_input",
+]
+
+[[package]]
+name = "bevy_mod_erased_component_registry"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_platform",
+ "bevy_ptr",
+ "derive-where",
+ "examples_common",
+ "rand 0.9.2",
 ]
 
 [[package]]

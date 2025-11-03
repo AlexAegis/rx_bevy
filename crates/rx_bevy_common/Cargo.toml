@@ -3,7 +3,7 @@ name = "rx_bevy_common"
 description = "shared traits across rx_bevy crates"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

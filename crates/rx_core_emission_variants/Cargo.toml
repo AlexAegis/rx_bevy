@@ -3,7 +3,7 @@ name = "rx_core_emission_variants"
 description = "Emission variants for rx_core used for observable combinators"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

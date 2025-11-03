@@ -1,4 +1,4 @@
-# bevy_erased_component_registry
+# bevy_mod_erased_component_registry
 
 Allows you to register components by their `TypeId` to then insert into entities
 without having to know their actual types.
@@ -40,5 +40,5 @@ time you press `Space`. The system that spawns this entity has no idea of the
 actual type of this component!
 
 ```sh
-cargo run -p bevy_erased_component_registry --example erased_component_registry_example --features example
+cargo run -p bevy_mod_erased_component_registry --example erased_component_registry_example --features example
 ```

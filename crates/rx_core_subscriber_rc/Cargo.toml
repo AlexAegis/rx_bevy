@@ -3,7 +3,7 @@ name = "rx_core_subscriber_rc"
 description = "A reference counted subscriber for rx_core that unsubscribes its destination only when all of its clones are unsubscribed."
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true
