@@ -60,7 +60,7 @@ bevy_input = { workspace = true, optional = true }
 bevy_reflect = { workspace = true, optional = true }
 bevy_window = { workspace = true }
 smallvec = { workspace = true }
-short_type_name = { workspace = true }
+disqualified = { workspace = true }
 derive-where = { workspace = true }
 thiserror = { workspace = true }
 

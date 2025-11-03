@@ -1,7 +1,7 @@
 // TODO: Check import groups, std -> dependencies -> crate -> super, similar to the nightly rustfmt option https://rust-lang.github.io/rustfmt/?version=v1.8.0&search=#group_imports
 use std::sync::{Arc, RwLock};
 
-use short_type_name::short_type_name;
+use disqualified::ShortName;
 
 use crate::{
 	SubscriptionLike, Teardown,
@@ -74,7 +74,7 @@ where
 		if let Ok(lock) = self.subscription.read() {
 			lock.is_closed()
 		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			true
 		}
 	}
@@ -84,7 +84,7 @@ where
 			if let Ok(mut lock) = self.subscription.write() {
 				lock.unsubscribe(context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 				// TODO: research poisoned lock recovery, maybe it should panic?
 			}
 		}
@@ -99,7 +99,7 @@ where
 			if let Ok(mut lock) = self.subscription.write() {
 				lock.add_teardown(teardown, context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 	}

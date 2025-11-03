@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use disqualified::ShortName;
+
 use crate::{SubscriptionLike, context::SubscriptionContext};
 
 /// A teardown is a closure which owns resources, by the nature of them being
@@ -32,7 +34,7 @@ where
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.write_fmt(format_args!(
 			"{} {{ is_closed: {} }}",
-			short_type_name::short_type_name::<Self>(),
+			ShortName::of::<Self>(),
 			self.is_closed(),
 		))
 	}

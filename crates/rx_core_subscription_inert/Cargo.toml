@@ -27,11 +27,11 @@ example = [
     "rx_core_testing/example",
 ]
 # TODO: Add a proper debug logger macro
-trace = ["dep:short_type_name", "rx_core/trace"]
+trace = ["dep:disqualified", "rx_core/trace"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
-short_type_name = { workspace = true, optional = true }
+disqualified = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

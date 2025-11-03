@@ -10,9 +10,9 @@ use bevy::{
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_mod_alternate_system_on_press::alternate_systems_on_press;
+use disqualified::ShortName;
 use examples_common::send_event;
 use rx_bevy::prelude::*;
-use short_type_name::short_type_name;
 
 fn main() -> AppExit {
 	App::new()
@@ -50,7 +50,7 @@ where
 		e => {
 			println!(
 				"{}\t value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
-				short_type_name::<T>(),
+				ShortName::of::<T>(),
 				e,
 				next.target(),
 				name_query.get(next.target()).unwrap(),

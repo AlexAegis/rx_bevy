@@ -38,13 +38,13 @@ pipe = [
     "rx_core/pipe",
     "rx_core_operator_composite?/pipe",
 ]
-trace = ["dep:short_type_name"]
+trace = ["dep:disqualified"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
 rx_core_observable_pipe = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
-short_type_name = { workspace = true, optional = true }
+disqualified = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

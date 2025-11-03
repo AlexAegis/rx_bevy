@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use short_type_name::short_type_name;
+use disqualified::ShortName;
 
 use crate::{
 	Observer, ObserverInput, SignalBound, Subscriber, SubscriptionData, SubscriptionLike, Tickable,
@@ -53,7 +53,7 @@ where
 		if let Ok(lock) = self.destination.read() {
 			reader(&*lock);
 		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 		}
 	}
 
@@ -64,7 +64,7 @@ where
 		if let Ok(mut lock) = self.destination.write() {
 			writer(&mut *lock);
 		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 		}
 	}
 }
@@ -119,7 +119,7 @@ where
 			if let Ok(mut lock) = self.destination.write() {
 				lock.next(next, context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 	}
@@ -133,7 +133,7 @@ where
 			if let Ok(mut lock) = self.destination.write() {
 				lock.error(error, context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 	}
@@ -143,7 +143,7 @@ where
 			if let Ok(mut lock) = self.destination.write() {
 				lock.complete(context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 	}
@@ -163,7 +163,7 @@ where
 		if let Ok(mut lock) = self.destination.write() {
 			lock.tick(tick, context);
 		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 		}
 	}
 }
@@ -184,7 +184,7 @@ where
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 		// Must always run
@@ -200,7 +200,7 @@ where
 			if let Ok(mut lock) = self.destination.write() {
 				lock.add_teardown(teardown, context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 	}

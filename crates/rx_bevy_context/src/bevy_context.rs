@@ -7,12 +7,12 @@ use bevy_ecs::{
 	system::SystemParam,
 	world::{DeferredWorld, Mut},
 };
+use disqualified::ShortName;
 use rx_core_traits::{
 	DropUnsafeSubscriptionContext, ObservableSubscription, SignalBound, Subscriber,
 	SubscriptionContext, SubscriptionContextAccess, SubscriptionLike,
 	heap_allocator_context::{ErasedSubscriberHeapAllocator, SubscriberHeapAllocator},
 };
-use short_type_name::short_type_name;
 use stealcell::Stolen;
 use thiserror::Error;
 
@@ -42,7 +42,7 @@ impl SubscriptionContext for BevySubscriptionContextProvider {
 This is likely due because an active subscription was dropped before it was unsubscribed, which
 should automatically happen when its entity despawns!
 Please submit an issue at https://github.com/AlexAegis/rx_bevy/issues/new?template=bug_report.md",
-			short_type_name::<Self>()
+			ShortName::of::<Self>()
 		)
 	}
 }
@@ -115,7 +115,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 			panic!(
 				"{} is missing an expected component: {}!",
 				destination_entity,
-				short_type_name::<C>(),
+				ShortName::of::<C>(),
 			);
 		};
 
@@ -131,7 +131,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 			panic!(
 				"{} is missing an expected component: {}!",
 				destination_entity,
-				short_type_name::<C>(),
+				ShortName::of::<C>(),
 			);
 		};
 
@@ -145,7 +145,10 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		if let Some(observable_ref) = self.deferred_world.get_mut::<C>(entity) {
 			Ok(observable_ref)
 		} else {
-			Err(ContextAccessError::NotAnObservable(short_type_name::<C>(), entity).into())
+			Err(
+				ContextAccessError::NotAnObservable(format!("{}", ShortName::of::<C>()), entity)
+					.into(),
+			)
 		}
 	}
 

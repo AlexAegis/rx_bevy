@@ -6,10 +6,10 @@ use bevy_ecs::{
 	observer::{Observer, Trigger},
 	world::DeferredWorld,
 };
+use disqualified::ShortName;
 use rx_core_traits::{
 	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
-use short_type_name::short_type_name;
 use stealcell::{StealCell, Stolen};
 
 use crate::{
@@ -20,7 +20,7 @@ use crate::{
 // TODO(bevy-0.18+): This component does not need to be erased, it's only erased to facilitate mass unsubscribe on exit, which currently can't be done using commands as there is no teardown schedule in bevy similar to the startup schedule. https://github.com/AlexAegis/rx_bevy/issues/2 https://github.com/bevyengine/bevy/issues/7067
 #[derive(Component)]
 #[component(on_insert=scheduled_subscription_add_notification_observer_on_insert, on_remove=scheduled_subscription_unsubscribe_on_remove)]
-#[require(Name::new(short_type_name::<Self>()))]
+#[require(Name::new(format!("{}", ShortName::of::<Self>())))]
 pub struct ScheduledSubscriptionComponent {
 	this_entity: Entity,
 	// TODO(bevy-0.18+): This "StealCell" won't be necessary once entity world scope lands: https://github.com/AlexAegis/rx_bevy/issues/1 https://github.com/bevyengine/bevy/issues/13128

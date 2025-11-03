@@ -22,7 +22,6 @@ dev = [
     "rx_core_traits/dev",
     "rx_core_observable_pipe?/dev",
     "rx_core_testing/dev",
-    "short_type_name/dev",
 ]
 example = [
     "dev",
@@ -36,7 +35,7 @@ pipe = ["dep:rx_core_observable_pipe", "rx_core/pipe"]
 [dependencies]
 rx_core_traits = { workspace = true }
 rx_core_observable_pipe = { workspace = true, optional = true }
-short_type_name = { workspace = true }
+disqualified = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

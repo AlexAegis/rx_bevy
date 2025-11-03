@@ -1,10 +1,10 @@
 use std::ops::{Deref, DerefMut};
 
+use disqualified::ShortName;
 use rx_core_traits::{
 	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
 	Tickable, WithSubscriptionContext,
 };
-use short_type_name::short_type_name;
 
 /// Internal to [RcSubscriber]
 #[doc(hidden)]
@@ -186,7 +186,7 @@ where
 			self.unsubscribe_count,
 			self.ref_count,
 			"The unsubscribe_count did not reach the ref_count of {} on drop.",
-			short_type_name::<Self>()
+			ShortName::of::<Self>()
 		);
 	}
 }

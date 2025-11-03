@@ -1,4 +1,4 @@
-use short_type_name::short_type_name;
+use disqualified::ShortName;
 
 use crate::{
 	NotifiableSubscription, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
@@ -160,7 +160,7 @@ where
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.write_fmt(format_args!(
 			"{} {{ is_closed: {}, finalizers: {} }}",
-			short_type_name::<Self>(),
+			ShortName::of::<Self>(),
 			self.is_closed(),
 			self.finalizers.len()
 		))

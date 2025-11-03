@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use short_type_name::short_type_name;
+use disqualified::ShortName;
 
 use crate::{
 	Observer, ObserverInput, Subscriber, SubscriptionLike, Tickable,
@@ -23,7 +23,7 @@ where
 }
 
 fn poisoned_destination_message<T>() -> String {
-	format!("Poisoned destination lock: {}", short_type_name::<T>())
+	format!("Poisoned destination lock: {}", ShortName::of::<T>())
 }
 
 impl<Destination> SharedDestination<Destination> for Arc<RwLock<Destination>>

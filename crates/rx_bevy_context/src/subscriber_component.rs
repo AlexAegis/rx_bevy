@@ -6,11 +6,11 @@ use bevy_ecs::{
 	observer::{Observer, Trigger},
 	world::DeferredWorld,
 };
+use disqualified::ShortName;
 use rx_core_traits::{
 	Observer as RxObserver, ObserverInput, Subscriber, SubscriptionLike, Tick, Tickable,
 	WithSubscriptionContext,
 };
-use short_type_name::short_type_name;
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
@@ -19,7 +19,7 @@ use crate::{
 
 #[derive(Component)]
 #[component(on_insert=subscriber_on_insert::<Destination>, on_remove=subscriber_on_remove::<Destination>)]
-#[require( Name::new(format!("Subscriber ({})", short_type_name::<Destination>())))]
+#[require( Name::new(format!("Subscriber ({})", ShortName::of::<Destination>())))]
 pub struct SubscriberComponent<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
@@ -46,8 +46,8 @@ where
 		self.destination.as_ref().unwrap_or_else(|| {
 			panic!(
 				"{}'s shared destination in {} is stolen!",
-				short_type_name::<Self>(),
-				short_type_name::<SubscriberComponent<Destination>>()
+				ShortName::of::<Self>(),
+				ShortName::of::<SubscriberComponent<Destination>>()
 			)
 		})
 	}
@@ -56,8 +56,8 @@ where
 		self.destination.as_mut().unwrap_or_else(|| {
 			panic!(
 				"{}'s shared destination in {} is stolen!",
-				short_type_name::<Self>(),
-				short_type_name::<SubscriberComponent<Destination>>()
+				ShortName::of::<Self>(),
+				ShortName::of::<SubscriberComponent<Destination>>()
 			)
 		})
 	}
@@ -68,8 +68,8 @@ where
 		self.destination.take().unwrap_or_else(|| {
 			panic!(
 				"{}'s shared destination in {} was already stolen!",
-				short_type_name::<Self>(),
-				short_type_name::<SubscriberComponent<Destination>>()
+				ShortName::of::<Self>(),
+				ShortName::of::<SubscriberComponent<Destination>>()
 			)
 		})
 	}
@@ -81,7 +81,7 @@ where
 		if _old_destination.is_some() {
 			panic!(
 				"A stolen destination was returned to {} but it does not belong here!",
-				short_type_name::<Self>(),
+				ShortName::of::<Self>(),
 			);
 		}
 	}

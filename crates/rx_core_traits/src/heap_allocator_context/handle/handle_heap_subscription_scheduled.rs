@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use short_type_name::short_type_name;
+use disqualified::ShortName;
 
 use crate::{
 	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable,
@@ -65,7 +65,7 @@ where
 		if let Ok(mut lock) = self.subscription.write() {
 			lock.tick(tick, context);
 		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 		}
 	}
 }
@@ -78,7 +78,7 @@ where
 		if let Ok(lock) = self.subscription.read() {
 			lock.is_closed()
 		} else {
-			println!("Poisoned destination lock: {}", short_type_name::<Self>());
+			println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			true
 		}
 	}
@@ -88,7 +88,7 @@ where
 			if let Ok(mut lock) = self.subscription.write() {
 				lock.unsubscribe(context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 				// TODO: research poisoned lock recovery, maybe it should panic?
 			}
 		}
@@ -103,7 +103,7 @@ where
 			if let Ok(mut lock) = self.subscription.write() {
 				lock.add_teardown(teardown, context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 	}

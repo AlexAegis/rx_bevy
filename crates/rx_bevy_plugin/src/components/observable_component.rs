@@ -8,12 +8,12 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use bevy_log::error;
+use disqualified::ShortName;
 use rx_bevy_context::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ScheduledSubscriptionComponent,
 };
 use rx_core_traits::{Observable, SubscriptionLike};
-use short_type_name::short_type_name;
 use thiserror::Error;
 
 use crate::{
@@ -68,7 +68,7 @@ where
 			// TODO(bevy-0.17): This is actually not needed, it's only here to not let these observes occupy the top level in the worldentityinspector. reconsider to only use either this or the other relationship if it's still producing warnings on despawn in 0.17
 			ChildOf(hook_context.entity),
 			SubscribeObserverOf::<O>::new(hook_context.entity),
-			Name::new(format!("Subscribe Observer {}", short_type_name::<O>())),
+			Name::new(format!("Subscribe Observer {}", ShortName::of::<O>())),
 			Observer::new(subscribe_event_observer::<O>)
 				.with_entity(hook_context.entity)
 				.with_error_handler(default_on_subscribe_error_handler),

@@ -1,5 +1,6 @@
 use core::marker::PhantomData;
 
+use disqualified::ShortName;
 use rx_core_traits::{
 	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
 	Tickable, WithSubscriptionContext,
@@ -123,7 +124,7 @@ where
 		if !self.is_closed() {
 			panic!(
 				"Dropped {} without unsubscribing first!",
-				short_type_name::short_type_name::<Self>()
+				ShortName::of::<Self>()
 			)
 		}
 	}

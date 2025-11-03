@@ -6,8 +6,8 @@ use bevy_ecs::{
 	observer::{Observer, Trigger},
 	world::DeferredWorld,
 };
+use disqualified::ShortName;
 use rx_core_traits::{SubscriptionLike, Teardown, WithSubscriptionContext};
-use short_type_name::short_type_name;
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
@@ -16,7 +16,7 @@ use crate::{
 
 #[derive(Component)]
 #[component(on_insert=unscheduled_subscription_add_notification_observer_on_insert::<Subscription>, on_remove=unscheduled_subscription_unsubscribe_on_remove::<Subscription>)]
-#[require(Name::new(short_type_name::<Subscription>()))]
+#[require(Name::new(format!("{}", ShortName::of::<Subscription>())))]
 pub struct UnscheduledSubscriptionComponent<Subscription>
 where
 	Subscription:

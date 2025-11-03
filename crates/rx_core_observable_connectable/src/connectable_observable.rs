@@ -1,10 +1,10 @@
 use std::sync::{Arc, RwLock};
 
+use disqualified::ShortName;
 use rx_core_traits::{
 	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionContext, SubscriptionLike,
 	Teardown, WithSubscriptionContext,
 };
-use short_type_name::short_type_name;
 
 use crate::{
 	InnerConnectableObservable,
@@ -109,7 +109,7 @@ where
 		if let Ok(mut lock) = self.connector.write() {
 			lock.subscribe(destination, context)
 		} else {
-			panic!("Poisoned connector lock: {}", short_type_name::<Self>());
+			panic!("Poisoned connector lock: {}", ShortName::of::<Self>());
 		}
 	}
 }
@@ -127,7 +127,7 @@ where
 		if let Ok(lock) = self.connector.read() {
 			lock.is_closed()
 		} else {
-			println!("Poisoned connector lock: {}", short_type_name::<Self>());
+			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
 			true
 		}
 	}
@@ -136,7 +136,7 @@ where
 		if let Ok(mut lock) = self.connector.write() {
 			lock.unsubscribe(context);
 		} else {
-			println!("Poisoned connector lock: {}", short_type_name::<Self>());
+			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
 		}
 	}
 
@@ -149,7 +149,7 @@ where
 		if let Ok(mut lock) = self.connector.write() {
 			lock.add_teardown(teardown, context);
 		} else {
-			println!("Poisoned connector lock: {}", short_type_name::<Self>());
+			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
 		}
 	}
 }
@@ -173,24 +173,7 @@ where
 		if let Ok(mut lock) = self.connector.write() {
 			lock.connect(context)
 		} else {
-			panic!("Poisoned connector lock: {}", short_type_name::<Self>());
+			panic!("Poisoned connector lock: {}", ShortName::of::<Self>());
 		}
 	}
 }
-/*
-impl<Source, ConnectorCreator, Connector> Clone
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Clone + Observable,
-	ConnectorCreator: Clone + Fn(&mut Connector::Context) -> Connector,
-	Connector: 'static
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-{
-	fn clone(&self) -> Self {
-		Self {
-			connector: self.connector.clone(),
-		}
-	}
-}
-*/

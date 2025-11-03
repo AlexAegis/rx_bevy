@@ -4357,6 +4357,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_egui",
  "bevy_mod_alternate_system_on_press",
+ "disqualified",
  "examples_common",
  "rx_bevy_context",
  "rx_bevy_observable_keyboard",
@@ -4364,7 +4365,6 @@ dependencies = [
  "rx_core",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4390,11 +4390,11 @@ dependencies = [
  "bevy_reflect",
  "bevy_time",
  "derive-where",
+ "disqualified",
  "rx_bevy",
  "rx_bevy_common",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
  "smallvec",
  "stealcell",
  "thiserror 2.0.17",
@@ -4432,12 +4432,12 @@ dependencies = [
  "bevy_time",
  "bevy_window",
  "derive-where",
+ "disqualified",
  "rx_bevy",
  "rx_bevy_common",
  "rx_bevy_context",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
  "smallvec",
  "thiserror 2.0.17",
 ]
@@ -4512,11 +4512,11 @@ dependencies = [
 name = "rx_core_observable_connectable"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_observable_deferred",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4543,22 +4543,22 @@ dependencies = [
 name = "rx_core_observable_iterator"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
 name = "rx_core_observable_iterator_on_tick"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4656,11 +4656,11 @@ dependencies = [
 name = "rx_core_operator_composite"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_observable_pipe",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4702,12 +4702,12 @@ dependencies = [
 name = "rx_core_operator_finalize"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4746,12 +4746,12 @@ name = "rx_core_operator_map"
 version = "0.1.0"
 dependencies = [
  "derive-where",
+ "disqualified",
  "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4770,12 +4770,12 @@ name = "rx_core_operator_scan"
 version = "0.1.0"
 dependencies = [
  "derive-where",
+ "disqualified",
  "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4793,6 +4793,7 @@ dependencies = [
 name = "rx_core_operator_switch_map"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
@@ -4801,7 +4802,6 @@ dependencies = [
  "rx_core_subscriber_switch",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4819,12 +4819,12 @@ dependencies = [
 name = "rx_core_operator_tap_next"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4876,11 +4876,11 @@ dependencies = [
 name = "rx_core_subscriber_rc"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_observable_iterator",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4906,19 +4906,19 @@ dependencies = [
 name = "rx_core_subscription_inert"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_testing",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
 name = "rx_core_testing"
 version = "0.1.0"
 dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_traits",
- "short_type_name",
 ]
 
 [[package]]
@@ -4926,9 +4926,9 @@ name = "rx_core_traits"
 version = "0.1.0"
 dependencies = [
  "derive-where",
+ "disqualified",
  "rx_core",
  "rx_core_testing",
- "short_type_name",
  "smallvec",
 ]
 
@@ -5054,10 +5054,6 @@ name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
-
-[[package]]
-name = "short_type_name"
-version = "0.1.0"
 
 [[package]]
 name = "simd-adler32"

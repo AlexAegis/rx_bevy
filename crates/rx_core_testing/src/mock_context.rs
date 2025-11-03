@@ -1,5 +1,6 @@
 use std::{any::Any, iter::Chain, slice::Iter};
 
+use disqualified::ShortName;
 use rx_core_traits::{
 	SignalBound, SubscriberNotification, SubscriptionContext, SubscriptionContextAccess,
 	SubscriptionContextDropSafety,
@@ -358,12 +359,12 @@ where
 			// *GLOBAL_SAFE_DROP_MOCK_CONTEXT.take::<In, InError, DropSafety>()
 			panic!(
 				"An unclosed Subscription was dropped during a test, but only in a SAFE context! Still, for tests, the context must be explicitly supplied as it stores the data used for asserts! {}",
-				short_type_name::short_type_name::<Self>()
+				ShortName::of::<Self>()
 			)
 		} else {
 			panic!(
 				"An unclosed Subscription was dropped during a test in an UNSAFE context! For tests, the context must be explicitly supplied as it stores the data used for asserts! {}",
-				short_type_name::short_type_name::<Self>()
+				ShortName::of::<Self>()
 			)
 		}
 	}

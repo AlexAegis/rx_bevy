@@ -34,7 +34,7 @@ example = [
 [dependencies]
 rx_core_traits = { workspace = true }
 rx_core_observable_deferred = { workspace = true }
-short_type_name = { workspace = true }
+disqualified = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

@@ -7,7 +7,7 @@ use crate::{
 		allocator::handle::{ScheduledSubscriptionHandle, WeakSubscriptionHandle},
 	},
 };
-use short_type_name::short_type_name;
+use disqualified::ShortName;
 
 use super::ScheduledHeapSubscriptionHandle;
 
@@ -61,7 +61,7 @@ where
 			if let Ok(lock) = subscription.read() {
 				lock.is_closed()
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 				true
 			}
 		} else {
@@ -77,7 +77,7 @@ where
 			if let Ok(mut lock) = subscription.write() {
 				lock.unsubscribe(context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 	}
@@ -93,7 +93,7 @@ where
 			if let Ok(mut lock) = subscription.write() {
 				lock.add_teardown(teardown, context);
 			} else {
-				println!("Poisoned destination lock: {}", short_type_name::<Self>());
+				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
 	}

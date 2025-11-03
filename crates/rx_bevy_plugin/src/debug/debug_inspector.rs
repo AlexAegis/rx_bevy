@@ -10,9 +10,9 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
+use disqualified::ShortName;
 use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::Observable;
-use short_type_name::short_type_name;
 
 use crate::{ObservableComponent, ObservableSubscriptions, SubscriptionOf, SubscriptionSchedule};
 
@@ -80,7 +80,7 @@ pub(crate) fn observable_entity_debug_print<O>(
 	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
 		observable_query.iter()
 	{
-		println!("Observable Entity {entity:?} {}", short_type_name::<O>());
+		println!("Observable Entity {entity:?} {}", ShortName::of::<O>());
 
 		if let Some(d) = subscriber_instance_of {
 			println!("{}", d);
@@ -117,7 +117,7 @@ where
 	S: ScheduleLabel,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "\tSubscriptionSchedule<{}>", short_type_name::<S>())
+		write!(f, "\tSubscriptionSchedule<{}>", ShortName::of::<S>())
 	}
 }
 
@@ -134,7 +134,7 @@ pub(crate) fn subscription_entity_debug_print<O>(
 	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
 		subscription_query.iter()
 	{
-		println!("Subscription Entity {entity:?} {}", short_type_name::<O>());
+		println!("Subscription Entity {entity:?} {}", ShortName::of::<O>());
 
 		println!("{}", subscriber_instance_of);
 

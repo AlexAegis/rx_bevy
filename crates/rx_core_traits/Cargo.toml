@@ -21,7 +21,6 @@ dev = [
     "dev_panic_on_dropped_active_subscriptions",
     "rx_core/dev",
     "rx_core_testing/dev",
-    "short_type_name/dev",
 ]
 example = ["dev", "rx_core/example", "rx_core_testing/example"]
 debug = []
@@ -36,7 +35,7 @@ dev_panic_on_dropped_active_subscriptions = []
 
 [dependencies]
 smallvec = { workspace = true }
-short_type_name = { workspace = true }
+disqualified = { workspace = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]
