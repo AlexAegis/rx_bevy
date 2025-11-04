@@ -1,4 +1,5 @@
 use core::marker::PhantomData;
+use std::iter::{self, Empty};
 
 use rx_core_traits::{
 	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
@@ -79,43 +80,146 @@ where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
+		let mut iter = self.iterator.clone().into_iter();
 		if self.options.emit_at_every_nth_tick == 0 {
-			for item in self.iterator.clone().into_iter() {
+			let mut completed = true;
+			while let Some(item) = iter.next() {
 				if destination.is_closed() {
+					completed = false;
 					break;
 				}
 				destination.next(item, context);
+			}
+			if completed {
 				destination.complete(context);
 			}
 		}
-
-		OnTickIteratorSubscription::new(
-			destination,
-			self.iterator.clone(),
-			self.options.clone(),
-			context,
-		)
+		OnTickIteratorSubscription::new(destination, iter, self.options.clone(), context)
 	}
 }
 
 #[cfg(test)]
-mod test {
+mod test_iterator_on_tick_observable {
 
-	use rx_core::prelude::*;
-	use rx_core_testing::prelude::*;
+	mod when_emit_at_nth_is_non_zero {
 
-	#[test]
-	fn iterator_observable_should_emit_its_values_then_complete() {
-		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+		use std::time::Duration;
 
-		let mut source = (1..=2).into_observable::<MockContext<_, _, _>>();
-		let _subscription = source.subscribe(mock_destination, &mut context);
-		println!("{context:?}");
-		assert!(
-			context.nothing_happened_after_closed(),
-			"something happened after unsubscribe"
-		);
-		assert_eq!(context.all_observed_values(), vec![10, 11, 12, 10, 11, 12]);
+		use rx_core::prelude::*;
+		use rx_core_testing::prelude::*;
+		use rx_core_traits::SubscriberNotification;
+
+		use crate::observable::{IntoIteratorOnTickObservableExtension, OnTickObservableOptions};
+
+		#[test]
+		fn should_emit_its_values_every_two_ticks_then_complete() {
+			let mut mock_clock = MockClock::default();
+			let mut context = MockContext::default();
+			let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+
+			let mut source = (1..=3).into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
+				OnTickObservableOptions {
+					emit_at_every_nth_tick: 2,
+					start_on_subscribe: true,
+				},
+			);
+			let mut subscription = source.subscribe(mock_destination, &mut context);
+			assert!(matches!(
+				context.nth_notification(0),
+				SubscriberNotification::Next(1)
+			));
+			subscription.tick(mock_clock.elapse(Duration::from_millis(1)), &mut context);
+			assert!(matches!(
+				context.nth_notification(1),
+				SubscriberNotification::Tick(_)
+			));
+			assert!(
+				!context.nth_notification_exists(2),
+				"should not have emitted after only one tick"
+			);
+			subscription.tick(mock_clock.elapse(Duration::from_millis(3)), &mut context);
+			assert!(matches!(
+				context.nth_notification(2),
+				SubscriberNotification::Next(2)
+			));
+			assert!(matches!(
+				context.nth_notification(3),
+				SubscriberNotification::Tick(_)
+			));
+
+			subscription.tick(mock_clock.elapse(Duration::from_millis(2)), &mut context);
+			assert!(matches!(
+				context.nth_notification(4),
+				SubscriberNotification::Tick(_)
+			));
+			subscription.tick(mock_clock.elapse(Duration::from_millis(1)), &mut context);
+			assert!(matches!(
+				context.nth_notification(5),
+				SubscriberNotification::Next(3)
+			));
+			assert!(matches!(
+				context.nth_notification(6),
+				SubscriberNotification::Complete
+			));
+			println!("{:?}", context);
+			assert!(matches!(
+				context.nth_notification(7),
+				SubscriberNotification::Tick(_)
+			));
+
+			assert_eq!(context.all_observed_values(), vec![1, 2, 3]);
+
+			subscription.unsubscribe(&mut context);
+			assert!(
+				context.nothing_happened_after_closed(),
+				"something happened after unsubscribe"
+			);
+		}
+	}
+
+	mod when_emit_at_nth_is_zero {
+
+		use std::time::Duration;
+
+		use rx_core::prelude::*;
+		use rx_core_testing::prelude::*;
+		use rx_core_traits::SubscriberNotification;
+
+		use crate::observable::{IntoIteratorOnTickObservableExtension, OnTickObservableOptions};
+
+		#[test]
+		fn should_immediately_emit_all_its_values_then_complete() {
+			let mut mock_clock = MockClock::default();
+			let mut context = MockContext::default();
+			let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+
+			let mut source = (1..=3).into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
+				OnTickObservableOptions {
+					emit_at_every_nth_tick: 0,
+					start_on_subscribe: false,
+				},
+			);
+			let mut subscription = source.subscribe(mock_destination, &mut context);
+			println!("{:?}", context);
+			assert_eq!(context.all_observed_values(), vec![1, 2, 3]);
+			assert!(matches!(
+				context.nth_notification(3),
+				SubscriberNotification::Complete
+			));
+			subscription.tick(mock_clock.elapse(Duration::from_millis(1)), &mut context);
+			assert!(matches!(
+				context.nth_notification(4),
+				SubscriberNotification::Tick(_)
+			));
+			assert!(
+				!context.nth_notification_exists(5),
+				"Something happened after completion due to a tick!"
+			);
+			subscription.unsubscribe(&mut context);
+			assert!(
+				context.nothing_happened_after_closed(),
+				"something happened after unsubscribe"
+			);
+		}
 	}
 }

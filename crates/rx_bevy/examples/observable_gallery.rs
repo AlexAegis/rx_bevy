@@ -180,7 +180,7 @@ fn setup(mut commands: Commands) {
 						KeyCode::Digit2 => Duration::from_millis(100),
 						KeyCode::Digit3 => Duration::from_millis(500),
 						KeyCode::Digit4 => Duration::from_millis(2000),
-						_ => Duration::from_millis(500),
+						_ => unreachable!(),
 					};
 					println!("Switching to a new inner observable with duration: {duration:?}");
 					IntervalObservable::new(IntervalObservableOptions {

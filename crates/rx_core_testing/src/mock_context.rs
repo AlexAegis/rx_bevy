@@ -112,6 +112,16 @@ where
 		}
 	}
 
+	pub fn nth_notification_exists(&self, n: usize) -> bool {
+		if n < self.observed_notifications.len() {
+			self.observed_notifications.get(n).is_some()
+		} else {
+			self.observed_notifications_after_close
+				.get(n - self.observed_notifications.len())
+				.is_some()
+		}
+	}
+
 	/// Checks whether or not something was observed after the first
 	/// [SubscriberNotification::Unsubscribe] notification.
 	pub fn nothing_happened_after_closed(&self) -> bool {

@@ -1,6 +1,8 @@
+use std::iter::Peekable;
+
 use rx_core_traits::{
-	SignalBound, Subscriber, SubscriptionData, SubscriptionLike, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Tick,
+	Tickable, WithSubscriptionContext,
 };
 
 use crate::observable::OnTickObservableOptions;
@@ -12,7 +14,7 @@ where
 	Context: SubscriptionContext,
 {
 	observed_ticks: usize,
-	iterator: Iterator::IntoIter,
+	peekable_iterator: Peekable<Iterator::IntoIter>,
 	options: OnTickObservableOptions,
 	destination:
 		Box<dyn Subscriber<In = Iterator::Item, InError = (), Context = Context> + Send + Sync>,
@@ -27,20 +29,21 @@ where
 {
 	pub fn new(
 		mut destination: impl Subscriber<In = Iterator::Item, InError = (), Context = Context> + 'static,
-		iterator: Iterator,
+		iterator: Iterator::IntoIter,
 		options: OnTickObservableOptions,
 		context: &mut Context::Item<'_, '_>,
 	) -> Self {
-		let mut iter = iterator.into_iter();
+		let mut peekable_iterator = iterator.peekable();
+
 		if options.start_on_subscribe
-			&& let Some(value) = iter.next()
+			&& let Some(value) = peekable_iterator.next()
 		{
 			destination.next(value, context);
 		}
 
 		OnTickIteratorSubscription {
 			observed_ticks: 0,
-			iterator: iter,
+			peekable_iterator,
 			options,
 			destination: Box::new(destination),
 			teardown: SubscriptionData::default(),
@@ -65,19 +68,28 @@ where
 {
 	fn tick(
 		&mut self,
-		_tick: Tick,
+		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		self.observed_ticks += 1;
+		if !self.is_closed() {
+			self.observed_ticks += 1;
 
-		if self.options.emit_at_every_nth_tick != 0
-			&& self
-				.observed_ticks
-				.is_multiple_of(self.options.emit_at_every_nth_tick)
-			&& let Some(value) = self.iterator.next()
-		{
-			self.destination.next(value, context);
+			if self.options.emit_at_every_nth_tick != 0
+				&& self
+					.observed_ticks
+					.is_multiple_of(self.options.emit_at_every_nth_tick)
+				&& let Some(value) = self.peekable_iterator.next()
+			{
+				self.observed_ticks = 0; // Reset to avoid overflow
+				self.destination.next(value, context);
+				if self.peekable_iterator.peek().is_none() {
+					self.destination.complete(context);
+					self.unsubscribe(context);
+				}
+			}
 		}
+
+		self.destination.tick(tick, context);
 	}
 }
 

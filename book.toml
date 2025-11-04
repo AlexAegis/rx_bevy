@@ -1,13 +1,14 @@
 # https://rust-lang.github.io/mdBook/format/configuration/general.html
 
 [book]
-title = "Bevy Kit"
+title = "rx_bevy"
 authors = ["AlexAegis"]
-description = "Documentation."
+description = "Usage and development documentation of rx_bevy."
 src = "docs"
 
 [build]
 build-dir = "target/book"
+create-missing = true
 
 [preprocessor.mermaid]
 command = "mdbook-mermaid"

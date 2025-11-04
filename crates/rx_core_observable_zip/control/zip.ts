@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { Subject, zip } from "rxjs";
+import { finalize, of, Subject, zip } from "rxjs";
 
 /**
  * The combineLatest observer combines the latest values from multiple observables
@@ -11,10 +11,16 @@ import { Subject, zip } from "rxjs";
 const subject1 = new Subject<number>();
 const subject2 = new Subject<number>();
 
-zip([subject1, subject2]).subscribe({
-  next: (next) => console.log(next),
-  complete: () => console.log("complete"),
-});
+zip([subject1, subject2])
+  .pipe(
+    finalize(() => {
+      console.log("finalize");
+    })
+  )
+  .subscribe({
+    next: (next) => console.log(next),
+    complete: () => console.log("complete"),
+  });
 
 subject1.next(1);
 subject2.next(10);
@@ -30,3 +36,14 @@ subject1.complete();
 
 // Even if the last emission of subject 1 was consumed after it was completed!
 subject2.next(30);
+
+of(1)
+  .pipe(
+    finalize(() => {
+      console.log("of finalize");
+    })
+  )
+  .subscribe({
+    next: (next) => console.log("of", next),
+    complete: () => console.log("of complete"),
+  });

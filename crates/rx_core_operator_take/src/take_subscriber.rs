@@ -12,6 +12,7 @@ where
 {
 	destination: Destination,
 	count: usize,
+	is_closed: bool,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -28,6 +29,7 @@ where
 		Self {
 			destination,
 			count,
+			is_closed: count == 0,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -85,6 +87,7 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			self.destination.complete(context);
+			self.unsubscribe(context);
 		}
 	}
 }
@@ -119,12 +122,15 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
+		self.is_closed
 	}
 
 	#[inline]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
+		if !self.is_closed() {
+			self.is_closed = true;
+			self.destination.unsubscribe(context);
+		}
 	}
 
 	#[inline]

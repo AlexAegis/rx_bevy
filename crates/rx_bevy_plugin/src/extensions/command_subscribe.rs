@@ -23,7 +23,7 @@ pub trait CommandSubscribeExtension {
 }
 
 impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
-	fn subscribe<Out, OutError, S>(
+	fn subscribe<Out, OutError, Schedule>(
 		&mut self,
 		observable_entity: Entity,
 		destination_entity: Entity,
@@ -31,10 +31,13 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 	where
 		Out: SignalBound,
 		OutError: SignalBound,
-		S: ScheduleLabel,
+		Schedule: ScheduleLabel,
 	{
-		let (subscribe_event, subscription_entity) =
-			Subscribe::<Out, OutError>::new::<S>(observable_entity, destination_entity, self);
+		let (subscribe_event, subscription_entity) = Subscribe::<Out, OutError>::new::<Schedule>(
+			observable_entity,
+			destination_entity,
+			self,
+		);
 
 		self.trigger_targets(subscribe_event, observable_entity);
 

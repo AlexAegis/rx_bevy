@@ -6,7 +6,6 @@ use rx_core_traits::{
 
 use crate::{AdsrSignal, AdsrSubscriber, operator::AdsrOperatorOptions};
 
-// TODO: Currently this is a regular operator, not an operatorComponent, which would make it hard to control it from bevy
 #[derive(Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub struct AdsrOperator<InError, Context>
