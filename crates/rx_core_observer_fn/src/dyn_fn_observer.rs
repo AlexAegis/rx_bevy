@@ -121,10 +121,11 @@ where
 	}
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		if !self.is_closed() {
-			if let Some(on_complete) = self.on_complete.take() {
-				(on_complete)(context);
-			}
+		if !self.is_closed()
+			&& let Some(on_complete) = self.on_complete.take()
+		{
+			(on_complete)(context);
+			self.unsubscribe(context);
 		}
 	}
 }

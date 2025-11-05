@@ -218,27 +218,13 @@ where
 	Destination: 'static + Subscriber,
 {
 	fn drop(&mut self) {
+		// Even though this is a shared subscriber, which usually should not do
+		// anything on drop, this is reference counted, and it has to make sure
+		// the count happened by unsubscribing itself.
 		if !self.unsubscribed {
 			let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
-
-		// let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
-		//
-		// self.shared_destination.access_with_context_mut(
-		// 	|destination, _context| {
-		// 		destination.ref_count -= 1;
-		//
-		// 		if self.completed {
-		// 			destination.completion_count -= 1;
-		// 		}
-		//
-		// 		if self.unsubscribed {
-		// 			destination.unsubscribe_count -= 1;
-		// 		}
-		// 	},
-		// 	&mut context,
-		// );
 	}
 }
 
@@ -248,6 +234,7 @@ mod test {
 
 	use rx_core::prelude::*;
 	use rx_core_testing::{MockContext, MockObserver};
+	use rx_core_traits::SubscriptionLike;
 
 	use crate::RcSubscriber;
 
@@ -279,7 +266,7 @@ mod test {
 	fn rc_subscriber_unsubscribes() {
 		let (mut rc_subscriber, mut context) = setup();
 
-		rc_subscriber.next(1, &mut context);
+		Observer::next(&mut rc_subscriber, 1, &mut context);
 		rc_subscriber.unsubscribe(&mut context);
 
 		assert_eq!(context.count_all_observed_unsubscribes(), 1);
@@ -303,6 +290,7 @@ mod test {
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
 		assert_eq!(context.count_all_observed_unsubscribes(), 0);
+		rc_subscriber.unsubscribe(&mut context);
 	}
 
 	#[test]
@@ -333,7 +321,7 @@ mod test {
 	}
 
 	#[test]
-	fn rc_subscriber_clones_unsubscribe_drop_removes_ref_count() {
+	fn rc_subscriber_clones_unsubscribe_drop_does_not_remove_ref_count() {
 		let (mut rc_subscriber, mut context) = setup();
 		let mut rc_subscriber_clone = rc_subscriber.clone_with_context(&mut context);
 
@@ -359,13 +347,13 @@ mod test {
 		drop(rc_subscriber_clone);
 
 		rc_subscriber.shared_destination.read(|destination| {
-			assert_eq!(destination.ref_count, 1);
-			assert_eq!(destination.unsubscribe_count, 1);
+			assert_eq!(destination.ref_count, 2);
+			assert_eq!(destination.unsubscribe_count, 2);
 		});
 
+		rc_subscriber.unsubscribe(&mut context);
 		// A debug assertion in the `Drop` of [InnerRcSubscriber] asserts that
-		// `ref_count`, `completion_count` and `unsubscribe_count` did indeed
-		// drop to 0
+		// `ref_count` and `unsubscribe_count` are equal.
 		drop(rc_subscriber);
 
 		assert!(context.nothing_happened_after_closed());
@@ -404,25 +392,39 @@ mod test {
 			MockContext<i32, (), DropSafeSubscriptionContext>,
 		>::new(1..=10);
 
-		let mut iterator_a_subscription =
-			iterator_a.subscribe(rc_subscriber.clone_with_context(&mut context), &mut context);
+		let iterator_a_destination = rc_subscriber.clone_with_context(&mut context);
 
+		rc_subscriber.shared_destination.read(|destination| {
+			assert_eq!(destination.ref_count, 2);
+			assert_eq!(destination.unsubscribe_count, 0);
+		});
+
+		let mut iterator_a_subscription =
+			iterator_a.subscribe(iterator_a_destination, &mut context);
+
+		// The iterator immediately compeltes and unsubscribes.
 		rc_subscriber.shared_destination.read(|destination| {
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
-		// Let the clone drop
+		// Additional unsubscrbe calls and letting the clone drop does not increase the counter any further
 		iterator_a_subscription.unsubscribe(&mut context);
-
+		drop(iterator_a_subscription);
 		rc_subscriber.shared_destination.read(|destination| {
-			assert_eq!(destination.ref_count, 1);
-			assert_eq!(destination.unsubscribe_count, 0);
+			assert_eq!(destination.ref_count, 2);
+			assert_eq!(destination.unsubscribe_count, 1);
 		});
+		rc_subscriber.unsubscribe(&mut context);
+		rc_subscriber.shared_destination.read(|destination| {
+			assert_eq!(destination.ref_count, 2);
+			assert_eq!(destination.unsubscribe_count, 2);
+		});
+		drop(rc_subscriber);
 	}
 
 	#[test]
-	fn rc_subscriber_asd() {
+	fn rc_subscriber_triple_clone_ref_count() {
 		let (mut rc_subscriber, mut context) = setup();
 
 		rc_subscriber.shared_destination.read(|destination| {
@@ -454,14 +456,20 @@ mod test {
 
 		drop(rc_clone_1);
 		rc_subscriber.shared_destination.read(|destination| {
-			assert_eq!(destination.ref_count, 2);
-			assert_eq!(destination.unsubscribe_count, 1);
+			assert_eq!(destination.ref_count, 3);
+			assert_eq!(destination.unsubscribe_count, 2);
 		});
 
 		drop(rc_clone_2);
 		rc_subscriber.shared_destination.read(|destination| {
-			assert_eq!(destination.ref_count, 1);
-			assert_eq!(destination.unsubscribe_count, 0);
+			assert_eq!(destination.ref_count, 3);
+			assert_eq!(destination.unsubscribe_count, 2);
+		});
+		rc_subscriber.unsubscribe(&mut context);
+
+		rc_subscriber.shared_destination.read(|destination| {
+			assert_eq!(destination.ref_count, 3);
+			assert_eq!(destination.unsubscribe_count, 3);
 		});
 		drop(rc_subscriber);
 	}

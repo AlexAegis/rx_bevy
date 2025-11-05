@@ -158,15 +158,13 @@ mod switch_map_operator {
 		let mut subscription = source.subscribe(mock_destination, &mut context);
 
 		subject.next(1, &mut context);
-		println!("{:?}", context);
+
 		assert_eq!(context.all_observed_values(), vec![0, 1]);
 
 		subject.next(3, &mut context);
-		println!("{:?}", context);
 		assert_eq!(context.all_observed_values(), vec![0, 1, 0, 1, 2, 3]);
 
 		subject.complete(&mut context);
-		println!("{:?}", context);
 
 		assert!(matches!(
 			context.nth_notification(6),
@@ -178,6 +176,7 @@ mod switch_map_operator {
 		));
 
 		subscription.unsubscribe(&mut context);
+		subject.unsubscribe(&mut context);
 	}
 
 	#[test]

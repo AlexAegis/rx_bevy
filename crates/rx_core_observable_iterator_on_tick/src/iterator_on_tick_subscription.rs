@@ -104,8 +104,10 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-		self.teardown.unsubscribe(context);
+		if !self.teardown.is_closed() {
+			self.destination.unsubscribe(context);
+			self.teardown.unsubscribe(context);
+		}
 	}
 
 	fn add_teardown(

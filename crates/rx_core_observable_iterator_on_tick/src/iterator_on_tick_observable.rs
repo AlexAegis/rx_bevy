@@ -1,5 +1,4 @@
 use core::marker::PhantomData;
-use std::iter::{self, Empty};
 
 use rx_core_traits::{
 	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
@@ -83,7 +82,7 @@ where
 		let mut iter = self.iterator.clone().into_iter();
 		if self.options.emit_at_every_nth_tick == 0 {
 			let mut completed = true;
-			while let Some(item) = iter.next() {
+			for item in iter.by_ref() {
 				if destination.is_closed() {
 					completed = false;
 					break;
@@ -111,6 +110,11 @@ mod test_iterator_on_tick_observable {
 
 		use crate::observable::{IntoIteratorOnTickObservableExtension, OnTickObservableOptions};
 
+		/// Verifies:
+		/// - RX_OB_IMMEDIATE_COMPLETION
+		/// - RX_OB_UNSUBSCRIBE_AFTER_COMPLETE
+		/// - RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE_EXCEPT_TICKS
+		/// - RX_ALWAYS_FORWARD_TICKS
 		#[test]
 		fn should_emit_its_values_every_two_ticks_then_complete() {
 			let mut mock_clock = MockClock::default();
@@ -161,15 +165,20 @@ mod test_iterator_on_tick_observable {
 				context.nth_notification(6),
 				SubscriberNotification::Complete
 			));
-			println!("{:?}", context);
 			assert!(matches!(
 				context.nth_notification(7),
+				SubscriberNotification::Unsubscribe
+			));
+			assert!(matches!(
+				context.nth_notification(8),
 				SubscriberNotification::Tick(_)
 			));
 
 			assert_eq!(context.all_observed_values(), vec![1, 2, 3]);
 
 			subscription.unsubscribe(&mut context);
+			println!("{:?}", context);
+			assert!(!context.nth_notification_exists(9));
 			assert!(
 				context.nothing_happened_after_closed(),
 				"something happened after unsubscribe"
@@ -182,7 +191,7 @@ mod test_iterator_on_tick_observable {
 		use std::time::Duration;
 
 		use rx_core::prelude::*;
-		use rx_core_testing::prelude::*;
+		use rx_core_testing::{IteratorTrackingDataAccess, TrackedIterator, prelude::*};
 		use rx_core_traits::SubscriberNotification;
 
 		use crate::observable::{IntoIteratorOnTickObservableExtension, OnTickObservableOptions};
@@ -220,6 +229,50 @@ mod test_iterator_on_tick_observable {
 				context.nothing_happened_after_closed(),
 				"something happened after unsubscribe"
 			);
+		}
+
+		/// Verifies:
+		/// - RX_CHECK_CLOSED_ON_MULTI_EMISSIONS
+		#[test]
+		fn should_not_finish_the_iterator_when_closed_early() {
+			let mut context = MockContext::default();
+			let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+
+			let tracked_iterator = TrackedIterator::new(1..=5);
+			let tracked_data = tracked_iterator.get_tracking_data_ref();
+			let mut source = tracked_iterator
+				.into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
+					OnTickObservableOptions {
+						emit_at_every_nth_tick: 0,
+						start_on_subscribe: false,
+					},
+				)
+				.take(2);
+			let mut subscription = source.subscribe(mock_destination, &mut context);
+			println!("{:?}", context);
+			assert!(matches!(
+				context.nth_notification(0),
+				SubscriberNotification::Next(1)
+			));
+			assert!(matches!(
+				context.nth_notification(1),
+				SubscriberNotification::Next(2)
+			));
+			assert!(matches!(
+				context.nth_notification(2),
+				SubscriberNotification::Complete
+			));
+			assert!(matches!(
+				context.nth_notification(3),
+				SubscriberNotification::Unsubscribe
+			));
+			assert!(!context.nth_notification_exists(4));
+			assert_eq!(context.all_observed_values(), vec![1, 2]);
+
+			assert_eq!(tracked_data.read_next_count(0), 3); // There's one extra due to a peek, but it's clearly less than 3
+			assert!(!tracked_data.is_finished(0));
+
+			subscription.unsubscribe(&mut context);
 		}
 	}
 }

@@ -48,6 +48,12 @@ impossible, must complete.
 After a `Complete` signal is sent, the destination must be unsubscribed
 and the observable!
 
+## `RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE_EXCEPT_TICKS`: Subscriptions and closable subscribers must not send events downstream after they close except for forwarding upstream ticks
+
+If a subscription has been closed - which usually happens because it
+unsubscribed - it must not send any events downstream except forwarding ticks
+coming from upstream. (See rule `RX_ALWAYS_FORWARD_TICKS`)
+
 ## `RX_ALWAYS_FORWARD_TICKS`: Observable Subscriptions and Operators must always forward the tick signal itself to its destination
 
 Downstream operators depend on the tick signal, it must be forwarded as
@@ -78,22 +84,6 @@ fn tick(
 }
 ```
 
-## `RX_CHECK_CLOSED_ON_MULTI_EMISSIONS`: Operators & Observables that can emit multiple downstream signals for a single upstream signal should check if downstream is closed between emissions to stop early
-
-Downstream can close early, for example due to a `take(n)` operator that will
-close after `n` emissions. If you're sending a lot of signals downstream at
-once, everything sent after downstream closed is a waste, and you should stop
-early if that happens.
-
-```rs
-for item in self.iterator.clone().into_iter() {
-    if destination.is_closed() {
-        break;
-    }
-    destination.next(item, context);
-}
-```
-
 ## `RX_OP_ALWAYS_FORWARD_INLINE`: Operator Subscribers must always forward all upstream signal downstream unless altering it is their expected behavior
 
 Downstream operators depend on signals too, don't forget to forward them!
@@ -116,11 +106,14 @@ fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Ite
 
 ## `RX_OP_NO_UNNECESSARY_CLOSE_ON_SINGLE_EMISSIONS`: Operator Subscribers should not do unnecessary checks and maintain their own is_closed state unless they can close themselves
 
-If something can close, it's their job to not emit anything after. Therefore
-downstream operators who can't close, do not have to do any unnecessary checks
-as nothing will be received from upstream after it closed.
+If an operator can't close itself because it's not not within it's ability to
+trigger an unsubscribe, then it's completely unnecessary to check if downstream
+is closed or not, as it will be downstreams job to ignore upstream events if it
+had been closed.
 
-Bad example:
+Checking too early would result in many more extra ifs that necessary.
+
+For example: `map` doesn't unsubscribe:
 
 ```rs
 #[inline]
@@ -129,10 +122,46 @@ fn next(
     next: Self::In,
     context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 ) {
-    if self.is_closed() { // Unnecessary
+    if self.destination.is_closed() { // Unnecessary
         let mapped = (self.mapper)(next);
         self.destination.next(mapped, context);
     }
+}
+```
+
+But `take` can close itself, and trigger an unsubscribe. And as such it tracks
+its own closed state:
+
+```rs
+#[inline]
+fn next(
+    &mut self,
+    next: Self::In,
+    context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+) {
+    if !self.is_closed() && self.count > 0 { // is_closed is: `#[inline] fn is_closed(&self) { self.is_closed }`
+        self.count -= 1;
+        self.destination.next(next, context);
+        if self.count == 0 {
+            self.complete(context);
+        }
+    }
+}
+```
+
+## `RX_CHECK_CLOSED_ON_MULTI_EMISSIONS`: Operators & Observables that can emit multiple downstream signals for a single upstream signal should check if downstream is closed between emissions to stop early
+
+Downstream can close early, for example due to a `take(n)` operator that will
+close after `n` emissions. If you're sending a lot of signals downstream at
+once, everything sent after downstream closed is a waste, and you should stop
+early if that happens.
+
+```rs
+for item in self.iterator.clone().into_iter() {
+    if destination.is_closed() {
+        break;
+    }
+    destination.next(item, context);
 }
 ```
 

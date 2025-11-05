@@ -124,8 +124,12 @@ where
 
 	/// Checks whether or not something was observed after the first
 	/// [SubscriberNotification::Unsubscribe] notification.
+	/// Tick notifications are allowed.
 	pub fn nothing_happened_after_closed(&self) -> bool {
-		self.observed_notifications_after_close.is_empty()
+		self.observed_notifications_after_close
+			.iter()
+			.filter(|n| !matches!(n, SubscriberNotification::Tick(_)))
+			.count() == 0
 	}
 
 	/// Returns an iterator over all observed [SubscriberNotification]

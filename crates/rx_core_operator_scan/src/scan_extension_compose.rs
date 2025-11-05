@@ -6,7 +6,7 @@ use crate::operator::ScanOperator;
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionScan: Operator + Sized {
 	fn scan<
-		NextOut: SignalBound,
+		NextOut: SignalBound + Clone,
 		Reducer: 'static + Fn(&NextOut, Self::Out) -> NextOut + Clone + Send + Sync,
 	>(
 		self,
@@ -15,10 +15,7 @@ pub trait CompositeOperatorExtensionScan: Operator + Sized {
 	) -> CompositeOperator<
 		Self,
 		ScanOperator<Self::Out, Self::OutError, Reducer, NextOut, <Self as Operator>::Context>,
-	>
-	where
-		NextOut: Clone,
-	{
+	> {
 		CompositeOperator::new(self, ScanOperator::new(reducer, seed))
 	}
 }

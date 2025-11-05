@@ -44,4 +44,4 @@
 - [Development](40_development.md)
   - [Writing Observables](41_writing_observables.md)
   - [Writing Operators](42_writing_operators.md)
-  - [Development Guidelines & Rules](43_development_guidelines.md)
+  - [Development Guidelines & Rules](43_development_guidelines_and_rules.md)

@@ -121,6 +121,7 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		for mut destination in self.subscribers.drain(..) {
 			destination.complete(context);
+			destination.unsubscribe(context);
 		}
 	}
 }
