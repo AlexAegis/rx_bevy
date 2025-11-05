@@ -1,7 +1,7 @@
 use bevy_input::keyboard::KeyCode;
 use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber, SubscriptionContext, SubscriptionData,
+	NotSubject, Observable, ObservableOutput, Subscriber, SubscriptionContext, SubscriptionData,
 	WithSubscriptionContext,
 };
 
@@ -21,6 +21,8 @@ impl WithSubscriptionContext for KeyboardObservable {
 }
 
 impl Observable for KeyboardObservable {
+	type IsSubject = NotSubject;
+
 	/// TODO: Maybe the destination generic should make a comeback
 	type Subscription = SubscriptionData<Self::Context>;
 

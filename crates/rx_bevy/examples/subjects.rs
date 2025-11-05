@@ -25,20 +25,50 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, KeyCode, ()>(
-					KeyCode::KeyK,
-					|res| res.keyboard_observable,
-					|res| res.example_event_observer,
-				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
-					KeyCode::KeyI,
+					KeyCode::KeyW,
 					|res| res.interval_observable,
+					|res| res.subject_usize,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, ()>(
+					KeyCode::KeyE,
+					|res| res.interval_observable,
+					|res| res.replay_subject_usize,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, ()>(
+					KeyCode::KeyR,
+					|res| res.interval_observable,
+					|res| res.behavior_subject_usize,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, ()>(
+					KeyCode::KeyS,
+					|res| res.subject_usize,
 					|res| res.example_event_observer,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
-					KeyCode::KeyL,
-					|e| e.keyboard_switch_map_to_interval_observable,
+					KeyCode::KeyD,
+					|res| res.replay_subject_usize,
 					|res| res.example_event_observer,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, ()>(
+					KeyCode::KeyF,
+					|res| res.behavior_subject_usize,
+					|res| res.example_event_observer,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, ()>(
+					KeyCode::KeyX,
+					|res| res.subject_usize,
+					|res| res.example_event_observer_2,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, ()>(
+					KeyCode::KeyC,
+					|res| res.replay_subject_usize,
+					|res| res.example_event_observer_2,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, ()>(
+					KeyCode::KeyV,
+					|res| res.behavior_subject_usize,
+					|res| res.example_event_observer_2,
 				),
 				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 			),
@@ -49,9 +79,12 @@ fn main() -> AppExit {
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
 	example_event_observer: Entity,
+	example_event_observer_2: Entity,
 	subscriptions: HashMap<(Entity, Entity), Entity>,
 	keyboard_observable: Entity,
-	keyboard_switch_map_to_interval_observable: Entity,
+	subject_usize: Entity,
+	replay_subject_usize: Entity,
+	behavior_subject_usize: Entity,
 	interval_observable: Entity,
 }
 
@@ -84,6 +117,11 @@ fn setup(mut commands: Commands) {
 		.observe(print_notification_observer::<KeyCode>)
 		.id();
 
+	let example_event_observer_2 = commands
+		.spawn(Name::new("ExampleObserver 2"))
+		.observe(print_notification_observer::<usize>)
+		.id();
+
 	let keyboard_observable = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
@@ -103,42 +141,36 @@ fn setup(mut commands: Commands) {
 		))
 		.id();
 
-	let keyboard_switch_map_to_interval_observable = commands
+	let subject_usize = commands
 		.spawn((
-			Name::new("KeyboardSwitchMapToIntervalObservable"),
-			KeyboardObservable::default()
-				.filter(|key_code| {
-					matches!(
-						key_code,
-						KeyCode::Digit1 | KeyCode::Digit2 | KeyCode::Digit3 | KeyCode::Digit4
-					)
-				})
-				.switch_map(|key_code| {
-					let duration = match key_code {
-						KeyCode::Digit1 => Duration::from_millis(5),
-						KeyCode::Digit2 => Duration::from_millis(100),
-						KeyCode::Digit3 => Duration::from_millis(500),
-						KeyCode::Digit4 => Duration::from_millis(2000),
-						_ => unreachable!(),
-					};
-					println!("Switching to a new inner observable with duration: {duration:?}");
-					IntervalObservable::new(IntervalObservableOptions {
-						duration,
-						start_on_subscribe: false,
-						max_emissions_per_tick: 4,
-					})
-					.tap_next(|n, _| println!("inner next {n}"))
-				})
-				.scan(|acc, _next| acc + 1, 0 as usize)
+			Name::new("Subject<usize>"),
+			Subject::<usize, (), BevySubscriptionContextProvider>::default().into_component(),
+		))
+		.id();
+
+	let replay_subject_usize = commands
+		.spawn((
+			Name::new("ReplaySubject<usize>"),
+			ReplaySubject::<3, usize, (), BevySubscriptionContextProvider>::default()
 				.into_component(),
+		))
+		.id();
+
+	let behavior_subject_usize = commands
+		.spawn((
+			Name::new("BehaviorSubject<usize>"),
+			BehaviorSubject::<usize, (), BevySubscriptionContextProvider>::new(0).into_component(),
 		))
 		.id();
 
 	commands.insert_resource(ExampleEntities {
 		subscriptions: HashMap::new(),
 		example_event_observer,
+		example_event_observer_2,
 		keyboard_observable,
 		interval_observable,
-		keyboard_switch_map_to_interval_observable,
+		subject_usize,
+		replay_subject_usize,
+		behavior_subject_usize,
 	});
 }

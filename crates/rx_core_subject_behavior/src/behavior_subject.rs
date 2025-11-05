@@ -1,10 +1,9 @@
-use std::{cell::RefCell, rc::Rc};
+use std::sync::{Arc, RwLock};
 
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionLike, Teardown,
-	SubscriptionContext, WithSubscriptionContext,
+	IsSubject, Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, Tickable, WithSubscriptionContext,
 };
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -17,8 +16,8 @@ where
 	Context: SubscriptionContext,
 {
 	subject: Subject<In, InError, Context>,
-	/// RefCell so even cloned subjects retain the same current value across clones
-	value: Rc<RefCell<In>>,
+	/// So cloned subjects retain the same current value across clones
+	value: Arc<RwLock<In>>,
 }
 
 impl<In, InError, Context> BehaviorSubject<In, InError, Context>
@@ -30,7 +29,7 @@ where
 	pub fn new(value: In) -> Self {
 		Self {
 			subject: Subject::default(),
-			value: Rc::new(RefCell::new(value)),
+			value: Arc::new(RwLock::new(value)),
 		}
 	}
 
@@ -39,7 +38,7 @@ where
 	/// subscription though to keep your code reactive, only use this when it's
 	/// absolutely necessary.
 	pub fn value(&self) -> In {
-		self.value.borrow().clone()
+		self.value.read().unwrap().clone()
 	}
 }
 
@@ -65,7 +64,9 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		let n = next.clone();
-		self.value.replace(next);
+		{
+			*self.value.write().unwrap() = next;
+		}
 		self.subject.next(n, context);
 	}
 
@@ -109,6 +110,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	type IsSubject = IsSubject;
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<
@@ -118,8 +120,24 @@ where
 		mut destination: Destination,
 		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription {
-		destination.next(self.value.borrow().clone(), context);
+		let next = { self.value.read().unwrap().clone() };
+		destination.next(next, context);
 		self.subject.subscribe(destination, context)
+	}
+}
+
+impl<In, InError, Context> Tickable for BehaviorSubject<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	fn tick(
+		&mut self,
+		tick: rx_core_traits::Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		self.subject.tick(tick, context);
 	}
 }
 

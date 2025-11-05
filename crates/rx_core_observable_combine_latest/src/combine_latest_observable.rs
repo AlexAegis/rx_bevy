@@ -3,8 +3,8 @@ use rx_core_emission_variants::{
 };
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber, SubscriptionData,
-	SubscriptionContext, WithSubscriptionContext,
+	NotSubject, Observable, ObservableOutput, Subscriber, SubscriptionContext, SubscriptionData,
+	WithSubscriptionContext,
 };
 
 use crate::CombineLatestSubscriber;
@@ -63,6 +63,7 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
+	type IsSubject = NotSubject;
 	type Subscription = SubscriptionData<O1::Context>;
 
 	fn subscribe<Destination>(

@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use rx_core_operator_map_into::MapIntoSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext, SubscriptionData,
-	WithSubscriptionContext,
+	NotSubject, Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
+	SubscriptionData, WithSubscriptionContext,
 };
 
 pub struct MergeObservable<Out, OutError, O1, O2>
@@ -85,6 +85,7 @@ where
 	O2::OutError: Into<OutError>,
 	<O2 as Observable>::Subscription: 'static,
 {
+	type IsSubject = NotSubject;
 	type Subscription = SubscriptionData<O1::Context>;
 
 	fn subscribe<Destination>(

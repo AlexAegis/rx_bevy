@@ -2175,7 +2175,12 @@ name = "examples_common"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_mod_alternate_system_on_press",
  "derive-where",
+ "disqualified",
+ "rx_bevy_context",
+ "rx_bevy_plugin",
+ "rx_core_traits",
 ]
 
 [[package]]
@@ -4439,6 +4444,7 @@ dependencies = [
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
+ "stealcell",
  "thiserror 2.0.17",
 ]
 

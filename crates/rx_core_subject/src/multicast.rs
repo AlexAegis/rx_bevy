@@ -1,5 +1,5 @@
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
+	IsSubject, Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
 	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
 	WithSubscriptionContext, allocator::ErasedDestinationAllocator,
 };
@@ -73,6 +73,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	type IsSubject = IsSubject;
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<Destination>(

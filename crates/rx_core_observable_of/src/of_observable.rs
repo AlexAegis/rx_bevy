@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
+	NotSubject, Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
 	WithSubscriptionContext,
 };
 
@@ -41,6 +41,7 @@ where
 	Out: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	type IsSubject = NotSubject;
 	type Subscription = InertSubscription<Context>;
 
 	fn subscribe<Destination>(

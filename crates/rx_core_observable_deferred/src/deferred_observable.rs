@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber, SubscriptionContext, WithSubscriptionContext,
+	NotSubject, Observable, ObservableOutput, Subscriber, SubscriptionContext,
+	WithSubscriptionContext,
 };
 
 /// Defers the creation of its source [Observable] until subscribe
@@ -41,6 +42,7 @@ where
 	Source: Observable,
 	F: Clone + Fn() -> Source,
 {
+	type IsSubject = NotSubject;
 	type Subscription = Source::Subscription;
 
 	fn subscribe<Destination>(

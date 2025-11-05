@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Subscriber, SubscriptionContext, WithSubscriptionContext,
+	NotSubject, Observable, ObservableOutput, Subscriber, SubscriptionContext,
+	WithSubscriptionContext,
 };
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
@@ -45,6 +46,7 @@ impl<Context> Observable for IntervalObservable<Context>
 where
 	Context: SubscriptionContext,
 {
+	type IsSubject = NotSubject;
 	type Subscription = IntervalSubscription<Context>;
 
 	fn subscribe<Destination>(

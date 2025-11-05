@@ -8,6 +8,7 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{SubscriptionLike, Teardown, WithSubscriptionContext};
+use stealcell::{StealCell, Stolen};
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
@@ -23,8 +24,7 @@ where
 		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	this_entity: Entity,
-	/// Stealable!
-	subscription: Option<Subscription>,
+	subscription: StealCell<Subscription>,
 }
 
 fn unscheduled_subscription_unsubscribe_on_remove<Subscription>(
@@ -53,29 +53,25 @@ where
 {
 	pub fn new(subscription: Subscription, this_entity: Entity) -> Self {
 		Self {
-			subscription: Some(subscription),
+			subscription: StealCell::new(subscription),
 			this_entity,
 		}
 	}
 
 	fn get_subscription(&self) -> &Subscription {
-		self.subscription.as_ref().expect("Subscription is stolen!")
+		self.subscription.get()
 	}
 
 	fn get_subscription_mut(&mut self) -> &mut Subscription {
-		self.subscription.as_mut().expect("Subscription is stolen!")
+		self.subscription.get_mut()
 	}
 
-	pub fn steal_subscription(&mut self) -> Subscription {
-		self.subscription
-			.take()
-			.expect("Subscription was already stolen!")
+	pub fn steal_subscription(&mut self) -> Stolen<Subscription> {
+		self.subscription.steal()
 	}
 
-	pub fn return_stolen_subscription(&mut self, subscription: Subscription) {
-		if self.subscription.replace(subscription).is_some() {
-			panic!("An subscription was returned but it wasn't stolen from here!")
-		}
+	pub fn return_stolen_subscription(&mut self, subscription: Stolen<Subscription>) {
+		self.subscription.return_stolen(subscription);
 	}
 }
 

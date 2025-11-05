@@ -47,3 +47,21 @@ where
 		}
 	}
 }
+
+impl<In, InError> From<SubscriberNotificationEvent<In, InError>>
+	for SubscriberNotification<In, InError, BevySubscriptionContextProvider>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	fn from(value: SubscriberNotificationEvent<In, InError>) -> Self {
+		match value {
+			SubscriberNotificationEvent::Next(next) => SubscriberNotification::Next(next),
+			SubscriberNotificationEvent::Error(error) => SubscriberNotification::Error(error),
+			SubscriberNotificationEvent::Complete => SubscriberNotification::Complete,
+			SubscriberNotificationEvent::Tick(tick) => SubscriberNotification::Tick(tick),
+			SubscriberNotificationEvent::Unsubscribe => SubscriberNotification::Unsubscribe,
+			SubscriberNotificationEvent::Add(teardown) => SubscriberNotification::Add(teardown),
+		}
+	}
+}

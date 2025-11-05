@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
+	IsSubject, Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
 	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 
@@ -70,6 +70,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	type IsSubject = IsSubject;
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<Destination>(

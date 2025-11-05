@@ -1,5 +1,5 @@
 use rx_core_traits::{
-	Observable, ObservableOutput, Operator, Subscriber, SubscriptionContext,
+	NotSubject, Observable, ObservableOutput, Operator, Subscriber, SubscriptionContext,
 	WithSubscriptionContext,
 };
 
@@ -81,6 +81,7 @@ where
 	Source: 'static + Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
+	type IsSubject = NotSubject;
 	type Subscription = Source::Subscription;
 
 	#[inline]

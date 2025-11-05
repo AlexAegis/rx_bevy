@@ -133,7 +133,6 @@ fn scheduled_subscription_unsubscribe_on_remove(
 	deferred_world: DeferredWorld,
 	hook_context: HookContext,
 ) {
-	println!("scheduled_subscription_unsubscribe_on_remove");
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
 	let mut context = context_param.into_context(hook_context.entity);
 

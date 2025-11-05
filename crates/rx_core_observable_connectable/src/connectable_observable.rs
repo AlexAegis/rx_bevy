@@ -2,8 +2,8 @@ use std::sync::{Arc, RwLock};
 
 use disqualified::ShortName;
 use rx_core_traits::{
-	Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionContext, SubscriptionLike,
-	Teardown, WithSubscriptionContext,
+	NotSubject, Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionContext,
+	SubscriptionLike, Teardown, WithSubscriptionContext,
 };
 
 use crate::{
@@ -93,6 +93,7 @@ where
 	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 {
+	type IsSubject = NotSubject;
 	type Subscription = Connector::Subscription;
 
 	fn subscribe<Destination>(
@@ -160,6 +161,7 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
+		+ Clone
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: 'static,

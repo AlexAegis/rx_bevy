@@ -14,6 +14,7 @@ use rx_bevy_context::{
 	ScheduledSubscriptionComponent,
 };
 use rx_core_traits::{Observable, SubscriptionLike};
+use stealcell::{StealCell, Stolen};
 use thiserror::Error;
 
 use crate::{
@@ -28,8 +29,7 @@ pub struct ObservableComponent<O>
 where
 	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	/// Stealable
-	observable: Option<O>,
+	observable: StealCell<O>,
 }
 
 impl<O> ObservableComponent<O>
@@ -38,20 +38,16 @@ where
 {
 	pub fn new(observable: O) -> Self {
 		Self {
-			observable: Some(observable),
+			observable: StealCell::new(observable),
 		}
 	}
 
-	pub(crate) fn steal_observable(&mut self) -> O {
-		self.observable
-			.take()
-			.expect("Observable was already stolen!")
+	pub(crate) fn steal_observable(&mut self) -> Stolen<O> {
+		self.observable.steal()
 	}
 
-	pub(crate) fn return_stolen_observable(&mut self, observable: O) {
-		if self.observable.replace(observable).is_some() {
-			panic!("An observable was returned but it wasn't stolen from here!")
-		}
+	pub(crate) fn return_stolen_observable(&mut self, observable: Stolen<O>) {
+		self.observable.return_stolen(observable);
 	}
 }
 
@@ -150,22 +146,22 @@ pub(crate) fn default_on_subscribe_error_handler(error: BevyError, error_context
 	}
 }
 
-pub trait BevySubscriptionContextExt {
-	fn steal_observable<O>(&mut self, entity: Entity) -> Result<O, BevyError>
+pub trait BevyContextObservableStealingExt {
+	fn steal_observable<O>(&mut self, entity: Entity) -> Result<Stolen<O>, BevyError>
 	where
 		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync;
 
 	fn return_stolen_observable<O>(
 		&mut self,
 		entity: Entity,
-		observable: O,
+		observable: Stolen<O>,
 	) -> Result<(), BevyError>
 	where
 		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync;
 }
 
-impl<'w, 's> BevySubscriptionContextExt for BevySubscriptionContext<'w, 's> {
-	fn steal_observable<O>(&mut self, entity: Entity) -> Result<O, BevyError>
+impl<'w, 's> BevyContextObservableStealingExt for BevySubscriptionContext<'w, 's> {
+	fn steal_observable<O>(&mut self, entity: Entity) -> Result<Stolen<O>, BevyError>
 	where
 		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 	{
@@ -177,7 +173,7 @@ impl<'w, 's> BevySubscriptionContextExt for BevySubscriptionContext<'w, 's> {
 	fn return_stolen_observable<O>(
 		&mut self,
 		entity: Entity,
-		observable: O,
+		observable: Stolen<O>,
 	) -> Result<(), BevyError>
 	where
 		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,

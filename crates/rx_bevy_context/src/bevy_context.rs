@@ -214,7 +214,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn steal_unscheduled_subscription<Subscription>(
 		&mut self,
 		entity: Entity,
-	) -> Result<Subscription, BevyError>
+	) -> Result<Stolen<Subscription>, BevyError>
 	where
 		Subscription:
 			'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
@@ -228,7 +228,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn return_stolen_unscheduled_subscription<Subscription>(
 		&mut self,
 		entity: Entity,
-		subscription: Subscription,
+		subscription: Stolen<Subscription>,
 	) -> Result<(), BevyError>
 	where
 		Subscription:

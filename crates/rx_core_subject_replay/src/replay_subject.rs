@@ -1,11 +1,10 @@
-use std::{cell::RefCell, rc::Rc};
+use std::sync::{Arc, RwLock};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionLike, Teardown,
-	SubscriptionContext, WithSubscriptionContext,
+	IsSubject, Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, Tickable, WithSubscriptionContext,
 };
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
@@ -18,8 +17,8 @@ where
 	Context: SubscriptionContext,
 {
 	subject: Subject<In, InError, Context>,
-	/// Refcell so even cloned subjects retain the same current value across clones
-	values: Rc<RefCell<ConstGenericRingBuffer<In, CAPACITY>>>,
+	/// Shared data across clones
+	values: Arc<RwLock<ConstGenericRingBuffer<In, CAPACITY>>>,
 }
 
 impl<const CAPACITY: usize, In, InError, Context> Default
@@ -32,7 +31,7 @@ where
 	fn default() -> Self {
 		Self {
 			subject: Subject::default(),
-			values: Rc::new(RefCell::new(ConstGenericRingBuffer::default())),
+			values: Arc::new(RwLock::new(ConstGenericRingBuffer::default())),
 		}
 	}
 }
@@ -56,7 +55,10 @@ where
 	Context: SubscriptionContext,
 {
 	fn next(&mut self, next: In, context: &mut Context::Item<'_, '_>) {
-		self.values.borrow_mut().enqueue(next.clone());
+		{
+			let mut buffer = self.values.write().unwrap();
+			buffer.enqueue(next.clone());
+		}
 		self.subject.next(next, context);
 	}
 
@@ -99,6 +101,7 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	type IsSubject = IsSubject;
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<
@@ -111,11 +114,32 @@ where
 		mut destination: Destination,
 		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription {
-		for value in self.values.borrow().iter() {
-			destination.next(value.clone(), context);
+		let buffer_iter = {
+			let buffer = self.values.read().unwrap();
+			// Values would need to be cloned either way to be able to send them
+			buffer.clone().into_iter()
+		};
+		for value in buffer_iter {
+			destination.next(value, context);
 		}
 
 		self.subject.subscribe(destination, context)
+	}
+}
+
+impl<const CAPACITY: usize, In, InError, Context> Tickable
+	for ReplaySubject<CAPACITY, In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	fn tick(
+		&mut self,
+		tick: rx_core_traits::Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		self.subject.tick(tick, context);
 	}
 }
 

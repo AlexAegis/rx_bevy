@@ -1,5 +1,5 @@
 use crate::{
-	ObservableSubscription, SignalBound, Subscriber,
+	ObservableSubscription, ObservableisSubjectQualifier, SignalBound, Subscriber,
 	SubscriptionContext, WithSubscriptionContext,
 };
 
@@ -77,6 +77,17 @@ pub trait ObservableOutput {
 /// > `let _ =`) will cause it to be immediately dropped, hence `subscribe` is
 /// > `#[must_use]`!
 pub trait Observable: ObservableOutput + WithSubscriptionContext {
+	/// Here one of two sealed marker structs can go, use
+	/// [IsSubject][crate::IsSubject] if the thing implmenting this observable
+	/// also implements [Subscriber][crate::Subscriber], meaning it's a
+	/// [SubjectLike][crate::SubjectLike], otherwise if it's a regular
+	/// observable, use [NotSubject][crate::NotSubject] to mark it as such.
+	///
+	/// Since subjects are all observables too, there is no way to differentate
+	/// observables that are only observables from subjects without this at the
+	/// type level. Not without negative trait bounds.
+	type IsSubject: ObservableisSubjectQualifier;
+
 	/// The subscription produced by this [Observable]. As this is the only kind
 	/// of subscription that is handled directly by users, only here are
 	/// subscriptions required to implement [Drop] to ensure resources
