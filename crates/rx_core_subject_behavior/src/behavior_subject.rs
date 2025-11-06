@@ -2,8 +2,9 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	IsSubject, Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, Tickable, WithSubscriptionContext,
+	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
+	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike, Teardown,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -50,6 +51,28 @@ where
 {
 	type In = In;
 	type InError = InError;
+}
+
+impl<In, InError, Context> WithPrimaryCategory for BehaviorSubject<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategorySubject;
+}
+
+impl<In, InError, Context> UpgradeableObserver for BehaviorSubject<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type Upgraded = DetachedSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Upgraded {
+		DetachedSubscriber::new(self)
+	}
 }
 
 impl<In, InError, Context> Observer for BehaviorSubject<In, InError, Context>
@@ -110,34 +133,21 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type IsSubject = IsSubject;
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
-	fn subscribe<
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
-	>(
+	fn subscribe<Destination>(
 		&mut self,
-		mut destination: Destination,
+		destination: Destination,
 		context: &mut Context::Item<'_, '_>,
-	) -> Self::Subscription {
+	) -> Self::Subscription
+	where
+		Destination: 'static
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+	{
+		let mut downstream_subscriber = destination.upgrade();
 		let next = { self.value.read().unwrap().clone() };
-		destination.next(next, context);
-		self.subject.subscribe(destination, context)
-	}
-}
-
-impl<In, InError, Context> Tickable for BehaviorSubject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	fn tick(
-		&mut self,
-		tick: rx_core_traits::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subject.tick(tick, context);
+		downstream_subscriber.next(next, context);
+		self.subject.subscribe(downstream_subscriber, context)
 	}
 }
 

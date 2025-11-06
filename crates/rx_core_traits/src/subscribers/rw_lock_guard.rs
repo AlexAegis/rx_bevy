@@ -1,9 +1,6 @@
 use std::sync::{RwLockReadGuard, RwLockWriteGuard};
 
-use crate::{
-	ObserverInput, SignalBound, Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
-};
+use crate::{ObserverInput, SignalBound, Subscriber, SubscriptionContext, WithSubscriptionContext};
 
 impl<'a, In, InError, Context> WithSubscriptionContext
 	for RwLockReadGuard<'a, dyn Subscriber<In = In, InError = InError, Context = Context>>

@@ -1,6 +1,7 @@
 use crate::{
-	Observer, ObserverInput, SignalBound, Subscriber, SubscriptionLike, Teardown, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, Tickable, WithPrimaryCategory,
+	WithSubscriptionContext,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
@@ -31,6 +32,16 @@ where
 		}
 	}
 }
+
+impl<In, InError, Context> WithPrimaryCategory for ErasedSubscriber<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
 impl<In, InError, Context> ObserverInput for ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,

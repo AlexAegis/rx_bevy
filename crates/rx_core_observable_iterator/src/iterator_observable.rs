@@ -2,7 +2,8 @@ use core::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
+	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
+	SubscriptionContext, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
 
@@ -55,26 +56,35 @@ where
 	type Context = Context;
 }
 
+impl<Iterator, Context> WithPrimaryCategory for IteratorObservable<Iterator, Context>
+where
+	Iterator: Clone + IntoIterator,
+	Iterator::Item: SignalBound,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
-	type IsSubject = NotSubject;
 	type Subscription = InertSubscription<Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
-		mut destination: Destination,
+		observer: Destination,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{
+		let mut destination = observer.upgrade();
 		for item in self.iterator.clone().into_iter() {
 			if destination.is_closed() {
 				break;

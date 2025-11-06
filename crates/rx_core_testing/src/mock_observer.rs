@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionContext,
-	SubscriptionContextDropSafety, SubscriptionLike, Teardown, Tick, Tickable,
-	WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SignalBound,
+	SubscriberNotification, SubscriptionContext, SubscriptionContextDropSafety, SubscriptionLike,
+	Teardown, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::MockContext;
@@ -16,7 +16,7 @@ where
 	DropSafety: SubscriptionContextDropSafety,
 {
 	pub closed: bool,
-	_phantom_data: PhantomData<(In, InError, DropSafety)>,
+	_phantom_data: PhantomData<(In, InError, fn(DropSafety))>,
 }
 
 impl<In, InError, DropSafety> ObserverInput for MockObserver<In, InError, DropSafety>
@@ -27,6 +27,29 @@ where
 {
 	type In = In;
 	type InError = InError;
+}
+
+impl<In, InError, DropSafety> WithPrimaryCategory for MockObserver<In, InError, DropSafety>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	DropSafety: SubscriptionContextDropSafety,
+{
+	/// While this is conceptually an Observer, used as an Observer, for testing
+	/// purposes it's marked as a subscriber to not get detached when used as
+	/// a destination and be able to track unsubscribe calls.
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+/// While this is conceptually an Observer, used as an Observer, for testing
+/// purposes it's marked as a subscriber to not get detached when used as
+/// a destination and be able to track unsubscribe calls.
+impl<In, InError, DropSafety> ObserverUpgradesToSelf for MockObserver<In, InError, DropSafety>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	DropSafety: SubscriptionContextDropSafety,
+{
 }
 
 impl<In, InError, DropSafety> Observer for MockObserver<In, InError, DropSafety>

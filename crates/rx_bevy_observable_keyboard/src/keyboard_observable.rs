@@ -1,8 +1,8 @@
 use bevy_input::keyboard::KeyCode;
 use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, Subscriber, SubscriptionContext, SubscriptionData,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext, SubscriptionData,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::KeyboardSubscription;
@@ -20,9 +20,11 @@ impl WithSubscriptionContext for KeyboardObservable {
 	type Context = BevySubscriptionContextProvider;
 }
 
-impl Observable for KeyboardObservable {
-	type IsSubject = NotSubject;
+impl WithPrimaryCategory for KeyboardObservable {
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
 
+impl Observable for KeyboardObservable {
 	/// TODO: Maybe the destination generic should make a comeback
 	type Subscription = SubscriptionData<Self::Context>;
 
@@ -33,11 +35,11 @@ impl Observable for KeyboardObservable {
 	) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{
-		let subscription = KeyboardSubscription::<Destination>::new(destination);
+		let subscription = KeyboardSubscription::new(destination.upgrade());
 		SubscriptionData::new_from_resource(subscription.into())
 	}
 }

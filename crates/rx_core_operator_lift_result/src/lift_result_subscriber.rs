@@ -1,8 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
@@ -54,13 +55,42 @@ where
 	type Context = Destination::Context;
 }
 
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> Observer
+impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> WithPrimaryCategory
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
 	ResultIn: SignalBound,
 	ResultInError: SignalBound,
 	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> ObserverUpgradesToSelf
+	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
+where
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
+	InErrorToResultError: Fn(InError) -> ResultInError,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+}
+
+impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> Observer
+	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
+where
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
+	InError: SignalBound,
+	InErrorToResultError: Fn(InError) -> ResultInError + Send + Sync,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
 			InError = <Self as ObservableOutput>::OutError,

@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use bevy_ecs::entity::Entity;
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionLike, Teardown, Tick,
-	Tickable, WithSubscriptionContext,
+	DetachedSubscriber, Observer, ObserverInput, SignalBound, SubscriberNotification, Tick,
+	Tickable, UpgradeableObserver, WithSubscriptionContext,
 };
 
 /// This is not a component, but a wrapper for an Entity to be used as a generic
@@ -20,7 +20,7 @@ where
 	InError: SignalBound,
 {
 	destination: Entity,
-	closed: bool,
+
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -32,7 +32,7 @@ where
 	pub fn new(destination: Entity) -> Self {
 		Self {
 			destination,
-			closed: false,
+
 			_phantom_data: PhantomData,
 		}
 	}
@@ -69,6 +69,18 @@ where
 	}
 }
 
+impl<In, InError> UpgradeableObserver for EntityObserver<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	type Upgraded = DetachedSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Upgraded {
+		DetachedSubscriber::new(self)
+	}
+}
+
 impl<In, InError> Observer for EntityObserver<In, InError>
 where
 	In: SignalBound,
@@ -76,72 +88,25 @@ where
 {
 	#[track_caller]
 	fn next(&mut self, next: Self::In, context: &mut BevySubscriptionContext<'_, '_>) {
-		if !self.is_closed() {
-			context.send_subscriber_notification(
-				self.destination,
-				SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Next(next),
-			);
-		}
+		context.send_subscriber_notification(
+			self.destination,
+			SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Next(next),
+		);
 	}
 
 	#[track_caller]
 	fn error(&mut self, error: Self::InError, context: &mut BevySubscriptionContext<'_, '_>) {
-		if !self.is_closed() {
-			context.send_subscriber_notification(
-				self.destination,
-				SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Error(
-					error,
-				),
-			);
-		}
+		context.send_subscriber_notification(
+			self.destination,
+			SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Error(error),
+		);
 	}
 
 	#[track_caller]
 	fn complete(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		if !self.is_closed() {
-			context.send_subscriber_notification(
-				self.destination,
-				SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Complete,
-			);
-		}
-	}
-}
-
-impl<In, InError> SubscriptionLike for EntityObserver<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.closed
-	}
-
-	#[track_caller]
-	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		if !self.is_closed() {
-			self.closed = true;
-			context.send_subscriber_notification(
-				self.destination,
-				SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Unsubscribe,
-			);
-		}
-	}
-
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut BevySubscriptionContext<'_, '_>,
-	) {
-		if !self.is_closed() {
-			context.send_subscriber_notification(
-				self.destination,
-				SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Add(Some(
-					teardown,
-				)),
-			);
-		} else {
-			teardown.execute(context);
-		}
+		context.send_subscriber_notification(
+			self.destination,
+			SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Complete,
+		);
 	}
 }

@@ -1,6 +1,7 @@
 use rx_core_traits::{
-	Observer, ObserverInput, Subscriber, SubscriptionCollection, SubscriptionContext,
-	SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
+	SubscriptionCollection, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
+	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct ExternallyManagedSubscriber<Destination>
@@ -135,6 +136,21 @@ where
 	Destination: SubscriptionCollection,
 {
 	type Context = Destination::Context;
+}
+
+impl<Destination> WithPrimaryCategory for ExternallyManagedSubscriber<Destination>
+where
+	Destination: 'static + Subscriber + Send + Sync,
+	Destination: SubscriptionCollection,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination> ObserverUpgradesToSelf for ExternallyManagedSubscriber<Destination>
+where
+	Destination: 'static + Subscriber + Send + Sync,
+	Destination: SubscriptionCollection,
+{
 }
 
 impl<Destination> Drop for ExternallyManagedSubscriber<Destination>

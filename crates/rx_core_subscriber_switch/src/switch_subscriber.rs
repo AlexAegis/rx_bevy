@@ -1,7 +1,8 @@
 use crate::ExternallyManagedSubscriber;
 use rx_core_traits::{
-	Observable, Observer, ObserverInput, SharedSubscriber, Subscriber, SubscriptionCollection,
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observable, Observer, ObserverInput, PrimaryCategorySubscriber, SharedSubscriber, Subscriber,
+	ObserverUpgradesToSelf, SubscriptionCollection, SubscriptionContext, SubscriptionLike, Teardown,
+	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
@@ -93,6 +94,39 @@ where
 	Destination: SubscriptionCollection,
 {
 	type Context = Destination::Context;
+}
+
+impl<InnerObservable, Destination> WithPrimaryCategory
+	for SwitchSubscriber<InnerObservable, Destination>
+where
+	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<InnerObservable, Destination> ObserverUpgradesToSelf
+	for SwitchSubscriber<InnerObservable, Destination>
+where
+	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
 }
 
 impl<InnerObservable, Destination> Observer for SwitchSubscriber<InnerObservable, Destination>

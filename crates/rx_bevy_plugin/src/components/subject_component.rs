@@ -12,7 +12,7 @@ use rx_bevy_context::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriberNotificationEvent, ScheduledSubscriptionComponent,
 };
-use rx_core_traits::{SubjectLike, SubscriberPushNotificationExtention, SubscriptionLike};
+use rx_core_traits::{SubjectLike, SubjectPushNotificationExtention, SubscriptionLike};
 use stealcell::{StealCell, Stolen};
 
 use crate::{

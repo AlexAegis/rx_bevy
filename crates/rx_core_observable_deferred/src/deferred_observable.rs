@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, Subscriber, SubscriptionContext,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// Defers the creation of its source [Observable] until subscribe
@@ -37,27 +37,35 @@ where
 	type Context = Source::Context;
 }
 
+impl<F, Source> WithPrimaryCategory for DeferredObservable<F, Source>
+where
+	Source: Observable,
+	F: Clone + Fn() -> Source,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<F, Source> Observable for DeferredObservable<F, Source>
 where
 	Source: Observable,
 	F: Clone + Fn() -> Source,
 {
-	type IsSubject = NotSubject;
 	type Subscription = Source::Subscription;
 
 	fn subscribe<Destination>(
 		&mut self,
-		destination: Destination,
+		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{
+		let destination = observer.upgrade();
 		let mut source = (self.observable_creator)();
-		source.subscribe::<Destination>(destination, context)
+		source.subscribe(destination, context)
 	}
 }
 

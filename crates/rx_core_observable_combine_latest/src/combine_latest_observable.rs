@@ -3,8 +3,8 @@ use rx_core_emission_variants::{
 };
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, Subscriber, SubscriptionContext, SubscriptionData,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext, SubscriptionData,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::CombineLatestSubscriber;
@@ -56,6 +56,16 @@ where
 	type Context = O1::Context;
 }
 
+impl<O1, O2> WithPrimaryCategory for CombineLatestObservable<O1, O2>
+where
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<O1, O2> Observable for CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
@@ -63,22 +73,22 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type IsSubject = NotSubject;
 	type Subscription = SubscriptionData<O1::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
-		destination: Destination,
+		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{
+		let destination = observer.upgrade();
 		let rc_subscriber = RcSubscriber::new(
-			CombineLatestSubscriber::<Destination, O1, O2>::new(destination),
+			CombineLatestSubscriber::<_, O1, O2>::new(destination),
 			context,
 		);
 

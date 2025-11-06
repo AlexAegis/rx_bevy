@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
+	SubscriptionContext, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 #[derive(Clone)]
@@ -43,23 +43,31 @@ where
 	type Context = Context;
 }
 
+impl<OutError, Context> WithPrimaryCategory for ThrowObservable<OutError, Context>
+where
+	OutError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<OutError, Context> Observable for ThrowObservable<OutError, Context>
 where
 	OutError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type IsSubject = NotSubject;
 	type Subscription = InertSubscription<Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
-		mut destination: Destination,
+		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Context>,
+		Destination: 'static
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Context>,
 	{
+		let mut destination = observer.upgrade();
 		destination.error(self.error.clone(), context);
 		InertSubscription::new(destination, context)
 	}

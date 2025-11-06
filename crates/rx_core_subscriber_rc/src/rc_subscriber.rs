@@ -1,6 +1,7 @@
 use rx_core_traits::{
-	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
-	Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
+	WithSubscriptionContext,
 	allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
 };
 
@@ -124,6 +125,18 @@ where
 	Destination: 'static + Subscriber,
 {
 	type Context = Destination::Context;
+}
+
+impl<Destination> WithPrimaryCategory for RcSubscriber<Destination>
+where
+	Destination: 'static + Subscriber,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination> ObserverUpgradesToSelf for RcSubscriber<Destination> where
+	Destination: 'static + Subscriber
+{
 }
 
 impl<Destination> Observer for RcSubscriber<Destination>

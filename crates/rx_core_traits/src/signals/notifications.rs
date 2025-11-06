@@ -1,4 +1,4 @@
-use crate::{SignalBound, Subscriber, Teardown, Tick, context::SubscriptionContext};
+use crate::{SignalBound, SubjectLike, Subscriber, Teardown, Tick, context::SubscriptionContext};
 
 /// Represents all signal events a subscriber can observe in a materialized form
 #[derive(Debug)]
@@ -65,6 +65,35 @@ where
 			SubscriberNotification::Error(error) => self.error(error, context),
 			SubscriberNotification::Complete => self.complete(context),
 			SubscriberNotification::Tick(tick) => self.tick(tick, context),
+			SubscriberNotification::Add(Some(teardown)) => self.add_teardown(teardown, context),
+			SubscriberNotification::Add(None) => {}
+			SubscriberNotification::Unsubscribe => self.unsubscribe(context),
+		}
+	}
+}
+
+pub trait SubjectPushNotificationExtention: SubjectLike {
+	fn push(
+		&mut self,
+		notification: impl Into<SubscriberNotification<Self::In, Self::InError, Self::Context>>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	);
+}
+
+impl<T> SubjectPushNotificationExtention for T
+where
+	T: SubjectLike,
+{
+	fn push(
+		&mut self,
+		notification: impl Into<SubscriberNotification<Self::In, Self::InError, Self::Context>>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		match notification.into() {
+			SubscriberNotification::Next(next) => self.next(next, context),
+			SubscriberNotification::Error(error) => self.error(error, context),
+			SubscriberNotification::Complete => self.complete(context),
+			SubscriberNotification::Tick(_tick) => {}
 			SubscriberNotification::Add(Some(teardown)) => self.add_teardown(teardown, context),
 			SubscriberNotification::Add(None) => {}
 			SubscriberNotification::Unsubscribe => self.unsubscribe(context),

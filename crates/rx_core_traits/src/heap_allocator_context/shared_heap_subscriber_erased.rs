@@ -3,7 +3,8 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 
 use crate::{
-	Observer, ObserverInput, SignalBound, Subscriber, SubscriptionData, SubscriptionLike, Tickable,
+	Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber, ObserverUpgradesToSelf,
+	SubscriptionData, SubscriptionLike, Tickable, WithPrimaryCategory,
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::ErasedSharedDestination},
 };
 
@@ -21,6 +22,23 @@ where
 
 impl<In, InError, Context> ErasedSharedDestination
 	for SharedHeapSubscriberErased<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
+}
+
+impl<In, InError, Context> WithPrimaryCategory for SharedHeapSubscriberErased<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError, Context> ObserverUpgradesToSelf for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,

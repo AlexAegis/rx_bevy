@@ -1,6 +1,6 @@
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, Operator, Subscriber, SubscriptionContext,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, Operator, PrimaryCategoryObservable, SubscriptionContext,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct Pipe<Source, Op>
@@ -76,26 +76,34 @@ where
 	type Context = Source::Context;
 }
 
+impl<Source, Op> WithPrimaryCategory for Pipe<Source, Op>
+where
+	Source: 'static + Observable,
+	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<Source, Op> Observable for Pipe<Source, Op>
 where
 	Source: 'static + Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
-	type IsSubject = NotSubject;
 	type Subscription = Source::Subscription;
 
 	#[inline]
 	fn subscribe<Destination>(
 		&mut self,
-		destination: Destination,
+		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{
+		let destination = observer.upgrade();
 		let operator_subscriber = self.operator.operator_subscribe(destination, context);
 		self.source_observable
 			.subscribe(operator_subscriber, context)

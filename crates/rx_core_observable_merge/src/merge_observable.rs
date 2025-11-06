@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use rx_core_operator_map_into::MapIntoSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionData, WithSubscriptionContext,
+	Observable, ObservableOutput, PrimaryCategoryObservable, SignalBound, SubscriptionContext,
+	SubscriptionData, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct MergeObservable<Out, OutError, O1, O2>
@@ -72,6 +72,20 @@ where
 	type Context = O1::Context;
 }
 
+impl<Out, OutError, O1, O2> WithPrimaryCategory for MergeObservable<Out, OutError, O1, O2>
+where
+	Out: SignalBound,
+	OutError: SignalBound,
+	O1: Observable,
+	O1::Out: Into<Out>,
+	O1::OutError: Into<OutError>,
+	O2: Observable<Context = O1::Context>,
+	O2::Out: Into<Out>,
+	O2::OutError: Into<OutError>,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<Out, OutError, O1, O2> Observable for MergeObservable<Out, OutError, O1, O2>
 where
 	Out: SignalBound,
@@ -85,18 +99,18 @@ where
 	O2::OutError: Into<OutError>,
 	<O2 as Observable>::Subscription: 'static,
 {
-	type IsSubject = NotSubject;
 	type Subscription = SubscriptionData<O1::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
-		destination: Destination,
+		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
+		let destination = observer.upgrade();
 		let rc_subscriber = RcSubscriber::new(destination, context);
 
 		let s1 = self.observable_1.subscribe(

@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
+	SubscriptionContext, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// Emits a single value then immediately completes
@@ -36,25 +36,33 @@ where
 	type Context = Context;
 }
 
+impl<Out, Context> WithPrimaryCategory for OfObservable<Out, Context>
+where
+	Out: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<Out, Context> Observable for OfObservable<Out, Context>
 where
 	Out: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type IsSubject = NotSubject;
 	type Subscription = InertSubscription<Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
-		mut destination: Destination,
+		observer: Destination,
 		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{
+		let mut destination = observer.upgrade();
 		destination.next(self.value.clone(), context);
 		destination.complete(context);
 		InertSubscription::new(destination, context)

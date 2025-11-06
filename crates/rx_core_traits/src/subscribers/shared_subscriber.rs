@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use crate::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
+	SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
 	context::{
 		SubscriptionContext, WithSubscriptionContext,
 		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
@@ -90,6 +91,18 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	type Context = Destination::Context;
+}
+
+impl<Destination> WithPrimaryCategory for SharedSubscriber<Destination>
+where
+	Destination: 'static + Subscriber + Send + Sync,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination> ObserverUpgradesToSelf for SharedSubscriber<Destination> where
+	Destination: 'static + Subscriber + Send + Sync
+{
 }
 
 impl<Destination> Observer for SharedSubscriber<Destination>

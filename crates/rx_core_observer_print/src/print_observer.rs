@@ -1,8 +1,9 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategoryObserver, SignalBound,
+	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -14,7 +15,7 @@ where
 {
 	prefix: Option<&'static str>,
 	teardown: SubscriptionData<Context>,
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError, fn(Context))>,
 }
 
 impl<In, InError, Context> PrintObserver<In, InError, Context>
@@ -116,6 +117,26 @@ where
 	Context: SubscriptionContext,
 {
 	type Context = Context;
+}
+
+impl<In, InError, Context> WithPrimaryCategory for PrintObserver<In, InError, Context>
+where
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategoryObserver;
+}
+
+/// While PrintObserver is not technially a subscriber - it can't even accept
+/// a destination - to be able to print every event, including unsubscribe,
+/// it is implemented as such.
+impl<In, InError, Context> ObserverUpgradesToSelf for PrintObserver<In, InError, Context>
+where
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
+	Context: SubscriptionContext,
+{
 }
 
 impl<In, InError, Context> SubscriptionLike for PrintObserver<In, InError, Context>

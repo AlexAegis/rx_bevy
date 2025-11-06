@@ -1,8 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
@@ -44,10 +45,34 @@ where
 	type Context = Destination::Context;
 }
 
-impl<In, InError, OnNext, Destination> Observer
+impl<In, InError, OnNext, Destination> WithPrimaryCategory
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
+	Destination: Subscriber<In = In, InError = InError>,
+	In: SignalBound,
+	InError: SignalBound,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError, OnNext, Destination> ObserverUpgradesToSelf
+	for TapNextSubscriber<In, InError, OnNext, Destination>
+where
+	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
+	Destination: Subscriber<In = In, InError = InError>,
+	In: SignalBound,
+	InError: SignalBound,
+{
+}
+
+impl<In, InError, OnNext, Destination> Observer
+	for TapNextSubscriber<In, InError, OnNext, Destination>
+where
+	OnNext: 'static
+		+ Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>)
+		+ Send
+		+ Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 	In: SignalBound,
 	InError: SignalBound,

@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriberNotification, SubscriptionLike, Teardown, Tick,
-	Tickable, WithSubscriptionContext, allocator::ErasedSharedDestination,
+	Observer, ObserverInput, SignalBound, ObserverUpgradesToSelf, SubscriberNotification,
+	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	allocator::ErasedSharedDestination,
 };
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
@@ -78,6 +79,13 @@ where
 	InError: SignalBound,
 {
 	type Context = BevySubscriptionContextProvider;
+}
+
+impl<In, InError> ObserverUpgradesToSelf for SharedErasedEntitySubscriber<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
 }
 
 impl<In, InError> Observer for SharedErasedEntitySubscriber<In, InError>

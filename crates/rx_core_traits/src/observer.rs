@@ -1,14 +1,11 @@
-use crate::{
-	SignalBound,
-	SubscriptionContext, WithSubscriptionContext,
-};
+use crate::{SignalBound, SubscriptionContext, WithSubscriptionContext};
 
 pub trait ObserverInput {
 	type In: SignalBound;
 	type InError: SignalBound;
 }
 
-pub trait Observer: ObserverInput + WithSubscriptionContext {
+pub trait Observer: ObserverInput + WithSubscriptionContext + Send + Sync {
 	/// TODO: Maybe rename all contextual functions to xy_with_context and add default implemented functions for a plain next where the context is just the default, but it should disallow overriding the default impl, so maybe on a sealed trait?
 	fn next(
 		&mut self,

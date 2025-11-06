@@ -1,7 +1,8 @@
 use rx_core_traits::{
-	IsSubject, Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
+	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, SignalBound,
 	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	WithSubscriptionContext, allocator::ErasedDestinationAllocator,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	allocator::ErasedDestinationAllocator,
 };
 use smallvec::SmallVec;
 
@@ -73,7 +74,6 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type IsSubject = IsSubject;
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<Destination>(
@@ -82,10 +82,10 @@ where
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		let shared = Context::ErasedDestinationAllocator::share(destination, context);
+		let shared = Context::ErasedDestinationAllocator::share(destination.upgrade(), context);
 		self.subscribers.push(shared.clone());
 		MulticastSubscription::new(shared)
 	}
@@ -157,6 +157,7 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+		println!("multicast unsub!!");
 		if let Some((subscribers, teardown)) = self.close() {
 			for mut destination in subscribers {
 				destination.unsubscribe(context);
@@ -194,6 +195,15 @@ where
 {
 	type Out = In;
 	type OutError = InError;
+}
+
+impl<In, InError, Context> WithPrimaryCategory for Multicast<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategorySubject;
 }
 
 impl<In, InError, Context> Default for Multicast<In, InError, Context>

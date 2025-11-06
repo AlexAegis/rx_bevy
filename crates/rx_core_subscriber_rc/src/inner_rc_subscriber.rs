@@ -2,8 +2,9 @@ use std::ops::{Deref, DerefMut};
 
 use disqualified::ShortName;
 use rx_core_traits::{
-	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
-	Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
+	WithSubscriptionContext,
 };
 
 /// Internal to [RcSubscriber]
@@ -97,6 +98,18 @@ where
 	Destination: Subscriber,
 {
 	type Context = Destination::Context;
+}
+
+impl<Destination> WithPrimaryCategory for InnerRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination> ObserverUpgradesToSelf for InnerRcSubscriber<Destination> where
+	Destination: Subscriber
+{
 }
 
 impl<Destination> Observer for InnerRcSubscriber<Destination>

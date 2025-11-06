@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, Subscriber, SubscriptionContext,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SubscriptionContext,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
@@ -42,22 +42,29 @@ where
 	type Context = Context;
 }
 
+impl<Context> WithPrimaryCategory for IntervalObservable<Context>
+where
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<Context> Observable for IntervalObservable<Context>
 where
 	Context: SubscriptionContext,
 {
-	type IsSubject = NotSubject;
 	type Subscription = IntervalSubscription<Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
-		mut destination: Destination,
+		observer: Destination,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
+		let mut destination = observer.upgrade();
 		if self.options.start_on_subscribe {
 			destination.next(0, context);
 		}

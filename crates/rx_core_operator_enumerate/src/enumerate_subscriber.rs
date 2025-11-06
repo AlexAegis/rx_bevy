@@ -1,9 +1,12 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tickable, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
+	ObserverUpgradesToSelf, SubscriptionContext, SubscriptionLike, Teardown, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
+
+// TODO: Search for In, InError, Dest and fix
 
 pub struct EnumerateSubscriber<In, InError, Destination>
 where
@@ -45,6 +48,29 @@ where
 		>,
 {
 	type Context = Destination::Context;
+}
+
+impl<In, InError, Destination> WithPrimaryCategory for EnumerateSubscriber<In, InError, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError, Destination> ObserverUpgradesToSelf for EnumerateSubscriber<In, InError, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 }
 
 impl<In, InError, Destination> Observer for EnumerateSubscriber<In, InError, Destination>

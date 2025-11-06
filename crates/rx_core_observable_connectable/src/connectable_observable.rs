@@ -2,8 +2,8 @@ use std::sync::{Arc, RwLock};
 
 use disqualified::ShortName;
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, SubjectLike, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, WithSubscriptionContext,
+	Observable, ObservableOutput, PrimaryCategoryObservable, SubjectLike, SubscriptionContext,
+	SubscriptionLike, Teardown, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{
@@ -85,6 +85,17 @@ where
 	type Context = Source::Context;
 }
 
+impl<Source, ConnectorCreator, Connector> WithPrimaryCategory
+	for ConnectableObservable<Source, ConnectorCreator, Connector>
+where
+	Source: Observable,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
+	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<Source, ConnectorCreator, Connector> Observable
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
@@ -93,20 +104,20 @@ where
 	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 {
-	type IsSubject = NotSubject;
 	type Subscription = Connector::Subscription;
 
 	fn subscribe<Destination>(
 		&mut self,
-		destination: Destination,
+		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{
+		let destination = observer.upgrade();
 		if let Ok(mut lock) = self.connector.write() {
 			lock.subscribe(destination, context)
 		} else {
@@ -162,7 +173,9 @@ where
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
 		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>
+		+ Send
+		+ Sync,
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 	Source::Subscription: 'static,
 {

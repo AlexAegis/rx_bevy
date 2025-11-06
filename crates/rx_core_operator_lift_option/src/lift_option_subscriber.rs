@@ -1,8 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
+	ObserverUpgradesToSelf, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct LiftOptionSubscriber<In, InError, Destination>
@@ -41,6 +42,30 @@ where
 		>,
 {
 	type Context = Destination::Context;
+}
+
+impl<In, InError, Destination> WithPrimaryCategory
+	for LiftOptionSubscriber<In, InError, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError, Destination> ObserverUpgradesToSelf for LiftOptionSubscriber<In, InError, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 }
 
 impl<In, InError, Destination> Observer for LiftOptionSubscriber<In, InError, Destination>

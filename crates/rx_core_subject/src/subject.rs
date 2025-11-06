@@ -1,8 +1,9 @@
 use std::sync::{Arc, RwLock};
 
 use rx_core_traits::{
-	IsSubject, Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
+	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike, Teardown,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -64,13 +65,21 @@ where
 	type Context = Context;
 }
 
+impl<In, InError, Context> WithPrimaryCategory for Subject<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategorySubject;
+}
+
 impl<In, InError, Context> Observable for Subject<In, InError, Context>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type IsSubject = IsSubject;
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
 	fn subscribe<Destination>(
@@ -79,11 +88,24 @@ where
 		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let mut multicast = self.multicast.write().expect("asd");
 		multicast.subscribe(destination, context)
+	}
+}
+
+impl<In, InError, Context> UpgradeableObserver for Subject<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type Upgraded = DetachedSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Upgraded {
+		DetachedSubscriber::new(self)
 	}
 }
 
@@ -136,23 +158,6 @@ where
 	}
 }
 
-impl<In, InError, Context> Tickable for Subject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		if let Ok(mut multicast) = self.multicast.write() {
-			multicast.tick(tick, context);
-		}
-	}
-}
-
 impl<In, InError, Context> SubscriptionLike for Subject<In, InError, Context>
 where
 	In: SignalBound + Clone,
@@ -168,6 +173,8 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+		println!("subject unsub!!");
+		// TODO: This should not be called at all when it's called by an upstream source when the subject is used as a destination. This should only do anything when directly called on the subject from outside. Maybe bring back upgradeableobserver for observable subscribe method! that can create a boundary.
 		if let Some((subscribers, teardown)) = {
 			let mut lock = self
 				.multicast

@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 #[derive_where(Debug)]
@@ -58,12 +59,41 @@ where
 	type Context = Destination::Context;
 }
 
-impl<In, InError, Reducer, Out, Destination> Observer
+impl<In, InError, Reducer, Out, Destination> WithPrimaryCategory
 	for ScanSubscriber<In, InError, Reducer, Out, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Reducer: Fn(&Out, In) -> Out,
+	Out: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError, Reducer, Out, Destination> ObserverUpgradesToSelf
+	for ScanSubscriber<In, InError, Reducer, Out, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Reducer: Fn(&Out, In) -> Out,
+	Out: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+}
+
+impl<In, InError, Reducer, Out, Destination> Observer
+	for ScanSubscriber<In, InError, Reducer, Out, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Reducer: Fn(&Out, In) -> Out + Send + Sync,
 	Out: SignalBound + Clone,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,

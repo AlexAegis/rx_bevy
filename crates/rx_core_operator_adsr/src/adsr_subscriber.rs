@@ -1,8 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
+	ObserverUpgradesToSelf, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, operator::AdsrOperatorOptions};
@@ -41,6 +42,21 @@ where
 	InError: SignalBound,
 {
 	type Context = Destination::Context;
+}
+
+impl<InError, Destination> WithPrimaryCategory for AdsrSubscriber<InError, Destination>
+where
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	InError: SignalBound,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<InError, Destination> ObserverUpgradesToSelf for AdsrSubscriber<InError, Destination>
+where
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	InError: SignalBound,
+{
 }
 
 impl<InError, Destination> Observer for AdsrSubscriber<InError, Destination>

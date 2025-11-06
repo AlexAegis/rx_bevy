@@ -39,9 +39,10 @@ impl SubscriptionContext for BevySubscriptionContextProvider {
 	fn create_context_to_unsubscribe_on_drop<'w, 's>() -> Self::Item<'w, 's> {
 		panic!(
 			"{}::create_context_to_unsubscribe_on_drop() was called, but its impossible to satisfy!
-This is likely due because an active subscription was dropped before it was unsubscribed, which
+This happened because an active subscription was dropped before it was unsubscribed, which
 should automatically happen when its entity despawns!
-Please submit an issue at https://github.com/AlexAegis/rx_bevy/issues/new?template=bug_report.md",
+Please submit an issue at https://github.com/AlexAegis/rx_bevy/issues/new?template=bug_report.md
+and make sure to include the complete stack trace!",
 			ShortName::of::<Self>()
 		)
 	}

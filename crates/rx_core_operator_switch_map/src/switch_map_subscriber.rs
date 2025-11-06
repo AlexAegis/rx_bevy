@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 
 use rx_core_subscriber_switch::SwitchSubscriber;
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionCollection, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
+	PrimaryCategorySubscriber, SignalBound, Subscriber, SubscriptionCollection,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
 
@@ -78,12 +79,51 @@ where
 	type Context = Destination::Context;
 }
 
-impl<In, InError, Switcher, InnerObservable, Destination> Observer
+impl<In, InError, Switcher, InnerObservable, Destination> WithPrimaryCategory
 	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
+	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError, Switcher, InnerObservable, Destination> ObserverUpgradesToSelf
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: Fn(In) -> InnerObservable,
+	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+	Destination: SubscriptionCollection,
+{
+}
+
+impl<In, InError, Switcher, InnerObservable, Destination> Observer
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: Fn(In) -> InnerObservable + Send + Sync,
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,

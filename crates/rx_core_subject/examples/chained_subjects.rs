@@ -14,19 +14,21 @@ fn main() {
 
 	let mut first_subject_subscription_1 = first_subject
 		.clone()
-		.tap_next(|next, _| println!("first_subject {}", next))
+		.tap_next(|next, _| println!("first_subject sub 1 {}", next))
 		.finalize(|_| println!("finalize 0"))
 		.subscribe(second_subject.clone(), context);
 
 	first_subject.next(2, context);
 	first_subject.next(3, context);
-	// TODO: Bug, this should not unsubscribe the second subject!!
+
 	first_subject_subscription_1.unsubscribe(context);
+
+	// TODO: Bug, this should not be logged by the tap of the first, just unsubscribed subscription!
 	first_subject.next(4, context);
 
 	let mut _first_subject_subscription_2 = first_subject
 		.clone()
-		.tap_next(|next, _| println!("first_subject {}", next))
+		.tap_next(|next, _| println!("first_subject sub 2 {}", next))
 		.finalize(|_| println!("finalize 0"))
 		.subscribe(second_subject.clone(), context);
 

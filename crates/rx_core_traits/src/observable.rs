@@ -1,6 +1,6 @@
 use crate::{
-	ObservableSubscription, ObservableisSubjectQualifier, SignalBound, Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
+	ObservableSubscription, SignalBound, SubscriptionContext, UpgradeableObserver,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// # [ObservableOutput]
@@ -76,18 +76,7 @@ pub trait ObservableOutput {
 /// > Note that not assigning the subscription to a variable (or assining it to
 /// > `let _ =`) will cause it to be immediately dropped, hence `subscribe` is
 /// > `#[must_use]`!
-pub trait Observable: ObservableOutput + WithSubscriptionContext {
-	/// Here one of two sealed marker structs can go, use
-	/// [IsSubject][crate::IsSubject] if the thing implmenting this observable
-	/// also implements [Subscriber][crate::Subscriber], meaning it's a
-	/// [SubjectLike][crate::SubjectLike], otherwise if it's a regular
-	/// observable, use [NotSubject][crate::NotSubject] to mark it as such.
-	///
-	/// Since subjects are all observables too, there is no way to differentate
-	/// observables that are only observables from subjects without this at the
-	/// type level. Not without negative trait bounds.
-	type IsSubject: ObservableisSubjectQualifier;
-
+pub trait Observable: ObservableOutput + WithSubscriptionContext + WithPrimaryCategory {
 	/// The subscription produced by this [Observable]. As this is the only kind
 	/// of subscription that is handled directly by users, only here are
 	/// subscriptions required to implement [Drop] to ensure resources
@@ -147,7 +136,7 @@ pub trait Observable: ObservableOutput + WithSubscriptionContext {
 	) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync;
 }
@@ -160,7 +149,7 @@ pub trait ObservableWithDefaultDropContext: Observable {
 	fn subscribe_noctx<Destination>(&mut self, destination: Destination) -> Self::Subscription
 	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{

@@ -3,7 +3,8 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 
 use crate::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Tickable,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
+	SubscriptionLike, Tickable, WithPrimaryCategory,
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
@@ -12,6 +13,18 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	type Context = Destination::Context;
+}
+
+impl<Destination> WithPrimaryCategory for Arc<RwLock<Destination>>
+where
+	Destination: 'static + Subscriber + Send + Sync,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination> ObserverUpgradesToSelf for Arc<RwLock<Destination>> where
+	Destination: 'static + Subscriber + Send + Sync
+{
 }
 
 impl<Destination> ObserverInput for Arc<RwLock<Destination>>

@@ -3,8 +3,9 @@ use std::sync::{Arc, RwLock};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	IsSubject, Observable, ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, Tickable, WithSubscriptionContext,
+	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
+	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike, Teardown,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
@@ -94,6 +95,30 @@ where
 	type Context = Context;
 }
 
+impl<const CAPACITY: usize, In, InError, Context> WithPrimaryCategory
+	for ReplaySubject<CAPACITY, In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategorySubject;
+}
+
+impl<const CAPACITY: usize, In, InError, Context> UpgradeableObserver
+	for ReplaySubject<CAPACITY, In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	type Upgraded = DetachedSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Upgraded {
+		DetachedSubscriber::new(self)
+	}
+}
+
 impl<const CAPACITY: usize, In, InError, Context> Observable
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
@@ -101,45 +126,30 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type IsSubject = IsSubject;
 	type Subscription = MulticastSubscription<In, InError, Context>;
 
-	fn subscribe<
+	fn subscribe<Destination>(
+		&mut self,
+		destination: Destination,
+		context: &mut Context::Item<'_, '_>,
+	) -> Self::Subscription
+	where
 		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
-	>(
-		&mut self,
-		mut destination: Destination,
-		context: &mut Context::Item<'_, '_>,
-	) -> Self::Subscription {
+	{
+		let mut downstream_subscriber = destination.upgrade();
 		let buffer_iter = {
 			let buffer = self.values.read().unwrap();
 			// Values would need to be cloned either way to be able to send them
 			buffer.clone().into_iter()
 		};
 		for value in buffer_iter {
-			destination.next(value, context);
+			downstream_subscriber.next(value, context);
 		}
 
-		self.subject.subscribe(destination, context)
-	}
-}
-
-impl<const CAPACITY: usize, In, InError, Context> Tickable
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	fn tick(
-		&mut self,
-		tick: rx_core_traits::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subject.tick(tick, context);
+		self.subject.subscribe(downstream_subscriber, context)
 	}
 }
 

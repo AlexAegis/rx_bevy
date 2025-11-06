@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 
 use disqualified::ShortName;
 use rx_core_traits::{
-	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
-	Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
+	WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -35,6 +36,21 @@ where
 	Destination: Observer,
 {
 	type Context = Inner::Context;
+}
+
+impl<Inner, Destination> WithPrimaryCategory for CompositeSubscriber<Inner, Destination>
+where
+	Inner: Subscriber,
+	Destination: Observer,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Inner, Destination> ObserverUpgradesToSelf for CompositeSubscriber<Inner, Destination>
+where
+	Inner: Subscriber,
+	Destination: Observer,
+{
 }
 
 impl<Inner, Destination> Observer for CompositeSubscriber<Inner, Destination>

@@ -1,8 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
+	PrimaryCategorySubscriber, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
+	Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -10,7 +11,7 @@ use crate::{EitherOut2, EitherOutError2};
 pub struct IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -22,7 +23,7 @@ where
 impl<O1, O2, Destination> IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -41,7 +42,7 @@ where
 impl<O1, O2, Destination> WithSubscriptionContext for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -52,10 +53,37 @@ where
 	type Context = <Destination as WithSubscriptionContext>::Context;
 }
 
+impl<O1, O2, Destination> WithPrimaryCategory for IntoVariant1of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<O1, O2, Destination> ObserverUpgradesToSelf for IntoVariant1of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+}
+
 impl<O1, O2, Destination> Observer for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -92,7 +120,7 @@ where
 impl<O1, O2, Destination> Tickable for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -113,7 +141,7 @@ where
 impl<O1, O2, Destination> SubscriptionLike for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -147,7 +175,7 @@ where
 impl<O1, O2, Destination> ObserverInput for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -159,7 +187,7 @@ where
 impl<O1, O2, Destination> ObservableOutput for IntoVariant1of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -171,7 +199,7 @@ where
 pub struct IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -183,7 +211,7 @@ where
 impl<O1, O2, Destination> IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -202,7 +230,7 @@ where
 impl<O1, O2, Destination> WithSubscriptionContext for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -213,10 +241,37 @@ where
 	type Context = <Destination as WithSubscriptionContext>::Context;
 }
 
+impl<O1, O2, Destination> WithPrimaryCategory for IntoVariant2of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<O1, O2, Destination> ObserverUpgradesToSelf for IntoVariant2of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+}
+
 impl<O1, O2, Destination> Observer for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -253,7 +308,7 @@ where
 impl<O1, O2, Destination> Tickable for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -274,7 +329,7 @@ where
 impl<O1, O2, Destination> SubscriptionLike for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber<
@@ -308,7 +363,7 @@ where
 impl<O1, O2, Destination> ObserverInput for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,
@@ -320,7 +375,7 @@ where
 impl<O1, O2, Destination> ObservableOutput for IntoVariant2of2Subscriber<O1, O2, Destination>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
+	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
 	O2::Out: Clone,
 	Destination: Subscriber,

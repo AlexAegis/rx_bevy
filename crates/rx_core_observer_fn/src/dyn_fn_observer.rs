@@ -1,6 +1,7 @@
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	Teardown, Tick, Tickable, WithSubscriptionContext,
+	DetachedSubscriber, Observer, ObserverInput, PrimaryCategoryObserver, SignalBound,
+	SubscriptionContext, Tick, Tickable, UpgradeableObserver, WithPrimaryCategory,
+	WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -13,7 +14,6 @@ where
 	on_complete: Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
 	on_tick: Option<Box<dyn FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync>>,
 	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
-	teardown: SubscriptionData<Context>,
 }
 
 impl<In, InError, Context> DynFnObserver<In, InError, Context>
@@ -86,6 +86,28 @@ where
 	type Context = Context;
 }
 
+impl<In, InError, Context> WithPrimaryCategory for DynFnObserver<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategoryObserver;
+}
+
+impl<In, InError, Context> UpgradeableObserver for DynFnObserver<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
+	type Upgraded = DetachedSubscriber<Self>;
+
+	fn upgrade(self) -> Self::Upgraded {
+		DetachedSubscriber::new(self)
+	}
+}
+
 impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
 where
 	In: SignalBound,
@@ -97,9 +119,7 @@ where
 		next: In,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.is_closed()
-			&& let Some(on_next) = &mut self.on_next
-		{
+		if let Some(on_next) = &mut self.on_next {
 			(on_next)(next, context);
 		}
 	}
@@ -109,23 +129,16 @@ where
 		error: InError,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.is_closed() {
-			if let Some(on_error) = &mut self.on_error {
-				(on_error)(error, context);
-			} else {
-				panic!("DynFnObserver without an error observer encountered an error!");
-			}
-
-			self.unsubscribe(context);
+		if let Some(on_error) = &mut self.on_error {
+			(on_error)(error, context);
+		} else {
+			panic!("DynFnObserver without an error observer encountered an error!");
 		}
 	}
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		if !self.is_closed()
-			&& let Some(on_complete) = self.on_complete.take()
-		{
+		if let Some(on_complete) = self.on_complete.take() {
 			(on_complete)(context);
-			self.unsubscribe(context);
 		}
 	}
 }
@@ -147,33 +160,6 @@ where
 	}
 }
 
-impl<In, InError, Context> SubscriptionLike for DynFnObserver<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Context: SubscriptionContext,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.teardown.is_closed()
-	}
-
-	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
-		if let Some(on_unsubscribe) = self.on_unsubscribe.take() {
-			(on_unsubscribe)(context);
-		}
-		self.teardown.unsubscribe(context);
-	}
-
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.teardown.add_teardown(teardown, context);
-	}
-}
-
 impl<In, InError, Context> Default for DynFnObserver<In, InError, Context>
 where
 	In: SignalBound,
@@ -187,7 +173,6 @@ where
 			on_complete: None,
 			on_tick: None,
 			on_unsubscribe: None,
-			teardown: SubscriptionData::default(),
 		}
 	}
 }

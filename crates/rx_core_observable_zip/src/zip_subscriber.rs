@@ -1,7 +1,8 @@
 use rx_core_emission_variants::{EitherOut2, EitherOutError2};
 use rx_core_traits::{
-	Observable, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	Observable, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{
@@ -188,6 +189,35 @@ where
 	O2::Out: Clone,
 {
 	type Context = O1::Context;
+}
+
+impl<Destination, O1, O2> WithPrimaryCategory for ZipSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination, O1, O2> ObserverUpgradesToSelf for ZipSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
 }
 
 impl<Destination, O1, O2> SubscriptionLike for ZipSubscriber<Destination, O1, O2>

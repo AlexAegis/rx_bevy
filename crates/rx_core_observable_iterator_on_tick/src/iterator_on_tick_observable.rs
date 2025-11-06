@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	NotSubject, Observable, ObservableOutput, SignalBound, Subscriber, SubscriptionContext,
+	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
+	SubscriptionContext, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
 
@@ -61,6 +62,15 @@ where
 	type Context = Context;
 }
 
+impl<Iterator, Context> WithPrimaryCategory for IteratorOnTickObservable<Iterator, Context>
+where
+	Iterator: Clone + IntoIterator,
+	Iterator::Item: SignalBound,
+	Context: SubscriptionContext,
+{
+	type PrimaryCategory = PrimaryCategoryObservable;
+}
+
 impl<Iterator, Context> Observable for IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
@@ -68,18 +78,18 @@ where
 	Iterator::IntoIter: Send + Sync,
 	Context: SubscriptionContext,
 {
-	type IsSubject = NotSubject;
 	type Subscription = OnTickIteratorSubscription<Iterator, Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
-		mut destination: Destination,
+		observer: Destination,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
+		let mut destination = observer.upgrade();
 		let mut iter = self.iterator.clone().into_iter();
 		if self.options.emit_at_every_nth_tick == 0 {
 			let mut completed = true;

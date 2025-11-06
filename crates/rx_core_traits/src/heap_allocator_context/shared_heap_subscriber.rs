@@ -3,7 +3,8 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 
 use crate::{
-	Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tickable,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
+	SubscriptionLike, Teardown, Tickable, WithPrimaryCategory,
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
@@ -12,6 +13,18 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	destination: Arc<RwLock<Destination>>,
+}
+
+impl<Destination> WithPrimaryCategory for SharedHeapSubscriber<Destination>
+where
+	Destination: 'static + Subscriber + Send + Sync,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination> ObserverUpgradesToSelf for SharedHeapSubscriber<Destination> where
+	Destination: 'static + Subscriber + Send + Sync
+{
 }
 
 impl<Destination> SharedDestination<Destination> for SharedHeapSubscriber<Destination>

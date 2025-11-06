@@ -1,5 +1,6 @@
 use crate::{
-	Observer, ObserverInput, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tickable,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
+	SubscriptionContext, SubscriptionLike, Teardown, Tickable, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
 
@@ -42,6 +43,35 @@ where
 	InnerSubscriber::InError: 'static,
 {
 	type Context = InnerSubscriber::Context;
+}
+
+impl<InnerSubscriber, Destination> WithPrimaryCategory
+	for OptionSubscriber<InnerSubscriber, Destination>
+where
+	InnerSubscriber: Subscriber,
+	Destination: Subscriber<
+			In = InnerSubscriber::In,
+			InError = InnerSubscriber::InError,
+			Context = InnerSubscriber::Context,
+		>,
+	InnerSubscriber::In: 'static,
+	InnerSubscriber::InError: 'static,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<InnerSubscriber, Destination> ObserverUpgradesToSelf
+	for OptionSubscriber<InnerSubscriber, Destination>
+where
+	InnerSubscriber: Subscriber,
+	Destination: Subscriber<
+			In = InnerSubscriber::In,
+			InError = InnerSubscriber::InError,
+			Context = InnerSubscriber::Context,
+		>,
+	InnerSubscriber::In: 'static,
+	InnerSubscriber::InError: 'static,
+{
 }
 
 impl<InnerSubscriber, Destination> Observer for OptionSubscriber<InnerSubscriber, Destination>

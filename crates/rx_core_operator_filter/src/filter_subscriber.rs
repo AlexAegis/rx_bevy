@@ -1,8 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
@@ -44,12 +45,33 @@ where
 	type Context = Destination::Context;
 }
 
-impl<In, InError, Filter, Destination> Observer
+impl<In, InError, Filter, Destination> WithPrimaryCategory
 	for FilterSubscriber<In, InError, Filter, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Subscriber<In = In, InError = InError>,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError, Filter, Destination> ObserverUpgradesToSelf
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Subscriber<In = In, InError = InError>,
+{
+}
+
+impl<In, InError, Filter, Destination> Observer
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Filter: for<'a> Fn(&'a In) -> bool + Send + Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 {
 	#[inline]

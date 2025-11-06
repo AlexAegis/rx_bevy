@@ -1,8 +1,8 @@
 use rx_core_emission_variants::{EitherOut2, EitherOutError2};
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown,
-	Tick, Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
+	PrimaryCategorySubscriber, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
+	Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct CombineLatestSubscriber<Destination, O1, O2>
@@ -68,6 +68,27 @@ where
 	O2::Out: Clone,
 {
 	type Context = Destination::Context;
+}
+
+impl<Destination, O1, O2> WithPrimaryCategory for CombineLatestSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination, O1, O2> ObserverUpgradesToSelf for CombineLatestSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
 }
 
 impl<Destination, O1, O2> Observer for CombineLatestSubscriber<Destination, O1, O2>

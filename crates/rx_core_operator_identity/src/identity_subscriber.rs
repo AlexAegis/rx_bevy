@@ -1,7 +1,7 @@
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, Subscriber, SubscriptionLike, Teardown, Tick,
-	Tickable,
-	SubscriptionContext, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -42,6 +42,18 @@ where
 	Destination: Subscriber,
 {
 	type Context = Destination::Context;
+}
+
+impl<Destination> WithPrimaryCategory for IdentitySubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<Destination> ObserverUpgradesToSelf for IdentitySubscriber<Destination> where
+	Destination: Subscriber
+{
 }
 
 impl<Destination> Observer for IdentitySubscriber<Destination>

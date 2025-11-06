@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 #[derive_where(Debug)]
@@ -56,12 +57,41 @@ where
 	type Context = Destination::Context;
 }
 
-impl<In, InError, Mapper, Out, Destination> Observer
+impl<In, InError, Mapper, Out, Destination> WithPrimaryCategory
 	for MapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Mapper: Fn(In) -> Out,
+	Out: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError, Mapper, Out, Destination> ObserverUpgradesToSelf
+	for MapSubscriber<In, InError, Mapper, Out, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: Fn(In) -> Out,
+	Out: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
+}
+
+impl<In, InError, Mapper, Out, Destination> Observer
+	for MapSubscriber<In, InError, Mapper, Out, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: Fn(In) -> Out + Send + Sync,
 	Out: SignalBound,
 	Destination: Subscriber<
 			In = <Self as ObservableOutput>::Out,
