@@ -3,8 +3,9 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 
 use crate::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber, ObserverUpgradesToSelf,
-	SubscriptionData, SubscriptionLike, Tickable, WithPrimaryCategory,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SignalBound,
+	Subscriber, SubscriptionClosedFlag, SubscriptionData, SubscriptionLike, Tickable,
+	WithPrimaryCategory,
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::ErasedSharedDestination},
 };
 
@@ -14,7 +15,7 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	is_closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 	destination:
 		Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context> + Send + Sync>>,
 	teardown: SubscriptionData<Context>,
@@ -38,7 +39,8 @@ where
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
 
-impl<In, InError, Context> ObserverUpgradesToSelf for SharedHeapSubscriberErased<In, InError, Context>
+impl<In, InError, Context> ObserverUpgradesToSelf
+	for SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -58,7 +60,7 @@ where
 			'static + Subscriber<In = In, InError = InError, Context = Context> + Send + Sync,
 	{
 		Self {
-			is_closed: destination.is_closed(),
+			closed_flag: destination.is_closed().into(),
 			destination: Arc::new(RwLock::new(destination)),
 			teardown: SubscriptionData::default(),
 		}
@@ -95,7 +97,7 @@ where
 {
 	fn clone(&self) -> Self {
 		Self {
-			is_closed: self.is_closed,
+			closed_flag: self.closed_flag.clone(),
 			destination: self.destination.clone(),
 			teardown: SubscriptionData::default(), // New instance, new teardowns
 		}
@@ -193,12 +195,12 @@ where
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
-		self.is_closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.is_closed = true;
+			self.closed_flag.close();
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);
 			} else {

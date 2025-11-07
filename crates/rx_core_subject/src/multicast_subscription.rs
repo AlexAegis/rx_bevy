@@ -1,6 +1,6 @@
 use rx_core_traits::{
-	SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	WithSubscriptionContext, allocator::ErasedDestinationAllocator,
+	SignalBound, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown, Tick,
+	Tickable, WithSubscriptionContext, allocator::ErasedDestinationAllocator,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -12,11 +12,10 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	is_closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 	subscriber: Option<
 		<Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>,
 	>,
-	teardown: SubscriptionData<Context>,
 }
 
 impl<In, InError, Context> MulticastSubscription<In, InError, Context>
@@ -29,9 +28,15 @@ where
 		shared_subscriber: <Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>,
 	) -> Self {
 		Self {
-			is_closed: shared_subscriber.is_closed(),
+			closed_flag: shared_subscriber.is_closed().into(),
 			subscriber: Some(shared_subscriber),
-			teardown: SubscriptionData::default(),
+		}
+	}
+
+	pub fn new_closed() -> Self {
+		Self {
+			closed_flag: true.into(),
+			subscriber: None,
 		}
 	}
 }
@@ -44,9 +49,8 @@ where
 {
 	fn default() -> Self {
 		Self {
-			is_closed: false,
+			closed_flag: false.into(),
 			subscriber: None,
-			teardown: SubscriptionData::default(),
 		}
 	}
 }
@@ -59,9 +63,8 @@ where
 {
 	fn clone(&self) -> Self {
 		Self {
-			is_closed: self.is_closed,
+			closed_flag: self.closed_flag.clone(),
 			subscriber: self.subscriber.clone(),
-			teardown: SubscriptionData::default(),
 		}
 	}
 }
@@ -99,16 +102,15 @@ where
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
-		self.is_closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.is_closed = true;
+			self.closed_flag.close();
 			if let Some(mut subscriber) = self.subscriber.take() {
 				subscriber.unsubscribe(context);
 			}
-			self.teardown.unsubscribe(context);
 		}
 	}
 
@@ -117,7 +119,9 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if let Some(subscriber) = &mut self.subscriber {
+		if !self.is_closed()
+			&& let Some(subscriber) = &mut self.subscriber
+		{
 			subscriber.add_teardown(teardown, context);
 		} else {
 			teardown.execute(context);
@@ -132,9 +136,9 @@ where
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
-		if !self.teardown.is_closed() {
+		if !self.is_closed() {
 			let mut context = Context::create_context_to_unsubscribe_on_drop();
-			self.teardown.unsubscribe(&mut context);
+			self.unsubscribe(&mut context);
 		}
 		// Does not unsubscribe the subscriber on drop as it is shared.
 		// Only the teardown is unsubscribed which is local to the reference instance

@@ -1,8 +1,9 @@
 use crate::ExternallyManagedSubscriber;
 use rx_core_traits::{
-	Observable, Observer, ObserverInput, PrimaryCategorySubscriber, SharedSubscriber, Subscriber,
-	ObserverUpgradesToSelf, SubscriptionCollection, SubscriptionContext, SubscriptionLike, Teardown,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Observable, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SharedSubscriber, Subscriber, SubscriptionClosedFlag, SubscriptionCollection,
+	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
+	WithSubscriptionContext,
 };
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
@@ -21,7 +22,7 @@ where
 {
 	pub(crate) destination: SharedSubscriber<ExternallyManagedSubscriber<Destination>>,
 	pub(crate) inner_subscription: Option<<InnerObservable as Observable>::Subscription>,
-	pub(crate) is_closed: bool,
+	pub(crate) closed_flag: SubscriptionClosedFlag,
 }
 
 impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>
@@ -47,7 +48,7 @@ where
 				context,
 			),
 			inner_subscription: None,
-			is_closed: false,
+			closed_flag: false.into(),
 		}
 	}
 
@@ -231,14 +232,14 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.is_closed
+		self.closed_flag.is_closed()
 	}
 
 	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		// An upstream unsubscribe stops everything!
 		if !self.is_closed() {
-			self.is_closed = true;
+			self.closed_flag.close();
 
 			self.unsubscribe_inner(context);
 			self.destination.unsubscribe(context);

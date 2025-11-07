@@ -2,8 +2,8 @@ use std::{any::Any, iter::Chain, slice::Iter};
 
 use disqualified::ShortName;
 use rx_core_traits::{
-	SignalBound, SubscriberNotification, SubscriptionContext, SubscriptionContextAccess,
-	SubscriptionContextDropSafety,
+	SignalBound, SubscriberNotification, SubscriptionClosedFlag, SubscriptionContext,
+	SubscriptionContextAccess, SubscriptionContextDropSafety,
 	heap_allocator_context::{
 		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
 		UnscheduledSubscriptionHeapAllocator,
@@ -59,7 +59,7 @@ where
 		Vec<SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>>,
 	observed_notifications_after_close:
 		Vec<SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>>,
-	is_closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 }
 
 impl<In, InError, DropSafety> MockContext<In, InError, DropSafety>
@@ -85,9 +85,9 @@ where
 		notification: SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>,
 	) {
 		// If we observe an unsubscribe notification, that means the observer should be closed
-		if !self.is_closed {
+		if !self.closed_flag.is_closed() {
 			if matches!(notification, SubscriberNotification::Unsubscribe) {
-				self.is_closed = true;
+				self.closed_flag.close();
 			}
 			self.observed_notifications.push(notification);
 		} else {
@@ -403,7 +403,7 @@ where
 		Self {
 			observed_notifications: Vec::default(),
 			observed_notifications_after_close: Vec::default(),
-			is_closed: false,
+			closed_flag: false.into(),
 		}
 	}
 }

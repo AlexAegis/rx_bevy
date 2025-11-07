@@ -197,6 +197,29 @@ closed.
 ```rs
 #[inline]
 fn is_closed(&self) -> bool {
-    self.is_closed
+    *self.closed_flag
 }
 ```
+
+> To safely track closedness - with a flag that automatically complies with the
+> `RX_WHATS_CLOSED_STAYS_CLOSED` rule - I recommend using the
+> `SubscriptionClosedFlag` type, which can't be re-opened.
+
+## `RX_EMPTY_IS_NOT_CLOSED`: Closedness must be explicit
+
+You must never treat a subscription as closed just because it's empty and
+there's nothing to clean up or unsubscribed from. If you have a subscription
+or internal teardown that isn't being closed by the time it drops in a
+`DropUnsafeSubscriptionContext` it **must** panic! Fail loud, and fail early!
+
+If you just don't deal with it because in some cases it's empty, then you'll
+just delay the problem until it's not empty in another usecase.
+
+## `RX_WHATS_CLOSED_STAYS_CLOSED`: Closed subscriptions can never re-open
+
+A subscription that was unsubscribed and thus closed, must never be re-opened.
+
+> This can be easily ensured by not using a simple `bool` to track the closed
+> state but `SubscriptionClosedFlag` that ensures a `false` never turns back
+> into a `true`. Types that use this struct for their `is_closed()`
+> implementation automatically complies with this rule.

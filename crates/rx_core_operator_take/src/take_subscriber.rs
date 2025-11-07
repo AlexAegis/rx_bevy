@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
-	ObserverUpgradesToSelf, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
+	Teardown, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -13,7 +13,7 @@ where
 {
 	destination: Destination,
 	count: usize,
-	is_closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -30,7 +30,7 @@ where
 		Self {
 			destination,
 			count,
-			is_closed: count == 0,
+			closed_flag: (count == 0).into(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -146,13 +146,13 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.is_closed
+		*self.closed_flag
 	}
 
 	#[inline]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.is_closed = true;
+			self.closed_flag.close();
 			self.destination.unsubscribe(context);
 		}
 	}

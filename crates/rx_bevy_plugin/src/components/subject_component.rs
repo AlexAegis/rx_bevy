@@ -153,7 +153,7 @@ where
 
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
 	let mut context = context_param.into_context(hook_context.entity);
-
+	println!("removing subject!!!");
 	let mut stolen_subject = context
 		.steal_subject::<Subject>(hook_context.entity)
 		.unwrap();

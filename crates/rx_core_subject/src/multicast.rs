@@ -1,7 +1,7 @@
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, SignalBound,
-	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tick, Tickable,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
+	Tick, Tickable, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 	allocator::ErasedDestinationAllocator,
 };
 use smallvec::SmallVec;
@@ -29,6 +29,7 @@ where
 			1],
 	>,
 	teardown: Option<SubscriptionData<Context>>,
+	closed_flag: SubscriptionClosedFlag,
 }
 
 impl<In, InError, Context> Multicast<In, InError, Context>
@@ -85,9 +86,13 @@ where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		let shared = Context::ErasedDestinationAllocator::share(destination.upgrade(), context);
-		self.subscribers.push(shared.clone());
-		MulticastSubscription::new(shared)
+		if !self.is_closed() {
+			let shared = Context::ErasedDestinationAllocator::share(destination.upgrade(), context);
+			self.subscribers.push(shared.clone());
+			MulticastSubscription::new(shared)
+		} else {
+			MulticastSubscription::new_closed()
+		}
 	}
 }
 
@@ -153,25 +158,31 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.teardown.is_none()
+		self.closed_flag.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		println!("multicast unsub!!");
-		if let Some((subscribers, teardown)) = self.close() {
-			for mut destination in subscribers {
-				destination.unsubscribe(context);
-			}
+		if !self.is_closed() {
+			self.closed_flag.close();
 
-			if let Some(mut teardown) = teardown {
-				teardown.unsubscribe(context);
+			if let Some((subscribers, teardown)) = self.close() {
+				for mut destination in subscribers {
+					destination.unsubscribe(context);
+				}
+
+				if let Some(mut teardown) = teardown {
+					teardown.unsubscribe(context);
+				}
 			}
 		}
 	}
 
 	fn add_teardown(&mut self, teardown: Teardown<Context>, context: &mut Context::Item<'_, '_>) {
-		if let Some(teardowns) = &mut self.teardown {
-			teardowns.add_teardown(teardown, context);
+		if !self.is_closed() {
+			self.teardown
+				.get_or_insert_default()
+				.add_teardown(teardown, context);
 		} else {
 			teardown.execute(context);
 		}
@@ -215,7 +226,8 @@ where
 	fn default() -> Self {
 		Self {
 			subscribers: SmallVec::new(),
-			teardown: Some(SubscriptionData::default()),
+			teardown: None,
+			closed_flag: false.into(),
 		}
 	}
 }
@@ -237,6 +249,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
+			println!("multicast dropped without closing!!");
 			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}

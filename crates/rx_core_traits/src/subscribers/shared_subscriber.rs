@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use crate::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
-	SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
+	SubscriptionClosedFlag, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
 	context::{
 		SubscriptionContext, WithSubscriptionContext,
 		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
@@ -18,7 +18,7 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	/// To track if this individual share is closed or not.
-	is_closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 	shared_destination: <Destination as DestinationSharedTypes>::Shared,
 	_phantom_data: PhantomData<Destination>,
 }
@@ -32,7 +32,7 @@ where
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
-			is_closed: destination.is_closed(),
+			closed_flag: destination.is_closed().into(),
 			shared_destination: <Destination as DestinationSharedTypes>::Sharer::share(
 				destination,
 				context,
@@ -46,7 +46,7 @@ where
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
-			is_closed: self.shared_destination.is_closed(),
+			closed_flag: self.shared_destination.is_closed().into(),
 			shared_destination: self.shared_destination.clone_with_context(context),
 			_phantom_data: PhantomData,
 		}
@@ -159,13 +159,13 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.is_closed
+		*self.closed_flag
 	}
 
 	#[inline]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.is_closed = true;
+			self.closed_flag.close();
 			self.shared_destination.unsubscribe(context);
 		}
 	}

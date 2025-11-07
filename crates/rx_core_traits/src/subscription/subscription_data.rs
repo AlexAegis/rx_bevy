@@ -1,8 +1,8 @@
 use disqualified::ShortName;
 
 use crate::{
-	NotifiableSubscription, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
-	Teardown, Tick, Tickable, WithSubscriptionContext,
+	NotifiableSubscription, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
+	SubscriptionNotification, Teardown, Tick, Tickable, WithSubscriptionContext,
 };
 use std::{fmt::Debug, vec};
 
@@ -21,7 +21,7 @@ pub struct SubscriptionData<Context>
 where
 	Context: SubscriptionContext,
 {
-	is_closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 	/// Must be stored as function reference or else Context would be forced to
 	/// also be 'static when we want to use this as a `dyn SubscriptionLike`
 	/// trait object, due to variance as the accepting functions signature is
@@ -45,7 +45,7 @@ where
 		};
 
 		Self {
-			is_closed,
+			closed_flag: is_closed.into(),
 			notifiable_subscriptions,
 			finalizers: Vec::new(),
 		}
@@ -68,7 +68,7 @@ where
 	pub fn new_with_teardown(teardown: Teardown<Context>) -> Self {
 		if let Some(teardown) = teardown.take() {
 			Self {
-				is_closed: false,
+				closed_flag: false.into(),
 				finalizers: vec![teardown],
 				notifiable_subscriptions: Vec::new(),
 			}
@@ -86,7 +86,7 @@ where
 		Self {
 			notifiable_subscriptions: Vec::new(),
 			finalizers: Vec::new(),
-			is_closed: false,
+			closed_flag: false.into(),
 		}
 	}
 }
@@ -120,13 +120,13 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.is_closed
+		*self.closed_flag
 	}
 
 	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.is_closed = true;
+			self.closed_flag.close();
 
 			for mut notifiable_subscription in self.notifiable_subscriptions.drain(..) {
 				(notifiable_subscription)(SubscriptionNotification::Unsubscribe, context);
@@ -172,7 +172,9 @@ where
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
+		//  && self.has_something_to_unsubscribe() using this is an anti pattern as problems would still appear with `finalize`
 		if !self.is_closed() {
+			// TODO: Now the problem is here with subjects
 			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
