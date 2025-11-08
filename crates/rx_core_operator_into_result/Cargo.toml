@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_operator_try_capture"
-description = "try_capture operator for rx_core"
+name = "rx_core_operator_into_result"
+description = "into_result operator for rx_core, captures upstream values and errors into a single Result"
 version = "0.1.0"
 readme = "readme.md"
 publish = true

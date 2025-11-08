@@ -2,8 +2,9 @@ use std::{any::Any, iter::Chain, slice::Iter};
 
 use disqualified::ShortName;
 use rx_core_traits::{
-	SignalBound, SubscriberNotification, SubscriptionClosedFlag, SubscriptionContext,
-	SubscriptionContextAccess, SubscriptionContextDropSafety,
+	DropSafeSubscriptionContext, Never, SignalBound, SubscriberNotification,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionContextAccess,
+	SubscriptionContextDropSafety,
 	heap_allocator_context::{
 		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
 		UnscheduledSubscriptionHeapAllocator,
@@ -49,7 +50,7 @@ impl ErasedMockContext {
 pub const GLOBAL_SAFE_DROP_MOCK_CONTEXT: ErasedMockContext = ErasedMockContext::new();
 
 #[derive(Debug)]
-pub struct MockContext<In, InError, DropSafety>
+pub struct MockContext<In, InError = Never, DropSafety = DropSafeSubscriptionContext>
 where
 	In: SignalBound,
 	InError: SignalBound,

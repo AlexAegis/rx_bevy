@@ -27,7 +27,7 @@ fn main() {
 
 	let _s3 = throw::<_, ()>("error".to_string())
 		.map(|i| i)
-		.try_capture()
+		.into_result()
 		.error_boundary()
 		.subscribe(
 			PrintObserver::new("error_boundary_operator (composite)"),

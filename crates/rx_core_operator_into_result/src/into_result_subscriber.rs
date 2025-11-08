@@ -6,7 +6,7 @@ use rx_core_traits::{
 	Teardown, TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
-pub struct TryCaptureSubscriber<In, InError, Destination>
+pub struct IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -16,7 +16,7 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Destination> TryCaptureSubscriber<In, InError, Destination>
+impl<In, InError, Destination> IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -34,7 +34,7 @@ where
 }
 
 impl<In, InError, Destination> WithSubscriptionContext
-	for TryCaptureSubscriber<In, InError, Destination>
+	for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -47,7 +47,7 @@ where
 }
 
 impl<In, InError, Destination> WithPrimaryCategory
-	for TryCaptureSubscriber<In, InError, Destination>
+	for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -60,7 +60,7 @@ where
 }
 
 impl<In, InError, Destination> ObserverUpgradesToSelf
-	for TryCaptureSubscriber<In, InError, Destination>
+	for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -71,7 +71,7 @@ where
 {
 }
 
-impl<In, InError, Destination> Observer for TryCaptureSubscriber<In, InError, Destination>
+impl<In, InError, Destination> Observer for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -104,7 +104,7 @@ where
 	}
 }
 
-impl<In, InError, Destination> Tickable for TryCaptureSubscriber<In, InError, Destination>
+impl<In, InError, Destination> Tickable for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -123,7 +123,7 @@ where
 	}
 }
 
-impl<In, InError, Destination> SubscriptionLike for TryCaptureSubscriber<In, InError, Destination>
+impl<In, InError, Destination> SubscriptionLike for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -143,7 +143,7 @@ where
 	}
 }
 
-impl<In, InError, Destination> TeardownCollection for TryCaptureSubscriber<In, InError, Destination>
+impl<In, InError, Destination> TeardownCollection for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -162,7 +162,7 @@ where
 	}
 }
 
-impl<In, InError, Destination> ObserverInput for TryCaptureSubscriber<In, InError, Destination>
+impl<In, InError, Destination> ObserverInput for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -172,7 +172,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Destination> ObservableOutput for TryCaptureSubscriber<In, InError, Destination>
+impl<In, InError, Destination> ObservableOutput for IntoResultSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,

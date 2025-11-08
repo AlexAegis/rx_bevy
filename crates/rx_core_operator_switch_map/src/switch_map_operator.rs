@@ -150,7 +150,7 @@ mod switch_map_operator {
 		let mut context = MockContext::default();
 		let mock_destination = MockObserver::<i32>::default();
 
-		let mut subject = Subject::<i32, (), MockContext<i32>>::default();
+		let mut subject = Subject::<i32, Never, MockContext<i32>>::default();
 		let mut source = subject
 			.clone()
 			.switch_map(|i| (0..=i).into_observable::<MockContext<_, _, _>>());
@@ -183,7 +183,7 @@ mod switch_map_operator {
 		let mut context = MockContext::default();
 		let mock_destination = MockObserver::<i32>::default();
 
-		let mut subject = Subject::<i32, (), MockContext<i32>>::default();
+		let mut subject = Subject::<i32, Never, MockContext<i32>>::default();
 		let mut source = subject
 			.clone()
 			.switch_map(|i| (0..=i).into_observable::<MockContext<_, _, _>>());

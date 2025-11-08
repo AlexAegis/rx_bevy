@@ -13,6 +13,6 @@ fn main() {
 				Result::<i32, String>::Err("Larger than 3!".to_string())
 			}
 		})
-		.lift_result(|_in_error: ()| unreachable!()) // We're lifting the result error from the "next" channel, but we still have to deal with the upstream errors if they exist, this `unreachable!` is just here to ignore them.
+		.lift_result(|_in_error: Never| unreachable!()) // We're lifting the result error from the "next" channel, but we still have to deal with the upstream errors if they exist, this `unreachable!` is just here to ignore them.
 		.subscribe(PrintObserver::new("lift_result_operator"), &mut ());
 }

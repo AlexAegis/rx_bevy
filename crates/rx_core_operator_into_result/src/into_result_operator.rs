@@ -4,19 +4,19 @@ use rx_core_traits::{
 	Never, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
 };
 
-use crate::TryCaptureSubscriber;
+use crate::IntoResultSubscriber;
 
 // TODO: Rename to `into_result`, the `try_` prefix means something that can produce a error result, and the point of this is to avoid that
-/// The [TryCaptureOperator] is used to pack incoming values and errors into a
+/// The [IntoResultOperator] is used to pack incoming values and errors into a
 /// Result. When used, upstream errors are guaranteed to not reach downstream.
-pub struct TryCaptureOperator<In, InError, Context = ()>
+pub struct IntoResultOperator<In, InError, Context = ()>
 where
 	InError: SignalBound,
 {
 	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError, Context> Default for TryCaptureOperator<In, InError, Context>
+impl<In, InError, Context> Default for IntoResultOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -28,7 +28,7 @@ where
 	}
 }
 
-impl<In, InError, Context> Operator for TryCaptureOperator<In, InError, Context>
+impl<In, InError, Context> Operator for IntoResultOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -36,7 +36,7 @@ where
 {
 	type Context = Context;
 	type Subscriber<Destination>
-		= TryCaptureSubscriber<In, InError, Destination>
+		= IntoResultSubscriber<In, InError, Destination>
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -55,11 +55,11 @@ where
 			+ Send
 			+ Sync,
 	{
-		TryCaptureSubscriber::new(destination)
+		IntoResultSubscriber::new(destination)
 	}
 }
 
-impl<In, InError, Context> ObserverInput for TryCaptureOperator<In, InError, Context>
+impl<In, InError, Context> ObserverInput for IntoResultOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -68,7 +68,7 @@ where
 	type InError = InError;
 }
 
-impl<In, InError, Context> ObservableOutput for TryCaptureOperator<In, InError, Context>
+impl<In, InError, Context> ObservableOutput for IntoResultOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -77,7 +77,7 @@ where
 	type OutError = Never;
 }
 
-impl<In, InError, Context> Clone for TryCaptureOperator<In, InError, Context>
+impl<In, InError, Context> Clone for IntoResultOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,

@@ -55,6 +55,8 @@ pub mod extension_composite {
 	pub use rx_core_operator_filter_map::extension_composite::*;
 	#[cfg(feature = "operator_finalize")]
 	pub use rx_core_operator_finalize::extension_composite::*;
+	#[cfg(feature = "operator_into_result")]
+	pub use rx_core_operator_into_result::extension_composite::*;
 	#[cfg(feature = "operator_lift_option")]
 	pub use rx_core_operator_lift_option::extension_composite::*;
 	#[cfg(feature = "operator_lift_result")]
@@ -73,8 +75,6 @@ pub mod extension_composite {
 	pub use rx_core_operator_take::extension_composite::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::extension_composite::*;
-	#[cfg(feature = "operator_try_capture")]
-	pub use rx_core_operator_try_capture::extension_composite::*;
 }
 
 #[cfg(feature = "pipe")]
@@ -89,6 +89,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_filter_map::extension_pipe::*;
 	#[cfg(feature = "operator_finalize")]
 	pub use rx_core_operator_finalize::extension_pipe::*;
+	#[cfg(feature = "operator_into_result")]
+	pub use rx_core_operator_into_result::extension_pipe::*;
 	#[cfg(feature = "operator_lift_option")]
 	pub use rx_core_operator_lift_option::extension_pipe::*;
 	#[cfg(feature = "operator_lift_result")]
@@ -107,8 +109,6 @@ pub mod extension_pipe {
 	pub use rx_core_operator_take::extension_pipe::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::extension_pipe::*;
-	#[cfg(feature = "operator_try_capture")]
-	pub use rx_core_operator_try_capture::extension_pipe::*;
 }
 
 pub mod operator {
@@ -126,6 +126,8 @@ pub mod operator {
 	pub use rx_core_operator_finalize::operator::*;
 	#[cfg(feature = "operator_identity")]
 	pub use rx_core_operator_identity::operator::*;
+	#[cfg(feature = "operator_into_result")]
+	pub use rx_core_operator_into_result::operator::*;
 	#[cfg(feature = "operator_lift_option")]
 	pub use rx_core_operator_lift_option::operator::*;
 	#[cfg(feature = "operator_lift_result")]
@@ -144,8 +146,6 @@ pub mod operator {
 	pub use rx_core_operator_take::operator::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::operator::*;
-	#[cfg(feature = "operator_try_capture")]
-	pub use rx_core_operator_try_capture::operator::*;
 }
 
 pub mod observer {

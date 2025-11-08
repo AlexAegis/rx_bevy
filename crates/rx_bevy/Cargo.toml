@@ -108,6 +108,7 @@ all_core_operators = [
     "operator_filter_map",
     "operator_finalize",
     "operator_identity",
+    "operator_into_result",
     "operator_lift_option",
     "operator_lift_result",
     "operator_map",
@@ -117,7 +118,6 @@ all_core_operators = [
     "operator_switch_map",
     "operator_take",
     "operator_tap",
-    "operator_try_capture",
 ]
 operator_adsr = ["rx_core/operator_adsr"]
 operator_composite = ["rx_core/operator_composite"]
@@ -126,6 +126,7 @@ operator_filter = ["rx_core/operator_filter"]
 operator_filter_map = ["rx_core/operator_filter_map"]
 operator_finalize = ["rx_core/operator_finalize"]
 operator_identity = ["rx_core/operator_identity"]
+operator_into_result = ["rx_core/operator_into_result"]
 operator_lift_option = ["rx_core/operator_lift_option"]
 operator_lift_result = ["rx_core/operator_lift_result"]
 operator_map = ["rx_core/operator_map"]
@@ -135,7 +136,6 @@ operator_skip = ["rx_core/operator_skip"]
 operator_switch_map = ["rx_core/operator_switch_map"]
 operator_take = ["rx_core/operator_take"]
 operator_tap = ["rx_core/operator_tap_next"]
-operator_try_capture = ["rx_core/operator_try_capture"]
 # Core Subjects
 all_core_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["rx_core/subject"]
