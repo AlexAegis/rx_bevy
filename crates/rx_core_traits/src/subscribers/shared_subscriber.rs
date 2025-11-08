@@ -2,7 +2,8 @@ use core::marker::PhantomData;
 
 use crate::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionClosedFlag, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
+	SubscriptionClosedFlag, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithPrimaryCategory,
 	context::{
 		SubscriptionContext, WithSubscriptionContext,
 		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
@@ -169,7 +170,12 @@ where
 			self.shared_destination.unsubscribe(context);
 		}
 	}
+}
 
+impl<Destination> TeardownCollection for SharedSubscriber<Destination>
+where
+	Destination: 'static + Subscriber + Send + Sync,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

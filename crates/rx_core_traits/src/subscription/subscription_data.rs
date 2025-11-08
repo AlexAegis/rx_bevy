@@ -2,7 +2,8 @@ use disqualified::ShortName;
 
 use crate::{
 	NotifiableSubscription, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
-	SubscriptionNotification, Teardown, Tick, Tickable, WithSubscriptionContext,
+	SubscriptionNotification, Teardown, TeardownCollection, Tick, Tickable,
+	WithSubscriptionContext,
 };
 use std::{fmt::Debug, vec};
 
@@ -137,7 +138,12 @@ where
 			}
 		}
 	}
+}
 
+impl<Context> TeardownCollection for SubscriptionData<Context>
+where
+	Context: SubscriptionContext,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

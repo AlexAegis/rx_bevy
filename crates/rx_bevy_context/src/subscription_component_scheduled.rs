@@ -8,7 +8,8 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{
-	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	SubscriptionScheduled, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithSubscriptionContext,
 };
 use stealcell::{StealCell, Stolen};
 
@@ -25,7 +26,7 @@ pub struct ScheduledSubscriptionComponent {
 	this_entity: Entity,
 	// TODO(bevy-0.18+): This "StealCell" won't be necessary once entity world scope lands: https://github.com/AlexAegis/rx_bevy/issues/1 https://github.com/bevyengine/bevy/issues/13128
 	subscription: StealCell<
-		Box<dyn ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync>,
+		Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
 	>,
 }
 
@@ -33,7 +34,7 @@ impl ScheduledSubscriptionComponent {
 	pub fn new<Subscription>(subscription: Subscription, this_entity: Entity) -> Self
 	where
 		Subscription: 'static
-			+ ObservableSubscription<Context = BevySubscriptionContextProvider>
+			+ SubscriptionScheduled<Context = BevySubscriptionContextProvider>
 			+ Send
 			+ Sync,
 	{
@@ -45,20 +46,20 @@ impl ScheduledSubscriptionComponent {
 
 	fn get_subscription(
 		&self,
-	) -> &dyn ObservableSubscription<Context = BevySubscriptionContextProvider> {
+	) -> &dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> {
 		self.subscription.as_deref()
 	}
 
 	fn get_subscription_mut(
 		&mut self,
-	) -> &mut dyn ObservableSubscription<Context = BevySubscriptionContextProvider> {
+	) -> &mut dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> {
 		self.subscription.as_deref_mut()
 	}
 
 	pub fn steal_subscription(
 		&mut self,
 	) -> Stolen<
-		Box<dyn ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync>,
+		Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
 	> {
 		self.subscription.steal()
 	}
@@ -67,7 +68,7 @@ impl ScheduledSubscriptionComponent {
 		&mut self,
 		subscription: Stolen<
 			Box<
-				dyn ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
+				dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync,
 			>,
 		>,
 	) {
@@ -175,7 +176,9 @@ impl SubscriptionLike for ScheduledSubscriptionComponent {
 			.entity(self.this_entity)
 			.try_despawn();
 	}
+}
 
+impl TeardownCollection for ScheduledSubscriptionComponent {
 	#[inline]
 	fn add_teardown(
 		&mut self,

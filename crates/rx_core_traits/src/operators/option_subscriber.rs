@@ -1,7 +1,7 @@
 use crate::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
-	SubscriptionContext, SubscriptionLike, Teardown, Tickable, WithPrimaryCategory,
-	WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub enum OptionSubscriber<InnerSubscriber, Destination>
@@ -174,7 +174,20 @@ where
 			}
 		}
 	}
+}
 
+impl<InnerSubscriber, Destination> TeardownCollection
+	for OptionSubscriber<InnerSubscriber, Destination>
+where
+	InnerSubscriber: Subscriber,
+	Destination: Subscriber<
+			In = InnerSubscriber::In,
+			InError = InnerSubscriber::InError,
+			Context = InnerSubscriber::Context,
+		>,
+	InnerSubscriber::In: 'static,
+	InnerSubscriber::InError: 'static,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

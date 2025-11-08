@@ -1,5 +1,5 @@
 use bevy_ecs::{entity::Entity, event::Event};
-use rx_core_traits::{SignalBound, SubscriberNotification, Teardown, Tick};
+use rx_core_traits::{ObserverNotification, SignalBound, SubscriberNotification, Teardown, Tick};
 use thiserror::Error;
 
 use crate::BevySubscriptionContextProvider;
@@ -62,6 +62,25 @@ where
 			SubscriberNotificationEvent::Tick(tick) => SubscriberNotification::Tick(tick),
 			SubscriberNotificationEvent::Unsubscribe => SubscriberNotification::Unsubscribe,
 			SubscriberNotificationEvent::Add(teardown) => SubscriberNotification::Add(teardown),
+		}
+	}
+}
+
+impl<In, InError> TryFrom<SubscriberNotificationEvent<In, InError>>
+	for ObserverNotification<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	// TODO: Add a real error type
+	type Error = ();
+
+	fn try_from(value: SubscriberNotificationEvent<In, InError>) -> Result<Self, ()> {
+		match value {
+			SubscriberNotificationEvent::Next(next) => Ok(ObserverNotification::Next(next)),
+			SubscriberNotificationEvent::Error(error) => Ok(ObserverNotification::Error(error)),
+			SubscriberNotificationEvent::Complete => Ok(ObserverNotification::Complete),
+			_ => Err(()),
 		}
 	}
 }

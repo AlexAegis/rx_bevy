@@ -1,6 +1,6 @@
 use crate::{
-	ObservableSubscription, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
-	WithSubscriptionContext,
+	SubscriptionScheduled, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
+	TeardownCollection, WithSubscriptionContext,
 };
 
 /// A teardown is a closure which owns resources, by the nature of them being
@@ -110,7 +110,12 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.execute(SubscriptionNotification::Unsubscribe, context);
 	}
+}
 
+impl<Context> TeardownCollection for NotifiableSubscription<Context>
+where
+	Context: SubscriptionContext,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: super::Teardown<Self::Context>,
@@ -136,7 +141,7 @@ where
 /// teardown, it will be immediately dropped.
 impl<S> From<S> for NotifiableSubscription<S::Context>
 where
-	S: 'static + ObservableSubscription + Send + Sync,
+	S: 'static + SubscriptionScheduled + Send + Sync,
 {
 	fn from(mut subscription: S) -> Self {
 		Self {

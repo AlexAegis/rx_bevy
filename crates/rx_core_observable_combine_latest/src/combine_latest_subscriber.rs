@@ -1,8 +1,8 @@
 use rx_core_emission_variants::{EitherOut2, EitherOutError2};
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
-	Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	PrimaryCategorySubscriber, Subscriber, SubscriptionContext, SubscriptionLike, Teardown,
+	TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct CombineLatestSubscriber<Destination, O1, O2>
@@ -173,7 +173,17 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<Destination, O1, O2> TeardownCollection for CombineLatestSubscriber<Destination, O1, O2>
+where
+	Destination:
+		Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>> + SubscriptionLike,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

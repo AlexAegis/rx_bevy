@@ -9,8 +9,8 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{
-	DropUnsafeSubscriptionContext, ObservableSubscription, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionContextAccess, SubscriptionLike,
+	DropUnsafeSubscriptionContext, SignalBound, Subscriber, SubscriptionContext,
+	SubscriptionContextAccess, SubscriptionScheduled, SubscriptionWithTeardown,
 	heap_allocator_context::{ErasedSubscriberHeapAllocator, SubscriberHeapAllocator},
 };
 use stealcell::Stolen;
@@ -184,9 +184,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		entity: Entity,
 	) -> Result<
 		Stolen<
-			Box<
-				dyn ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
-			>,
+			Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
 		>,
 		BevyError,
 	> {
@@ -200,9 +198,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		&mut self,
 		entity: Entity,
 		subscription: Stolen<
-			Box<
-				dyn ObservableSubscription<Context = BevySubscriptionContextProvider> + Send + Sync,
-			>,
+			Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
 		>,
 	) -> Result<(), BevyError> {
 		let mut scheduled_subscription_component =
@@ -217,8 +213,10 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		entity: Entity,
 	) -> Result<Stolen<Subscription>, BevyError>
 	where
-		Subscription:
-			'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Subscription: 'static
+			+ SubscriptionWithTeardown<Context = BevySubscriptionContextProvider>
+			+ Send
+			+ Sync,
 	{
 		let mut unscheduled_subscription_component =
 			self.try_get_component_mut::<UnscheduledSubscriptionComponent<Subscription>>(entity)?;
@@ -232,8 +230,10 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		subscription: Stolen<Subscription>,
 	) -> Result<(), BevyError>
 	where
-		Subscription:
-			'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Subscription: 'static
+			+ SubscriptionWithTeardown<Context = BevySubscriptionContextProvider>
+			+ Send
+			+ Sync,
 	{
 		let mut unscheduled_subscription_component =
 			self.try_get_component_mut::<UnscheduledSubscriptionComponent<Subscription>>(entity)?;

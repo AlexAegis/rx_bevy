@@ -1,8 +1,8 @@
 use std::iter::Peekable;
 
 use rx_core_traits::{
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Tick,
-	Tickable, WithSubscriptionContext,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::observable::OnTickObservableOptions;
@@ -109,7 +109,14 @@ where
 			self.teardown.unsubscribe(context);
 		}
 	}
+}
 
+impl<Iterator, Context> TeardownCollection for OnTickIteratorSubscription<Iterator, Context>
+where
+	Iterator: IntoIterator,
+	Iterator::Item: SignalBound,
+	Context: SubscriptionContext,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: rx_core_traits::Teardown<Self::Context>,

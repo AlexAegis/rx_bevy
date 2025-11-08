@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use rx_core_traits::{
 	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct FilterSubscriber<In, InError, Filter, Destination>
@@ -135,7 +135,16 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Filter, Destination> TeardownCollection
+	for FilterSubscriber<In, InError, Filter, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Filter: for<'a> Fn(&'a In) -> bool,
+	Destination: Subscriber<In = In, InError = InError>,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

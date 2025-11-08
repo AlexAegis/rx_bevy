@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 use rx_core_traits::{
 	Observable, ObservableOutput, PrimaryCategoryObservable, SubjectLike, SubscriptionContext,
-	SubscriptionLike, Teardown, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	SubscriptionLike, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{
@@ -41,6 +41,26 @@ where
 			connector: Arc::new(RwLock::new(InnerConnectableObservable::new(
 				source, options,
 			))),
+		}
+	}
+
+	pub fn is_closed(&self) -> bool {
+		if let Ok(lock) = self.connector.read() {
+			lock.is_closed()
+		} else {
+			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
+			true
+		}
+	}
+
+	pub fn unsubscribe(
+		&mut self,
+		context: &mut <Connector::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		if let Ok(mut lock) = self.connector.write() {
+			lock.unsubscribe(context);
+		} else {
+			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
 		}
 	}
 }
@@ -122,46 +142,6 @@ where
 			lock.subscribe(destination, context)
 		} else {
 			panic!("Poisoned connector lock: {}", ShortName::of::<Self>());
-		}
-	}
-}
-
-impl<Source, ConnectorCreator, Connector> SubscriptionLike
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-{
-	fn is_closed(&self) -> bool {
-		if let Ok(lock) = self.connector.read() {
-			lock.is_closed()
-		} else {
-			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
-			true
-		}
-	}
-
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		if let Ok(mut lock) = self.connector.write() {
-			lock.unsubscribe(context);
-		} else {
-			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
-		}
-	}
-
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		if let Ok(mut lock) = self.connector.write() {
-			lock.add_teardown(teardown, context);
-		} else {
-			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
 		}
 	}
 }

@@ -1,4 +1,4 @@
-use crate::ObservableSubscription;
+use crate::SubscriptionScheduled;
 
 use super::{UnscheduledSubscriptionHandle, WeakSubscriptionHandle};
 
@@ -13,7 +13,7 @@ use super::{UnscheduledSubscriptionHandle, WeakSubscriptionHandle};
 ///
 /// By calling `downgrade` on such handle, one can acquire a clonable,
 /// non-owning "weak" handle that can be used to unsubscribe the subscription.
-pub trait ScheduledSubscriptionHandle: ObservableSubscription + Send + Sync {
+pub trait ScheduledSubscriptionHandle: SubscriptionScheduled + Send + Sync {
 	type UnscheduledHandle: UnscheduledSubscriptionHandle<Context = Self::Context>;
 	type WeakHandle: WeakSubscriptionHandle<Context = Self::Context>;
 

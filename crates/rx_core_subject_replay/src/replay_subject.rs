@@ -4,7 +4,7 @@ use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
 	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
-	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike, Teardown,
+	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
@@ -71,6 +71,24 @@ where
 	#[inline]
 	fn complete(&mut self, context: &mut Context::Item<'_, '_>) {
 		self.subject.complete(context);
+	}
+}
+
+impl<const CAPACITY: usize, In, InError, Context> SubscriptionLike
+	for ReplaySubject<CAPACITY, In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		self.subject.is_closed()
+	}
+
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
+		self.subject.unsubscribe(context);
 	}
 }
 
@@ -150,32 +168,5 @@ where
 		}
 
 		self.subject.subscribe(downstream_subscriber, context)
-	}
-}
-
-impl<const CAPACITY: usize, In, InError, Context> SubscriptionLike
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.subject.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
-		self.subject.unsubscribe(context);
-	}
-
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subject.add_teardown(teardown, context);
 	}
 }

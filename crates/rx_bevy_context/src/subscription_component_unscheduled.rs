@@ -7,7 +7,10 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
-use rx_core_traits::{SubscriptionLike, Teardown, WithSubscriptionContext};
+use rx_core_traits::{
+	SubscriptionLike, SubscriptionWithTeardown, Teardown, TeardownCollection,
+	WithSubscriptionContext,
+};
 use stealcell::{StealCell, Stolen};
 
 use crate::{
@@ -21,7 +24,7 @@ use crate::{
 pub struct UnscheduledSubscriptionComponent<Subscription>
 where
 	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	this_entity: Entity,
 	subscription: StealCell<Subscription>,
@@ -32,7 +35,7 @@ fn unscheduled_subscription_unsubscribe_on_remove<Subscription>(
 	hook_context: HookContext,
 ) where
 	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
 	let mut context = context_param.into_context(hook_context.entity);
@@ -49,7 +52,7 @@ fn unscheduled_subscription_unsubscribe_on_remove<Subscription>(
 impl<Subscription> UnscheduledSubscriptionComponent<Subscription>
 where
 	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	pub fn new(subscription: Subscription, this_entity: Entity) -> Self {
 		Self {
@@ -80,7 +83,7 @@ fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
 	hook_context: HookContext,
 ) where
 	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
@@ -95,7 +98,7 @@ fn unscheduled_subscription_notification_observer<Subscription>(
 ) -> Result<(), BevyError>
 where
 	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let subscription_entity = subscription_notification.target();
 	let mut context = context_param.into_context(subscription_entity);
@@ -121,7 +124,7 @@ where
 impl<Subscription> WithSubscriptionContext for UnscheduledSubscriptionComponent<Subscription>
 where
 	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	type Context = BevySubscriptionContextProvider;
 }
@@ -129,7 +132,7 @@ where
 impl<Subscription> SubscriptionLike for UnscheduledSubscriptionComponent<Subscription>
 where
 	Subscription:
-		'static + SubscriptionLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -146,7 +149,13 @@ where
 				.try_despawn();
 		}
 	}
+}
 
+impl<Subscription> TeardownCollection for UnscheduledSubscriptionComponent<Subscription>
+where
+	Subscription:
+		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

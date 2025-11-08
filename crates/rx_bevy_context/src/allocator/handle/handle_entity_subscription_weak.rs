@@ -1,7 +1,7 @@
 use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_traits::{
-	SubscriptionLike, SubscriptionNotification, Teardown, WithSubscriptionContext,
-	allocator::handle::WeakSubscriptionHandle,
+	SubscriptionLike, SubscriptionNotification, Teardown, TeardownCollection,
+	WithSubscriptionContext, allocator::handle::WeakSubscriptionHandle,
 };
 
 use crate::{
@@ -60,7 +60,9 @@ impl SubscriptionLike for WeakEntitySubscriptionHandle {
 			);
 		}
 	}
+}
 
+impl TeardownCollection for WeakEntitySubscriptionHandle {
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

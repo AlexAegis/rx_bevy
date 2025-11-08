@@ -1,7 +1,7 @@
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, SignalBound,
-	SubscriptionClosedFlag, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
-	Tick, Tickable, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Tick, Tickable,
+	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 	allocator::ErasedDestinationAllocator,
 };
 use smallvec::SmallVec;
@@ -28,7 +28,6 @@ where
 		[<Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>;
 			1],
 	>,
-	teardown: Option<SubscriptionData<Context>>,
 	closed_flag: SubscriptionClosedFlag,
 }
 
@@ -49,22 +48,20 @@ where
 	#[inline]
 	pub(crate) fn close(
 		&mut self,
-	) -> Option<(
+	) -> Option<
 		Vec<
 			<Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<
 				In,
 				InError,
 			>,
 		>,
-		Option<SubscriptionData<Context>>,
-	)> {
+	> {
 		if self.is_closed() {
 			None
 		} else {
 			let subscribers = self.subscribers.drain(..).collect::<Vec<_>>();
-			let teardown = self.teardown.take();
 
-			Some((subscribers, teardown))
+			Some(subscribers)
 		}
 	}
 }
@@ -161,33 +158,20 @@ where
 		self.closed_flag.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
 		println!("multicast unsub!!");
 		if !self.is_closed() {
 			self.closed_flag.close();
 
-			if let Some((subscribers, teardown)) = self.close() {
+			if let Some(subscribers) = self.close() {
 				for mut destination in subscribers {
 					destination.unsubscribe(context);
-				}
-
-				if let Some(mut teardown) = teardown {
-					teardown.unsubscribe(context);
 				}
 			}
 		}
 	}
-
-	fn add_teardown(&mut self, teardown: Teardown<Context>, context: &mut Context::Item<'_, '_>) {
-		if !self.is_closed() {
-			self.teardown
-				.get_or_insert_default()
-				.add_teardown(teardown, context);
-		} else {
-			teardown.execute(context);
-		}
-	}
 }
+
 impl<In, InError, Context> ObserverInput for Multicast<In, InError, Context>
 where
 	In: SignalBound + Clone,
@@ -226,7 +210,6 @@ where
 	fn default() -> Self {
 		Self {
 			subscribers: SmallVec::new(),
-			teardown: None,
 			closed_flag: false.into(),
 		}
 	}
@@ -248,10 +231,11 @@ where
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
-		if !self.is_closed() {
-			println!("multicast dropped without closing!!");
-			let mut context = Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
+		// Does not need to unsubscribe on drop as it's just a collection of
+		// shared subscribers, the subscription given to the user is what must
+		// be unsubscribed, not the multicast.
+
+		// Close the flag regardless to avoid the safety check on drop.
+		self.closed_flag.close();
 	}
 }

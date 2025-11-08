@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
-	ObserverUpgradesToSelf, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct MapIntoSubscriber<In, InError, Out, OutError, Destination>
@@ -161,7 +161,20 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Out, OutError, Destination> TeardownCollection
+	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
+where
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

@@ -1,6 +1,6 @@
 use rx_core_traits::{
-	ObservableSubscription, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
-	WithSubscriptionContext,
+	SubscriptionScheduled, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
@@ -23,7 +23,7 @@ where
 	Context: SubscriptionContext,
 {
 	pub fn new(
-		mut destination: impl ObservableSubscription<Context = Context> + 'static + Send + Sync,
+		mut destination: impl SubscriptionScheduled<Context = Context> + 'static + Send + Sync,
 		context: &mut Context::Item<'_, '_>,
 	) -> Self {
 		// Immediately unsubscribes if it's not already closed.
@@ -68,7 +68,12 @@ where
 	fn unsubscribe(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		// Does not need to do anything on unsubscribe
 	}
+}
 
+impl<Context> TeardownCollection for InertSubscription<Context>
+where
+	Context: SubscriptionContext,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

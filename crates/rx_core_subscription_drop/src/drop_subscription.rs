@@ -1,6 +1,6 @@
 use rx_core_traits::{
-	DropSafeSubscriptionContext, ObservableSubscription, SubscriptionContext, SubscriptionData,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	DropSafeSubscriptionContext, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	SubscriptionScheduled, Teardown, TeardownCollection, Tick, Tickable, WithSubscriptionContext,
 };
 
 /// A DropSubscription is a type of Subscription Observables may use, it
@@ -19,7 +19,7 @@ where
 {
 	pub fn new<S>(subscription: S) -> Self
 	where
-		S: ObservableSubscription<Context = Context> + 'static + Send + Sync,
+		S: SubscriptionScheduled<Context = Context> + 'static + Send + Sync,
 	{
 		Self {
 			subscription_data: SubscriptionData::new_from_resource(subscription.into()),
@@ -71,7 +71,12 @@ where
 			self.subscription_data.unsubscribe(context);
 		}
 	}
+}
 
+impl<Context> TeardownCollection for DropSubscription<Context>
+where
+	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

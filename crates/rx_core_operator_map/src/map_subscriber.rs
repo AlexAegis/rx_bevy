@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use derive_where::derive_where;
 use rx_core_traits::{
 	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 #[derive_where(Debug)]
@@ -166,7 +166,20 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Mapper, Out, Destination> TeardownCollection
+	for MapSubscriber<In, InError, Mapper, Out, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: Fn(In) -> Out,
+	Out: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

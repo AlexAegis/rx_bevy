@@ -1,5 +1,5 @@
 use rx_core_traits::{
-	ObservableSubscription, SubscriptionLike, WithSubscriptionContext,
+	SubscriptionScheduled, SubscriptionWithTeardown, WithSubscriptionContext,
 	allocator::ScheduledSubscriptionAllocator,
 };
 
@@ -15,12 +15,12 @@ impl ScheduledSubscriptionAllocator for ScheduledEntitySubscriptionAllocator {
 	type ScheduledHandle<Subscription>
 		= ScheduledEntitySubscriptionHandle
 	where
-		Subscription: 'static + ObservableSubscription<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionScheduled<Context = Self::Context> + Send + Sync;
 
 	type UnscheduledHandle<Subscription>
 		= UnscheduledEntitySubscriptionHandle
 	where
-		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionWithTeardown<Context = Self::Context> + Send + Sync;
 }
 
 impl WithSubscriptionContext for ScheduledEntitySubscriptionAllocator {

@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use rx_core_subscriber_switch::SwitchSubscriber;
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, SignalBound, Subscriber, SubscriptionCollection,
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
+	PrimaryCategorySubscriber, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike,
+	Teardown, TeardownCollection, TeardownCollectionExtension, Tick, Tickable, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
 
@@ -22,7 +22,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 	destination: SwitchSubscriber<InnerObservable, Destination>,
 	switcher: Switcher,
@@ -44,7 +44,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 	pub fn new(
 		destination: Destination,
@@ -74,7 +74,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 	type Context = Destination::Context;
 }
@@ -94,7 +94,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
@@ -114,7 +114,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 }
 
@@ -133,7 +133,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 	#[inline]
 	fn next(
@@ -174,7 +174,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 	#[inline]
 	fn tick(
@@ -201,7 +201,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -212,7 +212,25 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Switcher, InnerObservable, Destination> TeardownCollection
+	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound + Into<InnerObservable::OutError>,
+	Switcher: Fn(In) -> InnerObservable,
+	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable::Out: 'static,
+	InnerObservable::OutError: 'static,
+	Destination: 'static
+		+ Subscriber<
+			In = InnerObservable::Out,
+			InError = InnerObservable::OutError,
+			Context = InnerObservable::Context,
+		>,
+	Destination: TeardownCollectionExtension,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,
@@ -258,7 +276,7 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: SubscriptionCollection,
+	Destination: TeardownCollectionExtension,
 {
 	type Out = InnerObservable::Out;
 	type OutError = InnerObservable::OutError;

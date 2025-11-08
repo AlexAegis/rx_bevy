@@ -1,5 +1,17 @@
 use crate::{SignalBound, SubjectLike, Subscriber, Teardown, Tick, context::SubscriptionContext};
 
+/// Represents all signal events an observer can observe in a materialized form
+#[derive(Debug)]
+pub enum ObserverNotification<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	Next(In),
+	Error(InError),
+	Complete,
+}
+
 /// Represents all signal events a subscriber can observe in a materialized form
 #[derive(Debug)]
 pub enum SubscriberNotification<In, InError, Context>
@@ -25,6 +37,26 @@ where
 	Unsubscribe,
 	Add(Teardown<Context>),
 	Tick(Tick),
+}
+
+impl<In, InError, Context> TryFrom<SubscriberNotification<In, InError, Context>>
+	for ObserverNotification<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
+	// TODO: Add a real error type
+	type Error = ();
+
+	fn try_from(value: SubscriberNotification<In, InError, Context>) -> Result<Self, ()> {
+		match value {
+			SubscriberNotification::Next(next) => Ok(ObserverNotification::Next(next)),
+			SubscriberNotification::Error(error) => Ok(ObserverNotification::Error(error)),
+			SubscriberNotification::Complete => Ok(ObserverNotification::Complete),
+			_ => Err(()),
+		}
+	}
 }
 
 impl<In, InError, Context> From<SubscriptionNotification<Context>>
@@ -75,7 +107,7 @@ where
 pub trait SubjectPushNotificationExtention: SubjectLike {
 	fn push(
 		&mut self,
-		notification: impl Into<SubscriberNotification<Self::In, Self::InError, Self::Context>>,
+		notification: impl Into<ObserverNotification<Self::In, Self::InError>>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	);
 }
@@ -86,17 +118,13 @@ where
 {
 	fn push(
 		&mut self,
-		notification: impl Into<SubscriberNotification<Self::In, Self::InError, Self::Context>>,
+		notification: impl Into<ObserverNotification<Self::In, Self::InError>>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		match notification.into() {
-			SubscriberNotification::Next(next) => self.next(next, context),
-			SubscriberNotification::Error(error) => self.error(error, context),
-			SubscriberNotification::Complete => self.complete(context),
-			SubscriberNotification::Tick(_tick) => {}
-			SubscriberNotification::Add(Some(teardown)) => self.add_teardown(teardown, context),
-			SubscriberNotification::Add(None) => {}
-			SubscriberNotification::Unsubscribe => self.unsubscribe(context),
+			ObserverNotification::Next(next) => self.next(next, context),
+			ObserverNotification::Error(error) => self.error(error, context),
+			ObserverNotification::Complete => self.complete(context),
 		}
 	}
 }

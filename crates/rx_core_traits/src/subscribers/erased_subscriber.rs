@@ -1,7 +1,7 @@
 use crate::{
 	Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, Tickable, WithPrimaryCategory,
-	WithSubscriptionContext,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
@@ -122,7 +122,14 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Context> TeardownCollection for ErasedSubscriber<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

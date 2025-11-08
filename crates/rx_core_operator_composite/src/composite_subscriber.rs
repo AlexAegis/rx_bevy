@@ -2,9 +2,9 @@ use core::marker::PhantomData;
 
 use disqualified::ShortName;
 use rx_core_traits::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
-	WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -111,7 +111,13 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.subscriber.unsubscribe(context);
 	}
+}
 
+impl<Inner, Destination> TeardownCollection for CompositeSubscriber<Inner, Destination>
+where
+	Inner: Subscriber,
+	Destination: Observer,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

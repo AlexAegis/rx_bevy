@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick,
-	Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	PrimaryCategorySubscriber, Subscriber, SubscriptionContext, SubscriptionLike, Teardown,
+	TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{EitherOut2, EitherOutError2};
@@ -161,7 +161,19 @@ where
 	) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<O1, O2, Destination> TeardownCollection for IntoVariant1of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,
@@ -349,7 +361,19 @@ where
 	) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<O1, O2, Destination> TeardownCollection for IntoVariant2of2Subscriber<O1, O2, Destination>
+where
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable,
+	O1::Out: Clone,
+	O2::Out: Clone,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

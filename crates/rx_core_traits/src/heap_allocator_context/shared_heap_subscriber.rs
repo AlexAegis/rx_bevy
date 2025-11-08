@@ -3,8 +3,8 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 
 use crate::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
-	SubscriptionLike, Teardown, Tickable, WithPrimaryCategory,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
+	SubscriptionLike, Teardown, TeardownCollection, Tickable, WithPrimaryCategory,
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
@@ -204,7 +204,12 @@ where
 			}
 		}
 	}
+}
 
+impl<Destination> TeardownCollection for SharedHeapSubscriber<Destination>
+where
+	Destination: 'static + Subscriber + Send + Sync,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

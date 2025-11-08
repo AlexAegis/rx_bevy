@@ -1,6 +1,6 @@
 use bevy_ecs::hierarchy::ChildOf;
 use rx_core_traits::{
-	SubscriptionLike, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
+	SubscriptionWithTeardown, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
 };
 
 use crate::{
@@ -16,14 +16,14 @@ impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator
 	type UnscheduledHandle<Subscription>
 		= UnscheduledEntitySubscriptionHandle
 	where
-		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionWithTeardown<Context = Self::Context> + Send + Sync;
 
 	fn allocate_unscheduled_subscription<S>(
 		subscription: S,
 		context: &mut BevySubscriptionContext<'_, '_>,
 	) -> Self::UnscheduledHandle<S>
 	where
-		S: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync,
+		S: 'static + SubscriptionWithTeardown<Context = Self::Context> + Send + Sync,
 	{
 		let contextual_subscription_entity = context.get_subscription_entity();
 		let unscheduled_subscription_entity = context.deferred_world.commands().spawn_empty().id();

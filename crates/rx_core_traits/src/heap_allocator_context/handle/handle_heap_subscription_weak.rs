@@ -1,7 +1,8 @@
 use std::sync::{Arc, RwLock, Weak};
 
 use crate::{
-	ObservableSubscription, SubscriptionLike, Teardown,
+	SubscriptionLike, SubscriptionScheduled, SubscriptionWithTeardown, Teardown,
+	TeardownCollection,
 	context::{
 		SubscriptionContext, WithSubscriptionContext,
 		allocator::handle::{ScheduledSubscriptionHandle, WeakSubscriptionHandle},
@@ -13,14 +14,14 @@ use super::ScheduledHeapSubscriptionHandle;
 
 pub struct WeakHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	subscription: Weak<RwLock<Subscription>>,
 }
 
 impl<Subscription> WeakHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	pub(crate) fn new(subscription: &Arc<RwLock<Subscription>>) -> Self {
 		Self {
@@ -31,19 +32,19 @@ where
 
 impl<Subscription> WithSubscriptionContext for WeakHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	type Context = Subscription::Context;
 }
 
 impl<Subscription> WeakSubscriptionHandle for WeakHeapSubscriptionHandle<Subscription> where
-	Subscription: SubscriptionLike + Send + Sync
+	Subscription: SubscriptionWithTeardown + Send + Sync
 {
 }
 
 impl<Subscription> Clone for WeakHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -54,7 +55,7 @@ where
 
 impl<Subscription> SubscriptionLike for WeakHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	fn is_closed(&self) -> bool {
 		if let Some(subscription) = self.subscription.upgrade() {
@@ -81,7 +82,12 @@ where
 			}
 		}
 	}
+}
 
+impl<Subscription> TeardownCollection for WeakHeapSubscriptionHandle<Subscription>
+where
+	Subscription: SubscriptionWithTeardown + Send + Sync,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
@@ -102,7 +108,7 @@ where
 impl<Subscription> From<ScheduledHeapSubscriptionHandle<Subscription>>
 	for WeakHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	fn from(mut subscription: ScheduledHeapSubscriptionHandle<Subscription>) -> Self {
 		subscription.downgrade()
@@ -111,7 +117,7 @@ where
 
 impl<Subscription> Drop for WeakHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	fn drop(&mut self) {
 		// Must not do anything on drop as it's not owning the subscription it's

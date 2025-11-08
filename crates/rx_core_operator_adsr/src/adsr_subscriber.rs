@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
-	ObserverUpgradesToSelf, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, operator::AdsrOperatorOptions};
@@ -123,7 +123,13 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<InError, Destination> TeardownCollection for AdsrSubscriber<InError, Destination>
+where
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	InError: SignalBound,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

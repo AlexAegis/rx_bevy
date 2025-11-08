@@ -4,7 +4,7 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 
 use crate::{
-	SubscriptionLike, Teardown,
+	SubscriptionLike, SubscriptionWithTeardown, Teardown, TeardownCollection,
 	context::{
 		SubscriptionContext, WithSubscriptionContext,
 		allocator::handle::UnscheduledSubscriptionHandle,
@@ -15,14 +15,14 @@ use super::WeakHeapSubscriptionHandle;
 
 pub struct UnscheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	subscription: Arc<RwLock<Subscription>>,
 }
 
 impl<Subscription> UnscheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	pub fn new_from_handle_ref(handle_ref: &Arc<RwLock<Subscription>>) -> Self {
 		Self {
@@ -39,7 +39,7 @@ where
 
 impl<Subscription> UnscheduledSubscriptionHandle for UnscheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	type WeakHandle = WeakHeapSubscriptionHandle<Subscription>;
 
@@ -50,14 +50,14 @@ where
 
 impl<Subscription> WithSubscriptionContext for UnscheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	type Context = Subscription::Context;
 }
 
 impl<Subscription> Clone for UnscheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -68,7 +68,7 @@ where
 
 impl<Subscription> SubscriptionLike for UnscheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(lock) = self.subscription.read() {
@@ -89,7 +89,12 @@ where
 			}
 		}
 	}
+}
 
+impl<Subscription> TeardownCollection for UnscheduledHeapSubscriptionHandle<Subscription>
+where
+	Subscription: SubscriptionWithTeardown + Send + Sync,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
@@ -107,7 +112,7 @@ where
 
 impl<Subscription> Drop for UnscheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionLike + Send + Sync,
+	Subscription: SubscriptionWithTeardown + Send + Sync,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

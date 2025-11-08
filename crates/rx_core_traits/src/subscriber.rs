@@ -1,5 +1,6 @@
 use crate::{
-	Observer, ObserverUpgradesToSelf, SubscriptionLike, Tickable, context::WithSubscriptionContext,
+	Observer, ObserverUpgradesToSelf, SubscriptionWithTeardown, Tickable,
+	context::WithSubscriptionContext,
 };
 
 /// # [Subscriber]
@@ -20,8 +21,8 @@ use crate::{
 pub trait Subscriber:
 	Observer
 	+ ObserverUpgradesToSelf
+	+ SubscriptionWithTeardown
 	+ Tickable
-	+ SubscriptionLike
 	+ WithSubscriptionContext
 	+ Send
 	+ Sync
@@ -31,8 +32,8 @@ pub trait Subscriber:
 impl<T> Subscriber for T where
 	T: Observer
 		+ ObserverUpgradesToSelf
+		+ SubscriptionWithTeardown
 		+ Tickable
-		+ SubscriptionLike
 		+ WithSubscriptionContext
 		+ Send
 		+ Sync

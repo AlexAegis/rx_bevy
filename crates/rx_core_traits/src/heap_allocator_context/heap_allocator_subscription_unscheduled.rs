@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use super::handle::UnscheduledHeapSubscriptionHandle;
 use crate::{
-	SubscriptionLike,
+	SubscriptionWithTeardown,
 	context::{
 		SubscriptionContext, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
 	},
@@ -40,14 +40,14 @@ where
 	type UnscheduledHandle<Subscription>
 		= UnscheduledHeapSubscriptionHandle<Subscription>
 	where
-		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionWithTeardown<Context = Self::Context> + Send + Sync;
 
 	fn allocate_unscheduled_subscription<Subscription>(
 		subscription: Subscription,
 		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::UnscheduledHandle<Subscription>
 	where
-		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync,
+		Subscription: 'static + SubscriptionWithTeardown<Context = Self::Context> + Send + Sync,
 	{
 		UnscheduledHeapSubscriptionHandle::new(subscription)
 	}

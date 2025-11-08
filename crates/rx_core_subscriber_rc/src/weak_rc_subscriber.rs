@@ -1,7 +1,7 @@
 use rx_core_traits::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, Subscriber, ObserverUpgradesToSelf,
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
-	WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 	allocator::{DestinationSharedTypes, SharedDestination},
 };
 
@@ -100,7 +100,12 @@ where
 			self.shared_destination.unsubscribe(context);
 		}
 	}
+}
 
+impl<Destination> TeardownCollection for WeakRcSubscriber<Destination>
+where
+	Destination: 'static + Subscriber,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

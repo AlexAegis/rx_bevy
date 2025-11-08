@@ -141,7 +141,7 @@ fn setup(mut commands: Commands) {
 		))
 		.id();
 
-	/// TODO: Bug, crashes on despawn
+	// TODO: Bug, crashes on despawn
 	let subject_usize = commands
 		.spawn((
 			Name::new("Subject<usize>"),

@@ -12,7 +12,9 @@ use rx_bevy_context::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ConsumableSubscriberNotificationEvent, ScheduledSubscriptionComponent,
 };
-use rx_core_traits::{SubjectLike, SubjectPushNotificationExtention, SubscriptionLike};
+use rx_core_traits::{
+	ObserverNotification, SubjectLike, SubjectPushNotificationExtention, SubscriptionLike,
+};
 use stealcell::{StealCell, Stolen};
 
 use crate::{
@@ -89,11 +91,13 @@ fn subject_notification_observer<'w, 's, Subject>(
 {
 	let subject_entity = on_notification.target();
 	let mut context = context_param.into_context(subject_entity);
-	let notification = on_notification.event_mut().consume();
-
+	let subscriber_notification = on_notification.event_mut().consume();
+	let notification: Result<ObserverNotification<Subject::In, Subject::InError>, ()> =
+		subscriber_notification.try_into();
 	let mut stolen_subject = context.steal_subject::<Subject>(subject_entity).unwrap();
+
 	stolen_subject.push(
-		notification,
+		notification.unwrap(),
 		&mut context, // I have to access the context, passing it into something that was accessed from the context
 	);
 	context

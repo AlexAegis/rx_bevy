@@ -1,7 +1,7 @@
 use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_traits::{
-	SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown, Tick, Tickable,
-	WithSubscriptionContext, allocator::handle::ScheduledSubscriptionHandle,
+	SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown, TeardownCollection,
+	Tick, Tickable, WithSubscriptionContext, allocator::handle::ScheduledSubscriptionHandle,
 };
 
 use crate::{
@@ -87,7 +87,9 @@ impl SubscriptionLike for ScheduledEntitySubscriptionHandle {
 			);
 		}
 	}
+}
 
+impl TeardownCollection for ScheduledEntitySubscriptionHandle {
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

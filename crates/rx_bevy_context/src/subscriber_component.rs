@@ -8,8 +8,8 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{
-	Observer as RxObserver, ObserverInput, Subscriber, SubscriptionLike, Tick, Tickable,
-	WithSubscriptionContext,
+	Observer as RxObserver, ObserverInput, Subscriber, SubscriptionLike, TeardownCollection, Tick,
+	Tickable, WithSubscriptionContext,
 };
 
 use crate::{
@@ -224,7 +224,12 @@ where
 			.entity(self.this_entity)
 			.try_despawn();
 	}
+}
 
+impl<Destination> TeardownCollection for SubscriberComponent<Destination>
+where
+	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: rx_core_traits::Teardown<Self::Context>,

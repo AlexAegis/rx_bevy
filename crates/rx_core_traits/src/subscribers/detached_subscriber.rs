@@ -1,6 +1,7 @@
 use crate::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, ObserverUpgradesToSelf, SubscriptionContext,
-	SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::SubscriptionData;
@@ -34,7 +35,10 @@ where
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
 
-impl<Destination> ObserverUpgradesToSelf for DetachedSubscriber<Destination> where Destination: Observer {}
+impl<Destination> ObserverUpgradesToSelf for DetachedSubscriber<Destination> where
+	Destination: Observer
+{
+}
 
 impl<Destination> WithSubscriptionContext for DetachedSubscriber<Destination>
 where
@@ -105,7 +109,12 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.teardown.unsubscribe(context);
 	}
+}
 
+impl<Destination> TeardownCollection for DetachedSubscriber<Destination>
+where
+	Destination: Observer,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

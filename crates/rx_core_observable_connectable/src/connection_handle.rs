@@ -1,20 +1,20 @@
 use rx_core_traits::{
-	SubscriptionContext, SubscriptionLike, Teardown, WithSubscriptionContext,
-	allocator::UnscheduledSubscriptionAllocator,
+	SubscriptionContext, SubscriptionLike, SubscriptionWithTeardown, Teardown, TeardownCollection,
+	WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
 };
 
 /// Subscription that represents an active connection for a
 /// [ConnectableObservable][crate::ConnectableObservable].
 pub struct ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionLike + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown  + Send + Sync,
 {
 	handle: <<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator as UnscheduledSubscriptionAllocator>::UnscheduledHandle<Subscription>,
 }
 
 impl<Subscription> ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionLike + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 {
 	pub fn new(
 		subscription: Subscription,
@@ -30,7 +30,7 @@ where
 
 impl<Subscription> Clone for ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionLike + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -41,14 +41,14 @@ where
 
 impl<Subscription> WithSubscriptionContext for ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionLike + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 {
 	type Context = Subscription::Context;
 }
 
 impl<Subscription> SubscriptionLike for ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionLike + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -58,6 +58,12 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.handle.unsubscribe(context);
 	}
+}
+
+impl<Subscription> TeardownCollection for ConnectionHandle<Subscription>
+where
+	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,
@@ -70,7 +76,7 @@ where
 
 impl<Subscription> Drop for ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionLike + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

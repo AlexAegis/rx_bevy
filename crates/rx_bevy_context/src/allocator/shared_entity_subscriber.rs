@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
-	Observer, ObserverInput, Subscriber, ObserverUpgradesToSelf, SubscriberNotification,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, Subscriber, SubscriberNotification,
+	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable, WithSubscriptionContext,
 	allocator::SharedDestination,
 };
 
@@ -209,7 +209,12 @@ where
 			.entity(self.destination_entity)
 			.despawn();
 	}
+}
 
+impl<Destination> TeardownCollection for SharedEntitySubscriber<Destination>
+where
+	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

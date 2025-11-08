@@ -4,8 +4,7 @@ use disqualified::ShortName;
 
 use crate::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SignalBound,
-	Subscriber, SubscriptionClosedFlag, SubscriptionData, SubscriptionLike, Tickable,
-	WithPrimaryCategory,
+	Subscriber, SubscriptionLike, TeardownCollection, Tickable, WithPrimaryCategory,
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::ErasedSharedDestination},
 };
 
@@ -15,10 +14,8 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	closed_flag: SubscriptionClosedFlag,
 	destination:
 		Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context> + Send + Sync>>,
-	teardown: SubscriptionData<Context>,
 }
 
 impl<In, InError, Context> ErasedSharedDestination
@@ -60,9 +57,7 @@ where
 			'static + Subscriber<In = In, InError = InError, Context = Context> + Send + Sync,
 	{
 		Self {
-			closed_flag: destination.is_closed().into(),
 			destination: Arc::new(RwLock::new(destination)),
-			teardown: SubscriptionData::default(),
 		}
 	}
 
@@ -97,9 +92,7 @@ where
 {
 	fn clone(&self) -> Self {
 		Self {
-			closed_flag: self.closed_flag.clone(),
 			destination: self.destination.clone(),
-			teardown: SubscriptionData::default(), // New instance, new teardowns
 		}
 	}
 }
@@ -195,22 +188,30 @@ where
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
-		*self.closed_flag
+		if let Ok(lock) = self.destination.read() {
+			lock.is_closed()
+		} else {
+			true
+		}
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.closed_flag.close();
 			if let Ok(mut lock) = self.destination.write() {
 				lock.unsubscribe(context);
 			} else {
 				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
 			}
 		}
-		// Must always run
-		self.teardown.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Context> TeardownCollection for SharedHeapSubscriberErased<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: crate::Teardown<Self::Context>,

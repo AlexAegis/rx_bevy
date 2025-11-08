@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rx_core_traits::{
 	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
 	SignalBound, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
-	Teardown, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Teardown, TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 #[derive(Debug)]
@@ -156,7 +156,17 @@ where
 			self.destination.unsubscribe(context);
 		}
 	}
+}
 
+impl<In, InError, Destination> TeardownCollection for TakeSubscriber<In, InError, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

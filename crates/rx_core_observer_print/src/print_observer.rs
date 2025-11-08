@@ -2,8 +2,8 @@ use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategoryObserver, SignalBound,
-	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
+	Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -156,7 +156,14 @@ where
 			println!("{}unsubscribed", self.get_prefix());
 		}
 	}
+}
 
+impl<In, InError, Context> TeardownCollection for PrintObserver<In, InError, Context>
+where
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
+	Context: SubscriptionContext,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

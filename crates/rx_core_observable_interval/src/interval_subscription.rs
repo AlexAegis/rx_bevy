@@ -1,7 +1,7 @@
 use bevy_time::{Timer, TimerMode};
 use rx_core_traits::{
-	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Tick, Tickable,
-	WithSubscriptionContext,
+	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, TeardownCollection, Tick,
+	Tickable, WithSubscriptionContext,
 };
 
 use crate::observable::IntervalObservableOptions;
@@ -85,7 +85,12 @@ where
 		}
 		self.teardown.unsubscribe(context);
 	}
+}
 
+impl<Context> TeardownCollection for IntervalSubscription<Context>
+where
+	Context: SubscriptionContext,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: rx_core_traits::Teardown<Self::Context>,

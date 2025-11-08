@@ -1,8 +1,8 @@
 use rx_core_emission_variants::{EitherOut2, EitherOutError2};
 use rx_core_traits::{
 	Observable, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	Subscriber, SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick,
+	Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::{
@@ -241,7 +241,20 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<Destination, O1, O2> TeardownCollection for ZipSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<
+			In = (O1::Out, O2::Out),
+			InError = EitherOutError2<O1, O2>,
+			Context = O1::Context,
+		>,
+	O1: 'static + Send + Sync + Observable,
+	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
+	O1::Out: Clone,
+	O2::Out: Clone,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

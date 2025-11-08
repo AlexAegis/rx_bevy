@@ -1,5 +1,5 @@
 use crate::{
-	ObservableSubscription, SignalBound, SubscriptionContext, UpgradeableObserver,
+	SubscriptionScheduled, SignalBound, SubscriptionContext, UpgradeableObserver,
 	WithPrimaryCategory, WithSubscriptionContext,
 };
 
@@ -84,7 +84,7 @@ pub trait Observable: ObservableOutput + WithSubscriptionContext + WithPrimaryCa
 	/// be attempted. This attempt at unsubscribing on drop, if the subscription
 	/// wasn't already unsubscribed, can panic if the SubscriptionContext used
 	/// is not a [DropSafeSubscriptionContext].
-	type Subscription: ObservableSubscription<Context = Self::Context> + Drop + Send + Sync;
+	type Subscription: SubscriptionScheduled<Context = Self::Context> + Drop + Send + Sync;
 
 	/// Create a Subscription for this [Observable]. This action allocates
 	/// resources to execute the behavior this [Observable] defines,

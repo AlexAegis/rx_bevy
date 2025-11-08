@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
-	Observer, ObserverInput, SignalBound, ObserverUpgradesToSelf, SubscriberNotification,
-	SubscriptionLike, Teardown, Tick, Tickable, WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, SignalBound, SubscriberNotification,
+	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable, WithSubscriptionContext,
 	allocator::ErasedSharedDestination,
 };
 
@@ -155,7 +155,13 @@ where
 			);
 		}
 	}
+}
 
+impl<In, InError> TeardownCollection for SharedErasedEntitySubscriber<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

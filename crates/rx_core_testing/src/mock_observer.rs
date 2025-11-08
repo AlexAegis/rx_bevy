@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SignalBound,
 	SubscriberNotification, SubscriptionContext, SubscriptionContextDropSafety, SubscriptionLike,
-	Teardown, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Teardown, TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::MockContext;
@@ -118,7 +118,14 @@ where
 		self.closed = true;
 		context.push(SubscriberNotification::Unsubscribe);
 	}
+}
 
+impl<In, InError, DropSafety> TeardownCollection for MockObserver<In, InError, DropSafety>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	DropSafety: SubscriptionContextDropSafety,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

@@ -1,6 +1,7 @@
 use rx_core_traits::{
-	SignalBound, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown, Tick,
-	Tickable, WithSubscriptionContext, allocator::ErasedDestinationAllocator,
+	SignalBound, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown,
+	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
+	allocator::ErasedDestinationAllocator,
 };
 
 /// This Subscription extends a shared subscriber into a clone-able subscription
@@ -113,7 +114,14 @@ where
 			}
 		}
 	}
+}
 
+impl<In, InError, Context> TeardownCollection for MulticastSubscription<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

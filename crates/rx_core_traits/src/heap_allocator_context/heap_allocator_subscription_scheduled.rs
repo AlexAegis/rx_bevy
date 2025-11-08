@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use super::handle::{ScheduledHeapSubscriptionHandle, UnscheduledHeapSubscriptionHandle};
 use crate::{
-	ObservableSubscription, SubscriptionLike,
+	SubscriptionScheduled, SubscriptionWithTeardown,
 	context::{
 		SubscriptionContext, WithSubscriptionContext, allocator::ScheduledSubscriptionAllocator,
 	},
@@ -40,10 +40,10 @@ where
 	type ScheduledHandle<Subscription>
 		= ScheduledHeapSubscriptionHandle<Subscription>
 	where
-		Subscription: 'static + ObservableSubscription<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionScheduled<Context = Self::Context> + Send + Sync;
 
 	type UnscheduledHandle<Subscription>
 		= UnscheduledHeapSubscriptionHandle<Subscription>
 	where
-		Subscription: 'static + SubscriptionLike<Context = Self::Context> + Send + Sync;
+		Subscription: 'static + SubscriptionWithTeardown<Context = Self::Context> + Send + Sync;
 }

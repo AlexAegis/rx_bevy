@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
 	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
-	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike, Teardown,
+	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
@@ -108,6 +108,23 @@ where
 	}
 }
 
+impl<In, InError, Context> SubscriptionLike for BehaviorSubject<In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		self.subject.is_closed()
+	}
+
+	#[inline]
+	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
+		self.subject.unsubscribe(context);
+	}
+}
+
 impl<In, InError, Context> WithSubscriptionContext for BehaviorSubject<In, InError, Context>
 where
 	In: SignalBound + Clone,
@@ -148,31 +165,5 @@ where
 		let next = { self.value.read().unwrap().clone() };
 		downstream_subscriber.next(next, context);
 		self.subject.subscribe(downstream_subscriber, context)
-	}
-}
-
-impl<In, InError, Context> SubscriptionLike for BehaviorSubject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.subject.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.subject.unsubscribe(context);
-	}
-
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subject.add_teardown(teardown, context);
 	}
 }

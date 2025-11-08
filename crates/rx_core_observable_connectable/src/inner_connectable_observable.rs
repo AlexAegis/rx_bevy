@@ -1,7 +1,7 @@
 use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SubjectLike, SubscriptionCollection,
-	SubscriptionContext, SubscriptionLike, Teardown, UpgradeableObserver, WithPrimaryCategory,
-	WithSubscriptionContext,
+	Observable, ObservableOutput, PrimaryCategoryObservable, SubjectLike, SubscriptionContext,
+	SubscriptionLike, Teardown, TeardownCollectionExtension, UpgradeableObserver,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::observable::{Connectable, ConnectableOptions, ConnectionHandle};
@@ -99,6 +99,30 @@ where
 	type OutError = Connector::OutError;
 }
 
+impl<Source, ConnectorCreator, Connector> SubscriptionLike
+	for InnerConnectableObservable<Source, ConnectorCreator, Connector>
+where
+	Source: Observable,
+	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
+	Connector: 'static
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		self.is_connection_closed()
+	}
+
+	fn unsubscribe(
+		&mut self,
+		context: &mut <Connector::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		if let Some(connector) = &mut self.connector {
+			connector.unsubscribe(context);
+		}
+	}
+}
+
 impl<Source, ConnectorCreator, Connector> Observable
 	for InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where
@@ -146,13 +170,16 @@ where
 		context: &mut <<Self::ConnectionSubscription as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> ConnectionHandle<Self::ConnectionSubscription> {
 		self.get_active_connection().unwrap_or_else(|| {
-			let connector = self.get_connector(context).clone();
+			let mut connector = self.get_connector(context).clone();
 
 			let mut connection =
 				ConnectionHandle::new(self.source.subscribe(connector.clone(), context), context);
 
 			if self.options.unsubscribe_connector_on_disconnect {
-				connection.add(connector, context);
+				connection.add(
+					Teardown::new(move |context| connector.unsubscribe(context)),
+					context,
+				);
 			}
 
 			self.connection.replace(connection.clone());
@@ -184,34 +211,4 @@ where
 	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
 {
 	type PrimaryCategory = PrimaryCategoryObservable;
-}
-
-impl<Source, ConnectorCreator, Connector> SubscriptionLike
-	for InnerConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-{
-	fn is_closed(&self) -> bool {
-		self.is_connection_closed()
-	}
-
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		if let Some(connector) = &mut self.connector {
-			connector.unsubscribe(context);
-		}
-	}
-
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		if let Some(connector) = &mut self.connector {
-			connector.add_teardown(teardown, context);
-		}
-	}
 }

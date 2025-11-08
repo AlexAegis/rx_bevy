@@ -1,5 +1,6 @@
+use crate::SubscriptionWithTeardown;
+
 use super::WeakSubscriptionHandle;
-use crate::SubscriptionLike;
 
 /// # UnscheduledSubscriptionHandle
 ///
@@ -8,7 +9,7 @@ use crate::SubscriptionLike;
 ///
 /// > These are mainly meant for the ConnectableObservable's connection which
 /// > should not be ticked, it just represents an active connection.
-pub trait UnscheduledSubscriptionHandle: SubscriptionLike + Clone + Send + Sync {
+pub trait UnscheduledSubscriptionHandle: SubscriptionWithTeardown + Clone + Send + Sync {
 	type WeakHandle: WeakSubscriptionHandle<Context = Self::Context>;
 
 	fn downgrade(&mut self) -> Self::WeakHandle;

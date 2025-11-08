@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
-	ObserverUpgradesToSelf, SubscriptionContext, SubscriptionLike, Teardown, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 // TODO: Search for In, InError, Dest and fix
@@ -62,7 +62,8 @@ where
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
 
-impl<In, InError, Destination> ObserverUpgradesToSelf for EnumerateSubscriber<In, InError, Destination>
+impl<In, InError, Destination> ObserverUpgradesToSelf
+	for EnumerateSubscriber<In, InError, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -156,7 +157,17 @@ where
 	) {
 		self.destination.unsubscribe(context);
 	}
+}
 
+impl<In, InError, Destination> TeardownCollection for EnumerateSubscriber<In, InError, Destination>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Destination: Subscriber<
+			In = <Self as ObservableOutput>::Out,
+			InError = <Self as ObservableOutput>::OutError,
+		>,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

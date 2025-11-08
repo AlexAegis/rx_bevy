@@ -1,7 +1,8 @@
 use bevy_input::{ButtonInput, keyboard::KeyCode};
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
-	Subscriber, SubscriptionContext, SubscriptionLike, Tick, Tickable, WithSubscriptionContext,
+	Subscriber, SubscriptionContext, SubscriptionLike, TeardownCollection, Tick, Tickable,
+	WithSubscriptionContext,
 };
 
 pub struct KeyboardSubscription<Destination>
@@ -48,7 +49,12 @@ where
 			self.destination.unsubscribe(context);
 		}
 	}
+}
 
+impl<Destination> TeardownCollection for KeyboardSubscription<Destination>
+where
+	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
+{
 	#[track_caller]
 	fn add_teardown(
 		&mut self,

@@ -1,13 +1,17 @@
 mod subscription_closed_flag;
 mod subscription_data;
 mod subscription_like;
-mod subscription_tickable;
+mod subscription_scheduled;
+mod subscription_with_teardown;
 mod teardown;
+mod teardown_collection;
 mod tickable_resource;
 
 pub use subscription_closed_flag::*;
 pub use subscription_data::*;
 pub use subscription_like::*;
-pub use subscription_tickable::*;
+pub use subscription_scheduled::*;
+pub use subscription_with_teardown::*;
 pub use teardown::*;
+pub use teardown_collection::*;
 pub use tickable_resource::*;

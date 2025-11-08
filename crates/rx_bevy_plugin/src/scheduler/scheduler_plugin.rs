@@ -68,8 +68,8 @@ fn unsubscribe_all_subscriptions(world: &mut World) {
 	let mut subscription_query = world.query::<(Entity, &mut ScheduledSubscriptionComponent)>();
 	let mut subscriptions = subscription_query
 		.iter_mut(world)
-		.map(|(entity, mut subscription_context)| {
-			(entity, subscription_context.steal_subscription())
+		.map(|(entity, mut subscription_component)| {
+			(entity, subscription_component.steal_subscription())
 		})
 		.collect::<Vec<_>>();
 

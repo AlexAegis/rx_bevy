@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionCollection,
+	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, TeardownCollectionExtension,
 	SubscriptionContext,
 };
 

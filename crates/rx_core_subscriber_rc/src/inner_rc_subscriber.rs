@@ -3,8 +3,8 @@ use std::ops::{Deref, DerefMut};
 use disqualified::ShortName;
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, Tick, Tickable, WithPrimaryCategory,
-	WithSubscriptionContext,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// Internal to [RcSubscriber]
@@ -173,7 +173,12 @@ where
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.unsubscribe_if_can(context);
 	}
+}
 
+impl<Destination> TeardownCollection for InnerRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
 	#[inline]
 	fn add_teardown(
 		&mut self,

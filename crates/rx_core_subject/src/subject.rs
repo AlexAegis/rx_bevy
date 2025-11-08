@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_traits::{
 	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
-	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike, Teardown,
+	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
@@ -172,10 +172,10 @@ where
 		}
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
 		println!("--------------------------------------- subject unsub!!");
 		// TODO: This should not be called at all when it's called by an upstream source when the subject is used as a destination. This should only do anything when directly called on the subject from outside. Maybe bring back upgradeableobserver for observable subscribe method! that can create a boundary.
-		if let Some((subscribers, teardown)) = {
+		if let Some(subscribers) = {
 			let mut lock = self
 				.multicast
 				.write()
@@ -186,22 +186,6 @@ where
 			for mut destination in subscribers {
 				destination.unsubscribe(context);
 			}
-
-			if let Some(mut teardown) = teardown {
-				teardown.unsubscribe(context);
-			}
-		}
-	}
-
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		if !self.is_closed()
-			&& let Ok(mut multicast) = self.multicast.write()
-		{
-			multicast.add_teardown(teardown, context);
 		}
 	}
 }

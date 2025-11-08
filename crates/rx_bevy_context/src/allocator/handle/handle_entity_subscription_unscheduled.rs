@@ -6,7 +6,7 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use rx_core_traits::{
-	SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown,
+	SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown, TeardownCollection,
 	WithSubscriptionContext, allocator::handle::UnscheduledSubscriptionHandle,
 };
 
@@ -118,7 +118,9 @@ impl SubscriptionLike for UnscheduledEntitySubscriptionHandle {
 			);
 		}
 	}
+}
 
+impl TeardownCollection for UnscheduledEntitySubscriptionHandle {
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,

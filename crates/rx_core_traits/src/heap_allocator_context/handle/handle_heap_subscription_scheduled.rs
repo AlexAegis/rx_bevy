@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 
 use crate::{
-	ObservableSubscription, SubscriptionLike, Teardown, Tick, Tickable,
+	SubscriptionScheduled, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
 	context::{
 		SubscriptionContext, WithSubscriptionContext,
 		allocator::handle::ScheduledSubscriptionHandle,
@@ -14,14 +14,14 @@ use super::{UnscheduledHeapSubscriptionHandle, WeakHeapSubscriptionHandle};
 
 pub struct ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	subscription: Arc<RwLock<Subscription>>,
 }
 
 impl<Subscription> ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	pub fn new(subscription: Subscription) -> Self {
 		Self {
@@ -32,7 +32,7 @@ where
 
 impl<Subscription> ScheduledSubscriptionHandle for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	type UnscheduledHandle = UnscheduledHeapSubscriptionHandle<Subscription>;
 	type WeakHandle = WeakHeapSubscriptionHandle<Subscription>;
@@ -48,14 +48,14 @@ where
 
 impl<Subscription> WithSubscriptionContext for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	type Context = Subscription::Context;
 }
 
 impl<Subscription> Tickable for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	fn tick(
 		&mut self,
@@ -72,7 +72,7 @@ where
 
 impl<Subscription> SubscriptionLike for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	fn is_closed(&self) -> bool {
 		if let Ok(lock) = self.subscription.read() {
@@ -93,7 +93,12 @@ where
 			}
 		}
 	}
+}
 
+impl<Subscription> TeardownCollection for ScheduledHeapSubscriptionHandle<Subscription>
+where
+	Subscription: SubscriptionScheduled + Send + Sync,
+{
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
@@ -111,7 +116,7 @@ where
 
 impl<Subscription> From<Subscription> for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	fn from(subscription: Subscription) -> Self {
 		Self::new(subscription)
@@ -120,7 +125,7 @@ where
 
 impl<Subscription> Drop for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: ObservableSubscription + Send + Sync,
+	Subscription: SubscriptionScheduled + Send + Sync,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
