@@ -27,7 +27,7 @@ fn insert_erased_component_by_type_id(type_id: TypeId) -> impl EntityCommand {
 		);
 
 		// SAFETY: `update_location` is called at the end, even though no other operations are done to this entity.
-		// This command always inserts a new component into an entity, but is is also only used on freshly spawned entities.
+		// This command always inserts a new component into an entity.
 		let world = unsafe { entity.world_mut() };
 
 		let erased_component_registry = world

@@ -19,13 +19,12 @@ where
 	C: Component + FromWorld + Send + Sync + 'static,
 {
 	fn build(&self, app: &mut App) {
-		app.world_mut().register_component::<C>();
-		app.add_systems(Startup, register_component_default::<C>);
 		app.init_resource::<ErasedComponentRegistry>();
+		app.add_systems(Startup, register_component_in_registry::<C>);
 	}
 }
 
-fn register_component_default<C>(mut registry: ResMut<ErasedComponentRegistry>)
+fn register_component_in_registry<C>(mut registry: ResMut<ErasedComponentRegistry>)
 where
 	C: Component + FromWorld + Send + Sync + 'static,
 {
