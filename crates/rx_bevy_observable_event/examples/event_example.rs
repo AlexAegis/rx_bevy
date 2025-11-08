@@ -9,6 +9,7 @@ use examples_common::{
 	SubscriptionMapResource, print_notification_observer, send_event, toggle_subscription_system,
 };
 use rx_bevy::prelude::*;
+use rx_core_traits::Never;
 
 fn main() -> AppExit {
 	App::new()
@@ -25,7 +26,7 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, DummyEvent, ()>(
+				toggle_subscription_system::<ExampleEntities, DummyEvent, Never>(
 					KeyCode::Space,
 					|res| res.event_observable,
 					|res| res.destination_entity,

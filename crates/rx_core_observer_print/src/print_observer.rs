@@ -1,13 +1,13 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_traits::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategoryObserver, SignalBound,
+	Never, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategoryObserver, SignalBound,
 	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 	Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
-pub struct PrintObserver<In, InError = (), Context = ()>
+pub struct PrintObserver<In, InError = Never, Context = ()>
 where
 	In: Debug,
 	InError: Debug,

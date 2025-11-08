@@ -3,8 +3,8 @@ use rx_core::prelude::*;
 /// The [CombineLatestObserver] combines the latest values from multiple other
 /// observables.
 fn main() {
-	let mut subject_1 = Subject::<i32, ()>::default();
-	let mut subject_2 = Subject::<i32, ()>::default();
+	let mut subject_1 = Subject::<i32>::default();
+	let mut subject_2 = Subject::<i32>::default();
 
 	let mut subscription = combine_latest(subject_1.clone(), subject_2.clone())
 		.subscribe(PrintObserver::new("combine_latest"), &mut ());

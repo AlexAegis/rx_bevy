@@ -12,7 +12,6 @@ use crate::{
 /// A SharedSubscriber is a subscriber that guarantees that if you clone it,
 /// the signals sent to the clone will reach the same recipient as the original
 /// subscriber did.
-// TODO: Maybe this and RcSubscriber should be joined together
 pub struct SharedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,

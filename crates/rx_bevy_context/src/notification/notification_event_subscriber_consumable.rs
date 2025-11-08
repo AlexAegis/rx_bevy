@@ -1,10 +1,10 @@
 use bevy_ecs::event::Event;
-use rx_core_traits::{SignalBound, SubscriberNotification};
+use rx_core_traits::{Never, SignalBound, SubscriberNotification};
 
 use crate::{BevySubscriptionContextProvider, SubscriberNotificationEvent};
 
 #[derive(Event, Clone, Debug)]
-pub struct ConsumableSubscriberNotificationEvent<In, InError = ()>
+pub struct ConsumableSubscriberNotificationEvent<In, InError = Never>
 where
 	In: SignalBound,
 	InError: SignalBound,

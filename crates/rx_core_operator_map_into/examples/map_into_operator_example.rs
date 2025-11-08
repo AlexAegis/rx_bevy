@@ -17,5 +17,5 @@ fn main() {
 	let _s = (1..=5)
 		.into_observable::<()>()
 		.map_into()
-		.subscribe(PrintObserver::<Foo, ()>::new("into_operator"), &mut ());
+		.subscribe(PrintObserver::<Foo>::new("into_operator"), &mut ());
 }

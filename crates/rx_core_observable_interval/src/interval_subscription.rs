@@ -1,7 +1,7 @@
 use bevy_time::{Timer, TimerMode};
 use rx_core_traits::{
-	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, TeardownCollection, Tick,
-	Tickable, WithSubscriptionContext,
+	Never, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, TeardownCollection,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 use crate::observable::IntervalObservableOptions;
@@ -16,7 +16,7 @@ where
 	/// It doesn't need to be a `usize` as the number it's compared against is
 	/// a `u32` coming from [bevy_time::Timer::times_finished_this_tick]
 	max_emissions_per_tick: u32,
-	destination: Box<dyn Subscriber<In = usize, InError = (), Context = Context> + Send + Sync>,
+	destination: Box<dyn Subscriber<In = usize, InError = Never, Context = Context> + Send + Sync>,
 	teardown: SubscriptionData<Context>,
 }
 
@@ -25,7 +25,7 @@ where
 	Context: SubscriptionContext,
 {
 	pub fn new(
-		destination: impl Subscriber<In = usize, InError = (), Context = Context> + 'static,
+		destination: impl Subscriber<In = usize, InError = Never, Context = Context> + 'static,
 		interval_subscription_options: IntervalObservableOptions,
 	) -> Self {
 		IntervalSubscription {

@@ -1,8 +1,8 @@
 use bevy_input::keyboard::KeyCode;
 use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext, SubscriptionData,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext,
+	SubscriptionData, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::KeyboardSubscription;
@@ -13,7 +13,7 @@ pub struct KeyboardObservable;
 
 impl ObservableOutput for KeyboardObservable {
 	type Out = KeyCode;
-	type OutError = ();
+	type OutError = Never;
 }
 
 impl WithSubscriptionContext for KeyboardObservable {

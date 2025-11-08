@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
+	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
 	SubscriptionContext, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
@@ -50,7 +50,7 @@ where
 	Context: SubscriptionContext,
 {
 	type Out = Iterator::Item;
-	type OutError = ();
+	type OutError = Never;
 }
 
 impl<Iterator, Context> WithSubscriptionContext for IteratorOnTickObservable<Iterator, Context>
@@ -130,7 +130,7 @@ mod test_iterator_on_tick_observable {
 		fn should_emit_its_values_every_two_ticks_then_complete() {
 			let mut mock_clock = MockClock::default();
 			let mut context = MockContext::default();
-			let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+			let mock_destination = MockObserver::<i32>::default();
 
 			let mut source = (1..=3).into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
 				OnTickObservableOptions {
@@ -211,7 +211,7 @@ mod test_iterator_on_tick_observable {
 		fn should_immediately_emit_all_its_values_then_complete() {
 			let mut mock_clock = MockClock::default();
 			let mut context = MockContext::default();
-			let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+			let mock_destination = MockObserver::<i32>::default();
 
 			let mut source = (1..=3).into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
 				OnTickObservableOptions {
@@ -247,7 +247,7 @@ mod test_iterator_on_tick_observable {
 		#[test]
 		fn should_not_finish_the_iterator_when_closed_early() {
 			let mut context = MockContext::default();
-			let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+			let mock_destination = MockObserver::<i32>::default();
 
 			let tracked_iterator = TrackedIterator::new(1..=5);
 			let tracked_data = tracked_iterator.get_tracking_data_ref();

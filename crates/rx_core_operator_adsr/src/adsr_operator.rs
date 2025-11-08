@@ -11,7 +11,7 @@ use crate::{AdsrSignal, AdsrSubscriber, operator::AdsrOperatorOptions};
 pub struct AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SubscriptionContext + 'static,
+	Context: SubscriptionContext,
 {
 	options: AdsrOperatorOptions,
 	_phantom_data: PhantomData<(InError, fn(Context))>,
@@ -20,7 +20,7 @@ where
 impl<InError, Context> AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SubscriptionContext + 'static,
+	Context: SubscriptionContext,
 {
 	pub fn new(options: AdsrOperatorOptions) -> Self {
 		Self {
@@ -33,7 +33,7 @@ where
 impl<InError, Context> Operator for AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SubscriptionContext + 'static,
+	Context: SubscriptionContext,
 {
 	type Context = Context;
 
@@ -63,7 +63,7 @@ where
 impl<InError, Context> ObserverInput for AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SubscriptionContext + 'static,
+	Context: SubscriptionContext,
 {
 	type In = bool;
 	type InError = InError;
@@ -72,7 +72,7 @@ where
 impl<InError, Context> ObservableOutput for AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
-	Context: SubscriptionContext + 'static,
+	Context: SubscriptionContext,
 {
 	type Out = AdsrSignal;
 	type OutError = InError;

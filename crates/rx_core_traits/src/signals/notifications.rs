@@ -49,7 +49,9 @@ where
 	// TODO: Add a real error type
 	type Error = ();
 
-	fn try_from(value: SubscriberNotification<In, InError, Context>) -> Result<Self, ()> {
+	fn try_from(
+		value: SubscriberNotification<In, InError, Context>,
+	) -> Result<Self, <Self as TryFrom<SubscriberNotification<In, InError, Context>>>::Error> {
 		match value {
 			SubscriberNotification::Next(next) => Ok(ObserverNotification::Next(next)),
 			SubscriberNotification::Error(error) => Ok(ObserverNotification::Error(error)),

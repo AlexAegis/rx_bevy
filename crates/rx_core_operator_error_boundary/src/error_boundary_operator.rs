@@ -4,18 +4,20 @@ use rx_core_traits::{
 	Never, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
 };
 
-use crate::IdentitySubscriber;
+use crate::ErrorBoundarySubscriber;
 
-/// # [IdentityOperator]
+/// # [ErrorBoundaryOperator]
 ///
-/// The [IdentityOperator] does nothing. It's only purpose is to let you
-/// easily define input types for a [CompositeOperator]
+/// The [ErrorBoundaryOperator] does nothing but ensure that the error type is
+/// [Never], giving you a compile error if the upstream error type has
+/// accidentally changed to something else, when you want to ensure the
+/// downstream error type stays [Never].
 #[derive(Debug)]
-pub struct IdentityOperator<In, InError = Never, Context = ()> {
-	_phantom_data: PhantomData<(In, InError, Context)>,
+pub struct ErrorBoundaryOperator<In, Context> {
+	_phantom_data: PhantomData<(In, fn(Context))>,
 }
 
-impl<In, InError, Context> Default for IdentityOperator<In, InError, Context> {
+impl<In, Context> Default for ErrorBoundaryOperator<In, Context> {
 	fn default() -> Self {
 		Self {
 			_phantom_data: PhantomData,
@@ -23,7 +25,7 @@ impl<In, InError, Context> Default for IdentityOperator<In, InError, Context> {
 	}
 }
 
-impl<In, InError, Context> Clone for IdentityOperator<In, InError, Context> {
+impl<In, Context> Clone for ErrorBoundaryOperator<In, Context> {
 	fn clone(&self) -> Self {
 		Self {
 			_phantom_data: PhantomData,
@@ -31,33 +33,30 @@ impl<In, InError, Context> Clone for IdentityOperator<In, InError, Context> {
 	}
 }
 
-impl<In, InError, Context> ObservableOutput for IdentityOperator<In, InError, Context>
+impl<In, Context> ObservableOutput for ErrorBoundaryOperator<In, Context>
 where
 	In: SignalBound,
-	InError: SignalBound,
 {
 	type Out = In;
-	type OutError = InError;
+	type OutError = Never;
 }
 
-impl<In, InError, Context> ObserverInput for IdentityOperator<In, InError, Context>
+impl<In, Context> ObserverInput for ErrorBoundaryOperator<In, Context>
 where
 	In: SignalBound,
-	InError: SignalBound,
 {
 	type In = In;
-	type InError = InError;
+	type InError = Never;
 }
 
-impl<In, InError, Context> Operator for IdentityOperator<In, InError, Context>
+impl<In, Context> Operator for ErrorBoundaryOperator<In, Context>
 where
 	In: SignalBound,
-	InError: SignalBound,
 	Context: SubscriptionContext,
 {
 	type Context = Context;
 	type Subscriber<Destination>
-		= IdentitySubscriber<Destination>
+		= ErrorBoundarySubscriber<Destination>
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -76,6 +75,6 @@ where
 			+ Send
 			+ Sync,
 	{
-		IdentitySubscriber::new(destination)
+		ErrorBoundarySubscriber::new(destination)
 	}
 }

@@ -1,11 +1,12 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
+	Never, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
 };
 
 use crate::TryCaptureSubscriber;
 
+// TODO: Rename to `into_result`, the `try_` prefix means something that can produce a error result, and the point of this is to avoid that
 /// The [TryCaptureOperator] is used to pack incoming values and errors into a
 /// Result. When used, upstream errors are guaranteed to not reach downstream.
 pub struct TryCaptureOperator<In, InError, Context = ()>
@@ -73,7 +74,7 @@ where
 	InError: SignalBound,
 {
 	type Out = Result<In, InError>;
-	type OutError = ();
+	type OutError = Never;
 }
 
 impl<In, InError, Context> Clone for TryCaptureOperator<In, InError, Context>

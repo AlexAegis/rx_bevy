@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
+	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
 	SubscriptionContext, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
@@ -44,7 +44,7 @@ where
 	Context: SubscriptionContext,
 {
 	type Out = Iterator::Item;
-	type OutError = ();
+	type OutError = Never;
 }
 
 impl<Iterator, Context> WithSubscriptionContext for IteratorObservable<Iterator, Context>
@@ -106,7 +106,7 @@ mod test {
 	#[test]
 	fn iterator_observable_should_emit_its_values_then_complete() {
 		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+		let mock_destination = MockObserver::<i32, Never, DropSafeSubscriptionContext>::default();
 
 		let mut source = (1..=2).into_observable::<MockContext<_, _, _>>();
 		let _subscription = source.subscribe(mock_destination, &mut context);

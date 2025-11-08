@@ -9,6 +9,7 @@ use examples_common::{
 	SubscriptionMapResource, print_notification_observer, send_event, toggle_subscription_system,
 };
 use rx_bevy::prelude::*;
+use rx_core_traits::Never;
 
 fn main() -> AppExit {
 	App::new()
@@ -25,17 +26,17 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, KeyCode, ()>(
+				toggle_subscription_system::<ExampleEntities, KeyCode, Never>(
 					KeyCode::KeyK,
 					|res| res.keyboard_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyI,
 					|res| res.interval_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyL,
 					|e| e.keyboard_switch_map_to_interval_observable,
 					|res| res.destination_entity,

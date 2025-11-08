@@ -10,7 +10,7 @@ use rx_core::prelude::*;
 /// source and connector
 fn main() {
 	let mut context = ();
-	let source = of(1);
+	let source = of::<_, ()>(1);
 	let mut connectable =
 		ConnectableObservable::new(source, ConnectableOptions::new(|_| Subject::default()));
 	let _subscription_0 =

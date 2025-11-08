@@ -1,12 +1,15 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, SubscriptionContext};
 
-use crate::FilterOperator;
+use crate::operator::FilterOperator;
 
 /// Operator creator function
-pub fn filter<Error, Filter, Out>(filter: Filter) -> FilterOperator<Out, Error, Filter>
+pub fn filter<Error, Filter, Out, Context>(
+	filter: Filter,
+) -> FilterOperator<Out, Error, Filter, Context>
 where
 	Filter: Fn(&Out) -> bool + Clone + Send + Sync,
+	Context: SubscriptionContext,
 {
 	FilterOperator::new(filter)
 }

@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
+	DetachedSubscriber, Never, Observable, ObservableOutput, Observer, ObserverInput,
 	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
@@ -11,7 +11,7 @@ use rx_core_traits::{
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.
 #[derive(Clone)]
-pub struct ReplaySubject<const CAPACITY: usize, In, InError = (), Context = ()>
+pub struct ReplaySubject<const CAPACITY: usize, In, InError = Never, Context = ()>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,

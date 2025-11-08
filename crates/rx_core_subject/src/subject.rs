@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use rx_core_traits::{
-	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
+	DetachedSubscriber, Never, Observable, ObservableOutput, Observer, ObserverInput,
 	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
@@ -10,7 +10,7 @@ use crate::{Multicast, MulticastSubscription};
 
 /// A Subject is a shared multicast observer, can be used for broadcasting,
 /// A subjects clone still multicasts to the same set of subscribers.
-pub struct Subject<In, InError = (), Context = ()>
+pub struct Subject<In, InError = Never, Context = ()>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,

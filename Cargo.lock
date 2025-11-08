@@ -4489,6 +4489,7 @@ dependencies = [
  "rx_core_operator_adsr",
  "rx_core_operator_composite",
  "rx_core_operator_enumerate",
+ "rx_core_operator_error_boundary",
  "rx_core_operator_filter",
  "rx_core_operator_filter_map",
  "rx_core_operator_finalize",
@@ -4693,6 +4694,18 @@ dependencies = [
 name = "rx_core_operator_enumerate"
 version = "0.1.0"
 dependencies = [
+ "rx_core",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_error_boundary"
+version = "0.1.0"
+dependencies = [
+ "disqualified",
  "rx_core",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",

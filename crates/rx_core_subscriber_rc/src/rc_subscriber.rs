@@ -256,12 +256,9 @@ mod test {
 
 	use crate::RcSubscriber;
 
-	fn setup() -> (
-		RcSubscriber<MockObserver<i32, (), DropSafeSubscriptionContext>>,
-		MockContext<i32, (), DropSafeSubscriptionContext>,
-	) {
+	fn setup() -> (RcSubscriber<MockObserver<i32>>, MockContext<i32>) {
 		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+		let mock_destination = MockObserver::<i32>::default();
 
 		let rc_subscriber = RcSubscriber::new(mock_destination, &mut context);
 
@@ -386,10 +383,8 @@ mod test {
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
-		let mut iterator_a = IteratorObservable::<
-			RangeInclusive<i32>,
-			MockContext<i32, (), DropSafeSubscriptionContext>,
-		>::new(1..=10);
+		let mut iterator_a =
+			IteratorObservable::<RangeInclusive<i32>, MockContext<i32>>::new(1..=10);
 
 		let mut iterator_a_subscription = iterator_a.subscribe(rc_subscriber, &mut context);
 
@@ -405,10 +400,8 @@ mod test {
 			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
-		let mut iterator_a = IteratorObservable::<
-			RangeInclusive<i32>,
-			MockContext<i32, (), DropSafeSubscriptionContext>,
-		>::new(1..=10);
+		let mut iterator_a =
+			IteratorObservable::<RangeInclusive<i32>, MockContext<i32>>::new(1..=10);
 
 		let iterator_a_destination = rc_subscriber.clone_with_context(&mut context);
 

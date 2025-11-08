@@ -1,5 +1,7 @@
 use bevy_ecs::{entity::Entity, event::Event};
-use rx_core_traits::{ObserverNotification, SignalBound, SubscriberNotification, Teardown, Tick};
+use rx_core_traits::{
+	Never, ObserverNotification, SignalBound, SubscriberNotification, Teardown, Tick,
+};
 use thiserror::Error;
 
 use crate::BevySubscriptionContextProvider;
@@ -9,7 +11,7 @@ use crate::BevySubscriptionContextProvider;
 /// one destination and let the `In` and `InError` signals be taken out of the
 /// event.
 #[derive(Event, Clone, Debug)]
-pub enum SubscriberNotificationEvent<In, InError = ()>
+pub enum SubscriberNotificationEvent<In, InError = Never>
 where
 	In: SignalBound,
 	InError: SignalBound,
@@ -75,7 +77,9 @@ where
 	// TODO: Add a real error type
 	type Error = ();
 
-	fn try_from(value: SubscriberNotificationEvent<In, InError>) -> Result<Self, ()> {
+	fn try_from(
+		value: SubscriberNotificationEvent<In, InError>,
+	) -> Result<Self, <ObserverNotification<In, InError> as TryFrom<SubscriberNotificationEvent<In, InError>>>::Error>{
 		match value {
 			SubscriberNotificationEvent::Next(next) => Ok(ObserverNotification::Next(next)),
 			SubscriberNotificationEvent::Error(error) => Ok(ObserverNotification::Error(error)),

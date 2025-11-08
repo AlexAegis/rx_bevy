@@ -18,7 +18,7 @@ use rx_core::prelude::*;
 ///
 fn main() {
 	let mut context = ();
-	let mut subject = Subject::<i32, ()>::default();
+	let mut subject = Subject::<i32>::default();
 	let mut subscription = subject
 		.clone()
 		.finalize(|_| println!("finally!"))

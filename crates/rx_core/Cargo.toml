@@ -256,6 +256,7 @@ rx_core_observer_print = { workspace = true, optional = true }
 rx_core_operator_adsr = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 rx_core_operator_enumerate = { workspace = true, optional = true }
+rx_core_operator_error_boundary = { workspace = true, optional = true }
 rx_core_operator_filter = { workspace = true, optional = true }
 rx_core_operator_filter_map = { workspace = true, optional = true }
 rx_core_operator_finalize = { workspace = true, optional = true }

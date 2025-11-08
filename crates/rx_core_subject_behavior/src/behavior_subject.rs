@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	DetachedSubscriber, Observable, ObservableOutput, Observer, ObserverInput,
+	DetachedSubscriber, Never, Observable, ObservableOutput, Observer, ObserverInput,
 	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
@@ -10,7 +10,7 @@ use rx_core_traits::{
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.
 #[derive(Clone)]
-pub struct BehaviorSubject<In, InError = (), Context = ()>
+pub struct BehaviorSubject<In, InError = Never, Context = ()>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,

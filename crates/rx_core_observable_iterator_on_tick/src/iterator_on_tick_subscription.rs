@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 
 use rx_core_traits::{
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Never, SignalBound, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike,
 	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
 };
 
@@ -17,7 +17,7 @@ where
 	peekable_iterator: Peekable<Iterator::IntoIter>,
 	options: OnTickObservableOptions,
 	destination:
-		Box<dyn Subscriber<In = Iterator::Item, InError = (), Context = Context> + Send + Sync>,
+		Box<dyn Subscriber<In = Iterator::Item, InError = Never, Context = Context> + Send + Sync>,
 	teardown: SubscriptionData<Context>,
 }
 
@@ -28,7 +28,8 @@ where
 	Context: SubscriptionContext,
 {
 	pub fn new(
-		mut destination: impl Subscriber<In = Iterator::Item, InError = (), Context = Context> + 'static,
+		mut destination: impl Subscriber<In = Iterator::Item, InError = Never, Context = Context>
+		+ 'static,
 		iterator: Iterator::IntoIter,
 		options: OnTickObservableOptions,
 		context: &mut Context::Item<'_, '_>,

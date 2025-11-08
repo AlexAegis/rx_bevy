@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SubscriptionContext,
+	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SubscriptionContext,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
@@ -32,7 +32,7 @@ where
 	Context: SubscriptionContext,
 {
 	type Out = usize;
-	type OutError = ();
+	type OutError = Never;
 }
 
 impl<Context> WithSubscriptionContext for IntervalObservable<Context>

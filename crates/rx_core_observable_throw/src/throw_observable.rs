@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
+	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
 	SubscriptionContext, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
@@ -31,7 +31,7 @@ impl<OutError, Context> ObservableOutput for ThrowObservable<OutError, Context>
 where
 	OutError: SignalBound + Clone,
 {
-	type Out = ();
+	type Out = Never;
 	type OutError = OutError;
 }
 

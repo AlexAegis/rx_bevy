@@ -31,6 +31,8 @@ that a test for a rule exists for any given implementation.
 
 ## `RX_OB_IMMEDIATE_COMPLETION`: Observables must immediately complete when they can no longer emit anything
 
+> Testable: Yes
+
 Observables that have finite values to emit, or know that further emissions are
 impossible, must complete.
 
@@ -45,16 +47,22 @@ impossible, must complete.
 
 ## `RX_OB_UNSUBSCRIBE_AFTER_COMPLETE`: Observables must immediately unsubscribe after completion
 
+> Testable: Yes
+
 After a `Complete` signal is sent, the destination must be unsubscribed
 and the observable!
 
 ## `RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE_EXCEPT_TICKS`: Subscriptions and closable subscribers must not send events downstream after they close except for forwarding upstream ticks
+
+> Testable: No
 
 If a subscription has been closed - which usually happens because it
 unsubscribed - it must not send any events downstream except forwarding ticks
 coming from upstream. (See rule `RX_ALWAYS_FORWARD_TICKS`)
 
 ## `RX_ALWAYS_FORWARD_TICKS`: Observable Subscriptions and Operators must always forward the tick signal itself to its destination
+
+> Testable: Yes
 
 Downstream operators depend on the tick signal, it must be forwarded as
 is. Unless altering it is the expected behavior.
@@ -86,6 +94,8 @@ fn tick(
 
 ## `RX_OP_ALWAYS_FORWARD_INLINE`: Operator Subscribers must always forward all upstream signal downstream unless altering it is their expected behavior
 
+> Testable: No
+
 Downstream operators depend on signals too, don't forget to forward them!
 
 > The `map` operator's only job is to turn the upstream `next` signal into
@@ -104,7 +114,9 @@ fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Ite
 }
 ```
 
-## `RX_OP_NO_UNNECESSARY_CLOSE_ON_SINGLE_EMISSIONS`: Operator Subscribers should not do unnecessary checks and maintain their own is_closed state unless they can close themselves
+## `RX_OP_NO_UNNECESSARY_CLOSED_CHECK_ON_SINGLE_EMISSIONS`: Operator Subscribers should not do unnecessary checks and maintain their own is_closed state unless they can close themselves
+
+> Testable: Yes
 
 If an operator can't close itself because it's not not within it's ability to
 trigger an unsubscribe, then it's completely unnecessary to check if downstream
@@ -151,6 +163,8 @@ fn next(
 
 ## `RX_CHECK_CLOSED_ON_MULTI_EMISSIONS`: Operators & Observables that can emit multiple downstream signals for a single upstream signal should check if downstream is closed between emissions to stop early
 
+> Testable: Depends on the source
+
 Downstream can close early, for example due to a `take(n)` operator that will
 close after `n` emissions. If you're sending a lot of signals downstream at
 once, everything sent after downstream closed is a waste, and you should stop
@@ -167,6 +181,8 @@ for item in self.iterator.clone().into_iter() {
 
 ## `RX_OP_UNSUBSCRIBE_AFTER_COMPLETION`: Operators must immediately unsubscribe if and only when they themselves trigged a completion
 
+> Testable: Yes
+
 If the operator just received a completion signal from upstream it does
 not need to also call unsubscribe, but if the completion was triggered by the
 operator, it does.
@@ -175,6 +191,8 @@ operator, it does.
 > also call `unsubscribe` on itself and close.
 
 ## `RX_OP_WHAT_CAN_CLOSE_SHALL_TRACK_CLOSE`: If an operator can close itself, it should track that closed state and not trust downstream
+
+> Testable: No
 
 Closedness should be tracked by the operator itself and not rely on the
 destination being closed because you called unsubscribe on it, in case something
@@ -207,6 +225,8 @@ fn is_closed(&self) -> bool {
 
 ## `RX_EMPTY_IS_NOT_CLOSED`: Closedness must be explicit
 
+> Testable: Yes
+
 You must never treat a subscription as closed just because it's empty and
 there's nothing to clean up or unsubscribed from. If you have a subscription
 or internal teardown that isn't being closed by the time it drops in a
@@ -217,9 +237,40 @@ just delay the problem until it's not empty in another usecase.
 
 ## `RX_WHATS_CLOSED_STAYS_CLOSED`: Closed subscriptions can never re-open
 
+> Testable: No, but given with `SubscriptionClosedFlag`
+
 A subscription that was unsubscribed and thus closed, must never be re-opened.
 
 > This can be easily ensured by not using a simple `bool` to track the closed
 > state but `SubscriptionClosedFlag` that ensures a `false` never turns back
 > into a `true`. Types that use this struct for their `is_closed()`
 > implementation automatically complies with this rule.
+
+## `RX_UNUSED_SIGNALS_MUST_BE_NEVER`: Using `Never` as your signal type means it won't ever be sent, as it can't be sent
+
+> Testable: No
+
+The `rx_core_traits` crate exposes the `Never` type which can't be
+constructed since it's an enum with no variants.
+
+> Never is actually just a type alias for `core::convert::Infallible`. The
+> reason `Infallible` isn't used directly, because that name conveys that it's
+> an *error*, while here it should mean an event/signal that can *never* happen.
+> And that event can be a valid output too, not just an error.
+
+This type **MUST** be used to denote signals that are never produced instead of
+using the unit type `()` which could be produced, and as such is inadequate to
+denote that something won't ever produce said signal.
+
+- If an Observable never produces an error, it **must** set it's `OutError`
+  type to `Never`.
+- If an Observable never produces a value, it's `Out` type **must** be set to
+  `Never`.
+  - For example the `ThrowObservable` only produces a single error, therefore
+    it's `Out` type is `Never`
+  - And the `NeverObservable` never produces anything so both `Out` and
+    `OutError` is `Never`.
+- If a Subscriber never sends errors downstream (for example it catches
+  errors), it also **must** set it's `OutError` type to `Never`.
+- If a Subscriber never sends values downstream (for example it re-throws them
+  as errors), it also **must** set it's `Out` type to `Never`.

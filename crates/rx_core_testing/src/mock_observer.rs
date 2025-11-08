@@ -1,16 +1,16 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SignalBound,
-	SubscriberNotification, SubscriptionClosedFlag, SubscriptionContext,
-	SubscriptionContextDropSafety, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	DropSafeSubscriptionContext, Never, Observer, ObserverInput, ObserverUpgradesToSelf,
+	PrimaryCategorySubscriber, SignalBound, SubscriberNotification, SubscriptionClosedFlag,
+	SubscriptionContext, SubscriptionContextDropSafety, SubscriptionLike, Teardown,
+	TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::MockContext;
 
 #[derive(Debug)]
-pub struct MockObserver<In, InError, DropSafety>
+pub struct MockObserver<In, InError = Never, DropSafety = DropSafeSubscriptionContext>
 where
 	In: SignalBound,
 	InError: SignalBound,

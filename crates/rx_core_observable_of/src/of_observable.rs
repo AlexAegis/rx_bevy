@@ -2,13 +2,13 @@ use core::marker::PhantomData;
 
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
+	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
 	SubscriptionContext, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// Emits a single value then immediately completes
 #[derive(Clone)]
-pub struct OfObservable<Out, Context>
+pub struct OfObservable<Out, Context = ()>
 where
 	Out: Clone,
 {
@@ -74,7 +74,7 @@ where
 	Out: SignalBound + Clone,
 {
 	type Out = Out;
-	type OutError = ();
+	type OutError = Never;
 }
 
 #[cfg(test)]

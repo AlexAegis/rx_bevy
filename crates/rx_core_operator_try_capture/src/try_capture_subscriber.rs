@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Never, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
+	PrimaryCategorySubscriber, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike,
+	Teardown, TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 pub struct TryCaptureSubscriber<In, InError, Destination>
@@ -179,5 +179,5 @@ where
 	Destination: Subscriber,
 {
 	type Out = Result<In, InError>;
-	type OutError = ();
+	type OutError = Never;
 }

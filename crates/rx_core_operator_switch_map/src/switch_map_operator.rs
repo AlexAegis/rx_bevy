@@ -131,7 +131,7 @@ mod switch_map_operator {
 	#[test]
 	fn subscribes_to_the_inner_observable_as_many_times_as_many_upstream_emissions_there_are() {
 		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+		let mock_destination = MockObserver::<i32>::default();
 
 		let mut source = (1..=2)
 			.into_observable::<MockContext<_, _, _>>()
@@ -148,10 +148,9 @@ mod switch_map_operator {
 	#[test]
 	fn subscribes_to_the_inner_observable_on_every_emit_of_a_source_subject_and_completes() {
 		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+		let mock_destination = MockObserver::<i32>::default();
 
-		let mut subject =
-			Subject::<i32, (), MockContext<i32, (), DropSafeSubscriptionContext>>::default();
+		let mut subject = Subject::<i32, (), MockContext<i32>>::default();
 		let mut source = subject
 			.clone()
 			.switch_map(|i| (0..=i).into_observable::<MockContext<_, _, _>>());
@@ -182,10 +181,9 @@ mod switch_map_operator {
 	#[test]
 	fn upstream_ticks_are_forwarded_to_the_inner_subscription() {
 		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, (), DropSafeSubscriptionContext>::default();
+		let mock_destination = MockObserver::<i32>::default();
 
-		let mut subject =
-			Subject::<i32, (), MockContext<i32, (), DropSafeSubscriptionContext>>::default();
+		let mut subject = Subject::<i32, (), MockContext<i32>>::default();
 		let mut source = subject
 			.clone()
 			.switch_map(|i| (0..=i).into_observable::<MockContext<_, _, _>>());

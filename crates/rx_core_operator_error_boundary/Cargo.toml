@@ -1,0 +1,42 @@
+[package]
+name = "rx_core_operator_error_boundary"
+description = "error boundary operator for rx_core. ensures at the type level that no errors are coming from upstream."
+version = "0.1.0"
+readme = "readme.md"
+publish = true
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["compose", "pipe"]
+dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
+example = [
+    "dev",
+    "rx_core/example",
+    "rx_core_traits/example",
+    "rx_core_testing/example",
+]
+compose = ["dep:rx_core_operator_composite", "rx_core/compose"]
+pipe = [
+    "dep:rx_core_observable_pipe",
+    "rx_core/pipe",
+    "rx_core_operator_composite?/pipe",
+]
+
+[dependencies]
+rx_core_traits = { workspace = true }
+rx_core_operator_composite = { workspace = true, optional = true }
+rx_core_observable_pipe = { workspace = true, optional = true }
+disqualified = { workspace = true }
+
+[dev-dependencies]
+rx_core = { workspace = true }
+rx_core_testing = { workspace = true }

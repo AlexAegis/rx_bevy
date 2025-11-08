@@ -3,8 +3,8 @@ use std::{fmt::Debug, marker::PhantomData};
 use bevy_ecs::{entity::Entity, event::Event};
 use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext, SubscriptionData,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext,
+	SubscriptionData, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::EntityEventSubscription;
@@ -35,7 +35,7 @@ where
 	E: Event + Clone,
 {
 	type Out = E;
-	type OutError = ();
+	type OutError = Never;
 }
 
 impl<E> WithSubscriptionContext for EventObservable<E>
