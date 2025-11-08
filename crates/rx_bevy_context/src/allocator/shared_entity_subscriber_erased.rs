@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, SignalBound, SubscriberNotification,
-	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable, WithSubscriptionContext,
-	allocator::ErasedSharedDestination,
+	SubscriptionClosedFlag, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithSubscriptionContext, allocator::ErasedSharedDestination,
 };
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
@@ -20,7 +20,7 @@ where
 {
 	/// Entity where observed signals are sent to
 	destination_entity: Entity,
-	closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -32,7 +32,7 @@ where
 	pub fn new(destination_entity: Entity) -> Self {
 		Self {
 			destination_entity,
-			closed: false,
+			closed_flag: false.into(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -51,7 +51,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			destination_entity: self.destination_entity,
-			closed: self.closed,
+			closed_flag: self.closed_flag.clone(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -143,12 +143,12 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.is_closed() {
-			self.closed = true;
+			self.closed_flag.close();
 			context.send_subscriber_notification(
 				self.destination_entity,
 				SubscriberNotification::<In, InError, Self::Context>::Unsubscribe,
@@ -167,9 +167,13 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
-		context.send_subscriber_notification(
-			self.destination_entity,
-			SubscriberNotification::<In, InError, Self::Context>::Add(Some(teardown)),
-		);
+		if !self.is_closed() {
+			context.send_subscriber_notification(
+				self.destination_entity,
+				SubscriberNotification::<In, InError, Self::Context>::Add(Some(teardown)),
+			);
+		} else {
+			teardown.execute(context);
+		}
 	}
 }

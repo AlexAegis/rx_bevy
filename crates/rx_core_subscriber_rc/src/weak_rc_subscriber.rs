@@ -1,7 +1,7 @@
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 	allocator::{DestinationSharedTypes, SharedDestination},
 };
 
@@ -14,7 +14,7 @@ where
 {
 	pub(crate) shared_destination:
 		<InnerRcSubscriber<Destination> as DestinationSharedTypes>::Shared,
-	pub(crate) closed: bool,
+	pub(crate) closed_flag: SubscriptionClosedFlag,
 }
 
 impl<Destination> ObserverInput for WeakRcSubscriber<Destination>
@@ -91,12 +91,12 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.closed = true;
+			self.closed_flag.close();
 			self.shared_destination.unsubscribe(context);
 		}
 	}

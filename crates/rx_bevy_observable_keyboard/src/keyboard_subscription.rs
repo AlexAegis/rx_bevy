@@ -1,8 +1,8 @@
 use bevy_input::{ButtonInput, keyboard::KeyCode};
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
-	Subscriber, SubscriptionContext, SubscriptionLike, TeardownCollection, Tick, Tickable,
-	WithSubscriptionContext,
+	Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, TeardownCollection,
+	Tick, Tickable, WithSubscriptionContext,
 };
 
 pub struct KeyboardSubscription<Destination>
@@ -10,7 +10,7 @@ where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	destination: Destination,
-	closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 }
 
 impl<Destination> KeyboardSubscription<Destination>
@@ -20,7 +20,7 @@ where
 	pub fn new(destination: Destination) -> Self {
 		Self {
 			destination,
-			closed: false,
+			closed_flag: false.into(),
 		}
 	}
 }
@@ -39,13 +39,13 @@ where
 	#[inline]
 	#[track_caller]
 	fn is_closed(&self) -> bool {
-		self.closed
+		*self.closed_flag
 	}
 
 	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.closed = true;
+			self.closed_flag.close();
 			self.destination.unsubscribe(context);
 		}
 	}
@@ -61,7 +61,11 @@ where
 		teardown: rx_core_traits::Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		self.destination.add_teardown(teardown, context);
+		if !self.is_closed() {
+			self.destination.add_teardown(teardown, context);
+		} else {
+			teardown.execute(context);
+		}
 	}
 }
 
@@ -71,13 +75,16 @@ where
 {
 	#[track_caller]
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
-		let just_pressed_key_codes = {
-			let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
-			button_input.get_just_pressed().cloned().collect::<Vec<_>>()
-		};
-		for key_code in just_pressed_key_codes {
-			self.destination.next(key_code, context);
+		if !self.is_closed() {
+			let just_pressed_key_codes = {
+				let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
+				button_input.get_just_pressed().cloned().collect::<Vec<_>>()
+			};
+			for key_code in just_pressed_key_codes {
+				self.destination.next(key_code, context);
+			}
 		}
+
 		self.destination.tick(tick, context);
 	}
 }

@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use bevy_ecs::entity::Entity;
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, Subscriber, SubscriberNotification,
-	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable, WithSubscriptionContext,
-	allocator::SharedDestination,
+	SubscriptionClosedFlag, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithSubscriptionContext, allocator::SharedDestination,
 };
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, SubscriberComponent};
@@ -18,7 +18,7 @@ where
 {
 	destination_entity: Entity,
 	/// TODO: The shared heap subs use this field, but we don't know the type of destination. so maybe add a new component SubscriptionClosed(bool)
-	closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 	_phantom_data: PhantomData<Destination>,
 }
 
@@ -29,7 +29,7 @@ where
 	pub(crate) fn new(destination_entity: Entity) -> Self {
 		Self {
 			destination_entity,
-			closed: false,
+			closed_flag: false.into(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -54,7 +54,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			destination_entity: self.destination_entity,
-			closed: self.closed,
+			closed_flag: self.closed_flag.clone(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -67,7 +67,7 @@ where
 	fn clone_with_context(&self, _context: &mut BevySubscriptionContext<'_, '_>) -> Self {
 		Self {
 			destination_entity: self.destination_entity,
-			closed: self.closed,
+			closed_flag: self.closed_flag.clone(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -194,20 +194,22 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
-		self.closed = true;
-		context.send_subscriber_notification(
+		if !self.is_closed() {
+			self.closed_flag.close();
+			context.send_subscriber_notification(
 			self.destination_entity,
 			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Unsubscribe,
 		);
-		context
-			.deferred_world
-			.commands()
-			.entity(self.destination_entity)
-			.despawn();
+			context
+				.deferred_world
+				.commands()
+				.entity(self.destination_entity)
+				.despawn();
+		}
 	}
 }
 
@@ -220,11 +222,15 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut BevySubscriptionContext<'_, '_>,
 	) {
-		context.send_subscriber_notification(
-			self.destination_entity,
-			SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Add(
-				Some(teardown),
-			),
-		);
+		if !self.is_closed() {
+			context.send_subscriber_notification(
+				self.destination_entity,
+				SubscriberNotification::<Destination::In, Destination::InError, Self::Context>::Add(
+					Some(teardown),
+				),
+			);
+		} else {
+			teardown.execute(context);
+		}
 	}
 }

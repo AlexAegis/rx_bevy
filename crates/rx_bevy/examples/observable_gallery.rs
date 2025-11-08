@@ -28,17 +28,17 @@ fn main() -> AppExit {
 				toggle_subscription_system::<ExampleEntities, KeyCode, ()>(
 					KeyCode::KeyK,
 					|res| res.keyboard_observable,
-					|res| res.example_event_observer,
+					|res| res.destination_entity,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
 					KeyCode::KeyI,
 					|res| res.interval_observable,
-					|res| res.example_event_observer,
+					|res| res.destination_entity,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
 					KeyCode::KeyL,
 					|e| e.keyboard_switch_map_to_interval_observable,
-					|res| res.example_event_observer,
+					|res| res.destination_entity,
 				),
 				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 			),
@@ -48,7 +48,7 @@ fn main() -> AppExit {
 
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
-	example_event_observer: Entity,
+	destination_entity: Entity,
 	subscriptions: HashMap<(Entity, Entity), Entity>,
 	keyboard_observable: Entity,
 	keyboard_switch_map_to_interval_observable: Entity,
@@ -76,8 +76,8 @@ fn setup(mut commands: Commands) {
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
-	let example_event_observer = commands
-		.spawn(Name::new("ExampleObserver"))
+	let destination_entity = commands
+		.spawn(Name::new("Destination"))
 		.observe(print_notification_observer::<String>)
 		.observe(print_notification_observer::<i32>)
 		.observe(print_notification_observer::<usize>)
@@ -136,7 +136,7 @@ fn setup(mut commands: Commands) {
 
 	commands.insert_resource(ExampleEntities {
 		subscriptions: HashMap::new(),
-		example_event_observer,
+		destination_entity,
 		keyboard_observable,
 		interval_observable,
 		keyboard_switch_map_to_interval_observable,

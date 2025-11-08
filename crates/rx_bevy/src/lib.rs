@@ -6,6 +6,9 @@ pub mod observable {
 
 	#[cfg(feature = "observable_keyboard")]
 	pub use rx_bevy_observable_keyboard::observable::*;
+
+	#[cfg(feature = "observable_event")]
+	pub use rx_bevy_observable_event::observable::*;
 }
 
 #[cfg(feature = "pipe")]

@@ -77,8 +77,10 @@ mod test {
 
 	#[test]
 	fn when_created_as_open_it_returns_its_initial_state() {
-		let flag = SubscriptionClosedFlag::new_opened();
+		let mut flag = SubscriptionClosedFlag::new_opened();
 		assert!(!flag.is_closed());
+		// Close because of drop protection
+		flag.close();
 	}
 
 	#[test]

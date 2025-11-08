@@ -107,7 +107,7 @@ where
 	) -> WeakRcSubscriber<Destination> {
 		WeakRcSubscriber {
 			shared_destination: self.shared_destination.clone_with_context(context),
-			closed: self.completed || self.unsubscribed,
+			closed_flag: (self.completed || self.unsubscribed).into(),
 		}
 	}
 }

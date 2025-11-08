@@ -1,7 +1,7 @@
 use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_traits::{
-	SubscriptionLike, SubscriptionNotification, Teardown, TeardownCollection,
-	WithSubscriptionContext, allocator::handle::WeakSubscriptionHandle,
+	SubscriptionClosedFlag, SubscriptionLike, SubscriptionNotification, Teardown,
+	TeardownCollection, WithSubscriptionContext, allocator::handle::WeakSubscriptionHandle,
 };
 
 use crate::{
@@ -19,14 +19,14 @@ use crate::{
 #[component(on_insert=erased_subscription_add_notification_observer_on_insert)]
 pub struct WeakEntitySubscriptionHandle {
 	subscription_entity: Entity,
-	closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 }
 
 impl WeakEntitySubscriptionHandle {
 	pub fn new(subscription_entity: Entity) -> Self {
 		Self {
 			subscription_entity,
-			closed: false,
+			closed_flag: false.into(),
 		}
 	}
 }
@@ -41,19 +41,19 @@ impl Clone for WeakEntitySubscriptionHandle {
 	fn clone(&self) -> Self {
 		Self {
 			subscription_entity: self.subscription_entity,
-			closed: self.closed,
+			closed_flag: self.closed_flag.clone(),
 		}
 	}
 }
 
 impl SubscriptionLike for WeakEntitySubscriptionHandle {
 	fn is_closed(&self) -> bool {
-		self.closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.is_closed() {
-			self.closed = true;
+			self.closed_flag.close();
 			context.send_subscription_notification(
 				self.subscription_entity,
 				SubscriptionNotification::Unsubscribe,
@@ -86,5 +86,8 @@ impl Drop for WeakEntitySubscriptionHandle {
 		// won't need to panic because we dropped an active subscription.
 
 		// The component implementation of this handle must also not unsubscribe `on_remove`.
+
+		// Doesn't own resources so it's not required to be closed to be dropped.
+		self.closed_flag.close();
 	}
 }

@@ -1,7 +1,8 @@
 use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_traits::{
-	SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown, TeardownCollection,
-	Tick, Tickable, WithSubscriptionContext, allocator::handle::ScheduledSubscriptionHandle,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
+	Teardown, TeardownCollection, Tick, Tickable, WithSubscriptionContext,
+	allocator::handle::ScheduledSubscriptionHandle,
 };
 
 use crate::{
@@ -22,21 +23,21 @@ pub trait ErasedEntitySubscriptionHandle {
 #[component(on_insert=erased_subscription_add_notification_observer_on_insert, on_remove=erased_subscription_unsubscribe_on_remove::<Self>)]
 pub struct ScheduledEntitySubscriptionHandle {
 	subscription_entity: Entity,
-	closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 }
 
 impl ScheduledEntitySubscriptionHandle {
 	pub fn new(subscription_entity: Entity) -> Self {
 		Self {
 			subscription_entity,
-			closed: false,
+			closed_flag: false.into(),
 		}
 	}
 }
 
 impl ErasedEntitySubscriptionHandle for ScheduledEntitySubscriptionHandle {
 	fn close_and_get_subscription_entity(&mut self) -> Entity {
-		self.closed = true;
+		self.closed_flag = true.into();
 		self.subscription_entity
 	}
 }
@@ -75,12 +76,12 @@ impl Tickable for ScheduledEntitySubscriptionHandle {
 
 impl SubscriptionLike for ScheduledEntitySubscriptionHandle {
 	fn is_closed(&self) -> bool {
-		self.closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.closed = true;
+			self.closed_flag.close();
 			context.send_subscription_notification(
 				self.subscription_entity,
 				SubscriptionNotification::Unsubscribe,

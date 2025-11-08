@@ -6,8 +6,9 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use rx_core_traits::{
-	SubscriptionContext, SubscriptionLike, SubscriptionNotification, Teardown, TeardownCollection,
-	WithSubscriptionContext, allocator::handle::UnscheduledSubscriptionHandle,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
+	Teardown, TeardownCollection, WithSubscriptionContext,
+	allocator::handle::UnscheduledSubscriptionHandle,
 };
 
 use crate::{
@@ -21,7 +22,7 @@ use super::WeakEntitySubscriptionHandle;
 #[component(on_insert=erased_subscription_add_notification_observer_on_insert, on_remove=erased_subscription_unsubscribe_on_remove::<Self>)]
 pub struct UnscheduledEntitySubscriptionHandle {
 	subscription_entity: Entity,
-	closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 }
 
 pub(crate) fn erased_subscription_add_notification_observer_on_insert(
@@ -71,14 +72,14 @@ impl UnscheduledEntitySubscriptionHandle {
 	pub(crate) fn new(subscription_entity: Entity) -> Self {
 		Self {
 			subscription_entity,
-			closed: false,
+			closed_flag: false.into(),
 		}
 	}
 }
 
 impl ErasedEntitySubscriptionHandle for UnscheduledEntitySubscriptionHandle {
 	fn close_and_get_subscription_entity(&mut self) -> Entity {
-		self.closed = true;
+		self.closed_flag.close();
 		self.subscription_entity
 	}
 }
@@ -99,19 +100,19 @@ impl Clone for UnscheduledEntitySubscriptionHandle {
 	fn clone(&self) -> Self {
 		Self {
 			subscription_entity: self.subscription_entity,
-			closed: self.closed,
+			closed_flag: self.closed_flag.clone(),
 		}
 	}
 }
 
 impl SubscriptionLike for UnscheduledEntitySubscriptionHandle {
 	fn is_closed(&self) -> bool {
-		self.closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.is_closed() {
-			self.closed = true;
+			self.closed_flag.close();
 			context.send_subscription_notification(
 				self.subscription_entity,
 				SubscriptionNotification::Unsubscribe,

@@ -408,6 +408,17 @@ where
 	}
 }
 
+impl<In, InError, DropSafety> Drop for MockContext<In, InError, DropSafety>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	DropSafety: SubscriptionContextDropSafety,
+{
+	fn drop(&mut self) {
+		self.closed_flag.close();
+	}
+}
+
 #[cfg(test)]
 mod test_mock_context {
 

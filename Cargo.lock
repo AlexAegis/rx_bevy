@@ -4365,6 +4365,7 @@ dependencies = [
  "disqualified",
  "examples_common",
  "rx_bevy_context",
+ "rx_bevy_observable_event",
  "rx_bevy_observable_keyboard",
  "rx_bevy_plugin",
  "rx_core",
@@ -4403,6 +4404,25 @@ dependencies = [
  "smallvec",
  "stealcell",
  "thiserror 2.0.17",
+]
+
+[[package]]
+name = "rx_bevy_observable_event"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_input",
+ "bevy_reflect",
+ "disqualified",
+ "examples_common",
+ "rx_bevy",
+ "rx_bevy_context",
+ "rx_core_testing",
+ "rx_core_traits",
 ]
 
 [[package]]

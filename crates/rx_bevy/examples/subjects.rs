@@ -43,32 +43,32 @@ fn main() -> AppExit {
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
 					KeyCode::KeyS,
 					|res| res.subject_usize,
-					|res| res.example_event_observer,
+					|res| res.destination_entity_1,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
 					KeyCode::KeyD,
 					|res| res.replay_subject_usize,
-					|res| res.example_event_observer,
+					|res| res.destination_entity_1,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
 					KeyCode::KeyF,
 					|res| res.behavior_subject_usize,
-					|res| res.example_event_observer,
+					|res| res.destination_entity_1,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
 					KeyCode::KeyX,
 					|res| res.subject_usize,
-					|res| res.example_event_observer_2,
+					|res| res.destination_entity_2,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
 					KeyCode::KeyC,
 					|res| res.replay_subject_usize,
-					|res| res.example_event_observer_2,
+					|res| res.destination_entity_2,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, ()>(
 					KeyCode::KeyV,
 					|res| res.behavior_subject_usize,
-					|res| res.example_event_observer_2,
+					|res| res.destination_entity_2,
 				),
 				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 			),
@@ -78,8 +78,8 @@ fn main() -> AppExit {
 
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
-	example_event_observer: Entity,
-	example_event_observer_2: Entity,
+	destination_entity_1: Entity,
+	destination_entity_2: Entity,
 	subscriptions: HashMap<(Entity, Entity), Entity>,
 	keyboard_observable: Entity,
 	subject_usize: Entity,
@@ -109,16 +109,16 @@ fn setup(mut commands: Commands) {
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
-	let example_event_observer = commands
-		.spawn(Name::new("ExampleObserver"))
+	let destination_entity_1 = commands
+		.spawn(Name::new("Destination 1"))
 		.observe(print_notification_observer::<String>)
 		.observe(print_notification_observer::<i32>)
 		.observe(print_notification_observer::<usize>)
 		.observe(print_notification_observer::<KeyCode>)
 		.id();
 
-	let example_event_observer_2 = commands
-		.spawn(Name::new("ExampleObserver 2"))
+	let destination_entity_2 = commands
+		.spawn(Name::new("Destination 2"))
 		.observe(print_notification_observer::<usize>)
 		.id();
 
@@ -166,8 +166,8 @@ fn setup(mut commands: Commands) {
 
 	commands.insert_resource(ExampleEntities {
 		subscriptions: HashMap::new(),
-		example_event_observer,
-		example_event_observer_2,
+		destination_entity_1,
+		destination_entity_2,
 		keyboard_observable,
 		interval_observable,
 		subject_usize,

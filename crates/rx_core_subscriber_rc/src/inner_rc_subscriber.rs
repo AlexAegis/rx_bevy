@@ -3,8 +3,8 @@ use std::ops::{Deref, DerefMut};
 use disqualified::ShortName;
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 /// Internal to [RcSubscriber]
@@ -21,7 +21,7 @@ where
 	/// Starts from 0 if the destination is not already closed, otherwise 1
 	pub(crate) unsubscribe_count: usize,
 
-	closed: bool,
+	closed_flag: SubscriptionClosedFlag,
 }
 
 impl<Destination> InnerRcSubscriber<Destination>
@@ -35,7 +35,7 @@ where
 			ref_count: 1,
 			completion_count: is_already_closed.into(),
 			unsubscribe_count: is_already_closed.into(),
-			closed: is_already_closed,
+			closed_flag: is_already_closed.into(),
 		}
 	}
 
@@ -46,8 +46,8 @@ where
 			'_,
 		>,
 	) {
-		if self.unsubscribe_count == self.ref_count && !self.closed {
-			self.closed = true;
+		if self.unsubscribe_count == self.ref_count && !self.closed_flag.is_closed() {
+			self.closed_flag.close();
 			self.destination.unsubscribe(context);
 		}
 	}
@@ -59,7 +59,7 @@ where
 			'_,
 		>,
 	) {
-		if self.completion_count == self.ref_count && !self.closed {
+		if self.completion_count == self.ref_count && !self.closed_flag.is_closed() {
 			self.destination.complete(context);
 		}
 	}
@@ -121,7 +121,7 @@ where
 		next: Self::In,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.closed {
+		if !self.closed_flag.is_closed() {
 			self.destination.next(next, context);
 		}
 	}
@@ -131,10 +131,10 @@ where
 		error: Self::InError,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.closed {
+		if !self.closed_flag.is_closed() {
 			self.destination.error(error, context);
 			// An error immediately unsubscribes.
-			self.closed = true;
+			self.closed_flag.close();
 			self.ref_count = 0;
 			self.completion_count = 0;
 			self.unsubscribe_count = 0;
@@ -166,7 +166,7 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed || self.destination.is_closed()
+		*self.closed_flag || self.destination.is_closed()
 	}
 
 	#[inline]

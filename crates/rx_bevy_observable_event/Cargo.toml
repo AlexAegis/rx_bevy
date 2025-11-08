@@ -1,0 +1,68 @@
+[package]
+name = "rx_bevy_observable_event"
+description = "rx_bevy eventity event observable, a glue between regular bevy events and observables"
+version = "0.1.0"
+readme = "readme.md"
+publish = true
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license-file.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev", "reflect", "debug"]
+dev = [
+    "bevy/dynamic_linking",
+    "examples_common/dev",
+    "rx_bevy/dev",
+    "rx_core_traits/dev",
+    "rx_core_testing/dev",
+]
+debug = ["bevy/track_location", "rx_core_traits/debug"]
+example = [
+    "bevy/bevy_asset",
+    "bevy/bevy_core_pipeline",
+    "bevy/bevy_gltf",
+    "bevy/bevy_pbr",
+    "bevy/bevy_picking",
+    "bevy/bevy_render",
+    "bevy/bevy_scene",
+    "bevy/bevy_winit",
+    "bevy/tonemapping_luts",
+    "bevy/x11",
+    "debug",
+    "dev",
+    "reflect",
+    "rx_bevy/example",
+    "rx_core_traits/example",
+    "rx_core_testing/example",
+]
+reflect = ["dep:bevy_reflect", "rx_bevy/reflect"]
+
+[dependencies]
+rx_core_traits = { workspace = true }
+rx_bevy_context = { workspace = true }
+bevy_app = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_input = { workspace = true }
+bevy_reflect = { workspace = true, optional = true }
+disqualified = { workspace = true }
+
+[dev-dependencies]
+bevy = { workspace = true }
+rx_bevy = { workspace = true }
+rx_core_testing = { workspace = true }
+examples_common = { workspace = true }
+bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
+bevy_egui = { workspace = true }
+
+[[example]]
+name = "observable_keyboard_example"
+path = "examples/observable_keyboard_example.rs"
+required-features = ["example"]

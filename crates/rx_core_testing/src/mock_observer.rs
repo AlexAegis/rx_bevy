@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SignalBound,
-	SubscriberNotification, SubscriptionContext, SubscriptionContextDropSafety, SubscriptionLike,
-	Teardown, TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	SubscriberNotification, SubscriptionClosedFlag, SubscriptionContext,
+	SubscriptionContextDropSafety, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::MockContext;
@@ -15,7 +16,7 @@ where
 	InError: SignalBound,
 	DropSafety: SubscriptionContextDropSafety,
 {
-	pub closed: bool,
+	pub closed_flag: SubscriptionClosedFlag,
 	_phantom_data: PhantomData<(In, InError, fn(DropSafety))>,
 }
 
@@ -111,11 +112,11 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed
+		*self.closed_flag
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.closed = true;
+		self.closed_flag.close();
 		context.push(SubscriberNotification::Unsubscribe);
 	}
 }
@@ -147,7 +148,7 @@ where
 {
 	fn default() -> Self {
 		Self {
-			closed: false,
+			closed_flag: false.into(),
 			_phantom_data: PhantomData,
 		}
 	}

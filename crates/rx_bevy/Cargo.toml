@@ -49,14 +49,36 @@ pipe = ["rx_core/pipe"]
 compose = ["rx_core/compose"]
 reflect = []
 
-# Observables
+# Bevy Observables
 all_observables = [
+    "all_core_observables",
+    "observable_event",
+    "observable_keyboard",
+]
+observable_event = ["dep:rx_bevy_observable_event"]
+observable_keyboard = ["dep:rx_bevy_observable_keyboard"]
+# Bevy Observers
+all_observers = ["all_core_observers"]
+# Bevy Operators
+all_operators = ["all_core_operators"]
+# Bevy Subjects
+all_subjects = ["all_core_subjects"]
+# Bevy Subscriptions
+all_subscriptions = ["all_core_subscriptions"]
+
+# Core Features
+# Keep these in sync with `rx_core`'s features whenever a new feature of the
+# following categories is added. To keep the same granular control over them.
+
+# Enable Observable Creation Functions
+observable_fn = ["rx_core/observable_fn"]
+# Core Observables
+all_core_observables = [
     "observable_combine_latest",
     "observable_connectable",
     "observable_deferred",
     "observable_iterator",
     "observable_iterator_on_tick",
-    "observable_keyboard",
     "observable_merge",
     "observable_of",
     "observable_throw",
@@ -68,20 +90,17 @@ observable_deferred = ["rx_core/observable_deferred"]
 observable_interval = ["rx_core/observable_interval"]
 observable_iterator = ["rx_core/observable_iterator"]
 observable_iterator_on_tick = ["rx_core/observable_iterator_on_tick"]
-observable_keyboard = ["dep:rx_bevy_observable_keyboard"]
 observable_merge = ["rx_core/observable_merge"]
 observable_of = ["rx_core/observable_of"]
 observable_throw = ["rx_core/observable_throw"]
 observable_zip = ["rx_core/observable_zip"]
-# Observable Creation Functions
-observable_fn = ["rx_core/observable_fn"]
-# Observers
-all_observers = ["observer_noop", "observer_print", "observer_fn"]
+# Core Observers
+all_core_observers = ["observer_noop", "observer_print", "observer_fn"]
 observer_fn = ["rx_core/observer_fn"]
 observer_noop = ["rx_core/observer_noop"]
 observer_print = ["rx_core/observer_print"]
-# Operators
-all_operators = [
+# Core Operators
+all_core_operators = [
     "operator_adsr",
     "operator_composite",
     "operator_enumerate",
@@ -93,6 +112,7 @@ all_operators = [
     "operator_lift_result",
     "operator_map",
     "operator_map_into",
+    "operator_scan",
     "operator_skip",
     "operator_switch_map",
     "operator_take",
@@ -110,18 +130,19 @@ operator_lift_option = ["rx_core/operator_lift_option"]
 operator_lift_result = ["rx_core/operator_lift_result"]
 operator_map = ["rx_core/operator_map"]
 operator_map_into = ["rx_core/operator_map_into"]
+operator_scan = ["rx_core/operator_scan"]
 operator_skip = ["rx_core/operator_skip"]
 operator_switch_map = ["rx_core/operator_switch_map"]
 operator_take = ["rx_core/operator_take"]
 operator_tap = ["rx_core/operator_tap_next"]
 operator_try_capture = ["rx_core/operator_try_capture"]
-# Subjects
-all_subjects = ["subject", "subject_behavior", "subject_replay"]
+# Core Subjects
+all_core_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["rx_core/subject"]
 subject_behavior = ["rx_core/subject_behavior"]
 subject_replay = ["rx_core/subject_replay"]
-# Subscriptions
-all_common_subscriptions = ["subscription_drop", "subscription_inert"]
+# Core Subscriptions
+all_core_subscriptions = ["subscription_drop", "subscription_inert"]
 subscription_drop = ["rx_core/subscription_drop"]
 subscription_inert = ["rx_core/subscription_inert"]
 
@@ -132,6 +153,7 @@ rx_bevy_context = { workspace = true }
 rx_bevy_plugin = { workspace = true }
 # Observables
 rx_bevy_observable_keyboard = { workspace = true, optional = true }
+rx_bevy_observable_event = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_core_testing = { workspace = true }
