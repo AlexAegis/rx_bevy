@@ -9,17 +9,14 @@ use bevy_ecs::{
 };
 use bevy_log::error;
 use disqualified::ShortName;
-use rx_bevy_context::{
-	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ScheduledSubscriptionComponent,
-};
 use rx_core_traits::{Observable, SubscriptionLike};
 use stealcell::{StealCell, Stolen};
 use thiserror::Error;
 
 use crate::{
-	EntityObserver, ObservableSubscriptions, Subscribe, SubscribeObserverOf, SubscribeObserverRef,
-	SubscriptionOf,
+	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
+	EntityObserver, ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe,
+	SubscribeObserverOf, SubscribeObserverRef, SubscriptionOf,
 };
 
 #[derive(Component)]

@@ -25,47 +25,47 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyW,
 					|res| res.interval_observable,
 					|res| res.subject_usize,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyE,
 					|res| res.interval_observable,
 					|res| res.replay_subject_usize,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyR,
 					|res| res.interval_observable,
 					|res| res.behavior_subject_usize,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyS,
 					|res| res.subject_usize,
 					|res| res.destination_entity_1,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyD,
 					|res| res.replay_subject_usize,
 					|res| res.destination_entity_1,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyF,
 					|res| res.behavior_subject_usize,
 					|res| res.destination_entity_1,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyX,
 					|res| res.subject_usize,
 					|res| res.destination_entity_2,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyC,
 					|res| res.replay_subject_usize,
 					|res| res.destination_entity_2,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, ()>(
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyV,
 					|res| res.behavior_subject_usize,
 					|res| res.destination_entity_2,
@@ -111,15 +111,15 @@ fn setup(mut commands: Commands) {
 
 	let destination_entity_1 = commands
 		.spawn(Name::new("Destination 1"))
-		.observe(print_notification_observer::<String>)
-		.observe(print_notification_observer::<i32>)
-		.observe(print_notification_observer::<usize>)
-		.observe(print_notification_observer::<KeyCode>)
+		.observe(print_notification_observer::<String, Never>)
+		.observe(print_notification_observer::<i32, Never>)
+		.observe(print_notification_observer::<usize, Never>)
+		.observe(print_notification_observer::<KeyCode, Never>)
 		.id();
 
 	let destination_entity_2 = commands
 		.spawn(Name::new("Destination 2"))
-		.observe(print_notification_observer::<usize>)
+		.observe(print_notification_observer::<usize, Never>)
 		.id();
 
 	let keyboard_observable = commands
@@ -145,14 +145,14 @@ fn setup(mut commands: Commands) {
 	let subject_usize = commands
 		.spawn((
 			Name::new("Subject<usize>"),
-			Subject::<usize, (), BevySubscriptionContextProvider>::default().into_component(),
+			Subject::<usize, Never, BevySubscriptionContextProvider>::default().into_component(),
 		))
 		.id();
 
 	let replay_subject_usize = commands
 		.spawn((
 			Name::new("ReplaySubject<usize>"),
-			ReplaySubject::<3, usize, (), BevySubscriptionContextProvider>::default()
+			ReplaySubject::<3, usize, Never, BevySubscriptionContextProvider>::default()
 				.into_component(),
 		))
 		.id();
@@ -160,7 +160,8 @@ fn setup(mut commands: Commands) {
 	let behavior_subject_usize = commands
 		.spawn((
 			Name::new("BehaviorSubject<usize>"),
-			BehaviorSubject::<usize, (), BevySubscriptionContextProvider>::new(0).into_component(),
+			BehaviorSubject::<usize, Never, BevySubscriptionContextProvider>::new(0)
+				.into_component(),
 		))
 		.id();
 

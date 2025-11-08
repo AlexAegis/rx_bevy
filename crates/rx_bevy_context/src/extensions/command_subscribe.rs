@@ -1,3 +1,5 @@
+use std::any::TypeId;
+
 use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::Commands};
 use rx_core_traits::SignalBound;
 
@@ -17,6 +19,17 @@ pub trait CommandSubscribeExtension {
 		Out: SignalBound,
 		OutError: SignalBound,
 		S: ScheduleLabel;
+
+	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
+	fn subscribe_with_erased_schedule<Out, OutError>(
+		&mut self,
+		observable_entity: Entity,
+		destination_entity: Entity,
+		schedule_component_type_id: TypeId,
+	) -> Entity
+	where
+		Out: SignalBound,
+		OutError: SignalBound;
 
 	/// This is just a `try_despawn` alias.
 	fn unsubscribe(&mut self, subscription_entity: Entity);
@@ -38,6 +51,29 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 			destination_entity,
 			self,
 		);
+
+		self.trigger_targets(subscribe_event, observable_entity);
+
+		subscription_entity
+	}
+
+	fn subscribe_with_erased_schedule<Out, OutError>(
+		&mut self,
+		observable_entity: Entity,
+		destination_entity: Entity,
+		schedule_component_type_id: TypeId,
+	) -> Entity
+	where
+		Out: SignalBound,
+		OutError: SignalBound,
+	{
+		let (subscribe_event, subscription_entity) =
+			Subscribe::<Out, OutError>::new_with_erased_schedule(
+				observable_entity,
+				destination_entity,
+				schedule_component_type_id,
+				self,
+			);
 
 		self.trigger_targets(subscribe_event, observable_entity);
 

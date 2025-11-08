@@ -57,11 +57,13 @@ bevy_time = { workspace = true }
 bevy_derive = { workspace = true }
 bevy_input = { workspace = true, optional = true }
 bevy_reflect = { workspace = true, optional = true }
+bevy_window = { workspace = true }
 smallvec = { workspace = true }
 disqualified = { workspace = true }
 derive-where = { workspace = true }
 thiserror = { workspace = true }
 stealcell = { workspace = true }
+bevy_mod_erased_component_registry = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }

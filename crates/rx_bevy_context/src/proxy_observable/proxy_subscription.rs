@@ -1,77 +1,90 @@
-use bevy_ecs::{entity::Entity, event::Event, name::Name, observer::Observer};
+use bevy_ecs::{entity::Entity, name::Name, observer::Observer};
 use disqualified::ShortName;
-use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
 	SharedSubscriber, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
 	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
 };
 
-use crate::create_event_forwarder_observer_for_destination;
+use crate::{
+	BevySubscriptionContext, BevySubscriptionContextProvider, CommandSubscribeExtension,
+	create_notification_forwarder_observer_for_destination,
+};
 
-pub struct EntityEventSubscription<Destination>
+pub struct ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-	Destination::In: Event + Clone,
 {
-	_observed_entity: Entity,
-	observer_satellite_entity: Entity,
+	proxy_subscription_entity: Entity,
+	proxy_destination_entity: Entity,
 	destination: SharedSubscriber<Destination>,
 	closed_flag: SubscriptionClosedFlag,
 }
 
-impl<Destination> EntityEventSubscription<Destination>
+impl<Destination> ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-	Destination::In: Event + Clone,
 {
 	pub fn new(
-		observed_entity: Entity,
+		target_observable_entity: Entity,
 		destination: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		let subscription_entity = context.get_subscription_entity();
 
+		println!("proxy created! {}", subscription_entity);
+
+		let subscription_entity_schedule_type_id =
+			context.get_subscription_contexts_erased_schedule();
+
 		let mut shared_destination = SharedSubscriber::new(destination, context);
 		let shared_destination_clone = shared_destination.clone_with_context(context);
 
-		let observer_satellite_entity = context
-			.deferred_world
-			.commands()
+		let mut commands = context.deferred_world.commands();
+
+		let proxy_destination_entity = commands
 			.spawn((
 				// ChildOf(subscription_entity), // TODO(bevy-0.17): Or mark as Internal to hide it
 				Name::new(format!(
 					"Event Observer {}",
 					ShortName::of::<Destination::In>()
 				)),
-				Observer::new(create_event_forwarder_observer_for_destination(
-					shared_destination_clone,
-					subscription_entity,
-				))
-				.with_entity(observed_entity),
 			))
 			.id();
 
+		commands.entity(proxy_destination_entity).insert(
+			Observer::new(create_notification_forwarder_observer_for_destination(
+				shared_destination_clone,
+				subscription_entity,
+			))
+			.with_entity(proxy_destination_entity),
+		);
+
+		let proxy_subscription_entity = commands
+			.subscribe_with_erased_schedule::<Destination::In, Destination::InError>(
+				target_observable_entity,
+				proxy_destination_entity,
+				subscription_entity_schedule_type_id,
+			);
+
 		Self {
-			_observed_entity: observed_entity,
-			observer_satellite_entity,
+			proxy_subscription_entity,
+			proxy_destination_entity,
 			destination: shared_destination,
 			closed_flag: false.into(),
 		}
 	}
 }
 
-impl<Destination> WithSubscriptionContext for EntityEventSubscription<Destination>
+impl<Destination> WithSubscriptionContext for ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-	Destination::In: Event + Clone,
 {
 	type Context = BevySubscriptionContextProvider;
 }
 
-impl<Destination> SubscriptionLike for EntityEventSubscription<Destination>
+impl<Destination> SubscriptionLike for ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-	Destination::In: Event + Clone,
 {
 	#[inline]
 	#[track_caller]
@@ -85,19 +98,17 @@ where
 			self.closed_flag.close();
 			self.destination.unsubscribe(context);
 
-			context
-				.deferred_world
-				.commands()
-				.entity(self.observer_satellite_entity)
-				.despawn();
+			let mut commands = context.deferred_world.commands();
+
+			commands.entity(self.proxy_destination_entity).despawn();
+			commands.entity(self.proxy_subscription_entity).despawn();
 		}
 	}
 }
 
-impl<Destination> TeardownCollection for EntityEventSubscription<Destination>
+impl<Destination> TeardownCollection for ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-	Destination::In: Event + Clone,
 {
 	#[track_caller]
 	fn add_teardown(
@@ -113,10 +124,9 @@ where
 	}
 }
 
-impl<Destination> Tickable for EntityEventSubscription<Destination>
+impl<Destination> Tickable for ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-	Destination::In: Event + Clone,
 {
 	#[track_caller]
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
@@ -124,10 +134,9 @@ where
 	}
 }
 
-impl<Destination> Drop for EntityEventSubscription<Destination>
+impl<Destination> Drop for ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-	Destination::In: Event + Clone,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

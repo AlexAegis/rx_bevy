@@ -1,4 +1,3 @@
-pub use rx_bevy_plugin::*;
 pub use rx_core_traits::*;
 
 pub mod observable {
@@ -38,7 +37,6 @@ pub mod context {
 }
 
 pub mod prelude {
-	pub use rx_bevy_plugin::*;
 	pub use rx_core_traits::*;
 
 	pub use super::context::*;

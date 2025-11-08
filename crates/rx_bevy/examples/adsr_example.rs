@@ -106,7 +106,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
 		))
 		.observe(handle_move_signal)
-		.subscribes_to::<AdsrSignal, (), Update>(RelativeEntity::Other(keyboard_observable_entity));
+		.subscribes_to::<AdsrSignal, (), Update>(keyboard_observable_entity);
 
 	commands.insert_resource(ExampleEntities {
 		subscription: target_subscription,

@@ -1,7 +1,6 @@
-use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::{PrimaryCategorySubject, SubjectLike};
 
-use crate::SubjectComponent;
+use crate::{BevySubscriptionContextProvider, SubjectComponent};
 
 /// Convenience function to turn an observable into a component that can listen
 /// to subscribe events.

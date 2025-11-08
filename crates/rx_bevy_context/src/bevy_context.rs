@@ -1,4 +1,5 @@
 use core::marker::PhantomData;
+use std::any::TypeId;
 
 use bevy_ecs::{
 	component::{Component, Mutable},
@@ -18,8 +19,9 @@ use thiserror::Error;
 
 use crate::{
 	ConsumableSubscriberNotificationEvent, ConsumableSubscriptionNotificationEvent,
-	ScheduledEntitySubscriptionAllocator, ScheduledSubscriptionComponent, SubscriberComponent,
-	UnscheduledEntitySubscriptionAllocator, UnscheduledSubscriptionComponent,
+	ErasedSubscriptionSchedule, ScheduledEntitySubscriptionAllocator,
+	ScheduledSubscriptionComponent, SubscriberComponent, UnscheduledEntitySubscriptionAllocator,
+	UnscheduledSubscriptionComponent,
 };
 
 pub struct BevySubscriptionContextProvider;
@@ -104,8 +106,23 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		}
 	}
 
+	#[inline]
 	pub fn get_subscription_entity(&self) -> Entity {
 		self.subscription_entity
+	}
+
+	pub fn get_subscription_contexts_erased_schedule(&mut self) -> TypeId {
+		let erased_subscription_schedule = self
+			.deferred_world
+			.entity(self.get_subscription_entity())
+			.get::<ErasedSubscriptionSchedule>()
+			.unwrap_or_else(|| {
+				panic!(
+					"Subscription Entity {} should have an ErasedSubscriptionSchedule!",
+					self.get_subscription_entity()
+				)
+			});
+		erased_subscription_schedule.get_subscription_schedule_component_type_id()
 	}
 
 	pub fn get_expected_component<C>(&mut self, destination_entity: Entity) -> &C

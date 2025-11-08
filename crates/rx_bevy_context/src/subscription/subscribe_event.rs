@@ -1,6 +1,8 @@
 use core::marker::PhantomData;
+use std::any::TypeId;
 
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
+use bevy_mod_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
 use derive_where::derive_where;
 use rx_core_traits::SignalBound;
 
@@ -42,6 +44,28 @@ where
 		S: ScheduleLabel,
 	{
 		let subscription_entity = commands.spawn(SubscriptionSchedule::<S>::default()).id();
+
+		(
+			Self {
+				observable_entity,
+				destination_entity,
+				subscription_entity,
+				_phantom_data: PhantomData,
+			},
+			subscription_entity,
+		)
+	}
+
+	pub fn new_with_erased_schedule(
+		observable_entity: Entity,
+		destination_entity: Entity,
+		schedule_component_type_id: TypeId,
+		commands: &mut Commands,
+	) -> (Self, Entity) {
+		let subscription_entity = commands
+			.spawn_empty()
+			.insert_erased_component_by_type_id(schedule_component_type_id)
+			.id();
 
 		(
 			Self {

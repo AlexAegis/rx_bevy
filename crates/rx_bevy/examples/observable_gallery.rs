@@ -9,6 +9,7 @@ use examples_common::{
 	SubscriptionMapResource, print_notification_observer, send_event, toggle_subscription_system,
 };
 use rx_bevy::prelude::*;
+use rx_bevy_context::observable::ProxyObservable;
 use rx_core_traits::Never;
 
 fn main() -> AppExit {
@@ -33,7 +34,7 @@ fn main() -> AppExit {
 				),
 				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyI,
-					|res| res.interval_observable,
+					|res| res.proxy_interval_observable,
 					|res| res.destination_entity,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, Never>(
@@ -54,6 +55,7 @@ struct ExampleEntities {
 	keyboard_observable: Entity,
 	keyboard_switch_map_to_interval_observable: Entity,
 	interval_observable: Entity,
+	proxy_interval_observable: Entity,
 }
 
 impl SubscriptionMapResource for ExampleEntities {
@@ -79,10 +81,10 @@ fn setup(mut commands: Commands) {
 
 	let destination_entity = commands
 		.spawn(Name::new("Destination"))
-		.observe(print_notification_observer::<String>)
-		.observe(print_notification_observer::<i32>)
-		.observe(print_notification_observer::<usize>)
-		.observe(print_notification_observer::<KeyCode>)
+		.observe(print_notification_observer::<String, Never>)
+		.observe(print_notification_observer::<i32, Never>)
+		.observe(print_notification_observer::<usize, Never>)
+		.observe(print_notification_observer::<KeyCode, Never>)
 		.id();
 
 	let keyboard_observable = commands
@@ -101,6 +103,16 @@ fn setup(mut commands: Commands) {
 				max_emissions_per_tick: 2,
 			})
 			.into_component(),
+		))
+		.id();
+
+	let proxy_interval_observable = commands
+		.spawn((
+			Name::new(format!(
+				"ProxyObservable (IntervalObservable) {}",
+				interval_observable
+			)),
+			ProxyObservable::<usize, Never>::new(interval_observable).into_component(),
 		))
 		.id();
 
@@ -140,6 +152,7 @@ fn setup(mut commands: Commands) {
 		destination_entity,
 		keyboard_observable,
 		interval_observable,
+		proxy_interval_observable,
 		keyboard_switch_map_to_interval_observable,
 	});
 }

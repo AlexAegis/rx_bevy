@@ -9,17 +9,17 @@ use bevy_ecs::{
 	system::{Commands, Query, Res},
 	world::{DeferredWorld, World},
 };
+use bevy_mod_erased_component_registry::AppRegisterErasedComponentExtension;
 use bevy_time::Time;
 use bevy_window::exit_on_all_closed;
 use derive_where::derive_where;
 use rx_bevy_common::Clock;
-use rx_bevy_context::{
-	BevySubscriptionContextParam, ConsumableSubscriptionNotificationEvent,
-	ScheduledSubscriptionComponent, SubscriptionNotificationEvent,
-};
 use rx_core_traits::Tick;
 
-use crate::SubscriptionSchedule;
+use crate::{
+	BevySubscriptionContextParam, ConsumableSubscriptionNotificationEvent,
+	ScheduledSubscriptionComponent, SubscriptionNotificationEvent, SubscriptionSchedule,
+};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -50,6 +50,9 @@ where
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
+		// Enables the creation of this component by its TypeId
+		app.register_erased_component::<SubscriptionSchedule<S>>();
+
 		app.add_systems(
 			self.schedule.clone(),
 			tick_scheduled_subscriptions_system::<S, C>,

@@ -1,4 +1,4 @@
-use std::{fmt::Debug, marker::PhantomData};
+use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event};
 use rx_bevy_context::BevySubscriptionContextProvider;
@@ -54,7 +54,7 @@ where
 
 impl<E> Observable for EventObservable<E>
 where
-	E: Event + Clone + Debug,
+	E: Event + Clone,
 {
 	/// TODO: Maybe the destination generic should make a comeback
 	type Subscription = SubscriptionData<Self::Context>;
@@ -70,11 +70,8 @@ where
 			+ Send
 			+ Sync,
 	{
-		let subscription = EntityEventSubscription::<E, _>::new(
-			self.observed_entity,
-			destination.upgrade(),
-			context,
-		);
+		let subscription =
+			EntityEventSubscription::new(self.observed_entity, destination.upgrade(), context);
 		SubscriptionData::new_from_resource(subscription.into())
 	}
 }

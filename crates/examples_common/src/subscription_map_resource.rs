@@ -10,7 +10,7 @@ use bevy::{
 	input::keyboard::KeyCode,
 };
 use bevy_mod_alternate_system_on_press::alternate_systems_on_press;
-use rx_bevy_plugin::CommandSubscribeExtension;
+use rx_bevy_context::CommandSubscribeExtension;
 use rx_core_traits::SignalBound;
 
 pub trait SubscriptionMapResource: Resource {

@@ -2179,7 +2179,6 @@ dependencies = [
  "derive-where",
  "disqualified",
  "rx_bevy_context",
- "rx_bevy_plugin",
  "rx_core_traits",
 ]
 
@@ -4367,7 +4366,6 @@ dependencies = [
  "rx_bevy_context",
  "rx_bevy_observable_event",
  "rx_bevy_observable_keyboard",
- "rx_bevy_plugin",
  "rx_core",
  "rx_core_testing",
  "rx_core_traits",
@@ -4393,8 +4391,10 @@ dependencies = [
  "bevy_ecs",
  "bevy_input",
  "bevy_log",
+ "bevy_mod_erased_component_registry",
  "bevy_reflect",
  "bevy_time",
+ "bevy_window",
  "derive-where",
  "disqualified",
  "rx_bevy",
@@ -4441,31 +4441,6 @@ dependencies = [
  "rx_bevy_context",
  "rx_core_testing",
  "rx_core_traits",
-]
-
-[[package]]
-name = "rx_bevy_plugin"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_app",
- "bevy_derive",
- "bevy_ecs",
- "bevy_input",
- "bevy_log",
- "bevy_reflect",
- "bevy_time",
- "bevy_window",
- "derive-where",
- "disqualified",
- "rx_bevy",
- "rx_bevy_common",
- "rx_bevy_context",
- "rx_core_testing",
- "rx_core_traits",
- "smallvec",
- "stealcell",
- "thiserror 2.0.17",
 ]
 
 [[package]]

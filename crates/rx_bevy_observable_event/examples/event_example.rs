@@ -106,7 +106,7 @@ fn setup(mut commands: Commands) {
 
 	let destination_entity = commands
 		.spawn(Name::new("ExampleObserver"))
-		.observe(print_notification_observer::<DummyEvent>)
+		.observe(print_notification_observer::<DummyEvent, Never>)
 		.id();
 
 	let dummy_event_sink = commands.spawn(Name::new("They are watching me")).id();
