@@ -1,15 +1,20 @@
 use std::sync::{Arc, RwLock};
 
+use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	DetachedSubscriber, Never, Observable, ObservableOutput, Observer, ObserverInput,
-	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
+	UpgradeableObserver,
 };
 
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.
-#[derive(Clone)]
+#[derive(RxSubject, Clone)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct BehaviorSubject<In, InError = Never, Context = ()>
 where
 	In: SignalBound + Clone,
@@ -40,38 +45,6 @@ where
 	/// absolutely necessary.
 	pub fn value(&self) -> In {
 		self.value.read().unwrap().clone()
-	}
-}
-
-impl<In, InError, Context> ObserverInput for BehaviorSubject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Context> WithPrimaryCategory for BehaviorSubject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategorySubject;
-}
-
-impl<In, InError, Context> UpgradeableObserver for BehaviorSubject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Upgraded = DetachedSubscriber<Self>;
-
-	fn upgrade(self) -> Self::Upgraded {
-		DetachedSubscriber::new(self)
 	}
 }
 
@@ -123,25 +96,6 @@ where
 	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
 		self.subject.unsubscribe(context);
 	}
-}
-
-impl<In, InError, Context> WithSubscriptionContext for BehaviorSubject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<In, InError, Context> ObservableOutput for BehaviorSubject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Out = In;
-	type OutError = InError;
 }
 
 impl<In, InError, Context> Observable for BehaviorSubject<In, InError, Context>

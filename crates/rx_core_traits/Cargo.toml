@@ -17,12 +17,8 @@ workspace = true
 
 [features]
 default = ["dev_panic_on_dropped_active_subscriptions"]
-dev = [
-    "dev_panic_on_dropped_active_subscriptions",
-    "rx_core/dev",
-    "rx_core_testing/dev",
-]
-example = ["dev", "rx_core/example", "rx_core_testing/example"]
+dev = ["dev_panic_on_dropped_active_subscriptions", "rx_core/dev"]
+example = ["dev", "rx_core/example"]
 debug = []
 # Keep this turned on for development, turn it off for production!
 # Depending on the context a subscription needs to perform an unsubscribe,
@@ -40,4 +36,3 @@ derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }
-rx_core_testing = { workspace = true }

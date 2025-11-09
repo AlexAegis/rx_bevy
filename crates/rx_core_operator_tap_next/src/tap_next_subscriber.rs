@@ -1,11 +1,17 @@
 use core::marker::PhantomData;
 
+use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Observer, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown,
+	TeardownCollection, Tick, Tickable,
 };
 
+#[derive(RxSubscriber, Debug)]
+#[rx_context(Destination::Context)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
@@ -32,38 +38,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<In, InError, OnNext, Destination> WithSubscriptionContext
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
-	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Context = Destination::Context;
-}
-
-impl<In, InError, OnNext, Destination> WithPrimaryCategory
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
-	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<In, InError, OnNext, Destination> ObserverUpgradesToSelf
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
-	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
-{
 }
 
 impl<In, InError, OnNext, Destination> Observer
@@ -158,28 +132,4 @@ where
 	) {
 		self.destination.add_teardown(teardown, context);
 	}
-}
-
-impl<In, InError, OnNext, Destination> ObservableOutput
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
-	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError, OnNext, Destination> ObserverInput
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
-	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
 }

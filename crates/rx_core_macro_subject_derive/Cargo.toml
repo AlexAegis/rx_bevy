@@ -1,0 +1,25 @@
+[package]
+name = "rx_core_macro_subject_derive"
+description = "rx_core subject derive, implements associated type only traits"
+version = "0.1.0"
+readme = "readme.md"
+publish = true
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
+rx_core_macro_common = { workspace = true }

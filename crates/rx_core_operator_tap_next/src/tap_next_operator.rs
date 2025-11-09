@@ -1,12 +1,15 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::TapNextSubscriber;
 
-#[derive(Debug)]
+#[derive(RxOperator, Debug)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
 pub struct TapNextOperator<In, InError, OnNext, Context>
 where
 	In: SignalBound,
@@ -63,29 +66,6 @@ where
 	{
 		TapNextSubscriber::new(destination, self.on_next.clone())
 	}
-}
-
-impl<In, InError, OnNext, Context> ObservableOutput
-	for TapNextOperator<In, InError, OnNext, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
-	Context: SubscriptionContext,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError, OnNext, Context> ObserverInput for TapNextOperator<In, InError, OnNext, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
-	Context: SubscriptionContext,
-{
-	type In = In;
-	type InError = InError;
 }
 
 impl<In, InError, OnNext, Context> Clone for TapNextOperator<In, InError, OnNext, Context>

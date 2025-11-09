@@ -1,16 +1,21 @@
 use std::sync::{Arc, RwLock};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
+use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	DetachedSubscriber, Never, Observable, ObservableOutput, Observer, ObserverInput,
-	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
+	UpgradeableObserver,
 };
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.
-#[derive(Clone)]
+#[derive(RxSubject, Clone)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct ReplaySubject<const CAPACITY: usize, In, InError = Never, Context = ()>
 where
 	In: SignalBound + Clone,
@@ -35,17 +40,6 @@ where
 			values: Arc::new(RwLock::new(ConstGenericRingBuffer::default())),
 		}
 	}
-}
-
-impl<const CAPACITY: usize, In, InError, Context> ObserverInput
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type In = In;
-	type InError = InError;
 }
 
 impl<const CAPACITY: usize, In, InError, Context> Observer
@@ -89,51 +83,6 @@ where
 	#[inline]
 	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
 		self.subject.unsubscribe(context);
-	}
-}
-
-impl<const CAPACITY: usize, In, InError, Context> ObservableOutput
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<const CAPACITY: usize, In, InError, Context> WithSubscriptionContext
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<const CAPACITY: usize, In, InError, Context> WithPrimaryCategory
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategorySubject;
-}
-
-impl<const CAPACITY: usize, In, InError, Context> UpgradeableObserver
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Upgraded = DetachedSubscriber<Self>;
-
-	fn upgrade(self) -> Self::Upgraded {
-		DetachedSubscriber::new(self)
 	}
 }
 

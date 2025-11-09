@@ -29,6 +29,7 @@ example = [
 [dependencies]
 bevy_time = { workspace = true }
 rx_core_traits = { workspace = true }
+rx_core_macro_observable_derive = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

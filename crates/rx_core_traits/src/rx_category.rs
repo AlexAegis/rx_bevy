@@ -17,11 +17,12 @@ pub enum PrimaryCategory {
 	Subject,
 	Observer,
 	Subscriber,
+	Operator,
 }
 
 /// Marks the struct to be primarily considered an
 /// [Observable][crate::Observable].
-/// It must only be used for structs that **ONLY** implement
+/// It must only be used for types that **ONLY** implement
 /// [Observable][crate::Observable] but do **NOT** implement
 /// [Observer][crate::Observer] and other traits as that would make it a
 /// [SubjectLike][crate::SubjectLike].
@@ -36,7 +37,7 @@ impl PrimaryCategoryMarker for PrimaryCategoryObservable {
 
 /// Marks the struct to be primarily considered a
 /// [SubjectLike][crate::SubjectLike].
-/// It must only be used for things that implement **both**
+/// It must only be used for types that implement **both**
 /// [Observable][crate::Observable] and [Observer][crate::Observer]!
 #[derive(Debug)]
 pub struct PrimaryCategorySubject;
@@ -48,7 +49,7 @@ impl PrimaryCategoryMarker for PrimaryCategorySubject {
 }
 
 /// Marks the struct to be primarily considered an [Observer][crate::Observer].
-/// It must only be used for structs that **ONLY** implement
+/// It must only be used for types that **ONLY** implement
 /// [Observer][crate::Observer] but do **NOT** implement
 /// [SubscriptionLike][crate::SubscriptionLike] as that would make it a
 /// [Subscriber][crate::Subscriber].
@@ -63,7 +64,7 @@ impl PrimaryCategoryMarker for PrimaryCategoryObserver {
 
 /// Marks the struct to be primarily considered a
 /// [Subscriber][crate::Subscriber].
-/// It must only be used for things that implement **both**
+/// It must only be used for types that implement **both**
 /// [Observer][crate::Observer] and [SubscriptionLike][crate::SubscriptionLike]!
 #[derive(Debug)]
 pub struct PrimaryCategorySubscriber;
@@ -72,6 +73,18 @@ impl private::Seal for PrimaryCategorySubscriber {}
 
 impl PrimaryCategoryMarker for PrimaryCategorySubscriber {
 	const CATEGORY: PrimaryCategory = PrimaryCategory::Subscriber;
+}
+
+/// Marks the struct to be primarily considered an
+/// [Operator][crate::Operator].
+/// It must only be used for types that implement [Operator][crate::Operator]!
+#[derive(Debug)]
+pub struct PrimaryCategoryOperator;
+
+impl private::Seal for PrimaryCategoryOperator {}
+
+impl PrimaryCategoryMarker for PrimaryCategoryOperator {
+	const CATEGORY: PrimaryCategory = PrimaryCategory::Operator;
 }
 
 /// 🦭

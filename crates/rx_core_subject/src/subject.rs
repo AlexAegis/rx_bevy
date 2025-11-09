@@ -1,15 +1,21 @@
 use std::sync::{Arc, RwLock};
 
+use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	DetachedSubscriber, Never, Observable, ObservableOutput, Observer, ObserverInput,
-	PrimaryCategorySubject, SignalBound, SubscriptionContext, SubscriptionLike,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
+	UpgradeableObserver,
 };
 
 use crate::{Multicast, MulticastSubscription};
 
 /// A Subject is a shared multicast observer, can be used for broadcasting,
 /// A subjects clone still multicasts to the same set of subscribers.
+#[derive(RxSubject)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct Subject<In, InError = Never, Context = ()>
 where
 	In: SignalBound + Clone,
@@ -46,34 +52,6 @@ where
 	}
 }
 
-impl<In, InError, Context> ObservableOutput for Subject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError, Context> WithSubscriptionContext for Subject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<In, InError, Context> WithPrimaryCategory for Subject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategorySubject;
-}
-
 impl<In, InError, Context> Observable for Subject<In, InError, Context>
 where
 	In: SignalBound + Clone,
@@ -94,29 +72,6 @@ where
 		let mut multicast = self.multicast.write().expect("asd");
 		multicast.subscribe(destination, context)
 	}
-}
-
-impl<In, InError, Context> UpgradeableObserver for Subject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Upgraded = DetachedSubscriber<Self>;
-
-	fn upgrade(self) -> Self::Upgraded {
-		DetachedSubscriber::new(self)
-	}
-}
-
-impl<In, InError, Context> ObserverInput for Subject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type In = In;
-	type InError = InError;
 }
 
 impl<In, InError, Context> Observer for Subject<In, InError, Context>

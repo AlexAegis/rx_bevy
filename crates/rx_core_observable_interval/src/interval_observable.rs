@@ -1,12 +1,13 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SubscriptionContext,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_observable_derive::RxObservable;
+use rx_core_traits::{Observable, Observer, SubscriptionContext, UpgradeableObserver};
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
 
+#[derive(RxObservable)]
+#[rx_out(usize)]
+#[rx_context(Context)]
 pub struct IntervalObservable<Context = ()>
 where
 	Context: SubscriptionContext,
@@ -25,28 +26,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<Context> ObservableOutput for IntervalObservable<Context>
-where
-	Context: SubscriptionContext,
-{
-	type Out = usize;
-	type OutError = Never;
-}
-
-impl<Context> WithSubscriptionContext for IntervalObservable<Context>
-where
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<Context> WithPrimaryCategory for IntervalObservable<Context>
-where
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<Context> Observable for IntervalObservable<Context>

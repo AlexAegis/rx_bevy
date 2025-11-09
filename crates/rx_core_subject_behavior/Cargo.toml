@@ -35,6 +35,7 @@ example = [
 rx_core_subject = { workspace = true }
 rx_core_traits = { workspace = true }
 rx_core_subscription_drop = { workspace = true }
+rx_core_macro_subject_derive = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

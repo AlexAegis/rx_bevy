@@ -4233,6 +4233,65 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_core_macro_common"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "rx_core_macro_observable_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
+name = "rx_core_macro_observer_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
+name = "rx_core_macro_operator_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
+name = "rx_core_macro_subject_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
+name = "rx_core_macro_subscriber_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
 name = "rx_core_observable_combine_latest"
 version = "0.1.0"
 dependencies = [
@@ -4271,6 +4330,7 @@ version = "0.1.0"
 dependencies = [
  "bevy_time",
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4580,6 +4640,8 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4591,6 +4653,7 @@ name = "rx_core_subject"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_subject_derive",
  "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
@@ -4602,6 +4665,7 @@ name = "rx_core_subject_behavior"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_subject_derive",
  "rx_core_subject",
  "rx_core_subscription_drop",
  "rx_core_testing",
@@ -4614,8 +4678,8 @@ version = "0.1.0"
 dependencies = [
  "ringbuffer",
  "rx_core",
+ "rx_core_macro_subject_derive",
  "rx_core_subject",
- "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4676,7 +4740,6 @@ dependencies = [
  "derive-where",
  "disqualified",
  "rx_core",
- "rx_core_testing",
  "smallvec",
 ]
 

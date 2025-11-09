@@ -84,9 +84,11 @@ disqualified = { version = "1.0.0", default-features = false }
 proc-macro2 = { version = "1.0", default-features = false }
 quote = { version = "1.0", default-features = false }
 syn = { version = "2.0", default-features = false, features = [
+    "clone-impls",
     "derive",
-    "proc-macro",
     "parsing",
+    "printing",
+    "proc-macro",
 ] }
 bevy_mod_erased_component_registry = { version = "0.1.0", default-features = false }
 # Workspace Crates
@@ -100,6 +102,13 @@ rx_core = { path = "crates/rx_core" }
 rx_core_traits = { path = "crates/rx_core_traits" }
 rx_core_emission_variants = { path = "crates/rx_core_emission_variants" }
 rx_core_testing = { path = "crates/rx_core_testing" }
+# Macros
+rx_core_macro_common = { path = "crates/rx_core_macro_common" }
+rx_core_macro_observable_derive = { path = "crates/rx_core_macro_observable_derive" }
+rx_core_macro_observer_derive = { path = "crates/rx_core_macro_observer_derive" }
+rx_core_macro_operator_derive = { path = "crates/rx_core_macro_operator_derive" }
+rx_core_macro_subject_derive = { path = "crates/rx_core_macro_subject_derive" }
+rx_core_macro_subscriber_derive = { path = "crates/rx_core_macro_subscriber_derive" }
 # Observables
 rx_core_observable_connectable = { path = "crates/rx_core_observable_connectable" }
 rx_core_observable_combine_latest = { path = "crates/rx_core_observable_combine_latest" }
