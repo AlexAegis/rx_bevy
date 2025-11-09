@@ -1,19 +1,24 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 
+#[derive(RxSubscriber)]
+#[rx_in(Result<ResultIn, ResultInError>)]
+#[rx_in_error(InError)]
+#[rx_context(Destination::Context)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_subscription_like_to_destination]
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
 	ResultIn: SignalBound,
 	ResultInError: SignalBound,
 	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber,
+	InErrorToResultError: Fn(InError) -> ResultInError + Send + Sync,
+	Destination: Subscriber<In = ResultIn, InError = ResultInError>,
 {
+	#[destination]
 	destination: Destination,
 	in_error_to_result_error: InErrorToResultError,
 	_phantom_data: PhantomData<(ResultIn, ResultInError, InError, InErrorToResultError)>,
@@ -25,11 +30,8 @@ where
 	ResultIn: SignalBound,
 	ResultInError: SignalBound,
 	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	InErrorToResultError: Fn(InError) -> ResultInError + Send + Sync,
+	Destination: Subscriber<In = ResultIn, InError = ResultInError>,
 {
 	pub fn new(destination: Destination, in_error_to_result_error: InErrorToResultError) -> Self {
 		Self {
@@ -40,50 +42,6 @@ where
 	}
 }
 
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> WithSubscriptionContext
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type Context = Destination::Context;
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> WithPrimaryCategory
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> ObserverUpgradesToSelf
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-}
-
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> Observer
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
@@ -91,10 +49,7 @@ where
 	ResultInError: SignalBound,
 	InError: SignalBound,
 	InErrorToResultError: Fn(InError) -> ResultInError + Send + Sync,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = ResultIn, InError = ResultInError>,
 {
 	#[inline]
 	fn next(
@@ -125,97 +80,4 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
 	}
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> Tickable
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> SubscriptionLike
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> TeardownCollection
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
-	}
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> ObserverInput
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber,
-{
-	type In = Result<ResultIn, ResultInError>;
-	type InError = InError;
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> ObservableOutput
-	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Fn(InError) -> ResultInError,
-	Destination: Subscriber,
-{
-	type Out = ResultIn;
-	type OutError = ResultInError;
 }

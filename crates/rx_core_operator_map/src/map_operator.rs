@@ -1,17 +1,26 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::MapSubscriber;
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(Out)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct MapOperator<In, InError, Mapper, Out = In, Context = ()>
 where
-	Mapper: Fn(In) -> Out,
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
+	Out: SignalBound,
+	Context: SubscriptionContext,
 {
 	pub mapper: Mapper,
 	pub _phantom_data: PhantomData<(In, InError, Out, Context)>,
@@ -19,7 +28,11 @@ where
 
 impl<In, InError, Mapper, Out, Context> MapOperator<In, InError, Mapper, Out, Context>
 where
-	Mapper: Fn(In) -> Out,
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
+	Out: SignalBound,
+	Context: SubscriptionContext,
 {
 	pub fn new(mapper: Mapper) -> Self {
 		Self {
@@ -37,7 +50,6 @@ where
 	Out: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= MapSubscriber<In, InError, Mapper, Out, Destination>
 	where
@@ -62,31 +74,13 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out, Context> ObservableOutput
-	for MapOperator<In, InError, Mapper, Out, Context>
-where
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	InError: SignalBound,
-{
-	type Out = Out;
-	type OutError = InError;
-}
-
-impl<In, InError, Mapper, Out, Context> ObserverInput
-	for MapOperator<In, InError, Mapper, Out, Context>
-where
-	Mapper: Fn(In) -> Out,
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
-}
-
 impl<In, InError, Mapper, Out, Context> Clone for MapOperator<In, InError, Mapper, Out, Context>
 where
-	Mapper: Clone + Fn(In) -> Out,
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
+	Out: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {

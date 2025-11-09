@@ -7,10 +7,7 @@ use crate::operator::EnumerateOperator;
 pub trait CompositeOperatorExtensionEnumerate: Operator + Sized {
 	fn enumerate(
 		self,
-	) -> CompositeOperator<
-		Self,
-		EnumerateOperator<Self::Out, Self::OutError, <Self as Operator>::Context>,
-	> {
+	) -> CompositeOperator<Self, EnumerateOperator<Self::Out, Self::OutError, Self::Context>> {
 		CompositeOperator::new(self, EnumerateOperator::default())
 	}
 }

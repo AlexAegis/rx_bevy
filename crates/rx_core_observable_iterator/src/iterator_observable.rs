@@ -1,10 +1,10 @@
 use core::marker::PhantomData;
 
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
-	SubscriptionContext, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory,
-	WithSubscriptionContext,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
+	UpgradeableObserver,
 };
 
 /// Emits all values from an iterator then immediately completes.
@@ -14,10 +14,14 @@ use rx_core_traits::{
 /// able to use the [InertSubscription], guaranteeing that regardless of context
 /// the subscriptions of this observable are always safe to drop, regardless of
 /// context.
-#[derive(Clone, Debug)]
+#[derive(RxObservable, Clone, Debug)]
+#[rx_out(Iterator::Item)]
+#[rx_out_error(Never)]
+#[rx_context(Context)]
 pub struct IteratorObservable<Iterator, Context = ()>
 where
 	Iterator: Clone + IntoIterator,
+	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
 	iterator: Iterator,
@@ -27,6 +31,7 @@ where
 impl<Iterator, Context> IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
+	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
 	pub fn new(iterator: Iterator) -> Self {
@@ -35,34 +40,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<Iterator, Context> ObservableOutput for IteratorObservable<Iterator, Context>
-where
-	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
-	Context: SubscriptionContext,
-{
-	type Out = Iterator::Item;
-	type OutError = Never;
-}
-
-impl<Iterator, Context> WithSubscriptionContext for IteratorObservable<Iterator, Context>
-where
-	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<Iterator, Context> WithPrimaryCategory for IteratorObservable<Iterator, Context>
-where
-	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>

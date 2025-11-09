@@ -6,7 +6,10 @@ use crate::operator::MapOperator;
 /// Operator creator function
 pub fn map<In, InError, Mapper, Out>(mapper: Mapper) -> MapOperator<In, InError, Mapper, Out>
 where
-	Mapper: Clone + Fn(In) -> Out,
+	In: SignalBound,
+	InError: SignalBound,
+	Out: SignalBound,
+	Mapper: Clone + Fn(In) -> Out + Send + Sync,
 {
 	MapOperator::new(mapper)
 }

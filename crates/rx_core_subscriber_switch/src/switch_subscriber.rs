@@ -1,12 +1,16 @@
 use crate::ExternallyManagedSubscriber;
+use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observable, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SharedSubscriber, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
-	Teardown, TeardownCollection, TeardownCollectionExtension, Tick, Tickable, WithPrimaryCategory,
-	WithSubscriptionContext,
+	Observable, Observer, SharedSubscriber, Subscriber, SubscriptionClosedFlag,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	TeardownCollectionExtension, Tick, Tickable,
 };
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
+#[derive(RxSubscriber)]
+#[rx_in(InnerObservable)]
+#[rx_in_error(InnerObservable::OutError)]
+#[rx_context(Destination::Context)]
 pub struct SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
@@ -61,73 +65,6 @@ where
 			inner_subscription.unsubscribe(context);
 		}
 	}
-}
-
-impl<InnerObservable, Destination> ObserverInput for SwitchSubscriber<InnerObservable, Destination>
-where
-	InnerObservable: 'static + Observable + Send + Sync,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
-	Destination: TeardownCollectionExtension,
-{
-	type In = InnerObservable;
-	type InError = InnerObservable::OutError;
-}
-
-impl<InnerObservable, Destination> WithSubscriptionContext
-	for SwitchSubscriber<InnerObservable, Destination>
-where
-	InnerObservable: 'static + Observable + Send + Sync,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
-	Destination: TeardownCollectionExtension,
-{
-	type Context = Destination::Context;
-}
-
-impl<InnerObservable, Destination> WithPrimaryCategory
-	for SwitchSubscriber<InnerObservable, Destination>
-where
-	InnerObservable: 'static + Observable + Send + Sync,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
-	Destination: TeardownCollectionExtension,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<InnerObservable, Destination> ObserverUpgradesToSelf
-	for SwitchSubscriber<InnerObservable, Destination>
-where
-	InnerObservable: 'static + Observable + Send + Sync,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
-	Destination: TeardownCollectionExtension,
-{
 }
 
 impl<InnerObservable, Destination> Observer for SwitchSubscriber<InnerObservable, Destination>
@@ -304,7 +241,6 @@ where
 	fn drop(&mut self) {
 		if !self.is_closed() {
 			let mut context = InnerObservable::Context::create_context_to_unsubscribe_on_drop();
-			println!("????????????????????????????????????");
 			self.unsubscribe(&mut context);
 		}
 	}

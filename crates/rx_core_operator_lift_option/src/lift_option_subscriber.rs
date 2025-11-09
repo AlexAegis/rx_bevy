@@ -1,82 +1,33 @@
-use core::marker::PhantomData;
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observer, Subscriber, SubscriptionContext};
 
-use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
-
-pub struct LiftOptionSubscriber<In, InError, Destination>
+#[derive(RxSubscriber)]
+#[rx_in(Option<Destination::In>)]
+#[rx_in_error(Destination::InError)]
+#[rx_context(Destination::Context)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_subscription_like_to_destination]
+pub struct LiftOptionSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
+	#[destination]
 	destination: Destination,
-	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Destination> LiftOptionSubscriber<In, InError, Destination>
+impl<Destination> LiftOptionSubscriber<Destination>
 where
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-	In: SignalBound,
-	InError: SignalBound,
+	Destination: Subscriber,
 {
 	pub fn new(destination: Destination) -> Self {
-		Self {
-			destination,
-			_phantom_data: PhantomData,
-		}
+		Self { destination }
 	}
 }
 
-impl<In, InError, Destination> WithSubscriptionContext
-	for LiftOptionSubscriber<In, InError, Destination>
+impl<Destination> Observer for LiftOptionSubscriber<Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type Context = Destination::Context;
-}
-
-impl<In, InError, Destination> WithPrimaryCategory
-	for LiftOptionSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<In, InError, Destination> ObserverUpgradesToSelf
-	for LiftOptionSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-}
-
-impl<In, InError, Destination> Observer for LiftOptionSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber,
 {
 	#[inline]
 	fn next(
@@ -102,82 +53,4 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
 	}
-}
-
-impl<In, InError, Destination> Tickable for LiftOptionSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<In, InError, Destination> SubscriptionLike for LiftOptionSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<In, InError, Destination> TeardownCollection for LiftOptionSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
-	}
-}
-
-impl<In, InError, Destination> ObserverInput for LiftOptionSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber,
-{
-	type In = Option<In>;
-	type InError = InError;
-}
-
-impl<In, InError, Destination> ObservableOutput for LiftOptionSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber,
-{
-	type Out = In;
-	type OutError = InError;
 }

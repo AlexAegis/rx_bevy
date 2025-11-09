@@ -4,7 +4,11 @@ use rx_core_traits::{Observable, SignalBound};
 use crate::operator::LiftOptionOperator;
 
 /// Operator creator function
-pub fn lift_option<In, InError>() -> LiftOptionOperator<In, InError> {
+pub fn lift_option<In, InError>() -> LiftOptionOperator<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
 	LiftOptionOperator::default()
 }
 

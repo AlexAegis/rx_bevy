@@ -1,15 +1,19 @@
 use rx_core_emission_variants::{EitherOut2, EitherOutError2};
-use rx_core_traits::{
-	Observable, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick,
-	Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observable, Observer, Subscriber, SubscriptionContext, SubscriptionLike};
 
 use crate::{
 	ObservableEmissionQueue,
 	observable::{QueueOverflowBehavior, ZipSubscriberOptions},
 };
 
+#[derive(RxSubscriber)]
+#[rx_in(EitherOut2<O1, O2>)]
+#[rx_in_error(EitherOutError2<O1, O2>)]
+#[rx_context(Destination::Context)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_subscription_like_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
 pub struct ZipSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<
@@ -22,10 +26,11 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
+	#[destination]
+	destination: Destination,
 	options: ZipSubscriberOptions,
 	o1_queue: ObservableEmissionQueue<O1>,
 	o2_queue: ObservableEmissionQueue<O2>,
-	destination: Destination,
 }
 
 impl<Destination, O1, O2> ZipSubscriber<Destination, O1, O2>
@@ -76,22 +81,6 @@ where
 			self.unsubscribe(context);
 		}
 	}
-}
-
-impl<Destination, O1, O2> ObserverInput for ZipSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<
-			In = (O1::Out, O2::Out),
-			InError = EitherOutError2<O1, O2>,
-			Context = O1::Context,
-		>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type In = EitherOut2<O1, O2>;
-	type InError = EitherOutError2<O1, O2>;
 }
 
 impl<Destination, O1, O2> Observer for ZipSubscriber<Destination, O1, O2>
@@ -151,116 +140,5 @@ where
 	#[inline]
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.check_if_can_complete(context);
-	}
-}
-
-impl<Destination, O1, O2> Tickable for ZipSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<
-			In = (O1::Out, O2::Out),
-			InError = EitherOutError2<O1, O2>,
-			Context = O1::Context,
-		>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<Destination, O1, O2> WithSubscriptionContext for ZipSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<
-			In = (O1::Out, O2::Out),
-			InError = EitherOutError2<O1, O2>,
-			Context = O1::Context,
-		>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Context = O1::Context;
-}
-
-impl<Destination, O1, O2> WithPrimaryCategory for ZipSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<
-			In = (O1::Out, O2::Out),
-			InError = EitherOutError2<O1, O2>,
-			Context = O1::Context,
-		>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Destination, O1, O2> ObserverUpgradesToSelf for ZipSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<
-			In = (O1::Out, O2::Out),
-			InError = EitherOutError2<O1, O2>,
-			Context = O1::Context,
-		>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-}
-
-impl<Destination, O1, O2> SubscriptionLike for ZipSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<
-			In = (O1::Out, O2::Out),
-			InError = EitherOutError2<O1, O2>,
-			Context = O1::Context,
-		>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<Destination, O1, O2> TeardownCollection for ZipSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<
-			In = (O1::Out, O2::Out),
-			InError = EitherOutError2<O1, O2>,
-			Context = O1::Context,
-		>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
 	}
 }

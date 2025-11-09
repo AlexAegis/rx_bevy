@@ -1,16 +1,31 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::LiftOptionSubscriber;
 
-pub struct LiftOptionOperator<In, InError, Context = ()> {
+#[derive(RxOperator)]
+#[rx_in(Option<In>)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
+pub struct LiftOptionOperator<In, InError = Never, Context = ()>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
 	pub _phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError, Context> Default for LiftOptionOperator<In, InError, Context> {
+impl<In, InError, Context> Default for LiftOptionOperator<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
 	fn default() -> Self {
 		Self {
 			_phantom_data: PhantomData,
@@ -24,9 +39,8 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
-		= LiftOptionSubscriber<In, InError, Destination>
+		= LiftOptionSubscriber<Destination>
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -49,25 +63,12 @@ where
 	}
 }
 
-impl<In, InError, Context> ObserverInput for LiftOptionOperator<In, InError, Context>
+impl<In, InError, Context> Clone for LiftOptionOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: SubscriptionContext,
 {
-	type In = Option<In>;
-	type InError = InError;
-}
-
-impl<In, InError, Context> ObservableOutput for LiftOptionOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError, Context> Clone for LiftOptionOperator<In, InError, Context> {
 	fn clone(&self) -> Self {
 		Self {
 			_phantom_data: PhantomData,

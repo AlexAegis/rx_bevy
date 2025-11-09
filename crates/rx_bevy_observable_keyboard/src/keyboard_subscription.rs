@@ -1,10 +1,13 @@
 use bevy_input::{ButtonInput, keyboard::KeyCode};
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
+use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, TeardownCollection,
-	Tick, Tickable, WithSubscriptionContext,
+	Tick, Tickable,
 };
 
+#[derive(RxSubscription)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct KeyboardSubscription<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
@@ -23,13 +26,6 @@ where
 			closed_flag: false.into(),
 		}
 	}
-}
-
-impl<Destination> WithSubscriptionContext for KeyboardSubscription<Destination>
-where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
-{
-	type Context = BevySubscriptionContextProvider;
 }
 
 impl<Destination> SubscriptionLike for KeyboardSubscription<Destination>

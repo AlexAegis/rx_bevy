@@ -1,22 +1,27 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
+#[derive(RxSubscriber)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_context(Destination::Context)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_subscription_like_to_destination]
 pub struct ScanSubscriber<In, InError, Reducer, Out, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber,
+	Reducer: Fn(&Out, In) -> Out + Send + Sync,
+	Out: SignalBound + Clone,
+	Destination: Subscriber<In = Out, InError = InError>,
 {
+	#[destination]
 	destination: Destination,
 	accumulator: Out,
 	reducer: Reducer,
@@ -27,12 +32,9 @@ impl<In, InError, Reducer, Out, Destination> ScanSubscriber<In, InError, Reducer
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Reducer: Fn(&Out, In) -> Out + Send + Sync,
+	Out: SignalBound + Clone,
+	Destination: Subscriber<In = Out, InError = InError>,
 {
 	pub fn new(destination: Destination, reducer: Reducer, seed: Out) -> Self {
 		Self {
@@ -44,50 +46,6 @@ where
 	}
 }
 
-impl<In, InError, Reducer, Out, Destination> WithSubscriptionContext
-	for ScanSubscriber<In, InError, Reducer, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type Context = Destination::Context;
-}
-
-impl<In, InError, Reducer, Out, Destination> WithPrimaryCategory
-	for ScanSubscriber<In, InError, Reducer, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<In, InError, Reducer, Out, Destination> ObserverUpgradesToSelf
-	for ScanSubscriber<In, InError, Reducer, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-}
-
 impl<In, InError, Reducer, Out, Destination> Observer
 	for ScanSubscriber<In, InError, Reducer, Out, Destination>
 where
@@ -95,10 +53,7 @@ where
 	InError: SignalBound,
 	Reducer: Fn(&Out, In) -> Out + Send + Sync,
 	Out: SignalBound + Clone,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = Out, InError = InError>,
 {
 	fn next(
 		&mut self,
@@ -122,97 +77,4 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
 	}
-}
-
-impl<In, InError, Reducer, Out, Destination> Tickable
-	for ScanSubscriber<In, InError, Reducer, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<In, InError, Reducer, Out, Destination> SubscriptionLike
-	for ScanSubscriber<In, InError, Reducer, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<In, InError, Reducer, Out, Destination> TeardownCollection
-	for ScanSubscriber<In, InError, Reducer, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
-	}
-}
-
-impl<In, InError, Reducer, Out, Destination> ObserverInput
-	for ScanSubscriber<In, InError, Reducer, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Reducer, Out, Destination> ObservableOutput
-	for ScanSubscriber<In, InError, Reducer, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber,
-{
-	type Out = Out;
-	type OutError = InError;
 }

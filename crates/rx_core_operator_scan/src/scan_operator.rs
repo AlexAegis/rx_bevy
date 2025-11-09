@@ -1,18 +1,26 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::ScanSubscriber;
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(Out)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct ScanOperator<In, InError, Reducer, Out = In, Context = ()>
 where
-	Reducer: Fn(&Out, In) -> Out,
-	Out: Clone,
+	In: SignalBound,
+	InError: SignalBound,
+	Reducer: 'static + Fn(&Out, In) -> Out + Clone + Send + Sync,
+	Out: SignalBound + Clone,
+	Context: SubscriptionContext,
 {
 	reducer: Reducer,
 	seed: Out,
@@ -21,8 +29,11 @@ where
 
 impl<In, InError, Reducer, Out, Context> ScanOperator<In, InError, Reducer, Out, Context>
 where
-	Reducer: Fn(&Out, In) -> Out,
-	Out: Clone,
+	In: SignalBound,
+	InError: SignalBound,
+	Reducer: 'static + Fn(&Out, In) -> Out + Clone + Send + Sync,
+	Out: SignalBound + Clone,
+	Context: SubscriptionContext,
 {
 	pub fn new(reducer: Reducer, seed: Out) -> Self {
 		Self {
@@ -42,7 +53,6 @@ where
 	Out: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= ScanSubscriber<In, InError, Reducer, Out, Destination>
 	where
@@ -67,33 +77,13 @@ where
 	}
 }
 
-impl<In, InError, Reducer, Out, Context> ObservableOutput
-	for ScanOperator<In, InError, Reducer, Out, Context>
-where
-	Reducer: Fn(&Out, In) -> Out,
-	Out: SignalBound + Clone,
-	InError: SignalBound,
-{
-	type Out = Out;
-	type OutError = InError;
-}
-
-impl<In, InError, Reducer, Out, Context> ObserverInput
-	for ScanOperator<In, InError, Reducer, Out, Context>
-where
-	Reducer: Fn(&Out, In) -> Out,
-	Out: Clone,
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
-}
-
 impl<In, InError, Reducer, Out, Context> Clone for ScanOperator<In, InError, Reducer, Out, Context>
 where
-	Reducer: Clone + Fn(&Out, In) -> Out,
-	Out: Clone,
+	In: SignalBound,
+	InError: SignalBound,
+	Reducer: 'static + Fn(&Out, In) -> Out + Clone + Send + Sync,
+	Out: SignalBound + Clone,
+	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {

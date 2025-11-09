@@ -1,15 +1,21 @@
 use core::marker::PhantomData;
 
+use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	DropSafeSubscriptionContext, Never, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, SignalBound, SubscriberNotification, SubscriptionClosedFlag,
-	SubscriptionContext, SubscriptionContextDropSafety, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	DropSafeSubscriptionContext, Never, Observer, SignalBound, SubscriberNotification,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionContextDropSafety, SubscriptionLike,
+	Teardown, TeardownCollection, Tick, Tickable,
 };
 
 use crate::MockContext;
 
-#[derive(Debug)]
+/// While this is conceptually an Observer, used as an Observer, for testing
+/// purposes it behaves like a Subscriber by not being detached on upgrade.
+#[derive(RxObserver, Debug)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_context(MockContext<In, InError, DropSafety>)]
+#[rx_upgrades_to(self)]
 pub struct MockObserver<In, InError = Never, DropSafety = DropSafeSubscriptionContext>
 where
 	In: SignalBound,
@@ -18,39 +24,6 @@ where
 {
 	pub closed_flag: SubscriptionClosedFlag,
 	_phantom_data: PhantomData<(In, InError, fn(DropSafety))>,
-}
-
-impl<In, InError, DropSafety> ObserverInput for MockObserver<In, InError, DropSafety>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	DropSafety: SubscriptionContextDropSafety,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, DropSafety> WithPrimaryCategory for MockObserver<In, InError, DropSafety>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	DropSafety: SubscriptionContextDropSafety,
-{
-	/// While this is conceptually an Observer, used as an Observer, for testing
-	/// purposes it's marked as a subscriber to not get detached when used as
-	/// a destination and be able to track unsubscribe calls.
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-/// While this is conceptually an Observer, used as an Observer, for testing
-/// purposes it's marked as a subscriber to not get detached when used as
-/// a destination and be able to track unsubscribe calls.
-impl<In, InError, DropSafety> ObserverUpgradesToSelf for MockObserver<In, InError, DropSafety>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	DropSafety: SubscriptionContextDropSafety,
-{
 }
 
 impl<In, InError, DropSafety> Observer for MockObserver<In, InError, DropSafety>
@@ -93,15 +66,6 @@ where
 	) {
 		context.push(SubscriberNotification::Tick(tick));
 	}
-}
-
-impl<In, InError, DropSafety> WithSubscriptionContext for MockObserver<In, InError, DropSafety>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	DropSafety: SubscriptionContextDropSafety,
-{
-	type Context = MockContext<In, InError, DropSafety>;
 }
 
 impl<In, InError, DropSafety> SubscriptionLike for MockObserver<In, InError, DropSafety>

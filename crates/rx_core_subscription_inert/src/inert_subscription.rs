@@ -1,6 +1,7 @@
+use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	SubscriptionContext, SubscriptionLike, SubscriptionScheduled, Teardown, TeardownCollection,
-	Tick, Tickable, WithSubscriptionContext,
+	Tick, Tickable,
 };
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
@@ -10,6 +11,8 @@ use rx_core_traits::{
 /// This aspect lets us safely ignore the drop-safety of the context used, as
 /// subscriptions made with drop-unsafe contexts can (obviously) be dropped once
 /// they are unsubscribed, and that is guaranteed here.
+#[derive(RxSubscription)]
+#[rx_context(Context)]
 pub struct InertSubscription<Context>
 where
 	Context: SubscriptionContext,
@@ -35,13 +38,6 @@ where
 			tickable: Box::new(destination),
 		}
 	}
-}
-
-impl<Context> WithSubscriptionContext for InertSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
-	type Context = Context;
 }
 
 impl<Context> Tickable for InertSubscription<Context>

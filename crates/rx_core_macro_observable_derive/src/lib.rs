@@ -10,6 +10,34 @@ fn primary_category_observable() -> Type {
 	}
 }
 
+/// # RxObservable
+///
+/// Helper macro to implement a few traits required for an observable.
+///
+/// ## Traits you still have to implement to get an observable
+///
+/// - `Observable`
+///
+/// ## Traits Implemented
+///
+/// - `WithPrimaryCategory`: Sets the associated type to `PrimaryCategoryObservable`
+/// - `WithSubscriptionContext`: Sets the associated type to the values of the
+///   `#[rx_context(...)]` attribute
+/// - `ObservableOutput`: Sets the associated type `Out` to the value of the
+///   `#[rx_out(...)]` attribute, or to `Never` (`Infallible`) if missing. Also
+///   sets the associated `OutError` type to the value of the
+///   `#[rx_out_error(...)]` attribute, or to `Never` if missing.
+///
+/// ## Attributes
+///
+/// > All attributes are prefixed with `rx_` for easy auto-complete access.
+///
+/// - `#[rx_out(...)]` (optional, default: `Never`): Defines the output type of
+///   the observable
+/// - `#[rx_out_error(...)]` (optional, default: `Never`): Defines the output
+///   error type of the observable
+/// - `#[rx_context(...)]`: Defines the Context this observable is compatible
+///   with
 #[proc_macro_derive(RxObservable, attributes(rx_out, rx_out_error, rx_context))]
 pub fn observable_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	let derive_input = parse_macro_input!(input as DeriveInput);

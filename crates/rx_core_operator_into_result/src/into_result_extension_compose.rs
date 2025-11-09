@@ -7,10 +7,7 @@ use crate::operator::IntoResultOperator;
 pub trait CompositeOperatorExtensionIntoResult: Operator + Sized {
 	fn lift_result(
 		self,
-	) -> CompositeOperator<
-		Self,
-		IntoResultOperator<Self::Out, Self::OutError, <Self as Operator>::Context>,
-	> {
+	) -> CompositeOperator<Self, IntoResultOperator<Self::Out, Self::OutError, Self::Context>> {
 		CompositeOperator::new(self, IntoResultOperator::default())
 	}
 }

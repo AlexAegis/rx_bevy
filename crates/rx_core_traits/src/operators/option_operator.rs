@@ -1,5 +1,5 @@
 use crate::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
+	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, WithSubscriptionContext,
 	context::SubscriptionContext,
 };
 
@@ -15,7 +15,6 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	type Context = Op::Context;
 	type Subscriber<Destination>
 		= OptionSubscriber<Op::Subscriber<Destination>, Destination>
 	where
@@ -63,4 +62,13 @@ where
 {
 	type Out = In;
 	type OutError = InError;
+}
+
+impl<In, InError, Op> WithSubscriptionContext for Option<Op>
+where
+	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
+	In: SignalBound,
+	InError: SignalBound,
+{
+	type Context = Op::Context;
 }

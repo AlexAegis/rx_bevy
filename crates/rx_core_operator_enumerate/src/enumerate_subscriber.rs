@@ -1,32 +1,30 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 
-// TODO: Search for In, InError, Dest and fix
-
-pub struct EnumerateSubscriber<In, InError, Destination>
+#[derive(RxSubscriber)]
+#[rx_in(In)]
+#[rx_in_error(Destination::InError)]
+#[rx_context(Destination::Context)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_subscription_like_to_destination]
+pub struct EnumerateSubscriber<In, Destination>
 where
 	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber,
+	Destination: Subscriber<In = (In, usize)>,
 {
+	#[destination]
 	destination: Destination,
 	counter: usize,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<In>,
 }
 
-impl<In, InError, Destination> EnumerateSubscriber<In, InError, Destination>
+impl<In, Destination> EnumerateSubscriber<In, Destination>
 where
 	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = (In, usize)>,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -37,51 +35,10 @@ where
 	}
 }
 
-impl<In, InError, Destination> WithSubscriptionContext
-	for EnumerateSubscriber<In, InError, Destination>
+impl<In, Destination> Observer for EnumerateSubscriber<In, Destination>
 where
 	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type Context = Destination::Context;
-}
-
-impl<In, InError, Destination> WithPrimaryCategory for EnumerateSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<In, InError, Destination> ObserverUpgradesToSelf
-	for EnumerateSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-}
-
-impl<In, InError, Destination> Observer for EnumerateSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = (In, usize)>,
 {
 	#[inline]
 	fn next(
@@ -115,85 +72,4 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
 	}
-}
-
-impl<In, InError, Destination> Tickable for EnumerateSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: rx_core_traits::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<In, InError, Destination> SubscriptionLike for EnumerateSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(
-		&mut self,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<In, InError, Destination> TeardownCollection for EnumerateSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
-	}
-}
-
-impl<In, InError, Destination> ObserverInput for EnumerateSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Destination> ObservableOutput for EnumerateSubscriber<In, InError, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: Subscriber,
-{
-	type Out = (In, usize);
-	type OutError = InError;
 }

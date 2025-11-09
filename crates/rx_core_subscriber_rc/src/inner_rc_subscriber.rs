@@ -1,18 +1,25 @@
 use std::ops::{Deref, DerefMut};
 
 use disqualified::ShortName;
+use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
+	WithSubscriptionContext,
 };
 
 /// Internal to [RcSubscriber]
 #[doc(hidden)]
+#[derive(RxSubscriber)]
+#[rx_in(Destination::In)]
+#[rx_in_error(Destination::InError)]
+#[rx_context(Destination::Context)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
 pub struct InnerRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
+	#[destination]
 	destination: Destination,
 	/// Starts from 1
 	pub(crate) ref_count: usize,
@@ -85,33 +92,6 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for InnerRcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
-}
-
-impl<Destination> WithSubscriptionContext for InnerRcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type Context = Destination::Context;
-}
-
-impl<Destination> WithPrimaryCategory for InnerRcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Destination> ObserverUpgradesToSelf for InnerRcSubscriber<Destination> where
-	Destination: Subscriber
-{
-}
-
 impl<Destination> Observer for InnerRcSubscriber<Destination>
 where
 	Destination: Subscriber,
@@ -147,19 +127,6 @@ where
 	}
 }
 
-impl<Destination> Tickable for InnerRcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
 impl<Destination> SubscriptionLike for InnerRcSubscriber<Destination>
 where
 	Destination: Subscriber,
@@ -172,20 +139,6 @@ where
 	#[inline]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.unsubscribe_if_can(context);
-	}
-}
-
-impl<Destination> TeardownCollection for InnerRcSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
 	}
 }
 

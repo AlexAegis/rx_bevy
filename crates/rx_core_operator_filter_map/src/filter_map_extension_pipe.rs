@@ -1,5 +1,5 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound};
+use rx_core_traits::{Observable, SignalBound, SubscriptionContext};
 
 use crate::operator::FilterMapOperator;
 
@@ -8,7 +8,11 @@ pub fn filter_map<In, InError, Mapper, Out, Context>(
 	mapper: Mapper,
 ) -> FilterMapOperator<In, InError, Mapper, Out, Context>
 where
-	Mapper: Fn(In) -> Option<Out> + Clone + Send + Sync,
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
+	Out: SignalBound,
+	Context: SubscriptionContext,
 {
 	FilterMapOperator::new(mapper)
 }

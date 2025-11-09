@@ -7,17 +7,15 @@ use crate::operator::TapNextOperator;
 pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
 	fn tap_next<
 		OnNext: 'static
-			+ Fn(&Self::Out, &mut <<Self as Operator>::Context as SubscriptionContext>::Item<'_, '_>)
+			+ Fn(&Self::Out, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
 			+ Clone
 			+ Send
 			+ Sync,
 	>(
 		self,
 		callback: OnNext,
-	) -> CompositeOperator<
-		Self,
-		TapNextOperator<Self::Out, Self::OutError, OnNext, <Self as Operator>::Context>,
-	> {
+	) -> CompositeOperator<Self, TapNextOperator<Self::Out, Self::OutError, OnNext, Self::Context>>
+	{
 		CompositeOperator::new(self, TapNextOperator::new(callback))
 	}
 }

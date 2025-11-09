@@ -1,11 +1,18 @@
 use core::marker::PhantomData;
 
+use derive_where::derive_where;
+use rx_core_macro_operator_derive::RxOperator;
 use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-	TeardownCollectionExtension,
+	Operator, SignalBound, Subscriber, SubscriptionContext, TeardownCollectionExtension,
 };
 
-#[derive(Debug)]
+#[derive_where(Clone, Debug; Callback)]
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct FinalizeOperator<In, InError, Callback, Context = ()>
 where
 	In: SignalBound,
@@ -39,7 +46,6 @@ where
 	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= Destination
 	where
@@ -62,44 +68,5 @@ where
 	{
 		destination.add_fn(self.callback.clone(), context);
 		destination
-	}
-}
-
-impl<In, InError, Callback, Context> ObservableOutput
-	for FinalizeOperator<In, InError, Callback, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError, Callback, Context> ObserverInput
-	for FinalizeOperator<In, InError, Callback, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Callback, Context> Clone for FinalizeOperator<In, InError, Callback, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
-{
-	fn clone(&self) -> Self {
-		Self {
-			callback: self.callback.clone(),
-			_phantom_data: PhantomData,
-		}
 	}
 }

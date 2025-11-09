@@ -1,14 +1,16 @@
 use rx_core_emission_variants::{
 	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
 };
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscriber_rc::RcSubscriber;
-use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext, SubscriptionData,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_traits::{Observable, SubscriptionContext, SubscriptionData, UpgradeableObserver};
 
 use crate::{ZipSubscriber, observable::ZipSubscriberOptions};
 
+#[derive(RxObservable, Clone, Debug)]
+#[rx_out((O1::Out, O2::Out))]
+#[rx_out_error(EitherOutError2<O1, O2>)]
+#[rx_context(O1::Context)]
 pub struct ZipObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
@@ -40,37 +42,6 @@ where
 		self.options = options;
 		self
 	}
-}
-
-impl<O1, O2> ObservableOutput for ZipObservable<O1, O2>
-where
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Out = (O1::Out, O2::Out);
-	type OutError = EitherOutError2<O1, O2>;
-}
-
-impl<O1, O2> WithSubscriptionContext for ZipObservable<O1, O2>
-where
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Context = O1::Context;
-}
-
-impl<O1, O2> WithPrimaryCategory for ZipObservable<O1, O2>
-where
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable<Context = O1::Context>,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<O1, O2> Observable for ZipObservable<O1, O2>

@@ -1,8 +1,13 @@
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Observable, ObservableOutput, Operator, PrimaryCategoryObservable, SubscriptionContext,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Observable, ObservableOutput, Operator, SubscriptionContext, UpgradeableObserver,
+	WithSubscriptionContext,
 };
 
+#[derive(RxObservable, Clone, Debug)]
+#[rx_out(Op::Out)]
+#[rx_out_error(Op::OutError)]
+#[rx_context(Source::Context)]
 pub struct Pipe<Source, Op>
 where
 	Source: 'static + Observable,
@@ -10,21 +15,6 @@ where
 {
 	pub(crate) source_observable: Source,
 	pub(crate) operator: Op,
-}
-
-impl<Source, Op> Clone for Pipe<Source, Op>
-where
-	Source: 'static + Clone + Observable,
-	Op: 'static
-		+ Clone
-		+ Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-{
-	fn clone(&self) -> Self {
-		Self {
-			operator: self.operator.clone(),
-			source_observable: self.source_observable.clone(),
-		}
-	}
 }
 
 impl<Source, Op> Pipe<Source, Op>
@@ -57,31 +47,6 @@ where
 	{
 		Pipe::<Self, NextOp>::new(self, operator)
 	}
-}
-
-impl<Source, Op> ObservableOutput for Pipe<Source, Op>
-where
-	Source: 'static + Observable,
-	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-{
-	type Out = Op::Out;
-	type OutError = Op::OutError;
-}
-
-impl<Source, Op> WithSubscriptionContext for Pipe<Source, Op>
-where
-	Source: 'static + Observable,
-	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-{
-	type Context = Source::Context;
-}
-
-impl<Source, Op> WithPrimaryCategory for Pipe<Source, Op>
-where
-	Source: 'static + Observable,
-	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<Source, Op> Observable for Pipe<Source, Op>

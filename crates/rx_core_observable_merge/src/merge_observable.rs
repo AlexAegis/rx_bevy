@@ -1,12 +1,16 @@
 use core::marker::PhantomData;
 
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_operator_map_into::MapIntoSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SignalBound, SubscriptionContext,
-	SubscriptionData, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Observable, SignalBound, SubscriptionContext, SubscriptionData, UpgradeableObserver,
 };
 
+#[derive(RxObservable, Clone, Debug)]
+#[rx_out(Out)]
+#[rx_out_error(OutError)]
+#[rx_context(O1::Context)]
 pub struct MergeObservable<Out, OutError, O1, O2>
 where
 	Out: SignalBound,
@@ -41,49 +45,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<Out, OutError, O1, O2> ObservableOutput for MergeObservable<Out, OutError, O1, O2>
-where
-	Out: SignalBound,
-	OutError: SignalBound,
-	O1: Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
-{
-	type Out = Out;
-	type OutError = OutError;
-}
-
-impl<Out, OutError, O1, O2> WithSubscriptionContext for MergeObservable<Out, OutError, O1, O2>
-where
-	Out: SignalBound,
-	OutError: SignalBound,
-	O1: Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
-{
-	type Context = O1::Context;
-}
-
-impl<Out, OutError, O1, O2> WithPrimaryCategory for MergeObservable<Out, OutError, O1, O2>
-where
-	Out: SignalBound,
-	OutError: SignalBound,
-	O1: Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<Out, OutError, O1, O2> Observable for MergeObservable<Out, OutError, O1, O2>

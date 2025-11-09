@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	Never, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use derive_where::derive_where;
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::IdentitySubscriber;
 
@@ -10,43 +10,20 @@ use crate::IdentitySubscriber;
 ///
 /// The [IdentityOperator] does nothing. It's only purpose is to let you
 /// easily define input types for a [CompositeOperator]
-#[derive(Debug)]
-pub struct IdentityOperator<In, InError = Never, Context = ()> {
+#[derive(RxOperator)]
+#[derive_where(Default, Clone, Debug)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
+pub struct IdentityOperator<In, InError = Never, Context = ()>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
 	_phantom_data: PhantomData<(In, InError, Context)>,
-}
-
-impl<In, InError, Context> Default for IdentityOperator<In, InError, Context> {
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<In, InError, Context> Clone for IdentityOperator<In, InError, Context> {
-	fn clone(&self) -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<In, InError, Context> ObservableOutput for IdentityOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError, Context> ObserverInput for IdentityOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
 }
 
 impl<In, InError, Context> Operator for IdentityOperator<In, InError, Context>
@@ -55,7 +32,6 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= IdentitySubscriber<Destination>
 	where

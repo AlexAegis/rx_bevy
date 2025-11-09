@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	Never, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use derive_where::derive_where;
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::ErrorBoundarySubscriber;
 
@@ -12,41 +12,19 @@ use crate::ErrorBoundarySubscriber;
 /// [Never], giving you a compile error if the upstream error type has
 /// accidentally changed to something else, when you want to ensure the
 /// downstream error type stays [Never].
-#[derive(Debug)]
-pub struct ErrorBoundaryOperator<In, Context> {
+#[derive_where(Debug, Default, Clone)]
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(Never)]
+#[rx_out(In)]
+#[rx_out_error(Never)]
+#[rx_context(Context)]
+pub struct ErrorBoundaryOperator<In, Context>
+where
+	In: SignalBound,
+	Context: SubscriptionContext,
+{
 	_phantom_data: PhantomData<(In, fn(Context))>,
-}
-
-impl<In, Context> Default for ErrorBoundaryOperator<In, Context> {
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<In, Context> Clone for ErrorBoundaryOperator<In, Context> {
-	fn clone(&self) -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<In, Context> ObservableOutput for ErrorBoundaryOperator<In, Context>
-where
-	In: SignalBound,
-{
-	type Out = In;
-	type OutError = Never;
-}
-
-impl<In, Context> ObserverInput for ErrorBoundaryOperator<In, Context>
-where
-	In: SignalBound,
-{
-	type In = In;
-	type InError = Never;
 }
 
 impl<In, Context> Operator for ErrorBoundaryOperator<In, Context>
@@ -54,7 +32,6 @@ where
 	In: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= ErrorBoundarySubscriber<Destination>
 	where

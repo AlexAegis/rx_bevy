@@ -2,7 +2,7 @@ use quote::quote;
 use rx_core_macro_common::{
 	impl_delegate_observer_to_destination, impl_delegate_subscription_like_to_destination,
 	impl_delegate_teardown_collection_to_destination, impl_delegate_tickable_to_destination,
-	impl_observable_output, impl_observer_input, impl_primary_category,
+	impl_observer_input, impl_observer_upgrades_to, impl_primary_category,
 	impl_subscriber_does_not_upgrade_to_self, impl_with_subscription_context,
 };
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
@@ -14,15 +14,74 @@ fn primary_category_subscriber() -> Type {
 }
 
 /// # RxSubscriber
+///
+/// Helper macro to implement a few traits required for a subscriber.
+///
+/// ## Traits you still have to implement to get a subscriber
+///
+/// - `Observer` (unless using `#[rx_delegate_observer_to_destination]`)
+/// - `Tickable` (unless using `#[rx_delegate_tickable_to_destination]`)
+/// - `SubscriptionLike` (unless using
+///   `#[rx_delegate_subscription_like_to_destination]`)
+/// - `TeardownCollection` (unless using
+///   `#[rx_delegate_teardown_collection_to_destination]`)
+///
+/// ## Traits Implemented
+///
+/// - `WithPrimaryCategory`: Sets the associated type to
+///   `PrimaryCategorySubscription`
+/// - `WithSubscriptionContext`: Sets the associated type to the values of the
+///   `#[rx_context(...)]` attribute
+/// - `ObserverInput`: Sets the associated type `In` to the value of the
+///   `#[rx_in(...)]` attribute, or to `Never` (`Infallible`) if missing. Also
+///   sets the associated `InError` type to the value of the
+///   `#[rx_in_error(...)]` attribute, or to `Never` if missing.
+/// - `UpgradeableObserver`: By default. It implements `UpgradeableObserver` by
+///   just returning itself as is. This implementation can
+///   be opted out with the `#[rx_does_not_upgrade_to_self]` attribute to
+///   provide a manual implementation. Other preset implementations can be
+///   used with the `#[rx_upgrades_to(...)]` attribute.
+///
+/// ## Attributes
+///
+/// > All attributes are prefixed with `rx_` for easy auto-complete access.
+///
+/// - `#[rx_in(...)]` (optional, default: `Never`): Defines the input type of
+///   the subscriber
+/// - `#[rx_in_error(...)]` (optional, default: `Never`): Defines the input
+///   error type of the subscriber
+/// - `#[rx_context(...)]`: Defines the Context this subscriber is compatible with
+/// - `#[rx_does_not_upgrade_to_self]` (optional): Opts out the default
+///   `UpgradeableObserver` implementation which just returns the subscriber
+///   to be directly used as a destination for an `Observable` to
+///   let upstream call unsubscribe on the subscriber.
+/// - `#[rx_upgrades_to(...)]` (optional, accepts: `self`, `detached`): Defines
+///   a preset implementation for `UpgradeableObserver`
+///   - `self`: Upgraded version is itself, causing it to be unsubscribed
+///     when upstream is unsubscribed when used as an observables destination.
+///   - `detached`: Upgraded version is itself wrapped in `DetachedSubscriber`,
+///     causing it to **not** be unsubscribed when upstream is unsubscribed when
+///     used as an observables destination.
+/// - `#[rx_delegate_tickable_to_destination]` (optional): Opts into
+///   the trivial implementation of `Tickable` where the traits methods
+///   are just simply called on the field marked as `#[destination]`.
+/// - `#[rx_delegate_teardown_collection_to_destination]` (optional): Opts into
+///   the trivial implementation of `TeardownCollection` where the traits methods
+///   are just simply called on the field marked as `#[destination]`.
+/// - `#[rx_delegate_subscription_like_to_destination]` (optional): Opts into
+///   the trivial implementation of `SubscriptionLike` where the traits methods
+///   are just simply called on the field marked as `#[destination]`.
+/// - `#[rx_delegate_observer_to_destination]` (optional): Opts into
+///   the trivial implementation of `Observer` where the traits methods
+///   are just simply called on the field marked as `#[destination]`.
 #[proc_macro_derive(
 	RxSubscriber,
 	attributes(
 		rx_in,
 		rx_in_error,
-		rx_out,
-		rx_out_error,
 		rx_context,
 		rx_does_not_upgrade_to_self,
+		rx_upgrades_to,
 		rx_delegate_tickable_to_destination,
 		rx_delegate_teardown_collection_to_destination,
 		rx_delegate_subscription_like_to_destination,
@@ -34,11 +93,11 @@ pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStr
 	let derive_input = parse_macro_input!(input as DeriveInput);
 
 	let primary_category_impl = impl_primary_category(&derive_input, primary_category_subscriber());
-	let observable_output_impl = impl_observable_output(&derive_input);
 	let observer_input_impl = impl_observer_input(&derive_input);
 	let with_subscription_context_impl = impl_with_subscription_context(&derive_input);
 	let subscriber_does_not_upgrade_to_self_impl =
 		impl_subscriber_does_not_upgrade_to_self(&derive_input);
+	let observer_upgrades_to_impl = impl_observer_upgrades_to(&derive_input);
 	let delegate_tickable_to_destination_impl =
 		impl_delegate_tickable_to_destination(&derive_input);
 	let delegate_teardown_collection_to_destination_impl =
@@ -51,9 +110,9 @@ pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStr
 	(quote! {
 		#primary_category_impl
 
-		#observable_output_impl
-
 		#observer_input_impl
+
+		#observer_upgrades_to_impl
 
 		#with_subscription_context_impl
 

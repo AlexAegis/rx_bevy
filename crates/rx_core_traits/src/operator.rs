@@ -1,4 +1,7 @@
-use crate::{ObservableOutput, ObserverInput, Subscriber, context::SubscriptionContext};
+use crate::{
+	ObservableOutput, ObserverInput, Subscriber, WithSubscriptionContext,
+	context::SubscriptionContext,
+};
 
 /// # [Operator]
 ///
@@ -44,9 +47,7 @@ use crate::{ObservableOutput, ObserverInput, Subscriber, context::SubscriptionCo
 /// and quick, when it comes to performance it may be better to write a new
 /// operator.
 ///
-pub trait Operator: ObserverInput + ObservableOutput {
-	type Context: SubscriptionContext;
-
+pub trait Operator: ObserverInput + ObservableOutput + WithSubscriptionContext {
 	type Subscriber<Destination>: 'static
 		+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
 		+ Send

@@ -1,11 +1,12 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Never, Observable, SubscriptionContext};
+use rx_core_traits::{Never, Observable, SignalBound, SubscriptionContext};
 
 use crate::operator::ErrorBoundaryOperator;
 
 /// Operator creator function
-pub fn error_boundary<Out, Context>() -> ErrorBoundaryOperator<Out, Context>
+pub fn error_boundary<In, Context>() -> ErrorBoundaryOperator<In, Context>
 where
+	In: SignalBound,
 	Context: SubscriptionContext,
 {
 	ErrorBoundaryOperator::default()

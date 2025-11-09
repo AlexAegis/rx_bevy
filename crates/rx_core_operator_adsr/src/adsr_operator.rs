@@ -1,13 +1,18 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::{AdsrSignal, AdsrSubscriber, operator::AdsrOperatorOptions};
 
 #[derive(Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(RxOperator)]
+#[rx_in(bool)]
+#[rx_in_error(InError)]
+#[rx_out(AdsrSignal)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct AdsrOperator<InError, Context>
 where
 	InError: SignalBound,
@@ -35,8 +40,6 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
-
 	type Subscriber<Destination>
 		= AdsrSubscriber<InError, Destination>
 	where
@@ -58,22 +61,4 @@ where
 	{
 		AdsrSubscriber::new(destination, self.options.clone())
 	}
-}
-
-impl<InError, Context> ObserverInput for AdsrOperator<InError, Context>
-where
-	InError: SignalBound,
-	Context: SubscriptionContext,
-{
-	type In = bool;
-	type InError = InError;
-}
-
-impl<InError, Context> ObservableOutput for AdsrOperator<InError, Context>
-where
-	InError: SignalBound,
-	Context: SubscriptionContext,
-{
-	type Out = AdsrSignal;
-	type OutError = InError;
 }

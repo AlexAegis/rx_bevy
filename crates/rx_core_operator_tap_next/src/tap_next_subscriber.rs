@@ -7,8 +7,6 @@ use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 #[rx_context(Destination::Context)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_out(In)]
-#[rx_out_error(InError)]
 #[rx_delegate_tickable_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
 #[rx_delegate_subscription_like_to_destination]

@@ -13,7 +13,7 @@ pub trait CompositeOperatorExtensionMap: Operator + Sized {
 		mapper: Mapper,
 	) -> CompositeOperator<
 		Self,
-		MapOperator<Self::Out, Self::OutError, Mapper, NextOut, <Self as Operator>::Context>,
+		MapOperator<Self::Out, Self::OutError, Mapper, NextOut, Self::Context>,
 	> {
 		CompositeOperator::new(self, MapOperator::new(mapper))
 	}

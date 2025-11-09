@@ -1,10 +1,8 @@
 use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
-use rx_core_traits::{
-	DetachedSubscriber, Observer, ObserverInput, SignalBound, SubscriberNotification, Tick,
-	Tickable, UpgradeableObserver, WithSubscriptionContext,
-};
+use rx_core_macro_observer_derive::RxObserver;
+use rx_core_traits::{Observer, SignalBound, SubscriberNotification};
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 
@@ -15,13 +13,16 @@ use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 /// It's mainly used by user made subscriptions, whenever you make a subscription
 /// through [Commands][bevy_ecs::Commands], the destination entity will be
 /// wrapped into this one.
+#[derive(RxObserver)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct EntityObserver<In, InError>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
 	destination: Entity,
-
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -33,52 +34,8 @@ where
 	pub fn new(destination: Entity) -> Self {
 		Self {
 			destination,
-
 			_phantom_data: PhantomData,
 		}
-	}
-}
-
-impl<In, InError> WithSubscriptionContext for EntityObserver<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Context = BevySubscriptionContextProvider;
-}
-
-impl<In, InError> ObserverInput for EntityObserver<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError> Tickable for EntityObserver<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	#[track_caller]
-	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
-		context.send_subscriber_notification(
-			self.destination,
-			SubscriberNotification::<In, InError, BevySubscriptionContextProvider>::Tick(tick),
-		);
-	}
-}
-
-impl<In, InError> UpgradeableObserver for EntityObserver<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Upgraded = DetachedSubscriber<Self>;
-
-	fn upgrade(self) -> Self::Upgraded {
-		DetachedSubscriber::new(self)
 	}
 }
 

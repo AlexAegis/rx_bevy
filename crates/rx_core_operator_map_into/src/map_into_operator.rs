@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use derive_where::derive_where;
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::MapIntoSubscriber;
 
@@ -10,18 +10,22 @@ use crate::MapIntoSubscriber;
 /// out value provided `From` is implemented on the downstream type.
 /// When both `In` and `Out`, and `InError` and `OutError` types are the same,
 /// it's equivalent to the `identity` operator and is a noop.
-pub struct MapIntoOperator<In, InError, Out, OutError, Context = ()> {
-	pub _phantom_data: PhantomData<(In, InError, Out, OutError, Context)>,
-}
-
-impl<In, InError, Out, OutError, Context> Default
-	for MapIntoOperator<In, InError, Out, OutError, Context>
+#[derive_where(Debug, Clone, Default)]
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(Out)]
+#[rx_out_error(OutError)]
+#[rx_context(Context)]
+pub struct MapIntoOperator<In, InError, Out, OutError, Context = ()>
+where
+	In: SignalBound + Into<Out>,
+	InError: SignalBound + Into<OutError>,
+	Out: SignalBound,
+	OutError: SignalBound,
+	Context: SubscriptionContext,
 {
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
+	pub _phantom_data: PhantomData<(In, InError, Out, OutError, Context)>,
 }
 
 impl<In, InError, Out, OutError, Context> Operator
@@ -33,7 +37,6 @@ where
 	OutError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= MapIntoSubscriber<In, InError, Out, OutError, Destination>
 	where
@@ -54,39 +57,5 @@ where
 			+ Sync,
 	{
 		MapIntoSubscriber::new(destination)
-	}
-}
-
-impl<In, InError, Out, OutError, Context> ObservableOutput
-	for MapIntoOperator<In, InError, Out, OutError, Context>
-where
-	In: SignalBound + Into<Out>,
-	InError: SignalBound + Into<OutError>,
-	Out: SignalBound,
-	OutError: SignalBound,
-{
-	type Out = Out;
-	type OutError = OutError;
-}
-
-impl<In, InError, Out, OutError, Context> ObserverInput
-	for MapIntoOperator<In, InError, Out, OutError, Context>
-where
-	In: SignalBound + Into<Out>,
-	InError: SignalBound + Into<OutError>,
-	Out: SignalBound,
-	OutError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Out, OutError, Context> Clone
-	for MapIntoOperator<In, InError, Out, OutError, Context>
-{
-	fn clone(&self) -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
 	}
 }

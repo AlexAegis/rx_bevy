@@ -1,18 +1,25 @@
 use core::marker::PhantomData;
 
+use derive_where::derive_where;
 use disqualified::ShortName;
-use rx_core_traits::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observer, Subscriber, SubscriptionLike};
 
-#[derive(Debug)]
+#[derive(RxSubscriber)]
+#[derive_where(Debug; Inner)]
+#[rx_in(Inner::In)]
+#[rx_in_error(Inner::InError)]
+#[rx_context(Inner::Context)]
+#[rx_delegate_observer_to_destination]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_subscription_like_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
 pub struct CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,
 	Destination: Observer,
 {
+	#[destination]
 	subscriber: Inner,
 	_phantom_data: PhantomData<Destination>,
 }
@@ -28,113 +35,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<Inner, Destination> WithSubscriptionContext for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	type Context = Inner::Context;
-}
-
-impl<Inner, Destination> WithPrimaryCategory for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Inner, Destination> ObserverUpgradesToSelf for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-}
-
-impl<Inner, Destination> Observer for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subscriber.next(next, context);
-	}
-
-	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subscriber.error(error, context);
-	}
-
-	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.subscriber.complete(context);
-	}
-}
-
-impl<Inner, Destination> Tickable for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subscriber.tick(tick, context);
-	}
-}
-
-impl<Inner, Destination> SubscriptionLike for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.subscriber.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.subscriber.unsubscribe(context);
-	}
-}
-
-impl<Inner, Destination> TeardownCollection for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subscriber.add_teardown(teardown, context);
-	}
-}
-
-impl<Inner, Destination> ObserverInput for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	type In = Inner::In;
-	type InError = Inner::InError;
 }
 
 impl<Inner, Destination> Drop for CompositeSubscriber<Inner, Destination>

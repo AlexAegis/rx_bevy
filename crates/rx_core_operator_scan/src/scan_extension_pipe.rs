@@ -9,8 +9,10 @@ pub fn scan<In, InError, Reducer, Out>(
 	seed: Out,
 ) -> ScanOperator<In, InError, Reducer, Out>
 where
-	Reducer: Clone + Fn(&Out, In) -> Out,
-	Out: Clone,
+	In: SignalBound,
+	InError: SignalBound,
+	Reducer: Fn(&Out, In) -> Out + Send + Sync + Clone,
+	Out: SignalBound + Clone,
 {
 	ScanOperator::new(reducer, seed)
 }

@@ -1,11 +1,11 @@
-use rx_core_traits::SubscriptionContext;
+use rx_core_traits::{SignalBound, SubscriptionContext};
 
 use crate::observable::OfObservable;
 
 /// Observable creator for [OfObservable]
-pub fn of<T, Context>(value: T) -> OfObservable<T, Context>
+pub fn of<Out, Context>(value: Out) -> OfObservable<Out, Context>
 where
-	T: Clone,
+	Out: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
 	OfObservable::new(value)

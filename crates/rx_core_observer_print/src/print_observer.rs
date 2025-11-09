@@ -1,16 +1,20 @@
 use std::{fmt::Debug, marker::PhantomData};
 
+use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	Never, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategoryObserver, SignalBound,
-	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
-	Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observer, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Teardown, TeardownCollection, Tickable,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
+#[derive(RxObserver)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_context(Context)]
 pub struct PrintObserver<In, InError = Never, Context = ()>
 where
-	In: Debug,
-	InError: Debug,
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
 	Context: SubscriptionContext,
 {
 	prefix: Option<&'static str>,
@@ -20,8 +24,8 @@ where
 
 impl<In, InError, Context> PrintObserver<In, InError, Context>
 where
-	In: Debug,
-	InError: Debug,
+	In: SignalBound + Debug,
+	InError: SignalBound + Debug,
 	Context: SubscriptionContext,
 {
 	pub fn new(message: &'static str) -> Self {
@@ -52,16 +56,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<In, InError, Context> ObserverInput for PrintObserver<In, InError, Context>
-where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
-	Context: SubscriptionContext,
-{
-	type In = In;
-	type InError = InError;
 }
 
 impl<In, InError, Context> Observer for PrintObserver<In, InError, Context>
@@ -108,35 +102,6 @@ where
 	) {
 		println!("{}tick: {:?}", self.get_prefix(), tick);
 	}
-}
-
-impl<In, InError, Context> WithSubscriptionContext for PrintObserver<In, InError, Context>
-where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<In, InError, Context> WithPrimaryCategory for PrintObserver<In, InError, Context>
-where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategoryObserver;
-}
-
-/// While PrintObserver is not technially a subscriber - it can't even accept
-/// a destination - to be able to print every event, including unsubscribe,
-/// it is implemented as such.
-impl<In, InError, Context> ObserverUpgradesToSelf for PrintObserver<In, InError, Context>
-where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
-	Context: SubscriptionContext,
-{
 }
 
 impl<In, InError, Context> SubscriptionLike for PrintObserver<In, InError, Context>

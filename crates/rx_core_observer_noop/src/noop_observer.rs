@@ -1,22 +1,21 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	DetachedSubscriber, Observer, ObserverInput, PrimaryCategoryObserver, SignalBound,
-	SubscriptionContext, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
-};
+use derive_where::derive_where;
+use rx_core_macro_observer_derive::RxObserver;
+use rx_core_traits::{Observer, SignalBound, SubscriptionContext};
 
-#[derive(Debug)]
-pub struct NoopObserver<In, InError, Context> {
-	_phantom_data: PhantomData<(In, InError, fn(Context))>,
-}
-
-impl<In, InError, Context> ObserverInput for NoopObserver<In, InError, Context>
+#[derive_where(Default, Debug)]
+#[derive(RxObserver)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_context(Context)]
+pub struct NoopObserver<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: SubscriptionContext,
 {
-	type In = In;
-	type InError = InError;
+	_phantom_data: PhantomData<(In, InError, fn(Context))>,
 }
 
 impl<In, InError, Context> Observer for NoopObserver<In, InError, Context>
@@ -44,43 +43,4 @@ where
 	}
 
 	fn complete(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {}
-}
-
-impl<In, InError, Context> WithSubscriptionContext for NoopObserver<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<In, InError, Context> WithPrimaryCategory for NoopObserver<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategoryObserver;
-}
-
-impl<In, InError, Context> UpgradeableObserver for NoopObserver<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Context: SubscriptionContext,
-{
-	type Upgraded = DetachedSubscriber<Self>;
-
-	fn upgrade(self) -> Self::Upgraded {
-		DetachedSubscriber::new(self)
-	}
-}
-
-impl<In, InError, Context> Default for NoopObserver<In, InError, Context> {
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
 }

@@ -4133,6 +4133,10 @@ dependencies = [
  "disqualified",
  "rx_bevy",
  "rx_bevy_common",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_observer_derive",
+ "rx_core_macro_subject_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
@@ -4173,6 +4177,8 @@ dependencies = [
  "examples_common",
  "rx_bevy",
  "rx_bevy_context",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4228,6 +4234,7 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_macro_subscriber_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4292,11 +4299,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_core_macro_subscription_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
 name = "rx_core_observable_combine_latest"
 version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_emission_variants",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_rc",
  "rx_core_subscription_drop",
  "rx_core_testing",
@@ -4309,6 +4328,7 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_observable_deferred",
  "rx_core_testing",
  "rx_core_traits",
@@ -4319,6 +4339,7 @@ name = "rx_core_observable_deferred"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
@@ -4341,6 +4362,7 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
@@ -4352,6 +4374,7 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
@@ -4362,6 +4385,7 @@ name = "rx_core_observable_merge"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_operator_map_into",
  "rx_core_subscriber_rc",
  "rx_core_testing",
@@ -4373,6 +4397,7 @@ name = "rx_core_observable_of"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
@@ -4383,6 +4408,7 @@ name = "rx_core_observable_pipe"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4392,6 +4418,7 @@ name = "rx_core_observable_throw"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
@@ -4403,6 +4430,8 @@ version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_emission_variants",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_rc",
  "rx_core_testing",
  "rx_core_traits",
@@ -4413,6 +4442,7 @@ name = "rx_core_observer_fn"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_observer_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4421,7 +4451,9 @@ dependencies = [
 name = "rx_core_observer_noop"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
+ "rx_core_macro_observer_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4431,6 +4463,7 @@ name = "rx_core_observer_print"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_observer_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4443,6 +4476,8 @@ dependencies = [
  "bevy_time",
  "bitflags 2.10.0",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
@@ -4452,8 +4487,11 @@ dependencies = [
 name = "rx_core_operator_composite"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "disqualified",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_testing",
  "rx_core_traits",
@@ -4463,7 +4501,10 @@ dependencies = [
 name = "rx_core_operator_enumerate"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4474,8 +4515,11 @@ dependencies = [
 name = "rx_core_operator_error_boundary"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "disqualified",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4486,7 +4530,10 @@ dependencies = [
 name = "rx_core_operator_filter"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4497,7 +4544,10 @@ dependencies = [
 name = "rx_core_operator_filter_map"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_operator_lift_option",
@@ -4510,8 +4560,11 @@ dependencies = [
 name = "rx_core_operator_finalize"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "disqualified",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4522,7 +4575,10 @@ dependencies = [
 name = "rx_core_operator_identity"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4532,6 +4588,8 @@ name = "rx_core_operator_into_result"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4543,6 +4601,8 @@ name = "rx_core_operator_lift_option"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4554,6 +4614,8 @@ name = "rx_core_operator_lift_result"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4567,6 +4629,8 @@ dependencies = [
  "derive-where",
  "disqualified",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4577,7 +4641,10 @@ dependencies = [
 name = "rx_core_operator_map_into"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4591,6 +4658,8 @@ dependencies = [
  "derive-where",
  "disqualified",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4601,7 +4670,10 @@ dependencies = [
 name = "rx_core_operator_skip"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4614,6 +4686,8 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_operator_finalize",
@@ -4627,7 +4701,10 @@ dependencies = [
 name = "rx_core_operator_take"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4690,6 +4767,7 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_subscriber_derive",
  "rx_core_observable_iterator",
  "rx_core_testing",
  "rx_core_traits",
@@ -4700,6 +4778,7 @@ name = "rx_core_subscriber_switch"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_subscriber_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4709,6 +4788,7 @@ name = "rx_core_subscription_drop"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
@@ -4720,6 +4800,7 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4730,6 +4811,7 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_observer_derive",
  "rx_core_traits",
 ]
 

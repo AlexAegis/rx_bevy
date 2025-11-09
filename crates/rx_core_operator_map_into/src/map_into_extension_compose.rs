@@ -9,13 +9,7 @@ pub trait CompositeOperatorExtensionInto: Operator + Sized {
 		self,
 	) -> CompositeOperator<
 		Self,
-		MapIntoOperator<
-			Self::Out,
-			Self::OutError,
-			NextOut,
-			NextOutError,
-			<Self as Operator>::Context,
-		>,
+		MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError, Self::Context>,
 	>
 	where
 		Self::Out: Into<NextOut>,

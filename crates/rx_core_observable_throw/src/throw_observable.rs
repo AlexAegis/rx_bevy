@@ -1,15 +1,19 @@
 use core::marker::PhantomData;
 
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
-	SubscriptionContext, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, UpgradeableObserver,
 };
 
-#[derive(Clone)]
+#[derive(RxObservable, Clone, Debug)]
+#[rx_out(Never)]
+#[rx_out_error(OutError)]
+#[rx_context(Context)]
 pub struct ThrowObservable<OutError, Context>
 where
 	OutError: SignalBound + Clone,
+	Context: SubscriptionContext,
 {
 	error: OutError,
 	_phantom_data: PhantomData<Context>,
@@ -18,6 +22,7 @@ where
 impl<OutError, Context> ThrowObservable<OutError, Context>
 where
 	OutError: SignalBound + Clone,
+	Context: SubscriptionContext,
 {
 	pub fn new(error: OutError) -> Self {
 		Self {
@@ -25,30 +30,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<OutError, Context> ObservableOutput for ThrowObservable<OutError, Context>
-where
-	OutError: SignalBound + Clone,
-{
-	type Out = Never;
-	type OutError = OutError;
-}
-
-impl<OutError, Context> WithSubscriptionContext for ThrowObservable<OutError, Context>
-where
-	OutError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<OutError, Context> WithPrimaryCategory for ThrowObservable<OutError, Context>
-where
-	OutError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<OutError, Context> Observable for ThrowObservable<OutError, Context>

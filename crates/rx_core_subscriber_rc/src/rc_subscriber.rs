@@ -1,13 +1,16 @@
+use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	Observer, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable,
 	allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
 };
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
 
-/// TODO: move this back to core, it's no longer specialized
+#[derive(RxSubscriber)]
+#[rx_in(Destination::In)]
+#[rx_in_error(Destination::InError)]
+#[rx_context(Destination::Context)]
 pub struct RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
@@ -110,33 +113,6 @@ where
 			closed_flag: (self.completed || self.unsubscribed).into(),
 		}
 	}
-}
-
-impl<Destination> ObserverInput for RcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
-}
-
-impl<Destination> WithSubscriptionContext for RcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	type Context = Destination::Context;
-}
-
-impl<Destination> WithPrimaryCategory for RcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Destination> ObserverUpgradesToSelf for RcSubscriber<Destination> where
-	Destination: 'static + Subscriber
-{
 }
 
 impl<Destination> Observer for RcSubscriber<Destination>

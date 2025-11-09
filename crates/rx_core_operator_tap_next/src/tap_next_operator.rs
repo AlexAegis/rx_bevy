@@ -10,6 +10,7 @@ use crate::TapNextSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct TapNextOperator<In, InError, OnNext, Context>
 where
 	In: SignalBound,
@@ -43,7 +44,6 @@ where
 	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= TapNextSubscriber<In, InError, OnNext, Destination>
 	where

@@ -36,6 +36,8 @@ observable_fn = []
 
 [dependencies]
 rx_core_traits = { workspace = true }
+rx_core_macro_observable_derive = { workspace = true }
+rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_emission_variants = { workspace = true }
 rx_core_subscriber_rc = { workspace = true }
 

@@ -18,6 +18,7 @@ pub enum PrimaryCategory {
 	Observer,
 	Subscriber,
 	Operator,
+	Subscription,
 }
 
 /// Marks the struct to be primarily considered an
@@ -85,6 +86,20 @@ impl private::Seal for PrimaryCategoryOperator {}
 
 impl PrimaryCategoryMarker for PrimaryCategoryOperator {
 	const CATEGORY: PrimaryCategory = PrimaryCategory::Operator;
+}
+
+/// Marks the struct to be primarily considered an
+/// [SubscriptionLike][crate::SubscriptionLike].
+/// It must only be used for types that implement
+/// [SubscriptionLike][crate::SubscriptionLike], [Tickable][crate::Tickable],
+/// and [TeardownCollection][crate::TeardownCollection]!
+#[derive(Debug)]
+pub struct PrimaryCategorySubscription;
+
+impl private::Seal for PrimaryCategorySubscription {}
+
+impl PrimaryCategoryMarker for PrimaryCategorySubscription {
+	const CATEGORY: PrimaryCategory = PrimaryCategory::Subscription;
 }
 
 /// 🦭

@@ -1,30 +1,27 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use derive_where::derive_where;
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::EnumerateSubscriber;
 
 /// The [EnumerateOperator] counts emissions, and downstream receives this
 /// counter in a tuple with the emitted value as (T, usize)
+#[derive_where(Default, Clone, Debug)]
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out((In, usize))]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct EnumerateOperator<In, InError, Context = ()>
-where
-	InError: SignalBound,
-{
-	_phantom_data: PhantomData<(In, InError, Context)>,
-}
-
-impl<In, InError, Context> Default for EnumerateOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: SubscriptionContext,
 {
-	fn default() -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
-	}
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
 impl<In, InError, Context> Operator for EnumerateOperator<In, InError, Context>
@@ -33,9 +30,8 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
-		= EnumerateSubscriber<In, InError, Destination>
+		= EnumerateSubscriber<In, Destination>
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -55,35 +51,5 @@ where
 			+ Sync,
 	{
 		EnumerateSubscriber::new(destination)
-	}
-}
-
-impl<In, InError, Context> ObserverInput for EnumerateOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Context> ObservableOutput for EnumerateOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Out = (In, usize);
-	type OutError = InError;
-}
-
-impl<In, InError, Context> Clone for EnumerateOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	fn clone(&self) -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
 	}
 }

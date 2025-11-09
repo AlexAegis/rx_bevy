@@ -1,19 +1,24 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext, Tick, Tickable};
 
 use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, operator::AdsrOperatorOptions};
 
 // TODO: It'd be nice to control the envelope live, I guess that could be done by querying the subscriber itself, but it would be nicer to control the operator itself, in case there are many observers
 #[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(RxSubscriber)]
+#[rx_in(bool)]
+#[rx_in_error(InError)]
+#[rx_context(Destination::Context)]
+#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_subscription_like_to_destination]
 pub struct AdsrSubscriber<InError, Destination>
 where
+	InError: SignalBound,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
+	#[destination]
 	destination: Destination,
 	is_getting_activated: bool,
 	state: AdsrEnvelopeState,
@@ -23,6 +28,7 @@ where
 
 impl<InError, Destination> AdsrSubscriber<InError, Destination>
 where
+	InError: SignalBound,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	pub fn new(destination: Destination, options: AdsrOperatorOptions) -> Self {
@@ -36,33 +42,10 @@ where
 	}
 }
 
-impl<InError, Destination> WithSubscriptionContext for AdsrSubscriber<InError, Destination>
-where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: SignalBound,
-{
-	type Context = Destination::Context;
-}
-
-impl<InError, Destination> WithPrimaryCategory for AdsrSubscriber<InError, Destination>
-where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: SignalBound,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<InError, Destination> ObserverUpgradesToSelf for AdsrSubscriber<InError, Destination>
-where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: SignalBound,
-{
-}
-
 impl<InError, Destination> Observer for AdsrSubscriber<InError, Destination>
 where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 	InError: SignalBound,
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	#[inline]
 	fn next(
@@ -90,8 +73,8 @@ where
 
 impl<InError, Destination> Tickable for AdsrSubscriber<InError, Destination>
 where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 	InError: SignalBound,
+	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	#[inline]
 	fn tick(
@@ -107,53 +90,4 @@ where
 			self.destination.next(next, context);
 		}
 	}
-}
-
-impl<InError, Destination> SubscriptionLike for AdsrSubscriber<InError, Destination>
-where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: SignalBound,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<InError, Destination> TeardownCollection for AdsrSubscriber<InError, Destination>
-where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: SignalBound,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
-	}
-}
-
-impl<InError, Destination> ObserverInput for AdsrSubscriber<InError, Destination>
-where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: SignalBound,
-{
-	type In = bool;
-	type InError = InError;
-}
-
-impl<InError, Destination> ObservableOutput for AdsrSubscriber<InError, Destination>
-where
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
-	InError: SignalBound,
-{
-	type Out = AdsrSignal;
-	type OutError = InError;
 }

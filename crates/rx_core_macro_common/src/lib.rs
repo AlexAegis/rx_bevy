@@ -1,6 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Attribute, DeriveInput, Ident, Meta, Type, parse_quote, parse2};
+use syn::{
+	Attribute, DeriveInput, Error, Ident, Meta, Token, Type,
+	parse::{Parse, ParseStream},
+	parse_quote, parse2,
+};
 
 pub fn find_attribute<'a>(attrs: &'a [Attribute], attribute_name: &str) -> Option<&'a Attribute> {
 	attrs
@@ -121,21 +125,65 @@ pub fn impl_subscriber_does_not_upgrade_to_self(derive_input: &DeriveInput) -> O
 	let does_not_upgrade_to_self_attribute =
 		find_attribute(&derive_input.attrs, "rx_does_not_upgrade_to_self").is_some();
 
-	if does_not_upgrade_to_self_attribute {
+	if does_not_upgrade_to_self_attribute
+		|| find_attribute(&derive_input.attrs, "rx_upgrades_to").is_some()
+	{
 		None
 	} else {
 		Some(impl_upgrades_to_self(derive_input))
 	}
 }
 
-pub fn impl_observer_upgrades_to_self(derive_input: &DeriveInput) -> Option<TokenStream> {
-	let upgrades_to_self = find_attribute(&derive_input.attrs, "rx_upgrades_to_self").is_some();
+pub fn impl_does_not_upgrade_to_detached(derive_input: &DeriveInput) -> Option<TokenStream> {
+	let does_not_upgrade_to_detached =
+		find_attribute(&derive_input.attrs, "rx_does_not_upgrade_to_detached").is_some();
 
-	if upgrades_to_self {
-		Some(impl_upgrades_to_self(derive_input))
-	} else {
+	if does_not_upgrade_to_detached
+		|| find_attribute(&derive_input.attrs, "rx_upgrades_to").is_some()
+	{
 		None
+	} else {
+		Some(impl_upgrades_to_detached(derive_input))
 	}
+}
+
+#[derive(Clone, Copy)]
+enum ObserverUpgrades {
+	ToSelf,
+	ToDetached,
+}
+
+impl Parse for ObserverUpgrades {
+	fn parse(input: ParseStream) -> Result<Self, Error> {
+		let is_self = input.parse::<Token![self]>().is_ok();
+		if is_self {
+			return Ok(ObserverUpgrades::ToSelf);
+		};
+
+		let ident = input.parse::<Ident>()?;
+
+		if ident == "detached" {
+			Ok(ObserverUpgrades::ToDetached)
+		} else {
+			Err(syn::Error::new(
+				ident.span(),
+				"invalid value for #[rx_upgrades_to(..)]: expected `self` or `detached`",
+			))
+		}
+	}
+}
+
+pub fn impl_observer_upgrades_to(derive_input: &DeriveInput) -> Option<TokenStream> {
+	let upgrades_to = find_attribute(&derive_input.attrs, "rx_upgrades_to");
+
+	upgrades_to.map(|upgrades_to| {
+		let target: ObserverUpgrades = upgrades_to.parse_args().unwrap();
+
+		match target {
+			ObserverUpgrades::ToDetached => impl_upgrades_to_detached(derive_input),
+			ObserverUpgrades::ToSelf => impl_upgrades_to_self(derive_input),
+		}
+	})
 }
 
 fn impl_upgrades_to_detached(derive_input: &DeriveInput) -> TokenStream {
@@ -150,30 +198,6 @@ fn impl_upgrades_to_detached(derive_input: &DeriveInput) -> TokenStream {
 				rx_core_traits::DetachedSubscriber::new(self)
 			}
 		}
-	}
-}
-
-pub fn impl_observer_upgrades_to_detached(derive_input: &DeriveInput) -> Option<TokenStream> {
-	let upgrades_to_detached =
-		find_attribute(&derive_input.attrs, "rx_upgrades_to_detached").is_some();
-
-	if upgrades_to_detached {
-		Some(impl_upgrades_to_detached(derive_input))
-	} else {
-		None
-	}
-}
-
-pub fn impl_subject_does_not_upgrade_to_detached(
-	derive_input: &DeriveInput,
-) -> Option<TokenStream> {
-	let does_not_upgrade_to_detached =
-		find_attribute(&derive_input.attrs, "rx_does_not_upgrade_to_detached").is_some();
-
-	if does_not_upgrade_to_detached {
-		None
-	} else {
-		Some(impl_upgrades_to_detached(derive_input))
 	}
 }
 

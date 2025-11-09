@@ -7,9 +7,9 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
+use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer as RxObserver, ObserverInput, Subscriber, SubscriptionLike, TeardownCollection, Tick,
-	Tickable, WithSubscriptionContext,
+	Observer as RxObserver, Subscriber, SubscriptionLike, TeardownCollection, Tick, Tickable,
 };
 
 use crate::{
@@ -17,9 +17,12 @@ use crate::{
 	ConsumableSubscriberNotificationEvent, SubscriberNotificationEvent,
 };
 
-#[derive(Component)]
+#[derive(Component, RxSubscriber)]
 #[component(on_insert=subscriber_on_insert::<Destination>, on_remove=subscriber_on_remove::<Destination>)]
 #[require( Name::new(format!("Subscriber ({})", ShortName::of::<Destination>())))]
+#[rx_in(Destination::In)]
+#[rx_in_error(Destination::InError)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct SubscriberComponent<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
@@ -158,21 +161,6 @@ where
 	context
 		.return_stolen_subscriber_destination(hook_context.entity, stolen_destination)
 		.unwrap();
-}
-
-impl<Destination> ObserverInput for SubscriberComponent<Destination>
-where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
-}
-
-impl<Destination> WithSubscriptionContext for SubscriberComponent<Destination>
-where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	type Context = BevySubscriptionContextProvider;
 }
 
 impl<Destination> Tickable for SubscriberComponent<Destination>

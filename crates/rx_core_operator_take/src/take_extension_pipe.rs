@@ -1,10 +1,14 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, SignalBound};
 
 use crate::operator::TakeOperator;
 
 /// Operator creator function
-pub fn take<In, InError>(count: usize) -> TakeOperator<In, InError> {
+pub fn take<In, InError>(count: usize) -> TakeOperator<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
 	TakeOperator::new(count)
 }
 

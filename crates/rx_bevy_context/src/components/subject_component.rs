@@ -8,8 +8,10 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
+use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	ObserverNotification, SubjectLike, SubjectPushNotificationExtention, SubscriptionLike,
+	Observer as RxObserver, ObserverNotification, SubjectLike, SubjectPushNotificationExtention,
+	SubscriptionLike,
 };
 use stealcell::{StealCell, Stolen};
 
@@ -20,9 +22,15 @@ use crate::{
 	SubscriptionOf, default_on_subscribe_error_handler,
 };
 
-#[derive(Component)]
+// TODO: Check if Observable etc can be implemented on this, or delete it and the observer impl because it's not actually used
+#[derive(Component, RxSubject)]
 #[component(on_insert=subject_on_insert::<Subject>, on_remove=subject_on_remove::<Subject>)]
 #[require(ObservableSubscriptions::<Subject>)]
+#[rx_in(Subject::In)]
+#[rx_in_error(Subject::InError)]
+#[rx_out(Subject::Out)]
+#[rx_out_error(Subject::OutError)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct SubjectComponent<Subject>
 where
 	Subject: SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
@@ -46,6 +54,35 @@ where
 
 	pub(crate) fn return_stolen_subject(&mut self, observable: Stolen<Subject>) {
 		self.subject.return_stolen(observable);
+	}
+}
+
+// TODO: This is actually not used, delete if no usecase is found together with the derive
+impl<Subject> RxObserver for SubjectComponent<Subject>
+where
+	Subject: SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+{
+	fn next(
+		&mut self,
+		next: Self::In,
+		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+	) {
+		self.subject.get_mut().next(next, context);
+	}
+
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+	) {
+		self.subject.get_mut().error(error, context);
+	}
+
+	fn complete(
+		&mut self,
+		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+	) {
+		self.subject.get_mut().complete(context);
 	}
 }
 

@@ -1,19 +1,36 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use derive_where::derive_where;
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::SkipSubscriber;
 
 /// The [SkipOperator] is used to skip the first `n` emissions of an observable,
 /// after which it does nothing.
-pub struct SkipOperator<In, InError, Context = ()> {
+#[derive(RxOperator)]
+#[derive_where(Debug, Clone)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
+pub struct SkipOperator<In, InError = Never, Context = ()>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
 	pub count: usize,
 	pub _phantom_data: PhantomData<(In, InError, Context)>,
 }
 
-impl<In, InError, Context> SkipOperator<In, InError, Context> {
+impl<In, InError, Context> SkipOperator<In, InError, Context>
+where
+	In: SignalBound,
+	InError: SignalBound,
+	Context: SubscriptionContext,
+{
 	pub fn new(count: usize) -> Self {
 		Self {
 			count,
@@ -28,7 +45,6 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= SkipSubscriber<In, InError, Destination>
 	where
@@ -50,32 +66,5 @@ where
 			+ Sync,
 	{
 		SkipSubscriber::new(destination, self.count)
-	}
-}
-
-impl<In, InError, Context> ObserverInput for SkipOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Context> ObservableOutput for SkipOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError, Context> Clone for SkipOperator<In, InError, Context> {
-	fn clone(&self) -> Self {
-		Self {
-			count: self.count,
-			_phantom_data: PhantomData,
-		}
 	}
 }

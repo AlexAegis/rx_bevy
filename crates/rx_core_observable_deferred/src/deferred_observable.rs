@@ -1,12 +1,13 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_observable_derive::RxObservable;
+use rx_core_traits::{Observable, SubscriptionContext, UpgradeableObserver};
 
 /// Defers the creation of its source [Observable] until subscribe
-#[derive(Clone)]
+#[derive(RxObservable, Clone)]
+#[rx_out(Source::Out)]
+#[rx_out_error(Source::OutError)]
+#[rx_context(Source::Context)]
 pub struct DeferredObservable<F, Source>
 where
 	Source: Observable,
@@ -27,22 +28,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<F, Source> WithSubscriptionContext for DeferredObservable<F, Source>
-where
-	Source: Observable,
-	F: Clone + Fn() -> Source,
-{
-	type Context = Source::Context;
-}
-
-impl<F, Source> WithPrimaryCategory for DeferredObservable<F, Source>
-where
-	Source: Observable,
-	F: Clone + Fn() -> Source,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<F, Source> Observable for DeferredObservable<F, Source>
@@ -67,13 +52,4 @@ where
 		let mut source = (self.observable_creator)();
 		source.subscribe(destination, context)
 	}
-}
-
-impl<F, Source> ObservableOutput for DeferredObservable<F, Source>
-where
-	Source: Observable,
-	F: Clone + Fn() -> Source,
-{
-	type Out = Source::Out;
-	type OutError = Source::OutError;
 }

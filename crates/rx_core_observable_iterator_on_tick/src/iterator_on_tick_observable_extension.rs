@@ -1,4 +1,4 @@
-use rx_core_traits::SubscriptionContext;
+use rx_core_traits::{SignalBound, SubscriptionContext};
 
 use crate::observable::{IteratorOnTickObservable, OnTickObservableOptions};
 
@@ -8,6 +8,7 @@ pub trait IntoIteratorOnTickObservableExtension: IntoIterator + Clone {
 		options: OnTickObservableOptions,
 	) -> IteratorOnTickObservable<Self, Context>
 	where
+		Self::Item: SignalBound,
 		Context: SubscriptionContext,
 	{
 		IteratorOnTickObservable::new(self, options)

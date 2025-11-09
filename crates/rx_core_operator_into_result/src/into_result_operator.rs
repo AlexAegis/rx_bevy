@@ -1,17 +1,23 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	Never, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::IntoResultSubscriber;
 
-// TODO: Rename to `into_result`, the `try_` prefix means something that can produce a error result, and the point of this is to avoid that
 /// The [IntoResultOperator] is used to pack incoming values and errors into a
 /// Result. When used, upstream errors are guaranteed to not reach downstream.
-pub struct IntoResultOperator<In, InError, Context = ()>
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(Result<In, InError>)]
+#[rx_out_error(Never)]
+#[rx_context(Context)]
+pub struct IntoResultOperator<In, InError = Never, Context = ()>
 where
+	In: SignalBound,
 	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	_phantom_data: PhantomData<(In, InError, Context)>,
 }
@@ -20,6 +26,7 @@ impl<In, InError, Context> Default for IntoResultOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -34,7 +41,6 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= IntoResultSubscriber<In, InError, Destination>
 	where
@@ -59,28 +65,11 @@ where
 	}
 }
 
-impl<In, InError, Context> ObserverInput for IntoResultOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Context> ObservableOutput for IntoResultOperator<In, InError, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type Out = Result<In, InError>;
-	type OutError = Never;
-}
-
 impl<In, InError, Context> Clone for IntoResultOperator<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
+	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {

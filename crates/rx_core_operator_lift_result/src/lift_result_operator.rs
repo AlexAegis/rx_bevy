@@ -1,8 +1,7 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::LiftResultSubscriber;
 
@@ -13,10 +12,19 @@ use crate::LiftResultSubscriber;
 ///
 /// The reason it's not called an "UnwrapResultOperator" because that would imply
 /// that it can panic, however that's only true if the error isn't caught downstream.
+#[derive(RxOperator)]
+#[rx_in(Result<ResultIn, ResultInError>)]
+#[rx_in_error(InError)]
+#[rx_out(ResultIn)]
+#[rx_out_error(ResultInError)]
+#[rx_context(Context)]
 pub struct LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context = ()>
 where
+	ResultIn: SignalBound,
+	ResultInError: SignalBound,
 	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
+	Context: SubscriptionContext,
 {
 	in_error_to_result_error: InErrorToResultError,
 	_phantom_data: PhantomData<(
@@ -35,6 +43,7 @@ where
 	ResultInError: SignalBound,
 	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
+	Context: SubscriptionContext,
 {
 	pub fn new(in_error_to_result_error: InErrorToResultError) -> Self {
 		Self {
@@ -53,7 +62,6 @@ where
 	InErrorToResultError: 'static + Fn(InError) -> ResultInError + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 	where
@@ -78,30 +86,6 @@ where
 	}
 }
 
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> ObserverInput
-	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
-{
-	type In = Result<ResultIn, ResultInError>;
-	type InError = InError;
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> ObservableOutput
-	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
-{
-	type Out = ResultIn;
-	type OutError = ResultInError;
-}
-
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> Clone
 	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
@@ -109,6 +93,7 @@ where
 	ResultInError: SignalBound,
 	InError: SignalBound,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
+	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {

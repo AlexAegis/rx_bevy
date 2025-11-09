@@ -1,12 +1,13 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, Observer, SubscriptionContext, UpgradeableObserver};
+use rx_core_traits::{Never, Observable, Observer, SubscriptionContext, UpgradeableObserver};
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
 
 #[derive(RxObservable)]
 #[rx_out(usize)]
+#[rx_out_error(Never)]
 #[rx_context(Context)]
 pub struct IntervalObservable<Context = ()>
 where

@@ -1,8 +1,14 @@
-use rx_core_traits::{ObservableOutput, ObserverInput, Operator, Subscriber, SubscriptionContext};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, Subscriber, SubscriptionContext};
 
 use crate::CompositeSubscriber;
 
-#[derive(Clone, Debug)]
+#[derive(RxOperator)]
+#[rx_in(PrevOp::In)]
+#[rx_in_error(PrevOp::InError)]
+#[rx_out(Op::Out)]
+#[rx_out_error(Op::OutError)]
+#[rx_context(Op::Context)]
 pub struct CompositeOperator<PrevOp, Op>
 where
 	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
@@ -40,8 +46,6 @@ where
 	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
 	Op: Operator,
 {
-	type Context = Op::Context;
-
 	type Subscriber<Destination>
 		= CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<Destination>>, Destination>
 	where
@@ -70,22 +74,4 @@ where
 				.operator_subscribe(self.op.operator_subscribe(destination, context), context),
 		)
 	}
-}
-
-impl<PrevOp, Op> ObserverInput for CompositeOperator<PrevOp, Op>
-where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
-	Op: Operator,
-{
-	type In = PrevOp::In;
-	type InError = PrevOp::InError;
-}
-
-impl<PrevOp, Op> ObservableOutput for CompositeOperator<PrevOp, Op>
-where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
-	Op: Operator,
-{
-	type Out = Op::Out;
-	type OutError = Op::OutError;
 }

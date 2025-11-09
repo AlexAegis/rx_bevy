@@ -9,6 +9,7 @@ use bevy_ecs::{
 };
 use bevy_log::error;
 use disqualified::ShortName;
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Observable, SubscriptionLike};
 use stealcell::{StealCell, Stolen};
 use thiserror::Error;
@@ -19,9 +20,13 @@ use crate::{
 	SubscribeObserverOf, SubscribeObserverRef, SubscriptionOf,
 };
 
-#[derive(Component)]
+/// TODO: Check if you can impl Observable on this
+#[derive(Component, RxObservable)]
 #[component(on_insert=observable_on_insert::<O>, on_remove=observable_on_remove::<O>)]
 #[require(ObservableSubscriptions::<O>)]
+#[rx_out(O::Out)]
+#[rx_out_error(O::OutError)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct ObservableComponent<O>
 where
 	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,

@@ -1,22 +1,27 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_traits::{
-	ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
+#[derive(RxSubscriber)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_context(Destination::Context)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_subscription_like_to_destination]
 pub struct MapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
+	Mapper: Fn(In) -> Out + Send + Sync,
 	Out: SignalBound,
-	Destination: Subscriber,
+	Destination: Subscriber<In = Out, InError = InError>,
 {
+	#[destination]
 	destination: Destination,
 	mapper: Mapper,
 	_phantom_data: PhantomData<(In, InError, Out)>,
@@ -26,12 +31,9 @@ impl<In, InError, Mapper, Out, Destination> MapSubscriber<In, InError, Mapper, O
 where
 	In: SignalBound,
 	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
+	Mapper: Fn(In) -> Out + Send + Sync,
 	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = Out, InError = InError>,
 {
 	pub fn new(destination: Destination, mapper: Mapper) -> Self {
 		Self {
@@ -42,50 +44,6 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out, Destination> WithSubscriptionContext
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type Context = Destination::Context;
-}
-
-impl<In, InError, Mapper, Out, Destination> WithPrimaryCategory
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<In, InError, Mapper, Out, Destination> ObserverUpgradesToSelf
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-}
-
 impl<In, InError, Mapper, Out, Destination> Observer
 	for MapSubscriber<In, InError, Mapper, Out, Destination>
 where
@@ -93,10 +51,7 @@ where
 	InError: SignalBound,
 	Mapper: Fn(In) -> Out + Send + Sync,
 	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
+	Destination: Subscriber<In = Out, InError = InError>,
 {
 	#[inline]
 	fn next(
@@ -121,97 +76,4 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
 	}
-}
-
-impl<In, InError, Mapper, Out, Destination> Tickable
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<In, InError, Mapper, Out, Destination> SubscriptionLike
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<In, InError, Mapper, Out, Destination> TeardownCollection
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber<
-			In = <Self as ObservableOutput>::Out,
-			InError = <Self as ObservableOutput>::OutError,
-		>,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
-	}
-}
-
-impl<In, InError, Mapper, Out, Destination> ObserverInput
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Mapper, Out, Destination> ObservableOutput
-	for MapSubscriber<In, InError, Mapper, Out, Destination>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: Fn(In) -> Out,
-	Out: SignalBound,
-	Destination: Subscriber,
-{
-	type Out = Out;
-	type OutError = InError;
 }

@@ -1,28 +1,18 @@
 use bevy_input::keyboard::KeyCode;
 use rx_bevy_context::BevySubscriptionContextProvider;
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Never, Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext,
-	SubscriptionData, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, SubscriptionContext, SubscriptionData, UpgradeableObserver,
 };
 
 use crate::KeyboardSubscription;
 
 /// A simplistic observable to demonstrate accessing world state from within a subscription
-#[derive(Default)]
+#[derive(RxObservable, Default)]
+#[rx_out(KeyCode)]
+#[rx_out_error(Never)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct KeyboardObservable;
-
-impl ObservableOutput for KeyboardObservable {
-	type Out = KeyCode;
-	type OutError = Never;
-}
-
-impl WithSubscriptionContext for KeyboardObservable {
-	type Context = BevySubscriptionContextProvider;
-}
-
-impl WithPrimaryCategory for KeyboardObservable {
-	type PrimaryCategory = PrimaryCategoryObservable;
-}
 
 impl Observable for KeyboardObservable {
 	/// TODO: Maybe the destination generic should make a comeback

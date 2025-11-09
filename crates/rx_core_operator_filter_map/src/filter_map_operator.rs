@@ -1,26 +1,31 @@
 use core::marker::PhantomData;
 
+use derive_where::derive_where;
+use rx_core_macro_operator_derive::RxOperator;
 use rx_core_operator_composite::CompositeSubscriber;
 use rx_core_operator_lift_option::LiftOptionSubscriber;
 use rx_core_operator_map::MapSubscriber;
-use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
-};
+use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 pub type FilterMapSubscriber<In, InError, Mapper, Out, Destination> = CompositeSubscriber<
-	MapSubscriber<
-		In,
-		InError,
-		Mapper,
-		Option<Out>,
-		LiftOptionSubscriber<Out, InError, Destination>,
-	>,
+	MapSubscriber<In, InError, Mapper, Option<Out>, LiftOptionSubscriber<Destination>>,
 	Destination,
 >;
 
+#[derive_where(Clone)]
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(Out)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
 pub struct FilterMapOperator<In, InError, Mapper, Out, Context = ()>
 where
-	Mapper: Fn(In) -> Option<Out>,
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
+	Out: SignalBound,
+	Context: SubscriptionContext,
 {
 	pub mapper: Mapper,
 	pub _phantom_data: PhantomData<(In, Out, InError, Context)>,
@@ -28,7 +33,11 @@ where
 
 impl<In, InError, Mapper, Out, Context> FilterMapOperator<In, InError, Mapper, Out, Context>
 where
-	Mapper: Fn(In) -> Option<Out>,
+	In: SignalBound,
+	InError: SignalBound,
+	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
+	Out: SignalBound,
+	Context: SubscriptionContext,
 {
 	pub fn new(mapper: Mapper) -> Self {
 		Self {
@@ -41,13 +50,12 @@ where
 impl<In, InError, Mapper, Out, Context> Operator
 	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
-	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
 	In: SignalBound,
-	Out: SignalBound,
 	InError: SignalBound,
+	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
+	Out: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Context = Context;
 	type Subscriber<Destination>
 		= FilterMapSubscriber<In, InError, Mapper, Out, Destination>
 	where
@@ -72,40 +80,5 @@ where
 			LiftOptionSubscriber::new(destination),
 			self.mapper.clone(),
 		))
-	}
-}
-
-impl<In, InError, Mapper, Out, Context> ObserverInput
-	for FilterMapOperator<In, InError, Mapper, Out, Context>
-where
-	Mapper: Fn(In) -> Option<Out>,
-	In: SignalBound,
-	InError: SignalBound,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Mapper, Out, Context> ObservableOutput
-	for FilterMapOperator<In, InError, Mapper, Out, Context>
-where
-	Mapper: Fn(In) -> Option<Out>,
-	Out: SignalBound,
-	InError: SignalBound,
-{
-	type Out = Out;
-	type OutError = InError;
-}
-
-impl<In, InError, Mapper, Out, Context> Clone
-	for FilterMapOperator<In, InError, Mapper, Out, Context>
-where
-	Mapper: Clone + Fn(In) -> Option<Out>,
-{
-	fn clone(&self) -> Self {
-		Self {
-			mapper: self.mapper.clone(),
-			_phantom_data: PhantomData,
-		}
 	}
 }

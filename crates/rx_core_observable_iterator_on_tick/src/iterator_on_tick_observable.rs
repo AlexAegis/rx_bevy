@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
-	SubscriptionContext, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory,
-	WithSubscriptionContext,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
+	UpgradeableObserver,
 };
 
 use crate::{OnTickIteratorSubscription, observable::OnTickObservableOptions};
@@ -18,10 +18,14 @@ use crate::{OnTickIteratorSubscription, observable::OnTickObservableOptions};
 /// An example usecase is throttling a logger to every nth frame, where knowing
 /// exactly how many frames have passed is useful. Otherwise, the
 /// IntervalObservable is a better choice for throttling.
-#[derive(Clone, Debug)]
+#[derive(RxObservable, Clone, Debug)]
+#[rx_out(Iterator::Item)]
+#[rx_out_error(Never)]
+#[rx_context(Context)]
 pub struct IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
+	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
 	iterator: Iterator,
@@ -32,6 +36,7 @@ where
 impl<Iterator, Context> IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
+	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
 	pub fn new(iterator: Iterator, options: OnTickObservableOptions) -> Self {
@@ -41,34 +46,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<Iterator, Context> ObservableOutput for IteratorOnTickObservable<Iterator, Context>
-where
-	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
-	Context: SubscriptionContext,
-{
-	type Out = Iterator::Item;
-	type OutError = Never;
-}
-
-impl<Iterator, Context> WithSubscriptionContext for IteratorOnTickObservable<Iterator, Context>
-where
-	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<Iterator, Context> WithPrimaryCategory for IteratorOnTickObservable<Iterator, Context>
-where
-	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<Iterator, Context> Observable for IteratorOnTickObservable<Iterator, Context>

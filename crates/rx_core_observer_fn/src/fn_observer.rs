@@ -1,12 +1,13 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	DetachedSubscriber, Observer, ObserverInput, PrimaryCategoryObserver, SignalBound,
-	SubscriptionContext, Tick, Tickable, UpgradeableObserver, WithPrimaryCategory,
-	WithSubscriptionContext,
-};
+use rx_core_macro_observer_derive::RxObserver;
+use rx_core_traits::{Observer, SignalBound, SubscriptionContext, Tick, Tickable};
 
 /// An [FnObserver] requires you to define a callback for all three notifications
+#[derive(RxObserver)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_context(Context)]
 pub struct FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: SignalBound,
@@ -48,67 +49,6 @@ where
 			on_tick,
 			_phantom_data: PhantomData,
 		}
-	}
-}
-
-impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> ObserverInput
-	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> WithSubscriptionContext
-	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> WithPrimaryCategory
-	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategoryObserver;
-}
-
-impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> UpgradeableObserver
-	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
-{
-	type Upgraded = DetachedSubscriber<Self>;
-
-	fn upgrade(self) -> Self::Upgraded {
-		DetachedSubscriber::new(self)
 	}
 }
 

@@ -1,11 +1,14 @@
+use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	DropSafeSubscriptionContext, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	SubscriptionScheduled, Teardown, TeardownCollection, Tick, Tickable, WithSubscriptionContext,
+	SubscriptionScheduled, Teardown, TeardownCollection, Tick, Tickable,
 };
 
 /// A DropSubscription is a type of Subscription Observables may use, it
 /// requires the subscriptions SubscriptionContext to be irrelevant during
 /// unsubscription.
+#[derive(RxSubscription)]
+#[rx_context(Context)]
 pub struct DropSubscription<Context>
 where
 	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
@@ -36,13 +39,6 @@ where
 			subscription_data: SubscriptionData::default(),
 		}
 	}
-}
-
-impl<Context> WithSubscriptionContext for DropSubscription<Context>
-where
-	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
-{
-	type Context = Context;
 }
 
 impl<Context> Tickable for DropSubscription<Context>

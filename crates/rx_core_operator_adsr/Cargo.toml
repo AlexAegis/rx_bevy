@@ -29,6 +29,8 @@ example = [
 
 [dependencies]
 rx_core_traits = { workspace = true }
+rx_core_macro_operator_derive = { workspace = true }
+rx_core_macro_subscriber_derive = { workspace = true }
 bitflags = { workspace = true }
 smallvec = { workspace = true }
 bevy_math = { workspace = true, features = ["std", "curve"] }

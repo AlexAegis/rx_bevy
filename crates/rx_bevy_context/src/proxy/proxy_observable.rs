@@ -1,17 +1,21 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
+use rx_core_macro_observable_derive::RxObservable;
 
 use crate::BevySubscriptionContextProvider;
 use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SignalBound, SubscriptionContext,
-	SubscriptionData, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Observable, SignalBound, SubscriptionContext, SubscriptionData, UpgradeableObserver,
 };
 
 use super::proxy_subscription::ProxySubscription;
 
 /// An observable that sources its events by just subscribing to another
 /// entity.
+#[derive(RxObservable, Clone, Debug)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct ProxyObservable<In, InError>
 where
 	In: SignalBound + Clone,
@@ -32,31 +36,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<In, InError> ObservableOutput for ProxyObservable<In, InError>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-{
-	type Out = In;
-	type OutError = InError;
-}
-
-impl<In, InError> WithSubscriptionContext for ProxyObservable<In, InError>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-{
-	type Context = BevySubscriptionContextProvider;
-}
-
-impl<In, InError> WithPrimaryCategory for ProxyObservable<In, InError>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<In, InError> Observable for ProxyObservable<In, InError>

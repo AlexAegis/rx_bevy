@@ -1,16 +1,20 @@
 use core::marker::PhantomData;
 
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Never, Observable, ObservableOutput, Observer, PrimaryCategoryObservable, SignalBound,
-	SubscriptionContext, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, UpgradeableObserver,
 };
 
 /// Emits a single value then immediately completes
-#[derive(Clone)]
+#[derive(RxObservable, Clone, Debug)]
+#[rx_out(Out)]
+#[rx_out_error(Never)]
+#[rx_context(Context)]
 pub struct OfObservable<Out, Context = ()>
 where
-	Out: Clone,
+	Out: SignalBound + Clone,
+	Context: SubscriptionContext,
 {
 	value: Out,
 	_phantom_data: PhantomData<Context>,
@@ -18,7 +22,8 @@ where
 
 impl<Out, Context> OfObservable<Out, Context>
 where
-	Out: Clone,
+	Out: SignalBound + Clone,
+	Context: SubscriptionContext,
 {
 	pub fn new(value: Out) -> Self {
 		Self {
@@ -26,22 +31,6 @@ where
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-impl<Out, Context> WithSubscriptionContext for OfObservable<Out, Context>
-where
-	Out: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<Out, Context> WithPrimaryCategory for OfObservable<Out, Context>
-where
-	Out: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<Out, Context> Observable for OfObservable<Out, Context>
@@ -67,14 +56,6 @@ where
 		destination.complete(context);
 		InertSubscription::new(destination, context)
 	}
-}
-
-impl<Out, Context> ObservableOutput for OfObservable<Out, Context>
-where
-	Out: SignalBound + Clone,
-{
-	type Out = Out;
-	type OutError = Never;
 }
 
 #[cfg(test)]

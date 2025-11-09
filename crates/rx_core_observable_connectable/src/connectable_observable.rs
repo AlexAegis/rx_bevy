@@ -1,9 +1,10 @@
 use std::sync::{Arc, RwLock};
 
 use disqualified::ShortName;
+use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SubjectLike, SubscriptionContext,
-	SubscriptionLike, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Observable, SubjectLike, SubscriptionContext, SubscriptionLike, UpgradeableObserver,
+	WithSubscriptionContext,
 };
 
 use crate::{
@@ -11,6 +12,10 @@ use crate::{
 	observable::{Connectable, ConnectableOptions, ConnectionHandle},
 };
 
+#[derive(RxObservable)]
+#[rx_out(Connector::Out)]
+#[rx_out_error(Connector::OutError)]
+#[rx_context(Source::Context)]
 pub struct ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
@@ -79,41 +84,6 @@ where
 			connector: self.connector.clone(),
 		}
 	}
-}
-
-impl<Source, ConnectorCreator, Connector> ObservableOutput
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-{
-	type Out = Connector::Out;
-	type OutError = Connector::OutError;
-}
-
-impl<Source, ConnectorCreator, Connector> WithSubscriptionContext
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-{
-	type Context = Source::Context;
-}
-
-impl<Source, ConnectorCreator, Connector> WithPrimaryCategory
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
-where
-	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-{
-	type PrimaryCategory = PrimaryCategoryObservable;
 }
 
 impl<Source, ConnectorCreator, Connector> Observable

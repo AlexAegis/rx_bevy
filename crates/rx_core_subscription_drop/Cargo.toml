@@ -29,6 +29,7 @@ example = [
 
 [dependencies]
 rx_core_traits = { workspace = true }
+rx_core_macro_subscription_derive = { workspace = true }
 smallvec = { workspace = true }
 
 [dev-dependencies]

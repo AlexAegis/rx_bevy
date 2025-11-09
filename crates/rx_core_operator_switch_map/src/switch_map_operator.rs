@@ -44,8 +44,6 @@ where
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 {
-	type Context = InnerObservable::Context;
-
 	type Subscriber<Destination>
 		= SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 	where
