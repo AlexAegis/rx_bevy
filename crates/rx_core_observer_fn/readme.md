@@ -1,4 +1,7 @@
-# rx_core_observer_fn
+# [rx_core_observer_fn](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observer_fn)
+
+[![crates.io](https://img.shields.io/crates/v/rx_core_observer_fn.svg)](https://crates.io/crates/rx_core_observer_fn)
+[![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
 
 ## Example
 

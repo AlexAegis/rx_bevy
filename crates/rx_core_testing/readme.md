@@ -1,4 +1,4 @@
-# rx_core_testing
+# [rx_core_testing](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_testing)
 
 ## Example
 

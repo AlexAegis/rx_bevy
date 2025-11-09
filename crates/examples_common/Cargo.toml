@@ -1,6 +1,7 @@
 [package]
 name = "examples_common"
 version = "0.1.0"
+description = ""
 publish = false
 
 edition.workspace = true
@@ -8,7 +9,7 @@ homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
 authors.workspace = true
-license-file.workspace = true
+license.workspace = true
 
 [lints]
 workspace = true

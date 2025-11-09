@@ -1,7 +1,7 @@
 use bevy_ecs::{entity::Entity, system::EntityCommands};
 use rx_core_traits::SignalBound;
 
-use crate::proxy_observable::observable::ProxyObservable;
+use crate::proxy::observable::ProxyObservable;
 
 /// Provides commands for subscription relative to this entity
 pub trait EntityCommandAsProxyObservableExtension {

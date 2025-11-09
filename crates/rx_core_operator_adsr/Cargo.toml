@@ -10,7 +10,7 @@ homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
 authors.workspace = true
-license-file.workspace = true
+license.workspace = true
 
 [lints]
 workspace = true
@@ -31,10 +31,7 @@ example = [
 rx_core_traits = { workspace = true }
 bitflags = { workspace = true }
 smallvec = { workspace = true }
-bevy_math = { workspace = true, features = [
-    "std",
-    "curve",
-], default-features = false }
+bevy_math = { workspace = true, features = ["std", "curve"] }
 bevy_time = { workspace = true }
 
 [dev-dependencies]

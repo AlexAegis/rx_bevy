@@ -122,7 +122,7 @@ where
 }
 
 #[cfg(test)]
-mod switch_map_operator {
+mod test {
 
 	use rx_core::prelude::*;
 	use rx_core_testing::prelude::*;

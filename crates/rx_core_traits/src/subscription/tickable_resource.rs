@@ -1,5 +1,5 @@
 use crate::{
-	SubscriptionScheduled, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
+	SubscriptionContext, SubscriptionLike, SubscriptionNotification, SubscriptionScheduled,
 	TeardownCollection, WithSubscriptionContext,
 };
 

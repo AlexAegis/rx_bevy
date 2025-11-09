@@ -2,7 +2,7 @@
 name = "rx_bevy"
 version = "0.1.0"
 description = "Reactive Extensions for the Bevy game engine"
-readme = "readme.md"
+readme = "../../readme.md"
 publish = true
 
 edition.workspace = true
@@ -10,7 +10,7 @@ homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
 authors.workspace = true
-license-file.workspace = true
+license.workspace = true
 
 [lints]
 workspace = true

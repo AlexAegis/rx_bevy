@@ -1,5 +1,6 @@
 # rx_bevy
 
+[![crates.io](https://img.shields.io/crates/v/rx_bevy.svg)](https://crates.io/crates/rx_bevy)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
 
 > Reactive Extensions for the [Bevy Game Engine][BevyWebsite]!

@@ -10,7 +10,7 @@ homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
 authors.workspace = true
-license-file.workspace = true
+license.workspace = true
 
 [lints]
 workspace = true
@@ -63,6 +63,6 @@ bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
 bevy_egui = { workspace = true }
 
 [[example]]
-name = "observable_keyboard_example"
-path = "examples/observable_keyboard_example.rs"
+name = "event_example"
+path = "examples/event_example.rs"
 required-features = ["example"]

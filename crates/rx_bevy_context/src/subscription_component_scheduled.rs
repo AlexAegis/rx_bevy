@@ -8,7 +8,7 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{
-	SubscriptionScheduled, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	SubscriptionLike, SubscriptionScheduled, Teardown, TeardownCollection, Tick, Tickable,
 	WithSubscriptionContext,
 };
 use stealcell::{StealCell, Stolen};
@@ -67,9 +67,7 @@ impl ScheduledSubscriptionComponent {
 	pub fn return_stolen_subscription(
 		&mut self,
 		subscription: Stolen<
-			Box<
-				dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync,
-			>,
+			Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
 		>,
 	) {
 		self.subscription.return_stolen(subscription)

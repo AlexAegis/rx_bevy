@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 
 use crate::{
-	SubscriptionScheduled, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	SubscriptionLike, SubscriptionScheduled, Teardown, TeardownCollection, Tick, Tickable,
 	context::{
 		SubscriptionContext, WithSubscriptionContext,
 		allocator::handle::ScheduledSubscriptionHandle,

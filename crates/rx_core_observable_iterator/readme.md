@@ -1,4 +1,7 @@
-# rx_core_observable_iterator
+# [rx_core_observable_iterator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_iterator)
+
+[![crates.io](https://img.shields.io/crates/v/rx_core_observable_iterator.svg)](https://crates.io/crates/rx_core_observable_iterator)
+[![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
 
 This crate provides functionality to convert iterators into observables using the `IntoIteratorObservableExt` extension trait.
 

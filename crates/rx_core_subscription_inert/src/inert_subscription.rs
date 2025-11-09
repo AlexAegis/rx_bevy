@@ -1,5 +1,5 @@
 use rx_core_traits::{
-	SubscriptionScheduled, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	SubscriptionContext, SubscriptionLike, SubscriptionScheduled, Teardown, TeardownCollection,
 	Tick, Tickable, WithSubscriptionContext,
 };
 

@@ -8,9 +8,9 @@ homepage = "https://github.com/AlexAegis/rx_bevy"
 repository = "https://github.com/AlexAegis/rx_bevy"
 documentation = "https://github.com/AlexAegis/rx_bevy"
 authors = ["alexaegis"]
-license-file = "/license"
-# Crates in this repository are private, for now
-publish = true
+license = "MIT"
+readme = "readme.md"
+publish = false
 
 [workspace.lints.clippy]
 type_complexity = "allow"
@@ -33,7 +33,7 @@ incremental = true
 debug = 0
 
 [workspace.dependencies]
-bevy = { version = "0.16.1", default-features = false, features = [
+bevy = { version = "0.16", default-features = false, features = [
     "multi_threaded",
     "bevy_core_pipeline",
     "bevy_asset",
@@ -49,37 +49,51 @@ bevy = { version = "0.16.1", default-features = false, features = [
     "bevy_gltf",
     "bevy_log",
 ] }
-bevy_app = { version = "0.16.1", default-features = false }
-bevy_derive = { version = "0.16.1", default-features = false }
-bevy_ecs = { version = "0.16.1", default-features = false }
-bevy_log = { version = "0.16.1", default-features = false }
-bevy_reflect = { version = "0.16.1", default-features = false }
-bevy_time = { version = "0.16.1", default-features = false }
-bevy_math = { version = "0.16.1", default-features = false }
-bevy_platform = { version = "0.16.1", default-features = false }
-bevy_ptr = { version = "0.16.1", default-features = false }
-bevy_input = { version = "0.16.1", default-features = false }
-bevy_window = { version = "0.16.1", default-features = false }
-bevy-inspector-egui = { version = "0.31.0", default-features = false }
-bevy_egui = { version = "0.34.1", features = ["immutable_ctx"] }
-derive-where = { version = "1.4.0" }
-bitflags = { version = "2.10.0" }
-smallvec = { version = "1.15.1" }
-slab = { version = "0.4.9" }
-ringbuffer = { version = "0.16.0" }
-serde = { version = "1.0.219" }
-num-traits = { version = "0.2.19" }
-variadics_please = { version = "1.1.0" }
-either = { version = "1.15.0" }
-thiserror = { version = "2.0.17" }
-rand = { version = "0.9.2" }
-cargo_metadata = { version = "0.23.0" }
-disqualified = { version = "1.0.0" }
+bevy_app = { version = "0.16", default-features = false }
+bevy_derive = { version = "0.16", default-features = false }
+bevy_ecs = { version = "0.16", default-features = false }
+bevy_log = { version = "0.16", default-features = false }
+bevy_reflect = { version = "0.16", default-features = false }
+bevy_time = { version = "0.16", default-features = false }
+bevy_math = { version = "0.16", default-features = false }
+bevy_platform = { version = "0.16", default-features = false }
+bevy_ptr = { version = "0.16", default-features = false }
+bevy_input = { version = "0.16", default-features = false }
+bevy_window = { version = "0.16", default-features = false }
+bevy-inspector-egui = { version = "0.31.0", default-features = false, features = [
+    "bevy_render",
+] }
+bevy_egui = { version = "0.34.1", default-features = false, features = [
+    "immutable_ctx",
+] }
+derive-where = { version = "1.4.0", default-features = false }
+bitflags = { version = "2.10.0", default-features = false }
+smallvec = { version = "1.15.1", default-features = false }
+slab = { version = "0.4.9", default-features = false }
+ringbuffer = { version = "0.16.0", default-features = false }
+serde = { version = "1.0.219", default-features = false }
+num-traits = { version = "0.2.19", default-features = false }
+variadics_please = { version = "1.1.0", default-features = false }
+either = { version = "1.15.0", default-features = false }
+thiserror = { version = "2.0.17", default-features = false }
+rand = { version = "0.9.2", default-features = false, features = [
+    "thread_rng",
+] }
+cargo_metadata = { version = "0.23.0", default-features = false }
+disqualified = { version = "1.0.0", default-features = false }
+proc-macro2 = { version = "1.0", default-features = false }
+quote = { version = "1.0", default-features = false }
+syn = { version = "2.0", default-features = false, features = [
+    "derive",
+    "proc-macro",
+    "parsing",
+] }
+bevy_mod_erased_component_registry = { version = "0.1.0", default-features = false }
+# Workspace Crates
 # Misc
 examples_common = { path = "crates/examples_common" }
 feature_checker = { path = "crates/feature_checker" }
 stealcell = { path = "crates/stealcell" }
-bevy_mod_erased_component_registry = { path = "crates/bevy_mod_erased_component_registry" }
 bevy_mod_alternate_system_on_press = { path = "crates/bevy_mod_alternate_system_on_press" }
 # Core
 rx_core = { path = "crates/rx_core" }

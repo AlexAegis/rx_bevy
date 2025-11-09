@@ -1,7 +1,4 @@
-use crate::{
-	Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
-};
+use crate::{Subscriber, SubscriptionContext, WithSubscriptionContext};
 
 /// A [SubscriberAllocator] that can create a [SharedDestination] out of a
 /// destination subscriber.

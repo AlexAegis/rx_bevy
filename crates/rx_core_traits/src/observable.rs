@@ -1,5 +1,5 @@
 use crate::{
-	SubscriptionScheduled, SignalBound, SubscriptionContext, UpgradeableObserver,
+	SignalBound, SubscriptionContext, SubscriptionScheduled, UpgradeableObserver,
 	WithPrimaryCategory, WithSubscriptionContext,
 };
 

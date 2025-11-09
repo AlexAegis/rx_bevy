@@ -1,7 +1,4 @@
-use crate::{
-	SignalBound, Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
-};
+use crate::{SignalBound, Subscriber, SubscriptionContext, WithSubscriptionContext};
 
 /// An [ErasedSubscriberAllocator] that can create an [ErasedSharedDestination]
 /// out of a destination.

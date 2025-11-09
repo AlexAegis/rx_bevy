@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_traits::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, TeardownCollectionExtension,
-	SubscriptionContext,
+	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, SubscriptionContext,
+	TeardownCollectionExtension,
 };
 
 #[derive(Debug)]
