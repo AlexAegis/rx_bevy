@@ -3,8 +3,7 @@ use std::sync::{Arc, RwLock};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
-	UpgradeableObserver,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, UpgradeableObserver,
 };
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -15,12 +14,14 @@ use rx_core_traits::{
 #[rx_out(In)]
 #[rx_out_error(InError)]
 #[rx_context(Context)]
+#[rx_delegate_subscription_like_to_destination]
 pub struct BehaviorSubject<In, InError = Never, Context = ()>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	#[destination]
 	subject: Subject<In, InError, Context>,
 	/// So cloned subjects retain the same current value across clones
 	value: Arc<RwLock<In>>,
@@ -78,23 +79,6 @@ where
 	#[inline]
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.subject.complete(context);
-	}
-}
-
-impl<In, InError, Context> SubscriptionLike for BehaviorSubject<In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.subject.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
-		self.subject.unsubscribe(context);
 	}
 }
 

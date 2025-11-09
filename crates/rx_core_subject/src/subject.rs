@@ -128,8 +128,6 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
-		println!("--------------------------------------- subject unsub!!");
-		// TODO: This should not be called at all when it's called by an upstream source when the subject is used as a destination. This should only do anything when directly called on the subject from outside. Maybe bring back upgradeableobserver for observable subscribe method! that can create a boundary.
 		if let Some(subscribers) = {
 			let mut lock = self
 				.multicast

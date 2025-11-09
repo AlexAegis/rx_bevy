@@ -4,8 +4,7 @@ use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
-	UpgradeableObserver,
+	Never, Observable, Observer, SignalBound, SubscriptionContext, UpgradeableObserver,
 };
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
@@ -16,12 +15,14 @@ use rx_core_traits::{
 #[rx_out(In)]
 #[rx_out_error(InError)]
 #[rx_context(Context)]
+#[rx_delegate_subscription_like_to_destination]
 pub struct ReplaySubject<const CAPACITY: usize, In, InError = Never, Context = ()>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	#[destination]
 	subject: Subject<In, InError, Context>,
 	/// Shared data across clones
 	values: Arc<RwLock<ConstGenericRingBuffer<In, CAPACITY>>>,
@@ -65,24 +66,6 @@ where
 	#[inline]
 	fn complete(&mut self, context: &mut Context::Item<'_, '_>) {
 		self.subject.complete(context);
-	}
-}
-
-impl<const CAPACITY: usize, In, InError, Context> SubscriptionLike
-	for ReplaySubject<CAPACITY, In, InError, Context>
-where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
-	Context: SubscriptionContext,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.subject.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
-		self.subject.unsubscribe(context);
 	}
 }
 

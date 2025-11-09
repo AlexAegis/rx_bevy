@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Attribute, DeriveInput, Meta, Type, parse_quote, parse2};
+use syn::{Attribute, DeriveInput, Ident, Meta, Type, parse_quote, parse2};
 
 pub fn find_attribute<'a>(attrs: &'a [Attribute], attribute_name: &str) -> Option<&'a Attribute> {
 	attrs
@@ -174,5 +174,210 @@ pub fn impl_subject_does_not_upgrade_to_detached(
 		None
 	} else {
 		Some(impl_upgrades_to_detached(derive_input))
+	}
+}
+
+fn find_field_ident_with_attribute(
+	derive_input: &DeriveInput,
+	field_attribute_name: &str,
+	trigger_attribute_name: &str,
+	required_trait_on_field: &str,
+) -> Ident {
+	let fields = match derive_input.data {
+		syn::Data::Struct(ref data) => match &data.fields {
+			syn::Fields::Named(fields) => &fields.named,
+			_ => panic!("Only named fields are supported when using #[{trigger_attribute_name}]!"),
+		},
+		_ => {
+			panic!("Only structs are supported when using #[{trigger_attribute_name}]!")
+		}
+	};
+
+	fields
+		.iter()
+		.find(|field| {
+			field
+				.attrs
+				.iter()
+				.any(|attr| attr.path().is_ident(field_attribute_name))
+		})
+		.and_then(|field| field.ident.clone())
+		.unwrap_or_else(||
+			panic!("A field implementing `{required_trait_on_field}` must be marked with `#[{field_attribute_name}]` when using #[{trigger_attribute_name}]!"),
+		)
+}
+
+pub fn impl_delegate_tickable_to_destination(derive_input: &DeriveInput) -> Option<TokenStream> {
+	let rx_delegate_tickable_to_destination =
+		find_attribute(&derive_input.attrs, "rx_delegate_tickable_to_destination").is_some();
+
+	if rx_delegate_tickable_to_destination {
+		Some(impl_delegate_tickable_to_destination_inner(derive_input))
+	} else {
+		None
+	}
+}
+
+fn impl_delegate_tickable_to_destination_inner(derive_input: &DeriveInput) -> TokenStream {
+	let ident = derive_input.ident.clone();
+	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
+
+	let destination_field = find_field_ident_with_attribute(
+		derive_input,
+		"destination",
+		"rx_delegate_tickable_to_destination",
+		"Tickable",
+	);
+
+	quote! {
+		impl #impl_generics rx_core_traits::Tickable for #ident #ty_generics #where_clause {
+			#[inline]
+			fn tick(
+				&mut self,
+				tick: rx_core_traits::Tick,
+				context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+			) {
+				self.#destination_field.tick(tick, context);
+			}
+		}
+	}
+}
+
+pub fn impl_delegate_teardown_collection_to_destination(
+	derive_input: &DeriveInput,
+) -> Option<TokenStream> {
+	let rx_delegate_teardown_collection_to_destination = find_attribute(
+		&derive_input.attrs,
+		"rx_delegate_teardown_collection_to_destination",
+	)
+	.is_some();
+
+	if rx_delegate_teardown_collection_to_destination {
+		Some(impl_delegate_teardown_collection_to_destination_inner(
+			derive_input,
+		))
+	} else {
+		None
+	}
+}
+
+fn impl_delegate_teardown_collection_to_destination_inner(
+	derive_input: &DeriveInput,
+) -> TokenStream {
+	let ident = derive_input.ident.clone();
+	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
+
+	let destination_field = find_field_ident_with_attribute(
+		derive_input,
+		"destination",
+		"rx_delegate_teardown_collection_to_destination",
+		"TeardownCollection",
+	);
+
+	quote! {
+		impl #impl_generics rx_core_traits::TeardownCollection for #ident #ty_generics #where_clause {
+			#[inline]
+			fn add_teardown(
+				&mut self,
+				teardown: rx_core_traits::Teardown<Self::Context>,
+				context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+			) {
+				self.#destination_field.add_teardown(teardown, context);
+			}
+		}
+	}
+}
+
+pub fn impl_delegate_subscription_like_to_destination(
+	derive_input: &DeriveInput,
+) -> Option<TokenStream> {
+	let rx_delegate_subscription_like_to_destination = find_attribute(
+		&derive_input.attrs,
+		"rx_delegate_subscription_like_to_destination",
+	)
+	.is_some();
+
+	if rx_delegate_subscription_like_to_destination {
+		Some(impl_delegate_subscription_like_to_destination_inner(
+			derive_input,
+		))
+	} else {
+		None
+	}
+}
+
+fn impl_delegate_subscription_like_to_destination_inner(derive_input: &DeriveInput) -> TokenStream {
+	let ident = derive_input.ident.clone();
+	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
+
+	let destination_field = find_field_ident_with_attribute(
+		derive_input,
+		"destination",
+		"rx_delegate_subscription_like_to_destination",
+		"SubscriptionLike",
+	);
+
+	quote! {
+		impl #impl_generics rx_core_traits::SubscriptionLike for #ident #ty_generics #where_clause {
+			#[inline]
+			fn is_closed(&self) -> bool {
+				self.#destination_field.is_closed()
+			}
+
+			#[inline]
+			fn unsubscribe(&mut self, context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>) {
+				self.#destination_field.unsubscribe(context);
+			}
+		}
+	}
+}
+
+pub fn impl_delegate_observer_to_destination(derive_input: &DeriveInput) -> Option<TokenStream> {
+	let rx_delegate_observer_to_destination =
+		find_attribute(&derive_input.attrs, "rx_delegate_observer_to_destination").is_some();
+
+	if rx_delegate_observer_to_destination {
+		Some(impl_delegate_observer_to_destination_inner(derive_input))
+	} else {
+		None
+	}
+}
+
+fn impl_delegate_observer_to_destination_inner(derive_input: &DeriveInput) -> TokenStream {
+	let ident = derive_input.ident.clone();
+	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
+
+	let destination_field = find_field_ident_with_attribute(
+		derive_input,
+		"destination",
+		"rx_delegate_observer_to_destination",
+		"Observer",
+	);
+
+	quote! {
+		impl #impl_generics rx_core_traits::Observer for #ident #ty_generics #where_clause {
+			#[inline]
+			fn next(
+				&mut self,
+				next: Self::In,
+				context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+			) {
+				self.#destination_field.next(next, context);
+			}
+
+			#[inline]
+			fn error(
+				&mut self,
+				error: Self::InError,
+				context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+			) {
+				self.#destination_field.error(error, context);
+			}
+
+			#[inline]
+			fn complete(&mut self, context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>) {
+				self.#destination_field.complete(context);
+			}
+		}
 	}
 }

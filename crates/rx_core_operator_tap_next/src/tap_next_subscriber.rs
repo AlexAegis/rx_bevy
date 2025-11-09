@@ -1,10 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
-	Observer, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable,
-};
+use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber, Debug)]
 #[rx_context(Destination::Context)]
@@ -12,6 +9,9 @@ use rx_core_traits::{
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_subscription_like_to_destination]
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
@@ -19,6 +19,7 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
+	#[destination]
 	destination: Destination,
 	callback: OnNext,
 	_phantom_data: PhantomData<(In, InError)>,
@@ -73,63 +74,5 @@ where
 	#[inline]
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
-	}
-}
-
-impl<In, InError, OnNext, Destination> Tickable
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
-	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: SubscriptionLike,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<In, InError, OnNext, Destination> SubscriptionLike
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
-	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: SubscriptionLike,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<In, InError, OnNext, Destination> TeardownCollection
-	for TapNextSubscriber<In, InError, OnNext, Destination>
-where
-	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
-	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
-	Destination: SubscriptionLike,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
 	}
 }
