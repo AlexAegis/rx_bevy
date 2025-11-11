@@ -8,7 +8,9 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin::default(),
+			EguiPlugin {
+				enable_multipass_for_primary_context: true,
+			},
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 		))
@@ -24,7 +26,11 @@ fn main() -> AppExit {
 		.run()
 }
 
-fn next_number_observer(next: On<RxSignal<String>>, name_query: Query<&Name>, time: Res<Time>) {
+fn next_number_observer(
+	next: Trigger<RxSignal<String>>,
+	name_query: Query<&Name>,
+	time: Res<Time>,
+) {
 	println!(
 		"value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
 		next.signal(),
@@ -55,7 +61,7 @@ fn setup(mut commands: Commands) {
 	let keyboard_observable_entity = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::default()
+			KeyboardObservable
 				.filter(|key_code| {
 					matches!(
 						key_code,

@@ -3,15 +3,6 @@ use rx_core_traits::{Observable, SignalBound};
 
 use crate::operator::LiftOptionOperator;
 
-/// Operator creator function
-pub fn lift_option<In, InError>() -> LiftOptionOperator<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	LiftOptionOperator::default()
-}
-
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionLiftOption<T>: Observable<Out = Option<T>> + Sized
 where

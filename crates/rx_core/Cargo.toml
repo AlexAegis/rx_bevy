@@ -223,6 +223,25 @@ operator_skip = ["dep:rx_core_operator_skip"]
 operator_switch_map = ["dep:rx_core_operator_switch_map"]
 operator_take = ["dep:rx_core_operator_take"]
 operator_tap_next = ["dep:rx_core_operator_tap_next"]
+# Operator Creation Functions
+operator_fn = [
+    "rx_core_operator_enumerate?/operator_fn",
+    "rx_core_operator_error_boundary?/operator_fn",
+    "rx_core_operator_filter?/operator_fn",
+    "rx_core_operator_filter_map?/operator_fn",
+    "rx_core_operator_finalize?/operator_fn",
+    "rx_core_operator_identity?/operator_fn",
+    "rx_core_operator_into_result?/operator_fn",
+    "rx_core_operator_lift_option?/operator_fn",
+    "rx_core_operator_lift_result?/operator_fn",
+    "rx_core_operator_map?/operator_fn",
+    "rx_core_operator_map_into?/operator_fn",
+    "rx_core_operator_scan?/operator_fn",
+    "rx_core_operator_skip?/operator_fn",
+    "rx_core_operator_switch_map?/operator_fn",
+    "rx_core_operator_take?/operator_fn",
+    "rx_core_operator_tap_next?/operator_fn",
+]
 # Subjects
 all_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["dep:rx_core_subject"]

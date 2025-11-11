@@ -7,8 +7,8 @@ fn main() {
 	// Though not necessary, the IdentityOperator provides an easy way to define
 	// input types for our composite operator.
 	let op = IdentityOperator::<i32, Never, ()>::default()
-		.pipe(map(|next: i32| next + 1))
-		.pipe(map(|next: i32| next * 100));
+		.map(|next: i32| next + 1)
+		.map(|next: i32| next * 100);
 
 	let _s = of::<_, ()>(1)
 		.pipe(op)

@@ -1,16 +1,7 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound};
+use rx_core_traits::Observable;
 
 use crate::operator::TakeOperator;
-
-/// Operator creator function
-pub fn take<In, InError>(count: usize) -> TakeOperator<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	TakeOperator::new(count)
-}
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionTake: Observable + Sized {

@@ -3,19 +3,6 @@ use rx_core_traits::{Observable, SignalBound};
 
 use crate::operator::LiftResultOperator;
 
-/// Operator creator function
-pub fn lift_result<ResultIn, ResultInError, InError, InErrorToResultError>(
-	in_error_to_result_error: InErrorToResultError,
-) -> LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError>
-where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
-	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
-{
-	LiftResultOperator::new(in_error_to_result_error)
-}
-
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionLiftResult<ResultOut, ResultOutError>:
 	Observable<Out = Result<ResultOut, ResultOutError>> + Sized

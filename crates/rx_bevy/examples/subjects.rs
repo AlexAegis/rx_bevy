@@ -126,7 +126,7 @@ fn setup(mut commands: Commands) {
 	let keyboard_observable = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::default().into_component(),
+			KeyboardObservable.into_component(),
 		))
 		.id();
 

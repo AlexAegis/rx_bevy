@@ -3,17 +3,6 @@ use rx_core_traits::{Observable, SignalBound};
 
 use crate::operator::MapIntoOperator;
 
-/// Operator creator function
-pub fn into<In, InError, Out, OutError>() -> MapIntoOperator<In, InError, Out, OutError>
-where
-	In: SignalBound + Into<Out>,
-	InError: SignalBound + Into<OutError>,
-	Out: SignalBound,
-	OutError: SignalBound,
-{
-	MapIntoOperator::default()
-}
-
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionInto: Observable + Sized {
 	fn map_into<NextOut: SignalBound, NextOutError: SignalBound>(

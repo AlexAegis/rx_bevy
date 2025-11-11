@@ -116,7 +116,7 @@ fn setup(mut commands: Commands) {
 	let keyboard_observable = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::default().into_component(),
+			KeyboardObservable.into_component(),
 		))
 		.id();
 
@@ -145,7 +145,7 @@ fn setup(mut commands: Commands) {
 	let keyboard_switch_map_to_interval_observable = commands
 		.spawn((
 			Name::new("KeyboardSwitchMapToIntervalObservable"),
-			KeyboardObservable::default()
+			KeyboardObservable
 				.filter(|key_code| {
 					matches!(
 						key_code,
@@ -168,7 +168,7 @@ fn setup(mut commands: Commands) {
 					})
 					.tap_next(|n, _| println!("inner next {n}"))
 				})
-				.scan(|acc, _next| acc + 1, 0 as usize)
+				.scan(|acc, _next| acc + 1, 0_usize)
 				.into_component(),
 		))
 		.id();

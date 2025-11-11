@@ -38,6 +38,7 @@ pipe = [
     "rx_core/pipe",
     "rx_core_operator_composite?/pipe",
 ]
+operator_fn = ["rx_core/operator_fn"]
 
 [dependencies]
 rx_core_traits = { workspace = true }

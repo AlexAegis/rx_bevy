@@ -82,7 +82,7 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert(
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
 	entity_commands.insert((
-		ChildOf(hook_context.entity),
+		ChildOf(hook_context.entity), // TODO: FIX, self child?? makes no sense
 		Name::new("ScheduledSubscriptionNotificationObserver"),
 		Observer::new(scheduled_subscription_notification_observer)
 			.with_entity(hook_context.entity),

@@ -1,16 +1,7 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound, WithSubscriptionContext};
+use rx_core_traits::{Observable, WithSubscriptionContext};
 
 use crate::operator::SkipOperator;
-
-/// Operator creator function
-pub fn skip<In, InError>(count: usize) -> SkipOperator<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	SkipOperator::new(count)
-}
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionSkip: Observable + Sized {

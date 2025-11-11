@@ -1,20 +1,7 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound, SubscriptionContext};
+use rx_core_traits::{Observable, SubscriptionContext};
 
 use crate::operator::TapNextOperator;
-
-/// Operator creator function
-pub fn tap_next<In, InError, OnNext, Context>(
-	callback: OnNext,
-) -> TapNextOperator<In, InError, OnNext, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
-	Context: SubscriptionContext,
-{
-	TapNextOperator::new(callback)
-}
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionTapNext: Observable + Sized {

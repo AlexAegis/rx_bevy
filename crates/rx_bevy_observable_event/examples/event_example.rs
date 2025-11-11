@@ -15,7 +15,9 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin::default(),
+			EguiPlugin {
+				enable_multipass_for_primary_context: true,
+			},
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 		))

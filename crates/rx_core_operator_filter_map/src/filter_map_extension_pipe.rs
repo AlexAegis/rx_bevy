@@ -1,21 +1,7 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound, SubscriptionContext};
+use rx_core_traits::{Observable, SignalBound};
 
 use crate::operator::FilterMapOperator;
-
-/// Operator creator function
-pub fn filter_map<In, InError, Mapper, Out, Context>(
-	mapper: Mapper,
-) -> FilterMapOperator<In, InError, Mapper, Out, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
-	Out: SignalBound,
-	Context: SubscriptionContext,
-{
-	FilterMapOperator::new(mapper)
-}
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionFilterMap: Observable + Sized {

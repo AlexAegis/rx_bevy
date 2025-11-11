@@ -1,20 +1,7 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound, SubscriptionContext};
+use rx_core_traits::Observable;
 
 use crate::operator::FilterOperator;
-
-/// Operator creator function
-pub fn filter<In, InError, Filter, Context>(
-	filter: Filter,
-) -> FilterOperator<In, InError, Filter, Context>
-where
-	In: SignalBound,
-	InError: SignalBound,
-	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
-	Context: SubscriptionContext,
-{
-	FilterOperator::new(filter)
-}
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionFilter: Observable + Sized {

@@ -1,20 +1,7 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound, SubscriptionContext};
+use rx_core_traits::{Observable, SubscriptionContext};
 
 use crate::operator::FinalizeOperator;
-
-/// Operator creator function
-pub fn finalize<Out, OutError, Callback, Context>(
-	callback: Callback,
-) -> FinalizeOperator<Out, OutError, Callback, Context>
-where
-	Out: SignalBound,
-	OutError: SignalBound,
-	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
-{
-	FinalizeOperator::new(callback)
-}
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionFinalize: Observable + Sized {

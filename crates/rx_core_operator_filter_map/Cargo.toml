@@ -48,7 +48,7 @@ pipe = [
     "rx_core_operator_lift_option/pipe",
     "rx_core_operator_map/pipe",
 ]
-
+operator_fn = ["rx_core/operator_fn"]
 
 [dependencies]
 rx_core_traits = { workspace = true }

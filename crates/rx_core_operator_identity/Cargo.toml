@@ -24,6 +24,7 @@ example = [
     "rx_core_traits/example",
     "rx_core_testing/example",
 ]
+operator_fn = ["rx_core/operator_fn"]
 
 [dependencies]
 rx_core_traits = { workspace = true }

@@ -69,9 +69,9 @@ fn next_adsr_observer(
 	);
 }
 
-fn unsubscribe(mut _commands: Commands, _example_entities: Res<ExampleEntities>) {
+fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
 	println!("Unsubscribe subscription!");
-	//	commands.unsubscribe(example_entities.subscription);
+	commands.unsubscribe(example_entities.subscription);
 }
 
 #[derive(Resource)]
@@ -91,7 +91,7 @@ fn setup(
 
 	let mut keyboard_observable_entity_commands = commands.spawn((
 		Name::new("KeyboardObservable"),
-		KeyboardObservable::default().into_component(),
+		KeyboardObservable.into_component(),
 	));
 
 	keyboard_observable_entity_commands.observe(next_keyboard_input_observer);
@@ -118,9 +118,9 @@ fn handle_move_signal(
 	next: Trigger<RxSignal<AdsrSignal>>,
 	mut transform_query: Query<&mut Transform>,
 ) {
-	if let ObserverNotification::Next(adsr_signal) = next.signal() {
-		if let Ok(mut transform) = transform_query.get_mut(next.entity()) {
-			transform.translation += Vec3::X * 0.05 * adsr_signal.value;
-		}
+	if let ObserverNotification::Next(adsr_signal) = next.signal()
+		&& let Ok(mut transform) = transform_query.get_mut(next.entity())
+	{
+		transform.translation += Vec3::X * 0.05 * adsr_signal.value;
 	}
 }
