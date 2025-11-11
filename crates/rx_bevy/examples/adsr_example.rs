@@ -1,5 +1,3 @@
-use std::ops::{Deref, DerefMut};
-
 use bevy::{
 	input::{common_conditions::input_just_pressed, keyboard::KeyboardInput},
 	prelude::*,
@@ -7,7 +5,7 @@ use bevy::{
 use bevy_egui::EguiPlugin;
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use examples_common::send_event;
+use examples_common::send_message;
 use rx_bevy::prelude::*;
 use rx_bevy_context::RxSignal;
 
@@ -15,9 +13,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 		))
@@ -25,7 +21,7 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
+				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 				unsubscribe.run_if(input_just_pressed(KeyCode::KeyQ)),
 			),
 		)
@@ -43,7 +39,7 @@ fn next_bool_observer(next: Trigger<RxSignal<bool>>, name_query: Query<&Name>, t
 }
 
 fn next_keyboard_input_observer(
-	next: Trigger<RxSignal<KeyboardInput>>,
+	next: On<RxSignal<KeyboardInput>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) {
@@ -115,12 +111,9 @@ fn setup(
 	});
 }
 
-fn handle_move_signal(
-	next: Trigger<RxSignal<AdsrSignal>>,
-	mut transform_query: Query<&mut Transform>,
-) {
-	if let RxSignal::Next(adsr_signal) = next.event() {
-		if let Ok(mut transform) = transform_query.get_mut(next.target()) {
+fn handle_move_signal(next: On<RxSignal<AdsrSignal>>, mut transform_query: Query<&mut Transform>) {
+	if let ObserverNotification::Next(adsr_signal) = next.signal() {
+		if let Ok(mut transform) = transform_query.get_mut(next.entity()) {
 			transform.translation += Vec3::X * 0.05 * adsr_signal.value;
 		}
 	}

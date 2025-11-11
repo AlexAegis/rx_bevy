@@ -1,8 +1,9 @@
 use bevy_ecs::{
-	component::{Component, HookContext, Mutable},
-	entity::Entity,
+	component::{Component, Mutable},
+	entity::{ContainsEntity, Entity},
 	error::BevyError,
-	observer::{Observer, Trigger},
+	lifecycle::HookContext,
+	observer::{Observer, On},
 	world::DeferredWorld,
 };
 use rx_core_traits::{
@@ -35,15 +36,26 @@ pub(crate) fn erased_subscription_add_notification_observer_on_insert(
 }
 
 fn erased_subscription_notification_observer(
-	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
-	context_param: BevySubscriptionContextParam,
+	mut subscription_notification: On<SubscriptionNotificationEvent>,
+	mut context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
-	let subscription_entity = subscription_notification.target();
 	let notification = subscription_notification.event_mut().clone();
 
-	let mut context = context_param.into_context(subscription_entity);
+	let handle_for_subscription_entity = {
+		let handle_component = context_param
+			.deferred_world
+			.entity(notification.entity())
+			.get::<UnscheduledEntitySubscriptionHandle>()
+			.unwrap();
+		handle_component.subscription_entity
+	};
 
-	context.send_subscription_notification(subscription_entity, notification);
+	let next_notification = subscription_notification.retarget(handle_for_subscription_entity)?;
+
+	context_param
+		.deferred_world
+		.commands()
+		.trigger(next_notification);
 	Ok(())
 }
 

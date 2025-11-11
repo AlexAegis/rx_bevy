@@ -16,6 +16,7 @@ use bevy_reflect::Reflect;
 /// It also adds an `ErasedSubscriptionSchedule` that contains TypeId of this
 /// component to be used when the schedule has to be cloned without needing to
 /// know which schedule was used.
+/// TODO: Add C: Clock
 #[derive(Component, Clone)]
 #[derive_where(Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]

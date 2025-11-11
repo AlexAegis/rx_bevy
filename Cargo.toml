@@ -33,7 +33,7 @@ incremental = true
 debug = 0
 
 [workspace.dependencies]
-bevy = { version = "0.16", default-features = false, features = [
+bevy = { version = "0.17", default-features = false, features = [
     "multi_threaded",
     "bevy_core_pipeline",
     "bevy_asset",
@@ -49,21 +49,21 @@ bevy = { version = "0.16", default-features = false, features = [
     "bevy_gltf",
     "bevy_log",
 ] }
-bevy_app = { version = "0.16", default-features = false }
-bevy_derive = { version = "0.16", default-features = false }
-bevy_ecs = { version = "0.16", default-features = false }
-bevy_log = { version = "0.16", default-features = false }
-bevy_reflect = { version = "0.16", default-features = false }
-bevy_time = { version = "0.16", default-features = false }
-bevy_math = { version = "0.16", default-features = false }
-bevy_platform = { version = "0.16", default-features = false }
-bevy_ptr = { version = "0.16", default-features = false }
-bevy_input = { version = "0.16", default-features = false }
-bevy_window = { version = "0.16", default-features = false }
-bevy-inspector-egui = { version = "0.31.0", default-features = false, features = [
+bevy_app = { version = "0.17", default-features = false }
+bevy_derive = { version = "0.17", default-features = false }
+bevy_ecs = { version = "0.17", default-features = false }
+bevy_log = { version = "0.17", default-features = false }
+bevy_reflect = { version = "0.17", default-features = false }
+bevy_time = { version = "0.17", default-features = false }
+bevy_math = { version = "0.17", default-features = false }
+bevy_platform = { version = "0.17", default-features = false }
+bevy_ptr = { version = "0.17", default-features = false }
+bevy_input = { version = "0.17", default-features = false }
+bevy_window = { version = "0.17", default-features = false }
+bevy-inspector-egui = { version = "0.35.0", default-features = false, features = [
     "bevy_render",
 ] }
-bevy_egui = { version = "0.34.1", default-features = false, features = [
+bevy_egui = { version = "0.38.0", default-features = false, features = [
     "immutable_ctx",
 ] }
 derive-where = { version = "1.4.0", default-features = false }
@@ -90,7 +90,7 @@ syn = { version = "2.0", default-features = false, features = [
     "printing",
     "proc-macro",
 ] }
-bevy_mod_erased_component_registry = { version = "0.1.0", default-features = false }
+bevy_mod_erased_component_registry = { version = "0.2.0", default-features = false }
 # Workspace Crates
 # Misc
 examples_common = { path = "crates/examples_common" }

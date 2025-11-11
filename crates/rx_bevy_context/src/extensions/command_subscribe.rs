@@ -58,7 +58,7 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 			observable_entity, destination, self
 		);
 
-		self.trigger_targets(subscribe_event, observable_entity);
+		self.trigger(subscribe_event);
 
 		subscription_entity
 	}
@@ -80,7 +80,7 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 				self,
 			);
 
-		self.trigger_targets(subscribe_event, observable_entity);
+		self.trigger(subscribe_event);
 
 		subscription_entity
 	}
@@ -100,7 +100,7 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 			observable_entity, destination, self
 		);
 
-		self.trigger_targets(subscribe_event, observable_entity);
+		self.trigger(subscribe_event);
 
 		subscription_entity
 	}

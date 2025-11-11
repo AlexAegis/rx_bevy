@@ -3,9 +3,10 @@ use core::marker::PhantomData;
 use bevy_app::{App, AppExit, Last, Plugin};
 use bevy_ecs::{
 	entity::Entity,
+	entity_disabling::Internal,
 	observer::Observer,
-	query::With,
-	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_event},
+	query::{Allow, With},
+	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_message},
 	system::{Commands, Local, Query, Res},
 	world::{DeferredWorld, World},
 };
@@ -62,13 +63,14 @@ where
 			Last,
 			unsubscribe_all_subscriptions
 				.after(exit_on_all_closed)
-				.run_if(on_event::<AppExit>),
+				.run_if(on_message::<AppExit>),
 		);
 	}
 }
 
 fn unsubscribe_all_subscriptions(world: &mut World) {
-	let mut subscription_query = world.query::<(Entity, &mut ScheduledSubscriptionComponent)>();
+	let mut subscription_query =
+		world.query_filtered::<(Entity, &mut ScheduledSubscriptionComponent), Allow<Internal>>();
 	let mut subscriptions = subscription_query
 		.iter_mut(world)
 		.map(|(entity, mut subscription_component)| {
@@ -102,7 +104,14 @@ fn unsubscribe_all_subscriptions(world: &mut World) {
 pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
 	mut commands: Commands,
 	time: Res<Time<C>>,
-	subscription_query: Query<Entity, (With<SubscriptionSchedule<S>>, With<Observer>)>,
+	subscription_query: Query<
+		Entity,
+		(
+			With<SubscriptionSchedule<S>>,
+			With<Observer>,
+			Allow<Internal>,
+		),
+	>,
 	mut index: Local<usize>,
 ) {
 	let subscription_entities = subscription_query.iter().collect::<Vec<_>>();
@@ -114,18 +123,20 @@ pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
 			delta: time.delta(),
 		};
 		*index += 1;
-		let notification: SubscriptionNotificationEvent =
-			SubscriptionNotification::Tick(tick.clone()).into();
 
-		println!("trigger sub tick! {:?} {:?}", tick, subscription_entities);
-		commands.trigger_targets(notification, subscription_entities);
+		for event in subscription_entities.iter().map(|target| {
+			SubscriptionNotificationEvent::from_notification(
+				SubscriptionNotification::Tick(tick.clone()),
+				*target,
+			)
+		}) {
+			commands.trigger(event);
+		}
 	}
 }
 
+//TODO: Evaluate if not using commands would be better or not, maybe from a scheduling perspective for users? could say .after this to know when its settled
 /*
-
-TODO: Evaluate if not using commands would be better or not, maybe from a scheduling perspective for users? could say .after this to know when its settled
-
 fn tick_all_subscriptions<S, C>(world: &mut World)
 where
 	S: ScheduleLabel,
@@ -133,6 +144,7 @@ where
 {
 	let time = world.resource::<Time<C>>();
 	let tick = Tick {
+		index: 0, // TODO: Wrong
 		now: time.elapsed(),
 		delta: time.delta(),
 	};
@@ -164,6 +176,4 @@ where
 		subscription_component.return_stolen_subscription(subscription);
 	}
 }
-
-
 */

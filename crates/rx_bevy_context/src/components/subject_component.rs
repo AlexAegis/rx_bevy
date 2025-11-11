@@ -1,10 +1,11 @@
 use bevy_ecs::{
-	component::{Component, HookContext},
-	entity::Entity,
+	component::Component,
+	entity::{ContainsEntity, Entity},
 	error::BevyError,
 	hierarchy::ChildOf,
+	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, Trigger},
+	observer::{Observer, On},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
@@ -124,14 +125,14 @@ where
 }
 
 fn subject_notification_observer<'w, 's, Subject>(
-	on_notification: Trigger<RxSignal<Subject::In, Subject::InError>>,
+	on_notification: On<RxSignal<Subject::In, Subject::InError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) where
 	Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
 	Subject::In: Clone,
 	Subject::InError: Clone,
 {
-	let subject_entity = on_notification.target();
+	let subject_entity = on_notification.entity();
 	let mut context = context_param.into_context(subject_entity);
 	let notification: ObserverNotification<Subject::In, Subject::InError> =
 		on_notification.event().clone().into();
@@ -150,7 +151,7 @@ fn subject_notification_observer<'w, 's, Subject>(
 }
 
 fn subscribe_event_observer<'w, 's, Subject>(
-	mut on_subscribe: Trigger<Subscribe<Subject::Out, Subject::OutError>>,
+	mut on_subscribe: On<Subscribe<Subject::Out, Subject::OutError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where

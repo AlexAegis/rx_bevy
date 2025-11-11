@@ -58,8 +58,6 @@ where
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		println!("interval got a tick {:?}", tick);
-
 		self.timer.tick(tick.delta);
 		let ticks = self
 			.timer

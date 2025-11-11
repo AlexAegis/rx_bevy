@@ -1,10 +1,11 @@
 use bevy_ecs::{
-	component::{Component, HookContext},
+	component::Component,
 	entity::Entity,
 	error::{BevyError, ErrorContext},
 	hierarchy::ChildOf,
+	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, Trigger},
+	observer::{Observer, On},
 	world::DeferredWorld,
 };
 use bevy_log::error;
@@ -75,7 +76,7 @@ where
 }
 
 fn subscribe_event_observer<'w, 's, O>(
-	mut on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
+	mut on_subscribe: On<Subscribe<O::Out, O::OutError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where
@@ -92,7 +93,7 @@ where
 	};
 
 	let mut context = context_param.into_context(event.subscription_entity);
-
+	println!("subbb");
 	let subscription = {
 		let mut stolen_observable = context.steal_observable::<O>(event.observable_entity)?;
 		let subscription = stolen_observable.subscribe(

@@ -1,4 +1,7 @@
-use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
+use bevy_ecs::{
+	entity::Entity, event::EntityEvent, hierarchy::ChildOf, schedule::ScheduleLabel,
+	system::Commands,
+};
 use bevy_mod_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
 use core::marker::PhantomData;
 use rx_core_traits::{SignalBound, Subscriber, UpgradeableObserver};
@@ -11,7 +14,7 @@ use crate::{BevySubscriptionContextProvider, SubscriptionSchedule};
 
 /// The destination is erased so observers can listen to this event based on
 /// the observables output types only.
-#[derive(Event)]
+#[derive(EntityEvent)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct Subscribe<Out, OutError>
 where
@@ -19,7 +22,7 @@ where
 	OutError: SignalBound,
 {
 	/// From which entity should the subscription be created from.
-	/// TODO (bevy-0.17): while this is not actually needed currently as you could just use the event target, it will be needed in 0.17
+	#[event_target]
 	pub(crate) observable_entity: Entity,
 	/// To where the subscriptions events should be sent to
 	/// The destination must be owned by the subscription, therefore it is
@@ -56,8 +59,13 @@ where
 				Context = BevySubscriptionContextProvider,
 			>,
 	{
-		let subscription_entity = commands.spawn(SubscriptionSchedule::<S>::default()).id();
-
+		let subscription_entity = commands
+			.spawn((
+				ChildOf(observable_entity),
+				SubscriptionSchedule::<S>::default(),
+			))
+			.id();
+		println!("spawned subscription {}", subscription_entity);
 		(
 			Self {
 				observable_entity,

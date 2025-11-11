@@ -2,8 +2,9 @@ use std::fmt::Debug;
 
 use bevy::{
 	ecs::{
+		entity::ContainsEntity,
 		name::Name,
-		observer::Trigger,
+		observer::On,
 		system::{Query, Res},
 	},
 	time::Time,
@@ -13,7 +14,7 @@ use rx_bevy_context::RxSignal;
 use rx_core_traits::SignalBound;
 
 pub fn print_notification_observer<In, InError>(
-	next: Trigger<RxSignal<In, InError>>,
+	next: On<RxSignal<In, InError>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) where
@@ -21,12 +22,11 @@ pub fn print_notification_observer<In, InError>(
 	InError: SignalBound + Debug,
 {
 	println!(
-		"<{},{}>\t value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
+		"<{},{}>\t value observed: {:?}\tname: {:?}\telapsed: {}",
 		ShortName::of::<In>(),
 		ShortName::of::<InError>(),
 		next.event(),
-		next.target(),
-		name_query.get(next.target()).unwrap(),
+		name_query.get(next.event().entity()).unwrap(),
 		time.elapsed_secs()
 	);
 }

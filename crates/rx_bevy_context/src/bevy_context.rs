@@ -10,8 +10,9 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{
-	DropUnsafeSubscriptionContext, SignalBound, Subscriber, SubscriptionContext,
-	SubscriptionContextAccess, SubscriptionScheduled, SubscriptionWithTeardown,
+	DropUnsafeSubscriptionContext, ObserverNotification, SignalBound, Subscriber,
+	SubscriberNotification, SubscriptionContext, SubscriptionContextAccess,
+	SubscriptionNotification, SubscriptionScheduled, SubscriptionWithTeardown,
 	heap_allocator_context::{ErasedSubscriberHeapAllocator, SubscriberHeapAllocator},
 };
 use stealcell::Stolen;
@@ -173,40 +174,36 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn send_observer_notification<In, InError>(
 		&mut self,
 		target: Entity,
-		notification: impl Into<RxSignal<In, InError>>,
+		notification: ObserverNotification<In, InError>,
 	) where
 		In: SignalBound,
 		InError: SignalBound,
 	{
-		let notification_event: RxSignal<In, InError> = notification.into();
-		self.deferred_world
-			.commands()
-			.trigger_targets(notification_event, target);
+		let notification_event = RxSignal::<In, InError>::from_notification(notification, target);
+		self.deferred_world.commands().trigger(notification_event);
 	}
 
 	pub fn send_subscriber_notification<In, InError>(
 		&mut self,
 		target: Entity,
-		notification: impl Into<SubscriberNotificationEvent<In, InError>>,
+		notification: SubscriberNotification<In, InError, BevySubscriptionContextProvider>,
 	) where
 		In: SignalBound,
 		InError: SignalBound,
 	{
-		let notification_event: SubscriberNotificationEvent<In, InError> = notification.into();
-		self.deferred_world
-			.commands()
-			.trigger_targets(notification_event, target);
+		let notification_event =
+			SubscriberNotificationEvent::<In, InError>::from_notification(notification, target);
+		self.deferred_world.commands().trigger(notification_event);
 	}
 
 	pub fn send_subscription_notification(
 		&mut self,
 		target: Entity,
-		notification: impl Into<SubscriptionNotificationEvent>,
+		notification: SubscriptionNotification<BevySubscriptionContextProvider>,
 	) {
-		let notification_event: SubscriptionNotificationEvent = notification.into();
-		self.deferred_world
-			.commands()
-			.trigger_targets(notification_event, target);
+		let notification_event =
+			SubscriptionNotificationEvent::from_notification(notification, target);
+		self.deferred_world.commands().trigger(notification_event);
 	}
 
 	pub fn steal_scheduled_subscription(

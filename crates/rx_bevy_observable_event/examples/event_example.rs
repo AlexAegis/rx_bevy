@@ -6,7 +6,7 @@ use bevy::{
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::{
-	SubscriptionMapResource, print_notification_observer, send_event, toggle_subscription_system,
+	SubscriptionMapResource, print_notification_observer, send_message, toggle_subscription_system,
 };
 use rx_bevy::prelude::*;
 use rx_core_traits::Never;
@@ -15,9 +15,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 		))
@@ -31,7 +29,7 @@ fn main() -> AppExit {
 					|res| res.event_observable,
 					|res| res.destination_entity,
 				),
-				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
+				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 				dummy_event_producer,
 			),
 		)
@@ -48,7 +46,14 @@ struct ExampleEntities {
 
 #[derive(Event, Debug, Clone)]
 pub struct DummyEvent {
+	pub target: Entity,
 	pub count: usize,
+}
+
+impl ContainsEntity for DummyEvent {
+	fn entity(&self) -> Entity {
+		self.target
+	}
 }
 
 fn dummy_event_producer(
@@ -69,15 +74,16 @@ fn dummy_event_producer(
 	timer.tick(time.delta());
 
 	if timer.just_finished() {
-		let dummy_event = DummyEvent { count: *count };
+		let dummy_event = DummyEvent {
+			count: *count,
+			target: example_entities.dummy_event_sink,
+		};
 
 		println!(
 			"Producer is sending {:?} to {}!",
 			dummy_event, example_entities.dummy_event_sink
 		);
-		commands
-			.entity(example_entities.dummy_event_sink)
-			.trigger(dummy_event);
+		commands.trigger(dummy_event);
 
 		*count += 1;
 	}

@@ -1,9 +1,11 @@
 use bevy_ecs::{
-	component::{Component, HookContext},
-	entity::Entity,
+	component::Component,
+	entity::{ContainsEntity, Entity},
 	error::BevyError,
+	hierarchy::ChildOf,
+	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, Trigger},
+	observer::{Observer, On},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
@@ -80,14 +82,19 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert(
 ) {
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
-	entity_commands.insert(Observer::new(scheduled_subscription_notification_observer));
+	entity_commands.insert((
+		ChildOf(hook_context.entity),
+		Name::new("ScheduledSubscriptionNotificationObserver"),
+		Observer::new(scheduled_subscription_notification_observer)
+			.with_entity(hook_context.entity),
+	));
 }
 
 pub(crate) fn scheduled_subscription_notification_observer(
-	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
+	mut subscription_notification: On<SubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
-	let subscription_entity = subscription_notification.target();
+	let subscription_entity = subscription_notification.entity();
 	let mut context = context_param.into_context(subscription_entity);
 
 	if !context
@@ -103,10 +110,10 @@ pub(crate) fn scheduled_subscription_notification_observer(
 
 	let mut stolen_scheduled_subscription = scheduled_subscription_component.steal_subscription();
 
-	// Cloned because every subscription gets the same event.
-	let event = subscription_notification.event_mut().clone();
+	// TODO: check if this clone is necessary, maybe only non-Add should be cloned?
+	let mut event = subscription_notification.event_mut().clone();
 
-	match event.notification {
+	match event.consume()? {
 		SubscriptionNotification::Unsubscribe => {
 			stolen_scheduled_subscription.unsubscribe(&mut context);
 			context

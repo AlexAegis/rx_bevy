@@ -6,7 +6,7 @@ use bevy::{
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::{
-	SubscriptionMapResource, print_notification_observer, send_event, toggle_subscription_system,
+	SubscriptionMapResource, print_notification_observer, send_message, toggle_subscription_system,
 };
 use rx_bevy::prelude::*;
 
@@ -14,9 +14,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 		))
@@ -70,7 +68,7 @@ fn main() -> AppExit {
 					|res| res.behavior_subject_usize,
 					|res| res.destination_entity_2,
 				),
-				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
+				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 			),
 		)
 		.run()

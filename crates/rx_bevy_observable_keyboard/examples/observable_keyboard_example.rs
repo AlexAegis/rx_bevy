@@ -1,16 +1,14 @@
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use examples_common::send_event;
+use examples_common::send_message;
 use rx_bevy::prelude::*;
 
 fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 		))
@@ -19,23 +17,19 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				send_event(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
+				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 				unsubscribe.run_if(input_just_pressed(KeyCode::Space)),
 			),
 		)
 		.run()
 }
 
-fn next_number_observer(
-	mut next: Trigger<RxSignal<String>>,
-	name_query: Query<&Name>,
-	time: Res<Time>,
-) {
+fn next_number_observer(next: On<RxSignal<String>>, name_query: Query<&Name>, time: Res<Time>) {
 	println!(
 		"value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
-		next.event_mut().consume(),
-		next.target(),
-		name_query.get(next.target()).unwrap(),
+		next.signal(),
+		next.entity(),
+		name_query.get(next.entity()).unwrap(),
 		time.elapsed_secs()
 	);
 }
@@ -78,8 +72,10 @@ fn setup(mut commands: Commands) {
 		.observe(next_number_observer)
 		.id();
 
-	let subscription = commands
-		.subscribe::<String, (), Update>(keyboard_observable_entity, keyboard_event_observer);
+	let subscription = commands.subscribe::<_, Update>(
+		keyboard_observable_entity,
+		EntityDestination::<String, Never>::new(keyboard_event_observer),
+	);
 
 	commands.insert_resource(ExampleEntities {
 		subscription,

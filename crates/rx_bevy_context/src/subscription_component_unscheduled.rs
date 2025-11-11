@@ -1,9 +1,10 @@
 use bevy_ecs::{
-	component::{Component, HookContext},
-	entity::Entity,
+	component::Component,
+	entity::{ContainsEntity, Entity},
 	error::BevyError,
+	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, Trigger},
+	observer::{Observer, On},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
@@ -93,22 +94,22 @@ fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
 }
 
 fn unscheduled_subscription_notification_observer<Subscription>(
-	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
+	mut subscription_notification: On<SubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError>
 where
 	Subscription:
 		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	let subscription_entity = subscription_notification.target();
+	let subscription_entity = subscription_notification.entity();
 	let mut context = context_param.into_context(subscription_entity);
 
 	let mut stolen_subscription =
 		context.steal_unscheduled_subscription::<Subscription>(subscription_entity)?;
 
-	let event = subscription_notification.event_mut().clone();
+	let event = subscription_notification.event_mut();
 
-	match event.notification {
+	match event.consume()? {
 		SubscriptionNotification::Unsubscribe => stolen_subscription.unsubscribe(&mut context),
 		SubscriptionNotification::Tick(_tick) => {} // These subscriptions are non-tickable, so this event is ignored
 		SubscriptionNotification::Add(Some(teardown)) => {
