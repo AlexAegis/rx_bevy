@@ -9,6 +9,9 @@ pub trait SubjectAsComponentExtension:
 	+ Send
 	+ Sync
 	+ Sized
+where
+	Self::In: Clone,
+	Self::InError: Clone,
 {
 	fn into_component(self) -> SubjectComponent<Self>;
 }
@@ -21,6 +24,8 @@ where
 		> + Send
 		+ Sync
 		+ Sized,
+	Subject::In: Clone,
+	Subject::InError: Clone,
 {
 	fn into_component(self) -> SubjectComponent<Self> {
 		SubjectComponent::new(self)

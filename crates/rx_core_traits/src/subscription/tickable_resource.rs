@@ -121,7 +121,7 @@ where
 		teardown: super::Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		self.execute(SubscriptionNotification::Add(teardown), context);
+		self.execute(SubscriptionNotification::Add(Some(teardown)), context);
 	}
 }
 
@@ -158,9 +158,10 @@ where
 							SubscriptionNotification::Unsubscribe => {
 								subscription.unsubscribe(context);
 							}
-							SubscriptionNotification::Add(teardown) => {
+							SubscriptionNotification::Add(Some(teardown)) => {
 								subscription.add_teardown(teardown, context);
 							}
+							SubscriptionNotification::Add(None) => {}
 						}
 					};
 				Some(Box::new(closure))

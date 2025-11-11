@@ -4823,6 +4823,7 @@ dependencies = [
  "disqualified",
  "rx_core",
  "smallvec",
+ "thiserror 2.0.17",
 ]
 
 [[package]]

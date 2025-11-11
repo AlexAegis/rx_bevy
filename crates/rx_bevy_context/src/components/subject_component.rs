@@ -10,16 +10,15 @@ use bevy_ecs::{
 use disqualified::ShortName;
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	Observer as RxObserver, ObserverNotification, SubjectLike, SubjectPushNotificationExtention,
-	SubscriptionLike,
+	Observer as RxObserver, ObserverNotification, ObserverPushObserverNotificationExtention,
+	SubjectLike, SubscriptionLike,
 };
 use stealcell::{StealCell, Stolen};
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ConsumableSubscriberNotificationEvent, EntityObserver, ObservableSubscriptions,
-	ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf, SubscribeObserverRef,
-	SubscriptionOf, default_on_subscribe_error_handler,
+	ObservableSubscriptions, RxSignal, ScheduledSubscriptionComponent, Subscribe, SubscribeError,
+	SubscribeObserverOf, SubscribeObserverRef, SubscriptionOf, default_on_subscribe_error_handler,
 };
 
 // TODO: Check if Observable etc can be implemented on this, or delete it and the observer impl because it's not actually used
@@ -34,6 +33,8 @@ use crate::{
 pub struct SubjectComponent<Subject>
 where
 	Subject: SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subject::In: Clone,
+	Subject::InError: Clone,
 {
 	subject: StealCell<Subject>,
 }
@@ -41,6 +42,8 @@ where
 impl<Subject> SubjectComponent<Subject>
 where
 	Subject: SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subject::In: Clone,
+	Subject::InError: Clone,
 {
 	pub fn new(subject: Subject) -> Self {
 		Self {
@@ -61,6 +64,8 @@ where
 impl<Subject> RxObserver for SubjectComponent<Subject>
 where
 	Subject: SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subject::In: Clone,
+	Subject::InError: Clone,
 {
 	fn next(
 		&mut self,
@@ -89,6 +94,8 @@ where
 fn subject_on_insert<Subject>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subject::In: Clone,
+	Subject::InError: Clone,
 {
 	#[cfg(feature = "debug")]
 	crate::register_observable_debug_systems::<Subject>(&mut deferred_world);
@@ -117,22 +124,24 @@ where
 }
 
 fn subject_notification_observer<'w, 's, Subject>(
-	mut on_notification: Trigger<
-		ConsumableSubscriberNotificationEvent<Subject::In, Subject::InError>,
-	>,
+	on_notification: Trigger<RxSignal<Subject::In, Subject::InError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) where
 	Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subject::In: Clone,
+	Subject::InError: Clone,
 {
 	let subject_entity = on_notification.target();
 	let mut context = context_param.into_context(subject_entity);
-	let subscriber_notification = on_notification.event_mut().consume();
-	let notification: Result<ObserverNotification<Subject::In, Subject::InError>, ()> =
-		subscriber_notification.try_into();
+	let notification: ObserverNotification<Subject::In, Subject::InError> =
+		on_notification.event().clone().into();
+
+	// let notification: Result<ObserverNotification<Subject::In, Subject::InError>, ()> =
+	// 	subscriber_notification.try_into();
 	let mut stolen_subject = context.steal_subject::<Subject>(subject_entity).unwrap();
 
 	stolen_subject.push(
-		notification.unwrap(),
+		notification,
 		&mut context, // I have to access the context, passing it into something that was accessed from the context
 	);
 	context
@@ -141,20 +150,30 @@ fn subject_notification_observer<'w, 's, Subject>(
 }
 
 fn subscribe_event_observer<'w, 's, Subject>(
-	on_subscribe: Trigger<Subscribe<Subject::Out, Subject::OutError>>,
+	mut on_subscribe: Trigger<Subscribe<Subject::Out, Subject::OutError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where
 	Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subject::In: Clone,
+	Subject::InError: Clone,
 {
-	let event = on_subscribe.event();
+	let event = on_subscribe.event_mut();
+
+	let Some(destination) = event.try_consume_destination() else {
+		return Err(SubscribeError::EventAlreadyConsumed(
+			ShortName::of::<Subject>().to_string(),
+			event.observable_entity,
+		)
+		.into());
+	};
 
 	let mut context = context_param.into_context(event.subscription_entity);
 
 	let subscription = {
 		let mut stolen_subject = context.steal_subject::<Subject>(event.observable_entity)?;
 		let subscription = stolen_subject.subscribe(
-			EntityObserver::<Subject::Out, Subject::OutError>::new(event.destination_entity),
+			destination,
 			&mut context, // I have to access the context, passing it into something that was accessed from the context
 		);
 		context.return_stolen_subject(event.observable_entity, stolen_subject)?;
@@ -183,6 +202,8 @@ where
 fn subject_on_remove<Subject>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subject::In: Clone,
+	Subject::InError: Clone,
 {
 	deferred_world
 		.commands()
@@ -205,7 +226,9 @@ where
 pub trait BevyContextSubjectStealingExt {
 	fn steal_subject<Subject>(&mut self, entity: Entity) -> Result<Stolen<Subject>, BevyError>
 	where
-		Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync;
+		Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Subject::In: Clone,
+		Subject::InError: Clone;
 
 	fn return_stolen_subject<Subject>(
 		&mut self,
@@ -213,13 +236,17 @@ pub trait BevyContextSubjectStealingExt {
 		subject: Stolen<Subject>,
 	) -> Result<(), BevyError>
 	where
-		Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync;
+		Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Subject::In: Clone,
+		Subject::InError: Clone;
 }
 
 impl<'w, 's> BevyContextSubjectStealingExt for BevySubscriptionContext<'w, 's> {
 	fn steal_subject<Subject>(&mut self, entity: Entity) -> Result<Stolen<Subject>, BevyError>
 	where
 		Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Subject::In: Clone,
+		Subject::InError: Clone,
 	{
 		let mut subject_component =
 			self.try_get_component_mut::<SubjectComponent<Subject>>(entity)?;
@@ -233,6 +260,8 @@ impl<'w, 's> BevyContextSubjectStealingExt for BevySubscriptionContext<'w, 's> {
 	) -> Result<(), BevyError>
 	where
 		Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Subject::In: Clone,
+		Subject::InError: Clone,
 	{
 		let mut subject_component =
 			self.try_get_component_mut::<SubjectComponent<Subject>>(entity)?;

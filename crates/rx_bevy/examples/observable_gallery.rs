@@ -32,10 +32,26 @@ fn main() -> AppExit {
 					|res| res.keyboard_observable,
 					|res| res.destination_entity,
 				),
+				// TODO: something is bugged with scheduling, press O and P, two subscriptions produce 4 ticks!
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
+					KeyCode::KeyO,
+					|res| res.interval_observable,
+					|res| res.destination_entity,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
+					KeyCode::KeyP,
+					|res| res.interval_observable,
+					|res| res.destination_entity_2,
+				),
 				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyI,
 					|res| res.proxy_interval_observable,
 					|res| res.destination_entity,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, Never>(
+					KeyCode::KeyU,
+					|res| res.proxy_interval_observable,
+					|res| res.destination_entity_2,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyL,
@@ -51,6 +67,7 @@ fn main() -> AppExit {
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
 	destination_entity: Entity,
+	destination_entity_2: Entity,
 	subscriptions: HashMap<(Entity, Entity), Entity>,
 	keyboard_observable: Entity,
 	keyboard_switch_map_to_interval_observable: Entity,
@@ -87,6 +104,14 @@ fn setup(mut commands: Commands) {
 		.observe(print_notification_observer::<KeyCode, Never>)
 		.id();
 
+	let destination_entity_2 = commands
+		.spawn(Name::new("Destination 2"))
+		.observe(print_notification_observer::<String, Never>)
+		.observe(print_notification_observer::<i32, Never>)
+		.observe(print_notification_observer::<usize, Never>)
+		.observe(print_notification_observer::<KeyCode, Never>)
+		.id();
+
 	let keyboard_observable = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
@@ -98,7 +123,7 @@ fn setup(mut commands: Commands) {
 		.spawn((
 			Name::new("IntervalObservable"),
 			IntervalObservable::new(IntervalObservableOptions {
-				duration: Duration::from_millis(500),
+				duration: Duration::from_millis(1000),
 				start_on_subscribe: true,
 				max_emissions_per_tick: 2,
 			})
@@ -150,6 +175,7 @@ fn setup(mut commands: Commands) {
 	commands.insert_resource(ExampleEntities {
 		subscriptions: HashMap::new(),
 		destination_entity,
+		destination_entity_2,
 		keyboard_observable,
 		interval_observable,
 		proxy_interval_observable,

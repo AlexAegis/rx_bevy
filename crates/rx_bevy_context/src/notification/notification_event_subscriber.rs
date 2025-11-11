@@ -1,8 +1,9 @@
-use bevy_ecs::{entity::Entity, event::Event};
+use bevy_derive::{Deref, DerefMut};
+use bevy_ecs::event::Event;
 use rx_core_traits::{
-	Never, ObserverNotification, SignalBound, SubscriberNotification, Teardown, Tick,
+	Never, ObserverNotification, SignalBound, SubscriberNotification,
+	SubscriberNotificationTryFromError,
 };
-use thiserror::Error;
 
 use crate::BevySubscriptionContextProvider;
 
@@ -10,26 +11,24 @@ use crate::BevySubscriptionContextProvider;
 /// can levarage the fact that these events are sent only once, and only to
 /// one destination and let the `In` and `InError` signals be taken out of the
 /// event.
-#[derive(Event, Clone, Debug)]
-pub enum SubscriberNotificationEvent<In, InError = Never>
+#[derive(Event, Clone, Deref, DerefMut)]
+pub struct SubscriberNotificationEvent<In, InError = Never>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	Next(In),
-	Error(InError),
-	Complete,
-	Tick(Tick),
-	Unsubscribe,
-	Add(Option<Teardown<BevySubscriptionContextProvider>>),
+	notification: SubscriberNotification<In, InError, BevySubscriptionContextProvider>,
 }
 
-#[derive(Error, Debug)]
-pub enum SubscriptionNotificationEventError {
-	#[error(
-		"Tried to send a SubscriptionNotification to {0}. But it does not exist on entity {1}."
-	)]
-	NotASubscription(String, Entity),
+impl<In, InError> SubscriberNotificationEvent<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	#[inline]
+	pub fn is_unsubscribe(&self) -> bool {
+		matches!(self.notification, SubscriberNotification::Unsubscribe)
+	}
 }
 
 impl<In, InError> From<SubscriberNotification<In, InError, BevySubscriptionContextProvider>>
@@ -38,15 +37,10 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn from(value: SubscriberNotification<In, InError, BevySubscriptionContextProvider>) -> Self {
-		match value {
-			SubscriberNotification::Next(next) => SubscriberNotificationEvent::Next(next),
-			SubscriberNotification::Error(error) => SubscriberNotificationEvent::Error(error),
-			SubscriberNotification::Complete => SubscriberNotificationEvent::Complete,
-			SubscriberNotification::Tick(tick) => SubscriberNotificationEvent::Tick(tick),
-			SubscriberNotification::Unsubscribe => SubscriberNotificationEvent::Unsubscribe,
-			SubscriberNotification::Add(teardown) => SubscriberNotificationEvent::Add(teardown),
-		}
+	fn from(
+		notification: SubscriberNotification<In, InError, BevySubscriptionContextProvider>,
+	) -> Self {
+		Self { notification }
 	}
 }
 
@@ -57,14 +51,7 @@ where
 	InError: SignalBound,
 {
 	fn from(value: SubscriberNotificationEvent<In, InError>) -> Self {
-		match value {
-			SubscriberNotificationEvent::Next(next) => SubscriberNotification::Next(next),
-			SubscriberNotificationEvent::Error(error) => SubscriberNotification::Error(error),
-			SubscriberNotificationEvent::Complete => SubscriberNotification::Complete,
-			SubscriberNotificationEvent::Tick(tick) => SubscriberNotification::Tick(tick),
-			SubscriberNotificationEvent::Unsubscribe => SubscriberNotification::Unsubscribe,
-			SubscriberNotificationEvent::Add(teardown) => SubscriberNotification::Add(teardown),
-		}
+		value.notification
 	}
 }
 
@@ -74,17 +61,11 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	// TODO: Add a real error type
-	type Error = ();
+	type Error = SubscriberNotificationTryFromError;
 
 	fn try_from(
 		value: SubscriberNotificationEvent<In, InError>,
 	) -> Result<Self, <ObserverNotification<In, InError> as TryFrom<SubscriberNotificationEvent<In, InError>>>::Error>{
-		match value {
-			SubscriberNotificationEvent::Next(next) => Ok(ObserverNotification::Next(next)),
-			SubscriberNotificationEvent::Error(error) => Ok(ObserverNotification::Error(error)),
-			SubscriberNotificationEvent::Complete => Ok(ObserverNotification::Complete),
-			_ => Err(()),
-		}
+		value.notification.try_into()
 	}
 }

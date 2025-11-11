@@ -23,15 +23,14 @@ use crate::{ObserverInput, Subscriber, WithSubscriptionContext};
 /// subscribe function, [UpgradeableObserver] does NOT have [Observer] as it's
 /// supertrait!
 pub trait UpgradeableObserver: ObserverInput + WithSubscriptionContext + Send + Sync {
-	type Upgraded: Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
-		+ UpgradeableObserver;
+	type Upgraded: Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
 
 	fn upgrade(self) -> Self::Upgraded;
 }
 
 impl<T> UpgradeableObserver for T
 where
-	T: Subscriber,
+	T: Subscriber + ObserverUpgradesToSelf,
 {
 	type Upgraded = T;
 

@@ -1,19 +1,17 @@
-use core::marker::PhantomData;
-use std::any::TypeId;
-
 use bevy_ecs::{entity::Entity, event::Event, schedule::ScheduleLabel, system::Commands};
-
 use bevy_mod_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
-use derive_where::derive_where;
-use rx_core_traits::SignalBound;
+use core::marker::PhantomData;
+use rx_core_traits::{SignalBound, Subscriber, UpgradeableObserver};
+use std::any::TypeId;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::SubscriptionSchedule;
+use crate::{BevySubscriptionContextProvider, SubscriptionSchedule};
 
-#[derive(Event, Clone)]
-#[derive_where(Debug)]
+/// The destination is erased so observers can listen to this event based on
+/// the observables output types only.
+#[derive(Event)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct Subscribe<Out, OutError>
 where
@@ -24,7 +22,15 @@ where
 	/// TODO (bevy-0.17): while this is not actually needed currently as you could just use the event target, it will be needed in 0.17
 	pub(crate) observable_entity: Entity,
 	/// To where the subscriptions events should be sent to
-	pub(crate) destination_entity: Entity,
+	/// The destination must be owned by the subscription, therefore it is
+	/// consumed during subscription and a `None` is left in its place.
+	/// Therefore you can't trigger a [Subscribe] event on multiple entities
+	/// at once, but there isn't an api to do that anyway.
+	pub(crate) consumable_destination: Option<
+		Box<
+			dyn Subscriber<In = Out, InError = OutError, Context = BevySubscriptionContextProvider>,
+		>,
+	>,
 	/// This entity can only be spawned from this events constructors
 	pub(crate) subscription_entity: Entity,
 
@@ -36,20 +42,26 @@ where
 	Out: SignalBound,
 	OutError: SignalBound,
 {
-	pub fn new<S>(
+	pub fn new<Destination, S>(
 		observable_entity: Entity,
-		destination_entity: Entity,
+		destination: Destination,
 		commands: &mut Commands,
 	) -> (Self, Entity)
 	where
 		S: ScheduleLabel,
+		Destination: 'static
+			+ UpgradeableObserver<
+				In = Out,
+				InError = OutError,
+				Context = BevySubscriptionContextProvider,
+			>,
 	{
 		let subscription_entity = commands.spawn(SubscriptionSchedule::<S>::default()).id();
 
 		(
 			Self {
 				observable_entity,
-				destination_entity,
+				consumable_destination: Some(Box::new(destination.upgrade())),
 				subscription_entity,
 				_phantom_data: PhantomData,
 			},
@@ -57,12 +69,20 @@ where
 		)
 	}
 
-	pub fn new_with_erased_schedule(
+	pub fn new_with_erased_schedule<Destination>(
 		observable_entity: Entity,
-		destination_entity: Entity,
+		destination: Destination,
 		schedule_component_type_id: TypeId,
 		commands: &mut Commands,
-	) -> (Self, Entity) {
+	) -> (Self, Entity)
+	where
+		Destination: 'static
+			+ UpgradeableObserver<
+				In = Out,
+				InError = OutError,
+				Context = BevySubscriptionContextProvider,
+			>,
+	{
 		let subscription_entity = commands
 			.spawn_empty()
 			.insert_component_by_type_id(schedule_component_type_id)
@@ -71,11 +91,47 @@ where
 		(
 			Self {
 				observable_entity,
-				destination_entity,
+				consumable_destination: Some(Box::new(destination.upgrade())),
 				subscription_entity,
 				_phantom_data: PhantomData,
 			},
 			subscription_entity,
 		)
+	}
+
+	pub fn new_unscheduled<Destination>(
+		observable_entity: Entity,
+		destination: Destination,
+		commands: &mut Commands,
+	) -> (Self, Entity)
+	where
+		Destination: 'static
+			+ UpgradeableObserver<
+				In = Out,
+				InError = OutError,
+				Context = BevySubscriptionContextProvider,
+			>,
+	{
+		let subscription_entity = commands.spawn_empty().id();
+
+		(
+			Self {
+				observable_entity,
+				consumable_destination: Some(Box::new(destination.upgrade())),
+				subscription_entity,
+				_phantom_data: PhantomData,
+			},
+			subscription_entity,
+		)
+	}
+
+	pub(crate) fn try_consume_destination(
+		&mut self,
+	) -> Option<
+		Box<
+			dyn Subscriber<In = Out, InError = OutError, Context = BevySubscriptionContextProvider>,
+		>,
+	> {
+		self.consumable_destination.take()
 	}
 }

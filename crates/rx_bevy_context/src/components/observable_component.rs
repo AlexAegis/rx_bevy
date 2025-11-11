@@ -16,8 +16,8 @@ use thiserror::Error;
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	EntityObserver, ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe,
-	SubscribeObserverOf, SubscribeObserverRef, SubscriptionOf,
+	ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
+	SubscribeObserverRef, SubscriptionOf,
 };
 
 /// TODO: Check if you can impl Observable on this
@@ -75,20 +75,28 @@ where
 }
 
 fn subscribe_event_observer<'w, 's, O>(
-	on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
+	mut on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
-	let event = on_subscribe.event();
+	let event = on_subscribe.event_mut();
+
+	let Some(destination) = event.try_consume_destination() else {
+		return Err(SubscribeError::EventAlreadyConsumed(
+			ShortName::of::<O>().to_string(),
+			event.observable_entity,
+		)
+		.into());
+	};
 
 	let mut context = context_param.into_context(event.subscription_entity);
 
 	let subscription = {
 		let mut stolen_observable = context.steal_observable::<O>(event.observable_entity)?;
 		let subscription = stolen_observable.subscribe(
-			EntityObserver::<O::Out, O::OutError>::new(event.destination_entity),
+			destination,
 			&mut context, // I have to access the context, passing it into something that was accessed from the context
 		);
 		context.return_stolen_observable(event.observable_entity, stolen_observable)?;
@@ -130,6 +138,10 @@ where
 pub enum SubscribeError {
 	#[error("Tried to subscribe to {0}. But it does not exist on entity {1}.")]
 	NotAnObservable(String, Entity),
+	#[error(
+		"Tried to subscribe to {0} on {1}. But the Subscribe event already had it's destination consumed!"
+	)]
+	EventAlreadyConsumed(String, Entity),
 	// TODO: consider how this could be implemented now, or if it's even needed. self subscriptions on subjects would cause infinite loops, maybe subjects could be treated as special things and have their own components which could be used to to trigger this error with an associuated const
 	// #[error("Tried to subscribe to {0}. But it disallows subscriptions from the same entity {1}.")]
 	// SelfSubscribeDisallowed(String, Entity),

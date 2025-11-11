@@ -8,14 +8,14 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{
-	SubscriptionLike, SubscriptionScheduled, Teardown, TeardownCollection, Tick, Tickable,
-	WithSubscriptionContext,
+	SubscriptionLike, SubscriptionNotification, SubscriptionScheduled, Teardown,
+	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
 };
 use stealcell::{StealCell, Stolen};
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
+	SubscriptionNotificationEvent,
 };
 
 // TODO(bevy-0.18+): This component does not need to be erased, it's only erased to facilitate mass unsubscribe on exit, which currently can't be done using commands as there is no teardown schedule in bevy similar to the startup schedule. https://github.com/AlexAegis/rx_bevy/issues/2 https://github.com/bevyengine/bevy/issues/7067
@@ -84,7 +84,7 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert(
 }
 
 pub(crate) fn scheduled_subscription_notification_observer(
-	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
+	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
 	let subscription_entity = subscription_notification.target();
@@ -102,11 +102,12 @@ pub(crate) fn scheduled_subscription_notification_observer(
 		context.try_get_component_mut::<ScheduledSubscriptionComponent>(subscription_entity)?;
 
 	let mut stolen_scheduled_subscription = scheduled_subscription_component.steal_subscription();
-	// Cloned because every subscription gets the same event.
-	let event = subscription_notification.event_mut().clone().consume();
 
-	match event {
-		SubscriptionNotificationEvent::Unsubscribe => {
+	// Cloned because every subscription gets the same event.
+	let event = subscription_notification.event_mut().clone();
+
+	match event.notification {
+		SubscriptionNotification::Unsubscribe => {
 			stolen_scheduled_subscription.unsubscribe(&mut context);
 			context
 				.deferred_world
@@ -114,12 +115,13 @@ pub(crate) fn scheduled_subscription_notification_observer(
 				.entity(subscription_entity)
 				.despawn();
 		}
-		SubscriptionNotificationEvent::Tick(tick) => {
+		SubscriptionNotification::Tick(tick) => {
 			stolen_scheduled_subscription.tick(tick, &mut context);
 		}
-		SubscriptionNotificationEvent::Add(teardown) => {
+		SubscriptionNotification::Add(Some(teardown)) => {
 			stolen_scheduled_subscription.add_teardown(teardown, &mut context);
 		}
+		SubscriptionNotification::Add(None) => {}
 	};
 
 	context

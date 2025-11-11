@@ -33,6 +33,7 @@ dev_panic_on_dropped_active_subscriptions = []
 smallvec = { workspace = true }
 disqualified = { workspace = true }
 derive-where = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

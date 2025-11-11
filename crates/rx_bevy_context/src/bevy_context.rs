@@ -18,9 +18,9 @@ use stealcell::Stolen;
 use thiserror::Error;
 
 use crate::{
-	ConsumableSubscriberNotificationEvent, ConsumableSubscriptionNotificationEvent,
-	ErasedSubscriptionSchedule, ScheduledEntitySubscriptionAllocator,
-	ScheduledSubscriptionComponent, SubscriberComponent, UnscheduledEntitySubscriptionAllocator,
+	ErasedSubscriptionSchedule, RxSignal, ScheduledEntitySubscriptionAllocator,
+	ScheduledSubscriptionComponent, SubscriberComponent, SubscriberNotificationEvent,
+	SubscriptionNotificationEvent, UnscheduledEntitySubscriptionAllocator,
 	UnscheduledSubscriptionComponent,
 };
 
@@ -170,16 +170,29 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		}
 	}
 
-	pub fn send_subscriber_notification<In, InError>(
+	pub fn send_observer_notification<In, InError>(
 		&mut self,
 		target: Entity,
-		notification: impl Into<ConsumableSubscriberNotificationEvent<In, InError>>,
+		notification: impl Into<RxSignal<In, InError>>,
 	) where
 		In: SignalBound,
 		InError: SignalBound,
 	{
-		let notification_event: ConsumableSubscriberNotificationEvent<In, InError> =
-			notification.into();
+		let notification_event: RxSignal<In, InError> = notification.into();
+		self.deferred_world
+			.commands()
+			.trigger_targets(notification_event, target);
+	}
+
+	pub fn send_subscriber_notification<In, InError>(
+		&mut self,
+		target: Entity,
+		notification: impl Into<SubscriberNotificationEvent<In, InError>>,
+	) where
+		In: SignalBound,
+		InError: SignalBound,
+	{
+		let notification_event: SubscriberNotificationEvent<In, InError> = notification.into();
 		self.deferred_world
 			.commands()
 			.trigger_targets(notification_event, target);
@@ -188,9 +201,9 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn send_subscription_notification(
 		&mut self,
 		target: Entity,
-		notification: impl Into<ConsumableSubscriptionNotificationEvent>,
+		notification: impl Into<SubscriptionNotificationEvent>,
 	) {
-		let notification_event: ConsumableSubscriptionNotificationEvent = notification.into();
+		let notification_event: SubscriptionNotificationEvent = notification.into();
 		self.deferred_world
 			.commands()
 			.trigger_targets(notification_event, target);
@@ -265,6 +278,8 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	) -> Result<Destination, BevyError>
 	where
 		Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Destination::In: Clone,
+		Destination::InError: Clone,
 	{
 		let mut subscriber_component =
 			self.try_get_component_mut::<SubscriberComponent<Destination>>(entity)?;
@@ -279,6 +294,8 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	) -> Result<(), BevyError>
 	where
 		Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Destination::In: Clone,
+		Destination::InError: Clone,
 	{
 		let mut subscriber_component =
 			self.try_get_component_mut::<SubscriberComponent<Destination>>(entity)?;

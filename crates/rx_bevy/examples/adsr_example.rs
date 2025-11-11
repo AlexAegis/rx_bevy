@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 use bevy::{
 	input::{common_conditions::input_just_pressed, keyboard::KeyboardInput},
 	prelude::*,
@@ -106,7 +108,7 @@ fn setup(
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
 		))
 		.observe(handle_move_signal)
-		.subscribes_to::<AdsrSignal, (), Update>(keyboard_observable_entity);
+		.subscribes_to_observable_entity::<AdsrSignal, (), Update>(keyboard_observable_entity);
 
 	commands.insert_resource(ExampleEntities {
 		subscription: target_subscription,
@@ -114,11 +116,10 @@ fn setup(
 }
 
 fn handle_move_signal(
-	mut next: Trigger<RxSignal<AdsrSignal>>,
+	next: Trigger<RxSignal<AdsrSignal>>,
 	mut transform_query: Query<&mut Transform>,
 ) {
-	// TODO: This is kinda inconvenient to access the event, edge observers should receive a non-consumable variant
-	if let SubscriberNotificationEvent::Next(adsr_signal) = next.event_mut().consume() {
+	if let RxSignal::Next(adsr_signal) = next.event() {
 		if let Ok(mut transform) = transform_query.get_mut(next.target()) {
 			transform.translation += Vec3::X * 0.05 * adsr_signal.value;
 		}

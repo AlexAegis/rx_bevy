@@ -8,14 +8,14 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{
-	SubscriptionLike, SubscriptionWithTeardown, Teardown, TeardownCollection,
-	WithSubscriptionContext,
+	SubscriptionLike, SubscriptionNotification, SubscriptionWithTeardown, Teardown,
+	TeardownCollection, WithSubscriptionContext,
 };
 use stealcell::{StealCell, Stolen};
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ConsumableSubscriptionNotificationEvent, SubscriptionNotificationEvent,
+	SubscriptionNotificationEvent,
 };
 
 #[derive(Component)]
@@ -93,7 +93,7 @@ fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
 }
 
 fn unscheduled_subscription_notification_observer<Subscription>(
-	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
+	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError>
 where
@@ -106,14 +106,15 @@ where
 	let mut stolen_subscription =
 		context.steal_unscheduled_subscription::<Subscription>(subscription_entity)?;
 
-	let event = subscription_notification.event_mut().clone().consume();
+	let event = subscription_notification.event_mut().clone();
 
-	match event {
-		SubscriptionNotificationEvent::Unsubscribe => stolen_subscription.unsubscribe(&mut context),
-		SubscriptionNotificationEvent::Tick(_tick) => {} // These subscriptions are non-tickable, so this event is ignored
-		SubscriptionNotificationEvent::Add(teardown) => {
+	match event.notification {
+		SubscriptionNotification::Unsubscribe => stolen_subscription.unsubscribe(&mut context),
+		SubscriptionNotification::Tick(_tick) => {} // These subscriptions are non-tickable, so this event is ignored
+		SubscriptionNotification::Add(Some(teardown)) => {
 			stolen_subscription.add_teardown(teardown, &mut context)
 		}
+		SubscriptionNotification::Add(None) => {}
 	};
 
 	context.return_stolen_unscheduled_subscription(subscription_entity, stolen_subscription)?;

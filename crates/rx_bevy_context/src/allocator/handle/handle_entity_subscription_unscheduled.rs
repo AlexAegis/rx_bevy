@@ -13,7 +13,7 @@ use rx_core_traits::{
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ConsumableSubscriptionNotificationEvent, handle::ErasedEntitySubscriptionHandle,
+	SubscriptionNotificationEvent, handle::ErasedEntitySubscriptionHandle,
 };
 
 use super::WeakEntitySubscriptionHandle;
@@ -35,11 +35,11 @@ pub(crate) fn erased_subscription_add_notification_observer_on_insert(
 }
 
 fn erased_subscription_notification_observer(
-	mut subscription_notification: Trigger<ConsumableSubscriptionNotificationEvent>,
+	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
 	let subscription_entity = subscription_notification.target();
-	let notification = subscription_notification.event_mut().clone().consume();
+	let notification = subscription_notification.event_mut().clone();
 
 	let mut context = context_param.into_context(subscription_entity);
 
@@ -130,7 +130,7 @@ impl TeardownCollection for UnscheduledEntitySubscriptionHandle {
 		if !self.is_closed() {
 			context.send_subscription_notification(
 				self.subscription_entity,
-				SubscriptionNotification::Add(teardown),
+				SubscriptionNotification::Add(Some(teardown)),
 			);
 		} else {
 			teardown.execute(context);

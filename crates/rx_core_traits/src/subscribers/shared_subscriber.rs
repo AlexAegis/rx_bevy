@@ -2,7 +2,8 @@ use core::marker::PhantomData;
 
 use crate::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable, WithPrimaryCategory,
+	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable, UpgradeableObserver,
+	WithPrimaryCategory,
 	context::{
 		SubscriptionContext, WithSubscriptionContext,
 		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
@@ -14,7 +15,7 @@ use crate::{
 /// subscriber did.
 pub struct SharedSubscriber<Destination>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	Destination: 'static + Subscriber + UpgradeableObserver + Send + Sync,
 {
 	shared_destination: <Destination as DestinationSharedTypes>::Shared,
 	_phantom_data: PhantomData<Destination>,
@@ -22,7 +23,7 @@ where
 
 impl<Destination> SharedSubscriber<Destination>
 where
-	Destination: 'static + Subscriber + Send + Sync,
+	Destination: 'static + Subscriber + UpgradeableObserver + Send + Sync,
 {
 	pub fn new(
 		destination: Destination,

@@ -1,3 +1,3 @@
-mod entity_observer;
+mod entity_destination;
 
-pub use entity_observer::*;
+pub use entity_destination::*;

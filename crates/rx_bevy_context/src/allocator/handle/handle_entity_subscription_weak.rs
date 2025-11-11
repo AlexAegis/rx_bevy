@@ -71,7 +71,7 @@ impl TeardownCollection for WeakEntitySubscriptionHandle {
 		if !self.is_closed() {
 			context.send_subscription_notification(
 				self.subscription_entity,
-				SubscriptionNotification::Add(teardown),
+				SubscriptionNotification::Add(Some(teardown)),
 			);
 		} else {
 			teardown.execute(context);

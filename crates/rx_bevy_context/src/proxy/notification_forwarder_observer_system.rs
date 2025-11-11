@@ -14,11 +14,13 @@ pub fn create_notification_forwarder_observer_for_destination<Destination>(
 )
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination::In: Clone,
+	Destination::InError: Clone,
 {
-	move |mut on_event: Trigger<RxSignal<Destination::In, Destination::InError>>,
+	move |on_event: Trigger<RxSignal<Destination::In, Destination::InError>>,
 	      context_param: BevySubscriptionContextParam| {
 		let mut context = context_param.into_context(contextual_subscription_entity);
-		let notification = on_event.event_mut().consume();
-		destination.push(notification, &mut context);
+
+		destination.push(on_event.event().clone(), &mut context);
 	}
 }

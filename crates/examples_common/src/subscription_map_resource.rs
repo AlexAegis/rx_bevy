@@ -10,7 +10,7 @@ use bevy::{
 	input::keyboard::KeyCode,
 };
 use bevy_mod_alternate_system_on_press::alternate_systems_on_press;
-use rx_bevy_context::CommandSubscribeExtension;
+use rx_bevy_context::{CommandSubscribeExtension, EntityDestination};
 use rx_core_traits::SignalBound;
 
 pub trait SubscriptionMapResource: Resource {
@@ -59,8 +59,10 @@ where
 		let observable_entity = observable_selector(&subscription_tracking_resource);
 		let destination_entity = destination_selector(&subscription_tracking_resource);
 		println!("subscribing to {}...", observable_entity);
-		let subscription_entity =
-			commands.subscribe::<Out, OutError, Update>(observable_entity, destination_entity);
+		let subscription_entity = commands.subscribe::<_, Update>(
+			observable_entity,
+			EntityDestination::<Out, OutError>::new(destination_entity),
+		);
 		println!(
 			"subscription to {} was spawned as {}!",
 			observable_entity, subscription_entity

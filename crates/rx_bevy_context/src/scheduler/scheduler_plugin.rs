@@ -6,7 +6,7 @@ use bevy_ecs::{
 	observer::Observer,
 	query::With,
 	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_event},
-	system::{Commands, Query, Res},
+	system::{Commands, Local, Query, Res},
 	world::{DeferredWorld, World},
 };
 use bevy_mod_erased_component_registry::AppRegisterErasedComponentExtension;
@@ -14,11 +14,11 @@ use bevy_time::Time;
 use bevy_window::exit_on_all_closed;
 use derive_where::derive_where;
 use rx_bevy_common::Clock;
-use rx_core_traits::Tick;
+use rx_core_traits::{SubscriptionNotification, Tick};
 
 use crate::{
-	BevySubscriptionContextParam, ConsumableSubscriptionNotificationEvent,
-	ScheduledSubscriptionComponent, SubscriptionNotificationEvent, SubscriptionSchedule,
+	BevySubscriptionContextParam, ScheduledSubscriptionComponent, SubscriptionNotificationEvent,
+	SubscriptionSchedule,
 };
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
@@ -103,17 +103,67 @@ pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
 	mut commands: Commands,
 	time: Res<Time<C>>,
 	subscription_query: Query<Entity, (With<SubscriptionSchedule<S>>, With<Observer>)>,
+	mut index: Local<usize>,
 ) {
-	let subscriptions = subscription_query.iter().collect::<Vec<_>>();
+	let subscription_entities = subscription_query.iter().collect::<Vec<_>>();
 
-	if !subscriptions.is_empty() {
-		let consumable_notification: ConsumableSubscriptionNotificationEvent =
-			SubscriptionNotificationEvent::Tick(Tick {
-				now: time.elapsed(),
-				delta: time.delta(),
-			})
-			.into();
+	if !subscription_entities.is_empty() {
+		let tick = Tick {
+			index: *index,
+			now: time.elapsed(),
+			delta: time.delta(),
+		};
+		*index += 1;
+		let notification: SubscriptionNotificationEvent =
+			SubscriptionNotification::Tick(tick.clone()).into();
 
-		commands.trigger_targets(consumable_notification, subscriptions);
+		println!("trigger sub tick! {:?} {:?}", tick, subscription_entities);
+		commands.trigger_targets(notification, subscription_entities);
 	}
 }
+
+/*
+
+TODO: Evaluate if not using commands would be better or not, maybe from a scheduling perspective for users? could say .after this to know when its settled
+
+fn tick_all_subscriptions<S, C>(world: &mut World)
+where
+	S: ScheduleLabel,
+	C: Clock,
+{
+	let time = world.resource::<Time<C>>();
+	let tick = Tick {
+		now: time.elapsed(),
+		delta: time.delta(),
+	};
+
+	let mut subscription_query = world.query::<(Entity, &mut ScheduledSubscriptionComponent)>();
+	let mut subscriptions = subscription_query
+		.iter_mut(world)
+		.map(|(entity, mut subscription_component)| {
+			(entity, subscription_component.steal_subscription())
+		})
+		.collect::<Vec<_>>();
+
+	let mut deferred_world = DeferredWorld::from(world);
+	{
+		for (entity, subscription) in subscriptions.iter_mut() {
+			let context_param: BevySubscriptionContextParam = deferred_world.reborrow().into();
+			let mut context = context_param.into_context(*entity);
+
+			subscription.tick(tick.clone(), &mut context);
+		}
+	}
+
+	// No need to return stolen subscriptions, the app is closed. We're doing it anyway :)
+	for (subscription_entity, subscription) in subscriptions {
+		let mut subscription_component = deferred_world
+			.get_mut::<ScheduledSubscriptionComponent>(subscription_entity)
+			.unwrap();
+
+		subscription_component.return_stolen_subscription(subscription);
+	}
+}
+
+
+*/

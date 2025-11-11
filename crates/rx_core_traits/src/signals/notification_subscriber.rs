@@ -1,16 +1,7 @@
-use crate::{SignalBound, SubjectLike, Subscriber, Teardown, Tick, context::SubscriptionContext};
-
-/// Represents all signal events an observer can observe in a materialized form
-#[derive(Debug)]
-pub enum ObserverNotification<In, InError>
-where
-	In: SignalBound,
-	InError: SignalBound,
-{
-	Next(In),
-	Error(InError),
-	Complete,
-}
+use crate::{
+	ObserverNotification, SignalBound, Subscriber, SubscriptionContext, SubscriptionNotification,
+	Teardown, Tick,
+};
 
 /// Represents all signal events a subscriber can observe in a materialized form
 #[derive(Debug)]
@@ -28,35 +19,36 @@ where
 	Add(Option<Teardown<Context>>),
 }
 
-/// Represents a signal event in a materialized form
-#[derive(Debug)]
-pub enum SubscriptionNotification<Context>
+impl<In, InError, Context> Clone for SubscriberNotification<In, InError, Context>
 where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	Unsubscribe,
-	Add(Teardown<Context>),
-	Tick(Tick),
+	fn clone(&self) -> Self {
+		match self {
+			Self::Next(next) => Self::Next(next.clone()),
+			Self::Error(error) => Self::Error(error.clone()),
+			Self::Complete => Self::Complete,
+			Self::Tick(tick) => Self::Tick(tick.clone()),
+			Self::Unsubscribe => Self::Unsubscribe,
+			Self::Add(_) => Self::Add(None),
+		}
+	}
 }
 
-impl<In, InError, Context> TryFrom<SubscriberNotification<In, InError, Context>>
-	for ObserverNotification<In, InError>
+impl<In, InError, Context> From<ObserverNotification<In, InError>>
+	for SubscriberNotification<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	// TODO: Add a real error type
-	type Error = ();
-
-	fn try_from(
-		value: SubscriberNotification<In, InError, Context>,
-	) -> Result<Self, <Self as TryFrom<SubscriberNotification<In, InError, Context>>>::Error> {
+	fn from(value: ObserverNotification<In, InError>) -> Self {
 		match value {
-			SubscriberNotification::Next(next) => Ok(ObserverNotification::Next(next)),
-			SubscriberNotification::Error(error) => Ok(ObserverNotification::Error(error)),
-			SubscriberNotification::Complete => Ok(ObserverNotification::Complete),
-			_ => Err(()),
+			ObserverNotification::Next(next) => SubscriberNotification::Next(next),
+			ObserverNotification::Error(error) => SubscriberNotification::Error(error),
+			ObserverNotification::Complete => SubscriberNotification::Complete,
 		}
 	}
 }
@@ -71,7 +63,7 @@ where
 	fn from(value: SubscriptionNotification<Context>) -> Self {
 		match value {
 			SubscriptionNotification::Unsubscribe => SubscriberNotification::Unsubscribe,
-			SubscriptionNotification::Add(teardown) => SubscriberNotification::Add(Some(teardown)),
+			SubscriptionNotification::Add(teardown) => SubscriberNotification::Add(teardown),
 			SubscriptionNotification::Tick(tick) => SubscriberNotification::Tick(tick),
 		}
 	}
@@ -102,31 +94,6 @@ where
 			SubscriberNotification::Add(Some(teardown)) => self.add_teardown(teardown, context),
 			SubscriberNotification::Add(None) => {}
 			SubscriberNotification::Unsubscribe => self.unsubscribe(context),
-		}
-	}
-}
-
-pub trait SubjectPushNotificationExtention: SubjectLike {
-	fn push(
-		&mut self,
-		notification: impl Into<ObserverNotification<Self::In, Self::InError>>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	);
-}
-
-impl<T> SubjectPushNotificationExtention for T
-where
-	T: SubjectLike,
-{
-	fn push(
-		&mut self,
-		notification: impl Into<ObserverNotification<Self::In, Self::InError>>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		match notification.into() {
-			ObserverNotification::Next(next) => self.next(next, context),
-			ObserverNotification::Error(error) => self.error(error, context),
-			ObserverNotification::Complete => self.complete(context),
 		}
 	}
 }
