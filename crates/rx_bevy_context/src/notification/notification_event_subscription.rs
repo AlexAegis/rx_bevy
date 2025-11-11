@@ -1,16 +1,17 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{
 	entity::{ContainsEntity, Entity},
-	event::EntityEvent,
+	event::Event,
 };
 use rx_core_traits::SubscriptionNotification;
 use thiserror::Error;
 
 use crate::BevySubscriptionContextProvider;
 
-#[derive(EntityEvent, Clone, Deref, DerefMut)]
+// TODO(bevy-0.17): Use EntityEvent
+#[derive(Event, Clone, Deref, DerefMut)]
 pub struct SubscriptionNotificationEvent {
-	#[event_target]
+	// TODO(bevy-0.17): #[event_target]
 	target: Entity,
 	/// Subscription notifications must be consumable because they may own
 	/// resources in the Add variant.

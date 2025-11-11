@@ -58,7 +58,9 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 			observable_entity, destination, self
 		);
 
-		self.trigger(subscribe_event);
+		// TODO(bevy-0.17): self.trigger(subscribe_event);
+		let target = subscribe_event.observable_entity;
+		self.trigger_targets(subscribe_event, target);
 
 		subscription_entity
 	}
@@ -80,7 +82,9 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 				self,
 			);
 
-		self.trigger(subscribe_event);
+		// TODO(bevy-0.17): self.trigger(subscribe_event);
+		let target = subscribe_event.observable_entity;
+		self.trigger_targets(subscribe_event, target);
 
 		subscription_entity
 	}
@@ -100,7 +104,9 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 			observable_entity, destination, self
 		);
 
-		self.trigger(subscribe_event);
+		// TODO(bevy-0.17): self.trigger(subscribe_event);
+		let target = subscribe_event.observable_entity;
+		self.trigger_targets(subscribe_event, target);
 
 		subscription_entity
 	}

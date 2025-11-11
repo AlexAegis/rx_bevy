@@ -2,11 +2,10 @@ use core::marker::PhantomData;
 
 use bevy_app::{App, AppExit, Last, Plugin};
 use bevy_ecs::{
-	entity::Entity,
-	entity_disabling::Internal,
+	entity::{ContainsEntity, Entity},
 	observer::Observer,
-	query::{Allow, With},
-	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_message},
+	query::With,
+	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_event},
 	system::{Commands, Local, Query, Res},
 	world::{DeferredWorld, World},
 };
@@ -63,14 +62,14 @@ where
 			Last,
 			unsubscribe_all_subscriptions
 				.after(exit_on_all_closed)
-				.run_if(on_message::<AppExit>),
+				.run_if(on_event::<AppExit>), // TODO(bevy-0.17): on_message
 		);
 	}
 }
 
 fn unsubscribe_all_subscriptions(world: &mut World) {
 	let mut subscription_query =
-		world.query_filtered::<(Entity, &mut ScheduledSubscriptionComponent), Allow<Internal>>();
+		world.query_filtered::<(Entity, &mut ScheduledSubscriptionComponent), ()>(); // TODO(bevy-0.17): Allow<Internal>
 	let mut subscriptions = subscription_query
 		.iter_mut(world)
 		.map(|(entity, mut subscription_component)| {
@@ -109,7 +108,7 @@ pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
 		(
 			With<SubscriptionSchedule<S>>,
 			With<Observer>,
-			Allow<Internal>,
+			// TODO(bevy-0.17): Allow<Internal>
 		),
 	>,
 	mut index: Local<usize>,
@@ -130,7 +129,9 @@ pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
 				*target,
 			)
 		}) {
-			commands.trigger(event);
+			// TODO(bevy-0.17): commands.trigger(event);
+			let target = event.entity();
+			commands.trigger_targets(event, target);
 		}
 	}
 }

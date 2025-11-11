@@ -1,11 +1,10 @@
 use bevy_ecs::{
-	component::Component,
+	component::{Component, HookContext},
 	entity::{ContainsEntity, Entity},
 	error::BevyError,
 	hierarchy::ChildOf,
-	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, On},
+	observer::{Observer, Trigger},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
@@ -125,7 +124,7 @@ where
 }
 
 fn subject_notification_observer<'w, 's, Subject>(
-	on_notification: On<RxSignal<Subject::In, Subject::InError>>,
+	on_notification: Trigger<RxSignal<Subject::In, Subject::InError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) where
 	Subject: 'static + SubjectLike<Context = BevySubscriptionContextProvider> + Send + Sync,
@@ -151,7 +150,7 @@ fn subject_notification_observer<'w, 's, Subject>(
 }
 
 fn subscribe_event_observer<'w, 's, Subject>(
-	mut on_subscribe: On<Subscribe<Subject::Out, Subject::OutError>>,
+	mut on_subscribe: Trigger<Subscribe<Subject::Out, Subject::OutError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where

@@ -1,6 +1,5 @@
 use bevy_ecs::{
-	entity::Entity, event::EntityEvent, hierarchy::ChildOf, schedule::ScheduleLabel,
-	system::Commands,
+	entity::Entity, event::Event, hierarchy::ChildOf, schedule::ScheduleLabel, system::Commands,
 };
 use bevy_mod_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
 use core::marker::PhantomData;
@@ -14,7 +13,8 @@ use crate::{BevySubscriptionContextProvider, SubscriptionSchedule};
 
 /// The destination is erased so observers can listen to this event based on
 /// the observables output types only.
-#[derive(EntityEvent)]
+/// TODO(bevy-0.17): Use EntityEvent
+#[derive(Event)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct Subscribe<Out, OutError>
 where
@@ -22,7 +22,7 @@ where
 	OutError: SignalBound,
 {
 	/// From which entity should the subscription be created from.
-	#[event_target]
+	// TODO(bevy-0.17): #[event_target]
 	pub(crate) observable_entity: Entity,
 	/// To where the subscriptions events should be sent to
 	/// The destination must be owned by the subscription, therefore it is

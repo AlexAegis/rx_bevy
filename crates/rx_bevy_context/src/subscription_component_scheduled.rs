@@ -1,11 +1,10 @@
 use bevy_ecs::{
-	component::Component,
+	component::{Component, HookContext},
 	entity::{ContainsEntity, Entity},
 	error::BevyError,
 	hierarchy::ChildOf,
-	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, On},
+	observer::{Observer, Trigger},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
@@ -91,7 +90,7 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert(
 }
 
 pub(crate) fn scheduled_subscription_notification_observer(
-	mut subscription_notification: On<SubscriptionNotificationEvent>,
+	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
 	let subscription_entity = subscription_notification.entity();

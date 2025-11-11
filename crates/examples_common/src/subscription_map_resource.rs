@@ -2,6 +2,7 @@ use bevy::{
 	app::Update,
 	ecs::{
 		entity::Entity,
+		error::BevyError,
 		resource::Resource,
 		schedule::ScheduleConfigs,
 		system::{Commands, ResMut},
@@ -26,8 +27,8 @@ pub fn toggle_subscription_system<
 	observable_selector: impl Fn(&ResMut<R>) -> Entity + Send + Sync + 'static + Clone,
 	destination_selector: impl Fn(&ResMut<R>) -> Entity + Send + Sync + 'static + Clone,
 ) -> (
-	ScheduleConfigs<Box<dyn bevy::prelude::System<In = (), Out = ()> + 'static>>,
-	ScheduleConfigs<Box<dyn bevy::prelude::System<In = (), Out = ()> + 'static>>,
+	ScheduleConfigs<Box<dyn bevy::prelude::System<In = (), Out = Result<(), BevyError>> + 'static>>, // TODO(bevy-0.17): Out = ()
+	ScheduleConfigs<Box<dyn bevy::prelude::System<In = (), Out = Result<(), BevyError>> + 'static>>, // TODO(bevy-0.17): Out = ()
 ) {
 	let observable_selector_clone = observable_selector.clone();
 	let destination_selector_clone = destination_selector.clone();

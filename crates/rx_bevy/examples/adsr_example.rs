@@ -13,7 +13,10 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin::default(),
+			//  EguiPlugin::default(), TODO(bevy-0.17): EguiPlugin::default()
+			EguiPlugin {
+				enable_multipass_for_primary_context: true,
+			},
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 		))
@@ -39,7 +42,7 @@ fn next_bool_observer(next: Trigger<RxSignal<bool>>, name_query: Query<&Name>, t
 }
 
 fn next_keyboard_input_observer(
-	next: On<RxSignal<KeyboardInput>>,
+	next: Trigger<RxSignal<KeyboardInput>>,
 	name_query: Query<&Name>,
 	time: Res<Time>,
 ) {
@@ -111,7 +114,10 @@ fn setup(
 	});
 }
 
-fn handle_move_signal(next: On<RxSignal<AdsrSignal>>, mut transform_query: Query<&mut Transform>) {
+fn handle_move_signal(
+	next: Trigger<RxSignal<AdsrSignal>>,
+	mut transform_query: Query<&mut Transform>,
+) {
 	if let ObserverNotification::Next(adsr_signal) = next.signal() {
 		if let Ok(mut transform) = transform_query.get_mut(next.entity()) {
 			transform.translation += Vec3::X * 0.05 * adsr_signal.value;

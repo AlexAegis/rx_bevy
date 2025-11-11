@@ -1,11 +1,10 @@
 use bevy_ecs::{
-	component::Component,
+	component::{Component, HookContext},
 	entity::Entity,
 	error::{BevyError, ErrorContext},
 	hierarchy::ChildOf,
-	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, On},
+	observer::{Observer, Trigger},
 	world::DeferredWorld,
 };
 use bevy_log::error;
@@ -76,7 +75,7 @@ where
 }
 
 fn subscribe_event_observer<'w, 's, O>(
-	mut on_subscribe: On<Subscribe<O::Out, O::OutError>>,
+	mut on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where

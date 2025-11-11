@@ -1,21 +1,21 @@
 use bevy_ecs::{
 	entity::{ContainsEntity, Entity},
-	event::EntityEvent,
+	event::Event,
 };
 use rx_core_traits::{Never, ObserverNotification, SignalBound, SubscriberNotification};
 
 use crate::BevySubscriptionContextProvider;
 
 /// # RxSignal (ObserverNotificationEvent)
-///
-#[derive(EntityEvent, Clone, Debug)]
+///  TODO(bevy-0.17): Use EntityEvent
+#[derive(Event, Clone, Debug)]
 #[doc(alias = "ObserverNotificationEvent")]
 pub struct RxSignal<In, InError = Never>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	#[event_target]
+	// TODO(bevy-0.17): #[event_target]
 	target: Entity,
 	notification: ObserverNotification<In, InError>,
 }

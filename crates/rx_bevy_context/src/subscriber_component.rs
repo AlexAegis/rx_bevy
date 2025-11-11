@@ -1,10 +1,9 @@
 use bevy_ecs::{
-	component::Component,
+	component::{Component, HookContext},
 	entity::{ContainsEntity, Entity},
 	error::BevyError,
-	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, On},
+	observer::{Observer, Trigger},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
@@ -97,7 +96,7 @@ where
 }
 
 fn subscriber_notification_observer<'w, 's, Destination>(
-	mut subscriber_notification: On<
+	mut subscriber_notification: Trigger<
 		SubscriberNotificationEvent<Destination::In, Destination::InError>,
 	>,
 	context_param: BevySubscriptionContextParam<'w, 's>,

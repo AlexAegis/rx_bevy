@@ -1,7 +1,7 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{
 	entity::{ContainsEntity, Entity},
-	event::EntityEvent,
+	event::Event,
 };
 use rx_core_traits::{
 	Never, ObserverNotification, SignalBound, SubscriberNotification,
@@ -14,13 +14,14 @@ use crate::BevySubscriptionContextProvider;
 /// can levarage the fact that these events are sent only once, and only to
 /// one destination and let the `In` and `InError` signals be taken out of the
 /// event.
-#[derive(EntityEvent, Clone, Deref, DerefMut)]
+// TODO(bevy-0.17): Use EntityEvent
+#[derive(Event, Clone, Deref, DerefMut)]
 pub struct SubscriberNotificationEvent<In, InError = Never>
 where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	#[event_target]
+	// TODO(bevy-0.17): #[event_target]
 	target: Entity,
 	#[deref]
 	notification: SubscriberNotification<In, InError, BevySubscriptionContextProvider>,

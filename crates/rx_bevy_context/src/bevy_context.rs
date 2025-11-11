@@ -3,7 +3,7 @@ use std::any::TypeId;
 
 use bevy_ecs::{
 	component::{Component, Mutable},
-	entity::Entity,
+	entity::{ContainsEntity, Entity},
 	error::BevyError,
 	system::SystemParam,
 	world::{DeferredWorld, Mut},
@@ -180,7 +180,12 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		InError: SignalBound,
 	{
 		let notification_event = RxSignal::<In, InError>::from_notification(notification, target);
-		self.deferred_world.commands().trigger(notification_event);
+		// TODO(bevy-0.17): Use this
+		// self.deferred_world.commands().trigger(notification_event);
+		let target = notification_event.entity();
+		self.deferred_world
+			.commands()
+			.trigger_targets(notification_event, target);
 	}
 
 	pub fn send_subscriber_notification<In, InError>(
@@ -193,7 +198,12 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	{
 		let notification_event =
 			SubscriberNotificationEvent::<In, InError>::from_notification(notification, target);
-		self.deferred_world.commands().trigger(notification_event);
+		// TODO(bevy-0.17): Use this
+		// self.deferred_world.commands().trigger(notification_event);
+		let target = notification_event.entity();
+		self.deferred_world
+			.commands()
+			.trigger_targets(notification_event, target);
 	}
 
 	pub fn send_subscription_notification(
@@ -203,7 +213,12 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	) {
 		let notification_event =
 			SubscriptionNotificationEvent::from_notification(notification, target);
-		self.deferred_world.commands().trigger(notification_event);
+		// TODO(bevy-0.17): Use this
+		// self.deferred_world.commands().trigger(notification_event);
+		let target = notification_event.entity();
+		self.deferred_world
+			.commands()
+			.trigger_targets(notification_event, target);
 	}
 
 	pub fn steal_scheduled_subscription(

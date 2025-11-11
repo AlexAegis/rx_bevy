@@ -1,10 +1,9 @@
 use bevy_ecs::{
-	component::Component,
+	component::{Component, HookContext},
 	entity::{ContainsEntity, Entity},
 	error::BevyError,
-	lifecycle::HookContext,
 	name::Name,
-	observer::{Observer, On},
+	observer::{Observer, Trigger},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
@@ -94,7 +93,7 @@ fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
 }
 
 fn unscheduled_subscription_notification_observer<Subscription>(
-	mut subscription_notification: On<SubscriptionNotificationEvent>,
+	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError>
 where
