@@ -2,7 +2,6 @@ use bevy_ecs::{
 	component::{Component, HookContext},
 	entity::{ContainsEntity, Entity},
 	error::BevyError,
-	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
 	world::DeferredWorld,
@@ -82,7 +81,6 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert(
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
 	entity_commands.insert((
-		ChildOf(hook_context.entity), // TODO: FIX, self child?? makes no sense
 		Name::new("ScheduledSubscriptionNotificationObserver"),
 		Observer::new(scheduled_subscription_notification_observer)
 			.with_entity(hook_context.entity),
@@ -143,7 +141,6 @@ fn scheduled_subscription_unsubscribe_on_remove(
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
 	let mut context = context_param.into_context(hook_context.entity);
 
-	println!("subscription, unsub on remove?? {}", hook_context.entity);
 	let mut stolen_subscription = context
 		.steal_scheduled_subscription(hook_context.entity)
 		.unwrap();

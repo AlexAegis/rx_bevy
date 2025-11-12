@@ -33,7 +33,6 @@ fn main() -> AppExit {
 					|res| res.keyboard_observable,
 					|res| res.destination_entity,
 				),
-				// TODO: something is bugged with scheduling, press O and P, two subscriptions produce 4 ticks!
 				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyO,
 					|res| res.interval_observable,
@@ -57,6 +56,11 @@ fn main() -> AppExit {
 				toggle_subscription_system::<ExampleEntities, usize, Never>(
 					KeyCode::KeyL,
 					|e| e.keyboard_switch_map_to_interval_observable,
+					|res| res.destination_entity,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, usize>(
+					KeyCode::KeyM, // This will (intentionally) miss as the Output types don't match with an observable!
+					|res| res.interval_observable,
 					|res| res.destination_entity,
 				),
 				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),

@@ -17,7 +17,7 @@ use thiserror::Error;
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
-	SubscribeObserverRef, SubscriptionOf,
+	SubscribeObserverRef, SubscriptionOf, UnfinishedSubscription,
 };
 
 /// TODO: Check if you can impl Observable on this
@@ -92,7 +92,7 @@ where
 	};
 
 	let mut context = context_param.into_context(event.subscription_entity);
-	println!("subbb");
+
 	let subscription = {
 		let mut stolen_observable = context.steal_observable::<O>(event.observable_entity)?;
 		let subscription = stolen_observable.subscribe(
@@ -117,6 +117,10 @@ where
 	} else {
 		subscription_entity_commands.try_despawn();
 	}
+
+	// Marks the subscription entity as "finished".
+	// An "unfinished" subscription entity would be immediately despawned.
+	subscription_entity_commands.try_remove::<UnfinishedSubscription>();
 
 	Ok(())
 }

@@ -58,14 +58,10 @@ where
 	move |mut commands: Commands, mut subscription_tracking_resource: ResMut<R>| {
 		let observable_entity = observable_selector(&subscription_tracking_resource);
 		let destination_entity = destination_selector(&subscription_tracking_resource);
-		println!("subscribing to {}...", observable_entity);
+
 		let subscription_entity = commands.subscribe::<_, Update>(
 			observable_entity,
 			EntityDestination::<Out, OutError>::new(destination_entity),
-		);
-		println!(
-			"subscription to {} was spawned as {}!",
-			observable_entity, subscription_entity
 		);
 
 		subscription_tracking_resource
@@ -87,16 +83,7 @@ where
 		if let Some(subscription_entity) =
 			subscription_tracking_resource.remove((observable_entity, destination_entity))
 		{
-			println!(
-				"unsubscribing {} observables {} subscription...",
-				observable_entity, subscription_entity
-			);
 			commands.unsubscribe(subscription_entity);
-		} else {
-			println!(
-				"{} does not have an active subscription!",
-				observable_entity
-			);
 		}
 	}
 }

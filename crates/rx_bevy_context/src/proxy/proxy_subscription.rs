@@ -27,10 +27,6 @@ where
 		destination: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
-		let subscription_entity = context.get_subscription_entity();
-
-		println!("proxy created! {}", subscription_entity);
-
 		let subscription_entity_schedule_type_id =
 			context.get_subscription_contexts_erased_schedule();
 

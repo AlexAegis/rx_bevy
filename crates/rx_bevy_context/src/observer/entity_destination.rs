@@ -2,9 +2,9 @@ use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, ObserverNotification, SignalBound};
+use rx_core_traits::{Observer, ObserverNotification, SignalBound, UpgradeableObserver};
 
-use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
+use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, DetachedEntitySubscriber};
 
 /// This is not a component, but a wrapper for an Entity to be used as a generic
 /// destination for subscriptions. The entity here will receive all signals as
@@ -16,10 +16,12 @@ use crate::{BevySubscriptionContext, BevySubscriptionContextProvider};
 ///
 /// > Technically this is an Observer in the Rx terms and should be called
 /// > `EntityObserver` but that would be a very confusing term in Bevy.
+/// > And while most, simple observers do not
 #[derive(RxObserver)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_context(BevySubscriptionContextProvider)]
+#[rx_does_not_upgrade_to_detached]
 pub struct EntityDestination<In, InError>
 where
 	In: SignalBound,
@@ -49,6 +51,18 @@ where
 {
 	fn from(value: Entity) -> Self {
 		Self::new(value)
+	}
+}
+
+impl<In, InError> UpgradeableObserver for EntityDestination<In, InError>
+where
+	In: SignalBound,
+	InError: SignalBound,
+{
+	type Upgraded = DetachedEntitySubscriber<In, InError>;
+
+	fn upgrade(self) -> Self::Upgraded {
+		DetachedEntitySubscriber::new(self)
 	}
 }
 

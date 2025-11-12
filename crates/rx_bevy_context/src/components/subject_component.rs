@@ -18,7 +18,8 @@ use stealcell::{StealCell, Stolen};
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ObservableSubscriptions, RxSignal, ScheduledSubscriptionComponent, Subscribe, SubscribeError,
-	SubscribeObserverOf, SubscribeObserverRef, SubscriptionOf, default_on_subscribe_error_handler,
+	SubscribeObserverOf, SubscribeObserverRef, SubscriptionOf, UnfinishedSubscription,
+	default_on_subscribe_error_handler,
 };
 
 // TODO: Check if Observable etc can be implemented on this, or delete it and the observer impl because it's not actually used
@@ -194,6 +195,10 @@ where
 	} else {
 		subscription_entity_commands.try_despawn();
 	}
+
+	// Marks the subscription entity as "finished".
+	// An "unfinished" subscription entity would be immediately despawned.
+	subscription_entity_commands.try_remove::<UnfinishedSubscription>();
 
 	Ok(())
 }

@@ -9,16 +9,18 @@ use bevy_ecs::{
 	system::{Commands, Local, Query, Res},
 	world::{DeferredWorld, World},
 };
+use bevy_log::warn;
 use bevy_mod_erased_component_registry::AppRegisterErasedComponentExtension;
 use bevy_time::Time;
 use bevy_window::exit_on_all_closed;
 use derive_where::derive_where;
+use disqualified::ShortName;
 use rx_bevy_common::Clock;
 use rx_core_traits::{SubscriptionNotification, Tick};
 
 use crate::{
 	BevySubscriptionContextParam, ScheduledSubscriptionComponent, SubscriptionNotificationEvent,
-	SubscriptionSchedule,
+	SubscriptionSchedule, UnfinishedSubscription,
 };
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
@@ -58,12 +60,37 @@ where
 			tick_scheduled_subscriptions_system::<S, C>,
 		);
 
+		// Just because a subscription is scheduled with `S`, it could be
+		// spawned during any other schedule. Therefore the cleanup in the
+		// `Last` schedule.
+		app.add_systems(Last, clean_unfinished_subscriptions::<S, C>);
+
 		app.add_systems(
 			Last,
 			unsubscribe_all_subscriptions
 				.after(exit_on_all_closed)
 				.run_if(on_event::<AppExit>), // TODO(bevy-0.17): on_message
 		);
+	}
+}
+
+fn clean_unfinished_subscriptions<S, C>(
+	mut commands: Commands,
+	unfinished_subscription_query: Query<
+		Entity,
+		(With<UnfinishedSubscription>, With<SubscriptionSchedule<S>>),
+	>,
+) where
+	S: ScheduleLabel + Default + Clone,
+	C: Clock,
+{
+	for unfinished_subscription_query in unfinished_subscription_query.iter() {
+		warn!(
+			"The subscription {} in schedule {} was not populated and does not contain a subscription! It is now being despawned! (This despawn is being issued in the Last schedule!)",
+			unfinished_subscription_query,
+			ShortName::of::<S>()
+		);
+		commands.entity(unfinished_subscription_query).despawn();
 	}
 }
 
