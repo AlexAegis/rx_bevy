@@ -2125,6 +2125,7 @@ dependencies = [
  "bevy_mod_alternate_system_on_press",
  "derive-where",
  "disqualified",
+ "rx_bevy_common",
  "rx_bevy_context",
  "rx_core_traits",
 ]

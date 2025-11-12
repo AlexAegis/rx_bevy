@@ -25,7 +25,7 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, AdsrSignal, Never>(
+				toggle_subscription_system::<ExampleEntities, AdsrSignal, Never, Update, Virtual>(
 					KeyCode::KeyK,
 					|res| res.adsr_observable,
 					|res| res.adsr_destination_cube,
@@ -68,6 +68,7 @@ fn setup(
 					release_easing: Some(EaseFunction::BounceOut),
 				},
 			})
+			.tap_next(|n, _| println!("{n:?}"))
 			.into_component(),
 		))
 		.id();

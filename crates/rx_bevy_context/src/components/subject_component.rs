@@ -99,7 +99,9 @@ where
 	Subject::InError: Clone,
 {
 	#[cfg(feature = "debug")]
-	crate::register_observable_debug_systems::<Subject>(&mut deferred_world);
+	crate::register_observable_debug_systems::<Subject, bevy_app::Update, bevy_time::Virtual>(
+		&mut deferred_world,
+	);
 
 	let mut commands = deferred_world.commands();
 	let _subscribe_event_observer_id = commands
@@ -218,7 +220,7 @@ where
 
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
 	let mut context = context_param.into_context(hook_context.entity);
-	println!("removing subject!!!");
+
 	let mut stolen_subject = context
 		.steal_subject::<Subject>(hook_context.entity)
 		.unwrap();

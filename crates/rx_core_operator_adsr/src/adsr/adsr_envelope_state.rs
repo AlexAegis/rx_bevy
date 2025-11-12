@@ -37,7 +37,7 @@ impl AdsrEnvelopeState {
 		&mut self,
 		envelope: AdsrEnvelope,
 		is_getting_activated: bool,
-		tick: Tick,
+		tick: &Tick,
 	) -> AdsrSignal {
 		if !self.last_frame_input_signal && is_getting_activated {
 			self.reset();

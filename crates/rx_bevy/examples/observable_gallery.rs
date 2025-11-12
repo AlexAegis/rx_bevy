@@ -28,37 +28,37 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, KeyCode, Never>(
+				toggle_subscription_system::<ExampleEntities, KeyCode, Never, Update, Virtual>(
 					KeyCode::KeyK,
 					|res| res.keyboard_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyO,
 					|res| res.interval_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyP,
 					|res| res.interval_observable,
 					|res| res.destination_entity_2,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyI,
 					|res| res.proxy_interval_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyU,
 					|res| res.proxy_interval_observable,
 					|res| res.destination_entity_2,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyL,
 					|e| e.keyboard_switch_map_to_interval_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, usize>(
+				toggle_subscription_system::<ExampleEntities, usize, usize, Update, Virtual>(
 					KeyCode::KeyM, // This will (intentionally) miss as the Output types don't match with an observable!
 					|res| res.interval_observable,
 					|res| res.destination_entity,
@@ -170,7 +170,6 @@ fn setup(mut commands: Commands) {
 						start_on_subscribe: false,
 						max_emissions_per_tick: 4,
 					})
-					.tap_next(|n, _| println!("inner next {n}"))
 				})
 				.scan(|acc, _next| acc + 1, 0_usize)
 				.into_component(),

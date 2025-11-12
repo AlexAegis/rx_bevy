@@ -23,5 +23,6 @@ bevy = { workspace = true }
 derive-where = { workspace = true }
 rx_core_traits = { workspace = true }
 rx_bevy_context = { workspace = true }
+rx_bevy_common = { workspace = true }
 disqualified = { workspace = true }
 bevy_mod_alternate_system_on_press = { workspace = true }

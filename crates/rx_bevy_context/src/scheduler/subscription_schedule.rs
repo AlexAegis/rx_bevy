@@ -6,6 +6,7 @@ use derive_where::derive_where;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
+use rx_bevy_common::Clock;
 
 /// Component to mark subscriptions with, to trigger `Tick` events without the
 /// knowledge of the actual [ObservableComponent]s type.
@@ -21,13 +22,14 @@ use bevy_reflect::Reflect;
 #[derive_where(Default)]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 #[cfg_attr(feature = "debug", derive(Debug))]
-#[require(ErasedSubscriptionSchedule::new::<S>())]
-pub struct SubscriptionSchedule<S>
+#[require(ErasedSubscriptionSchedule::new::<S, C>())]
+pub struct SubscriptionSchedule<S, C>
 where
 	S: ScheduleLabel,
+	C: Clock,
 {
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data: PhantomData<S>,
+	_phantom_data: PhantomData<(S, C)>,
 }
 
 /// Contains the TypeId of [SubscriptionSchedule] used on the same entity. It is
@@ -44,12 +46,13 @@ pub struct ErasedSubscriptionSchedule {
 }
 
 impl ErasedSubscriptionSchedule {
-	fn new<S>() -> Self
+	fn new<S, C>() -> Self
 	where
 		S: ScheduleLabel,
+		C: Clock,
 	{
 		Self {
-			subscription_schedule_component_type_id: TypeId::of::<SubscriptionSchedule<S>>(),
+			subscription_schedule_component_type_id: TypeId::of::<SubscriptionSchedule<S, C>>(),
 		}
 	}
 

@@ -53,7 +53,7 @@ where
 {
 	fn build(&self, app: &mut App) {
 		// Enables the creation of this component by its TypeId
-		app.register_erased_component::<SubscriptionSchedule<S>>();
+		app.register_erased_component::<SubscriptionSchedule<S, C>>();
 
 		app.add_systems(
 			self.schedule.clone(),
@@ -78,7 +78,10 @@ fn clean_unfinished_subscriptions<S, C>(
 	mut commands: Commands,
 	unfinished_subscription_query: Query<
 		Entity,
-		(With<UnfinishedSubscription>, With<SubscriptionSchedule<S>>),
+		(
+			With<UnfinishedSubscription>,
+			With<SubscriptionSchedule<S, C>>,
+		),
 	>,
 ) where
 	S: ScheduleLabel + Default + Clone,
@@ -133,7 +136,7 @@ pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
 	subscription_query: Query<
 		Entity,
 		(
-			With<SubscriptionSchedule<S>>,
+			With<SubscriptionSchedule<S, C>>,
 			With<Observer>,
 			// TODO(bevy-0.17): Allow<Internal>
 		),

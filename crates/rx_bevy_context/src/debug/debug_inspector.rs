@@ -11,6 +11,7 @@ use bevy_ecs::{
 };
 use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
 use disqualified::ShortName;
+use rx_bevy_common::Clock;
 use rx_core_traits::Observable;
 
 use crate::{
@@ -44,17 +45,19 @@ pub(crate) fn run_debug_systems(
 	}
 }
 
-pub(crate) fn register_observable_debug_systems<O>(deferred_world: &mut DeferredWorld)
+pub(crate) fn register_observable_debug_systems<O, S, C>(deferred_world: &mut DeferredWorld)
 where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	S: ScheduleLabel,
+	C: Clock,
 {
 	let observable_debug_system_id = deferred_world
 		.commands()
-		.register_system(observable_entity_debug_print::<O>);
+		.register_system(observable_entity_debug_print::<O, S, C>);
 
 	let subscription_debug_system_id = deferred_world
 		.commands()
-		.register_system(subscription_entity_debug_print::<O>);
+		.register_system(subscription_entity_debug_print::<O, S, C>);
 
 	if let Some(mut debug_registry) = deferred_world.get_resource_mut::<DebugSystemRegistry>() {
 		debug_registry
@@ -66,18 +69,20 @@ where
 	};
 }
 
-pub(crate) fn observable_entity_debug_print<O>(
+pub(crate) fn observable_entity_debug_print<O, S, C>(
 	observable_query: Query<
 		(
 			Entity,
 			Option<&SubscriptionOf<O>>,
 			Option<&ObservableSubscriptions<O>>,
-			Option<&SubscriptionSchedule<Update>>,
+			Option<&SubscriptionSchedule<S, C>>,
 		),
 		With<ObservableComponent<O>>,
 	>,
 ) where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	S: ScheduleLabel,
+	C: Clock,
 {
 	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
 		observable_query.iter()
@@ -114,24 +119,27 @@ where
 	}
 }
 
-impl<S> Display for &SubscriptionSchedule<S>
+impl<S, C> Display for &SubscriptionSchedule<S, C>
 where
 	S: ScheduleLabel,
+	C: Clock,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "\tSubscriptionSchedule<{}>", ShortName::of::<S>())
 	}
 }
 
-pub(crate) fn subscription_entity_debug_print<O>(
+pub(crate) fn subscription_entity_debug_print<O, S, C>(
 	subscription_query: Query<(
 		Entity,
 		&SubscriptionOf<O>,
 		Option<&ObservableSubscriptions<O>>,
-		Option<&SubscriptionSchedule<Update>>,
+		Option<&SubscriptionSchedule<S, C>>,
 	)>,
 ) where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	S: ScheduleLabel,
+	C: Clock,
 {
 	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
 		subscription_query.iter()

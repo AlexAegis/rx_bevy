@@ -26,7 +26,7 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, DummyEvent, Never>(
+				toggle_subscription_system::<ExampleEntities, DummyEvent, Never, Update, Virtual>(
 					KeyCode::Space,
 					|res| res.event_observable,
 					|res| res.destination_entity,
@@ -46,6 +46,7 @@ struct ExampleEntities {
 	dummy_event_sink: Entity,
 }
 
+// TODO(bevy-0.17): Use EntityEvent
 #[derive(Event, Debug, Clone)]
 pub struct DummyEvent {
 	pub target: Entity,
@@ -85,7 +86,9 @@ fn dummy_event_producer(
 			"Producer is sending {:?} to {}!",
 			dummy_event, example_entities.dummy_event_sink
 		);
-		commands.trigger(dummy_event);
+		// TODO(bevy-0.17): commands.trigger(dummy_event);
+		let target = dummy_event.target;
+		commands.trigger_targets(dummy_event, target);
 
 		*count += 1;
 	}

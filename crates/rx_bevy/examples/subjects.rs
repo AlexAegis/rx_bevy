@@ -26,47 +26,47 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyW,
 					|res| res.interval_observable,
 					|res| res.subject_usize,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyE,
 					|res| res.interval_observable,
 					|res| res.replay_subject_usize,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyR,
 					|res| res.interval_observable,
 					|res| res.behavior_subject_usize,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyS,
 					|res| res.subject_usize,
 					|res| res.destination_entity_1,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyD,
 					|res| res.replay_subject_usize,
 					|res| res.destination_entity_1,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyF,
 					|res| res.behavior_subject_usize,
 					|res| res.destination_entity_1,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyX,
 					|res| res.subject_usize,
 					|res| res.destination_entity_2,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyC,
 					|res| res.replay_subject_usize,
 					|res| res.destination_entity_2,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyV,
 					|res| res.behavior_subject_usize,
 					|res| res.destination_entity_2,

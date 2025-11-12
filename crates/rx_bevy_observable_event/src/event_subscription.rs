@@ -1,4 +1,4 @@
-use bevy_ecs::{entity::Entity, event::Event, name::Name, observer::Observer};
+use bevy_ecs::{entity::Entity, event::Event, hierarchy::ChildOf, name::Name, observer::Observer};
 use disqualified::ShortName;
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
 use rx_core_traits::{
@@ -13,7 +13,7 @@ where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
 	Destination::In: Event + Clone,
 {
-	_observed_entity: Entity,
+	_observed_event_source_entity: Entity,
 	observer_satellite_entity: Entity,
 	destination: SharedSubscriber<Destination>,
 	closed_flag: SubscriptionClosedFlag,
@@ -25,7 +25,7 @@ where
 	Destination::In: Event + Clone,
 {
 	pub fn new(
-		observed_entity: Entity,
+		observed_event_source_entity: Entity,
 		destination: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
@@ -38,21 +38,18 @@ where
 			.deferred_world
 			.commands()
 			.spawn((
-				// ChildOf(subscription_entity), // TODO(bevy-0.17): Or mark as Internal to hide it
-				Name::new(format!(
-					"Event Observer {}",
-					ShortName::of::<Destination::In>()
-				)),
+				ChildOf(subscription_entity), // TODO(bevy-0.17): Or mark as Internal to hide it
+				Name::new(format!("Event Observer of {}", ShortName::of::<Self>())),
 				Observer::new(create_event_forwarder_observer_for_destination(
 					shared_destination_clone,
 					subscription_entity,
 				))
-				.with_entity(observed_entity),
+				.with_entity(observed_event_source_entity),
 			))
 			.id();
 
 		Self {
-			_observed_entity: observed_entity,
+			_observed_event_source_entity: observed_event_source_entity,
 			observer_satellite_entity,
 			destination: shared_destination,
 			closed_flag: false.into(),
@@ -89,7 +86,7 @@ where
 				.deferred_world
 				.commands()
 				.entity(self.observer_satellite_entity)
-				.despawn();
+				.try_despawn();
 		}
 	}
 }

@@ -78,7 +78,7 @@ fn setup(mut commands: Commands) {
 		.observe(next_number_observer)
 		.id();
 
-	let subscription = commands.subscribe::<_, Update>(
+	let subscription = commands.subscribe::<_, Update, Virtual>(
 		keyboard_observable_entity,
 		EntityDestination::<String, Never>::new(keyboard_event_observer),
 	);

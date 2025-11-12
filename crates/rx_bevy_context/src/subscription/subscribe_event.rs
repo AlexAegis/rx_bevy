@@ -6,6 +6,7 @@ use bevy_log::error;
 use bevy_mod_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
 use core::marker::PhantomData;
 use disqualified::ShortName;
+use rx_bevy_common::Clock;
 use rx_core_traits::{SignalBound, Subscriber, UpgradeableObserver};
 use std::any::TypeId;
 
@@ -51,13 +52,14 @@ where
 	Out: SignalBound,
 	OutError: SignalBound,
 {
-	pub fn new<Destination, S>(
+	pub fn new<Destination, S, C>(
 		observable_entity: Entity,
 		destination: Destination,
 		commands: &mut Commands,
 	) -> (Self, Entity)
 	where
 		S: ScheduleLabel,
+		C: Clock,
 		Destination: 'static
 			+ UpgradeableObserver<
 				In = Out,
@@ -69,7 +71,7 @@ where
 			.spawn((
 				ChildOf(observable_entity),
 				UnfinishedSubscription,
-				SubscriptionSchedule::<S>::default(),
+				SubscriptionSchedule::<S, C>::default(),
 			))
 			.id();
 

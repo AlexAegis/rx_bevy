@@ -58,7 +58,9 @@ where
 	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	#[cfg(feature = "debug")]
-	crate::register_observable_debug_systems::<O>(&mut deferred_world);
+	crate::register_observable_debug_systems::<O, bevy_app::Update, bevy_time::Virtual>(
+		&mut deferred_world,
+	);
 
 	let _subscribe_event_observer_id = deferred_world
 		.commands()
