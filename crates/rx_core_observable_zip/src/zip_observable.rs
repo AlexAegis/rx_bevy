@@ -3,7 +3,9 @@ use rx_core_emission_variants::{
 };
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscriber_rc::RcSubscriber;
-use rx_core_traits::{Observable, SubscriptionContext, SubscriptionData, UpgradeableObserver};
+use rx_core_traits::{
+	Observable, Subscriber, SubscriptionContext, SubscriptionData, UpgradeableObserver,
+};
 
 use crate::{ZipSubscriber, observable::ZipSubscriberOptions};
 
@@ -51,13 +53,17 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type Subscription = SubscriptionData<O1::Context>;
+	type Subscription<Destination>
+		= SubscriptionData<O1::Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>

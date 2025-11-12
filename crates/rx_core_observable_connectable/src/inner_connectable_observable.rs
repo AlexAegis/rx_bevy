@@ -1,6 +1,6 @@
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Observable, SubjectLike, SubscriptionContext, SubscriptionLike, Teardown,
+	Observable, SubjectLike, Subscriber, SubscriptionContext, SubscriptionLike, Teardown,
 	TeardownCollectionExtension, UpgradeableObserver, WithSubscriptionContext,
 };
 
@@ -15,9 +15,9 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
+		+ Clone
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: 'static,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
 	/// Upon connection, the connector subject will subscribe to this source
 	/// observable
@@ -27,7 +27,9 @@ where
 	/// source
 	connector: Option<Connector>,
 
-	connection: Option<ConnectionHandle<Source::Subscription>>,
+	connection: Option<
+		ConnectionHandle<Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>>,
+	>,
 
 	options: ConnectableOptions<ConnectorCreator, Connector>,
 }
@@ -38,8 +40,9 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
+		+ Clone
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
@@ -75,7 +78,10 @@ where
 		self.get_connector(context)
 	}
 
-	fn get_active_connection(&mut self) -> Option<ConnectionHandle<Source::Subscription>> {
+	fn get_active_connection(
+		&mut self,
+	) -> Option<ConnectionHandle<Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>>>
+	{
 		self.connection
 			.as_ref()
 			.filter(|connection| !connection.is_closed())
@@ -96,8 +102,9 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
+		+ Clone
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -120,16 +127,21 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
+		+ Clone
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
-	type Subscription = Connector::Subscription;
+	type Subscription<Destination>
+		= Connector::Subscription<Destination>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -148,13 +160,11 @@ where
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
 		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>
-		+ Send
-		+ Sync,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: 'static,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
-	type ConnectionSubscription = Source::Subscription;
+	type ConnectionSubscription =
+		Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>;
 
 	fn connect(
 		&mut self,

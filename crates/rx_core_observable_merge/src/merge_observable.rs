@@ -4,7 +4,7 @@ use rx_core_macro_observable_derive::RxObservable;
 use rx_core_operator_map_into::MapIntoSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, SignalBound, SubscriptionContext, SubscriptionData, UpgradeableObserver,
+	Observable, SignalBound, Subscriber, SubscriptionContext, SubscriptionData, UpgradeableObserver,
 };
 
 #[derive(RxObservable, Clone, Debug)]
@@ -15,10 +15,10 @@ pub struct MergeObservable<Out, OutError, O1, O2>
 where
 	Out: SignalBound,
 	OutError: SignalBound,
-	O1: Observable,
+	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -31,10 +31,10 @@ impl<Out, OutError, O1, O2> MergeObservable<Out, OutError, O1, O2>
 where
 	Out: SignalBound,
 	OutError: SignalBound,
-	O1: Observable,
+	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -51,22 +51,24 @@ impl<Out, OutError, O1, O2> Observable for MergeObservable<Out, OutError, O1, O2
 where
 	Out: SignalBound,
 	OutError: SignalBound,
-	O1: Observable,
+	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	<O1 as Observable>::Subscription: 'static,
-	O2: Observable<Context = O1::Context>,
+	O2: 'static + Observable<Context = O1::Context>,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
-	<O2 as Observable>::Subscription: 'static,
 {
-	type Subscription = SubscriptionData<O1::Context>;
+	type Subscription<Destination>
+		= SubscriptionData<O1::Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,

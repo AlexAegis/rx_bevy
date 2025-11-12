@@ -3,8 +3,8 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, event::Event};
 use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_traits::{
-	Never, Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext,
-	SubscriptionData, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Never, Observable, ObservableOutput, PrimaryCategoryObservable, Subscriber,
+	SubscriptionContext, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::EntityEventSubscription;
@@ -56,22 +56,23 @@ impl<E> Observable for EventObservable<E>
 where
 	E: Event + Clone,
 {
-	/// TODO: Maybe the destination generic should make a comeback
-	type Subscription = SubscriptionData<Self::Context>;
+	type Subscription<Destination>
+		= EntityEventSubscription<Destination>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
 			+ Send
 			+ Sync,
 	{
-		let subscription =
-			EntityEventSubscription::new(self.observed_entity, destination.upgrade(), context);
-		SubscriptionData::new_from_resource(subscription.into())
+		EntityEventSubscription::new(self.observed_entity, destination.upgrade(), context)
 	}
 }

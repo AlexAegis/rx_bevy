@@ -1,7 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Never, Observable, Observer, SubscriptionContext, UpgradeableObserver};
+use rx_core_traits::{
+	Never, Observable, Observer, Subscriber, SubscriptionContext, UpgradeableObserver,
+};
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
 
@@ -33,13 +35,17 @@ impl<Context> Observable for IntervalObservable<Context>
 where
 	Context: SubscriptionContext,
 {
-	type Subscription = IntervalSubscription<Context>;
+	type Subscription<Destination>
+		= IntervalSubscription<Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,

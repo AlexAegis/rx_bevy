@@ -3,8 +3,8 @@ use std::sync::{Arc, RwLock};
 use disqualified::ShortName;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Observable, SubjectLike, SubscriptionContext, SubscriptionLike, UpgradeableObserver,
-	WithSubscriptionContext,
+	Observable, SubjectLike, Subscriber, SubscriptionContext, SubscriptionLike,
+	UpgradeableObserver, WithSubscriptionContext,
 };
 
 use crate::{
@@ -21,9 +21,9 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
+		+ Clone
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: 'static,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
 	/// The only reason this field is behind an `Arc<RwLock>` is to be able to
 	/// pipe operators over a connectable observable.
@@ -38,8 +38,9 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
+		+ Clone
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
@@ -76,8 +77,9 @@ where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
+		+ Clone
 		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -91,21 +93,25 @@ impl<Source, ConnectorCreator, Connector> Observable
 where
 	Source: Observable,
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
+	Connector: 'static
+		+ Clone
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
-	type Subscription = Connector::Subscription;
+	type Subscription<Destination>
+		= Connector::Subscription<Destination>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let destination = observer.upgrade();
 		if let Ok(mut lock) = self.connector.write() {
@@ -123,13 +129,11 @@ where
 	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
 	Connector: 'static
 		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>
-		+ Send
-		+ Sync,
-	<Connector as Observable>::Subscription: SubscriptionLike<Context = Source::Context>,
-	Source::Subscription: 'static,
+		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
 {
-	type ConnectionSubscription = Source::Subscription;
+	type ConnectionSubscription =
+		Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>;
 
 	fn connect(
 		&mut self,

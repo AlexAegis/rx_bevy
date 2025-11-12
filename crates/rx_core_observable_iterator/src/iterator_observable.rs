@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
+	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -48,18 +48,20 @@ where
 	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Subscription = InertSubscription<Context>;
+	type Subscription<Destination>
+		= InertSubscription<Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let mut destination = observer.upgrade();
 		for item in self.iterator.clone().into_iter() {

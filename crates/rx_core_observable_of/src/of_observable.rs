@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, SubscriptionContext, UpgradeableObserver,
+	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
 };
 
 /// Emits a single value then immediately completes
@@ -38,13 +38,17 @@ where
 	Out: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type Subscription = InertSubscription<Context>;
+	type Subscription<Destination>
+		= InertSubscription<Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut Context::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>

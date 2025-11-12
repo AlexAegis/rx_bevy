@@ -3,8 +3,8 @@ use rx_core_emission_variants::{
 };
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, ObservableOutput, PrimaryCategoryObservable, SubscriptionContext, SubscriptionData,
-	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
+	Observable, ObservableOutput, PrimaryCategoryObservable, Subscriber, SubscriptionContext,
+	SubscriptionData, UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 };
 
 use crate::CombineLatestSubscriber;
@@ -73,18 +73,20 @@ where
 	O1::Out: Clone,
 	O2::Out: Clone,
 {
-	type Subscription = SubscriptionData<O1::Context>;
+	type Subscription<Destination>
+		= SubscriptionData<O1::Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let destination = observer.upgrade();
 		let rc_subscriber = RcSubscriber::new(

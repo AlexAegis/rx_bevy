@@ -1,6 +1,6 @@
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, SignalBound,
-	SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Tick, Tickable,
+	Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Tick, Tickable,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 	allocator::ErasedDestinationAllocator,
 };
@@ -72,13 +72,17 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type Subscription = MulticastSubscription<In, InError, Context>;
+	type Subscription<Destination>
+		= MulticastSubscription<In, InError, Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,

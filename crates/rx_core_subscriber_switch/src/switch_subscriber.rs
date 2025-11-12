@@ -25,7 +25,11 @@ where
 	Destination: TeardownCollectionExtension,
 {
 	pub(crate) destination: SharedSubscriber<ExternallyManagedSubscriber<Destination>>,
-	pub(crate) inner_subscription: Option<<InnerObservable as Observable>::Subscription>,
+	pub(crate) inner_subscription: Option<
+		<InnerObservable as Observable>::Subscription<
+			SharedSubscriber<ExternallyManagedSubscriber<Destination>>,
+		>,
+	>,
 	pub(crate) closed_flag: SubscriptionClosedFlag,
 }
 

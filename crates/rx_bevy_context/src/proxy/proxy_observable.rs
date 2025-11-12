@@ -5,7 +5,7 @@ use rx_core_macro_observable_derive::RxObservable;
 
 use crate::BevySubscriptionContextProvider;
 use rx_core_traits::{
-	Observable, SignalBound, SubscriptionContext, SubscriptionData, UpgradeableObserver,
+	Observable, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
 };
 
 use super::proxy_subscription::ProxySubscription;
@@ -43,25 +43,25 @@ where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
 {
-	/// TODO: Maybe the destination generic should make a comeback
-	type Subscription = SubscriptionData<Self::Context>;
+	type Subscription<Destination>
+		= ProxySubscription<Destination>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		let subscription = ProxySubscription::new(
+		ProxySubscription::new(
 			self.target_observable_entity,
 			destination.upgrade(),
 			context,
-		);
-		SubscriptionData::new_from_resource(subscription.into())
+		)
 	}
 }

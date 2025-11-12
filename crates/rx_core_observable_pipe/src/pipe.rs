@@ -1,6 +1,6 @@
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Observable, ObservableOutput, Operator, SubscriptionContext, UpgradeableObserver,
+	Observable, ObservableOutput, Operator, Subscriber, SubscriptionContext, UpgradeableObserver,
 	WithSubscriptionContext,
 };
 
@@ -42,7 +42,7 @@ where
 			+ Operator<
 				In = <Self as ObservableOutput>::Out,
 				InError = <Self as ObservableOutput>::OutError,
-				Context = <<Pipe<Source, Op> as Observable>::Subscription as WithSubscriptionContext>::Context,
+				Context = <Self as WithSubscriptionContext>::Context,
 			>,
 	{
 		Pipe::<Self, NextOp>::new(self, operator)
@@ -54,14 +54,20 @@ where
 	Source: 'static + Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
-	type Subscription = Source::Subscription;
+	type Subscription<Destination>
+		= Source::Subscription<
+		<Op as Operator>::Subscriber<<Destination as UpgradeableObserver>::Upgraded>,
+	>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	#[inline]
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>

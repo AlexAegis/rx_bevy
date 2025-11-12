@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, SubscriptionContext, SubscriptionLike,
+	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -58,13 +58,17 @@ where
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
-	type Subscription = MulticastSubscription<In, InError, Context>;
+	type Subscription<Destination>
+		= MulticastSubscription<In, InError, Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
 		context: &mut Context::Item<'_, '_>,
-	) -> Self::Subscription
+	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
