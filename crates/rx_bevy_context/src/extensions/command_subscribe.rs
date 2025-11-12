@@ -31,14 +31,6 @@ pub trait CommandSubscribeExtension {
 	where
 		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>;
 
-	fn subscribe_unscheduled<Destination>(
-		&mut self,
-		observable_entity: Entity,
-		destination: Destination,
-	) -> Entity
-	where
-		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>;
-
 	/// This is just a `try_despawn` alias.
 	fn unsubscribe(&mut self, subscription_entity: Entity);
 }
@@ -84,28 +76,6 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 				schedule_component_type_id,
 				self,
 			);
-
-		// TODO(bevy-0.17): self.trigger(subscribe_event);
-		let target = subscribe_event.observable_entity;
-		self.trigger_targets(subscribe_event, target);
-
-		subscription_entity
-	}
-
-	fn subscribe_unscheduled<Destination>(
-		&mut self,
-		observable_entity: Entity,
-		destination: Destination,
-	) -> Entity
-	where
-		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>,
-	{
-		let (subscribe_event, subscription_entity) = Subscribe::<
-			Destination::In,
-			Destination::InError,
-		>::new_unscheduled(
-			observable_entity, destination, self
-		);
 
 		// TODO(bevy-0.17): self.trigger(subscribe_event);
 		let target = subscribe_event.observable_entity;

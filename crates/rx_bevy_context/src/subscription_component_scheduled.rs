@@ -80,11 +80,11 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert(
 ) {
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
-	entity_commands.insert((
-		Name::new("ScheduledSubscriptionNotificationObserver"),
+
+	entity_commands.insert(
 		Observer::new(scheduled_subscription_notification_observer)
 			.with_entity(hook_context.entity),
-	));
+	);
 }
 
 pub(crate) fn scheduled_subscription_notification_observer(

@@ -101,35 +101,9 @@ where
 			>,
 	{
 		let subscription_entity = commands
-			.spawn_empty()
+			.spawn((ChildOf(observable_entity), UnfinishedSubscription))
 			.insert_component_by_type_id(schedule_component_type_id)
 			.id();
-
-		(
-			Self {
-				observable_entity,
-				consumable_destination: Some(Box::new(destination.upgrade())),
-				subscription_entity,
-				_phantom_data: PhantomData,
-			},
-			subscription_entity,
-		)
-	}
-
-	pub fn new_unscheduled<Destination>(
-		observable_entity: Entity,
-		destination: Destination,
-		commands: &mut Commands,
-	) -> (Self, Entity)
-	where
-		Destination: 'static
-			+ UpgradeableObserver<
-				In = Out,
-				InError = OutError,
-				Context = BevySubscriptionContextProvider,
-			>,
-	{
-		let subscription_entity = commands.spawn_empty().id();
 
 		(
 			Self {
