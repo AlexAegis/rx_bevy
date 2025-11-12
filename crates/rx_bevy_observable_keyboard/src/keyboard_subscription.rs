@@ -6,6 +6,8 @@ use rx_core_traits::{
 	Tick, Tickable,
 };
 
+use crate::{KeyboardObservableEmit, KeyboardObservableOptions};
+
 #[derive(RxSubscription)]
 #[rx_context(BevySubscriptionContextProvider)]
 pub struct KeyboardSubscription<Destination>
@@ -13,6 +15,7 @@ where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
 	destination: Destination,
+	options: KeyboardObservableOptions,
 	closed_flag: SubscriptionClosedFlag,
 }
 
@@ -20,9 +23,10 @@ impl<Destination> KeyboardSubscription<Destination>
 where
 	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
 {
-	pub fn new(destination: Destination) -> Self {
+	pub fn new(destination: Destination, options: KeyboardObservableOptions) -> Self {
 		Self {
 			destination,
+			options,
 			closed_flag: false.into(),
 		}
 	}
@@ -72,11 +76,22 @@ where
 	#[track_caller]
 	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
 		if !self.is_closed() {
-			let just_pressed_key_codes = {
+			let key_codes = {
 				let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
-				button_input.get_just_pressed().cloned().collect::<Vec<_>>()
+				match self.options.emit {
+					KeyboardObservableEmit::JustPressed => {
+						button_input.get_just_pressed().cloned().collect::<Vec<_>>()
+					}
+					KeyboardObservableEmit::JustReleased => button_input
+						.get_just_released()
+						.cloned()
+						.collect::<Vec<_>>(),
+					KeyboardObservableEmit::Pressed => {
+						button_input.get_pressed().cloned().collect::<Vec<_>>()
+					}
+				}
 			};
-			for key_code in just_pressed_key_codes {
+			for key_code in key_codes {
 				self.destination.next(key_code, context);
 			}
 		}

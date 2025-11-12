@@ -4,7 +4,7 @@ use rx_core_traits::{Observable, SignalBound};
 use crate::operator::MapIntoOperator;
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionInto: Observable + Sized {
+pub trait ObservableExtensionMapInto: Observable + Sized {
 	fn map_into<NextOut: SignalBound, NextOutError: SignalBound>(
 		self,
 	) -> Pipe<Self, MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError, Self::Context>>
@@ -16,4 +16,4 @@ pub trait ObservableExtensionInto: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionInto for T where T: Observable {}
+impl<T> ObservableExtensionMapInto for T where T: Observable {}

@@ -4205,6 +4205,7 @@ dependencies = [
  "rx_core_operator_composite",
  "rx_core_operator_enumerate",
  "rx_core_operator_error_boundary",
+ "rx_core_operator_fallback_when_silent",
  "rx_core_operator_filter",
  "rx_core_operator_filter_map",
  "rx_core_operator_finalize",
@@ -4478,6 +4479,8 @@ dependencies = [
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
@@ -4517,6 +4520,20 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "disqualified",
+ "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_fallback_when_silent"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",

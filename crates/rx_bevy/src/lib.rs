@@ -23,6 +23,11 @@ pub mod extension_composite {
 	pub use rx_core::extension_composite::*;
 }
 
+#[cfg(feature = "operator_fn")]
+pub mod operator_fn {
+	pub use rx_core::operator_fn::*;
+}
+
 pub mod operator {
 	pub use rx_core::operator::*;
 }
@@ -48,6 +53,12 @@ pub mod prelude {
 	pub use super::operator::*;
 	pub use super::subject::*;
 
-	pub use super::extension_composite::*;
+	#[cfg(feature = "pipe")]
 	pub use super::extension_pipe::*;
+
+	#[cfg(feature = "compose")]
+	pub use super::extension_composite::*;
+
+	#[cfg(feature = "operator_fn")]
+	pub use super::operator_fn::*;
 }

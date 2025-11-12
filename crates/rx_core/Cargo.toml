@@ -44,6 +44,7 @@ dev = [
     "rx_core_operator_adsr?/dev",
     "rx_core_operator_composite?/dev",
     "rx_core_operator_enumerate?/dev",
+    "rx_core_operator_fallback_when_silent?/dev",
     "rx_core_operator_filter?/dev",
     "rx_core_operator_filter_map?/dev",
     "rx_core_operator_finalize?/dev",
@@ -83,6 +84,7 @@ example = [
     "rx_core_operator_adsr?/example",
     "rx_core_operator_composite?/example",
     "rx_core_operator_enumerate?/example",
+    "rx_core_operator_fallback_when_silent?/example",
     "rx_core_operator_filter?/example",
     "rx_core_operator_filter_map?/example",
     "rx_core_operator_finalize?/example",
@@ -114,8 +116,10 @@ trace = [
 ]
 pipe = [
     "observable_pipe",
+    "rx_core_operator_adsr?/pipe",
     "rx_core_operator_composite?/pipe",
     "rx_core_operator_enumerate?/pipe",
+    "rx_core_operator_fallback_when_silent?/pipe",
     "rx_core_operator_filter?/pipe",
     "rx_core_operator_filter_map?/pipe",
     "rx_core_operator_finalize?/pipe",
@@ -132,7 +136,9 @@ pipe = [
 ]
 compose = [
     "operator_composite",
+    "rx_core_operator_adsr?/compose",
     "rx_core_operator_enumerate?/compose",
+    "rx_core_operator_fallback_when_silent?/compose",
     "rx_core_operator_filter?/compose",
     "rx_core_operator_filter_map?/compose",
     "rx_core_operator_finalize?/compose",
@@ -191,6 +197,7 @@ all_operators = [
     "operator_adsr",
     "operator_composite",
     "operator_enumerate",
+    "operator_fallback_when_silent",
     "operator_filter",
     "operator_filter_map",
     "operator_finalize",
@@ -209,6 +216,7 @@ all_operators = [
 operator_adsr = ["dep:rx_core_operator_adsr"]
 operator_composite = ["dep:rx_core_operator_composite"]
 operator_enumerate = ["dep:rx_core_operator_enumerate"]
+operator_fallback_when_silent = ["dep:rx_core_operator_fallback_when_silent"]
 operator_filter = ["dep:rx_core_operator_filter"]
 operator_filter_map = ["dep:rx_core_operator_filter_map"]
 operator_finalize = ["dep:rx_core_operator_finalize"]
@@ -225,8 +233,10 @@ operator_take = ["dep:rx_core_operator_take"]
 operator_tap_next = ["dep:rx_core_operator_tap_next"]
 # Operator Creation Functions
 operator_fn = [
+    "rx_core_operator_adsr?/operator_fn",
     "rx_core_operator_enumerate?/operator_fn",
     "rx_core_operator_error_boundary?/operator_fn",
+    "rx_core_operator_fallback_when_silent?/operator_fn",
     "rx_core_operator_filter?/operator_fn",
     "rx_core_operator_filter_map?/operator_fn",
     "rx_core_operator_finalize?/operator_fn",
@@ -276,6 +286,7 @@ rx_core_operator_adsr = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 rx_core_operator_enumerate = { workspace = true, optional = true }
 rx_core_operator_error_boundary = { workspace = true, optional = true }
+rx_core_operator_fallback_when_silent = { workspace = true, optional = true }
 rx_core_operator_filter = { workspace = true, optional = true }
 rx_core_operator_filter_map = { workspace = true, optional = true }
 rx_core_operator_finalize = { workspace = true, optional = true }

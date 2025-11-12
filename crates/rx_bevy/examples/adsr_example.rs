@@ -1,11 +1,12 @@
+use std::time::Duration;
+
 use bevy::{
-	input::{common_conditions::input_just_pressed, keyboard::KeyboardInput},
-	prelude::*,
+	input::common_conditions::input_just_pressed, platform::collections::HashMap, prelude::*,
 };
 use bevy_egui::EguiPlugin;
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use examples_common::send_message;
+use examples_common::{SubscriptionMapResource, send_message, toggle_subscription_system};
 use rx_bevy::prelude::*;
 use rx_bevy_context::RxSignal;
 
@@ -24,59 +25,15 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
-				unsubscribe.run_if(input_just_pressed(KeyCode::KeyQ)),
+				toggle_subscription_system::<ExampleEntities, AdsrSignal, Never>(
+					KeyCode::KeyK,
+					|res| res.adsr_observable,
+					|res| res.adsr_destination_cube,
+				),
+				(send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),),
 			),
 		)
 		.run()
-}
-
-fn next_bool_observer(next: Trigger<RxSignal<bool>>, name_query: Query<&Name>, time: Res<Time>) {
-	println!(
-		"bool value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
-		next.event(),
-		next.target(),
-		name_query.get(next.target()).unwrap(),
-		time.elapsed_secs()
-	);
-}
-
-fn next_keyboard_input_observer(
-	next: Trigger<RxSignal<KeyboardInput>>,
-	name_query: Query<&Name>,
-	time: Res<Time>,
-) {
-	println!(
-		"keyboard_input value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
-		next.event(),
-		next.target(),
-		name_query.get(next.target()).unwrap(),
-		time.elapsed_secs()
-	);
-}
-
-fn next_adsr_observer(
-	next: Trigger<RxSignal<AdsrSignal>>,
-	name_query: Query<&Name>,
-	time: Res<Time>,
-) {
-	println!(
-		"adsr value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
-		next.event(),
-		next.target(),
-		name_query.get(next.target()).unwrap(),
-		time.elapsed_secs()
-	);
-}
-
-fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
-	println!("Unsubscribe subscription!");
-	commands.unsubscribe(example_entities.subscription);
-}
-
-#[derive(Resource)]
-struct ExampleEntities {
-	subscription: Entity,
 }
 
 fn setup(
@@ -86,31 +43,48 @@ fn setup(
 ) {
 	commands.spawn((
 		Camera3d::default(),
-		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
+		Transform::from_xyz(20., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
 	));
 
-	let mut keyboard_observable_entity_commands = commands.spawn((
-		Name::new("KeyboardObservable"),
-		KeyboardObservable.into_component(),
-	));
+	let adsr_observable = commands
+		.spawn((
+			Name::new("KeyboardObservable"),
+			KeyboardObservable::new(KeyboardObservableOptions {
+				emit: KeyboardObservableEmit::Pressed,
+			})
+			.map(Into::<Option<KeyCode>>::into)
+			.fallback_when_silent(Default::default) // When nothing pressed, emit the default of the input type
+			.map(|key| matches!(key, Some(KeyCode::Space)))
+			.adsr(AdsrOperatorOptions {
+				always_emit_none: false,
+				reset_input_on_tick: false,
+				envelope: AdsrEnvelope {
+					attack_time: Duration::from_millis(250),
+					attack_easing: Some(EaseFunction::SineIn),
+					decay_time: Duration::from_millis(500),
+					decay_easing: Some(EaseFunction::CubicInOut),
+					sustain_volume: 0.9,
+					release_time: Duration::from_millis(1500),
+					release_easing: Some(EaseFunction::BounceOut),
+				},
+			})
+			.into_component(),
+		))
+		.id();
 
-	keyboard_observable_entity_commands.observe(next_keyboard_input_observer);
-	keyboard_observable_entity_commands.observe(next_bool_observer);
-	keyboard_observable_entity_commands.observe(next_adsr_observer);
-
-	let keyboard_observable_entity = keyboard_observable_entity_commands.id();
-
-	let target_subscription = commands
+	let adsr_destination_cube = commands
 		.spawn((
 			Name::new("target"),
 			Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
 			MeshMaterial3d(materials.add(StandardMaterial::from_color(Color::WHITE))),
 		))
 		.observe(handle_move_signal)
-		.subscribes_to_observable_entity::<AdsrSignal, (), Update>(keyboard_observable_entity);
+		.id();
 
 	commands.insert_resource(ExampleEntities {
-		subscription: target_subscription,
+		subscriptions: HashMap::new(),
+		adsr_observable,
+		adsr_destination_cube,
 	});
 }
 
@@ -121,6 +95,28 @@ fn handle_move_signal(
 	if let ObserverNotification::Next(adsr_signal) = next.signal()
 		&& let Ok(mut transform) = transform_query.get_mut(next.entity())
 	{
-		transform.translation += Vec3::X * 0.05 * adsr_signal.value;
+		transform.translation += Vec3::X * 0.09 * adsr_signal.value;
+	}
+}
+
+#[derive(Resource)]
+struct ExampleEntities {
+	subscriptions: HashMap<(Entity, Entity), Entity>,
+	adsr_observable: Entity,
+	adsr_destination_cube: Entity,
+}
+
+impl SubscriptionMapResource for ExampleEntities {
+	fn insert(
+		&mut self,
+		observable_destination_key: (Entity, Entity),
+		subscription_entity: Entity,
+	) {
+		self.subscriptions
+			.insert(observable_destination_key, subscription_entity);
+	}
+
+	fn remove(&mut self, observable_destination_key: (Entity, Entity)) -> Option<Entity> {
+		self.subscriptions.remove(&observable_destination_key)
 	}
 }

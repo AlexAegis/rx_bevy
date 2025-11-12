@@ -61,7 +61,7 @@ fn setup(mut commands: Commands) {
 	let keyboard_observable_entity = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable
+			KeyboardObservable::default()
 				.filter(|key_code| {
 					matches!(
 						key_code,

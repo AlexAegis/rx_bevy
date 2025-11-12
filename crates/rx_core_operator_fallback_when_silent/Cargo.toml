@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_operator_adsr"
-description = "adsr operator for rx_core"
+name = "rx_core_operator_fallback_when_silent"
+description = "fallback_when_silent operator for rx_core"
 version = "0.1.0"
 readme = "readme.md"
 publish = true
@@ -16,14 +16,20 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev", "debug"]
-dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
-debug = ["rx_core_traits/debug"]
+default = ["compose", "pipe"]
+dev = [
+    "rx_core/dev",
+    "rx_core_traits/dev",
+    "rx_core_operator_composite?/dev",
+    "rx_core_observable_pipe?/dev",
+    "rx_core_testing/dev",
+]
 example = [
-    "debug",
     "dev",
     "rx_core/example",
     "rx_core_traits/example",
+    "rx_core_operator_composite?/example",
+    "rx_core_observable_pipe?/example",
     "rx_core_testing/example",
 ]
 compose = ["dep:rx_core_operator_composite", "rx_core/compose"]
@@ -40,10 +46,7 @@ rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_observable_pipe = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
-bitflags = { workspace = true }
-smallvec = { workspace = true }
-bevy_math = { workspace = true, features = ["std", "curve"] }
-bevy_time = { workspace = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

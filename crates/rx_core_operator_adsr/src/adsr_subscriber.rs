@@ -85,6 +85,9 @@ where
 		let next =
 			self.state
 				.calculate_output(self.options.envelope, self.is_getting_activated, tick);
+		if self.options.reset_input_on_tick {
+			self.is_getting_activated = false;
+		}
 
 		if !matches!(next.adsr_envelope_phase, AdsrEnvelopePhase::None) {
 			self.destination.next(next, context);

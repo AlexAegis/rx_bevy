@@ -136,6 +136,8 @@ operator_skip = ["rx_core/operator_skip"]
 operator_switch_map = ["rx_core/operator_switch_map"]
 operator_take = ["rx_core/operator_take"]
 operator_tap = ["rx_core/operator_tap_next"]
+# Operator fn
+operator_fn = ["rx_core/operator_fn"]
 # Core Subjects
 all_core_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["rx_core/subject"]
