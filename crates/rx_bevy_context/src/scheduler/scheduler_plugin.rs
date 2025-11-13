@@ -19,8 +19,9 @@ use rx_bevy_common::Clock;
 use rx_core_traits::{SubscriptionNotification, Tick};
 
 use crate::{
-	BevySubscriptionContextParam, ScheduledSubscriptionComponent, SubscriptionNotificationEvent,
-	SubscriptionSchedule, UnfinishedSubscription,
+	BevySubscriptionContextParam, ScheduledSubscriptionComponent, SubscribeRetryPlugin,
+	SubscriptionNotificationEvent, SubscriptionSchedule, UnfinishedSubscription,
+	run_subscribes_to_retry,
 };
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
@@ -54,6 +55,10 @@ where
 	fn build(&self, app: &mut App) {
 		// Enables the creation of this component by its TypeId
 		app.register_erased_component::<SubscriptionSchedule<S, C>>();
+
+		if !app.is_plugin_added::<SubscribeRetryPlugin>() {
+			app.add_plugins(SubscribeRetryPlugin);
+		}
 
 		app.add_systems(
 			self.schedule.clone(),
@@ -98,6 +103,9 @@ fn clean_unfinished_subscriptions<S, C>(
 }
 
 fn unsubscribe_all_subscriptions(world: &mut World) {
+	// These could contain stuff that'd panic on drop, better let them execute!
+	run_subscribes_to_retry(world);
+
 	let mut subscription_query =
 		world.query_filtered::<(Entity, &mut ScheduledSubscriptionComponent), ()>(); // TODO(bevy-0.17): Allow<Internal>
 	let mut subscriptions = subscription_query
@@ -112,7 +120,7 @@ fn unsubscribe_all_subscriptions(world: &mut World) {
 		let context_param: BevySubscriptionContextParam = deferred_world.reborrow().into();
 		// The entity doesn't really matter during an unsubscription, and it's only there anyway to
 		// organize new spawned internal subscriptions
-		let mut context = context_param.into_context(Entity::PLACEHOLDER);
+		let mut context = context_param.into_context(None);
 
 		for (_, subscription) in subscriptions.iter_mut() {
 			subscription.unsubscribe(&mut context);

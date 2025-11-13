@@ -33,24 +33,23 @@ where
 
 		let mut shared_destination = SharedSubscriber::new(destination, context);
 		let shared_destination_clone = shared_destination.clone_with_context(context);
-
-		let observer_satellite_entity = context
-			.deferred_world
-			.commands()
-			.spawn((
-				ChildOf(subscription_entity), // TODO(bevy-0.17): Or mark as Internal to hide it
-				Name::new(format!("Event Observer of {}", ShortName::of::<Self>())),
-				Observer::new(create_event_forwarder_observer_for_destination(
-					shared_destination_clone,
-					subscription_entity,
-				))
-				.with_entity(observed_event_source_entity),
+		let mut commands = context.deferred_world.commands();
+		let mut observer_satellite_entity = commands.spawn((
+			Name::new(format!("Event Observer of {}", ShortName::of::<Self>())),
+			Observer::new(create_event_forwarder_observer_for_destination(
+				shared_destination_clone,
+				subscription_entity,
 			))
-			.id();
+			.with_entity(observed_event_source_entity),
+		));
+
+		if let Some(subscription_entity) = subscription_entity {
+			observer_satellite_entity.insert(ChildOf(subscription_entity));
+		}
 
 		Self {
 			_observed_event_source_entity: observed_event_source_entity,
-			observer_satellite_entity,
+			observer_satellite_entity: observer_satellite_entity.id(),
 			destination: shared_destination,
 			closed_flag: false.into(),
 		}

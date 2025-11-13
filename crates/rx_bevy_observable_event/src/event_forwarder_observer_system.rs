@@ -7,7 +7,7 @@ use rx_bevy_context::{BevySubscriptionContextParam, BevySubscriptionContextProvi
 /// events into it.
 pub fn create_event_forwarder_observer_for_destination<Destination>(
 	mut destination: Destination,
-	contextual_subscription_entity: Entity,
+	contextual_subscription_entity: Option<Entity>,
 ) -> impl FnMut(Trigger<Destination::In>, BevySubscriptionContextParam<'_, '_>)
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,

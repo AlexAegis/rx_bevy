@@ -92,7 +92,7 @@ pub(crate) fn scheduled_subscription_notification_observer(
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError> {
 	let subscription_entity = subscription_notification.entity();
-	let mut context = context_param.into_context(subscription_entity);
+	let mut context = context_param.into_context(Some(subscription_entity));
 
 	if !context
 		.deferred_world
@@ -139,7 +139,7 @@ fn scheduled_subscription_unsubscribe_on_remove(
 	hook_context: HookContext,
 ) {
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(hook_context.entity);
+	let mut context = context_param.into_context(Some(hook_context.entity));
 
 	let mut stolen_subscription = context
 		.steal_scheduled_subscription(hook_context.entity)

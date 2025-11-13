@@ -38,7 +38,7 @@ fn unscheduled_subscription_unsubscribe_on_remove<Subscription>(
 		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(hook_context.entity);
+	let mut context = context_param.into_context(Some(hook_context.entity));
 
 	let mut stolen_subscription = context
 		.steal_unscheduled_subscription::<Subscription>(hook_context.entity)
@@ -101,7 +101,7 @@ where
 		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
 {
 	let subscription_entity = subscription_notification.entity();
-	let mut context = context_param.into_context(subscription_entity);
+	let mut context = context_param.into_context(Some(subscription_entity));
 
 	let mut stolen_subscription =
 		context.steal_unscheduled_subscription::<Subscription>(subscription_entity)?;

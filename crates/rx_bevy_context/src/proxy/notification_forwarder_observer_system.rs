@@ -7,7 +7,7 @@ use crate::{BevySubscriptionContextParam, BevySubscriptionContextProvider, RxSig
 /// notifications into it.
 pub fn create_notification_forwarder_observer_for_destination<Destination>(
 	mut destination: Destination,
-	contextual_subscription_entity: Entity,
+	contextual_subscription_entity: Option<Entity>,
 ) -> impl FnMut(
 	Trigger<RxSignal<Destination::In, Destination::InError>>,
 	BevySubscriptionContextParam<'_, '_>,

@@ -107,7 +107,7 @@ where
 	Destination::InError: Clone,
 {
 	let subscriber_entity = subscriber_notification.entity();
-	let mut context = context_param.into_context(subscriber_entity);
+	let mut context = context_param.into_context(Some(subscriber_entity));
 
 	let mut stolen_destination =
 		context.steal_subscriber_destination::<Destination>(subscriber_entity)?;
@@ -150,7 +150,7 @@ where
 	Destination::InError: Clone,
 {
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(hook_context.entity);
+	let mut context = context_param.into_context(Some(hook_context.entity));
 	// TODO: flip these api's from context to the component
 	let mut stolen_destination = context
 		.steal_subscriber_destination::<Destination>(hook_context.entity)

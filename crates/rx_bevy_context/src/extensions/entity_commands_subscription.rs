@@ -1,0 +1,89 @@
+use bevy_ecs::entity::Entity;
+use bevy_log::warn;
+use disqualified::ShortName;
+use rx_core_macro_subscription_derive::RxSubscription;
+use rx_core_traits::{
+	SubscriptionClosedFlag, SubscriptionLike, SubscriptionNotification, TeardownCollection,
+	Tickable,
+};
+
+use crate::BevySubscriptionContextProvider;
+
+#[derive(RxSubscription)]
+#[rx_context(BevySubscriptionContextProvider)]
+pub struct EntityCommandsSubscription {
+	closed_flag: SubscriptionClosedFlag,
+	subscription_entity: Entity,
+}
+
+impl EntityCommandsSubscription {
+	pub fn new(subscription_entity: Entity) -> Self {
+		Self {
+			closed_flag: false.into(),
+			subscription_entity,
+		}
+	}
+
+	pub fn into_entity(mut self) -> Entity {
+		self.closed_flag.close();
+		self.subscription_entity
+	}
+}
+
+impl Tickable for EntityCommandsSubscription {
+	fn tick(
+		&mut self,
+		_tick: rx_core_traits::Tick,
+		_context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+	) {
+		warn!(
+			"Do not tick an {}, the scheduler already handles it!",
+			ShortName::of::<Self>()
+		);
+	}
+}
+
+impl SubscriptionLike for EntityCommandsSubscription {
+	#[inline]
+	fn is_closed(&self) -> bool {
+		*self.closed_flag
+	}
+
+	fn unsubscribe(
+		&mut self,
+		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+	) {
+		if !self.is_closed() {
+			self.closed_flag.close();
+			context
+				.deferred_world
+				.commands()
+				.entity(self.subscription_entity)
+				.despawn();
+		}
+	}
+}
+
+impl TeardownCollection for EntityCommandsSubscription {
+	fn add_teardown(
+		&mut self,
+		teardown: rx_core_traits::Teardown<Self::Context>,
+		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+	) {
+		if !self.is_closed() {
+			context.send_subscription_notification(
+				self.subscription_entity,
+				SubscriptionNotification::Add(Some(teardown)),
+			);
+		} else {
+			teardown.execute(context);
+		}
+	}
+}
+
+impl Drop for EntityCommandsSubscription {
+	fn drop(&mut self) {
+		// Doesn't actually own any resources, the flag is safe to close.
+		self.closed_flag.close();
+	}
+}

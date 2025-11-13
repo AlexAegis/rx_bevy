@@ -1,10 +1,18 @@
+use std::any::TypeId;
+
+use bevy_app::Update;
 use bevy_ecs::entity::Entity;
+use bevy_log::warn;
+use bevy_time::Virtual;
 use rx_core_traits::{
 	SharedSubscriber, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
 	TeardownCollection, Tick, Tickable, UpgradeableObserver, WithSubscriptionContext,
 };
 
-use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, CommandSubscribeExtension};
+use crate::{
+	BevySubscriptionContext, BevySubscriptionContextProvider, CommandSubscribeExtension,
+	SubscriptionSchedule,
+};
 
 pub struct ProxySubscription<Destination>
 where
@@ -27,8 +35,24 @@ where
 		destination: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
-		let subscription_entity_schedule_type_id =
-			context.get_subscription_contexts_erased_schedule();
+		let subscription_entity_schedule_type_id = context
+			.get_subscriptions_erased_schedule()
+			.unwrap_or_else(|e| {
+				let update_virtual_type_id = TypeId::of::<SubscriptionSchedule<Update, Virtual>>();
+				let constructor_registry = context
+					.deferred_world
+					.get_resource::<bevy_mod_erased_component_registry::ErasedComponentRegistry>()
+					.expect("ErasedComponentRegistry should exist!");
+				if constructor_registry
+					.get_constructor(update_virtual_type_id)
+					.is_some()
+				{
+					warn!("{e:?}... Falling back to Update, Virtual!");
+					update_virtual_type_id
+				} else {
+					panic!("{e:?}");
+				}
+			});
 
 		let mut shared_destination = SharedSubscriber::new(destination, context);
 

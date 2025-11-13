@@ -28,17 +28,17 @@ impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator
 		let contextual_subscription_entity = context.get_subscription_entity();
 		let unscheduled_subscription_entity = context.deferred_world.commands().spawn_empty().id();
 
-		context
-			.deferred_world
-			.commands()
-			.entity(unscheduled_subscription_entity)
-			.insert((
-				ChildOf(contextual_subscription_entity),
-				UnscheduledSubscriptionComponent::new(
-					subscription,
-					unscheduled_subscription_entity,
-				),
-			));
+		let mut commmands = context.deferred_world.commands();
+		let mut entity_commands = commmands.entity(unscheduled_subscription_entity);
+
+		entity_commands.insert(UnscheduledSubscriptionComponent::new(
+			subscription,
+			unscheduled_subscription_entity,
+		));
+
+		if let Some(subscription_entity) = contextual_subscription_entity {
+			entity_commands.insert(ChildOf(subscription_entity));
+		}
 
 		UnscheduledEntitySubscriptionHandle::new(unscheduled_subscription_entity)
 	}

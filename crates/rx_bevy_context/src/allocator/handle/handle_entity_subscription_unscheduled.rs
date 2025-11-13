@@ -65,7 +65,7 @@ pub(crate) fn erased_subscription_unsubscribe_on_remove<C>(
 	C: Component<Mutability = Mutable> + ErasedEntitySubscriptionHandle,
 {
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(hook_context.entity);
+	let mut context = context_param.into_context(Some(hook_context.entity));
 
 	let target_subscription_entity = context
 		.deferred_world

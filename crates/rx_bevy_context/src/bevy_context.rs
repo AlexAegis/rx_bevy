@@ -74,7 +74,10 @@ impl<'w, 's> BevySubscriptionContextParam<'w, 's> {
 		}
 	}
 
-	pub fn into_context(self, subscription_entity: Entity) -> BevySubscriptionContext<'w, 's> {
+	pub fn into_context(
+		self,
+		subscription_entity: Option<Entity>,
+	) -> BevySubscriptionContext<'w, 's> {
 		BevySubscriptionContext {
 			deferred_world: self.deferred_world,
 			subscription_entity,
@@ -94,8 +97,18 @@ impl<'w, 's> From<DeferredWorld<'w>> for BevySubscriptionContextParam<'w, 's> {
 
 pub struct BevySubscriptionContext<'w, 's> {
 	pub deferred_world: DeferredWorld<'w>,
-	subscription_entity: Entity,
+	subscription_entity: Option<Entity>,
 	_phantom_data: PhantomData<&'s ()>,
+}
+
+#[derive(Error, Debug)]
+pub enum ContextGetSubscriptionsErasedScheduleError {
+	#[error(
+		"Attempted to create a ProxySubscription with an incomplete Context! It does not contain a parent subscription entity!"
+	)]
+	ContextDoesNotHaveASubscritpionEntity,
+	#[error("Subscription Entity {0} should have an ErasedSubscriptionSchedule!")]
+	SubscriptionEntityDoesNotHaveAnErasedSubscriptionSchedule(Entity),
 }
 
 impl<'w, 's> BevySubscriptionContext<'w, 's> {
@@ -108,22 +121,22 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	}
 
 	#[inline]
-	pub fn get_subscription_entity(&self) -> Entity {
+	pub fn get_subscription_entity(&self) -> Option<Entity> {
 		self.subscription_entity
 	}
 
-	pub fn get_subscription_contexts_erased_schedule(&mut self) -> TypeId {
+	pub fn get_subscriptions_erased_schedule(
+		&mut self,
+	) -> Result<TypeId, ContextGetSubscriptionsErasedScheduleError> {
+		let subscription_entity = self.get_subscription_entity().ok_or(
+			ContextGetSubscriptionsErasedScheduleError::ContextDoesNotHaveASubscritpionEntity,
+		)?;
 		let erased_subscription_schedule = self
 			.deferred_world
-			.entity(self.get_subscription_entity())
+			.entity(subscription_entity)
 			.get::<ErasedSubscriptionSchedule>()
-			.unwrap_or_else(|| {
-				panic!(
-					"Subscription Entity {} should have an ErasedSubscriptionSchedule!",
-					self.get_subscription_entity()
-				)
-			});
-		erased_subscription_schedule.get_subscription_schedule_component_type_id()
+			.ok_or(ContextGetSubscriptionsErasedScheduleError::SubscriptionEntityDoesNotHaveAnErasedSubscriptionSchedule(subscription_entity))?;
+		Ok(erased_subscription_schedule.get_subscription_schedule_component_type_id())
 	}
 
 	pub fn get_expected_component<C>(&mut self, destination_entity: Entity) -> &C

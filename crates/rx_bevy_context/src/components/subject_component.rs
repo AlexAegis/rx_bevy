@@ -18,8 +18,8 @@ use stealcell::{StealCell, Stolen};
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ObservableSubscriptions, RxSignal, ScheduledSubscriptionComponent, Subscribe, SubscribeError,
-	SubscribeObserverOf, SubscribeObserverRef, SubscriptionOf, UnfinishedSubscription,
-	default_on_subscribe_error_handler,
+	SubscribeObserverOf, SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf,
+	UnfinishedSubscription, default_on_subscribe_error_handler,
 };
 
 // TODO: Check if Observable etc can be implemented on this, or delete it and the observer impl because it's not actually used
@@ -109,6 +109,7 @@ where
 			// TODO(bevy-0.17): This is actually not needed, it's only here to not let these observes occupy the top level in the worldentityinspector. reconsider to only use either this or the other relationship if it's still producing warnings on despawn in 0.17
 			ChildOf(hook_context.entity),
 			SubscribeObserverOf::<Subject>::new(hook_context.entity),
+			SubscribeObserverTypeMarker::<Subject::Out, Subject::OutError>::default(),
 			Name::new(format!("Subscribe Observer {}", ShortName::of::<Subject>())),
 			Observer::new(subscribe_event_observer::<Subject>)
 				.with_entity(hook_context.entity)
@@ -135,7 +136,7 @@ fn subject_notification_observer<'w, 's, Subject>(
 	Subject::InError: Clone,
 {
 	let subject_entity = on_notification.entity();
-	let mut context = context_param.into_context(subject_entity);
+	let mut context = context_param.into_context(Some(subject_entity));
 	let notification: ObserverNotification<Subject::In, Subject::InError> =
 		on_notification.event().clone().into();
 
@@ -171,7 +172,7 @@ where
 		.into());
 	};
 
-	let mut context = context_param.into_context(event.subscription_entity);
+	let mut context = context_param.into_context(Some(event.subscription_entity));
 
 	let subscription = {
 		let mut stolen_subject = context.steal_subject::<Subject>(event.observable_entity)?;
@@ -219,7 +220,7 @@ where
 		.remove::<SubscribeObserverRef<Subject>>();
 
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(hook_context.entity);
+	let mut context = context_param.into_context(Some(hook_context.entity));
 
 	let mut stolen_subject = context
 		.steal_subject::<Subject>(hook_context.entity)

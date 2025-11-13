@@ -17,7 +17,7 @@ use thiserror::Error;
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
 	ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
-	SubscribeObserverRef, SubscriptionOf, UnfinishedSubscription,
+	SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf, UnfinishedSubscription,
 };
 
 /// TODO: Check if you can impl Observable on this
@@ -68,7 +68,13 @@ where
 			// TODO(bevy-0.17): This is actually not needed, it's only here to not let these observes occupy the top level in the worldentityinspector. reconsider to only use either this or the other relationship if it's still producing warnings on despawn in 0.17
 			ChildOf(hook_context.entity),
 			SubscribeObserverOf::<O>::new(hook_context.entity),
-			Name::new(format!("Subscribe Observer {}", ShortName::of::<O>())),
+			SubscribeObserverTypeMarker::<O::Out, O::OutError>::default(),
+			Name::new(format!(
+				"Subscribe Observer <Out = {}, OutError = {}> ({})",
+				ShortName::of::<O::Out>(),
+				ShortName::of::<O::OutError>(),
+				ShortName::of::<O>()
+			)),
 			Observer::new(subscribe_event_observer::<O>)
 				.with_entity(hook_context.entity)
 				.with_error_handler(default_on_subscribe_error_handler),
@@ -93,7 +99,7 @@ where
 		.into());
 	};
 
-	let mut context = context_param.into_context(event.subscription_entity);
+	let mut context = context_param.into_context(Some(event.subscription_entity));
 
 	let subscription = {
 		let mut stolen_observable = context.steal_observable::<O>(event.observable_entity)?;

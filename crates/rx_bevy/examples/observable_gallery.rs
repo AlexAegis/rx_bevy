@@ -63,10 +63,15 @@ fn main() -> AppExit {
 					|res| res.interval_observable,
 					|res| res.destination_entity,
 				),
+				despawn_instant_subscription.run_if(input_just_pressed(KeyCode::KeyQ)),
 				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 			),
 		)
 		.run()
+}
+
+fn despawn_instant_subscription(mut commands: Commands, r: Res<ExampleEntities>) {
+	commands.entity(r.instant_subscription_entity).despawn();
 }
 
 #[derive(Resource, Reflect)]
@@ -78,6 +83,7 @@ struct ExampleEntities {
 	keyboard_switch_map_to_interval_observable: Entity,
 	interval_observable: Entity,
 	proxy_interval_observable: Entity,
+	instant_subscription_entity: Entity,
 }
 
 impl SubscriptionMapResource for ExampleEntities {
@@ -95,7 +101,7 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -104,7 +110,7 @@ fn setup(mut commands: Commands) {
 	let destination_entity = commands
 		.spawn(Name::new("Destination"))
 		.observe(print_notification_observer::<String, Never>)
-		.observe(print_notification_observer::<i32, Never>)
+		.observe(print_notification_observer::<(usize, usize), Never>)
 		.observe(print_notification_observer::<usize, Never>)
 		.observe(print_notification_observer::<KeyCode, Never>)
 		.id();
@@ -112,10 +118,35 @@ fn setup(mut commands: Commands) {
 	let destination_entity_2 = commands
 		.spawn(Name::new("Destination 2"))
 		.observe(print_notification_observer::<String, Never>)
-		.observe(print_notification_observer::<i32, Never>)
+		.observe(print_notification_observer::<(usize, usize), Never>)
 		.observe(print_notification_observer::<usize, Never>)
 		.observe(print_notification_observer::<KeyCode, Never>)
 		.id();
+
+	let instant_subscription_entity = {
+		let mut interval_entity = commands.spawn((
+			Name::new("IntervalObservable"),
+			IntervalObservable::new(IntervalObservableOptions {
+				duration: Duration::from_millis(200),
+				start_on_subscribe: true,
+				max_emissions_per_tick: 2,
+			})
+			.into_component(),
+		));
+
+		let interval_entity_as_observable =
+			interval_entity.as_observable::<usize, Never, Update, Virtual>();
+
+		let mut context = context_param.into_context(None);
+
+		let subscription = interval_entity_as_observable
+			.enumerate()
+			.finalize(|_| println!("Finalize from the instant subscription!"))
+			.take(10)
+			.subscribe(EntityDestination::new(destination_entity_2), &mut context);
+
+		subscription.into_entity()
+	};
 
 	let keyboard_observable = commands
 		.spawn((
@@ -184,5 +215,6 @@ fn setup(mut commands: Commands) {
 		interval_observable,
 		proxy_interval_observable,
 		keyboard_switch_map_to_interval_observable,
+		instant_subscription_entity,
 	});
 }
