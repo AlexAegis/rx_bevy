@@ -163,3 +163,4 @@ rx_bevy_context = { path = "crates/rx_bevy_context" }
 # Bevy Observables
 rx_bevy_observable_keyboard = { path = "crates/rx_bevy_observable_keyboard" }
 rx_bevy_observable_event = { path = "crates/rx_bevy_observable_event" }
+rx_bevy_observable_proxy = { path = "crates/rx_bevy_observable_proxy" }

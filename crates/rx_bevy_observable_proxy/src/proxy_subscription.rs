@@ -9,7 +9,7 @@ use rx_core_traits::{
 	TeardownCollection, Tick, Tickable, UpgradeableObserver, WithSubscriptionContext,
 };
 
-use crate::{
+use rx_bevy_context::{
 	BevySubscriptionContext, BevySubscriptionContextProvider, CommandSubscribeExtension,
 	SubscriptionSchedule,
 };

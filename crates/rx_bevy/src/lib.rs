@@ -3,14 +3,14 @@ pub use rx_core_traits::*;
 pub mod observable {
 	pub use rx_core::observable::*;
 
-	/// "Built-in" Observables.
-	pub use rx_bevy_context::observable::*;
-
 	#[cfg(feature = "observable_keyboard")]
 	pub use rx_bevy_observable_keyboard::observable::*;
 
 	#[cfg(feature = "observable_event")]
 	pub use rx_bevy_observable_event::observable::*;
+
+	#[cfg(feature = "observable_proxy")]
+	pub use rx_bevy_observable_proxy::observable::*;
 }
 
 #[cfg(feature = "pipe")]

@@ -1,0 +1,72 @@
+[package]
+name = "rx_bevy_observable_proxy"
+description = "rx_bevy proxy observable, relays events from another observable"
+version = "0.1.0"
+readme = "readme.md"
+publish = true
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["dev", "reflect", "debug"]
+dev = [
+    "bevy/dynamic_linking",
+    "examples_common/dev",
+    "rx_bevy/dev",
+    "rx_core_traits/dev",
+    "rx_core_testing/dev",
+]
+debug = ["bevy/track_location", "rx_core_traits/debug"]
+example = [
+    "bevy/bevy_asset",
+    "bevy/bevy_core_pipeline",
+    "bevy/bevy_gltf",
+    "bevy/bevy_pbr",
+    "bevy/bevy_picking",
+    "bevy/bevy_render",
+    "bevy/bevy_scene",
+    "bevy/bevy_winit",
+    "bevy/tonemapping_luts",
+    "bevy/x11",
+    "debug",
+    "dev",
+    "reflect",
+    "rx_bevy/example",
+    "rx_core_traits/example",
+    "rx_core_testing/example",
+]
+reflect = ["dep:bevy_reflect", "rx_bevy/reflect"]
+
+[dependencies]
+rx_core_traits = { workspace = true }
+rx_core_macro_observable_derive = { workspace = true }
+rx_core_macro_subscription_derive = { workspace = true }
+rx_bevy_context = { workspace = true }
+bevy_mod_erased_component_registry = { workspace = true }
+bevy_app = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_input = { workspace = true }
+bevy_log = { workspace = true }
+bevy_time = { workspace = true }
+bevy_reflect = { workspace = true, optional = true }
+
+[dev-dependencies]
+bevy = { workspace = true }
+rx_bevy = { workspace = true }
+rx_core_testing = { workspace = true }
+examples_common = { workspace = true }
+bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
+bevy_egui = { workspace = true }
+
+[[example]]
+name = "proxy_observable_example"
+path = "examples/proxy_observable_example.rs"
+required-features = ["example"]
