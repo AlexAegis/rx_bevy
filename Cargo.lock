@@ -4101,6 +4101,7 @@ dependencies = [
  "rx_bevy_context",
  "rx_bevy_observable_event",
  "rx_bevy_observable_keyboard",
+ "rx_bevy_observable_message",
  "rx_bevy_observable_proxy",
  "rx_core",
  "rx_core_testing",
@@ -4162,6 +4163,8 @@ dependencies = [
  "examples_common",
  "rx_bevy",
  "rx_bevy_context",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4177,6 +4180,28 @@ dependencies = [
  "bevy_egui",
  "bevy_input",
  "bevy_reflect",
+ "examples_common",
+ "rx_bevy",
+ "rx_bevy_context",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_subscription_derive",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_bevy_observable_message"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_input",
+ "bevy_reflect",
+ "derive-where",
+ "disqualified",
  "examples_common",
  "rx_bevy",
  "rx_bevy_context",

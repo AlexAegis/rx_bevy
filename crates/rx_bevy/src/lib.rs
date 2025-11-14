@@ -3,19 +3,19 @@ pub use rx_core_traits::*;
 pub mod observable {
 	pub use rx_core::observable::*;
 
-	#[cfg(feature = "observable_keyboard")]
-	pub use rx_bevy_observable_keyboard::observable::*;
-
 	#[cfg(feature = "observable_event")]
 	pub use rx_bevy_observable_event::observable::*;
-
+	#[cfg(feature = "observable_keyboard")]
+	pub use rx_bevy_observable_keyboard::observable::*;
+	#[cfg(feature = "observable_message")]
+	pub use rx_bevy_observable_message::observable::*;
 	#[cfg(feature = "observable_proxy")]
 	pub use rx_bevy_observable_proxy::observable::*;
 }
 
-#[cfg(feature = "pipe")]
-pub mod extension_pipe {
-	pub use rx_core::extension_pipe::*;
+#[cfg(feature = "observable_fn")]
+pub mod observable_fn {
+	pub use rx_core::observable_fn::*;
 }
 
 #[cfg(feature = "compose")]
@@ -23,13 +23,18 @@ pub mod extension_composite {
 	pub use rx_core::extension_composite::*;
 }
 
-#[cfg(feature = "operator_fn")]
-pub mod operator_fn {
-	pub use rx_core::operator_fn::*;
+#[cfg(feature = "pipe")]
+pub mod extension_pipe {
+	pub use rx_core::extension_pipe::*;
 }
 
 pub mod operator {
 	pub use rx_core::operator::*;
+}
+
+#[cfg(feature = "operator_fn")]
+pub mod operator_fn {
+	pub use rx_core::operator_fn::*;
 }
 
 pub mod observer {

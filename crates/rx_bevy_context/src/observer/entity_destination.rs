@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, ObserverNotification, SignalBound, UpgradeableObserver};
+use rx_core_traits::{Never, Observer, ObserverNotification, SignalBound, UpgradeableObserver};
 
 use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, DetachedEntitySubscriber};
 
@@ -22,7 +22,7 @@ use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, DetachedEn
 #[rx_in_error(InError)]
 #[rx_context(BevySubscriptionContextProvider)]
 #[rx_does_not_upgrade_to_detached]
-pub struct EntityDestination<In, InError>
+pub struct EntityDestination<In, InError = Never>
 where
 	In: SignalBound,
 	InError: SignalBound,

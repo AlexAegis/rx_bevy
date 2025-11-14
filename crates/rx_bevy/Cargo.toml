@@ -54,10 +54,12 @@ all_observables = [
     "all_core_observables",
     "observable_event",
     "observable_keyboard",
+    "observable_message",
     "observable_proxy",
 ]
 observable_event = ["dep:rx_bevy_observable_event"]
 observable_keyboard = ["dep:rx_bevy_observable_keyboard"]
+observable_message = ["dep:rx_bevy_observable_message"]
 observable_proxy = ["dep:rx_bevy_observable_proxy"]
 # Bevy Observers
 all_observers = ["all_core_observers"]
@@ -155,8 +157,9 @@ rx_core = { workspace = true }
 rx_core_traits = { workspace = true }
 rx_bevy_context = { workspace = true }
 # Observables
-rx_bevy_observable_keyboard = { workspace = true, optional = true }
 rx_bevy_observable_event = { workspace = true, optional = true }
+rx_bevy_observable_keyboard = { workspace = true, optional = true }
+rx_bevy_observable_message = { workspace = true, optional = true }
 rx_bevy_observable_proxy = { workspace = true, optional = true }
 
 [dev-dependencies]

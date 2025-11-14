@@ -1,43 +1,31 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{entity::Entity, event::Event};
+use bevy_ecs::event::Event;
+use derive_where::derive_where;
 use rx_bevy_context::BevySubscriptionContextProvider;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Never, Observable, Subscriber, SubscriptionContext, UpgradeableObserver};
 
-use crate::EntityEventSubscription;
+use crate::MessageSubscription;
 
-/// A simplistic observable to demonstrate accessing world state from within a subscription
+#[derive_where(Default)]
 #[derive(RxObservable)]
-#[rx_out(E)]
+#[rx_out(M)]
 #[rx_out_error(Never)]
 #[rx_context(BevySubscriptionContextProvider)]
-pub struct EventObservable<E>
+pub struct MessageObservable<M>
 where
-	E: Event + Clone,
+	M: Event + Clone, // TODO(bevy-0.17): use the message trait
 {
-	observed_entity: Entity,
-	_phantom_data: PhantomData<E>,
+	_phantom_data: PhantomData<M>,
 }
 
-impl<E> EventObservable<E>
+impl<M> Observable for MessageObservable<M>
 where
-	E: Event + Clone,
-{
-	pub fn new(observed_entity: Entity) -> Self {
-		Self {
-			observed_entity,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<E> Observable for EventObservable<E>
-where
-	E: Event + Clone,
+	M: Event + Clone,
 {
 	type Subscription<Destination>
-		= EntityEventSubscription<Destination>
+		= MessageSubscription<Destination>
 	where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
@@ -45,7 +33,7 @@ where
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
@@ -53,6 +41,6 @@ where
 			+ Send
 			+ Sync,
 	{
-		EntityEventSubscription::new(self.observed_entity, destination.upgrade(), context)
+		MessageSubscription::new(destination.upgrade())
 	}
 }

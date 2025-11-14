@@ -1,13 +1,16 @@
 use bevy_ecs::{entity::Entity, event::Event, hierarchy::ChildOf, name::Name, observer::Observer};
 use disqualified::ShortName;
 use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
+use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	SharedSubscriber, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
-	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
+	TeardownCollection, Tick, Tickable,
 };
 
 use crate::create_event_forwarder_observer_for_destination;
 
+#[derive(RxSubscription)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct EntityEventSubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
@@ -54,14 +57,6 @@ where
 			closed_flag: false.into(),
 		}
 	}
-}
-
-impl<Destination> WithSubscriptionContext for EntityEventSubscription<Destination>
-where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-	Destination::In: Event + Clone,
-{
-	type Context = BevySubscriptionContextProvider;
 }
 
 impl<Destination> SubscriptionLike for EntityEventSubscription<Destination>
