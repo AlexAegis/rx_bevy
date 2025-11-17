@@ -1,0 +1,15 @@
+tag_prefix = "v"
+from_latest_tag = true
+ignore_merge_commits = true
+ignore_fixup_commits = true
+disable_changelog = true
+disable_bump_commit = true
+generate_mono_repository_global_tag = false
+generate_mono_repository_package_tags = false
+branch_whitelist = []
+skip_ci = "[skip ci]"
+skip_untracked = false
+
+[changelog]
+path = "changelog.md"
+authors = []

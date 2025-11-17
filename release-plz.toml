@@ -1,0 +1,21 @@
+[workspace]
+git_release_enable = false
+git_tag_enable = false
+
+[[package]]
+name = "experimental_do_nothing_crate_please_look_away"
+git_tag_name = "v{{ version }}"
+git_tag_enable = true
+git_release_enable = true
+
+[changelog]
+commit_parsers = [
+  { message = "^.*: add", group = "added" },
+  { message = "^.*: support", group = "added" },
+  { message = "^.*: remove", group = "removed" },
+  { message = "^.*: delete", group = "removed" },
+  { message = "^test", group = "fixed" },
+  { message = "^fix", group = "fixed" },
+  { message = "^.*: fix", group = "fixed" },
+  { message = "^.*", group = "changed" },
+]

@@ -1,0 +1,39 @@
+name: release pr
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  CI: 1
+  RUST_BACKTRACE: short
+  RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2024-compatibility"
+  RUSTUP_MAX_RETRIES: 10
+
+jobs:
+  release-plz-pr:
+    name: release_plz pr
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_name == github.event.repository.default_branch && github.repository_owner == 'AlexAegis' }}
+    permissions:
+      pull-requests: write
+      contents: write
+    concurrency:
+      group: release-plz-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: release-plz pr
+        uses: release-plz/action@v0.5
+        with:
+          command: release-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}

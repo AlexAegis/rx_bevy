@@ -1,10 +1,18 @@
-name: cicd
+name: ci
 
 on:
   push:
-    branches: "**"
+    branches:
+      - master
   pull_request:
     branches: "**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   CARGO_INCREMENTAL: 0
@@ -14,67 +22,75 @@ env:
   RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2024-compatibility"
   RUSTUP_MAX_RETRIES: 10
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
-
 jobs:
-  test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  fmt:
+    runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
+      - &checkout_depth_1
+        name: checkout
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
-          submodules: true
+          submodules: recursive
       - name: rust toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-      - name: cache
+          components: rustfmt
+      - &cache
+        name: cache
         uses: Swatinem/rust-cache@v2
-      - name: install cargo-make
-        run: cargo install cargo-make
-      - name: install alsa and udev (linux)
-        if: runner.os == 'linux'
+      - &install_alsa_and_udev
+        if: ${{ env.INSTALL_ALSA_AND_UDEV == 'true' }}
+        name: install alsa and udev (linux)
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - name: format
+        run: cargo fmt --all -- --check
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout_depth_1
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - *cache
+      - *install_alsa_and_udev
+      - name: clippy
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout_depth_1
+      - &install_rust
+        name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - *cache
+      - *install_alsa_and_udev
+      - name: build
+        run: cargo build --locked --workspace --all-targets --all-features
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout_depth_1
+      - *install_rust
+      - *cache
+      - *install_alsa_and_udev
       - name: test (build)
-        run: cargo make test-ci-build
+        run: cargo test --locked --workspace --all-targets --all-features --no-run
       - name: test
-        run: cargo make test-ci-run
-  lint:
+        run: cargo test --locked --workspace --all-targets --all-features -- --nocapture
+  conventional-commits:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          fetch-depth: 1
-          submodules: true
-      - name: setup node.js
-        uses: actions/setup-node@v4
+          fetch-depth: 0
+      - name: verify conventional commits
+        uses: cocogitto/cocogitto-action@v4
         with:
-          node-version: 20.x
-      - name: rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
-          components: rustfmt, clippy
-      - name: cache
-        uses: Swatinem/rust-cache@v2
-      - name: install cargo-make
-        run: cargo install cargo-make
-      - name: install alsa and udev (linux)
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - name: check format and clippy
-        run: cargo make lint
+          command: check
+          args: --from-latest-tag
   check-pages:
     runs-on: ubuntu-latest
     outputs:
@@ -85,47 +101,43 @@ jobs:
         uses: AlexAegis/check-github-pages@v1
   mdbook:
     runs-on: ubuntu-latest
-    needs: [test, lint, check-pages]
-    if: |
-      needs.check-pages.outputs.pages_enabled == 'true'
+    needs: [check-pages]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
-          submodules: true
+          submodules: recursive
       - name: rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
+        uses: dtolnay/rust-toolchain@stable
       - name: cache
         uses: Swatinem/rust-cache@v2
-      - name: install cargo-make
-        run: cargo install cargo-make
+      - name: install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
+      - name: install mdbook
+        run: cargo binstall --no-confirm --force mdbook
+      - name: install mdbook-mermaid
+        run: cargo binstall --no-confirm --force mdbook-mermaid
       - name: build book
-        run: cargo make book-build
+        run: mdbook build
       - name: setup pages
-        uses: actions/configure-pages@v4
-        if: |
-          github.ref_name == github.event.repository.default_branch &&
-          github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+        if: ${{ github.ref_name == github.event.repository.default_branch && github.event_name != 'pull_request' && needs.check-pages.outputs.pages_enabled == 'true' }}
       - name: upload artifact
-        uses: actions/upload-pages-artifact@v3
-        if: |
-          github.ref_name == github.event.repository.default_branch && 
-          github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        if: ${{ github.ref_name == github.event.repository.default_branch && github.event_name != 'pull_request' && needs.check-pages.outputs.pages_enabled == 'true' }}
         with:
           path: "target/book"
   deploy-github-pages:
-    name: deploy github pages
-    if: |
-      github.ref_name == github.event.repository.default_branch && 
-      github.event_name != 'pull_request' &&
-      needs.check-pages.outputs.pages_enabled == 'true'
+    if: ${{ github.ref_name == github.event.repository.default_branch && github.event_name != 'pull_request' && needs.check-pages.outputs.pages_enabled == 'true' }}
     runs-on: ubuntu-latest
     needs: [mdbook, check-pages]
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -133,33 +145,3 @@ jobs:
       - name: deploy to github pages
         uses: actions/deploy-pages@v4
         id: deployment
-  release:
-    if: |
-      github.ref_name == github.event.repository.default_branch &&
-      github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    needs: [test, lint]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          submodules: true
-          lfs: true
-      - name: checkout lfs
-        run: git lfs pull
-      - name: rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
-      - name: cache
-        uses: Swatinem/rust-cache@v2
-      - name: install cargo-make
-        run: cargo install cargo-make
-      - name: install alsa and udev (linux)
-        if: runner.os == 'linux'
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          ignore-unpublished-changes: true
