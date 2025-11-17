@@ -3,7 +3,7 @@ git_release_enable = false
 git_tag_enable = false
 
 [[package]]
-name = "experimental_do_nothing_crate_please_look_away"
+name = "rx_bevy"
 git_tag_name = "v{{ version }}"
 git_tag_enable = true
 git_release_enable = true
