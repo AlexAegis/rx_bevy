@@ -62,10 +62,10 @@ fn setup(
 					attack_time: Duration::from_millis(250),
 					attack_easing: Some(EaseFunction::SineIn),
 					decay_time: Duration::from_millis(500),
-					decay_easing: Some(EaseFunction::CubicInOut),
+					decay_easing: Some(EaseFunction::SmoothStep),
 					sustain_volume: 0.9,
 					release_time: Duration::from_millis(1500),
-					release_easing: Some(EaseFunction::BounceOut),
+					release_easing: Some(EaseFunction::CircularOut),
 				},
 			})
 			.tap_next(|n, _| println!("{n:?}"))

@@ -150,7 +150,10 @@ fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
 	let keyboard_observable = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::default().into_component(),
+			KeyboardObservable::new(KeyboardObservableOptions {
+				emit: KeyboardObservableEmit::JustPressed,
+			})
+			.into_component(),
 		))
 		.id();
 

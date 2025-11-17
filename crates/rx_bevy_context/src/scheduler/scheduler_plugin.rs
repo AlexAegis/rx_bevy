@@ -151,26 +151,22 @@ pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
 	>,
 	mut index: Local<usize>,
 ) {
-	let subscription_entities = subscription_query.iter().collect::<Vec<_>>();
+	let tick = Tick {
+		index: *index,
+		now: time.elapsed(),
+		delta: time.delta(),
+	};
+	*index += 1;
 
-	if !subscription_entities.is_empty() {
-		let tick = Tick {
-			index: *index,
-			now: time.elapsed(),
-			delta: time.delta(),
-		};
-		*index += 1;
+	for target in subscription_query.iter() {
+		let event = SubscriptionNotificationEvent::from_notification(
+			SubscriptionNotification::Tick(tick.clone()),
+			target,
+		);
 
-		for event in subscription_entities.iter().map(|target| {
-			SubscriptionNotificationEvent::from_notification(
-				SubscriptionNotification::Tick(tick.clone()),
-				*target,
-			)
-		}) {
-			// TODO(bevy-0.17): commands.trigger(event);
-			let target = event.entity();
-			commands.trigger_targets(event, target);
-		}
+		// TODO(bevy-0.17): commands.trigger(event);
+		let target = event.entity();
+		commands.trigger_targets(event, target);
 	}
 }
 

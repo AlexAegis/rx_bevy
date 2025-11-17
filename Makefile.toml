@@ -15,34 +15,47 @@ workspace = false
 private = true
 install_crate = { rustup_component_name = "rustfmt" }
 
+[tasks.install-cocogitto]
+description = "Install the cocogitto crate to handle conventional commit messages"
+workspace = false
+private = true
+install_crate = { crate_name = "cocogitto", binary = "cog", test_arg = "--version" }
+
+[tasks.install-koji]
+condition = { env_not_set = ["NO_KOJI"] }
+description = "Install the koji crate to generate conventional commit messages"
+workspace = false
+private = true
+install_crate = { crate_name = "koji", binary = "koji", test_arg = "--version" }
+
 [tasks.install-mdbook]
 description = "Install crate mdbook for building the documentation"
 workspace = false
 private = true
 dependencies = ["install-mdbook-mermaid"]
-install_crate = "mdbook"
+install_crate = { crate_name = "mdbook", binary = "mdbook", test_arg = "--version" }
 
 [tasks.install-mdbook-mermaid]
 description = "Install crate mdbook-mermaid for mermaid support"
 workspace = false
 private = true
-install_crate = "mdbook-mermaid"
-
-[tasks.install-trunk]
-condition = { env = { "CARGO_REQUIRE_WEB_SUPPORT" = "true" } }
-description = "Install crate trunk for WASM support"
-workspace = false
-private = true
-install_crate = "trunk"
+install_crate = { crate_name = "mdbook-mermaid", binary = "mdbook-mermaid", test_arg = "--version" }
 
 [tasks.install-cargo-expand]
 description = "Install crate cargo-expand for expanding and inspecting proc macros"
 workspace = false
 private = true
-install_crate = "cargo-expand"
+install_crate = { crate_name = "cargo-expand", binary = "cargo-expand", test_arg = "--version" }
+
+[tasks.install-trunk]
+condition = { env_true = ["CARGO_REQUIRE_WEB_SUPPORT"] }
+description = "Install crate trunk for WASM support"
+workspace = false
+private = true
+install_crate = { crate_name = "trunk", binary = "trunk", test_arg = "--version" }
 
 [tasks.install-target-wasm]
-condition = { env = { "CARGO_REQUIRE_WEB_SUPPORT" = "true" } }
+condition = { env_true = ["CARGO_REQUIRE_WEB_SUPPORT"] }
 description = "Adds the wasm32 target"
 workspace = false
 private = true
@@ -50,19 +63,24 @@ command = "rustup"
 args = ["target", "add", "wasm32-unknown-unknown"]
 
 [tasks.install-web-support]
-condition = { env = { "CARGO_REQUIRE_WEB_SUPPORT" = "true" } }
+condition = { env_true = ["CARGO_REQUIRE_WEB_SUPPORT"] }
 description = "Installs everything to be able to build for the web"
 workspace = false
 dependencies = ["install-target-wasm", "install-trunk"]
 
+# All hooks are shell scripts
 [tasks.enable-git-hooks]
+condition = { platforms = [
+    "linux",
+    "mac",
+], fail_message = "Git hooks are not available for Windows! Use a proper OS." }
 description = "Enable git hooks by setting the hooksPath to scripts/hooks"
 workspace = false
 command = "git"
 args = ["config", "core.hooksPath", "scripts/hooks"]
 
 [tasks.install-git-lfs]
-condition = { env = { "CARGO_REQUIRE_GIT_LFS" = "true" } }
+condition = { env_true = ["CARGO_REQUIRE_GIT_LFS"] }
 description = "Makes sure the git lfs hooks are enabled in the repository"
 private = false
 workspace = false
@@ -73,8 +91,7 @@ args = ["lfs", "install", "--force"]
 ## Tasks
 
 [tasks.book-build]
-description = '''Builds the book for the workspace. \
-!!! This task is NOT used in CI to avoid having to compile mdbook and cargo-make !!!'''
+description = "Builds the book for the workspace."
 workspace = false
 dependencies = ["install-mdbook"]
 command = "mdbook"
@@ -94,6 +111,7 @@ dependencies = ["install-clippy"]
 command = "cargo"
 args = [
     "clippy",
+    "--locked",
     "--workspace",
     "--all-targets",
     "--all-features",
@@ -133,6 +151,7 @@ description = "Builds the entire workspace"
 workspace = false
 category = "Build"
 command = "cargo"
+dependencies = ["setup"]
 args = ["build", "--workspace", "--all-targets", "--all-features"]
 
 [tasks.build-benchmark]
@@ -140,30 +159,41 @@ description = "Builds the entire workspace with timings enabled"
 workspace = false
 category = "Build"
 command = "cargo"
+dependencies = ["setup"]
 args = ["build", "--workspace", "--all-targets", "--all-features", "--timings"]
 
 [tasks.each-build]
 description = "Build individual projects"
 category = "Build"
 command = "cargo"
+dependencies = ["setup"]
 args = ["build", "--all-targets", "--all-features"]
 
 [tasks.test]
 description = "Tests the entire workspace"
 workspace = false
 command = "cargo"
+dependencies = ["setup"]
 args = ["test", "--workspace", "--all-features"]
 
 [tasks.each-test]
 description = "Tests individual projects"
 command = "cargo"
+dependencies = ["setup"]
 args = ["test", "--all-features"]
 
 [tasks.test-ci-build]
 description = "Builds the tests for ci"
 workspace = false
 command = "cargo"
-args = ["test", "--no-run", "--locked", "--workspace", "--all-features"]
+args = [
+    "test",
+    "--no-run",
+    "--locked",
+    "--workspace",
+    "--all-targets",
+    "--all-features",
+]
 
 [tasks.test-ci-run]
 description = "Tests the entire workspace"
@@ -171,12 +201,12 @@ workspace = false
 command = "cargo"
 args = [
     "test",
-    "--no-run",
+    "--locked",
     "--workspace",
+    "--all-targets",
     "--all-features",
     "--",
     "--nocapture",
-    "--quiet",
 ]
 
 ## Miscellaneous
@@ -189,6 +219,7 @@ command = "env"
 ## Scripts
 
 [tasks.script-link-assets]
+condition = { files_exist = ["scripts/link_assets.sh"] }
 description = "Run script link_assets.sh"
 workspace = false
 script = { file = "scripts/link_assets.sh" }
@@ -199,6 +230,9 @@ script = { file = "scripts/link_assets.sh" }
 description = "Prepares the workspace for development"
 workspace = false
 dependencies = [
+    "enable-git-hooks",
+    "install-cocogitto",
+    "install-koji",
     "install-git-lfs",
     "install-clippy",
     "install-rustfmt",
@@ -221,10 +255,11 @@ dependencies = ["setup", "format", "build", "lint", "book-build", "test"]
 ## Git hooks
 
 [tasks.pre-commit]
-description = "Definition of the pre-commit git hook."
+description = "Executed by the pre-commit hook."
 workspace = false
-dependencies = ["lint-format", "lint"]
+dependencies = ["lint"]
 
 [tasks.pre-push]
+description = "Executed by the pre-push hook."
 workspace = false
 dependencies = ["test"]
