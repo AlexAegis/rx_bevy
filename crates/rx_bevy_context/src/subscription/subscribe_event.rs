@@ -52,7 +52,7 @@ where
 	Out: SignalBound,
 	OutError: SignalBound,
 {
-	pub fn new<Destination, S, C>(
+	pub(crate) fn new<Destination, S, C>(
 		observable_entity: Entity,
 		destination: Destination,
 		commands: &mut Commands,
@@ -86,7 +86,7 @@ where
 		)
 	}
 
-	pub fn new_with_erased_schedule<Destination>(
+	pub(crate) fn new_with_erased_schedule<Destination>(
 		observable_entity: Entity,
 		destination: Destination,
 		schedule_component_type_id: TypeId,
