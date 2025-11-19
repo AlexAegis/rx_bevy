@@ -76,10 +76,7 @@ jobs:
     steps:
       - *checkout_depth_1
       - *install_rust
-      - name: cache (test) # tarpaulin comes with its own RUSTFLAGS, so it's cached separately
-        uses: Swatinem/rust-cache@v2
-        with:
-          key: "test"
+      - *cache
       - *install_alsa_and_udev
       - &install_binstall
         name: install cargo-binstall
@@ -89,7 +86,7 @@ jobs:
       - name: print tarpaulin rust flags
         run: cargo tarpaulin --print-rust-flags
       - name: test with coverage
-        run: cargo tarpaulin --workspace --engine llvm --timeout 120 --out xml lcov --output-dir target/coverage --no-default-features --features test
+        run: cargo tarpaulin --workspace --engine llvm --timeout 120 --out xml lcov --skip-clean --target-dir target/tarpaulin --output-dir target/coverage --no-default-features --features test
       - name: upload coverage report to codecov.io
         uses: codecov/codecov-action@v5
         with:

@@ -1,0 +1,14 @@
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+  individual_components:
+    - component_id: rx_bevy_common
+      name: rx_bevy_common
+      paths:
+        - crate/rx_bevy_common/**
+    - component_id: rx_core_observable_of
+      name: rx_core_observable_of
+      paths:
+        - crate/rx_core_observable_of/**
