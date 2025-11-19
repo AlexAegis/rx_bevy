@@ -3,7 +3,7 @@ name = "rx_core_operator_filter"
 description = "filter operator for rx_core"
 version = "0.1.0"
 readme = "readme.md"
-publish = true
+publish = false
 
 edition.workspace = true
 homepage.workspace = true

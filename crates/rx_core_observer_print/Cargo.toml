@@ -3,7 +3,7 @@ name = "rx_core_observer_print"
 description = "print observer for rx_core, it prints out received values"
 version = "0.1.0"
 readme = "readme.md"
-publish = true
+publish = false
 
 edition.workspace = true
 homepage.workspace = true

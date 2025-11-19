@@ -3,7 +3,7 @@ name = "rx_bevy_observable_proxy"
 description = "rx_bevy proxy observable, relays events from another observable"
 version = "0.1.0"
 readme = "readme.md"
-publish = true
+publish = false
 
 edition.workspace = true
 homepage.workspace = true

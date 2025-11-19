@@ -3,7 +3,7 @@ name = "stealcell"
 version = "0.1.0"
 description = "An Option like cell where the value can be temporarily stolen."
 readme = "readme.md"
-publish = true
+publish = false
 
 edition.workspace = true
 homepage.workspace = true
