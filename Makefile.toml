@@ -209,15 +209,19 @@ command = "cargo"
 args = [
     "tarpaulin",
     "--workspace",
+    "--engine",
+    "llvm",
     "--timeout",
     "120",
-    "--all-features",
     "--out",
     "xml",
     "lcov",
     "html",
     "--output-dir",
     "target/coverage",
+    "--no-default-features",
+    "--features",
+    "test",
 ]
 
 [tasks.test-ci-run]

@@ -48,6 +48,7 @@ trace = ["rx_core/trace"]
 pipe = ["rx_core/pipe"]
 compose = ["rx_core/compose"]
 reflect = []
+test = []
 
 # Bevy Observables
 all_observables = [

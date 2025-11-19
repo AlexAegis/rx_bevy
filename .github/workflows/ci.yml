@@ -89,7 +89,7 @@ jobs:
       - name: print tarpaulin rust flags
         run: cargo tarpaulin --print-rust-flags
       - name: test with coverage
-        run: cargo tarpaulin --workspace --all-features --timeout 120 --out xml lcov --output-dir target/coverage
+        run: cargo tarpaulin --workspace --engine llvm --timeout 120 --out xml lcov --output-dir target/coverage --no-default-features --features test
       - name: upload coverage report to codecov.io
         uses: codecov/codecov-action@v5
         with:
