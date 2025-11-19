@@ -40,7 +40,7 @@ jobs:
         name: cache
         uses: Swatinem/rust-cache@v2
       - &install_alsa_and_udev
-        if: ${{ env.INSTALL_ALSA_AND_UDEV == 'true' }}
+        if: ${{ vars.INSTALL_ALSA_AND_UDEV == 'true' }}
         name: install alsa and udev (linux)
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - name: format
@@ -70,19 +70,37 @@ jobs:
         run: cargo build --locked --workspace --all-targets --all-features
   test:
     runs-on: ubuntu-latest
+    environment:
+      name: codecov-io
+      url: https://app.codecov.io/github/${{ github.event.repository.full_name }}
     steps:
       - *checkout_depth_1
       - *install_rust
-      - *cache
+      - name: cache (test) # tarpaulin comes with its own RUSTFLAGS, so it's cached separately
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: "test"
       - *install_alsa_and_udev
-      - name: test (build)
-        run: cargo test --locked --workspace --all-targets --all-features --no-run
-      - name: test
-        run: cargo test --locked --workspace --all-targets --all-features -- --nocapture
+      - &install_binstall
+        name: install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
+      - name: install tarpaulin
+        run: cargo binstall --no-confirm --force cargo-tarpaulin
+      - name: print tarpaulin rust flags
+        run: cargo tarpaulin --print-rust-flags
+      - name: test with coverage
+        run: cargo tarpaulin --workspace --all-features --timeout 120 --out xml lcov --output-dir target/coverage
+      - name: upload coverage report to codecov.io
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: target/coverage
+          fail_ci_if_error: true
   conventional-commits:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - &checkout_depth_0
+        name: checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
@@ -105,17 +123,10 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - name: checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
-          submodules: recursive
-      - name: rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: cache
-        uses: Swatinem/rust-cache@v2
-      - name: install cargo-binstall
-        uses: cargo-bins/cargo-binstall@main
+      - *checkout_depth_1
+      - *install_rust
+      - *cache
+      - *install_binstall
       - name: install mdbook
         run: cargo binstall --no-confirm --force mdbook
       - name: install mdbook-mermaid

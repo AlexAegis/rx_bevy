@@ -29,27 +29,33 @@ private = true
 install_crate = { crate_name = "koji", binary = "koji", test_arg = "--version" }
 
 [tasks.install-mdbook]
-description = "Install crate mdbook for building the documentation"
+description = "Install the mdbook crate for building the documentation"
 workspace = false
 private = true
 dependencies = ["install-mdbook-mermaid"]
 install_crate = { crate_name = "mdbook", binary = "mdbook", test_arg = "--version" }
 
 [tasks.install-mdbook-mermaid]
-description = "Install crate mdbook-mermaid for mermaid support"
+description = "Install the mdbook-mermaid crate for mermaid support"
 workspace = false
 private = true
 install_crate = { crate_name = "mdbook-mermaid", binary = "mdbook-mermaid", test_arg = "--version" }
 
 [tasks.install-cargo-expand]
-description = "Install crate cargo-expand for expanding and inspecting proc macros"
+description = "Install the cargo-expand crate for expanding and inspecting proc macros"
 workspace = false
 private = true
 install_crate = { crate_name = "cargo-expand", binary = "cargo-expand", test_arg = "--version" }
 
+[tasks.install-tarpaulin]
+description = "Install the tarpaulin crate to generate code coverage results"
+workspace = false
+private = true
+install_crate = { crate_name = "cargo-tarpaulin", binary = "cargo-tarpaulin", test_arg = "--version" }
+
 [tasks.install-trunk]
 condition = { env_true = ["CARGO_REQUIRE_WEB_SUPPORT"] }
-description = "Install crate trunk for WASM support"
+description = "Install the trunk crate for WASM support"
 workspace = false
 private = true
 install_crate = { crate_name = "trunk", binary = "trunk", test_arg = "--version" }
@@ -84,8 +90,8 @@ condition = { env_true = ["CARGO_REQUIRE_GIT_LFS"] }
 description = "Makes sure the git lfs hooks are enabled in the repository"
 private = false
 workspace = false
-command = "git"
 dependencies = ["enable-git-hooks"]
+command = "git"
 args = ["lfs", "install", "--force"]
 
 ## Tasks
@@ -150,40 +156,40 @@ args = ["clean"]
 description = "Builds the entire workspace"
 workspace = false
 category = "Build"
-command = "cargo"
 dependencies = ["setup"]
+command = "cargo"
 args = ["build", "--workspace", "--all-targets", "--all-features"]
 
 [tasks.build-benchmark]
 description = "Builds the entire workspace with timings enabled"
 workspace = false
 category = "Build"
-command = "cargo"
 dependencies = ["setup"]
+command = "cargo"
 args = ["build", "--workspace", "--all-targets", "--all-features", "--timings"]
 
 [tasks.each-build]
 description = "Build individual projects"
 category = "Build"
-command = "cargo"
 dependencies = ["setup"]
+command = "cargo"
 args = ["build", "--all-targets", "--all-features"]
 
 [tasks.test]
 description = "Tests the entire workspace"
 workspace = false
-command = "cargo"
 dependencies = ["setup"]
+command = "cargo"
 args = ["test", "--workspace", "--all-features"]
 
 [tasks.each-test]
 description = "Tests individual projects"
-command = "cargo"
 dependencies = ["setup"]
+command = "cargo"
 args = ["test", "--all-features"]
 
-[tasks.test-ci-build]
-description = "Builds the tests for ci"
+[tasks.test-pre-build]
+description = "Pre builds the tests without running them"
 workspace = false
 command = "cargo"
 args = [
@@ -193,6 +199,25 @@ args = [
     "--workspace",
     "--all-targets",
     "--all-features",
+]
+
+[tasks.test-coverage]
+description = "Tests the entire workspace with tarpaulin for coverage"
+workspace = false
+dependencies = ["setup"]
+command = "cargo"
+args = [
+    "tarpaulin",
+    "--workspace",
+    "--timeout",
+    "120",
+    "--all-features",
+    "--out",
+    "xml",
+    "lcov",
+    "html",
+    "--output-dir",
+    "target/coverage",
 ]
 
 [tasks.test-ci-run]
@@ -238,6 +263,7 @@ dependencies = [
     "install-rustfmt",
     "install-mdbook",
     "install-cargo-expand",
+    "install-tarpaulin",
     "install-web-support",
     "script-link-assets",
 ]
