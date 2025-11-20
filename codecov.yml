@@ -1,14 +1,193 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 5
+        if_ci_failed: error
+    patch:
+      default:
+        target: auto
+        threshold: 0
+        if_ci_failed: error
 component_management:
   default_rules:
     statuses:
       - type: project
         target: auto
+      - type: patch
   individual_components:
+    - component_id: rx_bevy
+      paths:
+        - crates/rx_bevy/**
     - component_id: rx_bevy_common
-      name: rx_bevy_common
       paths:
-        - crate/rx_bevy_common/**
+        - crates/rx_bevy_common/**
+    - component_id: rx_bevy_context
+      paths:
+        - crates/rx_bevy_context/**
+    - component_id: rx_bevy_observable_event
+      paths:
+        - crates/rx_bevy_observable_event/**
+    - component_id: rx_bevy_observable_keyboard
+      paths:
+        - crates/rx_bevy_observable_keyboard/**
+    - component_id: rx_bevy_observable_message
+      paths:
+        - crates/rx_bevy_observable_message/**
+    - component_id: rx_bevy_observable_proxy
+      paths:
+        - crates/rx_bevy_observable_proxy/**
+    - component_id: rx_core
+      paths:
+        - crates/rx_core/**
+    - component_id: rx_core_emission_variants
+      paths:
+        - crates/rx_core_emission_variants/**
+    - component_id: rx_core_macro_common
+      paths:
+        - crates/rx_core_macro_common/**
+    - component_id: rx_core_macro_observable_derive
+      paths:
+        - crates/rx_core_macro_observable_derive/**
+    - component_id: rx_core_macro_observer_derive
+      paths:
+        - crates/rx_core_macro_observer_derive/**
+    - component_id: rx_core_macro_operator_derive
+      paths:
+        - crates/rx_core_macro_operator_derive/**
+    - component_id: rx_core_macro_subject_derive
+      paths:
+        - crates/rx_core_macro_subject_derive/**
+    - component_id: rx_core_macro_subscriber_derive
+      paths:
+        - crates/rx_core_macro_subscriber_derive/**
+    - component_id: rx_core_macro_subscription_derive
+      paths:
+        - crates/rx_core_macro_subscription_derive/**
+    - component_id: rx_core_observable_combine_latest
+      paths:
+        - crates/rx_core_observable_combine_latest/**
+    - component_id: rx_core_observable_connectable
+      paths:
+        - crates/rx_core_observable_connectable/**
+    - component_id: rx_core_observable_deferred
+      paths:
+        - crates/rx_core_observable_deferred/**
+    - component_id: rx_core_observable_interval
+      paths:
+        - crates/rx_core_observable_interval/**
+    - component_id: rx_core_observable_iterator
+      paths:
+        - crates/rx_core_observable_iterator/**
+    - component_id: rx_core_observable_iterator_on_tick
+      paths:
+        - crates/rx_core_observable_iterator_on_tick/**
+    - component_id: rx_core_observable_merge
+      paths:
+        - crates/rx_core_observable_merge/**
     - component_id: rx_core_observable_of
-      name: rx_core_observable_of
       paths:
-        - crate/rx_core_observable_of/**
+        - crates/rx_core_observable_of/**
+    - component_id: rx_core_observable_pipe
+      paths:
+        - crates/rx_core_observable_pipe/**
+    - component_id: rx_core_observable_throw
+      paths:
+        - crates/rx_core_observable_throw/**
+    - component_id: rx_core_observable_zip
+      paths:
+        - crates/rx_core_observable_zip/**
+    - component_id: rx_core_observer_fn
+      paths:
+        - crates/rx_core_observer_fn/**
+    - component_id: rx_core_observer_noop
+      paths:
+        - crates/rx_core_observer_noop/**
+    - component_id: rx_core_observer_print
+      paths:
+        - crates/rx_core_observer_print/**
+    - component_id: rx_core_operator_adsr
+      paths:
+        - crates/rx_core_operator_adsr/**
+    - component_id: rx_core_operator_composite
+      paths:
+        - crates/rx_core_operator_composite/**
+    - component_id: rx_core_operator_enumerate
+      paths:
+        - crates/rx_core_operator_enumerate/**
+    - component_id: rx_core_operator_error_boundary
+      paths:
+        - crates/rx_core_operator_error_boundary/**
+    - component_id: rx_core_operator_fallback_when_silent
+      paths:
+        - crates/rx_core_operator_fallback_when_silent/**
+    - component_id: rx_core_operator_filter
+      paths:
+        - crates/rx_core_operator_filter/**
+    - component_id: rx_core_operator_filter_map
+      paths:
+        - crates/rx_core_operator_filter_map/**
+    - component_id: rx_core_operator_finalize
+      paths:
+        - crates/rx_core_operator_finalize/**
+    - component_id: rx_core_operator_identity
+      paths:
+        - crates/rx_core_operator_identity/**
+    - component_id: rx_core_operator_into_result
+      paths:
+        - crates/rx_core_operator_into_result/**
+    - component_id: rx_core_operator_lift_option
+      paths:
+        - crates/rx_core_operator_lift_option/**
+    - component_id: rx_core_operator_lift_result
+      paths:
+        - crates/rx_core_operator_lift_result/**
+    - component_id: rx_core_operator_map
+      paths:
+        - crates/rx_core_operator_map/**
+    - component_id: rx_core_operator_map_into
+      paths:
+        - crates/rx_core_operator_map_into/**
+    - component_id: rx_core_operator_scan
+      paths:
+        - crates/rx_core_operator_scan/**
+    - component_id: rx_core_operator_skip
+      paths:
+        - crates/rx_core_operator_skip/**
+    - component_id: rx_core_operator_switch_map
+      paths:
+        - crates/rx_core_operator_switch_map/**
+    - component_id: rx_core_operator_take
+      paths:
+        - crates/rx_core_operator_take/**
+    - component_id: rx_core_operator_tap_next
+      paths:
+        - crates/rx_core_operator_tap_next/**
+    - component_id: rx_core_subject
+      paths:
+        - crates/rx_core_subject/**
+    - component_id: rx_core_subject_behavior
+      paths:
+        - crates/rx_core_subject_behavior/**
+    - component_id: rx_core_subject_replay
+      paths:
+        - crates/rx_core_subject_replay/**
+    - component_id: rx_core_subscriber_rc
+      paths:
+        - crates/rx_core_subscriber_rc/**
+    - component_id: rx_core_subscriber_switch
+      paths:
+        - crates/rx_core_subscriber_switch/**
+    - component_id: rx_core_subscription_drop
+      paths:
+        - crates/rx_core_subscription_drop/**
+    - component_id: rx_core_subscription_inert
+      paths:
+        - crates/rx_core_subscription_inert/**
+    - component_id: rx_core_testing
+      paths:
+        - crates/rx_core_testing/**
+    - component_id: rx_core_traits
+      paths:
+        - crates/rx_core_traits/**
