@@ -5,7 +5,7 @@ git_tag_enable = false
 changelog_path = "./CHANGELOG.md"
 
 [[package]]
-name = "stealcell"
+name = "rx_bevy"
 git_tag_name = "v{{ version }}"
 git_tag_enable = true
 git_release_enable = true
@@ -14,8 +14,12 @@ git_release_enable = true
 commit_parsers = [
   { message = "^feat", group = "added" },
   { message = "^refactor", group = "changed" },
+  { message = "^changed", group = "changed" },
+  { message = "^deprecated", group = "deprecated" },
   { message = "^fix", group = "fixed" },
   { message = "^perf", group = "performance" },
+  { message = "^security", group = "security" },
+  { message = "^.*", group = "other" },
 ]
 body = """
 
