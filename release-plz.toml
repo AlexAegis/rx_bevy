@@ -1,21 +1,33 @@
 [workspace]
 git_release_enable = false
 git_tag_enable = false
+# set the path of all the crates to the changelog to the root of the repository
+changelog_path = "./CHANGELOG.md"
 
 [[package]]
-name = "rx_bevy"
+name = "stealcell"
 git_tag_name = "v{{ version }}"
 git_tag_enable = true
 git_release_enable = true
 
 [changelog]
 commit_parsers = [
-  { message = "^.*: add", group = "added" },
-  { message = "^.*: support", group = "added" },
-  { message = "^.*: remove", group = "removed" },
-  { message = "^.*: delete", group = "removed" },
-  { message = "^test", group = "fixed" },
+  { message = "^feat", group = "added" },
+  { message = "^refactor", group = "changed" },
   { message = "^fix", group = "fixed" },
-  { message = "^.*: fix", group = "fixed" },
-  { message = "^.*", group = "changed" },
+  { message = "^perf", group = "performance" },
 ]
+body = """
+
+## `{{ package }}` - [{{ version }}]{%- if release_link -%}({{ release_link }}){% endif %} - {{ timestamp | date(format="%Y-%m-%d") }}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}
+{%- if commit.scope -%}
+- *({{commit.scope}})* {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message }}{%- if commit.links %} ({% for link in commit.links %}[{{link.text}}]({{link.href}}) {% endfor -%}){% endif %}
+{% else -%}
+- {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message }}
+{% endif -%}
+{% endfor -%}
+{% endfor -%}
+"""
