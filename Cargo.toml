@@ -91,11 +91,11 @@ syn = { version = "2.0", default-features = false, features = [
     "proc-macro",
 ] }
 bevy_mod_erased_component_registry = { version = "0.1.0", default-features = false }
+stealcell = { version = "0.1" }
 # Workspace Crates
 # Misc
 examples_common = { path = "crates/examples_common" }
 feature_checker = { path = "crates/feature_checker" }
-stealcell = { path = "crates/stealcell" }
 bevy_mod_alternate_system_on_press = { path = "crates/bevy_mod_alternate_system_on_press" }
 # Core
 rx_core = { path = "crates/rx_core" }
