@@ -47,6 +47,12 @@ workspace = false
 private = true
 install_crate = { crate_name = "cargo-expand", binary = "cargo-expand", test_arg = "--version" }
 
+[tasks.install-cargo-audit]
+description = "Install the cargo-audit crate"
+workspace = false
+private = true
+install_crate = { crate_name = "cargo-audit", binary = "cargo-audit", test_arg = "--version" }
+
 [tasks.install-tarpaulin]
 description = "Install the tarpaulin crate to generate code coverage results"
 workspace = false
@@ -240,20 +246,12 @@ args = [
     "https://codecov.io/validate",
 ]
 
-[tasks.test-ci-run]
-description = "Tests the entire workspace"
+[tasks.audit]
+description = "Runs cargo audit"
 workspace = false
+dependencies = ["install-cargo-audit"]
 command = "cargo"
-args = [
-    "test",
-    "--locked",
-    "--workspace",
-    "--all-targets",
-    "--features",
-    "test",
-    "--",
-    "--nocapture",
-]
+args = ["audit"]
 
 ## Miscellaneous
 
