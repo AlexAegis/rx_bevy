@@ -17,8 +17,6 @@ workspace = true
 
 [features]
 default = []
-dev = []
-example = ["dev"]
 
 [dependencies]
 bevy_ecs = { workspace = true }

@@ -16,14 +16,9 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
-dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
-example = [
-    "dev",
-    "rx_core/example",
-    "rx_core_traits/example",
-    "rx_core_testing/example",
-]
+default = []
+debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
+dev = ["panic_on_error"]
 panic_on_error = []
 
 [dependencies]

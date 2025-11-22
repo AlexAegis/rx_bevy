@@ -16,38 +16,11 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev", "debug"]
-dev = [
-    "bevy/dynamic_linking",
-    "rx_bevy/dev",
-    "rx_core_traits/dev",
-    "rx_core_testing/dev",
-]
-debug = ["rx_core_traits/debug", "dep:bevy_input"]
-example = [
-    "bevy/bevy_asset",
-    "bevy/bevy_core_pipeline",
-    "bevy/bevy_gltf",
-    "bevy/bevy_pbr",
-    "bevy/bevy_picking",
-    "bevy/bevy_render",
-    "bevy/bevy_scene",
-    "bevy/bevy_winit",
-    "bevy/tonemapping_luts",
-    "bevy/x11",
-    "debug",
-    "dev",
-    "rx_bevy/example",
-    "rx_core_traits/example",
-    "rx_core_testing/example",
-]
-dev_panic_on_dropped_active_subscriptions = [
-    "rx_core_traits/dev_panic_on_dropped_active_subscriptions",
-]
-reflect = ["dep:bevy_reflect"]
+default = []
+debug = ["dep:bevy_input", "rx_core_testing/debug", "rx_core_traits/debug"]
+reflect = ["dep:bevy_reflect", "rx_bevy_common/reflect"]
 
 [dependencies]
-# TODO: disable default features in all dependencies
 rx_core_traits = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_observer_derive = { workspace = true }

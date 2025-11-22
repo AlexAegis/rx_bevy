@@ -16,21 +16,12 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
-dev = [
-    "rx_core/dev",
-    "rx_core_traits/dev",
-    "rx_core_emission_variants/dev",
-    "rx_core_subscriber_rc/dev",
-    "rx_core_testing/dev",
-]
-example = [
-    "dev",
-    "rx_core/example",
-    "rx_core_traits/example",
-    "rx_core_emission_variants/example",
-    "rx_core_subscriber_rc/example",
-    "rx_core_testing/example",
+default = []
+debug = [
+    "rx_core_emission_variants/debug",
+    "rx_core_subscriber_rc/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
 ]
 observable_fn = []
 
@@ -42,5 +33,5 @@ rx_core_emission_variants = { workspace = true }
 rx_core_subscriber_rc = { workspace = true }
 
 [dev-dependencies]
-rx_core = { workspace = true }
+rx_core = { workspace = true, default-features = true }
 rx_core_testing = { workspace = true }

@@ -24,9 +24,28 @@ default = [
     "compose",
     "pipe",
 ]
-dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
-debug = []
+debug = [
+    "rx_bevy_context/debug",
+    "rx_bevy_observable_event?/debug",
+    "rx_bevy_observable_keyboard?/debug",
+    "rx_bevy_observable_message?/debug",
+    "rx_bevy_observable_proxy?/debug",
+    "rx_core/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
+]
+pipe = ["rx_core/pipe"]
+compose = ["rx_core/compose"]
+reflect = [
+    "rx_bevy_context/reflect",
+    "rx_bevy_observable_event?/reflect",
+    "rx_bevy_observable_keyboard?/reflect",
+    "rx_bevy_observable_message?/reflect",
+    "rx_bevy_observable_proxy?/reflect",
+]
+test = []
 example = [
+    "bevy/dynamic_linking",
     "bevy/bevy_asset",
     "bevy/bevy_core_pipeline",
     "bevy/bevy_gltf",
@@ -37,18 +56,7 @@ example = [
     "bevy/bevy_winit",
     "bevy/tonemapping_luts",
     "bevy/x11",
-    "debug",
-    "dev",
-    "reflect",
-    "rx_core/example",
-    "rx_core_traits/example",
-    "rx_core_testing/example",
 ]
-trace = ["rx_core/trace"]
-pipe = ["rx_core/pipe"]
-compose = ["rx_core/compose"]
-reflect = []
-test = []
 
 # Bevy Observables
 all_observables = [

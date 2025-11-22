@@ -16,19 +16,11 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
-dev = [
-    "rx_core/dev",
-    "rx_core_observable_deferred/dev",
-    "rx_core_testing/dev",
-    "rx_core_traits/dev",
-]
-example = [
-    "dev",
-    "rx_core/example",
-    "rx_core_observable_deferred/example",
-    "rx_core_testing/example",
-    "rx_core_traits/example",
+default = []
+debug = [
+    "rx_core_observable_deferred/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
 ]
 
 [dependencies]
@@ -38,5 +30,5 @@ rx_core_observable_deferred = { workspace = true }
 disqualified = { workspace = true }
 
 [dev-dependencies]
-rx_core = { workspace = true }
+rx_core = { workspace = true, default-features = true }
 rx_core_testing = { workspace = true }

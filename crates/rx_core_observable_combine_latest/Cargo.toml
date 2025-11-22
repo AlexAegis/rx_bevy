@@ -17,20 +17,12 @@ workspace = true
 
 [features]
 default = []
-dev = [
-    "rx_core/dev",
-    "rx_core_emission_variants/dev",
-    "rx_core_subscriber_rc/dev",
-    "rx_core_testing/dev",
-    "rx_core_traits/dev",
-]
-example = [
-    "dev",
-    "rx_core/example",
-    "rx_core_emission_variants/example",
-    "rx_core_subscriber_rc/example",
-    "rx_core_testing/example",
-    "rx_core_traits/example",
+debug = [
+    "rx_core_emission_variants/debug",
+    "rx_core_subscriber_rc/debug",
+    "rx_core_subscription_drop/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
 ]
 observable_fn = []
 
@@ -43,5 +35,5 @@ rx_core_subscription_drop = { workspace = true }
 rx_core_subscriber_rc = { workspace = true }
 
 [dev-dependencies]
-rx_core = { workspace = true }
+rx_core = { workspace = true, default-features = true }
 rx_core_testing = { workspace = true }

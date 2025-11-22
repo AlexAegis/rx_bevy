@@ -16,13 +16,11 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
-dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
-example = [
-    "dev",
-    "rx_core/example",
-    "rx_core_traits/example",
-    "rx_core_testing/example",
+default = []
+debug = [
+    "rx_core_subscription_inert/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
 ]
 observable_fn = []
 
@@ -32,5 +30,5 @@ rx_core_macro_observable_derive = { workspace = true }
 rx_core_subscription_inert = { workspace = true }
 
 [dev-dependencies]
-rx_core = { workspace = true }
+rx_core = { workspace = true, default-features = true }
 rx_core_testing = { workspace = true }

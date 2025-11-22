@@ -17,14 +17,8 @@ workspace = true
 
 [features]
 default = []
-dev = ["rx_core/dev", "rx_core_traits/dev", "rx_core_testing/dev"]
-example = [
-    "dev",
-    "rx_core/example",
-    "rx_core_traits/example",
-    "rx_core_testing/example",
-]
-operator_fn = ["rx_core/operator_fn"]
+debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
+operator_fn = []
 
 [dependencies]
 rx_core_traits = { workspace = true }
@@ -33,5 +27,5 @@ rx_core_macro_subscriber_derive = { workspace = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]
-rx_core = { workspace = true }
+rx_core = { workspace = true, default-features = true }
 rx_core_testing = { workspace = true }

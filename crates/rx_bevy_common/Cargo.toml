@@ -16,10 +16,7 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev", "reflect", "debug"]
-dev = []
-debug = ["rx_core_traits/debug"]
-example = ["rx_core_traits/example", "rx_core_testing/example"]
+default = []
 reflect = ["dep:bevy_reflect"]
 serialize = ["dep:serde"]
 

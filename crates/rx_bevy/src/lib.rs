@@ -18,6 +18,10 @@ pub mod observable_fn {
 	pub use rx_core::observable_fn::*;
 }
 
+pub mod operator {
+	pub use rx_core::operator::*;
+}
+
 #[cfg(feature = "compose")]
 pub mod extension_composite {
 	pub use rx_core::extension_composite::*;
@@ -26,10 +30,6 @@ pub mod extension_composite {
 #[cfg(feature = "pipe")]
 pub mod extension_pipe {
 	pub use rx_core::extension_pipe::*;
-}
-
-pub mod operator {
-	pub use rx_core::operator::*;
 }
 
 #[cfg(feature = "operator_fn")]

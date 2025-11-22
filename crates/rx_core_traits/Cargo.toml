@@ -16,18 +16,8 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev_panic_on_dropped_active_subscriptions"]
-dev = ["dev_panic_on_dropped_active_subscriptions", "rx_core/dev"]
-example = ["dev", "rx_core/example"]
+default = []
 debug = []
-# Keep this turned on for development, turn it off for production!
-# Depending on the context a subscription needs to perform an unsubscribe,
-# not all subscriptions can be automatically unsubscribed when they are dropped
-# The subscriptions when dropped, will check if they had been unsubscribed, and
-# during development, this should panic so you notice it. For production, you
-# can decide if you want to keep your program running or crash for mishandled
-# subscriptions.
-dev_panic_on_dropped_active_subscriptions = []
 
 [dependencies]
 smallvec = { workspace = true }

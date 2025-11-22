@@ -16,30 +16,17 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["compose", "pipe"]
-dev = [
-    "rx_core/dev",
-    "rx_core_traits/dev",
-    "rx_core_operator_composite?/dev",
-    "rx_core_observable_pipe?/dev",
-    "rx_core_testing/dev",
+default = []
+debug = [
+    "dep:disqualified",
+    "rx_core_observable_pipe?/debug",
+    "rx_core_operator_composite?/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
 ]
-example = [
-    "dev",
-    "rx_core/example",
-    "rx_core_traits/example",
-    "rx_core_operator_composite?/example",
-    "rx_core_observable_pipe?/example",
-    "rx_core_testing/example",
-]
-compose = ["dep:rx_core_operator_composite", "rx_core/compose"]
-pipe = [
-    "dep:rx_core_observable_pipe",
-    "rx_core/pipe",
-    "rx_core_operator_composite?/pipe",
-]
-operator_fn = ["rx_core/operator_fn"]
-trace = ["dep:disqualified", "rx_core/trace"]
+compose = ["dep:rx_core_operator_composite"]
+pipe = ["dep:rx_core_observable_pipe"]
+operator_fn = []
 
 [dependencies]
 rx_core_traits = { workspace = true }
@@ -51,5 +38,5 @@ derive-where = { workspace = true }
 disqualified = { workspace = true, optional = true }
 
 [dev-dependencies]
-rx_core = { workspace = true }
+rx_core = { workspace = true, default-features = true }
 rx_core_testing = { workspace = true }

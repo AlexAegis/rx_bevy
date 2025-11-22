@@ -16,16 +16,15 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev", "reflect", "debug"]
-dev = [
-    "bevy/dynamic_linking",
-    "examples_common/dev",
-    "rx_bevy/dev",
-    "rx_core_traits/dev",
-    "rx_core_testing/dev",
+default = []
+debug = [
+    "bevy/track_location",
+    "rx_bevy_context/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
 ]
-debug = ["bevy/track_location", "rx_core_traits/debug"]
 example = [
+    "bevy/dynamic_linking",
     "bevy/bevy_asset",
     "bevy/bevy_core_pipeline",
     "bevy/bevy_gltf",
@@ -36,14 +35,8 @@ example = [
     "bevy/bevy_winit",
     "bevy/tonemapping_luts",
     "bevy/x11",
-    "debug",
-    "dev",
-    "reflect",
-    "rx_bevy/example",
-    "rx_core_traits/example",
-    "rx_core_testing/example",
 ]
-reflect = ["dep:bevy_reflect", "rx_bevy/reflect"]
+reflect = ["dep:bevy_reflect", "rx_bevy_context/reflect"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
@@ -59,7 +52,7 @@ derive-where = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
-rx_bevy = { workspace = true }
+rx_bevy = { workspace = true, default-features = true }
 rx_core_testing = { workspace = true }
 examples_common = { workspace = true }
 bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }

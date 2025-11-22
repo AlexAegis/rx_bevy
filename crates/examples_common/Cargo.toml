@@ -15,11 +15,10 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["dev"]
-dev = ["bevy/dynamic_linking"]
+default = []
 
 [dependencies]
-bevy = { workspace = true }
+bevy = { workspace = true, features = ["dynamic_linking"] }
 derive-where = { workspace = true }
 rx_core_traits = { workspace = true }
 rx_bevy_context = { workspace = true }

@@ -43,6 +43,47 @@ pub mod observable_fn {
 	pub use rx_core_observable_zip::observable_fn::*;
 }
 
+pub mod operator {
+	#[cfg(feature = "operator_adsr")]
+	pub use rx_core_operator_adsr::operator::*;
+	#[cfg(feature = "operator_composite")]
+	pub use rx_core_operator_composite::operator::*;
+	#[cfg(feature = "operator_enumerate")]
+	pub use rx_core_operator_enumerate::operator::*;
+	#[cfg(feature = "operator_error_boundary")]
+	pub use rx_core_operator_error_boundary::operator::*;
+	#[cfg(feature = "operator_fallback_when_silent")]
+	pub use rx_core_operator_fallback_when_silent::operator::*;
+	#[cfg(feature = "operator_filter")]
+	pub use rx_core_operator_filter::operator::*;
+	#[cfg(feature = "operator_filter_map")]
+	pub use rx_core_operator_filter_map::operator::*;
+	#[cfg(feature = "operator_finalize")]
+	pub use rx_core_operator_finalize::operator::*;
+	#[cfg(feature = "operator_identity")]
+	pub use rx_core_operator_identity::operator::*;
+	#[cfg(feature = "operator_into_result")]
+	pub use rx_core_operator_into_result::operator::*;
+	#[cfg(feature = "operator_lift_option")]
+	pub use rx_core_operator_lift_option::operator::*;
+	#[cfg(feature = "operator_lift_result")]
+	pub use rx_core_operator_lift_result::operator::*;
+	#[cfg(feature = "operator_map")]
+	pub use rx_core_operator_map::operator::*;
+	#[cfg(feature = "operator_map_into")]
+	pub use rx_core_operator_map_into::operator::*;
+	#[cfg(feature = "operator_scan")]
+	pub use rx_core_operator_scan::operator::*;
+	#[cfg(feature = "operator_skip")]
+	pub use rx_core_operator_skip::operator::*;
+	#[cfg(feature = "operator_switch_map")]
+	pub use rx_core_operator_switch_map::operator::*;
+	#[cfg(feature = "operator_take")]
+	pub use rx_core_operator_take::operator::*;
+	#[cfg(feature = "operator_tap_next")]
+	pub use rx_core_operator_tap_next::operator::*;
+}
+
 #[cfg(feature = "compose")]
 pub mod extension_composite {
 	#[cfg(feature = "operator_adsr")]
@@ -51,6 +92,8 @@ pub mod extension_composite {
 	pub use rx_core_operator_composite::extension_composite::*;
 	#[cfg(feature = "operator_enumerate")]
 	pub use rx_core_operator_enumerate::extension_composite::*;
+	#[cfg(feature = "operator_error_boundary")]
+	pub use rx_core_operator_error_boundary::extension_composite::*;
 	#[cfg(feature = "operator_fallback_when_silent")]
 	pub use rx_core_operator_fallback_when_silent::extension_composite::*;
 	#[cfg(feature = "operator_filter")]
@@ -89,6 +132,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_adsr::extension_pipe::*;
 	#[cfg(feature = "operator_enumerate")]
 	pub use rx_core_operator_enumerate::extension_pipe::*;
+	#[cfg(feature = "operator_error_boundary")]
+	pub use rx_core_operator_error_boundary::extension_pipe::*;
 	#[cfg(feature = "operator_fallback_when_silent")]
 	pub use rx_core_operator_fallback_when_silent::extension_pipe::*;
 	#[cfg(feature = "operator_filter")]
@@ -119,51 +164,14 @@ pub mod extension_pipe {
 	pub use rx_core_operator_tap_next::extension_pipe::*;
 }
 
-pub mod operator {
-	#[cfg(feature = "operator_adsr")]
-	pub use rx_core_operator_adsr::operator::*;
-	#[cfg(feature = "operator_composite")]
-	pub use rx_core_operator_composite::operator::*;
-	#[cfg(feature = "operator_enumerate")]
-	pub use rx_core_operator_enumerate::operator::*;
-	#[cfg(feature = "operator_fallback_when_silent")]
-	pub use rx_core_operator_fallback_when_silent::operator::*;
-	#[cfg(feature = "operator_filter")]
-	pub use rx_core_operator_filter::operator::*;
-	#[cfg(feature = "operator_filter_map")]
-	pub use rx_core_operator_filter_map::operator::*;
-	#[cfg(feature = "operator_finalize")]
-	pub use rx_core_operator_finalize::operator::*;
-	#[cfg(feature = "operator_identity")]
-	pub use rx_core_operator_identity::operator::*;
-	#[cfg(feature = "operator_into_result")]
-	pub use rx_core_operator_into_result::operator::*;
-	#[cfg(feature = "operator_lift_option")]
-	pub use rx_core_operator_lift_option::operator::*;
-	#[cfg(feature = "operator_lift_result")]
-	pub use rx_core_operator_lift_result::operator::*;
-	#[cfg(feature = "operator_map")]
-	pub use rx_core_operator_map::operator::*;
-	#[cfg(feature = "operator_map_into")]
-	pub use rx_core_operator_map_into::operator::*;
-	#[cfg(feature = "operator_scan")]
-	pub use rx_core_operator_scan::operator::*;
-	#[cfg(feature = "operator_skip")]
-	pub use rx_core_operator_skip::operator::*;
-	#[cfg(feature = "operator_switch_map")]
-	pub use rx_core_operator_switch_map::operator::*;
-	#[cfg(feature = "operator_take")]
-	pub use rx_core_operator_take::operator::*;
-	#[cfg(feature = "operator_tap_next")]
-	pub use rx_core_operator_tap_next::operator::*;
-}
-
 #[cfg(feature = "operator_fn")]
 pub mod operator_fn {
 	#[cfg(feature = "operator_adsr")]
 	pub use rx_core_operator_adsr::operator_fn::*;
 	#[cfg(feature = "operator_enumerate")]
 	pub use rx_core_operator_enumerate::operator_fn::*;
+	#[cfg(feature = "operator_error_boundary")]
+	pub use rx_core_operator_error_boundary::operator_fn::*;
 	#[cfg(feature = "operator_fallback_when_silent")]
 	pub use rx_core_operator_fallback_when_silent::operator_fn::*;
 	#[cfg(feature = "operator_filter")]

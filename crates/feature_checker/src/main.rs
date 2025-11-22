@@ -34,7 +34,25 @@ fn main() {
 			if feature == "default" {
 				continue;
 			}
+
+			// Skip features that should not propagate
+			if feature == "example" {
+				continue;
+			}
+
+			// Skip aggregate features for non aggregator crates
+			if (feature == "compose" || feature == "pipe" || feature == "operator_fn")
+				&& (package.name != "rx_core" || package.name != "rx_bevy")
+			{
+				continue;
+			}
+
 			for dep in &package.dependencies {
+				// Skip aggregator crates
+				if dep.name == "rx_core" || dep.name == "rx_bevy" {
+					continue;
+				}
+
 				// Skip non-workspace dependencies
 				if !workspace_names.contains(dep.name.as_str()) {
 					continue;

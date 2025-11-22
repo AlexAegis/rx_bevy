@@ -16,32 +16,18 @@ license.workspace = true
 workspace = true
 
 [features]
-default = ["pipe"]
-dev = [
-    "rx_core/dev",
-    "rx_core_traits/dev",
-    "rx_core_observable_pipe?/dev",
-    "rx_core_testing/dev",
-]
-example = [
-    "dev",
-    "rx_core/example",
-    "rx_core_traits/example",
-    "rx_core_observable_pipe?/example",
-    "rx_core_testing/example",
-]
-pipe = ["dep:rx_core_observable_pipe", "rx_core/pipe"]
+default = []
+debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
 rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
-rx_core_observable_pipe = { workspace = true, optional = true }
 disqualified = { workspace = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]
-rx_core = { workspace = true }
+rx_core = { workspace = true, default-features = true }
 rx_core_testing = { workspace = true }
 
 [[example]]
