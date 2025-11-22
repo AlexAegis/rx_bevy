@@ -20,7 +20,6 @@ default = []
 debug = [
     "rx_core_emission_variants/debug",
     "rx_core_subscriber_rc/debug",
-    "rx_core_subscription_drop/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
 ]
@@ -31,7 +30,6 @@ rx_core_traits = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_emission_variants = { workspace = true }
-rx_core_subscription_drop = { workspace = true }
 rx_core_subscriber_rc = { workspace = true }
 
 [dev-dependencies]

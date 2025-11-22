@@ -46,7 +46,7 @@ where
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
-		= SkipSubscriber<In, InError, Destination>
+		= SkipSubscriber<Destination>
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>

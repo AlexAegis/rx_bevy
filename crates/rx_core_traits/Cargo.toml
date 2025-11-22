@@ -20,9 +20,7 @@ default = []
 debug = []
 
 [dependencies]
-smallvec = { workspace = true }
 disqualified = { workspace = true }
-derive-where = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]

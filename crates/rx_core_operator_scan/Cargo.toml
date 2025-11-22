@@ -18,7 +18,6 @@ workspace = true
 [features]
 default = []
 debug = [
-    "dep:disqualified",
     "rx_core_observable_pipe?/debug",
     "rx_core_operator_composite?/debug",
     "rx_core_testing/debug",
@@ -35,7 +34,6 @@ rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_observable_pipe = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 derive-where = { workspace = true }
-disqualified = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

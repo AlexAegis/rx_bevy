@@ -36,13 +36,7 @@ debug = [
 ]
 pipe = ["rx_core/pipe"]
 compose = ["rx_core/compose"]
-reflect = [
-    "rx_bevy_context/reflect",
-    "rx_bevy_observable_event?/reflect",
-    "rx_bevy_observable_keyboard?/reflect",
-    "rx_bevy_observable_message?/reflect",
-    "rx_bevy_observable_proxy?/reflect",
-]
+reflect = ["rx_bevy_context/reflect"]
 test = []
 example = [
     "bevy/dynamic_linking",

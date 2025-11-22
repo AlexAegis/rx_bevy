@@ -1,15 +1,19 @@
 use disqualified::ShortName;
-use rx_core_traits::{
-	Never, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, Subscriber, SubscriptionContext, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Never, Observer, Subscriber, SubscriptionContext};
 
-#[derive(Debug)]
+#[derive(RxSubscriber, Debug)]
+#[rx_context(Destination::Context)]
+#[rx_in(Destination::In)]
+#[rx_in_error(Never)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_subscription_like_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
 pub struct ErrorBoundarySubscriber<Destination>
 where
 	Destination: Subscriber<InError = Never>,
 {
+	#[destination]
 	destination: Destination,
 }
 
@@ -20,41 +24,6 @@ where
 	pub fn new(destination: Destination) -> Self {
 		Self { destination }
 	}
-}
-
-impl<Destination> ObservableOutput for ErrorBoundarySubscriber<Destination>
-where
-	Destination: Subscriber<InError = Never>,
-{
-	type Out = Destination::In;
-	type OutError = Never;
-}
-
-impl<Destination> ObserverInput for ErrorBoundarySubscriber<Destination>
-where
-	Destination: Subscriber<InError = Never>,
-{
-	type In = Destination::In;
-	type InError = Never;
-}
-
-impl<Destination> WithSubscriptionContext for ErrorBoundarySubscriber<Destination>
-where
-	Destination: Subscriber<InError = Never>,
-{
-	type Context = Destination::Context;
-}
-
-impl<Destination> WithPrimaryCategory for ErrorBoundarySubscriber<Destination>
-where
-	Destination: Subscriber<InError = Never>,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Destination> ObserverUpgradesToSelf for ErrorBoundarySubscriber<Destination> where
-	Destination: Subscriber<InError = Never>
-{
 }
 
 impl<Destination> Observer for ErrorBoundarySubscriber<Destination>
@@ -89,48 +58,5 @@ where
 	#[inline]
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
-	}
-}
-
-impl<Destination> Tickable for ErrorBoundarySubscriber<Destination>
-where
-	Destination: Subscriber<InError = Never>,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<Destination> SubscriptionLike for ErrorBoundarySubscriber<Destination>
-where
-	Destination: Subscriber<InError = Never>,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<Destination> TeardownCollection for ErrorBoundarySubscriber<Destination>
-where
-	Destination: Subscriber<InError = Never>,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
 	}
 }

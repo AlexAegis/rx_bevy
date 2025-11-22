@@ -1618,9 +1618,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.46"
+version = "1.2.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b97463e1064cb1b1c1384ad0a0b9c8abd0988e2a91f52606c80ef14aadb63e36"
+checksum = "cd405d82c84ff7f35739f175f67d8b9fb7687a0e84ccdc78bd3568839827cf07"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -2163,7 +2163,6 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_mod_alternate_system_on_press",
- "derive-where",
  "disqualified",
  "rx_bevy_common",
  "rx_bevy_context",
@@ -2703,9 +2702,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.12.0"
+version = "2.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6717a8d2a5a929a1a2eb43a12812498ed141a0bcfb7e8f7844fbdbe4303bba9f"
+checksum = "0ad4bb2b565bca0645f4d68c5c9af97fba094e9791da685bf83cb5f3ce74acf2"
 dependencies = [
  "equivalent",
  "hashbrown 0.16.1",
@@ -4180,7 +4179,6 @@ version = "0.1.0"
 dependencies = [
  "bevy_reflect",
  "rx_core_testing",
- "rx_core_traits",
  "serde",
 ]
 
@@ -4209,7 +4207,6 @@ dependencies = [
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
- "smallvec",
  "stealcell",
  "thiserror 2.0.17",
 ]
@@ -4220,11 +4217,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_app",
  "bevy_ecs",
  "bevy_egui",
- "bevy_input",
- "bevy_reflect",
  "disqualified",
  "examples_common",
  "rx_bevy",
@@ -4241,11 +4235,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_app",
- "bevy_ecs",
  "bevy_egui",
  "bevy_input",
- "bevy_reflect",
  "examples_common",
  "rx_bevy",
  "rx_bevy_context",
@@ -4261,13 +4252,9 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_app",
  "bevy_ecs",
  "bevy_egui",
- "bevy_input",
- "bevy_reflect",
  "derive-where",
- "disqualified",
  "examples_common",
  "rx_bevy",
  "rx_bevy_context",
@@ -4286,10 +4273,8 @@ dependencies = [
  "bevy_app",
  "bevy_ecs",
  "bevy_egui",
- "bevy_input",
  "bevy_log",
  "bevy_mod_erased_component_registry",
- "bevy_reflect",
  "bevy_time",
  "examples_common",
  "rx_bevy",
@@ -4370,7 +4355,6 @@ dependencies = [
 name = "rx_core_macro_observable_derive"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
  "quote",
  "rx_core_macro_common",
  "syn",
@@ -4380,7 +4364,6 @@ dependencies = [
 name = "rx_core_macro_observer_derive"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
  "quote",
  "rx_core_macro_common",
  "syn",
@@ -4390,7 +4373,6 @@ dependencies = [
 name = "rx_core_macro_operator_derive"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
  "quote",
  "rx_core_macro_common",
  "syn",
@@ -4400,7 +4382,6 @@ dependencies = [
 name = "rx_core_macro_subject_derive"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
  "quote",
  "rx_core_macro_common",
  "syn",
@@ -4410,7 +4391,6 @@ dependencies = [
 name = "rx_core_macro_subscriber_derive"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
  "quote",
  "rx_core_macro_common",
  "syn",
@@ -4420,7 +4400,6 @@ dependencies = [
 name = "rx_core_macro_subscription_derive"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
  "quote",
  "rx_core_macro_common",
  "syn",
@@ -4435,7 +4414,6 @@ dependencies = [
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_rc",
- "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4447,7 +4425,6 @@ dependencies = [
  "disqualified",
  "rx_core",
  "rx_core_macro_observable_derive",
- "rx_core_observable_deferred",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4458,7 +4435,6 @@ version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_macro_observable_derive",
- "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4478,7 +4454,6 @@ dependencies = [
 name = "rx_core_observable_iterator"
 version = "0.1.0"
 dependencies = [
- "disqualified",
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
@@ -4490,10 +4465,8 @@ dependencies = [
 name = "rx_core_observable_iterator_on_tick"
 version = "0.1.0"
 dependencies = [
- "disqualified",
  "rx_core",
  "rx_core_macro_observable_derive",
- "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4649,7 +4622,6 @@ dependencies = [
 name = "rx_core_operator_fallback_when_silent"
 version = "0.1.0"
 dependencies = [
- "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
@@ -4680,7 +4652,6 @@ dependencies = [
  "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
- "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_operator_lift_option",
@@ -4694,10 +4665,8 @@ name = "rx_core_operator_finalize"
 version = "0.1.0"
 dependencies = [
  "derive-where",
- "disqualified",
  "rx_core",
  "rx_core_macro_operator_derive",
- "rx_core_macro_subscriber_derive",
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_testing",
@@ -4760,7 +4729,6 @@ name = "rx_core_operator_map"
 version = "0.1.0"
 dependencies = [
  "derive-where",
- "disqualified",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
@@ -4789,7 +4757,6 @@ name = "rx_core_operator_scan"
 version = "0.1.0"
 dependencies = [
  "derive-where",
- "disqualified",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
@@ -4817,7 +4784,6 @@ dependencies = [
 name = "rx_core_operator_switch_map"
 version = "0.1.0"
 dependencies = [
- "disqualified",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
@@ -4848,7 +4814,6 @@ dependencies = [
 name = "rx_core_operator_tap_next"
 version = "0.1.0"
 dependencies = [
- "disqualified",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
@@ -4864,7 +4829,6 @@ version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_macro_subject_derive",
- "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
@@ -4877,7 +4841,6 @@ dependencies = [
  "rx_core",
  "rx_core_macro_subject_derive",
  "rx_core_subject",
- "rx_core_subscription_drop",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4924,14 +4887,12 @@ dependencies = [
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
- "smallvec",
 ]
 
 [[package]]
 name = "rx_core_subscription_inert"
 version = "0.1.0"
 dependencies = [
- "disqualified",
  "rx_core",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
@@ -4952,10 +4913,8 @@ dependencies = [
 name = "rx_core_traits"
 version = "0.1.0"
 dependencies = [
- "derive-where",
  "disqualified",
  "rx_core",
- "smallvec",
  "thiserror 2.0.17",
 ]
 

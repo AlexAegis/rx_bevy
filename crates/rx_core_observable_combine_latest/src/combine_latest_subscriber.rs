@@ -1,10 +1,14 @@
 use rx_core_emission_variants::{EitherOut2, EitherOutError2};
-use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, Subscriber, SubscriptionContext, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable, WithPrimaryCategory, WithSubscriptionContext,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Observable, Observer, Subscriber, SubscriptionContext, SubscriptionLike};
 
+#[derive(RxSubscriber)]
+#[rx_context(Destination::Context)]
+#[rx_in( EitherOut2<O1, O2>)]
+#[rx_in_error(EitherOutError2<O1, O2>)]
+#[rx_delegate_tickable_to_destination]
+#[rx_delegate_subscription_like_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
 pub struct CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
@@ -15,6 +19,7 @@ where
 {
 	o1_val: Option<O1::Out>,
 	o2_val: Option<O2::Out>,
+	#[destination]
 	destination: Destination,
 }
 
@@ -33,62 +38,6 @@ where
 			destination,
 		}
 	}
-}
-
-impl<Destination, O1, O2> ObserverInput for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type In = EitherOut2<O1, O2>;
-	type InError = EitherOutError2<O1, O2>;
-}
-
-impl<Destination, O1, O2> ObservableOutput for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Out = (O1::Out, O2::Out);
-	type OutError = EitherOutError2<O1, O2>;
-}
-
-impl<Destination, O1, O2> WithSubscriptionContext for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type Context = Destination::Context;
-}
-
-impl<Destination, O1, O2> WithPrimaryCategory for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Destination, O1, O2> ObserverUpgradesToSelf for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
 }
 
 impl<Destination, O1, O2> Observer for CombineLatestSubscriber<Destination, O1, O2>
@@ -133,64 +82,6 @@ where
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.destination.complete(context);
 		self.unsubscribe(context)
-	}
-}
-
-impl<Destination, O1, O2> Tickable for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination:
-		Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>> + SubscriptionLike,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<Destination, O1, O2> SubscriptionLike for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination:
-		Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>> + SubscriptionLike,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
-	}
-}
-
-impl<Destination, O1, O2> TeardownCollection for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination:
-		Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>> + SubscriptionLike,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
 	}
 }
 

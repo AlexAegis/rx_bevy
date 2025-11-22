@@ -19,7 +19,6 @@ workspace = true
 default = []
 debug = [
     "rx_core_subject/debug",
-    "rx_core_subscription_drop/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
 ]
@@ -27,7 +26,6 @@ debug = [
 [dependencies]
 rx_core_subject = { workspace = true }
 rx_core_traits = { workspace = true }
-rx_core_subscription_drop = { workspace = true }
 rx_core_macro_subject_derive = { workspace = true }
 
 [dev-dependencies]

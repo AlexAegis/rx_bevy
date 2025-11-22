@@ -33,4 +33,3 @@ rx_core_testing = { workspace = true }
 [[example]]
 name = "composite_operators_example"
 path = "examples/composite_operators_example.rs"
-required-features = ["example"]

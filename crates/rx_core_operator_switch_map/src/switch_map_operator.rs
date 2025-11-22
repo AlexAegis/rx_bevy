@@ -1,12 +1,16 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{
-	Observable, ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber,
-	SubscriptionContext, WithSubscriptionContext,
-};
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Observable, Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::SwitchMapSubscriber;
 
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(InnerObservable::Out)]
+#[rx_out_error(InnerObservable::OutError)]
+#[rx_context(InnerObservable::Context)]
 pub struct SwitchMapOperator<In, InError, Switcher, InnerObservable>
 where
 	In: SignalBound,
@@ -66,41 +70,6 @@ where
 	{
 		SwitchMapSubscriber::new(destination, self.switcher.clone(), context)
 	}
-}
-
-impl<In, InError, Switcher, InnerObservable> ObserverInput
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
-where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
-	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: 'static + Observable + Send + Sync,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Switcher, InnerObservable> ObservableOutput
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
-where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
-	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: 'static + Observable + Send + Sync,
-{
-	type Out = InnerObservable::Out;
-	type OutError = InnerObservable::OutError;
-}
-
-impl<In, InError, Switcher, InnerObservable> WithSubscriptionContext
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
-where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
-	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: 'static + Observable + Send + Sync,
-{
-	type Context = InnerObservable::Context;
 }
 
 impl<In, InError, Switcher, InnerObservable> Clone

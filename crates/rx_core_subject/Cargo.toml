@@ -17,16 +17,11 @@ workspace = true
 
 [features]
 default = []
-debug = [
-    "rx_core_subscription_drop/debug",
-    "rx_core_testing/debug",
-    "rx_core_traits/debug",
-]
+debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
 
 [dependencies]
 smallvec = { workspace = true }
 rx_core_traits = { workspace = true }
-rx_core_subscription_drop = { workspace = true }
 rx_core_macro_subject_derive = { workspace = true }
 
 [dev-dependencies]

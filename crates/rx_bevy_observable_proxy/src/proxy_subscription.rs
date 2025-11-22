@@ -4,9 +4,10 @@ use bevy_app::Update;
 use bevy_ecs::entity::Entity;
 use bevy_log::warn;
 use bevy_time::Virtual;
+use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	SharedSubscriber, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
-	TeardownCollection, Tick, Tickable, UpgradeableObserver, WithSubscriptionContext,
+	TeardownCollection, Tick, Tickable, UpgradeableObserver,
 };
 
 use rx_bevy_context::{
@@ -14,6 +15,8 @@ use rx_bevy_context::{
 	SubscriptionSchedule,
 };
 
+#[derive(RxSubscription)]
+#[rx_context(BevySubscriptionContextProvider)]
 pub struct ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
@@ -72,13 +75,6 @@ where
 			closed_flag: false.into(),
 		}
 	}
-}
-
-impl<Destination> WithSubscriptionContext for ProxySubscription<Destination>
-where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
-{
-	type Context = BevySubscriptionContextProvider;
 }
 
 impl<Destination> SubscriptionLike for ProxySubscription<Destination>
