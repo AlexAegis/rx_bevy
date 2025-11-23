@@ -57,6 +57,7 @@ debug = [
     "rx_core_operator_map_into?/debug",
     "rx_core_operator_scan?/debug",
     "rx_core_operator_skip?/debug",
+    "rx_core_operator_switch_all?/debug",
     "rx_core_operator_switch_map?/debug",
     "rx_core_operator_take?/debug",
     "rx_core_operator_tap_next?/debug",
@@ -125,6 +126,7 @@ all_operators = [
     "operator_map_into",
     "operator_scan",
     "operator_skip",
+    "operator_switch_all",
     "operator_switch_map",
     "operator_take",
     "operator_tap_next",
@@ -145,6 +147,7 @@ operator_map = ["dep:rx_core_operator_map"]
 operator_map_into = ["dep:rx_core_operator_map_into"]
 operator_scan = ["dep:rx_core_operator_scan"]
 operator_skip = ["dep:rx_core_operator_skip"]
+operator_switch_all = ["dep:rx_core_operator_switch_all"]
 operator_switch_map = ["dep:rx_core_operator_switch_map"]
 operator_take = ["dep:rx_core_operator_take"]
 operator_tap_next = ["dep:rx_core_operator_tap_next"]
@@ -164,6 +167,7 @@ pipe = [
     "rx_core_operator_map_into?/pipe",
     "rx_core_operator_scan?/pipe",
     "rx_core_operator_skip?/pipe",
+    "rx_core_operator_switch_all?/pipe",
     "rx_core_operator_switch_map?/pipe",
     "rx_core_operator_take?/pipe",
     "rx_core_operator_tap_next?/pipe",
@@ -184,6 +188,7 @@ compose = [
     "rx_core_operator_map_into?/compose",
     "rx_core_operator_scan?/compose",
     "rx_core_operator_skip?/compose",
+    "rx_core_operator_switch_all?/compose",
     "rx_core_operator_switch_map?/compose",
     "rx_core_operator_take?/compose",
     "rx_core_operator_tap_next?/compose",
@@ -205,6 +210,7 @@ operator_fn = [
     "rx_core_operator_map_into?/operator_fn",
     "rx_core_operator_scan?/operator_fn",
     "rx_core_operator_skip?/operator_fn",
+    "rx_core_operator_switch_all?/operator_fn",
     "rx_core_operator_switch_map?/operator_fn",
     "rx_core_operator_take?/operator_fn",
     "rx_core_operator_tap_next?/operator_fn",
@@ -254,6 +260,7 @@ rx_core_operator_map = { workspace = true, optional = true }
 rx_core_operator_map_into = { workspace = true, optional = true }
 rx_core_operator_scan = { workspace = true, optional = true }
 rx_core_operator_skip = { workspace = true, optional = true }
+rx_core_operator_switch_all = { workspace = true, optional = true }
 rx_core_operator_switch_map = { workspace = true, optional = true }
 rx_core_operator_take = { workspace = true, optional = true }
 rx_core_operator_tap_next = { workspace = true, optional = true }

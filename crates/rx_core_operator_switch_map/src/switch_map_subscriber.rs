@@ -2,9 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_switch::SwitchSubscriber;
-use rx_core_traits::{
-	Observable, Observer, SignalBound, Subscriber, SubscriptionContext, TeardownCollectionExtension,
-};
+use rx_core_traits::{Observable, Observer, SignalBound, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber)]
 #[rx_in(In)]
@@ -27,7 +25,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	#[destination]
 	destination: SwitchSubscriber<InnerObservable, Destination>,
@@ -50,7 +47,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	pub fn new(
 		destination: Destination,
@@ -80,7 +76,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	#[inline]
 	fn next(

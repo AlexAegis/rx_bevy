@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_operator_switch_map"
-description = "switch_map operator for rx_core"
+name = "rx_core_operator_switch_all"
+description = "switch_all operator for rx_core"
 version = "0.1.0"
 readme = "readme.md"
 publish = false

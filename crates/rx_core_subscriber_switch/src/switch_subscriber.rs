@@ -2,8 +2,7 @@ use crate::ExternallyManagedSubscriber;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observable, Observer, SharedSubscriber, Subscriber, SubscriptionClosedFlag,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	TeardownCollectionExtension, Tick, Tickable,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
 };
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
@@ -22,7 +21,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	pub(crate) destination: SharedSubscriber<ExternallyManagedSubscriber<Destination>>,
 	pub(crate) inner_subscription: Option<
@@ -44,7 +42,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	pub fn new(
 		destination: Destination,
@@ -82,7 +79,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	fn next(
 		&mut self,
@@ -141,7 +137,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	fn tick(
 		&mut self,
@@ -169,7 +164,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -206,7 +200,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	fn add_teardown(
 		&mut self,
@@ -239,7 +232,6 @@ where
 			InError = InnerObservable::OutError,
 			Context = InnerObservable::Context,
 		>,
-	Destination: TeardownCollectionExtension,
 {
 	#[inline]
 	fn drop(&mut self) {

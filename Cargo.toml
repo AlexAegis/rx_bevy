@@ -145,6 +145,7 @@ rx_core_operator_map = { path = "crates/rx_core_operator_map" }
 rx_core_operator_map_into = { path = "crates/rx_core_operator_map_into" }
 rx_core_operator_scan = { path = "crates/rx_core_operator_scan" }
 rx_core_operator_skip = { path = "crates/rx_core_operator_skip" }
+rx_core_operator_switch_all = { path = "crates/rx_core_operator_switch_all" }
 rx_core_operator_switch_map = { path = "crates/rx_core_operator_switch_map" }
 rx_core_operator_take = { path = "crates/rx_core_operator_take" }
 rx_core_operator_tap_next = { path = "crates/rx_core_operator_tap_next" }

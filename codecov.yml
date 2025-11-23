@@ -38,6 +38,9 @@ component_management:
     - component_id: rx_bevy_observable_proxy
       paths:
         - crates/rx_bevy_observable_proxy/**
+    - component_id: rx_bevy_observable_resource
+      paths:
+        - crates/rx_bevy_observable_resource/**
     - component_id: rx_core
       paths:
         - crates/rx_core/**
@@ -155,6 +158,9 @@ component_management:
     - component_id: rx_core_operator_skip
       paths:
         - crates/rx_core_operator_skip/**
+    - component_id: rx_core_operator_switch_all
+      paths:
+        - crates/rx_core_operator_switch_all/**
     - component_id: rx_core_operator_switch_map
       paths:
         - crates/rx_core_operator_switch_map/**

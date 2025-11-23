@@ -76,6 +76,8 @@ pub mod operator {
 	pub use rx_core_operator_scan::operator::*;
 	#[cfg(feature = "operator_skip")]
 	pub use rx_core_operator_skip::operator::*;
+	#[cfg(feature = "operator_switch_all")]
+	pub use rx_core_operator_switch_all::operator::*;
 	#[cfg(feature = "operator_switch_map")]
 	pub use rx_core_operator_switch_map::operator::*;
 	#[cfg(feature = "operator_take")]
@@ -116,6 +118,8 @@ pub mod extension_composite {
 	pub use rx_core_operator_scan::extension_composite::*;
 	#[cfg(feature = "operator_skip")]
 	pub use rx_core_operator_skip::extension_composite::*;
+	#[cfg(feature = "operator_switch_all")]
+	pub use rx_core_operator_switch_all::extension_composite::*;
 	#[cfg(feature = "operator_switch_map")]
 	pub use rx_core_operator_switch_map::extension_composite::*;
 	#[cfg(feature = "operator_take")]
@@ -156,6 +160,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_scan::extension_pipe::*;
 	#[cfg(feature = "operator_skip")]
 	pub use rx_core_operator_skip::extension_pipe::*;
+	#[cfg(feature = "operator_switch_all")]
+	pub use rx_core_operator_switch_all::extension_pipe::*;
 	#[cfg(feature = "operator_switch_map")]
 	pub use rx_core_operator_switch_map::extension_pipe::*;
 	#[cfg(feature = "operator_take")]
@@ -196,6 +202,8 @@ pub mod operator_fn {
 	pub use rx_core_operator_scan::operator_fn::*;
 	#[cfg(feature = "operator_skip")]
 	pub use rx_core_operator_skip::operator_fn::*;
+	#[cfg(feature = "operator_switch_all")]
+	pub use rx_core_operator_switch_all::operator_fn::*;
 	#[cfg(feature = "operator_switch_map")]
 	pub use rx_core_operator_switch_map::operator_fn::*;
 	#[cfg(feature = "operator_take")]
