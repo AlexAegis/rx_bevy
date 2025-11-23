@@ -23,7 +23,7 @@ env:
   RUSTUP_MAX_RETRIES: 10
 
 jobs:
-  fmt:
+  build:
     runs-on: ubuntu-latest
     steps:
       - &checkout_depth_1
@@ -32,10 +32,9 @@ jobs:
         with:
           fetch-depth: 1
           submodules: recursive
-      - name: rust toolchain
+      - &install_rust
+        name: rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
       - &cache
         name: cache
         uses: Swatinem/rust-cache@v2
@@ -43,29 +42,6 @@ jobs:
         if: ${{ vars.INSTALL_ALSA_AND_UDEV == 'true' }}
         name: install alsa and udev (linux)
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - name: format
-        run: cargo fmt --all -- --check
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-      - *checkout_depth_1
-      - name: rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - *cache
-      - *install_alsa_and_udev
-      - name: clippy
-        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - *checkout_depth_1
-      - &install_rust
-        name: rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - *cache
-      - *install_alsa_and_udev
       - name: build
         run: cargo build --locked --workspace --all-targets --all-features
   test:
@@ -93,6 +69,45 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: target/coverage
           fail_ci_if_error: true
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout_depth_1
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - *cache
+      - *install_alsa_and_udev
+      - name: format
+        run: cargo fmt --all -- --check
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout_depth_1
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - *cache
+      - *install_alsa_and_udev
+      - name: clippy
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+  machete:
+    runs-on: ubuntu-latest
+    environment:
+      name: codecov-io
+      url: https://app.codecov.io/github/${{ github.event.repository.full_name }}
+    steps:
+      - *checkout_depth_1
+      - *install_rust
+      - *cache
+      - *install_alsa_and_udev
+      - *install_binstall
+      - name: install machete
+        run: cargo binstall --no-confirm --force cargo-machete
+      - name: check for unused dependencies
+        run: cargo machete
   conventional-commits:
     runs-on: ubuntu-latest
     steps:
