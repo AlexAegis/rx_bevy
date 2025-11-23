@@ -1,0 +1,58 @@
+[package]
+name = "rx_bevy_observable_resource"
+description = "rx_bevy resource observable"
+version = "0.1.0"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = []
+debug = [
+    "bevy/track_location",
+    "rx_bevy_context/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
+]
+example = [
+    "bevy/dynamic_linking",
+    "bevy/bevy_asset",
+    "bevy/bevy_core_pipeline",
+    "bevy/bevy_gltf",
+    "bevy/bevy_pbr",
+    "bevy/bevy_picking",
+    "bevy/bevy_render",
+    "bevy/bevy_scene",
+    "bevy/bevy_winit",
+    "bevy/tonemapping_luts",
+    "bevy/x11",
+]
+
+[dependencies]
+rx_core_traits = { workspace = true }
+rx_bevy_context = { workspace = true }
+rx_core_macro_observable_derive = { workspace = true }
+rx_core_macro_subscription_derive = { workspace = true }
+bevy_ecs = { workspace = true }
+
+[dev-dependencies]
+bevy = { workspace = true }
+rx_bevy = { workspace = true, default-features = true }
+rx_core_testing = { workspace = true }
+examples_common = { workspace = true }
+bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
+bevy_egui = { workspace = true }
+
+[[example]]
+name = "resource_observable_example"
+path = "examples/resource_observable_example.rs"
+required-features = ["example"]

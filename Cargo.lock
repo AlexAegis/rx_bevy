@@ -4168,6 +4168,7 @@ dependencies = [
  "rx_bevy_observable_keyboard",
  "rx_bevy_observable_message",
  "rx_bevy_observable_proxy",
+ "rx_bevy_observable_resource",
  "rx_core",
  "rx_core_testing",
  "rx_core_traits",
@@ -4276,6 +4277,23 @@ dependencies = [
  "bevy_log",
  "bevy_mod_erased_component_registry",
  "bevy_time",
+ "examples_common",
+ "rx_bevy",
+ "rx_bevy_context",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_subscription_derive",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_bevy_observable_resource"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_ecs",
+ "bevy_egui",
  "examples_common",
  "rx_bevy",
  "rx_bevy_context",

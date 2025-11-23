@@ -11,6 +11,8 @@ pub mod observable {
 	pub use rx_bevy_observable_message::observable::*;
 	#[cfg(feature = "observable_proxy")]
 	pub use rx_bevy_observable_proxy::observable::*;
+	#[cfg(feature = "observable_resource")]
+	pub use rx_bevy_observable_resource::observable::*;
 }
 
 #[cfg(feature = "observable_fn")]

@@ -71,7 +71,6 @@ description = "Installs everything to be able to build for the web"
 workspace = false
 dependencies = ["install-target-wasm", "install-trunk"]
 
-
 ### Build - Extra Scripts
 
 [tasks.script-link-assets]
@@ -97,6 +96,7 @@ category = "Build"
 dependencies = ["setup"]
 command = "cargo"
 args = ["build", "--workspace", "--all-targets", "--all-features", "--timings"]
+
 
 ## Test
 
@@ -286,7 +286,7 @@ dependencies = ["install-mdbook"]
 command = "mdbook"
 args = ["build"]
 
-[tasks.book-serve]
+[tasks.book]
 description = "Serves the book for editing"
 workspace = false
 dependencies = ["install-mdbook"]

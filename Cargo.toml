@@ -165,6 +165,7 @@ rx_bevy_observable_event = { path = "crates/rx_bevy_observable_event" }
 rx_bevy_observable_keyboard = { path = "crates/rx_bevy_observable_keyboard" }
 rx_bevy_observable_message = { path = "crates/rx_bevy_observable_message" }
 rx_bevy_observable_proxy = { path = "crates/rx_bevy_observable_proxy" }
+rx_bevy_observable_resource = { path = "crates/rx_bevy_observable_resource" }
 
 [workspace.metadata.cargo-machete]
 ignored = ["rx_core_testing"]
