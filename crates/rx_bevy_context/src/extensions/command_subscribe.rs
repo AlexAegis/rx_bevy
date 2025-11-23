@@ -93,12 +93,20 @@ where
 					.is_some()
 			});
 
+		let remaining_retries = self.retries_remaining;
+
 		if has_matching_subscribe_observer {
 			// TODO(bevy-0.17): world.trigger(self.event);
 			world.trigger_targets(self.event, observable_entity);
-		} else {
-			let command_to_retry = self.retry()?;
-			let mut subscries_to_retry = world.get_resource_mut::<SubscribesToRetry>().unwrap();
+		} else if let (Ok(command_to_retry), Some(mut subscries_to_retry)) =
+			(self.retry(), world.get_resource_mut::<SubscribesToRetry>())
+		{
+			// TODO: Use feature gated debug macro once ready
+			println!(
+				"Retrying {} {}...",
+				ShortName::of::<Self>(),
+				remaining_retries
+			);
 			subscries_to_retry.push(command_to_retry);
 		}
 

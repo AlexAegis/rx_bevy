@@ -133,7 +133,9 @@ where
 	OutError: SignalBound,
 {
 	fn drop(&mut self) {
-		if let Some(_destination) = self.try_consume_destination() {
+		if let Some(destination) = self.try_consume_destination()
+			&& !destination.is_closed()
+		{
 			error!(
 				r"The {} event was not consumed! The target observable entity ({}) does not contain any observables with these output types!
 
