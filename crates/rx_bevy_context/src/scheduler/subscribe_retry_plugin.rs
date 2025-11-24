@@ -9,7 +9,7 @@ pub(crate) struct SubscribeRetryPlugin;
 impl Plugin for SubscribeRetryPlugin {
 	fn build(&self, app: &mut bevy_app::App) {
 		app.init_resource::<SubscribesToRetry>();
-		app.add_systems(First, run_subscribes_to_retry);
+		app.add_systems(First, execute_pending_retries);
 	}
 }
 
@@ -36,7 +36,7 @@ impl SubscribesToRetry {
 	}
 }
 
-pub(crate) fn run_subscribes_to_retry(world: &mut World) {
+pub(crate) fn execute_pending_retries(world: &mut World) {
 	if let Some(mut subscribes_to_retry) = world.remove_resource::<SubscribesToRetry>() {
 		subscribes_to_retry.execute(world);
 		world.insert_resource(subscribes_to_retry);

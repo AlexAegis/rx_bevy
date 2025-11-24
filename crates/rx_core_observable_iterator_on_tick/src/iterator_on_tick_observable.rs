@@ -24,7 +24,7 @@ use crate::{OnTickIteratorSubscription, observable::OnTickObservableOptions};
 #[rx_context(Context)]
 pub struct IteratorOnTickObservable<Iterator, Context>
 where
-	Iterator: Clone + IntoIterator,
+	Iterator: 'static + Clone + IntoIterator,
 	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
@@ -35,7 +35,7 @@ where
 
 impl<Iterator, Context> IteratorOnTickObservable<Iterator, Context>
 where
-	Iterator: Clone + IntoIterator,
+	Iterator: 'static + Clone + IntoIterator,
 	Iterator::Item: SignalBound,
 	Context: SubscriptionContext,
 {
@@ -50,7 +50,7 @@ where
 
 impl<Iterator, Context> Observable for IteratorOnTickObservable<Iterator, Context>
 where
-	Iterator: Clone + IntoIterator,
+	Iterator: 'static + Clone + IntoIterator,
 	Iterator::Item: SignalBound,
 	Iterator::IntoIter: Send + Sync,
 	Context: SubscriptionContext,

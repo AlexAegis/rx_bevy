@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub struct IntervalObservableOptions {
 	pub duration: Duration,

@@ -122,6 +122,8 @@ fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
 		.observe(print_notification_observer::<KeyCode, Never>)
 		.id();
 
+	let mut context = context_param.into_context(None);
+
 	let instant_subscription_entity = {
 		let mut interval_entity = commands.spawn((
 			Name::new("IntervalObservable"),
@@ -135,8 +137,6 @@ fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
 
 		let interval_entity_as_observable =
 			interval_entity.as_observable::<usize, Never, Update, Virtual>();
-
-		let mut context = context_param.into_context(None);
 
 		let subscription = interval_entity_as_observable
 			.enumerate()

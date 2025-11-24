@@ -21,7 +21,7 @@ use rx_core_traits::{SubscriptionNotification, Tick};
 use crate::{
 	BevySubscriptionContextParam, ScheduledSubscriptionComponent, SubscribeRetryPlugin,
 	SubscriptionNotificationEvent, SubscriptionSchedule, UnfinishedSubscription,
-	run_subscribes_to_retry,
+	execute_pending_retries,
 };
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
@@ -104,7 +104,7 @@ fn clean_unfinished_subscriptions<S, C>(
 
 fn unsubscribe_all_subscriptions(world: &mut World) {
 	// These could contain stuff that'd panic on drop, better let them execute!
-	run_subscribes_to_retry(world);
+	execute_pending_retries(world);
 
 	let mut subscription_query =
 		world.query_filtered::<(Entity, &mut ScheduledSubscriptionComponent), ()>(); // TODO(bevy-0.17): Allow<Internal>

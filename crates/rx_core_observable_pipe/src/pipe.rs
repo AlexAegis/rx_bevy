@@ -10,7 +10,7 @@ use rx_core_traits::{
 #[rx_context(Source::Context)]
 pub struct Pipe<Source, Op>
 where
-	Source: 'static + Observable,
+	Source: Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	pub(crate) source_observable: Source,
@@ -19,7 +19,7 @@ where
 
 impl<Source, Op> Pipe<Source, Op>
 where
-	Source: 'static + Observable,
+	Source: Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	pub fn new(source_observable: Source, operator: Op) -> Self {
@@ -32,7 +32,7 @@ where
 
 impl<Source, Op> Pipe<Source, Op>
 where
-	Source: 'static + Observable,
+	Source: Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	#[inline]
@@ -51,7 +51,7 @@ where
 
 impl<Source, Op> Observable for Pipe<Source, Op>
 where
-	Source: 'static + Observable,
+	Source: Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
 	type Subscription<Destination>

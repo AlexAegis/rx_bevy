@@ -7,9 +7,7 @@ use rx_core_traits::{
 	Observable, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
 };
 
-use crate::{
-	BevySubscriptionContextProvider, EntityCommandSubscribeExtension, EntityCommandsSubscription,
-};
+use crate::{BevySubscriptionContextProvider, EntityCommandSubscribeExtension, EntitySubscription};
 
 pub trait EntityCommandsAsObservableExtension {
 	/// # `as_observable`
@@ -152,7 +150,7 @@ where
 	C: Clock,
 {
 	type Subscription<Destination>
-		= EntityCommandsSubscription
+		= EntitySubscription
 	where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
@@ -177,6 +175,6 @@ where
 			.commands()
 			.entity(self.observable_entity)
 			.subscribe_destination::<_, S, C>(destination);
-		EntityCommandsSubscription::new(subscription_entity)
+		EntitySubscription::new(subscription_entity)
 	}
 }

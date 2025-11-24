@@ -22,7 +22,7 @@ pub trait WithSubscriptionContext {
 /// The context defines how new subscriptions can be acquired in an observable.
 ///
 /// TODO: Rename to SubscriptionAllocationContextProvider?
-pub trait SubscriptionContext {
+pub trait SubscriptionContext: 'static {
 	/// The actual context reference that will be passed into subscriptions
 	/// and subscribers. The lifetime parameters allow for decoupling the
 	/// lifetime of the context definition and the lifetime of the context

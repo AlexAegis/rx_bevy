@@ -12,10 +12,10 @@ pub struct FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: 'static + FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: 'static + FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	on_next: OnNext,
@@ -30,10 +30,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: 'static + FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: 'static + FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	pub fn new(
@@ -57,10 +57,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Observer
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: 'static + FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: 'static + FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	fn next(
@@ -89,10 +89,10 @@ impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Tickable
 where
 	In: SignalBound,
 	InError: SignalBound,
-	OnNext: FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnError: FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	OnComplete: FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
-	OnTick: FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
+	OnComplete: 'static + FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
+	OnTick: 'static + FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
 	fn tick(

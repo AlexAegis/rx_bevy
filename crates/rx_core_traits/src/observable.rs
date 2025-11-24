@@ -84,7 +84,8 @@ pub trait Observable: ObservableOutput + WithSubscriptionContext + WithPrimaryCa
 	/// be attempted. This attempt at unsubscribing on drop, if the subscription
 	/// wasn't already unsubscribed, can panic if the SubscriptionContext used
 	/// is not a [DropSafeSubscriptionContext].
-	type Subscription<Destination>: SubscriptionScheduled<Context = Self::Context>
+	type Subscription<Destination>: 'static
+		+ SubscriptionScheduled<Context = Self::Context>
 		+ Drop
 		+ Send
 		+ Sync

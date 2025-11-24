@@ -11,12 +11,12 @@ use crate::BevySubscriptionContextProvider;
 
 #[derive(RxSubscription)]
 #[rx_context(BevySubscriptionContextProvider)]
-pub struct EntityCommandsSubscription {
+pub struct EntitySubscription {
 	closed_flag: SubscriptionClosedFlag,
 	subscription_entity: Entity,
 }
 
-impl EntityCommandsSubscription {
+impl EntitySubscription {
 	pub fn new(subscription_entity: Entity) -> Self {
 		Self {
 			closed_flag: false.into(),
@@ -30,7 +30,13 @@ impl EntityCommandsSubscription {
 	}
 }
 
-impl Tickable for EntityCommandsSubscription {
+impl From<EntitySubscription> for Entity {
+	fn from(value: EntitySubscription) -> Self {
+		value.into_entity()
+	}
+}
+
+impl Tickable for EntitySubscription {
 	fn tick(
 		&mut self,
 		_tick: rx_core_traits::Tick,
@@ -43,7 +49,7 @@ impl Tickable for EntityCommandsSubscription {
 	}
 }
 
-impl SubscriptionLike for EntityCommandsSubscription {
+impl SubscriptionLike for EntitySubscription {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		*self.closed_flag
@@ -64,7 +70,7 @@ impl SubscriptionLike for EntityCommandsSubscription {
 	}
 }
 
-impl TeardownCollection for EntityCommandsSubscription {
+impl TeardownCollection for EntitySubscription {
 	fn add_teardown(
 		&mut self,
 		teardown: rx_core_traits::Teardown<Self::Context>,
@@ -81,7 +87,7 @@ impl TeardownCollection for EntityCommandsSubscription {
 	}
 }
 
-impl Drop for EntityCommandsSubscription {
+impl Drop for EntitySubscription {
 	fn drop(&mut self) {
 		// Doesn't actually own any resources, the flag is safe to close.
 		self.closed_flag.close();
