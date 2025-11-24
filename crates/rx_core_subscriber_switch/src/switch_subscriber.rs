@@ -1,8 +1,8 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_subscriber_managed::ManagedSubscriber;
+use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, Observer, SharedSubscriber, Subscriber, SubscriptionClosedFlag,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	Observable, Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext,
+	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
 };
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
@@ -22,12 +22,9 @@ where
 			Context = InnerObservable::Context,
 		>,
 {
-	pub(crate) destination: SharedSubscriber<ManagedSubscriber<Destination>>,
-	pub(crate) inner_subscription: Option<
-		<InnerObservable as Observable>::Subscription<
-			SharedSubscriber<ManagedSubscriber<Destination>>,
-		>,
-	>,
+	pub(crate) destination: RcSubscriber<Destination>,
+	pub(crate) inner_subscription:
+		Option<<InnerObservable as Observable>::Subscription<RcSubscriber<Destination>>>,
 	pub(crate) closed_flag: SubscriptionClosedFlag,
 }
 
@@ -48,7 +45,7 @@ where
 		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
-			destination: SharedSubscriber::new(ManagedSubscriber::new(destination), context),
+			destination: RcSubscriber::new(destination, context),
 			inner_subscription: None,
 			closed_flag: false.into(),
 		}
@@ -84,13 +81,6 @@ where
 	) {
 		if !self.is_closed() {
 			self.unsubscribe_inner(context);
-			self.destination.access_with_context_mut(
-				|inner, _context| {
-					inner.inner_is_complete = false;
-					inner.outer_is_complete = false;
-				},
-				context,
-			);
 
 			let subscription =
 				next.subscribe(self.destination.clone_with_context(context), context);
@@ -112,13 +102,7 @@ where
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.destination.access_with_context_mut(
-				|inner, context| {
-					inner.outer_is_complete = true;
-					inner.complete_if_can(context);
-				},
-				context,
-			);
+			self.destination.complete(context);
 		}
 	}
 }
@@ -175,12 +159,6 @@ where
 
 			self.unsubscribe_inner(context);
 			self.destination.unsubscribe(context);
-			self.destination.access_with_context_mut(
-				|inner, context| {
-					inner.downstream_destination.unsubscribe(context);
-				},
-				context,
-			);
 		}
 	}
 }
@@ -204,14 +182,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			let mut teardown = Some(teardown);
-			self.destination.access_with_context_mut(
-				|inner, context| {
-					let teardown = teardown.take().unwrap();
-					inner.add_downstream_teardown(teardown, context);
-				},
-				context,
-			);
+			self.destination.add_downstream_teardown(teardown, context);
 		} else {
 			teardown.execute(context);
 		}

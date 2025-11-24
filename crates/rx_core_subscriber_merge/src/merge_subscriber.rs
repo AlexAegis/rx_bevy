@@ -165,15 +165,8 @@ where
 		// An upstream unsubscribe stops everything!
 		if !self.is_closed() {
 			self.closed_flag.close();
-
 			self.unsubscribe_all_inner(context);
 			self.destination.unsubscribe(context);
-			//self.destination.access_with_context_mut(
-			//	|inner, context| {
-			//		inner.downstream_destination.unsubscribe(context);
-			//	},
-			//	context,
-			//);
 		}
 	}
 }
@@ -197,14 +190,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			let mut teardown = Some(teardown);
-			self.destination.access_with_context_mut(
-				|inner, context| {
-					let teardown = teardown.take().unwrap();
-					inner.add_teardown(teardown, context);
-				},
-				context,
-			);
+			self.destination.add_downstream_teardown(teardown, context);
 		} else {
 			teardown.execute(context);
 		}

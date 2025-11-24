@@ -1,7 +1,7 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable,
+	Observer, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection, Tick, Tickable,
 	allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
 };
 
@@ -16,6 +16,7 @@ where
 	Destination: 'static + Subscriber,
 {
 	shared_destination: <InnerRcSubscriber<Destination> as DestinationSharedTypes>::Shared,
+	pub inner_teardown: Option<SubscriptionData<Destination::Context>>,
 	completed: bool,
 	unsubscribed: bool,
 }
@@ -34,6 +35,7 @@ where
 					InnerRcSubscriber::new(destination),
 					context,
 				),
+			inner_teardown: None,
 			completed: false,
 			unsubscribed: false,
 		}
@@ -68,6 +70,7 @@ where
 		Self {
 			completed: self.completed,
 			unsubscribed: self.unsubscribed,
+			inner_teardown: None,
 			shared_destination,
 		}
 	}
@@ -98,6 +101,15 @@ where
 	{
 		self.shared_destination
 			.access_with_context_mut(accessor, context);
+	}
+
+	#[inline]
+	pub fn add_downstream_teardown(
+		&mut self,
+		teardown: Teardown<Destination::Context>,
+		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		self.shared_destination.add_teardown(teardown, context);
 	}
 
 	/// Acquire a clone to the same reference which will not interact with
@@ -204,7 +216,12 @@ where
 		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		self.shared_destination.add_teardown(teardown, context);
+		// The inner subscriptions additional teardowns will be stored here, not downstream.
+		// Additional downstream teardowns can only be added from upstream, using an externally
+		// accessed function.
+		self.inner_teardown
+			.get_or_insert_default()
+			.add_teardown(teardown, context);
 	}
 }
 

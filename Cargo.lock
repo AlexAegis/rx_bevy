@@ -4942,7 +4942,7 @@ version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_macro_subscriber_derive",
- "rx_core_subscriber_managed",
+ "rx_core_subscriber_rc",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -5251,9 +5251,9 @@ checksum = "0193cc4331cfd2f3d2011ef287590868599a2f33c3e69bc22c1a3d3acf9e02fb"
 
 [[package]]
 name = "syn"
-version = "2.0.110"
+version = "2.0.111"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a99801b5bd34ede4cf3fc688c5919368fea4e4814a4664359503e6015b280aea"
+checksum = "390cc9a294ab71bdb1aa2e99d13be9c753cd2d7bd6560c77118597410c4d2e87"
 dependencies = [
  "proc-macro2",
  "quote",
