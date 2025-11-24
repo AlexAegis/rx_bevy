@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_subscriber_switch"
-description = "switch subscriber for rx_core. Upon recieving an observable, subscribes to it immediately, unsubscribing the previous one."
+name = "rx_core_subscriber_managed"
+description = "merge subscriber for rx_core."
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -20,9 +20,8 @@ default = []
 debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
 
 [dependencies]
-rx_core_macro_subscriber_derive = { workspace = true }
-rx_core_subscriber_managed = { workspace = true }
 rx_core_traits = { workspace = true }
+rx_core_macro_subscriber_derive = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

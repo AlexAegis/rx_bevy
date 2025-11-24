@@ -1,8 +1,8 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_subscriber_managed::ManagedSubscriber;
+use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, Observer, SharedSubscriber, Subscriber, SubscriptionClosedFlag,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	Observable, Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext,
+	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
 };
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
@@ -10,7 +10,7 @@ use rx_core_traits::{
 #[rx_in(InnerObservable)]
 #[rx_in_error(InnerObservable::OutError)]
 #[rx_context(Destination::Context)]
-pub struct SwitchSubscriber<InnerObservable, Destination>
+pub struct MergeSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
@@ -22,16 +22,13 @@ where
 			Context = InnerObservable::Context,
 		>,
 {
-	pub(crate) destination: SharedSubscriber<ManagedSubscriber<Destination>>,
-	pub(crate) inner_subscription: Option<
-		<InnerObservable as Observable>::Subscription<
-			SharedSubscriber<ManagedSubscriber<Destination>>,
-		>,
-	>,
+	pub(crate) destination: RcSubscriber<Destination>,
+	pub(crate) inner_subscriptions:
+		Vec<<InnerObservable as Observable>::Subscription<RcSubscriber<Destination>>>,
 	pub(crate) closed_flag: SubscriptionClosedFlag,
 }
 
-impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination> MergeSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
@@ -48,24 +45,24 @@ where
 		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
-			destination: SharedSubscriber::new(ManagedSubscriber::new(destination), context),
-			inner_subscription: None,
+			destination: RcSubscriber::new(destination, context),
+			inner_subscriptions: Vec::new(),
 			closed_flag: false.into(),
 		}
 	}
 
 	#[inline]
-	fn unsubscribe_inner(
+	fn unsubscribe_all_inner(
 		&mut self,
 		context: &mut <InnerObservable::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if let Some(mut inner_subscription) = self.inner_subscription.take() {
+		for mut inner_subscription in self.inner_subscriptions.drain(..) {
 			inner_subscription.unsubscribe(context);
 		}
 	}
 }
 
-impl<InnerObservable, Destination> Observer for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination> Observer for MergeSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
@@ -83,19 +80,18 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			self.unsubscribe_inner(context);
-			self.destination.access_with_context_mut(
-				|inner, _context| {
-					inner.inner_is_complete = false;
-					inner.outer_is_complete = false;
-				},
-				context,
-			);
+			//self.destination.access_with_context_mut(
+			//	|inner, _context| {
+			//		inner.inner_is_complete = false;
+			//		inner.outer_is_complete = false;
+			//	},
+			//	context,
+			//);
 
 			let subscription =
 				next.subscribe(self.destination.clone_with_context(context), context);
 
-			self.inner_subscription = Some(subscription);
+			self.inner_subscriptions.push(subscription);
 		}
 	}
 
@@ -105,25 +101,19 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			self.unsubscribe_inner(context);
+			self.unsubscribe_all_inner(context);
 			self.destination.error(error, context);
 		}
 	}
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.destination.access_with_context_mut(
-				|inner, context| {
-					inner.outer_is_complete = true;
-					inner.complete_if_can(context);
-				},
-				context,
-			);
+			self.destination.complete(context);
 		}
 	}
 }
 
-impl<InnerObservable, Destination> Tickable for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination> Tickable for MergeSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
@@ -140,9 +130,12 @@ where
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if let Some(inner_subscription) = &mut self.inner_subscription {
+		// TODO: Since there's multiple things to tick here, and they all go downstream, this will cause problems, and they must be filtered as they join back
+		for inner_subscription in self.inner_subscriptions.iter_mut() {
 			inner_subscription.tick(tick.clone(), context);
-		} else {
+		}
+
+		if self.inner_subscriptions.is_empty() {
 			// The inner observable will tick downstream, only directly tick downstream if there is no inner
 			self.destination.tick(tick, context);
 		}
@@ -150,7 +143,7 @@ where
 }
 
 impl<InnerObservable, Destination> SubscriptionLike
-	for SwitchSubscriber<InnerObservable, Destination>
+	for MergeSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
@@ -173,20 +166,20 @@ where
 		if !self.is_closed() {
 			self.closed_flag.close();
 
-			self.unsubscribe_inner(context);
+			self.unsubscribe_all_inner(context);
 			self.destination.unsubscribe(context);
-			self.destination.access_with_context_mut(
-				|inner, context| {
-					inner.downstream_destination.unsubscribe(context);
-				},
-				context,
-			);
+			//self.destination.access_with_context_mut(
+			//	|inner, context| {
+			//		inner.downstream_destination.unsubscribe(context);
+			//	},
+			//	context,
+			//);
 		}
 	}
 }
 
 impl<InnerObservable, Destination> TeardownCollection
-	for SwitchSubscriber<InnerObservable, Destination>
+	for MergeSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,
@@ -208,7 +201,7 @@ where
 			self.destination.access_with_context_mut(
 				|inner, context| {
 					let teardown = teardown.take().unwrap();
-					inner.add_downstream_teardown(teardown, context);
+					inner.add_teardown(teardown, context);
 				},
 				context,
 			);
@@ -218,7 +211,7 @@ where
 	}
 }
 
-impl<InnerObservable, Destination> Drop for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination> Drop for MergeSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: 'static + Observable + Send + Sync,
 	InnerObservable::Out: 'static,

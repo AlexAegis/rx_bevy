@@ -113,6 +113,8 @@ all_core_operators = [
     "operator_adsr",
     "operator_composite",
     "operator_enumerate",
+    "operator_error_boundary",
+    "operator_fallback_when_silent",
     "operator_filter",
     "operator_filter_map",
     "operator_finalize",
@@ -122,15 +124,19 @@ all_core_operators = [
     "operator_lift_result",
     "operator_map",
     "operator_map_into",
+    "operator_merge_map",
     "operator_scan",
     "operator_skip",
+    "operator_switch_all",
     "operator_switch_map",
     "operator_take",
-    "operator_tap",
+    "operator_tap_next",
 ]
 operator_adsr = ["rx_core/operator_adsr"]
 operator_composite = ["rx_core/operator_composite"]
 operator_enumerate = ["rx_core/operator_enumerate"]
+operator_error_boundary = ["rx_core/operator_error_boundary"]
+operator_fallback_when_silent = ["rx_core/operator_fallback_when_silent"]
 operator_filter = ["rx_core/operator_filter"]
 operator_filter_map = ["rx_core/operator_filter_map"]
 operator_finalize = ["rx_core/operator_finalize"]
@@ -140,11 +146,13 @@ operator_lift_option = ["rx_core/operator_lift_option"]
 operator_lift_result = ["rx_core/operator_lift_result"]
 operator_map = ["rx_core/operator_map"]
 operator_map_into = ["rx_core/operator_map_into"]
+operator_merge_map = ["rx_core/operator_merge_map"]
 operator_scan = ["rx_core/operator_scan"]
 operator_skip = ["rx_core/operator_skip"]
+operator_switch_all = ["rx_core/operator_switch_all"]
 operator_switch_map = ["rx_core/operator_switch_map"]
 operator_take = ["rx_core/operator_take"]
-operator_tap = ["rx_core/operator_tap_next"]
+operator_tap_next = ["rx_core/operator_tap_next"]
 # Operator fn
 operator_fn = ["rx_core/operator_fn"]
 # Core Subjects

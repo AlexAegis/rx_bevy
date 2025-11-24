@@ -127,6 +127,8 @@ rx_core_observer_fn = { path = "crates/rx_core_observer_fn" }
 rx_core_observer_noop = { path = "crates/rx_core_observer_noop" }
 rx_core_observer_print = { path = "crates/rx_core_observer_print" }
 # Subscribers
+rx_core_subscriber_managed = { path = "crates/rx_core_subscriber_managed" }
+rx_core_subscriber_merge = { path = "crates/rx_core_subscriber_merge" }
 rx_core_subscriber_rc = { path = "crates/rx_core_subscriber_rc" }
 rx_core_subscriber_switch = { path = "crates/rx_core_subscriber_switch" }
 # Operators
@@ -143,6 +145,7 @@ rx_core_operator_lift_option = { path = "crates/rx_core_operator_lift_option" }
 rx_core_operator_lift_result = { path = "crates/rx_core_operator_lift_result" }
 rx_core_operator_map = { path = "crates/rx_core_operator_map" }
 rx_core_operator_map_into = { path = "crates/rx_core_operator_map_into" }
+rx_core_operator_merge_map = { path = "crates/rx_core_operator_merge_map" }
 rx_core_operator_scan = { path = "crates/rx_core_operator_scan" }
 rx_core_operator_skip = { path = "crates/rx_core_operator_skip" }
 rx_core_operator_switch_all = { path = "crates/rx_core_operator_switch_all" }

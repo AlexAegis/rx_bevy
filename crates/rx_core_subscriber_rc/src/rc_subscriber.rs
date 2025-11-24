@@ -144,8 +144,9 @@ where
 		if !self.is_this_clone_closed() {
 			self.completed = true;
 			self.shared_destination.access_with_context_mut(
-				|destination, _context| {
+				|destination, context| {
 					destination.completion_count += 1;
+					destination.complete_if_can(context);
 				},
 				context,
 			);

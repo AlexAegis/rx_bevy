@@ -29,6 +29,7 @@ where
 	pub(crate) unsubscribe_count: usize,
 
 	closed_flag: SubscriptionClosedFlag,
+	completed_flag: SubscriptionClosedFlag,
 }
 
 impl<Destination> InnerRcSubscriber<Destination>
@@ -43,6 +44,7 @@ where
 			completion_count: is_already_closed.into(),
 			unsubscribe_count: is_already_closed.into(),
 			closed_flag: is_already_closed.into(),
+			completed_flag: is_already_closed.into(),
 		}
 	}
 
@@ -66,8 +68,12 @@ where
 			'_,
 		>,
 	) {
-		if self.completion_count == self.ref_count && !self.closed_flag.is_closed() {
+		if self.completion_count == self.ref_count
+			&& !self.closed_flag.is_closed()
+			&& !self.completed_flag.is_closed()
+		{
 			self.destination.complete(context);
+			self.completed_flag.close();
 		}
 	}
 }
@@ -148,6 +154,8 @@ where
 {
 	/// This should only happen when all counters reach 0.
 	fn drop(&mut self) {
+		self.completed_flag.close();
+
 		if !self.is_closed() {
 			let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
 			self.destination.unsubscribe(&mut context);

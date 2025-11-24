@@ -1,20 +1,24 @@
+use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection, Tick,
-	Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Observer, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection, Tick, Tickable,
 };
 
-pub struct ExternallyManagedSubscriber<Destination>
+#[derive(RxSubscriber)]
+#[rx_in(Destination::In)]
+#[rx_in_error(Destination::InError)]
+#[rx_context(Destination::Context)]
+pub struct ManagedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
-	pub(crate) downstream_destination: Destination,
-	pub(crate) inner_teardown: Option<SubscriptionData<Destination::Context>>,
-	pub(crate) outer_is_complete: bool,
-	pub(crate) inner_is_complete: bool,
+	pub downstream_destination: Destination,
+	pub inner_teardown: Option<SubscriptionData<Destination::Context>>,
+	pub outer_is_complete: bool,
+	pub inner_is_complete: bool,
 }
 
-impl<Destination> ExternallyManagedSubscriber<Destination>
+impl<Destination> ManagedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -27,7 +31,7 @@ where
 		}
 	}
 
-	pub(crate) fn complete_if_can(
+	pub fn complete_if_can(
 		&mut self,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
@@ -37,7 +41,7 @@ where
 	}
 
 	#[inline]
-	pub(crate) fn add_downstream_teardown(
+	pub fn add_downstream_teardown(
 		&mut self,
 		teardown: Teardown<Destination::Context>,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
@@ -46,7 +50,7 @@ where
 	}
 }
 
-impl<Destination> Tickable for ExternallyManagedSubscriber<Destination>
+impl<Destination> Tickable for ManagedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -60,7 +64,7 @@ where
 	}
 }
 
-impl<Destination> Observer for ExternallyManagedSubscriber<Destination>
+impl<Destination> Observer for ManagedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -86,7 +90,7 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for ExternallyManagedSubscriber<Destination>
+impl<Destination> SubscriptionLike for ManagedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -103,7 +107,7 @@ where
 	}
 }
 
-impl<Destination> TeardownCollection for ExternallyManagedSubscriber<Destination>
+impl<Destination> TeardownCollection for ManagedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {
@@ -121,34 +125,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for ExternallyManagedSubscriber<Destination>
-where
-	Destination: 'static + Subscriber + Send + Sync,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
-}
-
-impl<Destination> WithSubscriptionContext for ExternallyManagedSubscriber<Destination>
-where
-	Destination: 'static + Subscriber + Send + Sync,
-{
-	type Context = Destination::Context;
-}
-
-impl<Destination> WithPrimaryCategory for ExternallyManagedSubscriber<Destination>
-where
-	Destination: 'static + Subscriber + Send + Sync,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Destination> ObserverUpgradesToSelf for ExternallyManagedSubscriber<Destination> where
-	Destination: 'static + Subscriber + Send + Sync
-{
-}
-
-impl<Destination> Drop for ExternallyManagedSubscriber<Destination>
+impl<Destination> Drop for ManagedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {

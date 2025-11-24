@@ -124,6 +124,7 @@ all_operators = [
     "operator_lift_result",
     "operator_map",
     "operator_map_into",
+    "operator_merge_map",
     "operator_scan",
     "operator_skip",
     "operator_switch_all",
@@ -145,6 +146,7 @@ operator_lift_option = ["dep:rx_core_operator_lift_option"]
 operator_lift_result = ["dep:rx_core_operator_lift_result"]
 operator_map = ["dep:rx_core_operator_map"]
 operator_map_into = ["dep:rx_core_operator_map_into"]
+operator_merge_map = ["dep:rx_core_operator_merge_map"]
 operator_scan = ["dep:rx_core_operator_scan"]
 operator_skip = ["dep:rx_core_operator_skip"]
 operator_switch_all = ["dep:rx_core_operator_switch_all"]
@@ -165,6 +167,7 @@ pipe = [
     "rx_core_operator_lift_result?/pipe",
     "rx_core_operator_map?/pipe",
     "rx_core_operator_map_into?/pipe",
+    "rx_core_operator_merge_map?/pipe",
     "rx_core_operator_scan?/pipe",
     "rx_core_operator_skip?/pipe",
     "rx_core_operator_switch_all?/pipe",
@@ -186,6 +189,7 @@ compose = [
     "rx_core_operator_lift_result?/compose",
     "rx_core_operator_map?/compose",
     "rx_core_operator_map_into?/compose",
+    "rx_core_operator_merge_map?/compose",
     "rx_core_operator_scan?/compose",
     "rx_core_operator_skip?/compose",
     "rx_core_operator_switch_all?/compose",
@@ -208,6 +212,7 @@ operator_fn = [
     "rx_core_operator_lift_result?/operator_fn",
     "rx_core_operator_map?/operator_fn",
     "rx_core_operator_map_into?/operator_fn",
+    "rx_core_operator_merge_map?/operator_fn",
     "rx_core_operator_scan?/operator_fn",
     "rx_core_operator_skip?/operator_fn",
     "rx_core_operator_switch_all?/operator_fn",
@@ -258,6 +263,7 @@ rx_core_operator_lift_option = { workspace = true, optional = true }
 rx_core_operator_lift_result = { workspace = true, optional = true }
 rx_core_operator_map = { workspace = true, optional = true }
 rx_core_operator_map_into = { workspace = true, optional = true }
+rx_core_operator_merge_map = { workspace = true, optional = true }
 rx_core_operator_scan = { workspace = true, optional = true }
 rx_core_operator_skip = { workspace = true, optional = true }
 rx_core_operator_switch_all = { workspace = true, optional = true }
