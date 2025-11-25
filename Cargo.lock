@@ -4904,16 +4904,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_core_subscriber_managed"
-version = "0.1.0"
-dependencies = [
- "rx_core",
- "rx_core_macro_subscriber_derive",
- "rx_core_testing",
- "rx_core_traits",
-]
-
-[[package]]
 name = "rx_core_subscriber_merge"
 version = "0.1.0"
 dependencies = [
