@@ -15,13 +15,14 @@ use thiserror::Error;
 
 use crate::{
 	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
-	SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf, UnfinishedSubscription,
+	ObservableOutputs, ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe,
+	SubscribeObserverOf, SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf,
+	UnfinishedSubscription,
 };
 
 #[derive(Component)]
 #[component(on_insert=observable_on_insert::<O>, on_remove=observable_on_remove::<O>)]
-#[require(ObservableSubscriptions::<O>)]
+#[require(ObservableSubscriptions::<O>, ObservableOutputs::<O::Out, O::OutError>)]
 pub struct ObservableComponent<O>
 where
 	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
