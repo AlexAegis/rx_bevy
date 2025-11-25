@@ -11,6 +11,7 @@ use rx_core_traits::{
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_context(Context)]
+#[rx_upgrades_to(self)]
 pub struct PrintObserver<In, InError = Never, Context = ()>
 where
 	In: SignalBound + Debug,

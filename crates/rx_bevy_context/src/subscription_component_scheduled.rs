@@ -169,7 +169,6 @@ impl SubscriptionLike for ScheduledSubscriptionComponent {
 		subscription.is_closed()
 	}
 
-	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
 		let subscription = self.get_subscription_mut();
 		subscription.unsubscribe(context);

@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use rx_core::prelude::*;
+use rx_core_testing::MockClock;
 
 #[derive(Clone, Debug)]
 enum Either {
@@ -8,6 +11,7 @@ enum Either {
 
 fn main() {
 	let mut context = ();
+	let mut clock = MockClock::default();
 
 	let mut upstream_subject = Subject::<Either>::default();
 	let mut inner_left_subject = Subject::<i32>::default();
@@ -34,6 +38,8 @@ fn main() {
 	upstream_subject.next(Either::Right, &mut context);
 	inner_left_subject.next(5, &mut context);
 	inner_right_subject.next(6, &mut context);
+	// Currently 2 inner subscriptions are active, yet the inner RcSubscriber ensures only one gets through
+	subscription.tick(clock.elapse(Duration::from_millis(100)), &mut context);
 	inner_left_subject.next(7, &mut context);
 	inner_right_subject.next(8, &mut context);
 	inner_left_subject.complete(&mut context);

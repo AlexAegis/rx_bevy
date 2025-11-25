@@ -151,7 +151,6 @@ where
 		self.closed_flag.is_closed()
 	}
 
-	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		// An upstream unsubscribe stops everything!
 		if !self.is_closed() {

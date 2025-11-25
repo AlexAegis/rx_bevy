@@ -176,10 +176,9 @@ where
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		// TODO: verify how shared destinations behave if all of them are getting ticked, ticks might need an id, and consumers of ticks would probably need to check if a tick had been processed before using them
-		//if !self.is_this_clone_closed() {
+		// The inner shared destination ensures downstream will only receive
+		// one tick if multiple clones of this are all trying to tick it.
 		self.shared_destination.tick(tick, context);
-		//}
 	}
 }
 
@@ -242,11 +241,11 @@ where
 
 #[cfg(test)]
 mod test {
-	use std::ops::RangeInclusive;
+	use std::{ops::RangeInclusive, time::Duration};
 
 	use rx_core::prelude::*;
-	use rx_core_testing::{MockContext, MockObserver};
-	use rx_core_traits::SubscriptionLike;
+	use rx_core_testing::{MockClock, MockContext, MockObserver};
+	use rx_core_traits::{SubscriptionLike, Tickable};
 
 	use crate::RcSubscriber;
 
@@ -476,6 +475,39 @@ mod test {
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 3);
 		});
+		drop(rc_subscriber);
+	}
+
+	#[test]
+	fn rc_subscriber_discard_duplicate_ticks() {
+		let (mut rc_subscriber, mut context) = setup();
+
+		let mut clock = MockClock::default();
+
+		rc_subscriber.shared_destination.read(|destination| {
+			assert_eq!(destination.ref_count, 1);
+			assert_eq!(destination.unsubscribe_count, 0);
+		});
+
+		let mut rc_clone_1 = rc_subscriber.clone_with_context(&mut context);
+		let mut rc_clone_2 = rc_subscriber.clone_with_context(&mut context);
+
+		assert_eq!(context.count_all_observed_ticks(), 0);
+
+		let tick = clock.elapse(Duration::from_millis(200));
+		rc_subscriber.tick(tick.clone(), &mut context);
+		rc_clone_1.tick(tick.clone(), &mut context);
+		rc_clone_2.tick(tick, &mut context);
+
+		assert_eq!(
+			context.count_all_observed_ticks(),
+			1,
+			"If the same tick is sent on multiple clones of the same rc_subscriber, only one should reach downstream!"
+		);
+
+		rc_clone_1.unsubscribe(&mut context);
+		rc_clone_2.unsubscribe(&mut context);
+		rc_subscriber.unsubscribe(&mut context);
 		drop(rc_subscriber);
 	}
 }

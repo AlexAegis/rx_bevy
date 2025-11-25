@@ -3,8 +3,8 @@ use std::ops::{Deref, DerefMut};
 use disqualified::ShortName;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
-	WithSubscriptionContext,
+	Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Tick,
+	Tickable, WithSubscriptionContext,
 };
 
 /// Internal to [RcSubscriber]
@@ -13,7 +13,6 @@ use rx_core_traits::{
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
 #[rx_context(Destination::Context)]
-#[rx_delegate_tickable_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
 pub struct InnerRcSubscriber<Destination>
 where
@@ -28,6 +27,7 @@ where
 	/// Starts from 0 if the destination is not already closed, otherwise 1
 	pub(crate) unsubscribe_count: usize,
 
+	last_observed_tick: Option<Tick>,
 	closed_flag: SubscriptionClosedFlag,
 	completed_flag: SubscriptionClosedFlag,
 }
@@ -45,6 +45,7 @@ where
 			unsubscribe_count: is_already_closed.into(),
 			closed_flag: is_already_closed.into(),
 			completed_flag: is_already_closed.into(),
+			last_observed_tick: None,
 		}
 	}
 
@@ -130,6 +131,22 @@ where
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		self.complete_if_can(context);
+	}
+}
+
+impl<Destination> Tickable for InnerRcSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	fn tick(
+		&mut self,
+		tick: Tick,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		if tick.is_newer_than(self.last_observed_tick.as_ref()) {
+			self.last_observed_tick = Some(tick.clone());
+			self.destination.tick(tick, context);
+		}
 	}
 }
 

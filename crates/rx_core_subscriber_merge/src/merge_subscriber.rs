@@ -130,7 +130,8 @@ where
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		// TODO: Since there's multiple things to tick here, and they all go downstream, this will cause problems, and they must be filtered as they join back
+		// The RcSubscriber ensures only one tick reaches downstream, while
+		// still ticking all inner subscribtions
 		for inner_subscription in self.inner_subscriptions.iter_mut() {
 			inner_subscription.tick(tick.clone(), context);
 		}
@@ -160,7 +161,6 @@ where
 		self.closed_flag.is_closed()
 	}
 
-	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		// An upstream unsubscribe stops everything!
 		if !self.is_closed() {

@@ -99,7 +99,6 @@ where
 		self.downstream_destination.is_closed()
 	}
 
-	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if let Some(mut teardown) = self.inner_teardown.take() {
 			teardown.unsubscribe(context);

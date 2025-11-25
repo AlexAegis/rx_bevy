@@ -103,7 +103,6 @@ impl<Context> Tickable for SubscriptionData<Context>
 where
 	Context: SubscriptionContext,
 {
-	#[track_caller]
 	fn tick(
 		&mut self,
 		tick: Tick,
@@ -124,7 +123,6 @@ where
 		*self.closed_flag
 	}
 
-	#[track_caller]
 	fn unsubscribe(&mut self, context: &mut Context::Item<'_, '_>) {
 		if !self.is_closed() {
 			self.closed_flag.close();
