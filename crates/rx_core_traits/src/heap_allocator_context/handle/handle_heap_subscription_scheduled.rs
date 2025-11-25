@@ -127,6 +127,7 @@ impl<Subscription> Drop for ScheduledHeapSubscriptionHandle<Subscription>
 where
 	Subscription: SubscriptionScheduled + Send + Sync,
 {
+	#[track_caller]
 	fn drop(&mut self) {
 		if !self.is_closed() {
 			let mut context = Subscription::Context::create_context_to_unsubscribe_on_drop();

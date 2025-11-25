@@ -224,21 +224,6 @@ where
 	}
 }
 
-impl<Destination> Drop for RcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn drop(&mut self) {
-		// Even though this is a shared subscriber, which usually should not do
-		// anything on drop, this is reference counted, and it has to make sure
-		// the count happened by unsubscribing itself.
-		if !self.unsubscribed {
-			let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
-	}
-}
-
 #[cfg(test)]
 mod test {
 	use std::{ops::RangeInclusive, time::Duration};

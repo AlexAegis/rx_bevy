@@ -89,16 +89,3 @@ where
 		self.destination.tick(tick, context);
 	}
 }
-
-impl<Destination> Drop for MessageSubscription<Destination>
-where
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
-	Destination::In: Event + Clone,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
-	}
-}

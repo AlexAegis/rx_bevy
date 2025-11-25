@@ -1,8 +1,7 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable,
-	allocator::{DestinationSharedTypes, SharedDestination},
+	TeardownCollection, Tick, Tickable, allocator::DestinationSharedTypes,
 };
 
 use crate::InnerRcSubscriber;
@@ -90,24 +89,5 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.shared_destination.add_teardown(teardown, context);
-	}
-}
-
-impl<Destination> Drop for WeakRcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
-
-			self.shared_destination.access_with_context_mut(
-				|destination, context| {
-					destination.complete_if_can(context);
-					destination.unsubscribe_if_can(context);
-				},
-				&mut context,
-			);
-		}
 	}
 }

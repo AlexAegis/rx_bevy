@@ -5,7 +5,7 @@ use rx_bevy_context::{RxBevyContext, RxBevyContextItem};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
+	TeardownCollection, Tick, Tickable,
 };
 
 use crate::observable::ResourceObservableOptions;
@@ -123,19 +123,5 @@ where
 		}
 
 		self.destination.tick(tick, context);
-	}
-}
-
-impl<R, Reader, Destination> Drop for ResourceSubscription<R, Reader, Destination>
-where
-	R: Resource,
-	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = <<Self as WithSubscriptionContext>::Context as SubscriptionContext>::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
 	}
 }

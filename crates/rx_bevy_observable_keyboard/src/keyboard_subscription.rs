@@ -95,15 +95,3 @@ where
 		self.destination.tick(tick, context);
 	}
 }
-
-impl<Destination> Drop for KeyboardSubscription<Destination>
-where
-	Destination: Subscriber<Context = RxBevyContext>,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
-	}
-}

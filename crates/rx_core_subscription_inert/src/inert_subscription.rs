@@ -13,12 +13,12 @@ use rx_core_traits::{
 /// they are unsubscribed, and that is guaranteed here.
 #[derive(RxSubscription)]
 #[rx_context(Context)]
+#[rx_skip_unsubscribe_on_drop_impl]
 pub struct InertSubscription<Context>
 where
 	Context: SubscriptionContext,
 {
 	tickable: Box<dyn Tickable<Context = Context> + Send + Sync>,
-	// TODO: Check every PhantomData for variance
 }
 
 impl<Context> InertSubscription<Context>

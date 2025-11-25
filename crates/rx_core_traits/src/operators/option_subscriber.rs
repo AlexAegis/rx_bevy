@@ -203,22 +203,3 @@ where
 		}
 	}
 }
-
-impl<InnerSubscriber, Destination> Drop for OptionSubscriber<InnerSubscriber, Destination>
-where
-	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
-	InnerSubscriber::In: 'static,
-	InnerSubscriber::InError: 'static,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = InnerSubscriber::Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
-	}
-}

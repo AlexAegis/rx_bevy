@@ -405,3 +405,35 @@ fn impl_delegate_observer_to_destination_inner(derive_input: &DeriveInput) -> To
 		}
 	}
 }
+
+/// Implements automatic unsubscribe on drop, which will work just fine for
+/// subscriptions made with DropSafeSubscriptionContexts, but will
+/// (intentionally) panic for subscriptions made with
+/// DropUnsafeSubscriptionContexts.
+fn impl_unsubscribe_on_drop(derive_input: &DeriveInput) -> TokenStream {
+	let ident = derive_input.ident.clone();
+	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
+
+	quote! {
+		impl #impl_generics Drop for #ident #ty_generics #where_clause {
+			#[track_caller]
+			fn drop(&mut self) {
+				if !rx_core_traits::SubscriptionLike::is_closed(self) {
+					let mut context = <<Self as rx_core_traits::WithSubscriptionContext>::Context as rx_core_traits::SubscriptionContext>::create_context_to_unsubscribe_on_drop();
+					rx_core_traits::SubscriptionLike::unsubscribe(self, &mut context);
+				}
+			}
+		}
+	}
+}
+
+pub fn impl_skip_unsubscribe_on_drop_impl(derive_input: &DeriveInput) -> Option<TokenStream> {
+	let skip_unsubscribe_on_drop_impl =
+		find_attribute(&derive_input.attrs, "rx_skip_unsubscribe_on_drop_impl").is_some();
+
+	if skip_unsubscribe_on_drop_impl {
+		None
+	} else {
+		Some(impl_unsubscribe_on_drop(derive_input))
+	}
+}

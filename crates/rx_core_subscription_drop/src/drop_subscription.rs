@@ -7,6 +7,14 @@ use rx_core_traits::{
 /// A DropSubscription is a type of Subscription Observables may use, it
 /// requires the subscriptions SubscriptionContext to be irrelevant during
 /// unsubscription.
+///
+/// The default drop implementation is **not** skipped:
+/// While we require the context to be drop-safe, some contexts (like
+/// the MockContext) may lie about its safety, so it's mandatory to still
+/// check closed-ness before attempting an unsubscribe.
+/// Not to mention that if the subscription is closed, it doesn't make
+/// sense to trigger an unsubscription again on drop when one was already
+/// done manually.
 #[derive(RxSubscription)]
 #[rx_context(Context)]
 pub struct DropSubscription<Context>
@@ -79,23 +87,5 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.subscription_data.add_teardown(teardown, context);
-	}
-}
-
-impl<Context> Drop for DropSubscription<Context>
-where
-	Context: SubscriptionContext<DropSafety = DropSafeSubscriptionContext>,
-{
-	fn drop(&mut self) {
-		// While we require the context to be drop-safe, some contexts (like
-		// the MockContext) may lie about its safety, so it's mandatory to still
-		// check closed-ness before attempting an unsubscribe.
-		// Not to mention that if the subscription is closed, it doesn't make
-		// sense to trigger an unsubscription again on drop when one was already
-		// done manually.
-		if !self.is_closed() {
-			let mut context = Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
 	}
 }

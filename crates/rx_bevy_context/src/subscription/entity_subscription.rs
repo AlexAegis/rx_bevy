@@ -11,6 +11,7 @@ use crate::RxBevyContext;
 
 #[derive(RxSubscription)]
 #[rx_context(RxBevyContext)]
+#[rx_skip_unsubscribe_on_drop_impl]
 pub struct EntitySubscription {
 	closed_flag: SubscriptionClosedFlag,
 	subscription_entity: Entity,

@@ -1,9 +1,8 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use disqualified::ShortName;
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Subscriber, SubscriptionLike};
+use rx_core_traits::{Observer, Subscriber};
 
 #[derive(RxSubscriber)]
 #[derive_where(Debug; Inner)]
@@ -33,21 +32,6 @@ where
 		Self {
 			subscriber,
 			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<Inner, Destination> Drop for CompositeSubscriber<Inner, Destination>
-where
-	Inner: Subscriber,
-	Destination: Observer,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			panic!(
-				"Dropped {} without unsubscribing first!",
-				ShortName::of::<Self>()
-			)
 		}
 	}
 }

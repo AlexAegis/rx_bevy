@@ -1,12 +1,15 @@
 use bevy_time::{Timer, TimerMode};
+use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Never, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, TeardownCollection,
-	Tick, Tickable, WithSubscriptionContext,
+	Tick, Tickable,
 };
 
 use crate::observable::IntervalObservableOptions;
 
-// TODO: Remove bevy-time dependency, it's a small crate but it's versioned together with the rest of bevy, and even it could just stay on a version, I don't want to ppl see two bevy versions in their lockfile/cargo output, that'd be confusing
+// TODO: Remove bevy_time dependency, it's a small crate but it's versioned together with the rest of bevy, and even it could just stay on an older version for this crate, I don't want to ppl see two bevy versions in their lockfile/cargo output, that'd be confusing
+#[derive(RxSubscription)]
+#[rx_context(Context)]
 pub struct IntervalSubscription<Context>
 where
 	Context: SubscriptionContext,
@@ -40,13 +43,6 @@ where
 			teardown: SubscriptionData::default(),
 		}
 	}
-}
-
-impl<Context> WithSubscriptionContext for IntervalSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
-	type Context = Context;
 }
 
 impl<Context> Tickable for IntervalSubscription<Context>
@@ -97,17 +93,5 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
-	}
-}
-
-impl<Context> Drop for IntervalSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
 	}
 }

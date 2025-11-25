@@ -1,5 +1,7 @@
 use quote::quote;
-use rx_core_macro_common::{impl_primary_category, impl_with_subscription_context};
+use rx_core_macro_common::{
+	impl_primary_category, impl_skip_unsubscribe_on_drop_impl, impl_with_subscription_context,
+};
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
 fn primary_category_subscription() -> Type {
@@ -30,8 +32,17 @@ fn primary_category_subscription() -> Type {
 ///
 /// > All attributes are prefixed with `rx_` for easy auto-complete access.
 ///
-/// - `#[rx_context(...)]`: Defines the Context this subscriber is compatible with
-#[proc_macro_derive(RxSubscription, attributes(rx_context))]
+/// - `#[rx_context(...)]`: Defines the Context this subscriber is compatible
+///   with
+/// - `#[rx_skip_unsubscribe_on_drop_impl]`: Skips the default
+///   unsubscribe-on-drop implementation that will panic for
+///   DropUnsafeSubscriptionContexts if they were not closed before dropped.
+///   This is the default, expected behavior but some Subscriptions may ensure
+///   correct operation differently.
+#[proc_macro_derive(
+	RxSubscription,
+	attributes(rx_context, rx_skip_unsubscribe_on_drop_impl)
+)]
 pub fn subscription_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	let derive_input = parse_macro_input!(input as DeriveInput);
 
@@ -39,10 +50,14 @@ pub fn subscription_derive(input: proc_macro::TokenStream) -> proc_macro::TokenS
 		impl_primary_category(&derive_input, primary_category_subscription());
 	let with_subscription_context_impl = impl_with_subscription_context(&derive_input);
 
+	let skip_unsubscribe_on_drop_impl = impl_skip_unsubscribe_on_drop_impl(&derive_input);
+
 	(quote! {
 		#primary_category_impl
 
 		#with_subscription_context_impl
+
+		#skip_unsubscribe_on_drop_impl
 	})
 	.into()
 }

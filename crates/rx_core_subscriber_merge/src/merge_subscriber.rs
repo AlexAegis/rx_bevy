@@ -196,24 +196,3 @@ where
 		}
 	}
 }
-
-impl<InnerObservable, Destination> Drop for MergeSubscriber<InnerObservable, Destination>
-where
-	InnerObservable: 'static + Observable + Send + Sync,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
-	Destination: 'static
-		+ Subscriber<
-			In = InnerObservable::Out,
-			InError = InnerObservable::OutError,
-			Context = InnerObservable::Context,
-		>,
-{
-	#[inline]
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = InnerObservable::Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
-	}
-}

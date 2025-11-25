@@ -1,12 +1,15 @@
 use std::iter::Peekable;
 
+use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Never, SignalBound, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
+	TeardownCollection, Tick, Tickable,
 };
 
 use crate::observable::OnTickObservableOptions;
 
+#[derive(RxSubscription)]
+#[rx_context(Context)]
 pub struct OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
@@ -50,15 +53,6 @@ where
 			teardown: SubscriptionData::default(),
 		}
 	}
-}
-
-impl<Iterator, Context> WithSubscriptionContext for OnTickIteratorSubscription<Iterator, Context>
-where
-	Iterator: IntoIterator,
-	Iterator::Item: SignalBound,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
 }
 
 impl<Iterator, Context> Tickable for OnTickIteratorSubscription<Iterator, Context>
@@ -124,19 +118,5 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.teardown.add_teardown(teardown, context);
-	}
-}
-
-impl<Iterator, Context> Drop for OnTickIteratorSubscription<Iterator, Context>
-where
-	Iterator: IntoIterator,
-	Iterator::Item: SignalBound,
-	Context: SubscriptionContext,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			let mut context = Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
-		}
 	}
 }

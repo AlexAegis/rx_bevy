@@ -84,21 +84,3 @@ where
 		self.unsubscribe(context)
 	}
 }
-
-impl<Destination, O1, O2> Drop for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out), InError = EitherOutError2<O1, O2>>,
-	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Observable,
-	O1::Out: Clone,
-	O2::Out: Clone,
-{
-	fn drop(&mut self) {
-		// Should not do anything on drop, as this subscriber is managed by its
-		// subscription through the [RcSubscriber], this subscriber does not
-		// need to ensure unsubscription, as they do.
-		// TODO: This is actually true for all subscribers, only subscriptions
-		// need to unsubscribe on drop, the rest is contained in the subscription so
-		// they either wont drop earlier, or if they do they do because of internal logic in which case it will ensure unsub
-	}
-}
