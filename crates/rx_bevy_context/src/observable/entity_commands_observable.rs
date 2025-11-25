@@ -63,17 +63,6 @@ pub trait EntityCommandsAsObservableExtension {
 	/// inserted an observable component onto your observable
 	/// entity, and only then you issued the subscribe command, you can be
 	/// sure that the subscription will be established in the same frame.
-	///
-	/// However, the [`EntityCommands::as_observable`][crate::EntityCommandsAsObservableExtension::as_observable]
-	/// will use the [`DeferredWorld`][bevy_ecs::world::DeferredWorld] to
-	/// issue a command, and those will queue **ahead** of the commands queued
-	/// with the regular [`Commands`][bevy_ecs::system::Commands]. Meaning it's
-	/// impossible to spawn an observable and a subscription in the same system
-	/// through this function. To mitigate this, every
-	/// [SubscribeCommand][crate::SubscribeCommand] can retry itself in the next
-	/// frames [`First`][bevy_app::main_schedule::First] schedule if it notices
-	/// that the target observable entity doesn't have a child that listens for
-	/// [Subscribe] events of this `Out` and `OutError` types.
 	fn as_observable<Out, OutError, S, C>(
 		&mut self,
 	) -> EntityCommandsObservable<Out, OutError, S, C>
