@@ -60,7 +60,7 @@ fn setup(mut commands: Commands) {
 	let proxy_keyboard_observable_entity = commands
 		.spawn((
 			Name::new("Proxy"),
-			ProxyObservable::<KeyCode, Never>::new(keyboard_observable_entity)
+			ProxyObservable::<KeyCode, Never, Update, Virtual>::new(keyboard_observable_entity)
 				.map(|key_code| format!("KEYCODE {:?}", key_code))
 				.into_component(),
 		))

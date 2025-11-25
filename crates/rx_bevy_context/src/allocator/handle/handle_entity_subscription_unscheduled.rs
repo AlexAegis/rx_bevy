@@ -12,8 +12,8 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContextParam, RxBevyContext, RxBevyContextItem, SubscriptionNotificationEvent,
-	handle::ErasedEntitySubscriptionHandle,
+	DeferredWorldAsRxBevyContextExtension, RxBevyContext, RxBevyContextItem,
+	SubscriptionNotificationEvent, handle::ErasedEntitySubscriptionHandle,
 };
 
 use super::WeakEntitySubscriptionHandle;
@@ -36,7 +36,7 @@ pub(crate) fn erased_subscription_add_notification_observer_on_insert(
 
 fn erased_subscription_notification_observer(
 	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
-	mut context_param: BevySubscriptionContextParam,
+	mut context_param: RxBevyContextItem,
 ) -> Result<(), BevyError> {
 	let notification = subscription_notification.event_mut().clone();
 
@@ -64,8 +64,7 @@ pub(crate) fn erased_subscription_unsubscribe_on_remove<C>(
 ) where
 	C: Component<Mutability = Mutable> + ErasedEntitySubscriptionHandle,
 {
-	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(Some(hook_context.entity));
+	let mut context = deferred_world.into_rx_context();
 
 	let target_subscription_entity = context
 		.deferred_world

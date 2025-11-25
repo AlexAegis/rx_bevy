@@ -16,10 +16,10 @@ use rx_core_traits::{
 use stealcell::{StealCell, Stolen};
 
 use crate::{
-	BevySubscriptionContextParam, ObservableSubscriptions, RxBevyContext, RxBevyContextItem,
-	RxSignal, ScheduledSubscriptionComponent, Subscribe, SubscribeError, SubscribeObserverOf,
-	SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf, UnfinishedSubscription,
-	default_on_subscribe_error_handler,
+	DeferredWorldAsRxBevyContextExtension, ObservableSubscriptions, RxBevyContext,
+	RxBevyContextItem, RxSignal, ScheduledSubscriptionComponent, Subscribe, SubscribeError,
+	SubscribeObserverOf, SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf,
+	UnfinishedSubscription, default_on_subscribe_error_handler,
 };
 
 #[derive(Component, RxSubject)]
@@ -128,19 +128,17 @@ where
 
 fn subject_notification_observer<'w, 's, Subject>(
 	on_notification: Trigger<RxSignal<Subject::In, Subject::InError>>,
-	context_param: BevySubscriptionContextParam<'w, 's>,
+	mut context: RxBevyContextItem<'w, 's>,
 ) where
 	Subject: 'static + SubjectLike<Context = RxBevyContext> + Send + Sync,
 	Subject::In: Clone,
 	Subject::InError: Clone,
 {
 	let subject_entity = on_notification.entity();
-	let mut context = context_param.into_context(Some(subject_entity));
+
 	let notification: ObserverNotification<Subject::In, Subject::InError> =
 		on_notification.event().clone().into();
 
-	// let notification: Result<ObserverNotification<Subject::In, Subject::InError>, ()> =
-	// 	subscriber_notification.try_into();
 	let mut stolen_subject = context.steal_subject::<Subject>(subject_entity).unwrap();
 
 	stolen_subject.push(
@@ -154,7 +152,7 @@ fn subject_notification_observer<'w, 's, Subject>(
 
 fn subscribe_event_observer<'w, 's, Subject>(
 	mut on_subscribe: Trigger<Subscribe<Subject::Out, Subject::OutError>>,
-	context_param: BevySubscriptionContextParam<'w, 's>,
+	mut context: RxBevyContextItem<'w, 's>,
 ) -> Result<(), BevyError>
 where
 	Subject: 'static + SubjectLike<Context = RxBevyContext> + Send + Sync,
@@ -170,8 +168,6 @@ where
 		)
 		.into());
 	};
-
-	let mut context = context_param.into_context(Some(event.subscription_entity));
 
 	let subscription = {
 		let mut stolen_subject = context.steal_subject::<Subject>(event.observable_entity)?;
@@ -218,8 +214,7 @@ where
 		.remove::<ObservableSubscriptions<Subject>>()
 		.remove::<SubscribeObserverRef<Subject>>();
 
-	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(Some(hook_context.entity));
+	let mut context = deferred_world.into_rx_context();
 
 	let mut stolen_subject = context
 		.steal_subject::<Subject>(hook_context.entity)

@@ -1,20 +1,18 @@
-use bevy_ecs::{entity::Entity, event::Event, observer::Trigger};
+use bevy_ecs::{event::Event, observer::Trigger};
 use rx_core_traits::Subscriber;
 
-use rx_bevy_context::{BevySubscriptionContextParam, RxBevyContext};
+use rx_bevy_context::{RxBevyContext, RxBevyContextItem};
 
 /// Creates an `ObserverSystem` that owns a destination and forwards incoming
 /// events into it.
 pub fn create_event_forwarder_observer_for_destination<Destination>(
 	mut destination: Destination,
-	contextual_subscription_entity: Option<Entity>,
-) -> impl FnMut(Trigger<Destination::In>, BevySubscriptionContextParam<'_, '_>)
+) -> impl FnMut(Trigger<Destination::In>, RxBevyContextItem<'_, '_>)
 where
 	Destination: 'static + Subscriber<Context = RxBevyContext>,
 	Destination::In: Event + Clone,
 {
-	move |on_event: Trigger<Destination::In>, context_param: BevySubscriptionContextParam| {
-		let mut context = context_param.into_context(contextual_subscription_entity);
+	move |on_event: Trigger<Destination::In>, mut context: RxBevyContextItem| {
 		let event = on_event.event().clone();
 		destination.next(event, &mut context);
 	}

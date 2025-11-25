@@ -41,7 +41,7 @@ struct ExampleEntities {
 	ad_hoc_subscription_2_entity: Entity,
 }
 
-fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
+fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -51,8 +51,6 @@ fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
 		.spawn(Name::new("Destination"))
 		.observe(print_notification_observer::<usize, Never>)
 		.id();
-
-	let mut context = context_param.into_context(None);
 
 	let ad_hoc_subscription = commands
 		.with_observable::<_, Update, Virtual>(IntervalObservable::new(IntervalObservableOptions {

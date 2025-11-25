@@ -19,7 +19,7 @@ use rx_bevy_common::Clock;
 use rx_core_traits::Tick;
 
 use crate::{
-	BevySubscriptionContextParam, ScheduledSubscriptionComponent, SubscribeRetryPlugin,
+	DeferredWorldAsRxBevyContextExtension, ScheduledSubscriptionComponent, SubscribeRetryPlugin,
 	SubscriptionSchedule, UnfinishedSubscription, execute_pending_retries,
 };
 
@@ -112,13 +112,11 @@ fn unsubscribe_all_subscriptions(world: &mut World) {
 		.collect::<Vec<_>>();
 
 	let mut deferred_world = DeferredWorld::from(world);
-	{
-		let context_param: BevySubscriptionContextParam = deferred_world.reborrow().into();
-		// The entity doesn't really matter during an unsubscription, and it's only there anyway to
-		// organize new spawned internal subscriptions
-		let mut context = context_param.into_context(None);
 
-		for (_, subscription) in subscriptions.iter_mut() {
+	{
+		let mut context = deferred_world.reborrow().into_rx_context();
+
+		for (_subscription_entity, subscription) in subscriptions.iter_mut() {
 			subscription.unsubscribe(&mut context);
 		}
 	}
@@ -174,10 +172,8 @@ where
 
 	let mut deferred_world = DeferredWorld::from(world);
 	{
-		for (entity, subscription) in subscriptions.iter_mut() {
-			let context_param: BevySubscriptionContextParam = deferred_world.reborrow().into();
-			let mut context = context_param.into_context(Some(*entity));
-
+		let mut context = deferred_world.reborrow().into_rx_context();
+		for (_subscription_entity, subscription) in subscriptions.iter_mut() {
 			subscription.tick(tick.clone(), &mut context);
 		}
 	}

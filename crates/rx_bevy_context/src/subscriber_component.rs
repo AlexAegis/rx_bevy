@@ -14,7 +14,8 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContextParam, RxBevyContext, RxBevyContextItem, SubscriberNotificationEvent,
+	DeferredWorldAsRxBevyContextExtension, RxBevyContext, RxBevyContextItem,
+	SubscriberNotificationEvent,
 };
 
 #[derive(Component, RxSubscriber)]
@@ -98,7 +99,7 @@ fn subscriber_notification_observer<'w, 's, Destination>(
 	mut subscriber_notification: Trigger<
 		SubscriberNotificationEvent<Destination::In, Destination::InError>,
 	>,
-	context_param: BevySubscriptionContextParam<'w, 's>,
+	mut context: RxBevyContextItem<'w, 's>,
 ) -> Result<(), BevyError>
 where
 	Destination: 'static + Subscriber<Context = RxBevyContext> + Send + Sync,
@@ -106,7 +107,6 @@ where
 	Destination::InError: Clone,
 {
 	let subscriber_entity = subscriber_notification.entity();
-	let mut context = context_param.into_context(Some(subscriber_entity));
 
 	let mut stolen_destination =
 		context.steal_subscriber_destination::<Destination>(subscriber_entity)?;
@@ -148,8 +148,7 @@ where
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
-	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(Some(hook_context.entity));
+	let mut context = deferred_world.into_rx_context();
 	let mut stolen_destination = context
 		.steal_subscriber_destination::<Destination>(hook_context.entity)
 		.unwrap();

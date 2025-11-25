@@ -14,7 +14,8 @@ use rx_core_traits::{
 use stealcell::{StealCell, Stolen};
 
 use crate::{
-	BevySubscriptionContextParam, RxBevyContext, RxBevyContextItem, SubscriptionNotificationEvent,
+	DeferredWorldAsRxBevyContextExtension, RxBevyContext, RxBevyContextItem,
+	SubscriptionNotificationEvent,
 };
 
 #[derive(Component)]
@@ -34,8 +35,7 @@ fn unscheduled_subscription_unsubscribe_on_remove<Subscription>(
 ) where
 	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
-	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(Some(hook_context.entity));
+	let mut context = deferred_world.into_rx_context();
 
 	let mut stolen_subscription = context
 		.steal_unscheduled_subscription::<Subscription>(hook_context.entity)
@@ -89,13 +89,12 @@ fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
 
 fn unscheduled_subscription_notification_observer<Subscription>(
 	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
-	context_param: BevySubscriptionContextParam,
+	mut context: RxBevyContextItem,
 ) -> Result<(), BevyError>
 where
 	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
 	let subscription_entity = subscription_notification.entity();
-	let mut context = context_param.into_context(Some(subscription_entity));
 
 	let mut stolen_subscription =
 		context.steal_unscheduled_subscription::<Subscription>(subscription_entity)?;

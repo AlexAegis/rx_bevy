@@ -5,7 +5,8 @@ use rx_core_traits::{Never, Observable, Subscriber, SubscriptionContext, Upgrade
 
 use crate::{KeyboardObservableOptions, KeyboardSubscription};
 
-/// A simplistic observable to demonstrate accessing world state from within a subscription
+/// A simplistic observable to demonstrate accessing world state from within a
+/// subscription
 #[derive(RxObservable, Default)]
 #[rx_out(KeyCode)]
 #[rx_out_error(Never)]

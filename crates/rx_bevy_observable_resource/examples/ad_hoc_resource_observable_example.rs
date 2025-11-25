@@ -60,7 +60,7 @@ fn dummy_resource_mutator(dummy_resource: Option<ResMut<DummyResource>>) {
 	}
 }
 
-fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
+fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -71,7 +71,6 @@ fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
 		.observe(print_notification_observer::<usize, Never>)
 		.id();
 
-	let mut context = context_param.into_context(None);
 	// Store this somewhere, or mark it with a component, or you won't be able
 	// to stop it!
 	let ad_hoc_resource_subscription: Entity =

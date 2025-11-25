@@ -1,5 +1,4 @@
 use core::marker::PhantomData;
-use std::any::TypeId;
 
 use bevy_ecs::{
 	component::{Component, Mutable},
@@ -19,10 +18,9 @@ use stealcell::Stolen;
 use thiserror::Error;
 
 use crate::{
-	ErasedSubscriptionSchedule, RxSignal, ScheduledEntitySubscriptionAllocator,
-	ScheduledSubscriptionComponent, SubscriberComponent, SubscriberNotificationEvent,
-	SubscriptionNotificationEvent, UnscheduledEntitySubscriptionAllocator,
-	UnscheduledSubscriptionComponent,
+	RxSignal, ScheduledEntitySubscriptionAllocator, ScheduledSubscriptionComponent,
+	SubscriberComponent, SubscriberNotificationEvent, SubscriptionNotificationEvent,
+	UnscheduledEntitySubscriptionAllocator, UnscheduledSubscriptionComponent,
 };
 
 pub struct RxBevyContext;
@@ -61,41 +59,19 @@ and make sure to include the complete stack trace!",
 /// component on these internally spawned entities are capable of despawning
 /// themselves so that's also not a reason to have this. It's purely cosmetic.
 #[derive(SystemParam)]
-pub struct BevySubscriptionContextParam<'w, 's> {
+pub struct RxBevyContextItem<'w, 's> {
 	pub deferred_world: DeferredWorld<'w>,
 	_phantom_data: PhantomData<&'s ()>,
 }
 
-impl<'w, 's> BevySubscriptionContextParam<'w, 's> {
-	pub fn reborrow(&mut self) -> BevySubscriptionContextParam<'_, '_> {
-		BevySubscriptionContextParam {
-			deferred_world: self.deferred_world.reborrow(),
-			_phantom_data: PhantomData,
-		}
-	}
-
-	pub fn into_context(self, subscription_entity: Option<Entity>) -> RxBevyContextItem<'w, 's> {
-		RxBevyContextItem {
-			deferred_world: self.deferred_world,
-			subscription_entity,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<'w, 's> From<DeferredWorld<'w>> for BevySubscriptionContextParam<'w, 's> {
+impl<'w, 's> From<DeferredWorld<'w>> for RxBevyContextItem<'w, 's> {
+	#[inline]
 	fn from(deferred_world: DeferredWorld<'w>) -> Self {
 		Self {
 			deferred_world,
 			_phantom_data: PhantomData,
 		}
 	}
-}
-
-pub struct RxBevyContextItem<'w, 's> {
-	pub deferred_world: DeferredWorld<'w>,
-	subscription_entity: Option<Entity>,
-	_phantom_data: PhantomData<&'s ()>,
 }
 
 #[derive(Error, Debug)]
@@ -109,31 +85,12 @@ pub enum ContextGetSubscriptionsErasedScheduleError {
 }
 
 impl<'w, 's> RxBevyContextItem<'w, 's> {
+	#[inline]
 	pub fn reborrow(&mut self) -> RxBevyContextItem<'_, '_> {
 		RxBevyContextItem {
 			deferred_world: self.deferred_world.reborrow(),
-			subscription_entity: self.subscription_entity,
 			_phantom_data: PhantomData,
 		}
-	}
-
-	#[inline]
-	pub fn get_subscription_entity(&self) -> Option<Entity> {
-		self.subscription_entity
-	}
-
-	pub fn get_subscriptions_erased_schedule(
-		&mut self,
-	) -> Result<TypeId, ContextGetSubscriptionsErasedScheduleError> {
-		let subscription_entity = self.get_subscription_entity().ok_or(
-			ContextGetSubscriptionsErasedScheduleError::ContextDoesNotHaveASubscritpionEntity,
-		)?;
-		let erased_subscription_schedule = self
-			.deferred_world
-			.entity(subscription_entity)
-			.get::<ErasedSubscriptionSchedule>()
-			.ok_or(ContextGetSubscriptionsErasedScheduleError::SubscriptionEntityDoesNotHaveAnErasedSubscriptionSchedule(subscription_entity))?;
-		Ok(erased_subscription_schedule.get_subscription_schedule_component_type_id())
 	}
 
 	pub fn get_expected_component<C>(&mut self, destination_entity: Entity) -> &C
@@ -325,4 +282,14 @@ impl<'w, 's> SubscriptionContextAccess for RxBevyContextItem<'w, 's> {
 pub enum ContextAccessError {
 	#[error("Tried to get {0}. But it does not exist on entity {1}.")]
 	NotAnObservable(String, Entity),
+}
+
+pub trait DeferredWorldAsRxBevyContextExtension<'w> {
+	fn into_rx_context<'s>(self) -> RxBevyContextItem<'w, 's>;
+}
+
+impl<'w> DeferredWorldAsRxBevyContextExtension<'w> for DeferredWorld<'w> {
+	fn into_rx_context<'s>(self) -> RxBevyContextItem<'w, 's> {
+		self.into()
+	}
 }

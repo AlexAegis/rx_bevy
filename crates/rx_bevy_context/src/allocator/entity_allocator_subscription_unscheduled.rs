@@ -1,4 +1,3 @@
-use bevy_ecs::hierarchy::ChildOf;
 use rx_core_traits::{
 	SubscriptionWithTeardown, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
 };
@@ -23,7 +22,6 @@ impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator
 	where
 		S: 'static + SubscriptionWithTeardown<Context = Self::Context> + Send + Sync,
 	{
-		let contextual_subscription_entity = context.get_subscription_entity();
 		let unscheduled_subscription_entity = context.deferred_world.commands().spawn_empty().id();
 
 		let mut commmands = context.deferred_world.commands();
@@ -33,10 +31,6 @@ impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator
 			subscription,
 			unscheduled_subscription_entity,
 		));
-
-		if let Some(subscription_entity) = contextual_subscription_entity {
-			entity_commands.insert(ChildOf(subscription_entity));
-		}
 
 		UnscheduledEntitySubscriptionHandle::new(unscheduled_subscription_entity)
 	}

@@ -100,7 +100,7 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
+fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -121,8 +121,6 @@ fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
 		.observe(print_notification_observer::<usize, Never>)
 		.observe(print_notification_observer::<KeyCode, Never>)
 		.id();
-
-	let mut context = context_param.into_context(None);
 
 	let instant_subscription_entity = {
 		let mut interval_entity = commands.spawn((
@@ -175,7 +173,8 @@ fn setup(mut commands: Commands, context_param: BevySubscriptionContextParam) {
 				"ProxyObservable (IntervalObservable) {}",
 				interval_observable
 			)),
-			ProxyObservable::<usize, Never>::new(interval_observable).into_component(),
+			ProxyObservable::<usize, Never, Update, Virtual>::new(interval_observable)
+				.into_component(),
 		))
 		.id();
 

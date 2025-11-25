@@ -2,8 +2,8 @@ use bevy_input::{ButtonInput, keyboard::KeyCode};
 use rx_bevy_context::{RxBevyContext, RxBevyContextItem};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, TeardownCollection,
-	Tick, Tickable,
+	Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown,
+	TeardownCollection, Tick, Tickable,
 };
 
 use crate::{KeyboardObservableEmit, KeyboardObservableOptions};
@@ -55,7 +55,7 @@ where
 {
 	fn add_teardown(
 		&mut self,
-		teardown: rx_core_traits::Teardown<Self::Context>,
+		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {

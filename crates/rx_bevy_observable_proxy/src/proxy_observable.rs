@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::entity::Entity;
+use bevy_ecs::{entity::Entity, schedule::ScheduleLabel};
+use rx_bevy_common::Clock;
 use rx_bevy_context::RxBevyContext;
 use rx_core_macro_observable_derive::RxObservable;
 
@@ -16,19 +17,23 @@ use super::proxy_subscription::ProxySubscription;
 #[rx_out(In)]
 #[rx_out_error(InError)]
 #[rx_context(RxBevyContext)]
-pub struct ProxyObservable<In, InError>
+pub struct ProxyObservable<In, InError, S, C>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
+	S: ScheduleLabel,
+	C: Clock,
 {
 	target_observable_entity: Entity,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<(In, InError, S, C)>,
 }
 
-impl<In, InError> ProxyObservable<In, InError>
+impl<In, InError, S, C> ProxyObservable<In, InError, S, C>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
+	S: ScheduleLabel,
+	C: Clock,
 {
 	pub fn new(target_observable_entity: Entity) -> Self {
 		Self {
@@ -38,13 +43,15 @@ where
 	}
 }
 
-impl<In, InError> Observable for ProxyObservable<In, InError>
+impl<In, InError, S, C> Observable for ProxyObservable<In, InError, S, C>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
+	S: ScheduleLabel,
+	C: Clock,
 {
 	type Subscription<Destination>
-		= ProxySubscription<Destination>
+		= ProxySubscription<Destination, S, C>
 	where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;

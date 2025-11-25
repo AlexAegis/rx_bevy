@@ -1,4 +1,4 @@
-use bevy_ecs::{entity::Entity, event::Event, hierarchy::ChildOf, name::Name, observer::Observer};
+use bevy_ecs::{entity::Entity, event::Event, name::Name, observer::Observer};
 use disqualified::ShortName;
 use rx_bevy_context::{RxBevyContext, RxBevyContextItem};
 use rx_core_macro_subscription_derive::RxSubscription;
@@ -32,23 +32,16 @@ where
 		destination: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
-		let subscription_entity = context.get_subscription_entity();
-
 		let mut shared_destination = SharedSubscriber::new(destination, context);
 		let shared_destination_clone = shared_destination.clone_with_context(context);
 		let mut commands = context.deferred_world.commands();
-		let mut observer_satellite_entity = commands.spawn((
+		let observer_satellite_entity = commands.spawn((
 			Name::new(format!("Event Observer of {}", ShortName::of::<Self>())),
 			Observer::new(create_event_forwarder_observer_for_destination(
 				shared_destination_clone,
-				subscription_entity,
 			))
 			.with_entity(observed_event_source_entity),
 		));
-
-		if let Some(subscription_entity) = subscription_entity {
-			observer_satellite_entity.insert(ChildOf(subscription_entity));
-		}
 
 		Self {
 			_observed_event_source_entity: observed_event_source_entity,

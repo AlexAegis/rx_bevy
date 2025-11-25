@@ -14,9 +14,9 @@ use stealcell::{StealCell, Stolen};
 use thiserror::Error;
 
 use crate::{
-	BevySubscriptionContextParam, ObservableOutputs, ObservableSubscriptions, RxBevyContext,
-	RxBevyContextItem, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
-	SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf, UnfinishedSubscription,
+	ObservableOutputs, ObservableSubscriptions, RxBevyContext, RxBevyContextItem,
+	ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf, SubscribeObserverRef,
+	SubscribeObserverTypeMarker, SubscriptionOf, UnfinishedSubscription,
 };
 
 #[derive(Component)]
@@ -79,7 +79,7 @@ where
 
 fn subscribe_event_observer<'w, 's, O>(
 	mut on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
-	context_param: BevySubscriptionContextParam<'w, 's>,
+	mut context: RxBevyContextItem<'w, 's>,
 ) -> Result<(), BevyError>
 where
 	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
@@ -93,8 +93,6 @@ where
 		)
 		.into());
 	};
-
-	let mut context = context_param.into_context(Some(event.subscription_entity));
 
 	let subscription = {
 		let mut stolen_observable = context.steal_observable::<O>(event.observable_entity)?;

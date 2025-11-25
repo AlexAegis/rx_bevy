@@ -14,7 +14,8 @@ use rx_core_traits::{
 use stealcell::{StealCell, Stolen};
 
 use crate::{
-	BevySubscriptionContextParam, RxBevyContext, RxBevyContextItem, SubscriptionNotificationEvent,
+	DeferredWorldAsRxBevyContextExtension, RxBevyContext, RxBevyContextItem,
+	SubscriptionNotificationEvent,
 };
 
 // TODO(bevy-0.18+): This component does not need to be erased, it's only erased to facilitate mass unsubscribe on exit, which currently can't be done using commands as there is no teardown schedule in bevy similar to the startup schedule. https://github.com/AlexAegis/rx_bevy/issues/2 https://github.com/bevyengine/bevy/issues/7067
@@ -75,10 +76,9 @@ pub(crate) fn scheduled_subscription_add_notification_observer_on_insert(
 
 pub(crate) fn scheduled_subscription_notification_observer(
 	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
-	context_param: BevySubscriptionContextParam,
+	mut context: RxBevyContextItem,
 ) -> Result<(), BevyError> {
 	let subscription_entity = subscription_notification.entity();
-	let mut context = context_param.into_context(Some(subscription_entity));
 
 	if !context
 		.deferred_world
@@ -121,8 +121,7 @@ fn scheduled_subscription_unsubscribe_on_remove(
 	deferred_world: DeferredWorld,
 	hook_context: HookContext,
 ) {
-	let context_param: BevySubscriptionContextParam = deferred_world.into();
-	let mut context = context_param.into_context(Some(hook_context.entity));
+	let mut context = deferred_world.into_rx_context();
 
 	let mut stolen_subscription = context
 		.steal_scheduled_subscription(hook_context.entity)
