@@ -25,7 +25,6 @@ debug = [
 ]
 compose = ["dep:rx_core_operator_composite"]
 pipe = ["dep:rx_core_observable_pipe"]
-operator_fn = []
 # It's not likely that a simple counter can ever overflow a usize, but if you
 # fear that, enable this feature and it will saturate the counter instead of overflowing
 saturating_add = []

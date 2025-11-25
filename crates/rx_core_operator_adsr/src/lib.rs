@@ -32,11 +32,3 @@ mod adsr_extension_pipe;
 pub mod extension_pipe {
 	pub use super::adsr_extension_pipe::*;
 }
-
-#[cfg(feature = "operator_fn")]
-mod adsr_fn;
-
-#[cfg(feature = "operator_fn")]
-pub mod operator_fn {
-	pub use super::adsr_fn::*;
-}

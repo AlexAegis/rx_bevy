@@ -22,11 +22,3 @@ mod switch_all_extension_pipe;
 pub mod extension_pipe {
 	pub use super::switch_all_extension_pipe::*;
 }
-
-#[cfg(feature = "operator_fn")]
-mod switch_all_fn;
-
-#[cfg(feature = "operator_fn")]
-pub mod operator_fn {
-	pub use super::switch_all_fn::*;
-}

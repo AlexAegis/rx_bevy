@@ -27,7 +27,6 @@ debug = [
 ]
 compose = []
 pipe = ["dep:rx_core_observable_pipe"]
-operator_fn = []
 
 [dependencies]
 rx_core_traits = { workspace = true }

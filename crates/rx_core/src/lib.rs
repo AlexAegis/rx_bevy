@@ -176,50 +176,6 @@ pub mod extension_pipe {
 	pub use rx_core_operator_tap_next::extension_pipe::*;
 }
 
-#[cfg(feature = "operator_fn")]
-pub mod operator_fn {
-	#[cfg(feature = "operator_adsr")]
-	pub use rx_core_operator_adsr::operator_fn::*;
-	#[cfg(feature = "operator_enumerate")]
-	pub use rx_core_operator_enumerate::operator_fn::*;
-	#[cfg(feature = "operator_error_boundary")]
-	pub use rx_core_operator_error_boundary::operator_fn::*;
-	#[cfg(feature = "operator_fallback_when_silent")]
-	pub use rx_core_operator_fallback_when_silent::operator_fn::*;
-	#[cfg(feature = "operator_filter")]
-	pub use rx_core_operator_filter::operator_fn::*;
-	#[cfg(feature = "operator_filter_map")]
-	pub use rx_core_operator_filter_map::operator_fn::*;
-	#[cfg(feature = "operator_finalize")]
-	pub use rx_core_operator_finalize::operator_fn::*;
-	#[cfg(feature = "operator_identity")]
-	pub use rx_core_operator_identity::operator_fn::*;
-	#[cfg(feature = "operator_into_result")]
-	pub use rx_core_operator_into_result::operator_fn::*;
-	#[cfg(feature = "operator_lift_option")]
-	pub use rx_core_operator_lift_option::operator_fn::*;
-	#[cfg(feature = "operator_lift_result")]
-	pub use rx_core_operator_lift_result::operator_fn::*;
-	#[cfg(feature = "operator_map")]
-	pub use rx_core_operator_map::operator_fn::*;
-	#[cfg(feature = "operator_map_into")]
-	pub use rx_core_operator_map_into::operator_fn::*;
-	#[cfg(feature = "operator_merge_map")]
-	pub use rx_core_operator_merge_map::operator_fn::*;
-	#[cfg(feature = "operator_scan")]
-	pub use rx_core_operator_scan::operator_fn::*;
-	#[cfg(feature = "operator_skip")]
-	pub use rx_core_operator_skip::operator_fn::*;
-	#[cfg(feature = "operator_switch_all")]
-	pub use rx_core_operator_switch_all::operator_fn::*;
-	#[cfg(feature = "operator_switch_map")]
-	pub use rx_core_operator_switch_map::operator_fn::*;
-	#[cfg(feature = "operator_take")]
-	pub use rx_core_operator_take::operator_fn::*;
-	#[cfg(feature = "operator_tap_next")]
-	pub use rx_core_operator_tap_next::operator_fn::*;
-}
-
 pub mod observer {
 	#[cfg(feature = "observer_fn")]
 	pub use rx_core_observer_fn::observer::*;
@@ -262,7 +218,4 @@ pub mod prelude {
 
 	#[cfg(feature = "pipe")]
 	pub use super::extension_pipe::*;
-
-	#[cfg(feature = "operator_fn")]
-	pub use super::operator_fn::*;
 }

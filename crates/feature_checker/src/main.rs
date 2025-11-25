@@ -41,7 +41,7 @@ fn main() {
 			}
 
 			// Skip aggregate features for non aggregator crates
-			if (feature == "compose" || feature == "pipe" || feature == "operator_fn")
+			if (feature == "compose" || feature == "pipe")
 				&& (package.name != "rx_core" || package.name != "rx_bevy")
 			{
 				continue;

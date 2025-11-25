@@ -361,7 +361,7 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 
 ### Creating New Operators
 
-Operators usually have 5-6 files besides `lib.rs`:
+Operators usually have 4-5 files besides `lib.rs`:
 
 - `foo_operator.rs` The Operator implementation, which is responsible of
   creating a subscriber.
@@ -369,12 +369,6 @@ Operators usually have 5-6 files besides `lib.rs`:
   an existing one, or a combination of multiple other subscribers!)
 - `foo_operator_options.rs` Options for the Operator, usually passed down
   into the Subscriber. (Optional)
-- `foo_operator_fn.rs` Operator creator functions, they are shorter to write
-  but can't have their generics default to something.
-  > `operator_fn`s may be removed, but they are already behind a feature.
-  > Feedback and time shall tell if they are useful or not.
-  > They are even less useful than `observable_fn`s, as operators are more
-  > convenient to use through extensions. TODO: Delete
 - `foo_extension_pipe.rs`: An extension for Observables, to construct
   a new Pipe observable with this operator. Enables this operator to be
   chainable with Observables.
@@ -417,14 +411,6 @@ Operators usually have 5-6 files besides `lib.rs`:
    #[cfg(feature = "pipe")]
    pub mod extension_pipe {
        pub use super::map_extension_pipe::*;
-   }
-
-   #[cfg(feature = "operator_fn")]
-   mod map_fn;
-
-   #[cfg(feature = "operator_fn")]
-   pub mod operator_fn {
-       pub use super::map_fn::*;
    }
    ```
 
@@ -497,14 +483,6 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
      ]
      ```
 
-   - operator_fn
-
-     ```toml
-     operator_fn = [
-       "rx_core_operator_foo?/operator_fn"  
-     ]
-     ```
-
 6. Open [`rx_core/src/lib.rs`](./crates/rx_core/src/lib.rs) and re-export the
    new crate within the relevant sections:
 
@@ -534,16 +512,6 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
       pub mod extension_pipe {
           #[cfg(feature = "operator_foo")]
           pub use rx_core_operator_foo::extension_pipe::*;
-      }
-      ```
-
-   4. Add the operator creator function to the `operator_fn` module:
-
-      ```rs
-      #[cfg(feature = "operator_fn")]
-      pub mod operator_fn {
-          #[cfg(feature = "operator_foo")]
-          pub use rx_core_operator_foo::operator_fn::*;
       }
       ```
 

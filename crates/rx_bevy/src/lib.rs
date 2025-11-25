@@ -34,11 +34,6 @@ pub mod extension_pipe {
 	pub use rx_core::extension_pipe::*;
 }
 
-#[cfg(feature = "operator_fn")]
-pub mod operator_fn {
-	pub use rx_core::operator_fn::*;
-}
-
 pub mod observer {
 	pub use rx_core::observer::*;
 }
@@ -60,12 +55,9 @@ pub mod prelude {
 	pub use super::operator::*;
 	pub use super::subject::*;
 
-	#[cfg(feature = "pipe")]
-	pub use super::extension_pipe::*;
-
 	#[cfg(feature = "compose")]
 	pub use super::extension_composite::*;
 
-	#[cfg(feature = "operator_fn")]
-	pub use super::operator_fn::*;
+	#[cfg(feature = "pipe")]
+	pub use super::extension_pipe::*;
 }
