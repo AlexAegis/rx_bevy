@@ -9,8 +9,7 @@ use bevy_ecs::{
 };
 use bevy_log::error;
 use disqualified::ShortName;
-use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, Subscriber, SubscriptionLike};
+use rx_core_traits::{Observable, SubscriptionLike};
 use stealcell::{StealCell, Stolen};
 use thiserror::Error;
 
@@ -20,13 +19,9 @@ use crate::{
 	SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf, UnfinishedSubscription,
 };
 
-/// TODO: Check if you can impl Observable on this
-#[derive(Component, RxObservable)]
+#[derive(Component)]
 #[component(on_insert=observable_on_insert::<O>, on_remove=observable_on_remove::<O>)]
 #[require(ObservableSubscriptions::<O>)]
-#[rx_out(O::Out)]
-#[rx_out_error(O::OutError)]
-#[rx_context(BevySubscriptionContextProvider)]
 pub struct ObservableComponent<O>
 where
 	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
@@ -50,35 +45,6 @@ where
 
 	pub(crate) fn return_stolen_observable(&mut self, observable: Stolen<O>) {
 		self.observable.return_stolen(observable);
-	}
-}
-
-impl<O> Observable for ObservableComponent<O>
-where
-	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
-{
-	type Subscription<Destination>
-		= O::Subscription<Destination>
-	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
-
-	fn subscribe<Destination>(
-		&mut self,
-		destination: Destination,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-	) -> Self::Subscription<Destination::Upgraded>
-	where
-		Destination: 'static
-			+ rx_core_traits::UpgradeableObserver<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = Self::Context,
-			>
-			+ Send
-			+ Sync,
-	{
-		self.observable.get_mut().subscribe(destination, context)
 	}
 }
 

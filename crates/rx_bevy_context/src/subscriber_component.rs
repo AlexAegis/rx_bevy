@@ -151,7 +151,6 @@ where
 {
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
 	let mut context = context_param.into_context(Some(hook_context.entity));
-	// TODO: flip these api's from context to the component
 	let mut stolen_destination = context
 		.steal_subscriber_destination::<Destination>(hook_context.entity)
 		.unwrap();

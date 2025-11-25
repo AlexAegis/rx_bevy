@@ -2,11 +2,11 @@ use core::marker::PhantomData;
 
 use bevy_app::{App, AppExit, Last, Plugin};
 use bevy_ecs::{
-	entity::{ContainsEntity, Entity},
-	observer::Observer,
+	entity::Entity,
 	query::With,
+	resource::Resource,
 	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_event},
-	system::{Commands, Local, Query, Res},
+	system::{Commands, Query},
 	world::{DeferredWorld, World},
 };
 use bevy_log::warn;
@@ -16,12 +16,11 @@ use bevy_window::exit_on_all_closed;
 use derive_where::derive_where;
 use disqualified::ShortName;
 use rx_bevy_common::Clock;
-use rx_core_traits::{SubscriptionNotification, Tick};
+use rx_core_traits::Tick;
 
 use crate::{
 	BevySubscriptionContextParam, ScheduledSubscriptionComponent, SubscribeRetryPlugin,
-	SubscriptionNotificationEvent, SubscriptionSchedule, UnfinishedSubscription,
-	execute_pending_retries,
+	SubscriptionSchedule, UnfinishedSubscription, execute_pending_retries,
 };
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
@@ -60,10 +59,7 @@ where
 			app.add_plugins(SubscribeRetryPlugin);
 		}
 
-		app.add_systems(
-			self.schedule.clone(),
-			tick_scheduled_subscriptions_system::<S, C>,
-		);
+		app.add_systems(self.schedule.clone(), tick_all_subscriptions::<S, C>);
 
 		// Just because a subscription is scheduled with `S`, it could be
 		// spawned during any other schedule. Therefore the cleanup in the
@@ -137,54 +133,38 @@ fn unsubscribe_all_subscriptions(world: &mut World) {
 	}
 }
 
-/// Sends a tick notification for all subscriptions scheduled with this schedule
-pub fn tick_scheduled_subscriptions_system<S: ScheduleLabel, C: Clock>(
-	mut commands: Commands,
-	time: Res<Time<C>>,
-	subscription_query: Query<
-		Entity,
-		(
-			With<SubscriptionSchedule<S, C>>,
-			With<Observer>,
-			// TODO(bevy-0.17): Allow<Internal>
-		),
-	>,
-	mut index: Local<usize>,
-) {
-	let tick = Tick {
-		index: *index,
-		now: time.elapsed(),
-		delta: time.delta(),
-	};
-	*index += 1;
+/// Stores the next tick index for all schedule/clock combinations to avoid
+/// conflicts between them.
+#[derive(Resource, Default)]
+struct RxSchedulerTickIndex {
+	index: usize,
+}
 
-	for target in subscription_query.iter() {
-		let event = SubscriptionNotificationEvent::from_notification(
-			SubscriptionNotification::Tick(tick.clone()),
-			target,
-		);
-
-		// TODO(bevy-0.17): commands.trigger(event);
-		let target = event.entity();
-		commands.trigger_targets(event, target);
+impl RxSchedulerTickIndex {
+	fn get_index_and_increment(&mut self) -> usize {
+		let next = self.index;
+		self.index += 1;
+		next
 	}
 }
 
-//TODO: Evaluate if not using commands would be better or not, maybe from a scheduling perspective for users? could say .after this to know when its settled
-/*
 fn tick_all_subscriptions<S, C>(world: &mut World)
 where
 	S: ScheduleLabel,
 	C: Clock,
 {
+	let index = world
+		.get_resource_or_init::<RxSchedulerTickIndex>()
+		.get_index_and_increment();
 	let time = world.resource::<Time<C>>();
 	let tick = Tick {
-		index: 0, // TODO: Wrong
+		index,
 		now: time.elapsed(),
 		delta: time.delta(),
 	};
 
-	let mut subscription_query = world.query::<(Entity, &mut ScheduledSubscriptionComponent)>();
+	let mut subscription_query = world
+		.query_filtered::<(Entity, &mut ScheduledSubscriptionComponent), With<SubscriptionSchedule<S, C>>>();
 	let mut subscriptions = subscription_query
 		.iter_mut(world)
 		.map(|(entity, mut subscription_component)| {
@@ -196,13 +176,12 @@ where
 	{
 		for (entity, subscription) in subscriptions.iter_mut() {
 			let context_param: BevySubscriptionContextParam = deferred_world.reborrow().into();
-			let mut context = context_param.into_context(*entity);
+			let mut context = context_param.into_context(Some(*entity));
 
 			subscription.tick(tick.clone(), &mut context);
 		}
 	}
 
-	// No need to return stolen subscriptions, the app is closed. We're doing it anyway :)
 	for (subscription_entity, subscription) in subscriptions {
 		let mut subscription_component = deferred_world
 			.get_mut::<ScheduledSubscriptionComponent>(subscription_entity)
@@ -211,4 +190,3 @@ where
 		subscription_component.return_stolen_subscription(subscription);
 	}
 }
-*/

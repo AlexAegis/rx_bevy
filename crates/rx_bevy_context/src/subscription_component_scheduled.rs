@@ -107,10 +107,7 @@ pub(crate) fn scheduled_subscription_notification_observer(
 
 	let mut stolen_scheduled_subscription = scheduled_subscription_component.steal_subscription();
 
-	// TODO: check if this clone is necessary, maybe only non-Add should be cloned?
-	let mut event = subscription_notification.event_mut().clone();
-
-	match event.consume()? {
+	match subscription_notification.event_mut().consume()? {
 		SubscriptionNotification::Unsubscribe => {
 			stolen_scheduled_subscription.unsubscribe(&mut context);
 			context
