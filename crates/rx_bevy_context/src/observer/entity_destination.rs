@@ -17,7 +17,7 @@ use crate::{DetachedEntitySubscriber, RxBevyContext, RxBevyContextItem};
 /// > Technically this is an Observer in the Rx terms and should be called
 /// > `EntityObserver` but that would be a very confusing term in Bevy.
 /// > And while most, simple observers do not
-#[derive(RxObserver)]
+#[derive(RxObserver, Copy, Clone, Debug)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_context(RxBevyContext)]

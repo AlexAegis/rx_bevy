@@ -3,8 +3,8 @@ use bevy_log::warn;
 use disqualified::ShortName;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	SubscriptionClosedFlag, SubscriptionLike, SubscriptionNotification, TeardownCollection,
-	Tickable,
+	SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, SubscriptionNotification,
+	Teardown, TeardownCollection, Tick, Tickable,
 };
 
 use crate::RxBevyContext;
@@ -40,8 +40,8 @@ impl From<EntitySubscription> for Entity {
 impl Tickable for EntitySubscription {
 	fn tick(
 		&mut self,
-		_tick: rx_core_traits::Tick,
-		_context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+		_tick: Tick,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		warn!(
 			"Do not tick an {}, the scheduler already handles it!",
@@ -56,10 +56,7 @@ impl SubscriptionLike for EntitySubscription {
 		*self.closed_flag
 	}
 
-	fn unsubscribe(
-		&mut self,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
 			self.closed_flag.close();
 			context
@@ -74,8 +71,8 @@ impl SubscriptionLike for EntitySubscription {
 impl TeardownCollection for EntitySubscription {
 	fn add_teardown(
 		&mut self,
-		teardown: rx_core_traits::Teardown<Self::Context>,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+		teardown: Teardown<Self::Context>,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
 			context.send_subscription_notification(
