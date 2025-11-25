@@ -145,23 +145,21 @@ fn setup(mut commands: Commands) {
 	let subject_usize = commands
 		.spawn((
 			Name::new("Subject<usize>"),
-			Subject::<usize, Never, BevySubscriptionContextProvider>::default().into_component(),
+			Subject::<usize, Never, RxBevyContext>::default().into_component(),
 		))
 		.id();
 
 	let replay_subject_usize = commands
 		.spawn((
 			Name::new("ReplaySubject<usize>"),
-			ReplaySubject::<3, usize, Never, BevySubscriptionContextProvider>::default()
-				.into_component(),
+			ReplaySubject::<3, usize, Never, RxBevyContext>::default().into_component(),
 		))
 		.id();
 
 	let behavior_subject_usize = commands
 		.spawn((
 			Name::new("BehaviorSubject<usize>"),
-			BehaviorSubject::<usize, Never, BevySubscriptionContextProvider>::new(0)
-				.into_component(),
+			BehaviorSubject::<usize, Never, RxBevyContext>::new(0).into_component(),
 		))
 		.id();
 

@@ -5,7 +5,7 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider,
+	RxBevyContext, RxBevyContextItem,
 	handle::erased_subscription_add_notification_observer_on_insert,
 };
 
@@ -34,7 +34,7 @@ impl WeakEntitySubscriptionHandle {
 impl WeakSubscriptionHandle for WeakEntitySubscriptionHandle {}
 
 impl WithSubscriptionContext for WeakEntitySubscriptionHandle {
-	type Context = BevySubscriptionContextProvider;
+	type Context = RxBevyContext;
 }
 
 impl Clone for WeakEntitySubscriptionHandle {
@@ -51,7 +51,7 @@ impl SubscriptionLike for WeakEntitySubscriptionHandle {
 		*self.closed_flag
 	}
 
-	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut RxBevyContextItem<'_, '_>) {
 		if !self.is_closed() {
 			self.closed_flag.close();
 			context.send_subscription_notification(
@@ -66,7 +66,7 @@ impl TeardownCollection for WeakEntitySubscriptionHandle {
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut BevySubscriptionContext<'_, '_>,
+		context: &mut RxBevyContextItem<'_, '_>,
 	) {
 		if !self.is_closed() {
 			context.send_subscription_notification(

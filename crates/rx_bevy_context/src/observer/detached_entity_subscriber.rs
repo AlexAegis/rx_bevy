@@ -8,12 +8,12 @@ use rx_core_traits::{
 	TeardownCollection, Tickable,
 };
 
-use crate::{BevySubscriptionContextProvider, EntityDestination};
+use crate::{EntityDestination, RxBevyContext};
 
 #[derive(RxSubscriber)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 #[rx_delegate_observer_to_destination]
 pub struct DetachedEntitySubscriber<In, InError>
 where
@@ -23,7 +23,7 @@ where
 	#[destination]
 	destination: EntityDestination<In, InError>,
 	closed_flag: SubscriptionClosedFlag,
-	teardown: Option<SubscriptionData<BevySubscriptionContextProvider>>,
+	teardown: Option<SubscriptionData<RxBevyContext>>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -125,8 +125,7 @@ in it that wasn't properly unsubscribed from!",
 				ShortName::of::<Self>()
 			);
 			// This will panic, intentionally.
-			let mut context =
-				BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
+			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

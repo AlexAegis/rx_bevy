@@ -14,10 +14,9 @@ use stealcell::{StealCell, Stolen};
 use thiserror::Error;
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	ObservableOutputs, ObservableSubscriptions, ScheduledSubscriptionComponent, Subscribe,
-	SubscribeObserverOf, SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf,
-	UnfinishedSubscription,
+	BevySubscriptionContextParam, ObservableOutputs, ObservableSubscriptions, RxBevyContext,
+	RxBevyContextItem, ScheduledSubscriptionComponent, Subscribe, SubscribeObserverOf,
+	SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionOf, UnfinishedSubscription,
 };
 
 #[derive(Component)]
@@ -25,14 +24,14 @@ use crate::{
 #[require(ObservableSubscriptions::<O>, ObservableOutputs::<O::Out, O::OutError>)]
 pub struct ObservableComponent<O>
 where
-	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: Observable<Context = RxBevyContext> + Send + Sync,
 {
 	observable: StealCell<O>,
 }
 
 impl<O> ObservableComponent<O>
 where
-	O: Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: Observable<Context = RxBevyContext> + Send + Sync,
 {
 	pub fn new(observable: O) -> Self {
 		Self {
@@ -51,7 +50,7 @@ where
 
 fn observable_on_insert<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	#[cfg(feature = "debug")]
 	crate::register_observable_debug_systems::<O, bevy_app::Update, bevy_time::Virtual>(
@@ -83,7 +82,7 @@ fn subscribe_event_observer<'w, 's, O>(
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	let event = on_subscribe.event_mut();
 
@@ -132,7 +131,7 @@ where
 /// Remove related components along with the observable
 fn observable_on_remove<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	deferred_world
 		.commands()
@@ -171,7 +170,7 @@ pub(crate) fn default_on_subscribe_error_handler(error: BevyError, error_context
 pub trait BevyContextObservableStealingExt {
 	fn steal_observable<O>(&mut self, entity: Entity) -> Result<Stolen<O>, BevyError>
 	where
-		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync;
+		O: 'static + Observable<Context = RxBevyContext> + Send + Sync;
 
 	fn return_stolen_observable<O>(
 		&mut self,
@@ -179,13 +178,13 @@ pub trait BevyContextObservableStealingExt {
 		observable: Stolen<O>,
 	) -> Result<(), BevyError>
 	where
-		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync;
+		O: 'static + Observable<Context = RxBevyContext> + Send + Sync;
 }
 
-impl<'w, 's> BevyContextObservableStealingExt for BevySubscriptionContext<'w, 's> {
+impl<'w, 's> BevyContextObservableStealingExt for RxBevyContextItem<'w, 's> {
 	fn steal_observable<O>(&mut self, entity: Entity) -> Result<Stolen<O>, BevyError>
 	where
-		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+		O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 	{
 		let mut obserable_component =
 			self.try_get_component_mut::<ObservableComponent<O>>(entity)?;
@@ -198,7 +197,7 @@ impl<'w, 's> BevyContextObservableStealingExt for BevySubscriptionContext<'w, 's
 		observable: Stolen<O>,
 	) -> Result<(), BevyError>
 	where
-		O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+		O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 	{
 		let mut obserable_component =
 			self.try_get_component_mut::<ObservableComponent<O>>(entity)?;

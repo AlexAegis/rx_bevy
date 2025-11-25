@@ -7,10 +7,10 @@ use rx_core_traits::{
 	Tickable,
 };
 
-use crate::BevySubscriptionContextProvider;
+use crate::RxBevyContext;
 
 #[derive(RxSubscription)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct EntitySubscription {
 	closed_flag: SubscriptionClosedFlag,
 	subscription_entity: Entity,

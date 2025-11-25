@@ -1,14 +1,11 @@
 use rx_core_traits::{PrimaryCategorySubject, SubjectLike};
 
-use crate::{BevySubscriptionContextProvider, SubjectComponent};
+use crate::{RxBevyContext, SubjectComponent};
 
 /// Convenience function to turn an observable into a component that can listen
 /// to subscribe events.
 pub trait SubjectAsComponentExtension:
-	SubjectLike<Context = BevySubscriptionContextProvider, PrimaryCategory = PrimaryCategorySubject>
-	+ Send
-	+ Sync
-	+ Sized
+	SubjectLike<Context = RxBevyContext, PrimaryCategory = PrimaryCategorySubject> + Send + Sync + Sized
 where
 	Self::In: Clone,
 	Self::InError: Clone,
@@ -18,10 +15,8 @@ where
 
 impl<Subject> SubjectAsComponentExtension for Subject
 where
-	Subject: SubjectLike<
-			Context = BevySubscriptionContextProvider,
-			PrimaryCategory = PrimaryCategorySubject,
-		> + Send
+	Subject: SubjectLike<Context = RxBevyContext, PrimaryCategory = PrimaryCategorySubject>
+		+ Send
 		+ Sync
 		+ Sized,
 	Subject::In: Clone,

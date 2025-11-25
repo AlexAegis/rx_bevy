@@ -6,8 +6,7 @@ use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Observable, Subscriber, UpgradeableObserver};
 
 use crate::{
-	BevySubscriptionContextProvider, EntitySubscription, ScheduledSubscriptionComponent,
-	SubscriptionSchedule,
+	EntitySubscription, RxBevyContext, ScheduledSubscriptionComponent, SubscriptionSchedule,
 };
 
 pub trait CommandsWithObservableExtension {
@@ -16,7 +15,7 @@ pub trait CommandsWithObservableExtension {
 		observable: O,
 	) -> CommandsWithObservable<'_, '_, O, S, C>
 	where
-		O: Observable<Context = BevySubscriptionContextProvider>,
+		O: Observable<Context = RxBevyContext>,
 		S: ScheduleLabel,
 		C: Clock;
 }
@@ -24,7 +23,7 @@ pub trait CommandsWithObservableExtension {
 impl CommandsWithObservableExtension for Commands<'_, '_> {
 	fn with_observable<O, S, C>(&mut self, observable: O) -> CommandsWithObservable<'_, '_, O, S, C>
 	where
-		O: Observable<Context = BevySubscriptionContextProvider>,
+		O: Observable<Context = RxBevyContext>,
 		S: ScheduleLabel,
 		C: Clock,
 	{
@@ -38,7 +37,7 @@ impl CommandsWithObservableExtension for Commands<'_, '_> {
 
 pub trait ObservableWithCommandsExtension
 where
-	Self: Sized + Observable<Context = BevySubscriptionContextProvider>,
+	Self: Sized + Observable<Context = RxBevyContext>,
 {
 	fn with_commands<'w, 's, S, C>(
 		self,
@@ -51,7 +50,7 @@ where
 
 impl<O> ObservableWithCommandsExtension for O
 where
-	O: Observable<Context = BevySubscriptionContextProvider>,
+	O: Observable<Context = RxBevyContext>,
 {
 	fn with_commands<'w, 's, S, C>(
 		self,
@@ -72,10 +71,10 @@ where
 #[derive(RxObservable)]
 #[rx_out(O::Out)]
 #[rx_out_error(O::OutError)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct CommandsWithObservable<'w, 's, O, S, C>
 where
-	O: Observable<Context = BevySubscriptionContextProvider>,
+	O: Observable<Context = RxBevyContext>,
 	S: ScheduleLabel,
 	C: Clock,
 {
@@ -86,7 +85,7 @@ where
 
 impl<'w, 's, O, S, C> Observable for CommandsWithObservable<'w, 's, O, S, C>
 where
-	O: Observable<Context = BevySubscriptionContextProvider>,
+	O: Observable<Context = RxBevyContext>,
 	S: ScheduleLabel,
 	C: Clock,
 {

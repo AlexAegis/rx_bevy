@@ -6,7 +6,7 @@ use bevy_ecs::{
 use rx_core_traits::SubscriptionNotification;
 use thiserror::Error;
 
-use crate::BevySubscriptionContextProvider;
+use crate::RxBevyContext;
 
 // TODO(bevy-0.17): Use EntityEvent
 #[derive(Event, Clone, Deref, DerefMut)]
@@ -16,7 +16,7 @@ pub struct SubscriptionNotificationEvent {
 	/// Subscription notifications must be consumable because they may own
 	/// resources in the Add variant.
 	#[deref]
-	pub(crate) notification: Option<SubscriptionNotification<BevySubscriptionContextProvider>>,
+	pub(crate) notification: Option<SubscriptionNotification<RxBevyContext>>,
 }
 
 impl ContainsEntity for SubscriptionNotificationEvent {
@@ -28,7 +28,7 @@ impl ContainsEntity for SubscriptionNotificationEvent {
 impl SubscriptionNotificationEvent {
 	#[inline]
 	pub fn from_notification(
-		notification: SubscriptionNotification<BevySubscriptionContextProvider>,
+		notification: SubscriptionNotification<RxBevyContext>,
 		target: Entity,
 	) -> Self {
 		Self {
@@ -39,10 +39,8 @@ impl SubscriptionNotificationEvent {
 
 	pub fn consume(
 		&mut self,
-	) -> Result<
-		SubscriptionNotification<BevySubscriptionContextProvider>,
-		SubscriptionNotificationEventConsumeError,
-	> {
+	) -> Result<SubscriptionNotification<RxBevyContext>, SubscriptionNotificationEventConsumeError>
+	{
 		self.notification
 			.take()
 			.ok_or(SubscriptionNotificationEventConsumeError)
@@ -60,9 +58,7 @@ impl SubscriptionNotificationEvent {
 #[error("Notification was already consumed!")]
 pub struct SubscriptionNotificationEventConsumeError;
 
-impl From<SubscriptionNotificationEvent>
-	for SubscriptionNotification<BevySubscriptionContextProvider>
-{
+impl From<SubscriptionNotificationEvent> for SubscriptionNotification<RxBevyContext> {
 	fn from(mut event: SubscriptionNotificationEvent) -> Self {
 		event.consume().unwrap()
 	}

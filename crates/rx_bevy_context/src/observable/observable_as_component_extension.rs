@@ -1,14 +1,12 @@
 use rx_core_traits::{Observable, PrimaryCategoryObservable};
 
-use crate::{BevySubscriptionContextProvider, ObservableComponent};
+use crate::{ObservableComponent, RxBevyContext};
 
 /// Convenience function to turn an observable into a component that can listen
 /// to subscribe events.
 pub trait ObservableAsComponentExtension:
-	Observable<
-		Context = BevySubscriptionContextProvider,
-		PrimaryCategory = PrimaryCategoryObservable,
-	> + Send
+	Observable<Context = RxBevyContext, PrimaryCategory = PrimaryCategoryObservable>
+	+ Send
 	+ Sync
 	+ Sized
 {
@@ -17,10 +15,8 @@ pub trait ObservableAsComponentExtension:
 
 impl<O> ObservableAsComponentExtension for O
 where
-	O: Observable<
-			Context = BevySubscriptionContextProvider,
-			PrimaryCategory = PrimaryCategoryObservable,
-		> + Send
+	O: Observable<Context = RxBevyContext, PrimaryCategory = PrimaryCategoryObservable>
+		+ Send
 		+ Sync
 		+ Sized,
 {

@@ -14,9 +14,7 @@ use rx_bevy_common::Clock;
 use rx_core_traits::{SignalBound, UpgradeableObserver};
 use thiserror::Error;
 
-use crate::{
-	BevySubscriptionContextProvider, Subscribe, SubscribeObserverTypeMarker, SubscribesToRetry,
-};
+use crate::{RxBevyContext, Subscribe, SubscribeObserverTypeMarker, SubscribesToRetry};
 
 pub struct SubscribeCommand<Out, OutError>
 where
@@ -123,7 +121,7 @@ pub trait CommandSubscribeExtension {
 		destination: Destination,
 	) -> Entity
 	where
-		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>,
+		Destination: 'static + UpgradeableObserver<Context = RxBevyContext>,
 		S: ScheduleLabel,
 		C: Clock;
 
@@ -135,7 +133,7 @@ pub trait CommandSubscribeExtension {
 		schedule_component_type_id: TypeId,
 	) -> Entity
 	where
-		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>;
+		Destination: 'static + UpgradeableObserver<Context = RxBevyContext>;
 
 	/// This is just a `try_despawn` alias.
 	fn unsubscribe(&mut self, subscription_entity: Entity);
@@ -148,7 +146,7 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		destination: Destination,
 	) -> Entity
 	where
-		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>,
+		Destination: 'static + UpgradeableObserver<Context = RxBevyContext>,
 		Schedule: ScheduleLabel,
 		C: Clock,
 	{
@@ -171,7 +169,7 @@ impl<'w, 's> CommandSubscribeExtension for Commands<'w, 's> {
 		schedule_component_type_id: TypeId,
 	) -> Entity
 	where
-		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>,
+		Destination: 'static + UpgradeableObserver<Context = RxBevyContext>,
 	{
 		let (subscribe_event, subscription_entity) =
 			Subscribe::<Destination::In, Destination::InError>::new_with_erased_schedule(

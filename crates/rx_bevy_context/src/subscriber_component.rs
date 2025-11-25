@@ -14,8 +14,7 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	SubscriberNotificationEvent,
+	BevySubscriptionContextParam, RxBevyContext, RxBevyContextItem, SubscriberNotificationEvent,
 };
 
 #[derive(Component, RxSubscriber)]
@@ -23,10 +22,10 @@ use crate::{
 #[require( Name::new(format!("Subscriber ({})", ShortName::of::<Destination>())))]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct SubscriberComponent<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: 'static + Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
@@ -39,7 +38,7 @@ where
 
 impl<Destination> SubscriberComponent<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
@@ -102,7 +101,7 @@ fn subscriber_notification_observer<'w, 's, Destination>(
 	context_param: BevySubscriptionContextParam<'w, 's>,
 ) -> Result<(), BevyError>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: 'static + Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
@@ -131,7 +130,7 @@ where
 
 fn subscriber_on_insert<Destination>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: 'static + Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
@@ -145,7 +144,7 @@ where
 
 fn subscriber_on_remove<Destination>(deferred_world: DeferredWorld, hook_context: HookContext)
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: 'static + Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
@@ -162,12 +161,12 @@ where
 
 impl<Destination> Tickable for SubscriberComponent<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn tick(&mut self, tick: Tick, context: &mut RxBevyContextItem<'_, '_>) {
 		// Tick must not be stopped even if it's closed, in case a
 		// downstream subscription is expecting it
 		self.get_destination_mut().tick(tick, context);
@@ -176,29 +175,29 @@ where
 
 impl<Destination> RxObserver for SubscriberComponent<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
 	#[inline]
-	fn next(&mut self, next: Self::In, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn next(&mut self, next: Self::In, context: &mut RxBevyContextItem<'_, '_>) {
 		self.get_destination_mut().next(next, context);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn error(&mut self, error: Self::InError, context: &mut RxBevyContextItem<'_, '_>) {
 		self.get_destination_mut().error(error, context);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn complete(&mut self, context: &mut RxBevyContextItem<'_, '_>) {
 		self.get_destination_mut().complete(context);
 	}
 }
 
 impl<Destination> SubscriptionLike for SubscriberComponent<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
@@ -207,7 +206,7 @@ where
 		self.get_destination().is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut RxBevyContextItem<'_, '_>) {
 		self.get_destination_mut().unsubscribe(context);
 		context
 			.deferred_world
@@ -219,14 +218,14 @@ where
 
 impl<Destination> TeardownCollection for SubscriberComponent<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Destination: Subscriber<Context = RxBevyContext> + Send + Sync,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
 	fn add_teardown(
 		&mut self,
 		teardown: rx_core_traits::Teardown<Self::Context>,
-		context: &mut BevySubscriptionContext<'_, '_>,
+		context: &mut RxBevyContextItem<'_, '_>,
 	) {
 		self.get_destination_mut().add_teardown(teardown, context);
 	}

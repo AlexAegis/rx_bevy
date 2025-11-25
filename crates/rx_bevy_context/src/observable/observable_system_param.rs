@@ -8,16 +8,14 @@ use rx_bevy_common::Clock;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Never, SignalBound, UpgradeableObserver};
 
-use crate::{
-	BevySubscriptionContextProvider, CommandSubscribeExtension, ObservableOutputs, SubscribeError,
-};
+use crate::{CommandSubscribeExtension, ObservableOutputs, RxBevyContext, SubscribeError};
 
 /// An alternative interface to subscribe to observables, offering eager
 /// checks.
 #[derive(RxObservable, SystemParam)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct ObservableQuery<'w, 's, Out, OutError = Never>
 where
 	Out: SignalBound,
@@ -44,11 +42,7 @@ where
 		&mut self,
 		observable_entity: Entity,
 		destination: impl 'static
-		+ UpgradeableObserver<
-			In = Out,
-			InError = OutError,
-			Context = BevySubscriptionContextProvider,
-		>,
+		+ UpgradeableObserver<In = Out, InError = OutError, Context = RxBevyContext>,
 	) -> Result<Entity, SubscribeError>
 	where
 		S: ScheduleLabel,

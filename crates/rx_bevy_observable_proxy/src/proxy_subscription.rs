@@ -11,15 +11,14 @@ use rx_core_traits::{
 };
 
 use rx_bevy_context::{
-	BevySubscriptionContext, BevySubscriptionContextProvider, CommandSubscribeExtension,
-	SubscriptionSchedule,
+	CommandSubscribeExtension, RxBevyContext, RxBevyContextItem, SubscriptionSchedule,
 };
 
 #[derive(RxSubscription)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	proxy_subscription_entity: Entity,
 	destination: SharedSubscriber<Destination>,
@@ -28,8 +27,7 @@ where
 
 impl<Destination> ProxySubscription<Destination>
 where
-	Destination:
-		'static + Subscriber<Context = BevySubscriptionContextProvider> + UpgradeableObserver,
+	Destination: 'static + Subscriber<Context = RxBevyContext> + UpgradeableObserver,
 	Destination::In: Clone,
 	Destination::InError: Clone,
 {
@@ -79,7 +77,7 @@ where
 
 impl<Destination> SubscriptionLike for ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -99,7 +97,7 @@ where
 
 impl<Destination> TeardownCollection for ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	fn add_teardown(
 		&mut self,
@@ -116,22 +114,21 @@ where
 
 impl<Destination> Tickable for ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn tick(&mut self, tick: Tick, context: &mut RxBevyContextItem<'_, '_>) {
 		self.destination.tick(tick, context);
 	}
 }
 
 impl<Destination> Drop for ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context =
-				BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
+			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

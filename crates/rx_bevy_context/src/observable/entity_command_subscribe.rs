@@ -2,7 +2,7 @@ use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::EntityCommands};
 use rx_bevy_common::Clock;
 use rx_core_traits::{SignalBound, UpgradeableObserver};
 
-use crate::{BevySubscriptionContextProvider, CommandSubscribeExtension, EntityDestination};
+use crate::{CommandSubscribeExtension, EntityDestination, RxBevyContext};
 
 /// Provides commands for subscription relative to this entity
 pub trait EntityCommandSubscribeExtension {
@@ -28,7 +28,7 @@ pub trait EntityCommandSubscribeExtension {
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
 	fn subscribe_destination<Destination, S, C>(&mut self, destination: Destination) -> Entity
 	where
-		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>,
+		Destination: 'static + UpgradeableObserver<Context = RxBevyContext>,
 		S: ScheduleLabel,
 		C: Clock;
 
@@ -75,7 +75,7 @@ pub trait EntityCommandSubscribeExtension {
 impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 	fn subscribe_destination<Destination, S, C>(&mut self, destination: Destination) -> Entity
 	where
-		Destination: 'static + UpgradeableObserver<Context = BevySubscriptionContextProvider>,
+		Destination: 'static + UpgradeableObserver<Context = RxBevyContext>,
 		S: ScheduleLabel,
 		C: Clock,
 	{

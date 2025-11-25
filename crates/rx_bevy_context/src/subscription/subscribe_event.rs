@@ -13,7 +13,7 @@ use std::any::TypeId;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::{BevySubscriptionContextProvider, SubscriptionSchedule};
+use crate::{RxBevyContext, SubscriptionSchedule};
 
 /// The destination is erased so observers can listen to this event based on
 /// the observables output types only.
@@ -33,11 +33,8 @@ where
 	/// consumed during subscription and a `None` is left in its place.
 	/// Therefore you can't trigger a [Subscribe] event on multiple entities
 	/// at once, but there isn't an api to do that anyway.
-	pub(crate) consumable_destination: Option<
-		Box<
-			dyn Subscriber<In = Out, InError = OutError, Context = BevySubscriptionContextProvider>,
-		>,
-	>,
+	pub(crate) consumable_destination:
+		Option<Box<dyn Subscriber<In = Out, InError = OutError, Context = RxBevyContext>>>,
 	/// This entity can only be spawned from this events constructors
 	pub(crate) subscription_entity: Entity,
 
@@ -60,12 +57,8 @@ where
 	where
 		S: ScheduleLabel,
 		C: Clock,
-		Destination: 'static
-			+ UpgradeableObserver<
-				In = Out,
-				InError = OutError,
-				Context = BevySubscriptionContextProvider,
-			>,
+		Destination:
+			'static + UpgradeableObserver<In = Out, InError = OutError, Context = RxBevyContext>,
 	{
 		let subscription_entity = commands
 			.spawn((
@@ -93,12 +86,8 @@ where
 		commands: &mut Commands,
 	) -> (Self, Entity)
 	where
-		Destination: 'static
-			+ UpgradeableObserver<
-				In = Out,
-				InError = OutError,
-				Context = BevySubscriptionContextProvider,
-			>,
+		Destination:
+			'static + UpgradeableObserver<In = Out, InError = OutError, Context = RxBevyContext>,
 	{
 		let subscription_entity = commands
 			.spawn((ChildOf(observable_entity), UnfinishedSubscription))
@@ -118,11 +107,7 @@ where
 
 	pub(crate) fn try_consume_destination(
 		&mut self,
-	) -> Option<
-		Box<
-			dyn Subscriber<In = Out, InError = OutError, Context = BevySubscriptionContextProvider>,
-		>,
-	> {
+	) -> Option<Box<dyn Subscriber<In = Out, InError = OutError, Context = RxBevyContext>>> {
 		self.consumable_destination.take()
 	}
 }

@@ -1,5 +1,5 @@
 use bevy_input::{ButtonInput, keyboard::KeyCode};
-use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
+use rx_bevy_context::{RxBevyContext, RxBevyContextItem};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, TeardownCollection,
@@ -9,10 +9,10 @@ use rx_core_traits::{
 use crate::{KeyboardObservableEmit, KeyboardObservableOptions};
 
 #[derive(RxSubscription)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct KeyboardSubscription<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: Subscriber<Context = RxBevyContext>,
 {
 	destination: Destination,
 	options: KeyboardObservableOptions,
@@ -21,7 +21,7 @@ where
 
 impl<Destination> KeyboardSubscription<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: Subscriber<Context = RxBevyContext>,
 {
 	pub fn new(destination: Destination, options: KeyboardObservableOptions) -> Self {
 		Self {
@@ -34,7 +34,7 @@ where
 
 impl<Destination> SubscriptionLike for KeyboardSubscription<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: Subscriber<Context = RxBevyContext>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -51,7 +51,7 @@ where
 
 impl<Destination> TeardownCollection for KeyboardSubscription<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: Subscriber<Context = RxBevyContext>,
 {
 	fn add_teardown(
 		&mut self,
@@ -68,9 +68,9 @@ where
 
 impl<Destination> Tickable for KeyboardSubscription<Destination>
 where
-	Destination: Subscriber<In = KeyCode, Context = BevySubscriptionContextProvider>,
+	Destination: Subscriber<In = KeyCode, Context = RxBevyContext>,
 {
-	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn tick(&mut self, tick: Tick, context: &mut RxBevyContextItem<'_, '_>) {
 		if !self.is_closed() {
 			let key_codes = {
 				let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
@@ -98,12 +98,11 @@ where
 
 impl<Destination> Drop for KeyboardSubscription<Destination>
 where
-	Destination: Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: Subscriber<Context = RxBevyContext>,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context =
-				BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
+			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

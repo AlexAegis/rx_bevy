@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::resource::Resource;
 
-use rx_bevy_context::BevySubscriptionContextProvider;
+use rx_bevy_context::RxBevyContext;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
 	Observable, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
@@ -13,7 +13,7 @@ use crate::{ResourceSubscription, observable::ResourceObservableOptions};
 #[derive(RxObservable)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct ResourceObservable<R, Reader, Out, OutError>
 where
 	R: Resource,

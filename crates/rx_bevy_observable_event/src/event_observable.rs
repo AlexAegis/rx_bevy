@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event};
-use rx_bevy_context::BevySubscriptionContextProvider;
+use rx_bevy_context::RxBevyContext;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Never, Observable, Subscriber, SubscriptionContext, UpgradeableObserver};
 
@@ -11,7 +11,7 @@ use crate::EntityEventSubscription;
 #[derive(RxObservable)]
 #[rx_out(E)]
 #[rx_out_error(Never)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct EventObservable<E>
 where
 	E: Event + Clone,

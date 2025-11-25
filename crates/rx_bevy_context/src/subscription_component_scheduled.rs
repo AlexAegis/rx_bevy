@@ -14,8 +14,7 @@ use rx_core_traits::{
 use stealcell::{StealCell, Stolen};
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	SubscriptionNotificationEvent,
+	BevySubscriptionContextParam, RxBevyContext, RxBevyContextItem, SubscriptionNotificationEvent,
 };
 
 // TODO(bevy-0.18+): This component does not need to be erased, it's only erased to facilitate mass unsubscribe on exit, which currently can't be done using commands as there is no teardown schedule in bevy similar to the startup schedule. https://github.com/AlexAegis/rx_bevy/issues/2 https://github.com/bevyengine/bevy/issues/7067
@@ -25,18 +24,13 @@ use crate::{
 pub struct ScheduledSubscriptionComponent {
 	this_entity: Entity,
 	// TODO(bevy-0.18+): This "StealCell" won't be necessary once entity world scope lands: https://github.com/AlexAegis/rx_bevy/issues/1 https://github.com/bevyengine/bevy/issues/13128
-	subscription: StealCell<
-		Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
-	>,
+	subscription: StealCell<Box<dyn SubscriptionScheduled<Context = RxBevyContext> + Send + Sync>>,
 }
 
 impl ScheduledSubscriptionComponent {
 	pub fn new<Subscription>(subscription: Subscription, this_entity: Entity) -> Self
 	where
-		Subscription: 'static
-			+ SubscriptionScheduled<Context = BevySubscriptionContextProvider>
-			+ Send
-			+ Sync,
+		Subscription: 'static + SubscriptionScheduled<Context = RxBevyContext> + Send + Sync,
 	{
 		Self {
 			subscription: StealCell::new(Box::new(subscription)),
@@ -44,31 +38,23 @@ impl ScheduledSubscriptionComponent {
 		}
 	}
 
-	fn get_subscription(
-		&self,
-	) -> &dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> {
+	fn get_subscription(&self) -> &dyn SubscriptionScheduled<Context = RxBevyContext> {
 		self.subscription.as_deref()
 	}
 
-	fn get_subscription_mut(
-		&mut self,
-	) -> &mut dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> {
+	fn get_subscription_mut(&mut self) -> &mut dyn SubscriptionScheduled<Context = RxBevyContext> {
 		self.subscription.as_deref_mut()
 	}
 
 	pub fn steal_subscription(
 		&mut self,
-	) -> Stolen<
-		Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
-	> {
+	) -> Stolen<Box<dyn SubscriptionScheduled<Context = RxBevyContext> + Send + Sync>> {
 		self.subscription.steal()
 	}
 
 	pub fn return_stolen_subscription(
 		&mut self,
-		subscription: Stolen<
-			Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
-		>,
+		subscription: Stolen<Box<dyn SubscriptionScheduled<Context = RxBevyContext> + Send + Sync>>,
 	) {
 		self.subscription.return_stolen(subscription)
 	}
@@ -148,12 +134,12 @@ fn scheduled_subscription_unsubscribe_on_remove(
 }
 
 impl WithSubscriptionContext for ScheduledSubscriptionComponent {
-	type Context = BevySubscriptionContextProvider;
+	type Context = RxBevyContext;
 }
 
 impl Tickable for ScheduledSubscriptionComponent {
 	#[inline]
-	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn tick(&mut self, tick: Tick, context: &mut RxBevyContextItem<'_, '_>) {
 		let subscription = self.get_subscription_mut();
 		subscription.tick(tick, context);
 	}
@@ -166,7 +152,7 @@ impl SubscriptionLike for ScheduledSubscriptionComponent {
 		subscription.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut RxBevyContextItem<'_, '_>) {
 		let subscription = self.get_subscription_mut();
 		subscription.unsubscribe(context);
 		context
@@ -182,7 +168,7 @@ impl TeardownCollection for ScheduledSubscriptionComponent {
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut BevySubscriptionContext<'_, '_>,
+		context: &mut RxBevyContextItem<'_, '_>,
 	) {
 		let subscription = self.get_subscription_mut();
 		subscription.add_teardown(teardown, context);

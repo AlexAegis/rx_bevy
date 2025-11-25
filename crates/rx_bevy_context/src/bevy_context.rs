@@ -25,10 +25,10 @@ use crate::{
 	UnscheduledSubscriptionComponent,
 };
 
-pub struct BevySubscriptionContextProvider;
+pub struct RxBevyContext;
 
-impl SubscriptionContext for BevySubscriptionContextProvider {
-	type Item<'w, 's> = BevySubscriptionContext<'w, 's>;
+impl SubscriptionContext for RxBevyContext {
+	type Item<'w, 's> = RxBevyContextItem<'w, 's>;
 
 	type DropSafety = DropUnsafeSubscriptionContext;
 
@@ -74,11 +74,8 @@ impl<'w, 's> BevySubscriptionContextParam<'w, 's> {
 		}
 	}
 
-	pub fn into_context(
-		self,
-		subscription_entity: Option<Entity>,
-	) -> BevySubscriptionContext<'w, 's> {
-		BevySubscriptionContext {
+	pub fn into_context(self, subscription_entity: Option<Entity>) -> RxBevyContextItem<'w, 's> {
+		RxBevyContextItem {
 			deferred_world: self.deferred_world,
 			subscription_entity,
 			_phantom_data: PhantomData,
@@ -95,7 +92,7 @@ impl<'w, 's> From<DeferredWorld<'w>> for BevySubscriptionContextParam<'w, 's> {
 	}
 }
 
-pub struct BevySubscriptionContext<'w, 's> {
+pub struct RxBevyContextItem<'w, 's> {
 	pub deferred_world: DeferredWorld<'w>,
 	subscription_entity: Option<Entity>,
 	_phantom_data: PhantomData<&'s ()>,
@@ -111,9 +108,9 @@ pub enum ContextGetSubscriptionsErasedScheduleError {
 	SubscriptionEntityDoesNotHaveAnErasedSubscriptionSchedule(Entity),
 }
 
-impl<'w, 's> BevySubscriptionContext<'w, 's> {
-	pub fn reborrow(&mut self) -> BevySubscriptionContext<'_, '_> {
-		BevySubscriptionContext {
+impl<'w, 's> RxBevyContextItem<'w, 's> {
+	pub fn reborrow(&mut self) -> RxBevyContextItem<'_, '_> {
+		RxBevyContextItem {
 			deferred_world: self.deferred_world.reborrow(),
 			subscription_entity: self.subscription_entity,
 			_phantom_data: PhantomData,
@@ -204,7 +201,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn send_subscriber_notification<In, InError>(
 		&mut self,
 		target: Entity,
-		notification: SubscriberNotification<In, InError, BevySubscriptionContextProvider>,
+		notification: SubscriberNotification<In, InError, RxBevyContext>,
 	) where
 		In: SignalBound,
 		InError: SignalBound,
@@ -222,7 +219,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn send_subscription_notification(
 		&mut self,
 		target: Entity,
-		notification: SubscriptionNotification<BevySubscriptionContextProvider>,
+		notification: SubscriptionNotification<RxBevyContext>,
 	) {
 		let notification_event =
 			SubscriptionNotificationEvent::from_notification(notification, target);
@@ -238,9 +235,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		&mut self,
 		entity: Entity,
 	) -> Result<
-		Stolen<
-			Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
-		>,
+		Stolen<Box<dyn SubscriptionScheduled<Context = RxBevyContext> + Send + Sync>>,
 		BevyError,
 	> {
 		let mut scheduled_subscription_component =
@@ -252,9 +247,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	pub fn return_stolen_scheduled_subscription(
 		&mut self,
 		entity: Entity,
-		subscription: Stolen<
-			Box<dyn SubscriptionScheduled<Context = BevySubscriptionContextProvider> + Send + Sync>,
-		>,
+		subscription: Stolen<Box<dyn SubscriptionScheduled<Context = RxBevyContext> + Send + Sync>>,
 	) -> Result<(), BevyError> {
 		let mut scheduled_subscription_component =
 			self.try_get_component_mut::<ScheduledSubscriptionComponent>(entity)?;
@@ -268,10 +261,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		entity: Entity,
 	) -> Result<Stolen<Subscription>, BevyError>
 	where
-		Subscription: 'static
-			+ SubscriptionWithTeardown<Context = BevySubscriptionContextProvider>
-			+ Send
-			+ Sync,
+		Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 	{
 		let mut unscheduled_subscription_component =
 			self.try_get_component_mut::<UnscheduledSubscriptionComponent<Subscription>>(entity)?;
@@ -285,10 +275,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		subscription: Stolen<Subscription>,
 	) -> Result<(), BevyError>
 	where
-		Subscription: 'static
-			+ SubscriptionWithTeardown<Context = BevySubscriptionContextProvider>
-			+ Send
-			+ Sync,
+		Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 	{
 		let mut unscheduled_subscription_component =
 			self.try_get_component_mut::<UnscheduledSubscriptionComponent<Subscription>>(entity)?;
@@ -302,7 +289,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		entity: Entity,
 	) -> Result<Destination, BevyError>
 	where
-		Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Destination: 'static + Subscriber<Context = RxBevyContext> + Send + Sync,
 		Destination::In: Clone,
 		Destination::InError: Clone,
 	{
@@ -318,7 +305,7 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 		destination: Destination,
 	) -> Result<(), BevyError>
 	where
-		Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider> + Send + Sync,
+		Destination: 'static + Subscriber<Context = RxBevyContext> + Send + Sync,
 		Destination::In: Clone,
 		Destination::InError: Clone,
 	{
@@ -330,8 +317,8 @@ impl<'w, 's> BevySubscriptionContext<'w, 's> {
 	}
 }
 
-impl<'w, 's> SubscriptionContextAccess for BevySubscriptionContext<'w, 's> {
-	type SubscriptionContextProvider = BevySubscriptionContextProvider;
+impl<'w, 's> SubscriptionContextAccess for RxBevyContextItem<'w, 's> {
+	type SubscriptionContextProvider = RxBevyContext;
 }
 
 #[derive(Error, Debug)]

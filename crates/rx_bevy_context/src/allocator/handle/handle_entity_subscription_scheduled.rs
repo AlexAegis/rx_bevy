@@ -6,7 +6,7 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContextProvider,
+	RxBevyContext,
 	handle::{
 		erased_subscription_add_notification_observer_on_insert,
 		erased_subscription_unsubscribe_on_remove,
@@ -56,7 +56,7 @@ impl ScheduledSubscriptionHandle for ScheduledEntitySubscriptionHandle {
 }
 
 impl WithSubscriptionContext for ScheduledEntitySubscriptionHandle {
-	type Context = BevySubscriptionContextProvider;
+	type Context = RxBevyContext;
 }
 
 impl Tickable for ScheduledEntitySubscriptionHandle {
@@ -110,8 +110,7 @@ impl TeardownCollection for ScheduledEntitySubscriptionHandle {
 impl Drop for ScheduledEntitySubscriptionHandle {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context =
-				BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
+			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

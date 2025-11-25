@@ -7,7 +7,7 @@ use rx_core_traits::{
 	Observable, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
 };
 
-use crate::{BevySubscriptionContextProvider, EntityCommandSubscribeExtension, EntitySubscription};
+use crate::{EntityCommandSubscribeExtension, EntitySubscription, RxBevyContext};
 
 pub trait EntityCommandsAsObservableExtension {
 	/// # `as_observable`
@@ -115,7 +115,7 @@ impl EntityCommandsAsObservableExtension for Entity {
 #[derive(RxObservable)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct EntityCommandsObservable<Out, OutError, S, C>
 where
 	Out: SignalBound,

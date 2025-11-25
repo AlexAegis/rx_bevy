@@ -9,7 +9,7 @@ use std::fmt::Debug;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::BevySubscriptionContextProvider;
+use crate::RxBevyContext;
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
@@ -19,7 +19,7 @@ use crate::BevySubscriptionContextProvider;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	#[relationship]
 	#[deref]
@@ -30,7 +30,7 @@ where
 
 impl<O> ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	pub fn get_subscription_entities(&self) -> Vec<Entity> {
 		self.subscriptions.clone()
@@ -39,7 +39,7 @@ where
 
 impl<O> Default for ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	fn default() -> Self {
 		Self {
@@ -55,7 +55,7 @@ where
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscriptionOf<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	#[relationship]
 	#[deref]
@@ -66,7 +66,7 @@ where
 
 impl<O> SubscriptionOf<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	pub fn new(observable_entity: Entity) -> Self {
 		Self {

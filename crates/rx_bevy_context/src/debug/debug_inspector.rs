@@ -15,7 +15,7 @@ use rx_bevy_common::Clock;
 use rx_core_traits::Observable;
 
 use crate::{
-	BevySubscriptionContextProvider, ObservableComponent, ObservableSubscriptions, SubscriptionOf,
+	ObservableComponent, ObservableSubscriptions, RxBevyContext, SubscriptionOf,
 	SubscriptionSchedule,
 };
 
@@ -47,7 +47,7 @@ pub(crate) fn run_debug_systems(
 
 pub(crate) fn register_observable_debug_systems<O, S, C>(deferred_world: &mut DeferredWorld)
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 	S: ScheduleLabel,
 	C: Clock,
 {
@@ -80,7 +80,7 @@ pub(crate) fn observable_entity_debug_print<O, S, C>(
 		With<ObservableComponent<O>>,
 	>,
 ) where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 	S: ScheduleLabel,
 	C: Clock,
 {
@@ -103,7 +103,7 @@ pub(crate) fn observable_entity_debug_print<O, S, C>(
 
 impl<O> Display for &SubscriptionOf<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "\tSubscription of: {}", self.get_observable_entity())
@@ -112,7 +112,7 @@ where
 
 impl<O> Display for &ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "\tSubscriptions: {:?}", self.get_subscription_entities())
@@ -137,7 +137,7 @@ pub(crate) fn subscription_entity_debug_print<O, S, C>(
 		Option<&SubscriptionSchedule<S, C>>,
 	)>,
 ) where
-	O: 'static + Observable<Context = BevySubscriptionContextProvider> + Send + Sync,
+	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
 	S: ScheduleLabel,
 	C: Clock,
 {

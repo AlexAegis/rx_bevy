@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::resource::Resource;
-use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
+use rx_bevy_context::{RxBevyContext, RxBevyContextItem};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
@@ -11,17 +11,17 @@ use rx_core_traits::{
 use crate::observable::ResourceObservableOptions;
 
 #[derive(RxSubscription)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct ResourceSubscription<R, Reader, Destination>
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	destination: Destination,
 	reader: Reader,
 	options: ResourceObservableOptions,
-	teardown: SubscriptionData<BevySubscriptionContextProvider>,
+	teardown: SubscriptionData<RxBevyContext>,
 	// The `is_resource_added` method doesn't seem to work in this context, so
 	// it will be tracked here instead.
 	resource_existed_in_the_previous_tick: bool,
@@ -32,7 +32,7 @@ impl<R, Reader, Destination> ResourceSubscription<R, Reader, Destination>
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	pub fn new(
 		reader: Reader,
@@ -58,7 +58,7 @@ impl<R, Reader, Destination> SubscriptionLike for ResourceSubscription<R, Reader
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -77,7 +77,7 @@ impl<R, Reader, Destination> TeardownCollection for ResourceSubscription<R, Read
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	fn add_teardown(
 		&mut self,
@@ -96,9 +96,9 @@ impl<R, Reader, Destination> Tickable for ResourceSubscription<R, Reader, Destin
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
-	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn tick(&mut self, tick: Tick, context: &mut RxBevyContextItem<'_, '_>) {
 		let resource_option = context.deferred_world.get_resource::<R>();
 		let is_changed = context.deferred_world.is_resource_changed::<R>();
 		let is_added = {
@@ -130,7 +130,7 @@ impl<R, Reader, Destination> Drop for ResourceSubscription<R, Reader, Destinatio
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {

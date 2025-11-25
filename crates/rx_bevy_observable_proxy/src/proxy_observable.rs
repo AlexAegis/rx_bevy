@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
-use rx_bevy_context::BevySubscriptionContextProvider;
+use rx_bevy_context::RxBevyContext;
 use rx_core_macro_observable_derive::RxObservable;
 
 use rx_core_traits::{
@@ -15,7 +15,7 @@ use super::proxy_subscription::ProxySubscription;
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct ProxyObservable<In, InError>
 where
 	In: SignalBound + Clone,

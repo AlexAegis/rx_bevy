@@ -3,9 +3,7 @@ use rx_core_traits::{
 	SubscriptionWithTeardown, WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
 };
 
-use crate::{
-	BevySubscriptionContext, BevySubscriptionContextProvider, UnscheduledSubscriptionComponent,
-};
+use crate::{RxBevyContext, RxBevyContextItem, UnscheduledSubscriptionComponent};
 
 use super::handle::UnscheduledEntitySubscriptionHandle;
 
@@ -20,7 +18,7 @@ impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator
 
 	fn allocate_unscheduled_subscription<S>(
 		subscription: S,
-		context: &mut BevySubscriptionContext<'_, '_>,
+		context: &mut RxBevyContextItem<'_, '_>,
 	) -> Self::UnscheduledHandle<S>
 	where
 		S: 'static + SubscriptionWithTeardown<Context = Self::Context> + Send + Sync,
@@ -45,5 +43,5 @@ impl UnscheduledSubscriptionAllocator for UnscheduledEntitySubscriptionAllocator
 }
 
 impl WithSubscriptionContext for UnscheduledEntitySubscriptionAllocator {
-	type Context = BevySubscriptionContextProvider;
+	type Context = RxBevyContext;
 }

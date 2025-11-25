@@ -12,8 +12,8 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	SubscriptionNotificationEvent, handle::ErasedEntitySubscriptionHandle,
+	BevySubscriptionContextParam, RxBevyContext, RxBevyContextItem, SubscriptionNotificationEvent,
+	handle::ErasedEntitySubscriptionHandle,
 };
 
 use super::WeakEntitySubscriptionHandle;
@@ -104,7 +104,7 @@ impl UnscheduledSubscriptionHandle for UnscheduledEntitySubscriptionHandle {
 }
 
 impl WithSubscriptionContext for UnscheduledEntitySubscriptionHandle {
-	type Context = BevySubscriptionContextProvider;
+	type Context = RxBevyContext;
 }
 
 impl Clone for UnscheduledEntitySubscriptionHandle {
@@ -121,7 +121,7 @@ impl SubscriptionLike for UnscheduledEntitySubscriptionHandle {
 		*self.closed_flag
 	}
 
-	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut RxBevyContextItem<'_, '_>) {
 		if !self.is_closed() {
 			self.closed_flag.close();
 			context.send_subscription_notification(
@@ -136,7 +136,7 @@ impl TeardownCollection for UnscheduledEntitySubscriptionHandle {
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut BevySubscriptionContext<'_, '_>,
+		context: &mut RxBevyContextItem<'_, '_>,
 	) {
 		if !self.is_closed() {
 			context.send_subscription_notification(
@@ -152,8 +152,7 @@ impl TeardownCollection for UnscheduledEntitySubscriptionHandle {
 impl Drop for UnscheduledEntitySubscriptionHandle {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context =
-				BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
+			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

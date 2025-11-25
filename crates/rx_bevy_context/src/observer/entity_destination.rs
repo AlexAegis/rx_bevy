@@ -4,7 +4,7 @@ use bevy_ecs::entity::Entity;
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{Never, Observer, ObserverNotification, SignalBound, UpgradeableObserver};
 
-use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, DetachedEntitySubscriber};
+use crate::{DetachedEntitySubscriber, RxBevyContext, RxBevyContextItem};
 
 /// This is not a component, but a wrapper for an Entity to be used as a generic
 /// destination for subscriptions. The entity here will receive all signals as
@@ -20,7 +20,7 @@ use crate::{BevySubscriptionContext, BevySubscriptionContextProvider, DetachedEn
 #[derive(RxObserver)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 #[rx_does_not_upgrade_to_detached]
 pub struct EntityDestination<In, InError = Never>
 where
@@ -71,21 +71,21 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	fn next(&mut self, next: Self::In, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn next(&mut self, next: Self::In, context: &mut RxBevyContextItem<'_, '_>) {
 		context.send_observer_notification(
 			self.destination,
 			ObserverNotification::<In, InError>::Next(next),
 		);
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn error(&mut self, error: Self::InError, context: &mut RxBevyContextItem<'_, '_>) {
 		context.send_observer_notification(
 			self.destination,
 			ObserverNotification::<In, InError>::Error(error),
 		);
 	}
 
-	fn complete(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn complete(&mut self, context: &mut RxBevyContextItem<'_, '_>) {
 		context.send_observer_notification(
 			self.destination,
 			ObserverNotification::<In, InError>::Complete,

@@ -1,5 +1,5 @@
 use bevy_input::keyboard::KeyCode;
-use rx_bevy_context::BevySubscriptionContextProvider;
+use rx_bevy_context::RxBevyContext;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Never, Observable, Subscriber, SubscriptionContext, UpgradeableObserver};
 
@@ -9,7 +9,7 @@ use crate::{KeyboardObservableOptions, KeyboardSubscription};
 #[derive(RxObservable, Default)]
 #[rx_out(KeyCode)]
 #[rx_out_error(Never)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct KeyboardObservable {
 	options: KeyboardObservableOptions,
 }

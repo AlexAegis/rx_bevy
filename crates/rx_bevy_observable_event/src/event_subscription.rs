@@ -1,6 +1,6 @@
 use bevy_ecs::{entity::Entity, event::Event, hierarchy::ChildOf, name::Name, observer::Observer};
 use disqualified::ShortName;
-use rx_bevy_context::{BevySubscriptionContext, BevySubscriptionContextProvider};
+use rx_bevy_context::{RxBevyContext, RxBevyContextItem};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	SharedSubscriber, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
@@ -10,10 +10,10 @@ use rx_core_traits::{
 use crate::create_event_forwarder_observer_for_destination;
 
 #[derive(RxSubscription)]
-#[rx_context(BevySubscriptionContextProvider)]
+#[rx_context(RxBevyContext)]
 pub struct EntityEventSubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 	Destination::In: Event + Clone,
 {
 	_observed_event_source_entity: Entity,
@@ -24,7 +24,7 @@ where
 
 impl<Destination> EntityEventSubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 	Destination::In: Event + Clone,
 {
 	pub fn new(
@@ -61,7 +61,7 @@ where
 
 impl<Destination> SubscriptionLike for EntityEventSubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 	Destination::In: Event + Clone,
 {
 	#[inline]
@@ -85,7 +85,7 @@ where
 
 impl<Destination> TeardownCollection for EntityEventSubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 	Destination::In: Event + Clone,
 {
 	fn add_teardown(
@@ -103,23 +103,22 @@ where
 
 impl<Destination> Tickable for EntityEventSubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 	Destination::In: Event + Clone,
 {
-	fn tick(&mut self, tick: Tick, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn tick(&mut self, tick: Tick, context: &mut RxBevyContextItem<'_, '_>) {
 		self.destination.tick(tick, context);
 	}
 }
 
 impl<Destination> Drop for EntityEventSubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = BevySubscriptionContextProvider>,
+	Destination: 'static + Subscriber<Context = RxBevyContext>,
 	Destination::In: Event + Clone,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context =
-				BevySubscriptionContextProvider::create_context_to_unsubscribe_on_drop();
+			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}
 	}

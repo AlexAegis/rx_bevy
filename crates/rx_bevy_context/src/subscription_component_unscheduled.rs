@@ -14,8 +14,7 @@ use rx_core_traits::{
 use stealcell::{StealCell, Stolen};
 
 use crate::{
-	BevySubscriptionContext, BevySubscriptionContextParam, BevySubscriptionContextProvider,
-	SubscriptionNotificationEvent,
+	BevySubscriptionContextParam, RxBevyContext, RxBevyContextItem, SubscriptionNotificationEvent,
 };
 
 #[derive(Component)]
@@ -23,8 +22,7 @@ use crate::{
 #[require(Name::new(format!("{}", ShortName::of::<Subscription>())))]
 pub struct UnscheduledSubscriptionComponent<Subscription>
 where
-	Subscription:
-		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
 	this_entity: Entity,
 	subscription: StealCell<Subscription>,
@@ -34,8 +32,7 @@ fn unscheduled_subscription_unsubscribe_on_remove<Subscription>(
 	deferred_world: DeferredWorld,
 	hook_context: HookContext,
 ) where
-	Subscription:
-		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
 	let context_param: BevySubscriptionContextParam = deferred_world.into();
 	let mut context = context_param.into_context(Some(hook_context.entity));
@@ -51,8 +48,7 @@ fn unscheduled_subscription_unsubscribe_on_remove<Subscription>(
 
 impl<Subscription> UnscheduledSubscriptionComponent<Subscription>
 where
-	Subscription:
-		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
 	pub fn new(subscription: Subscription, this_entity: Entity) -> Self {
 		Self {
@@ -82,8 +78,7 @@ fn unscheduled_subscription_add_notification_observer_on_insert<Subscription>(
 	mut deferred_world: DeferredWorld,
 	hook_context: HookContext,
 ) where
-	Subscription:
-		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
 	let mut commands = deferred_world.commands();
 	let mut entity_commands = commands.entity(hook_context.entity);
@@ -97,8 +92,7 @@ fn unscheduled_subscription_notification_observer<Subscription>(
 	context_param: BevySubscriptionContextParam,
 ) -> Result<(), BevyError>
 where
-	Subscription:
-		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
 	let subscription_entity = subscription_notification.entity();
 	let mut context = context_param.into_context(Some(subscription_entity));
@@ -124,23 +118,21 @@ where
 
 impl<Subscription> WithSubscriptionContext for UnscheduledSubscriptionComponent<Subscription>
 where
-	Subscription:
-		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
-	type Context = BevySubscriptionContextProvider;
+	type Context = RxBevyContext;
 }
 
 impl<Subscription> SubscriptionLike for UnscheduledSubscriptionComponent<Subscription>
 where
-	Subscription:
-		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		self.get_subscription().is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut BevySubscriptionContext<'_, '_>) {
+	fn unsubscribe(&mut self, context: &mut RxBevyContextItem<'_, '_>) {
 		if !self.is_closed() {
 			self.get_subscription_mut().unsubscribe(context);
 			context
@@ -154,14 +146,13 @@ where
 
 impl<Subscription> TeardownCollection for UnscheduledSubscriptionComponent<Subscription>
 where
-	Subscription:
-		'static + SubscriptionWithTeardown<Context = BevySubscriptionContextProvider> + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown<Context = RxBevyContext> + Send + Sync,
 {
 	#[inline]
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
-		context: &mut BevySubscriptionContext<'_, '_>,
+		context: &mut RxBevyContextItem<'_, '_>,
 	) {
 		self.get_subscription_mut().add_teardown(teardown, context);
 	}

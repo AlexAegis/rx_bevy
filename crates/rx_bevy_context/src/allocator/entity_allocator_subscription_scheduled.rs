@@ -4,7 +4,7 @@ use rx_core_traits::{
 };
 
 use crate::{
-	BevySubscriptionContextProvider,
+	RxBevyContext,
 	handle::{ScheduledEntitySubscriptionHandle, UnscheduledEntitySubscriptionHandle},
 };
 
@@ -24,5 +24,5 @@ impl ScheduledSubscriptionAllocator for ScheduledEntitySubscriptionAllocator {
 }
 
 impl WithSubscriptionContext for ScheduledEntitySubscriptionAllocator {
-	type Context = BevySubscriptionContextProvider;
+	type Context = RxBevyContext;
 }
