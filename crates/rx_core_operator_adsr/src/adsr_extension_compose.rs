@@ -1,10 +1,13 @@
 use rx_core_operator_composite::operator::CompositeOperator;
 use rx_core_traits::Operator;
 
-use crate::operator::{AdsrOperator, AdsrOperatorOptions};
+use crate::{
+	AdsrTrigger,
+	operator::{AdsrOperator, AdsrOperatorOptions},
+};
 
 /// Provides a convenient function to pipe the operator from another operator  
-pub trait CompositeOperatorExtensionAdsr: Operator<Out = bool> + Sized {
+pub trait CompositeOperatorExtensionAdsr: Operator<Out = AdsrTrigger> + Sized {
 	fn adsr(
 		self,
 		options: AdsrOperatorOptions,
@@ -13,4 +16,4 @@ pub trait CompositeOperatorExtensionAdsr: Operator<Out = bool> + Sized {
 	}
 }
 
-impl<Op> CompositeOperatorExtensionAdsr for Op where Op: Operator<Out = bool> {}
+impl<Op> CompositeOperatorExtensionAdsr for Op where Op: Operator<Out = AdsrTrigger> {}

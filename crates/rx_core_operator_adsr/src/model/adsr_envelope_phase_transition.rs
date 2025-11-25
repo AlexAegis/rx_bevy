@@ -1,7 +1,6 @@
-use bitflags::{bitflags, bitflags_match};
-use smallvec::SmallVec;
+use bitflags::bitflags;
 
-use crate::{AdsrEnvelopePhase, AdsrSignalEvent};
+use crate::AdsrEnvelopePhase;
 
 /// Describes what happened between this and the last frame, aside from None
 /// other transitions are only present for a single frame, and can be used
@@ -28,24 +27,6 @@ bitflags! {
 		const Stop = 0b00010000;
 		/// When any ActionEnvelopeState transitions to a lower state that is not ActionEnvelopeState::None
 		const Restart = 0b00100000;
-	}
-}
-
-impl AdsrEnvelopePhaseTransition {
-	pub fn map_to_signal_events<const N: usize>(&self) -> SmallVec<[AdsrSignalEvent; N]> {
-		self.into_iter()
-			.flat_map(|flag| {
-				bitflags_match!(flag, {
-					AdsrEnvelopePhaseTransition::Start => Some(AdsrSignalEvent::Start),
-					AdsrEnvelopePhaseTransition::Fire => Some(AdsrSignalEvent::Fire),
-					AdsrEnvelopePhaseTransition::Sustain => Some(AdsrSignalEvent::Sustain),
-					AdsrEnvelopePhaseTransition::Release => Some(AdsrSignalEvent::Release),
-					AdsrEnvelopePhaseTransition::Stop => Some(AdsrSignalEvent::Stop),
-					AdsrEnvelopePhaseTransition::Restart => Some(AdsrSignalEvent::Restart),
-					_ => None,
-				})
-			})
-			.collect()
 	}
 }
 

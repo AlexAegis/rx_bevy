@@ -33,7 +33,6 @@ rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_observable_pipe = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 bitflags = { workspace = true }
-smallvec = { workspace = true }
 bevy_math = { workspace = true, features = ["std", "curve"] }
 bevy_time = { workspace = true }
 

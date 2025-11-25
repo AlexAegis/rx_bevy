@@ -3,12 +3,12 @@ use core::marker::PhantomData;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
-use crate::{AdsrSignal, AdsrSubscriber, operator::AdsrOperatorOptions};
+use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptions};
 
 #[derive(Clone)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[derive(RxOperator)]
-#[rx_in(bool)]
+#[rx_in(AdsrTrigger)]
 #[rx_in_error(InError)]
 #[rx_out(AdsrSignal)]
 #[rx_out_error(InError)]

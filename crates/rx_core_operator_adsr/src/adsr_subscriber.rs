@@ -3,12 +3,14 @@ use core::marker::PhantomData;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext, Tick, Tickable};
 
-use crate::{AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, operator::AdsrOperatorOptions};
+use crate::{
+	AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, AdsrTrigger, operator::AdsrOperatorOptions,
+};
 
 // TODO: It'd be nice to control the envelope live, I guess that could be done by querying the subscriber itself, but it would be nicer to control the operator itself, in case there are many observers
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[derive(RxSubscriber)]
-#[rx_in(bool)]
+#[rx_in(AdsrTrigger)]
 #[rx_in_error(InError)]
 #[rx_context(Destination::Context)]
 #[rx_delegate_teardown_collection_to_destination]
@@ -55,7 +57,11 @@ where
 		next: Self::In,
 		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		self.is_getting_activated = next;
+		self.is_getting_activated = next.activated;
+
+		if let Some(envelope_change) = next.envelope_changes {
+			self.options.envelope.apply_change(envelope_change);
+		}
 	}
 
 	#[inline]

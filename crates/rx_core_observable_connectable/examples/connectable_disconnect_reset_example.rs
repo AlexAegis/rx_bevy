@@ -17,7 +17,6 @@ fn main() {
 
 	source.next(1, &mut ());
 
-	// TODO: Pipes should not take values, only references!
 	let mut _subscription = connectable
 		.clone()
 		.finalize(|_| println!("connection finalize 0"))

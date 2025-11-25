@@ -8,10 +8,8 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
-use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	Observer as RxObserver, ObserverNotification, ObserverPushObserverNotificationExtention,
-	SubjectLike, SubscriptionLike,
+	ObserverNotification, ObserverPushObserverNotificationExtention, SubjectLike, SubscriptionLike,
 };
 use stealcell::{StealCell, Stolen};
 
@@ -22,14 +20,16 @@ use crate::{
 	UnfinishedSubscription, default_on_subscribe_error_handler,
 };
 
-#[derive(Component, RxSubject)]
+/// Note that if you accidentally subscribe to a subject entity, with itself,
+/// then that will result in an infinite loop! With a regular Subject it's
+/// easy and self evident that this would happen, but since it's possible
+/// to subscribe to stuff by only knowing it's output types, it's harder to
+/// know when is it a subject or just an observable. Although it should be
+/// rare that even a regular observable would send events to the same entity
+/// it's defined on.
+#[derive(Component)]
 #[component(on_insert=subject_on_insert::<Subject>, on_remove=subject_on_remove::<Subject>)]
 #[require(ObservableSubscriptions::<Subject>)]
-#[rx_in(Subject::In)]
-#[rx_in_error(Subject::InError)]
-#[rx_out(Subject::Out)]
-#[rx_out_error(Subject::OutError)]
-#[rx_context(RxBevyContext)]
 pub struct SubjectComponent<Subject>
 where
 	Subject: SubjectLike<Context = RxBevyContext> + Send + Sync,
@@ -57,37 +57,6 @@ where
 
 	pub(crate) fn return_stolen_subject(&mut self, observable: Stolen<Subject>) {
 		self.subject.return_stolen(observable);
-	}
-}
-
-// TODO: This is actually not used, delete if no usecase is found together with the derive
-impl<Subject> RxObserver for SubjectComponent<Subject>
-where
-	Subject: SubjectLike<Context = RxBevyContext> + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
-{
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subject.get_mut().next(next, context);
-	}
-
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subject.get_mut().error(error, context);
-	}
-
-	fn complete(
-		&mut self,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.subject.get_mut().complete(context);
 	}
 }
 

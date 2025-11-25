@@ -147,9 +147,6 @@ pub enum SubscribeError {
 		"Tried to subscribe to {0} on {1}. But the Subscribe event already had it's destination consumed!"
 	)]
 	EventAlreadyConsumed(String, Entity),
-	// TODO: consider how this could be implemented now, or if it's even needed. self subscriptions on subjects would cause infinite loops, maybe subjects could be treated as special things and have their own components which could be used to to trigger this error with an associuated const
-	// #[error("Tried to subscribe to {0}. But it disallows subscriptions from the same entity {1}.")]
-	// SelfSubscribeDisallowed(String, Entity),
 }
 
 /// The default error handler just prints out the error as warning

@@ -8,8 +8,6 @@ pub use adsr::*;
 pub use adsr_subscriber::*;
 pub use model::*;
 
-// TODO: Extension pipe once the operator is ready
-
 pub mod operator {
 	pub use super::adsr::*;
 	pub use super::adsr_operator::*;

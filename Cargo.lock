@@ -4203,7 +4203,6 @@ dependencies = [
  "rx_bevy_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_observer_derive",
- "rx_core_macro_subject_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
@@ -4592,7 +4591,6 @@ dependencies = [
  "rx_core_operator_composite",
  "rx_core_testing",
  "rx_core_traits",
- "smallvec",
 ]
 
 [[package]]

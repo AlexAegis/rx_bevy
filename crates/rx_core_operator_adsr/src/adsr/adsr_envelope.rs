@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::AdsrEnvelopePhase;
+use crate::{AdsrEnvelopeChange, AdsrEnvelopePhase};
 
 use bevy_math::{
 	Curve,
@@ -132,6 +132,36 @@ impl AdsrEnvelope {
 				}
 			}
 		}
+	}
+
+	pub fn apply_change(&mut self, change: AdsrEnvelopeChange) {
+		if let Some(attack_time) = change.attack_time {
+			self.attack_time = attack_time;
+		};
+
+		if let Some(attack_easing) = change.attack_easing {
+			self.attack_easing = Some(attack_easing);
+		};
+
+		if let Some(decay_time) = change.decay_time {
+			self.decay_time = decay_time;
+		};
+
+		if let Some(decay_easing) = change.decay_easing {
+			self.decay_easing = Some(decay_easing);
+		};
+
+		if let Some(sustain_volume) = change.sustain_volume {
+			self.sustain_volume = sustain_volume;
+		};
+
+		if let Some(release_time) = change.release_time {
+			self.release_time = release_time;
+		};
+
+		if let Some(release_easing) = change.release_easing {
+			self.release_easing = Some(release_easing);
+		};
 	}
 }
 

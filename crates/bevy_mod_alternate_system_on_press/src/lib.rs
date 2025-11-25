@@ -16,7 +16,6 @@ where
 	input_just_pressed_nth(2, if start_state { 1 } else { 0 }, input)
 }
 
-/// TODO: split out as condition met nth
 pub fn input_just_pressed_nth<T>(
 	every: usize,
 	offset: usize,

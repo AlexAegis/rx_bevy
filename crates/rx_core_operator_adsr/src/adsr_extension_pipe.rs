@@ -1,10 +1,13 @@
 use rx_core_observable_pipe::observable::Pipe;
 use rx_core_traits::Observable;
 
-use crate::operator::{AdsrOperator, AdsrOperatorOptions};
+use crate::{
+	AdsrTrigger,
+	operator::{AdsrOperator, AdsrOperatorOptions},
+};
 
 /// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionAdsr: Observable<Out = bool> + Sized {
+pub trait ObservableExtensionAdsr: Observable<Out = AdsrTrigger> + Sized {
 	fn adsr(
 		self,
 		options: AdsrOperatorOptions,
@@ -13,4 +16,4 @@ pub trait ObservableExtensionAdsr: Observable<Out = bool> + Sized {
 	}
 }
 
-impl<Obs> ObservableExtensionAdsr for Obs where Obs: Observable<Out = bool> {}
+impl<Obs> ObservableExtensionAdsr for Obs where Obs: Observable<Out = AdsrTrigger> {}

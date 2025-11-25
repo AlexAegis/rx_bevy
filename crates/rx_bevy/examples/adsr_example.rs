@@ -10,6 +10,7 @@ use examples_common::{SubscriptionMapResource, send_message, toggle_subscription
 use rx_bevy::prelude::*;
 use rx_bevy_context::RxSignal;
 
+/// Press K to start the subscription, then Space to trigger the envelope
 fn main() -> AppExit {
 	App::new()
 		.add_plugins((
@@ -55,6 +56,7 @@ fn setup(
 			.map(Into::<Option<KeyCode>>::into)
 			.fallback_when_silent(Default::default) // When nothing pressed, emit the default of the input type
 			.map(|key| matches!(key, Some(KeyCode::Space)))
+			.map_into::<AdsrTrigger, Never>()
 			.adsr(AdsrOperatorOptions {
 				always_emit_none: false,
 				reset_input_on_tick: false,
