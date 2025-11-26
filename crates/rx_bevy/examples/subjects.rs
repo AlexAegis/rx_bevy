@@ -19,7 +19,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
-			RxPlugin,
+			RxScheduler::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -112,15 +112,15 @@ fn setup(mut commands: Commands) {
 
 	let destination_entity_1 = commands
 		.spawn(Name::new("Destination 1"))
-		.observe(print_notification_observer::<String, Never>)
-		.observe(print_notification_observer::<i32, Never>)
-		.observe(print_notification_observer::<usize, Never>)
-		.observe(print_notification_observer::<KeyCode, Never>)
+		.observe(print_notification_observer::<String, Never, Virtual>)
+		.observe(print_notification_observer::<i32, Never, Virtual>)
+		.observe(print_notification_observer::<usize, Never, Virtual>)
+		.observe(print_notification_observer::<KeyCode, Never, Virtual>)
 		.id();
 
 	let destination_entity_2 = commands
 		.spawn(Name::new("Destination 2"))
-		.observe(print_notification_observer::<usize, Never>)
+		.observe(print_notification_observer::<usize, Never, Virtual>)
 		.id();
 
 	let keyboard_observable = commands

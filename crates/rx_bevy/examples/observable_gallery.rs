@@ -20,7 +20,9 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
-			RxPlugin,
+			RxScheduler::<FixedUpdate, Fixed>::default(),
+			RxScheduler::<Update, Virtual>::default(),
+			RxScheduler::<Update, Real>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -32,30 +34,35 @@ fn main() -> AppExit {
 					|res| res.keyboard_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, FixedUpdate, Fixed>(
 					KeyCode::KeyO,
 					|res| res.interval_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Real>(
 					KeyCode::KeyP,
 					|res| res.interval_observable,
-					|res| res.destination_entity_2,
+					|res| res.destination_entity_real_clock,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyI,
 					|res| res.proxy_interval_observable,
 					|res| res.destination_entity,
 				),
-				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Real>(
 					KeyCode::KeyU,
 					|res| res.proxy_interval_observable,
-					|res| res.destination_entity_2,
+					|res| res.destination_entity_real_clock,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Virtual>(
 					KeyCode::KeyL,
 					|e| e.keyboard_switch_map_to_interval_observable,
 					|res| res.destination_entity,
+				),
+				toggle_subscription_system::<ExampleEntities, usize, Never, Update, Real>(
+					KeyCode::KeyR,
+					|e| e.keyboard_switch_map_to_interval_observable,
+					|res| res.destination_entity_real_clock,
 				),
 				toggle_subscription_system::<ExampleEntities, usize, usize, Update, Virtual>(
 					KeyCode::KeyM, // This will (intentionally) miss as the Output types don't match with an observable!
@@ -76,7 +83,7 @@ fn despawn_instant_subscription(mut commands: Commands, r: Res<ExampleEntities>)
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
 	destination_entity: Entity,
-	destination_entity_2: Entity,
+	destination_entity_real_clock: Entity,
 	subscriptions: HashMap<(Entity, Entity), Entity>,
 	keyboard_observable: Entity,
 	keyboard_switch_map_to_interval_observable: Entity,
@@ -107,20 +114,44 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 	));
 
 	let destination_entity = commands
-		.spawn(Name::new("Destination"))
-		.observe(print_notification_observer::<String, Never>)
-		.observe(print_notification_observer::<(usize, usize), Never>)
-		.observe(print_notification_observer::<usize, Never>)
-		.observe(print_notification_observer::<KeyCode, Never>)
+		.spawn(Name::new("Destination (Virtual Clock Logging)"))
+		.observe(print_notification_observer::<String, Never, Virtual>)
+		.observe(print_notification_observer::<(usize, usize), Never, Virtual>)
+		.observe(print_notification_observer::<usize, Never, Virtual>)
+		.observe(print_notification_observer::<KeyCode, Never, Virtual>)
 		.id();
 
-	let destination_entity_2 = commands
-		.spawn(Name::new("Destination 2"))
-		.observe(print_notification_observer::<String, Never>)
-		.observe(print_notification_observer::<(usize, usize), Never>)
-		.observe(print_notification_observer::<usize, Never>)
-		.observe(print_notification_observer::<KeyCode, Never>)
+	let destination_entity_real_clock = commands
+		.spawn(Name::new("Destination (Real Clock Logging)"))
+		.observe(print_notification_observer::<String, Never, Real>)
+		.observe(print_notification_observer::<(usize, usize), Never, Real>)
+		.observe(print_notification_observer::<usize, Never, Real>)
+		.observe(print_notification_observer::<KeyCode, Never, Real>)
 		.id();
+
+	let _virtual_time_setting_subscription = commands
+		.with_observable::<_, Update, Real>(KeyboardObservable::new(KeyboardObservableOptions {
+			emit: KeyboardObservableEmit::JustPressed,
+		}))
+		.subscribe(
+			ResourceDestination::<_, _, Time<Virtual>, _>::new(|mut virtual_time, signal| {
+				let speed = match signal {
+					ObserverNotification::Next(key_code) => match key_code {
+						KeyCode::KeyX => 0.5,
+						KeyCode::KeyC => 1.5,
+						KeyCode::KeyV => 2.5,
+						_ => 1.0,
+					},
+					_ => 1.0,
+				};
+
+				println!("Setting the virtual clocks relative speed to {speed}!");
+
+				virtual_time.set_relative_speed(speed);
+			}),
+			&mut context,
+		)
+		.into_entity();
 
 	let instant_subscription_entity = {
 		let mut interval_entity = commands.spawn((
@@ -140,7 +171,10 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 			.enumerate()
 			.finalize(|_| println!("Finalize from the instant subscription!"))
 			.take(10)
-			.subscribe(EntityDestination::new(destination_entity_2), &mut context);
+			.subscribe(
+				EntityDestination::new(destination_entity_real_clock),
+				&mut context,
+			);
 
 		subscription.into_entity()
 	};
@@ -211,7 +245,7 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 	commands.insert_resource(ExampleEntities {
 		subscriptions: HashMap::new(),
 		destination_entity,
-		destination_entity_2,
+		destination_entity_real_clock,
 		keyboard_observable,
 		interval_observable,
 		proxy_interval_observable,

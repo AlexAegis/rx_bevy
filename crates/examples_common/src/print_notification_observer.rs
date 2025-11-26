@@ -10,16 +10,18 @@ use bevy::{
 	time::Time,
 };
 use disqualified::ShortName;
+use rx_bevy_common::Clock;
 use rx_bevy_context::RxSignal;
 use rx_core_traits::SignalBound;
 
-pub fn print_notification_observer<In, InError>(
+pub fn print_notification_observer<In, InError, C>(
 	next: Trigger<RxSignal<In, InError>>,
 	name_query: Query<&Name>,
-	time: Res<Time>,
+	time: Res<Time<C>>,
 ) where
 	In: SignalBound + Debug,
 	InError: SignalBound + Debug,
+	C: Clock,
 {
 	println!(
 		"<{},{}>\t value: {:?}\tname: {:?}\telapsed: {}",

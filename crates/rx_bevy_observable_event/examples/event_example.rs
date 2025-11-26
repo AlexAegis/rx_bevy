@@ -19,7 +19,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
-			RxPlugin,
+			RxScheduler::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -117,7 +117,7 @@ fn setup(mut commands: Commands) {
 
 	let destination_entity = commands
 		.spawn(Name::new("ExampleObserver"))
-		.observe(print_notification_observer::<DummyEvent, Never>)
+		.observe(print_notification_observer::<DummyEvent, Never, Virtual>)
 		.id();
 
 	let dummy_event_sink = commands.spawn(Name::new("They are watching me")).id();

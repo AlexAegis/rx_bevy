@@ -1,6 +1,6 @@
 use quote::quote;
 use rx_core_macro_common::{
-	impl_delegate_subscription_like_to_destination, impl_does_not_upgrade_to_detached,
+	impl_delegate_subscription_like_to_destination, impl_does_not_upgrade_to_observer_subscriber,
 	impl_observable_output, impl_observer_input, impl_observer_upgrades_to, impl_primary_category,
 	impl_with_subscription_context,
 };
@@ -38,8 +38,8 @@ fn primary_category_subject() -> Type {
 ///   sets the associated `OutError` type to the value of the
 ///   `#[rx_out_error(...)]` attribute, or to `Never` if missing.
 /// - `UpgradeableObserver`: By default. It implements `UpgradeableObserver` by
-///   wrapping the subject into a `DetachedSubscriber`. This implementation can
-///   be opted out with the `#[rx_does_not_upgrade_to_detached]` attribute to
+///   wrapping the subject into a `ObserverSubscriber`. This implementation can
+///   be opted out with the `#[rx_does_not_upgrade_to_observer_subscriber]` attribute to
 ///   provide a manual implementation. Other preset implementations can be
 ///   used with the `#[rx_upgrades_to(...)]` attribute.
 ///
@@ -56,17 +56,18 @@ fn primary_category_subject() -> Type {
 /// - `#[rx_out_error(...)]` (optional, default: `Never`): Defines the output
 ///   error type of the subject, usually it's the same as the input error type
 /// - `#[rx_context(...)]`: Defines the Context this subject is compatible with
-/// - `#[rx_does_not_upgrade_to_detached]` (optional): Opts out the default
+/// - `#[rx_does_not_upgrade_to_observer_subscriber]` (optional): Opts out the default
 ///   `UpgradeableObserver` implementation which just wraps the `Subject` in a
-///   `DetachedSubscriber` when used as a destination for an `Observable` to
+///   `ObserverSubscriber` when used as a destination for an `Observable` to
 ///   prevent upstream from unsubscribing the entire `Subject`.
-/// - `#[rx_upgrades_to(...)]` (optional, accepts: `self`, `detached`): Defines
-///   a preset implementation for `UpgradeableObserver`
+/// - `#[rx_upgrades_to(...)]` (optional, accepts: `self`,
+///   `observer_subscriber`): Defines a preset implementation for
+///   `UpgradeableObserver`
 ///   - `self`: Upgraded version is itself, causing it to be unsubscribed
 ///     when upstream is unsubscribed when used as an observables destination.
-///   - `detached`: Upgraded version is itself wrapped in `DetachedSubscriber`,
-///     causing it to **not** be unsubscribed when upstream is unsubscribed when
-///     used as an observables destination.
+///   - `observer_subscriber`: Upgraded version is itself wrapped in
+///     `ObserverSubscriber`, causing it to **not** be unsubscribed when
+///     upstream is unsubscribed when used as an observables destination.
 /// - `#[rx_delegate_subscription_like_to_destination]` (optional): Opts into
 ///   the trivial implementation of `SubscriptionLike` where the traits methods
 ///   are just simply called on the field marked as `#[destination]`.
@@ -78,7 +79,7 @@ fn primary_category_subject() -> Type {
 		rx_out,
 		rx_out_error,
 		rx_context,
-		rx_does_not_upgrade_to_detached,
+		rx_does_not_upgrade_to_observer_subscriber,
 		rx_upgrades_to,
 		rx_delegate_subscription_like_to_destination,
 		destination
@@ -92,7 +93,8 @@ pub fn subject_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream
 	let observer_input_impl = impl_observer_input(&derive_input);
 	let with_subscription_context_impl = impl_with_subscription_context(&derive_input);
 	let observer_upgrades_to_impl = impl_observer_upgrades_to(&derive_input);
-	let does_not_upgrade_to_detached_impl = impl_does_not_upgrade_to_detached(&derive_input);
+	let does_not_upgrade_to_observer_subscriber_impl =
+		impl_does_not_upgrade_to_observer_subscriber(&derive_input);
 	let delegate_subscription_like_to_destination_impl =
 		impl_delegate_subscription_like_to_destination(&derive_input);
 
@@ -107,7 +109,7 @@ pub fn subject_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream
 
 		#observer_upgrades_to_impl
 
-		#does_not_upgrade_to_detached_impl
+		#does_not_upgrade_to_observer_subscriber_impl
 
 		#delegate_subscription_like_to_destination_impl
 	})

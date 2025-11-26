@@ -1,6 +1,6 @@
 use quote::quote;
 use rx_core_macro_common::{
-	impl_does_not_upgrade_to_detached, impl_observer_input, impl_observer_upgrades_to,
+	impl_does_not_upgrade_to_observer_subscriber, impl_observer_input, impl_observer_upgrades_to,
 	impl_primary_category, impl_with_subscription_context,
 };
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
@@ -30,10 +30,10 @@ fn primary_category_observer() -> Type {
 ///   sets the associated `InError` type to the value of the
 ///   `#[rx_in_error(...)]` attribute, or to `Never` if missing.
 /// - `UpgradeableObserver`: By default. It implements `UpgradeableObserver` by
-///   wrapping the subject into a `DetachedSubscriber`. This implementation can
-///   be opted out with the `#[rx_does_not_upgrade_to_detached]` attribute to
-///   provide a manual implementation. Other preset implementations can be
-///   used with the `#[rx_upgrades_to(...)]` attribute.
+///   wrapping the subject into a `ObserverSubscriber`. This implementation can
+///   be opted out with the `#[rx_does_not_upgrade_to_observer_subscriber]`
+///   attribute to provide a manual implementation. Other preset
+///   implementations can be used with the `#[rx_upgrades_to(...)]` attribute.
 ///
 /// ## Attributes
 ///
@@ -43,25 +43,27 @@ fn primary_category_observer() -> Type {
 ///   the subscriber
 /// - `#[rx_in_error(...)]` (optional, default: `Never`): Defines the input
 ///   error type of the subscriber
-/// - `#[rx_context(...)]`: Defines the Context this subscriber is compatible with
-/// - `#[rx_does_not_upgrade_to_detached]` (optional): Opts out the default
-///   `UpgradeableObserver` implementation which just wraps the `Subject` in a
-///   `DetachedSubscriber` when used as a destination for an `Observable` to
-///   prevent upstream from unsubscribing the entire `Subject`.
-/// - `#[rx_upgrades_to(...)]` (optional, accepts: `self`, `detached`): Defines
-///   a preset implementation for `UpgradeableObserver`
+/// - `#[rx_context(...)]`: Defines the Context this subscriber is compatible
+///   with
+/// - `#[rx_does_not_upgrade_to_observer_subscriber]` (optional): Opts out the
+///   default `UpgradeableObserver` implementation which just wraps the
+///   `Subject` in a `ObserverSubscriber` when used as a destination for an
+///   `Observable` to prevent upstream from unsubscribing the entire `Subject`.
+/// - `#[rx_upgrades_to(...)]` (optional, accepts: `self`,
+///   `observer_subscriber`): Defines a preset implementation for
+///   `UpgradeableObserver`
 ///   - `self`: Upgraded version is itself, causing it to be unsubscribed
 ///     when upstream is unsubscribed when used as an observables destination.
-///   - `detached`: Upgraded version is itself wrapped in `DetachedSubscriber`,
-///     causing it to **not** be unsubscribed when upstream is unsubscribed when
-///     used as an observables destination.
+///   - `observer_subscriber`: Upgraded version is itself wrapped in
+///     `ObserverSubscriber`, causing it to **not** be unsubscribed when
+///     upstream is unsubscribed when used as an observables destination.
 #[proc_macro_derive(
 	RxObserver,
 	attributes(
 		rx_in,
 		rx_in_error,
 		rx_context,
-		rx_does_not_upgrade_to_detached,
+		rx_does_not_upgrade_to_observer_subscriber,
 		rx_upgrades_to
 	)
 )]
@@ -72,7 +74,8 @@ pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStr
 	let observer_input_impl = impl_observer_input(&derive_input);
 	let with_subscription_context_impl = impl_with_subscription_context(&derive_input);
 	let observer_upgrades_to_impl = impl_observer_upgrades_to(&derive_input);
-	let does_not_upgrade_to_detached_impl = impl_does_not_upgrade_to_detached(&derive_input);
+	let does_not_upgrade_to_observer_subscriber_impl =
+		impl_does_not_upgrade_to_observer_subscriber(&derive_input);
 
 	(quote! {
 		#primary_category_impl
@@ -83,7 +86,7 @@ pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStr
 
 		#observer_upgrades_to_impl
 
-		#does_not_upgrade_to_detached_impl
+		#does_not_upgrade_to_observer_subscriber_impl
 	})
 	.into()
 }

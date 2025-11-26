@@ -1,5 +1,7 @@
-mod detached_entity_subscriber;
+mod detached_subscriber;
 mod entity_destination;
+mod resource_destination;
 
-pub(crate) use detached_entity_subscriber::*;
+pub(crate) use detached_subscriber::*;
 pub use entity_destination::*;
+pub use resource_destination::*;

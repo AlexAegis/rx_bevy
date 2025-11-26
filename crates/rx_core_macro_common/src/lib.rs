@@ -134,11 +134,16 @@ pub fn impl_subscriber_does_not_upgrade_to_self(derive_input: &DeriveInput) -> O
 	}
 }
 
-pub fn impl_does_not_upgrade_to_detached(derive_input: &DeriveInput) -> Option<TokenStream> {
-	let does_not_upgrade_to_detached =
-		find_attribute(&derive_input.attrs, "rx_does_not_upgrade_to_detached").is_some();
+pub fn impl_does_not_upgrade_to_observer_subscriber(
+	derive_input: &DeriveInput,
+) -> Option<TokenStream> {
+	let does_not_upgrade_to_observer_subscriber = find_attribute(
+		&derive_input.attrs,
+		"rx_does_not_upgrade_to_observer_subscriber",
+	)
+	.is_some();
 
-	if does_not_upgrade_to_detached
+	if does_not_upgrade_to_observer_subscriber
 		|| find_attribute(&derive_input.attrs, "rx_upgrades_to").is_some()
 	{
 		None
@@ -150,7 +155,7 @@ pub fn impl_does_not_upgrade_to_detached(derive_input: &DeriveInput) -> Option<T
 #[derive(Clone, Copy)]
 enum ObserverUpgrades {
 	ToSelf,
-	ToDetached,
+	ToObserverSubscriber,
 }
 
 impl Parse for ObserverUpgrades {
@@ -162,12 +167,12 @@ impl Parse for ObserverUpgrades {
 
 		let ident = input.parse::<Ident>()?;
 
-		if ident == "detached" {
-			Ok(ObserverUpgrades::ToDetached)
+		if ident == "observer_subscriber" {
+			Ok(ObserverUpgrades::ToObserverSubscriber)
 		} else {
 			Err(syn::Error::new(
 				ident.span(),
-				"invalid value for #[rx_upgrades_to(..)]: expected `self` or `detached`",
+				"invalid value for #[rx_upgrades_to(..)]: expected `self` or `observer_subscriber`",
 			))
 		}
 	}
@@ -180,7 +185,7 @@ pub fn impl_observer_upgrades_to(derive_input: &DeriveInput) -> Option<TokenStre
 		let target: ObserverUpgrades = upgrades_to.parse_args().unwrap();
 
 		match target {
-			ObserverUpgrades::ToDetached => impl_upgrades_to_detached(derive_input),
+			ObserverUpgrades::ToObserverSubscriber => impl_upgrades_to_detached(derive_input),
 			ObserverUpgrades::ToSelf => impl_upgrades_to_self(derive_input),
 		}
 	})
@@ -192,10 +197,10 @@ fn impl_upgrades_to_detached(derive_input: &DeriveInput) -> TokenStream {
 
 	quote! {
 		impl #impl_generics rx_core_traits::UpgradeableObserver for #ident #ty_generics #where_clause {
-			type Upgraded = rx_core_traits::DetachedSubscriber<Self>;
+			type Upgraded = rx_core_traits::ObserverSubscriber<Self>;
 
 			fn upgrade(self) -> Self::Upgraded {
-				rx_core_traits::DetachedSubscriber::new(self)
+				rx_core_traits::ObserverSubscriber::new(self)
 			}
 		}
 	}

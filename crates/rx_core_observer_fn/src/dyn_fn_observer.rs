@@ -1,5 +1,5 @@
 use rx_core_traits::{
-	DetachedSubscriber, Observer, ObserverInput, PrimaryCategoryObserver, SignalBound,
+	Observer, ObserverInput, ObserverSubscriber, PrimaryCategoryObserver, SignalBound,
 	SubscriptionContext, Tick, Tickable, UpgradeableObserver, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
@@ -101,10 +101,10 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	type Upgraded = DetachedSubscriber<Self>;
+	type Upgraded = ObserverSubscriber<Self>;
 
 	fn upgrade(self) -> Self::Upgraded {
-		DetachedSubscriber::new(self)
+		ObserverSubscriber::new(self)
 	}
 }
 

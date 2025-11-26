@@ -4,7 +4,7 @@ use bevy_ecs::entity::Entity;
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{Never, Observer, ObserverNotification, SignalBound, UpgradeableObserver};
 
-use crate::{DetachedEntitySubscriber, RxBevyContext, RxBevyContextItem};
+use crate::{DetachedSubscriber, RxBevyContext, RxBevyContextItem};
 
 /// This is not a component, but a wrapper for an Entity to be used as a generic
 /// destination for subscriptions. The entity here will receive all signals as
@@ -21,7 +21,7 @@ use crate::{DetachedEntitySubscriber, RxBevyContext, RxBevyContextItem};
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_context(RxBevyContext)]
-#[rx_does_not_upgrade_to_detached]
+#[rx_does_not_upgrade_to_observer_subscriber]
 pub struct EntityDestination<In, InError = Never>
 where
 	In: SignalBound,
@@ -59,10 +59,10 @@ where
 	In: SignalBound,
 	InError: SignalBound,
 {
-	type Upgraded = DetachedEntitySubscriber<In, InError>;
+	type Upgraded = DetachedSubscriber<Self>;
 
 	fn upgrade(self) -> Self::Upgraded {
-		DetachedEntitySubscriber::new(self)
+		DetachedSubscriber::new(self)
 	}
 }
 

@@ -50,24 +50,26 @@ fn primary_category_subscriber() -> Type {
 ///   the subscriber
 /// - `#[rx_in_error(...)]` (optional, default: `Never`): Defines the input
 ///   error type of the subscriber
-/// - `#[rx_context(...)]`: Defines the Context this subscriber is compatible with
+/// - `#[rx_context(...)]`: Defines the Context this subscriber is compatible
+///   with
 /// - `#[rx_does_not_upgrade_to_self]` (optional): Opts out the default
 ///   `UpgradeableObserver` implementation which just returns the subscriber
 ///   to be directly used as a destination for an `Observable` to
 ///   let upstream call unsubscribe on the subscriber.
-/// - `#[rx_upgrades_to(...)]` (optional, accepts: `self`, `detached`): Defines
-///   a preset implementation for `UpgradeableObserver`
+/// - `#[rx_upgrades_to(...)]` (optional, accepts: `self`,
+///   `observer_subscriber`): Defines a preset implementation for
+///   `UpgradeableObserver`
 ///   - `self`: Upgraded version is itself, causing it to be unsubscribed
 ///     when upstream is unsubscribed when used as an observables destination.
-///   - `detached`: Upgraded version is itself wrapped in `DetachedSubscriber`,
-///     causing it to **not** be unsubscribed when upstream is unsubscribed when
-///     used as an observables destination.
+///   - `observer_subscriber`: Upgraded version is itself wrapped in
+///     `ObserverSubscriber`, causing it to **not** be unsubscribed when
+///     upstream is unsubscribed when used as an observables destination.
 /// - `#[rx_delegate_tickable_to_destination]` (optional): Opts into
 ///   the trivial implementation of `Tickable` where the traits methods
 ///   are just simply called on the field marked as `#[destination]`.
 /// - `#[rx_delegate_teardown_collection_to_destination]` (optional): Opts into
-///   the trivial implementation of `TeardownCollection` where the traits methods
-///   are just simply called on the field marked as `#[destination]`.
+///   the trivial implementation of `TeardownCollection` where the traits
+///   methods are just simply called on the field marked as `#[destination]`.
 /// - `#[rx_delegate_subscription_like_to_destination]` (optional): Opts into
 ///   the trivial implementation of `SubscriptionLike` where the traits methods
 ///   are just simply called on the field marked as `#[destination]`.

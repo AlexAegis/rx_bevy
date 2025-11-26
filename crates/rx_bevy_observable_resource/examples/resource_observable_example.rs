@@ -21,7 +21,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
-			RxPlugin,
+			RxScheduler::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -90,7 +90,7 @@ fn setup(mut commands: Commands) {
 
 	let dummy_message_destination = commands
 		.spawn(Name::new("ExampleObserver"))
-		.observe(print_notification_observer::<usize, Never>)
+		.observe(print_notification_observer::<usize, Never, Virtual>)
 		.id();
 
 	let message_observable = commands

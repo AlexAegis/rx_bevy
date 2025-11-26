@@ -1,51 +1,44 @@
-use core::marker::PhantomData;
-
 use bevy_log::error;
 use disqualified::ShortName;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	SignalBound, SubscriptionClosedFlag, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Observer, SubscriptionClosedFlag, SubscriptionContext, SubscriptionData, SubscriptionLike,
 	TeardownCollection, Tickable,
 };
 
-use crate::{EntityDestination, RxBevyContext};
+use crate::RxBevyContext;
 
 #[derive(RxSubscriber)]
-#[rx_in(In)]
-#[rx_in_error(InError)]
+#[rx_in(Destination::In)]
+#[rx_in_error(Destination::InError)]
 #[rx_context(RxBevyContext)]
 #[rx_delegate_observer_to_destination]
-pub struct DetachedEntitySubscriber<In, InError>
+pub struct DetachedSubscriber<Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	Destination: Observer<Context = RxBevyContext>,
 {
 	#[destination]
-	destination: EntityDestination<In, InError>,
+	destination: Destination,
 	closed_flag: SubscriptionClosedFlag,
 	teardown: Option<SubscriptionData<RxBevyContext>>,
-	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError> DetachedEntitySubscriber<In, InError>
+impl<Destination> DetachedSubscriber<Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	Destination: Observer<Context = RxBevyContext>,
 {
-	pub(crate) fn new(destination: EntityDestination<In, InError>) -> Self {
+	pub(crate) fn new(destination: Destination) -> Self {
 		Self {
 			destination,
 			closed_flag: false.into(),
 			teardown: None,
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError> Tickable for DetachedEntitySubscriber<In, InError>
+impl<Destination> Tickable for DetachedSubscriber<Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	Destination: Observer<Context = RxBevyContext>,
 {
 	#[inline]
 	fn tick(
@@ -58,10 +51,9 @@ where
 	}
 }
 
-impl<In, InError> SubscriptionLike for DetachedEntitySubscriber<In, InError>
+impl<Destination> SubscriptionLike for DetachedSubscriber<Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	Destination: Observer<Context = RxBevyContext>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -81,10 +73,9 @@ where
 	}
 }
 
-impl<In, InError> TeardownCollection for DetachedEntitySubscriber<In, InError>
+impl<Destination> TeardownCollection for DetachedSubscriber<Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	Destination: Observer<Context = RxBevyContext>,
 {
 	fn add_teardown(
 		&mut self,
@@ -101,10 +92,9 @@ where
 	}
 }
 
-impl<In, InError> Drop for DetachedEntitySubscriber<In, InError>
+impl<Destination> Drop for DetachedSubscriber<Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	Destination: Observer<Context = RxBevyContext>,
 {
 	/// When you make a subscription in rx_bevy, the Subscribe event stores
 	/// the destination you want to subscribe to, this way you're not limited

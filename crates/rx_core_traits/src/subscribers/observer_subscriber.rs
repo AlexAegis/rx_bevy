@@ -9,7 +9,8 @@ use crate::SubscriptionData;
 /// This subscriber acts as the subscriptions boundary by not forwarding
 /// `unsubscribe` calls downstream.
 #[derive(Debug)]
-pub struct DetachedSubscriber<Destination>
+
+pub struct ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -17,7 +18,7 @@ where
 	teardown: SubscriptionData<Destination::Context>,
 }
 
-impl<Destination> DetachedSubscriber<Destination>
+impl<Destination> ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -29,26 +30,26 @@ where
 	}
 }
 
-impl<Destination> WithPrimaryCategory for DetachedSubscriber<Destination>
+impl<Destination> WithPrimaryCategory for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
 
-impl<Destination> ObserverUpgradesToSelf for DetachedSubscriber<Destination> where
+impl<Destination> ObserverUpgradesToSelf for ObserverSubscriber<Destination> where
 	Destination: Observer
 {
 }
 
-impl<Destination> WithSubscriptionContext for DetachedSubscriber<Destination>
+impl<Destination> WithSubscriptionContext for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
 	type Context = Destination::Context;
 }
 
-impl<Destination> Observer for DetachedSubscriber<Destination>
+impl<Destination> Observer for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -82,7 +83,7 @@ where
 	}
 }
 
-impl<Destination> Tickable for DetachedSubscriber<Destination>
+impl<Destination> Tickable for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -97,7 +98,7 @@ where
 	}
 }
 
-impl<Destination> SubscriptionLike for DetachedSubscriber<Destination>
+impl<Destination> SubscriptionLike for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -112,7 +113,7 @@ where
 	}
 }
 
-impl<Destination> TeardownCollection for DetachedSubscriber<Destination>
+impl<Destination> TeardownCollection for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -126,7 +127,7 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for DetachedSubscriber<Destination>
+impl<Destination> ObserverInput for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
@@ -134,7 +135,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> Drop for DetachedSubscriber<Destination>
+impl<Destination> Drop for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {

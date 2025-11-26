@@ -20,7 +20,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
-			RxPlugin,
+			RxScheduler::<Update, Virtual>::default(),
 		))
 		.add_systems(Startup, setup)
 		.add_systems(
