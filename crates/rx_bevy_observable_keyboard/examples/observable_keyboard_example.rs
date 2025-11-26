@@ -32,7 +32,7 @@ fn next_number_observer(
 	time: Res<Time>,
 ) {
 	println!(
-		"value observed: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
+		"value: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
 		next.signal(),
 		next.entity(),
 		name_query.get(next.entity()).unwrap(),

@@ -30,8 +30,8 @@ fn primary_category_subscriber() -> Type {
 ///
 /// - `WithPrimaryCategory`: Sets the associated type to
 ///   `PrimaryCategorySubscription`
-/// - `WithSubscriptionContext`: Sets the associated type to the values of the
-///   `#[rx_context(...)]` attribute
+/// - `WithSubscriptionContext`: Sets the associated type to the values
+///   of the `#[rx_context(...)]` attribute
 /// - `ObserverInput`: Sets the associated type `In` to the value of the
 ///   `#[rx_in(...)]` attribute, or to `Never` (`Infallible`) if missing. Also
 ///   sets the associated `InError` type to the value of the

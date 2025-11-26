@@ -391,7 +391,7 @@ where
 	InError: SignalBound,
 	DropSafety: SubscriptionContextDropSafety,
 {
-	type SubscriptionContextProvider = MockContext<In, InError, DropSafety>;
+	type Context = MockContext<In, InError, DropSafety>;
 }
 
 impl<In, InError, DropSafety> Default for MockContext<In, InError, DropSafety>

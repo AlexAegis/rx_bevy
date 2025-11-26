@@ -16,7 +16,7 @@ where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -38,7 +38,7 @@ where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -67,7 +67,7 @@ where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable + Send + Sync,
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static

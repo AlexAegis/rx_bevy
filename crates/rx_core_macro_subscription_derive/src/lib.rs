@@ -27,8 +27,8 @@ fn primary_category_subscription() -> Type {
 ///
 /// - `WithPrimaryCategory`: Sets the associated type to
 ///   `PrimaryCategorySubscription`
-/// - `WithSubscriptionContext`: Sets the associated type to the values of the
-///   `#[rx_context(...)]` attribute
+/// - `WithSubscriptionContext`: Sets the associated type to the values
+///   of the `#[rx_context(...)]` attribute
 ///
 /// ## Attributes
 ///

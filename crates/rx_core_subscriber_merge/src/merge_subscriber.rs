@@ -1,7 +1,7 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext,
+	Observable, Observer, SignalBound, Subscriber, SubscriptionClosedFlag, SubscriptionContext,
 	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
 };
 
@@ -12,7 +12,7 @@ use rx_core_traits::{
 #[rx_context(Destination::Context)]
 pub struct MergeSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -30,7 +30,7 @@ where
 
 impl<InnerObservable, Destination> MergeSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -64,7 +64,7 @@ where
 
 impl<InnerObservable, Destination> Observer for MergeSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -80,14 +80,6 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			//self.destination.access_with_context_mut(
-			//	|inner, _context| {
-			//		inner.inner_is_complete = false;
-			//		inner.outer_is_complete = false;
-			//	},
-			//	context,
-			//);
-
 			let subscription =
 				next.subscribe(self.destination.clone_with_context(context), context);
 
@@ -115,7 +107,7 @@ where
 
 impl<InnerObservable, Destination> Tickable for MergeSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -146,7 +138,7 @@ where
 impl<InnerObservable, Destination> SubscriptionLike
 	for MergeSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -174,7 +166,7 @@ where
 impl<InnerObservable, Destination> TeardownCollection
 	for MergeSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static

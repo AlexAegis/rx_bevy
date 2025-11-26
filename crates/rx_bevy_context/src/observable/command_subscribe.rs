@@ -7,7 +7,7 @@ use bevy_ecs::{
 	schedule::ScheduleLabel,
 	system::{Command, Commands},
 };
-use bevy_log::error;
+use bevy_log::{debug, error};
 use derive_where::derive_where;
 use disqualified::ShortName;
 use rx_bevy_common::Clock;
@@ -99,8 +99,7 @@ where
 		} else if let (Ok(command_to_retry), Some(mut subscries_to_retry)) =
 			(self.retry(), world.get_resource_mut::<SubscribesToRetry>())
 		{
-			// TODO: Use feature gated debug macro once ready
-			println!(
+			debug!(
 				"Retrying {} {}...",
 				ShortName::of::<Self>(),
 				remaining_retries

@@ -20,9 +20,10 @@ fn primary_category_observable() -> Type {
 ///
 /// ## Traits Implemented
 ///
-/// - `WithPrimaryCategory`: Sets the associated type to `PrimaryCategoryObservable`
-/// - `WithSubscriptionContext`: Sets the associated type to the values of the
-///   `#[rx_context(...)]` attribute
+/// - `WithPrimaryCategory`: Sets the associated type to
+///   `PrimaryCategoryObservable`
+/// - `WithSubscriptionContext`: Sets the associated type to the values
+///   of the `#[rx_context(...)]` attribute
 /// - `ObservableOutput`: Sets the associated type `Out` to the value of the
 ///   `#[rx_out(...)]` attribute, or to `Never` (`Infallible`) if missing. Also
 ///   sets the associated `OutError` type to the value of the

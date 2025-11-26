@@ -20,8 +20,6 @@ pub trait WithSubscriptionContext {
 /// ## [SubscriptionContext][crate::SubscriptionContext]
 ///
 /// The context defines how new subscriptions can be acquired in an observable.
-///
-/// TODO: Rename to SubscriptionAllocationContextProvider?
 pub trait SubscriptionContext: 'static {
 	/// The actual context reference that will be passed into subscriptions
 	/// and subscribers. The lifetime parameters allow for decoupling the
@@ -36,7 +34,7 @@ pub trait SubscriptionContext: 'static {
 	/// lifetimes would merge into one and result downstream in a
 	/// `<'world: 'state, 'world: 'state>` lifetime requirement, which is
 	/// incompatible with systems.
-	type Item<'w, 's>: SubscriptionContextAccess<SubscriptionContextProvider = Self>;
+	type Item<'w, 's>: SubscriptionContextAccess<Context = Self>;
 
 	/// Indicates if the context can be safely (or not) acquired during a drop
 	/// to perform a last minute unsubscription in case the subscription is not
@@ -71,5 +69,5 @@ pub trait SubscriptionContext: 'static {
 
 /// Used as a back reference to the provider
 pub trait SubscriptionContextAccess {
-	type SubscriptionContextProvider: SubscriptionContext;
+	type Context: SubscriptionContext;
 }

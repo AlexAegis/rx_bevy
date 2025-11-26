@@ -1,7 +1,6 @@
 use std::time::Duration;
 
-#[derive(Clone)]
-#[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Clone, Debug)]
 pub struct IntervalObservableOptions {
 	pub duration: Duration,
 	/// Whether or not the first emission, `0` should happen on subscribe

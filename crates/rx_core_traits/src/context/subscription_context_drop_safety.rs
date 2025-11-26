@@ -1,4 +1,4 @@
-pub trait SubscriptionContextDropSafety: private::Seal + 'static {
+pub trait SubscriptionContextDropSafety: 'static + private::Seal {
 	/// Boolean to indicate if this context is safe to create during a drop
 	const DROP_SAFE: bool;
 }
@@ -18,6 +18,7 @@ pub trait SubscriptionContextDropSafety: private::Seal + 'static {
 /// with an ECS system where the only way of freeing up (and acquiring)
 /// resources is through the context, which holds a reference of that short
 /// lived object that lets you interact with the ECS.
+#[derive(Debug)]
 pub struct DropUnsafeSubscriptionContext;
 
 impl private::Seal for DropUnsafeSubscriptionContext {}

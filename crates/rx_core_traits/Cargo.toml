@@ -22,6 +22,7 @@ debug = []
 [dependencies]
 disqualified = { workspace = true }
 thiserror = { workspace = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

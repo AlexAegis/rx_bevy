@@ -1,12 +1,12 @@
 use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Observable, Operator};
+use rx_core_traits::{Observable, Operator, SignalBound};
 
 use crate::operator::MergeMapOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionMergeMap: Operator + Sized {
 	fn switch_map<
-		NextInnerObservable: 'static + Observable<Context = Self::Context> + Send + Sync,
+		NextInnerObservable: Observable<Context = Self::Context> + SignalBound,
 		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,

@@ -15,7 +15,8 @@ license.workspace = true
 workspace = true
 
 [features]
-default = []
+default = ["debug"]
+debug = []
 
 [dependencies]
 bevy = { workspace = true, features = ["dynamic_linking"] }

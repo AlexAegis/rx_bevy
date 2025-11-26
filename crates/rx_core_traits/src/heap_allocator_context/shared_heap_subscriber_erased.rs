@@ -1,5 +1,6 @@
 use std::sync::{Arc, RwLock};
 
+use derive_where::derive_where;
 use disqualified::ShortName;
 
 use crate::{
@@ -8,12 +9,14 @@ use crate::{
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::ErasedSharedDestination},
 };
 
+#[derive_where(Debug)]
 pub struct SharedHeapSubscriberErased<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
+	#[derive_where(skip(Debug))]
 	destination:
 		Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context> + Send + Sync>>,
 }

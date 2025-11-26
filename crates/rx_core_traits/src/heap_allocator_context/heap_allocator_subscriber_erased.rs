@@ -8,6 +8,7 @@ use crate::{
 	},
 };
 
+#[derive(Debug)]
 pub struct ErasedSubscriberHeapAllocator<Context>
 where
 	Context: SubscriptionContext,

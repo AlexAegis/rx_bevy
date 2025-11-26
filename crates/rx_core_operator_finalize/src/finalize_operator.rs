@@ -6,7 +6,7 @@ use rx_core_traits::{
 	Operator, SignalBound, Subscriber, SubscriptionContext, TeardownCollectionExtension,
 };
 
-#[derive_where(Clone, Debug; Callback)]
+#[derive_where(Clone, Debug)]
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
@@ -20,6 +20,7 @@ where
 	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
+	#[derive_where(skip(Debug))]
 	callback: Callback,
 	_phantom_data: PhantomData<(In, InError, Context)>,
 }

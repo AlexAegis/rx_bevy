@@ -8,6 +8,7 @@ use crate::SubscriptionData;
 
 /// This subscriber acts as the subscriptions boundary by not forwarding
 /// `unsubscribe` calls downstream.
+#[derive(Debug)]
 pub struct DetachedSubscriber<Destination>
 where
 	Destination: Observer,

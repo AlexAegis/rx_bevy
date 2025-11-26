@@ -23,6 +23,7 @@ use crate::{
 	UnscheduledEntitySubscriptionAllocator, UnscheduledSubscriptionComponent,
 };
 
+#[derive(Debug)]
 pub struct RxBevyContext;
 
 impl SubscriptionContext for RxBevyContext {
@@ -275,7 +276,7 @@ impl<'w, 's> RxBevyContextItem<'w, 's> {
 }
 
 impl<'w, 's> SubscriptionContextAccess for RxBevyContextItem<'w, 's> {
-	type SubscriptionContextProvider = RxBevyContext;
+	type Context = RxBevyContext;
 }
 
 #[derive(Error, Debug)]

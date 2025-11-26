@@ -33,5 +33,5 @@ impl WithSubscriptionContext for () {
 }
 
 impl SubscriptionContextAccess for () {
-	type SubscriptionContextProvider = ();
+	type Context = ();
 }

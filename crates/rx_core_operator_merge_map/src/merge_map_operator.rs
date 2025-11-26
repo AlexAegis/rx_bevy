@@ -16,7 +16,7 @@ where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 {
 	pub switcher: Switcher,
 	pub _phantom_data: PhantomData<(In, InError, InnerObservable)>,
@@ -28,7 +28,7 @@ where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 {
 	pub fn new(switcher: Switcher) -> Self {
 		Self {
@@ -44,9 +44,7 @@ where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: 'static + Observable + Send + Sync,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
+	InnerObservable: Observable + SignalBound,
 {
 	type Subscriber<Destination>
 		= MergeMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
@@ -78,7 +76,7 @@ where
 	In: SignalBound,
 	InError: SignalBound + Into<InnerObservable::OutError>,
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 {
 	fn clone(&self) -> Self {
 		Self {

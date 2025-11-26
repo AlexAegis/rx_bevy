@@ -1,3 +1,5 @@
+use derive_where::derive_where;
+
 use crate::{
 	Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
 	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tickable,
@@ -8,12 +10,14 @@ use crate::{
 pub type DynSubscriber<In, InError, Context> =
 	Box<dyn Subscriber<In = In, InError = InError, Context = Context>>;
 
+#[derive_where(Debug)]
 pub struct ErasedSubscriber<In, InError, Context>
 where
 	In: SignalBound,
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
+	#[derive_where(skip(Debug))]
 	destination: Box<dyn Subscriber<In = In, InError = InError, Context = Context>>,
 }
 

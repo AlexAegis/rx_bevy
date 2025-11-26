@@ -22,7 +22,7 @@ pub fn print_notification_observer<In, InError>(
 	InError: SignalBound + Debug,
 {
 	println!(
-		"<{},{}>\t value observed: {:?}\tname: {:?}\telapsed: {}",
+		"<{},{}>\t value: {:?}\tname: {:?}\telapsed: {}",
 		ShortName::of::<In>(),
 		ShortName::of::<InError>(),
 		next.event(),

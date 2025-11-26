@@ -18,7 +18,7 @@ impl SubscriptionContext for CustomContext {
 }
 
 impl SubscriptionContextAccess for CustomContext {
-	type SubscriptionContextProvider = CustomContext;
+	type Context = CustomContext;
 }
 
 /// Since all subscriptions present here are inert, it's safe to use an drop-unsafe context

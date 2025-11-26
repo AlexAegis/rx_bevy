@@ -1,11 +1,13 @@
 use core::marker::PhantomData;
 
+use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
 
 use crate::TapNextSubscriber;
 
-#[derive(RxOperator, Debug)]
+#[derive_where(Debug)]
+#[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(In)]
@@ -18,6 +20,7 @@ where
 	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
+	#[derive_where(skip(Debug))]
 	on_next: OnNext,
 	_phantom_data: PhantomData<(In, InError, Context)>,
 }

@@ -1,7 +1,7 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext,
+	Observable, Observer, SignalBound, Subscriber, SubscriptionClosedFlag, SubscriptionContext,
 	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
 };
 
@@ -12,7 +12,7 @@ use rx_core_traits::{
 #[rx_context(Destination::Context)]
 pub struct SwitchSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -30,7 +30,7 @@ where
 
 impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -64,7 +64,7 @@ where
 
 impl<InnerObservable, Destination> Observer for SwitchSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -109,7 +109,7 @@ where
 
 impl<InnerObservable, Destination> Tickable for SwitchSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -136,7 +136,7 @@ where
 impl<InnerObservable, Destination> SubscriptionLike
 	for SwitchSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static
@@ -165,7 +165,7 @@ where
 impl<InnerObservable, Destination> TeardownCollection
 	for SwitchSubscriber<InnerObservable, Destination>
 where
-	InnerObservable: 'static + Observable + Send + Sync,
+	InnerObservable: Observable + SignalBound,
 	InnerObservable::Out: 'static,
 	InnerObservable::OutError: 'static,
 	Destination: 'static

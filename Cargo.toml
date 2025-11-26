@@ -92,6 +92,7 @@ syn = { version = "2.0", default-features = false, features = [
 ] }
 bevy_mod_erased_component_registry = { version = "0.1.0", default-features = false }
 stealcell = { version = "0.1" }
+tracing = { version = "0.1.41" }
 # Workspace Crates
 # Misc
 examples_common = { path = "crates/examples_common" }

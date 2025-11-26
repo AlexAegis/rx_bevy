@@ -10,7 +10,7 @@ use crate::{Multicast, MulticastSubscription};
 
 /// A Subject is a shared multicast observer, can be used for broadcasting,
 /// A subjects clone still multicasts to the same set of subscribers.
-#[derive(RxSubject)]
+#[derive(RxSubject, Debug)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(In)]

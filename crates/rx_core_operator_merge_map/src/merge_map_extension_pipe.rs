@@ -1,12 +1,12 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, SignalBound};
 
 use crate::operator::MergeMapOperator;
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionMergeMap: Observable + Sized {
 	fn merge_map<
-		NextInnerObservable: 'static + Observable<Context = Self::Context> + Send + Sync,
+		NextInnerObservable: Observable<Context = Self::Context> + SignalBound,
 		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,

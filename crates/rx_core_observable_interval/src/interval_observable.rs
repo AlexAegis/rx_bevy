@@ -7,7 +7,7 @@ use rx_core_traits::{
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
 
-#[derive(RxObservable)]
+#[derive(RxObservable, Debug)]
 #[rx_out(usize)]
 #[rx_out_error(Never)]
 #[rx_context(Context)]

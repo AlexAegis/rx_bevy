@@ -1,3 +1,4 @@
+use derive_where::derive_where;
 use rx_core_traits::{
 	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, SignalBound,
 	Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Tick, Tickable,
@@ -18,12 +19,14 @@ use crate::MulticastSubscription;
 /// from `subscribe` will NOT automatically unsubscribe the inner subscriber when it's dropped.
 /// Users must explicitly call `unsubscribe` with a valid context if eager cleanup is desired.
 /// Closed subscribers are lazily cleaned up on the next `next` / `tick` emission.
+#[derive_where(Debug)]
 pub struct Multicast<In, InError, Context>
 where
 	In: SignalBound + Clone,
 	InError: SignalBound + Clone,
 	Context: SubscriptionContext,
 {
+	#[derive_where(skip(Debug))]
 	subscribers: SmallVec<
 		[<Context::ErasedDestinationAllocator as ErasedDestinationAllocator>::Shared<In, InError>;
 			1],

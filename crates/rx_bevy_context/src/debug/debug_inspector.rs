@@ -10,6 +10,7 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
+use bevy_log::debug;
 use disqualified::ShortName;
 use rx_bevy_common::Clock;
 use rx_core_traits::Observable;
@@ -87,16 +88,16 @@ pub(crate) fn observable_entity_debug_print<O, S, C>(
 	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
 		observable_query.iter()
 	{
-		println!("Observable Entity {entity:?} {}", ShortName::of::<O>());
+		debug!("Observable Entity {entity:?} {}", ShortName::of::<O>());
 
 		if let Some(d) = subscriber_instance_of {
-			println!("{}", d);
+			debug!("{}", d);
 		}
 		if let Some(d) = subscriber_instances {
-			println!("{}", d);
+			debug!("{}", d);
 		}
 		if let Some(d) = subscription_schedule {
-			println!("{}", d);
+			debug!("{}", d);
 		}
 	}
 }
@@ -144,15 +145,15 @@ pub(crate) fn subscription_entity_debug_print<O, S, C>(
 	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
 		subscription_query.iter()
 	{
-		println!("Subscription Entity {entity:?} {}", ShortName::of::<O>());
+		debug!("Subscription Entity {entity:?} {}", ShortName::of::<O>());
 
-		println!("{}", subscriber_instance_of);
+		debug!("{}", subscriber_instance_of);
 
 		if let Some(d) = subscriber_instances {
-			println!("{}", d);
+			debug!("{}", d);
 		}
 		if let Some(d) = subscription_schedule {
-			println!("{}", d);
+			debug!("{}", d);
 		}
 	}
 }
