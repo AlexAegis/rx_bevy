@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_subscriber_switch::SwitchSubscriber;
+use rx_core_subscriber_merge::MergeSubscriber;
 use rx_core_traits::{Observable, Observer, SignalBound, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber)]
@@ -11,18 +11,18 @@ use rx_core_traits::{Observable, Observer, SignalBound, Subscriber, Subscription
 #[rx_delegate_tickable_to_destination]
 #[rx_delegate_subscription_like_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
-pub struct SwitchAllSubscriber<In, InError, Destination>
+pub struct MergeAllSubscriber<In, InError, Destination>
 where
 	In: Observable + SignalBound,
 	InError: SignalBound + Into<In::OutError>,
 	Destination: 'static + Subscriber<In = In::Out, InError = In::OutError, Context = In::Context>,
 {
 	#[destination]
-	destination: SwitchSubscriber<In, Destination>,
+	destination: MergeSubscriber<In, Destination>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Destination> SwitchAllSubscriber<In, InError, Destination>
+impl<In, InError, Destination> MergeAllSubscriber<In, InError, Destination>
 where
 	In: Observable + SignalBound,
 	InError: SignalBound + Into<In::OutError>,
@@ -33,13 +33,13 @@ where
 		context: &mut <In::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
 		Self {
-			destination: SwitchSubscriber::new(destination, context),
+			destination: MergeSubscriber::new(destination, context),
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, Destination> Observer for SwitchAllSubscriber<In, InError, Destination>
+impl<In, InError, Destination> Observer for MergeAllSubscriber<In, InError, Destination>
 where
 	In: Observable + SignalBound,
 	InError: SignalBound + Into<In::OutError>,

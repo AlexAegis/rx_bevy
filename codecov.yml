@@ -152,6 +152,12 @@ component_management:
     - component_id: rx_core_operator_map_into
       paths:
         - crates/rx_core_operator_map_into/**
+    - component_id: rx_core_operator_merge_all
+      paths:
+        - crates/rx_core_operator_merge_all/**
+    - component_id: rx_core_operator_merge_map
+      paths:
+        - crates/rx_core_operator_merge_map/**
     - component_id: rx_core_operator_scan
       paths:
         - crates/rx_core_operator_scan/**

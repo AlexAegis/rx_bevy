@@ -20,8 +20,8 @@ where
 	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
-	pub filter: Filter,
-	pub _phantom_data: PhantomData<(In, InError, Context)>,
+	filter: Filter,
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
 impl<In, InError, Filter, Context> FilterOperator<In, InError, Filter, Context>

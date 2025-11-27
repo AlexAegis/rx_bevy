@@ -19,8 +19,8 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	pub count: usize,
-	pub _phantom_data: PhantomData<(In, InError, Context)>,
+	count: usize,
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
 impl<In, InError, Context> TakeOperator<In, InError, Context>

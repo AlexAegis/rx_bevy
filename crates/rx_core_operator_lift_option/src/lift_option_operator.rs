@@ -17,7 +17,7 @@ where
 	InError: SignalBound,
 	Context: SubscriptionContext,
 {
-	pub _phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError, Context)>,
 }
 
 impl<In, InError, Context> Default for LiftOptionOperator<In, InError, Context>

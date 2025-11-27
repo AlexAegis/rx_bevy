@@ -25,7 +25,7 @@ where
 	OutError: SignalBound,
 	Context: SubscriptionContext,
 {
-	pub _phantom_data: PhantomData<(In, InError, Out, OutError, Context)>,
+	_phantom_data: PhantomData<(In, InError, Out, OutError, Context)>,
 }
 
 impl<In, InError, Out, OutError, Context> Operator

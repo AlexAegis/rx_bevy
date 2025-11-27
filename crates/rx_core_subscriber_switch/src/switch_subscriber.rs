@@ -13,8 +13,6 @@ use rx_core_traits::{
 pub struct SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable + SignalBound,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -31,8 +29,6 @@ where
 impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable + SignalBound,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -65,8 +61,6 @@ where
 impl<InnerObservable, Destination> Observer for SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable + SignalBound,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -110,8 +104,6 @@ where
 impl<InnerObservable, Destination> Tickable for SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable + SignalBound,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -137,8 +129,6 @@ impl<InnerObservable, Destination> SubscriptionLike
 	for SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable + SignalBound,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -166,8 +156,6 @@ impl<InnerObservable, Destination> TeardownCollection
 	for SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable + SignalBound,
-	InnerObservable::Out: 'static,
-	InnerObservable::OutError: 'static,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,

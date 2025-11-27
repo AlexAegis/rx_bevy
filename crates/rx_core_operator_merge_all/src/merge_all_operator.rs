@@ -1,17 +1,19 @@
 use core::marker::PhantomData;
 
+use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_traits::{Observable, Operator, SignalBound, Subscriber, SubscriptionContext};
 
-use crate::SwitchAllSubscriber;
+use crate::MergeAllSubscriber;
 
+#[derive_where(Clone, Default)]
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(In::Out)]
 #[rx_out_error(In::OutError)]
 #[rx_context(In::Context)]
-pub struct SwitchAllOperator<In, InError>
+pub struct MergeAllOperator<In, InError>
 where
 	In: Observable + SignalBound,
 	InError: SignalBound + Into<In::OutError>,
@@ -19,25 +21,25 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError> Default for SwitchAllOperator<In, InError>
+impl<In, InError> MergeAllOperator<In, InError>
 where
 	In: Observable + SignalBound,
 	InError: SignalBound + Into<In::OutError>,
 {
-	fn default() -> Self {
+	pub fn new() -> Self {
 		Self {
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError> Operator for SwitchAllOperator<In, InError>
+impl<In, InError> Operator for MergeAllOperator<In, InError>
 where
 	In: Observable + SignalBound,
 	InError: SignalBound + Into<In::OutError>,
 {
 	type Subscriber<Destination>
-		= SwitchAllSubscriber<In, InError, Destination>
+		= MergeAllSubscriber<In, InError, Destination>
 	where
 		Destination: 'static
 			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
@@ -56,19 +58,7 @@ where
 			+ Send
 			+ Sync,
 	{
-		SwitchAllSubscriber::new(destination, context)
-	}
-}
-
-impl<In, InError> Clone for SwitchAllOperator<In, InError>
-where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
-{
-	fn clone(&self) -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
+		MergeAllSubscriber::new(destination, context)
 	}
 }
 
@@ -86,8 +76,7 @@ mod test {
 
 		let mut source = (1..=2)
 			.into_observable::<MockContext<_, _, _>>()
-			.map(|_| (10..=12).into_observable::<MockContext<_, _, _>>())
-			.switch_all();
+			.switch_map(|_| (10..=12).into_observable::<MockContext<_, _, _>>());
 		let mut subscription = source.subscribe(mock_destination, &mut context);
 		assert!(
 			context.nothing_happened_after_closed(),
@@ -105,8 +94,7 @@ mod test {
 		let mut subject = Subject::<i32, Never, MockContext<i32>>::default();
 		let mut source = subject
 			.clone()
-			.map(|i| (0..=i).into_observable::<MockContext<_, _, _>>())
-			.switch_all();
+			.switch_map(|i| (0..=i).into_observable::<MockContext<_, _, _>>());
 		let mut subscription = source.subscribe(mock_destination, &mut context);
 
 		subject.next(1, &mut context);
@@ -139,8 +127,7 @@ mod test {
 		let mut subject = Subject::<i32, Never, MockContext<i32>>::default();
 		let mut source = subject
 			.clone()
-			.map(|i| (0..=i).into_observable::<MockContext<_, _, _>>())
-			.switch_all();
+			.switch_map(|i| (0..=i).into_observable::<MockContext<_, _, _>>());
 		let mut subscription = source.subscribe(mock_destination, &mut context);
 
 		subject.next(1, &mut context);

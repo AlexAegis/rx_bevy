@@ -18,8 +18,8 @@ where
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + SignalBound,
 {
-	pub switcher: Switcher,
-	pub _phantom_data: PhantomData<(In, InError, InnerObservable)>,
+	switcher: Switcher,
+	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
 
 impl<In, InError, Switcher, InnerObservable>

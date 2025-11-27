@@ -22,8 +22,8 @@ where
 	Out: SignalBound,
 	Context: SubscriptionContext,
 {
-	pub mapper: Mapper,
-	pub _phantom_data: PhantomData<(In, InError, Out, Context)>,
+	mapper: Mapper,
+	_phantom_data: PhantomData<(In, InError, Out, Context)>,
 }
 
 impl<In, InError, Mapper, Out, Context> MapOperator<In, InError, Mapper, Out, Context>
