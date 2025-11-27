@@ -247,10 +247,11 @@ mod test {
 	fn rc_subscriber_starts_with_ref_1() {
 		let (mut rc_subscriber, mut context) = setup();
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
+		}
 
 		rc_subscriber.unsubscribe(&mut context);
 	}
@@ -270,19 +271,22 @@ mod test {
 		let (mut rc_subscriber, mut context) = setup();
 		let mut rc_subscriber_clone = rc_subscriber.clone_with_context(&mut context);
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
-		assert_eq!(context.count_all_observed_unsubscribes(), 0);
+			assert_eq!(context.count_all_observed_unsubscribes(), 0);
+		}
 
 		rc_subscriber_clone.unsubscribe(&mut context);
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
-		});
-		assert_eq!(context.count_all_observed_unsubscribes(), 0);
+			assert_eq!(context.count_all_observed_unsubscribes(), 0);
+		}
+
 		rc_subscriber.unsubscribe(&mut context);
 	}
 
@@ -291,25 +295,26 @@ mod test {
 		let (mut rc_subscriber, mut context) = setup();
 		let mut rc_subscriber_clone = rc_subscriber.clone_with_context(&mut context);
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
+		}
 
 		rc_subscriber.unsubscribe(&mut context);
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
-		});
+		}
 
 		rc_subscriber_clone.unsubscribe(&mut context);
-
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 2);
-		});
-
+		}
 		assert!(context.nothing_happened_after_closed());
 	}
 
@@ -317,33 +322,30 @@ mod test {
 	fn rc_subscriber_clones_unsubscribe_drop_does_not_remove_ref_count() {
 		let (mut rc_subscriber, mut context) = setup();
 		let mut rc_subscriber_clone = rc_subscriber.clone_with_context(&mut context);
-
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
-
+		}
 		rc_subscriber.unsubscribe(&mut context);
-
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
-		});
-
+		}
 		rc_subscriber_clone.unsubscribe(&mut context);
-
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 2);
-		});
-
+		}
 		drop(rc_subscriber_clone);
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 2);
-		});
-
+		}
 		rc_subscriber.unsubscribe(&mut context);
 		// A debug assertion in the `Drop` of [InnerRcSubscriber] asserts that
 		// `ref_count` and `unsubscribe_count` are equal.
@@ -354,12 +356,13 @@ mod test {
 
 	#[test]
 	fn rc_subscriber_as_iterator_observable_target_direct() {
-		let (mut rc_subscriber, mut context) = setup();
+		let (rc_subscriber, mut context) = setup();
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
+		}
 
 		let mut iterator_a =
 			IteratorObservable::<RangeInclusive<i32>, MockContext<i32>>::new(1..=10);
@@ -373,42 +376,50 @@ mod test {
 	fn rc_subscriber_as_iterator_observable_target_cloned() {
 		let (mut rc_subscriber, mut context) = setup();
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
+		}
 
 		let mut iterator_a =
 			IteratorObservable::<RangeInclusive<i32>, MockContext<i32>>::new(1..=10);
 
 		let iterator_a_destination = rc_subscriber.clone_with_context(&mut context);
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
+		}
 
 		let mut iterator_a_subscription =
 			iterator_a.subscribe(iterator_a_destination, &mut context);
 
-		// The iterator immediately compeltes and unsubscribes.
-		rc_subscriber.shared_destination.read(|destination| {
+		// The iterator immediately completes and unsubscribes.
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
-		});
+		}
 
-		// Additional unsubscrbe calls and letting the clone drop does not increase the counter any further
+		// Additional unsubscribe calls and letting the clone drop does not
+		// increase the counter any further
 		iterator_a_subscription.unsubscribe(&mut context);
 		drop(iterator_a_subscription);
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
-		});
+		}
+
 		rc_subscriber.unsubscribe(&mut context);
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 2);
-		});
+		}
+
 		drop(rc_subscriber);
 	}
 
@@ -416,50 +427,61 @@ mod test {
 	fn rc_subscriber_triple_clone_ref_count() {
 		let (mut rc_subscriber, mut context) = setup();
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
+		}
 
 		let mut rc_clone_1 = rc_subscriber.clone_with_context(&mut context);
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
+		}
+
 		rc_clone_1.unsubscribe(&mut context);
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 2);
 			assert_eq!(destination.unsubscribe_count, 1);
-		});
+		}
 
 		let mut rc_clone_2 = rc_subscriber.clone_with_context(&mut context);
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 1);
-		});
+		}
+
 		rc_clone_2.unsubscribe(&mut context);
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 2);
-		});
+		}
 
 		drop(rc_clone_1);
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 2);
-		});
+		}
 
 		drop(rc_clone_2);
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 2);
-		});
-		rc_subscriber.unsubscribe(&mut context);
+		}
 
-		rc_subscriber.shared_destination.read(|destination| {
+		rc_subscriber.unsubscribe(&mut context);
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 3);
 			assert_eq!(destination.unsubscribe_count, 3);
-		});
+		}
+
 		drop(rc_subscriber);
 	}
 
@@ -469,10 +491,11 @@ mod test {
 
 		let mut clock = MockClock::default();
 
-		rc_subscriber.shared_destination.read(|destination| {
+		{
+			let destination = rc_subscriber.shared_destination.read().unwrap();
 			assert_eq!(destination.ref_count, 1);
 			assert_eq!(destination.unsubscribe_count, 0);
-		});
+		}
 
 		let mut rc_clone_1 = rc_subscriber.clone_with_context(&mut context);
 		let mut rc_clone_2 = rc_subscriber.clone_with_context(&mut context);

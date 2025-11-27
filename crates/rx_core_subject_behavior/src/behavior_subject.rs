@@ -45,7 +45,13 @@ where
 	/// subscription though to keep your code reactive, only use this when it's
 	/// absolutely necessary.
 	pub fn value(&self) -> In {
-		self.value.read().unwrap().clone()
+		self.value
+			.read()
+			.unwrap_or_else(|poison_error| {
+				self.value.clear_poison();
+				poison_error.into_inner()
+			})
+			.clone()
 	}
 }
 
@@ -60,11 +66,13 @@ where
 		next: In,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		let n = next.clone();
-		{
-			*self.value.write().unwrap() = next;
-		}
-		self.subject.next(n, context);
+		let mut buffer = self.value.write().unwrap_or_else(|poison_error| {
+			self.value.clear_poison();
+			poison_error.into_inner()
+		});
+
+		*buffer = next.clone();
+		self.subject.next(next, context);
 	}
 
 	#[inline]
@@ -104,7 +112,15 @@ where
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let mut downstream_subscriber = destination.upgrade();
-		let next = { self.value.read().unwrap().clone() };
+		let next = self
+			.value
+			.read()
+			.unwrap_or_else(|poison_error| {
+				self.value.clear_poison();
+				poison_error.into_inner()
+			})
+			.clone();
+
 		downstream_subscriber.next(next, context);
 		self.subject.subscribe(downstream_subscriber, context)
 	}

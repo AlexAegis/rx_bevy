@@ -89,11 +89,7 @@ where
 		next: Self::In,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.is_closed()
-			&& let Ok(mut multicast) = self.multicast.write()
-		{
-			multicast.next(next, context);
-		}
+		self.multicast.next(next, context);
 	}
 
 	fn error(
@@ -101,19 +97,11 @@ where
 		error: Self::InError,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.is_closed()
-			&& let Ok(mut multicast) = self.multicast.write()
-		{
-			multicast.error(error, context);
-		}
+		self.multicast.error(error, context);
 	}
 
 	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		if !self.is_closed()
-			&& let Ok(mut multicast) = self.multicast.write()
-		{
-			multicast.complete(context);
-		}
+		self.multicast.complete(context);
 	}
 }
 
@@ -124,19 +112,16 @@ where
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
-		if let Ok(multicast) = self.multicast.read() {
-			multicast.is_closed()
-		} else {
-			true
-		}
+		self.multicast.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
+		// It's an unsubscribe, we can ignore the poison
 		if let Some(subscribers) = {
 			let mut lock = self
 				.multicast
 				.write()
-				.expect("Subject multicast lock poisoned");
+				.unwrap_or_else(|poison_error| poison_error.into_inner());
 
 			lock.close()
 		} {

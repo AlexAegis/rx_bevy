@@ -8,7 +8,6 @@ use crate::{
 		allocator::handle::{ScheduledSubscriptionHandle, WeakSubscriptionHandle},
 	},
 };
-use disqualified::ShortName;
 
 use super::ScheduledHeapSubscriptionHandle;
 
@@ -59,12 +58,7 @@ where
 {
 	fn is_closed(&self) -> bool {
 		if let Some(subscription) = self.subscription.upgrade() {
-			if let Ok(lock) = subscription.read() {
-				lock.is_closed()
-			} else {
-				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
-				true
-			}
+			subscription.is_closed()
 		} else {
 			// It was dropped already
 			true
@@ -73,13 +67,9 @@ where
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed()
-			&& let Some(subscription) = self.subscription.upgrade()
+			&& let Some(mut subscription) = self.subscription.upgrade()
 		{
-			if let Ok(mut lock) = subscription.write() {
-				lock.unsubscribe(context);
-			} else {
-				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
-			}
+			subscription.unsubscribe(context);
 		}
 	}
 }
@@ -94,13 +84,9 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed()
-			&& let Some(subscription) = self.subscription.upgrade()
+			&& let Some(mut subscription) = self.subscription.upgrade()
 		{
-			if let Ok(mut lock) = subscription.write() {
-				lock.add_teardown(teardown, context);
-			} else {
-				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
-			}
+			subscription.add_teardown(teardown, context);
 		}
 	}
 }

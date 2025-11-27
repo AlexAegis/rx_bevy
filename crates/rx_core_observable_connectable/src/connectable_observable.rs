@@ -1,6 +1,5 @@
 use std::sync::{Arc, RwLock};
 
-use disqualified::ShortName;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
 	Observable, SubjectLike, Subscriber, SubscriptionContext, SubscriptionLike,
@@ -51,23 +50,14 @@ where
 	}
 
 	pub fn is_closed(&self) -> bool {
-		if let Ok(lock) = self.connector.read() {
-			lock.is_closed()
-		} else {
-			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
-			true
-		}
+		self.connector.is_closed()
 	}
 
 	pub fn unsubscribe(
 		&mut self,
 		context: &mut <Connector::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if let Ok(mut lock) = self.connector.write() {
-			lock.unsubscribe(context);
-		} else {
-			println!("Poisoned connector lock: {}", ShortName::of::<Self>());
-		}
+		self.connector.unsubscribe(context);
 	}
 }
 
@@ -113,11 +103,17 @@ where
 		Destination: 'static
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
-		let destination = observer.upgrade();
-		if let Ok(mut lock) = self.connector.write() {
-			lock.subscribe(destination, context)
-		} else {
-			panic!("Poisoned connector lock: {}", ShortName::of::<Self>());
+		let mut destination = observer.upgrade();
+
+		match self.connector.write() {
+			Ok(mut connector) => connector.subscribe(destination, context),
+			Err(poison_error) => {
+				let error_message =
+					format!("Poisoned lock encountered, unable to subscribe! {poison_error:?}");
+				poison_error.into_inner().unsubscribe(context);
+				destination.unsubscribe(context);
+				panic!("{}", error_message)
+			}
 		}
 	}
 }
@@ -139,10 +135,14 @@ where
 		&mut self,
 		context: &mut <<Self::ConnectionSubscription as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> ConnectionHandle<Self::ConnectionSubscription> {
-		if let Ok(mut lock) = self.connector.write() {
-			lock.connect(context)
-		} else {
-			panic!("Poisoned connector lock: {}", ShortName::of::<Self>());
+		match self.connector.write() {
+			Ok(mut connector) => connector.connect(context),
+			Err(poison_error) => {
+				let error_message =
+					format!("Poisoned lock encountered, unable to subscribe! {poison_error:?}");
+				poison_error.into_inner().unsubscribe(context);
+				panic!("{}", error_message)
+			}
 		}
 	}
 }

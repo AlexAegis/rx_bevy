@@ -176,9 +176,11 @@ where
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
-		//  && self.has_something_to_unsubscribe() using this is an anti pattern as problems would still appear with `finalize`
+		// Not respecting the closed flag and checking for something
+		// like "self.has_something_to_unsubscribe()" would be an anti pattern
+		// as that would only delay a panic happening until you have something
+		// to unsubscribe.
 		if !self.is_closed() {
-			// TODO: Now the problem is here with subjects
 			let mut context = Context::create_context_to_unsubscribe_on_drop();
 			self.unsubscribe(&mut context);
 		}

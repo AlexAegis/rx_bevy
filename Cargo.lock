@@ -4438,7 +4438,6 @@ dependencies = [
 name = "rx_core_observable_connectable"
 version = "0.1.0"
 dependencies = [
- "disqualified",
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_testing",

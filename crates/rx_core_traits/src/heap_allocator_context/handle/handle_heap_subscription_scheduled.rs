@@ -1,7 +1,5 @@
 use std::sync::{Arc, RwLock};
 
-use disqualified::ShortName;
-
 use crate::{
 	SubscriptionLike, SubscriptionScheduled, Teardown, TeardownCollection, Tick, Tickable,
 	context::{
@@ -14,14 +12,14 @@ use super::{UnscheduledHeapSubscriptionHandle, WeakHeapSubscriptionHandle};
 
 pub struct ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	subscription: Arc<RwLock<Subscription>>,
 }
 
 impl<Subscription> ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	pub fn new(subscription: Subscription) -> Self {
 		Self {
@@ -32,7 +30,7 @@ where
 
 impl<Subscription> ScheduledSubscriptionHandle for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	type UnscheduledHandle = UnscheduledHeapSubscriptionHandle<Subscription>;
 	type WeakHandle = WeakHeapSubscriptionHandle<Subscription>;
@@ -48,75 +46,53 @@ where
 
 impl<Subscription> WithSubscriptionContext for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	type Context = Subscription::Context;
 }
 
 impl<Subscription> Tickable for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	fn tick(
 		&mut self,
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if let Ok(mut lock) = self.subscription.write() {
-			lock.tick(tick, context);
-		} else {
-			println!("Poisoned destination lock: {}", ShortName::of::<Self>());
-		}
+		self.subscription.tick(tick, context);
 	}
 }
 
 impl<Subscription> SubscriptionLike for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	fn is_closed(&self) -> bool {
-		if let Ok(lock) = self.subscription.read() {
-			lock.is_closed()
-		} else {
-			println!("Poisoned destination lock: {}", ShortName::of::<Self>());
-			true
-		}
+		self.subscription.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		if !self.is_closed() {
-			if let Ok(mut lock) = self.subscription.write() {
-				lock.unsubscribe(context);
-			} else {
-				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
-				// TODO: research poisoned lock recovery, maybe it should panic?
-			}
-		}
+		self.subscription.unsubscribe(context);
 	}
 }
 
 impl<Subscription> TeardownCollection for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	fn add_teardown(
 		&mut self,
 		teardown: Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		if !self.is_closed() {
-			if let Ok(mut lock) = self.subscription.write() {
-				lock.add_teardown(teardown, context);
-			} else {
-				println!("Poisoned destination lock: {}", ShortName::of::<Self>());
-			}
-		}
+		self.subscription.add_teardown(teardown, context);
 	}
 }
 
 impl<Subscription> From<Subscription> for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	fn from(subscription: Subscription) -> Self {
 		Self::new(subscription)
@@ -125,7 +101,7 @@ where
 
 impl<Subscription> Drop for ScheduledHeapSubscriptionHandle<Subscription>
 where
-	Subscription: SubscriptionScheduled + Send + Sync,
+	Subscription: 'static + SubscriptionScheduled + Send + Sync,
 {
 	#[track_caller]
 	fn drop(&mut self) {

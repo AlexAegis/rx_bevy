@@ -28,6 +28,32 @@ where
 	values: Arc<RwLock<ConstGenericRingBuffer<In, CAPACITY>>>,
 }
 
+impl<const CAPACITY: usize, In, InError, Context> ReplaySubject<CAPACITY, In, InError, Context>
+where
+	In: SignalBound + Clone,
+	InError: SignalBound + Clone,
+	Context: SubscriptionContext,
+{
+	/// Returns a clone of the currently stored value
+	/// In case you want to access the current value, prefer using a
+	/// subscription though to keep your code reactive, only use this when it's
+	/// absolutely necessary.
+	///
+	/// This has a max length of `CAPACITY` but can be empty too, right when
+	/// the subject is created and no values have been observed.
+	pub fn values(&self) -> Vec<In> {
+		self.values
+			.read()
+			.unwrap_or_else(|poison_error| {
+				self.values.clear_poison();
+				poison_error.into_inner()
+			})
+			.iter()
+			.cloned()
+			.collect()
+	}
+}
+
 impl<const CAPACITY: usize, In, InError, Context> Default
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
@@ -51,10 +77,14 @@ where
 	Context: SubscriptionContext,
 {
 	fn next(&mut self, next: In, context: &mut Context::Item<'_, '_>) {
-		{
-			let mut buffer = self.values.write().unwrap();
-			buffer.enqueue(next.clone());
-		}
+		self.values
+			.write()
+			.unwrap_or_else(|poison_error| {
+				self.values.clear_poison();
+				poison_error.into_inner()
+			})
+			.enqueue(next.clone());
+
 		self.subject.next(next, context);
 	}
 
@@ -92,11 +122,16 @@ where
 			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
 	{
 		let mut downstream_subscriber = destination.upgrade();
-		let buffer_iter = {
-			let buffer = self.values.read().unwrap();
-			// Values would need to be cloned either way to be able to send them
-			buffer.clone().into_iter()
-		};
+		let buffer_iter = self
+			.values
+			.read()
+			.unwrap_or_else(|poison_error| {
+				self.values.clear_poison();
+				poison_error.into_inner()
+			})
+			.clone()
+			.into_iter();
+
 		for value in buffer_iter {
 			downstream_subscriber.next(value, context);
 		}
