@@ -248,12 +248,41 @@ dependencies = ["install-cargo-audit"]
 command = "cargo"
 args = ["audit"]
 
+### Linting - xtask lints
+
+[tasks.xtask-lint-codecov]
+description = "Checks that all creates have a codecov component"
+workspace = false
+command = "cargo"
+args = [
+    "run",
+    "-p",
+    "xtask",
+    "--",
+    "lint",
+    "codecov",
+    "--ignore",
+    "xtask,feature_checker,examples_common,bevy_mod_alternate_system_on_press",
+]
+
+[tasks.xtask-lint-docs]
+description = "Checks that all rx_* creates are part of the documentation"
+workspace = false
+command = "cargo"
+args = ["run", "-p", "xtask", "--", "lint", "docs"]
+
 ### Linting - Lint groups
 
 [tasks.lint]
 description = "Run several linting steps that do not block eachother in parallel"
 workspace = false
-run_task = { name = ["format", "clippy", "machete"], parallel = true }
+run_task = { name = [
+    "format",
+    "clippy",
+    "machete",
+    "xtask-lint-codecov",
+    "xtask-lint-docs",
+], parallel = true }
 
 [tasks.lint-ad-hoc]
 description = "Runs tasks that are not automatically run for various reasons. This task is mostly here to just highlight them."
@@ -292,7 +321,6 @@ workspace = false
 dependencies = ["install-mdbook"]
 command = "mdbook"
 args = ["serve"]
-
 
 ## Miscellaneous
 

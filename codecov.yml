@@ -188,6 +188,9 @@ component_management:
     - component_id: rx_core_subscriber_rc
       paths:
         - crates/rx_core_subscriber_rc/**
+    - component_id: rx_core_subscriber_merge
+      paths:
+        - crates/rx_core_subscriber_merge/**
     - component_id: rx_core_subscriber_switch
       paths:
         - crates/rx_core_subscriber_switch/**
