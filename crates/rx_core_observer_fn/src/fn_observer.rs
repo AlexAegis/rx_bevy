@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, SignalBound, SubscriptionContext, Tick, Tickable};
+use rx_core_traits::{Observer, Signal, SubscriptionContext, Tick, Tickable};
 
 /// An [FnObserver] requires you to define a callback for all three notifications
 #[derive(RxObserver)]
@@ -10,8 +10,8 @@ use rx_core_traits::{Observer, SignalBound, SubscriptionContext, Tick, Tickable}
 #[rx_context(Context)]
 pub struct FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
 	OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
 	OnComplete: 'static + FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
@@ -28,8 +28,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 	FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
 	OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
 	OnComplete: 'static + FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
@@ -55,8 +55,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Observer
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
 	OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
 	OnComplete: 'static + FnMut(&mut Context::Item<'_, '_>) + Send + Sync,
@@ -87,8 +87,8 @@ where
 impl<In, InError, OnNext, OnError, OnComplete, OnTick, Context> Tickable
 	for FnObserver<In, InError, OnNext, OnError, OnComplete, OnTick, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync,
 	OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
 	OnComplete: 'static + FnMut(&mut Context::Item<'_, '_>) + Send + Sync,

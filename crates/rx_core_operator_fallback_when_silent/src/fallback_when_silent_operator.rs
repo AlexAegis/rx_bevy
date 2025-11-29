@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::FallbackWhenSilentSubscriber;
 
@@ -17,8 +17,8 @@ use crate::FallbackWhenSilentSubscriber;
 #[rx_context(Context)]
 pub struct FallbackWhenSilentOperator<In, InError, Fallback, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -28,8 +28,8 @@ where
 
 impl<In, InError, Fallback, Context> FallbackWhenSilentOperator<In, InError, Fallback, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -44,8 +44,8 @@ where
 impl<In, InError, Fallback, Context> Operator
 	for FallbackWhenSilentOperator<In, InError, Fallback, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {

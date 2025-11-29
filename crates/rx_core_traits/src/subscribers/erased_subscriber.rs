@@ -1,9 +1,9 @@
 use derive_where::derive_where;
 
 use crate::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, SignalBound, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Signal, Subscriber, SubscriptionContext,
+	SubscriptionLike, Teardown, TeardownCollection, Tickable, WithPrimaryCategory,
+	WithSubscriptionContext,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
@@ -13,8 +13,8 @@ pub type DynSubscriber<In, InError, Context> =
 #[derive_where(Debug)]
 pub struct ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	#[derive_where(skip(Debug))]
@@ -23,8 +23,8 @@ where
 
 impl<In, InError, Context> ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn new<Destination>(destination: Destination) -> Self
@@ -39,8 +39,8 @@ where
 
 impl<In, InError, Context> WithPrimaryCategory for ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
@@ -48,8 +48,8 @@ where
 
 impl<In, InError, Context> ObserverInput for ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type In = In;
@@ -58,8 +58,8 @@ where
 
 impl<In, InError, Context> WithSubscriptionContext for ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Context = Context;
@@ -67,8 +67,8 @@ where
 
 impl<In, InError, Context> Observer for ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -97,8 +97,8 @@ where
 
 impl<In, InError, Context> Tickable for ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -113,8 +113,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -130,8 +130,8 @@ where
 
 impl<In, InError, Context> TeardownCollection for ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -146,8 +146,8 @@ where
 
 impl<In, InError, Context> Drop for ErasedSubscriber<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {

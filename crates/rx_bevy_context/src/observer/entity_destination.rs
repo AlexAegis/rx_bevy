@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Never, Observer, ObserverNotification, SignalBound, UpgradeableObserver};
+use rx_core_traits::{Never, Observer, ObserverNotification, Signal, UpgradeableObserver};
 
 use crate::{DetachedSubscriber, RxBevyContext, RxBevyContextItem};
 
@@ -24,8 +24,8 @@ use crate::{DetachedSubscriber, RxBevyContext, RxBevyContextItem};
 #[rx_does_not_upgrade_to_observer_subscriber]
 pub struct EntityDestination<In, InError = Never>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	destination: Entity,
 	_phantom_data: PhantomData<(In, InError)>,
@@ -33,8 +33,8 @@ where
 
 impl<In, InError> EntityDestination<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	pub fn new(destination: Entity) -> Self {
 		Self {
@@ -46,8 +46,8 @@ where
 
 impl<In, InError> From<Entity> for EntityDestination<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	fn from(value: Entity) -> Self {
 		Self::new(value)
@@ -56,8 +56,8 @@ where
 
 impl<In, InError> UpgradeableObserver for EntityDestination<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	type Upgraded = DetachedSubscriber<Self>;
 
@@ -68,8 +68,8 @@ where
 
 impl<In, InError> Observer for EntityDestination<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	fn next(&mut self, next: Self::In, context: &mut RxBevyContextItem<'_, '_>) {
 		context.send_observer_notification(

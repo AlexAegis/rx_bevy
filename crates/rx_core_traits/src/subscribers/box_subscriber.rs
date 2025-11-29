@@ -1,16 +1,16 @@
 use std::ops::{Deref, DerefMut};
 
 use crate::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SignalBound,
-	Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick,
-	Tickable, WithPrimaryCategory, WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Signal, Subscriber,
+	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
+	WithPrimaryCategory, WithSubscriptionContext,
 };
 
 impl<In, InError, Context> Observer
 	for Box<dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn next(
@@ -37,8 +37,8 @@ where
 impl<In, InError, Context> WithSubscriptionContext
 	for Box<dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Context = Context;
@@ -47,8 +47,8 @@ where
 impl<In, InError, Context> ObserverInput
 	for Box<dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type In = In;
@@ -58,8 +58,8 @@ where
 impl<In, InError, Context> WithPrimaryCategory
 	for Box<dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
@@ -68,8 +68,8 @@ where
 impl<In, InError, Context> ObserverUpgradesToSelf
 	for Box<dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 }
@@ -77,8 +77,8 @@ where
 impl<In, InError, Context> Tickable
 	for Box<dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -94,8 +94,8 @@ where
 impl<In, InError, Context> SubscriptionLike
 	for Box<dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -112,8 +112,8 @@ where
 impl<In, InError, Context> TeardownCollection
 	for Box<dyn Subscriber<In = In, InError = InError, Context = Context>>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	#[inline]

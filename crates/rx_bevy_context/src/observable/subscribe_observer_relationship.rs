@@ -1,6 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{component::Component, entity::Entity};
-use rx_core_traits::{Observable, SignalBound};
+use rx_core_traits::{Observable, Signal};
 
 use core::marker::PhantomData;
 #[cfg(feature = "debug")]
@@ -72,8 +72,8 @@ where
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscribeObserverTypeMarker<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomData<(Out, OutError)>,
@@ -81,8 +81,8 @@ where
 
 impl<Out, OutError> Default for SubscribeObserverTypeMarker<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	fn default() -> Self {
 		Self {

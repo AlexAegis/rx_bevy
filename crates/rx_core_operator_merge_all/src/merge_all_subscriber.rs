@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_merge::MergeSubscriber;
-use rx_core_traits::{Observable, Observer, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observable, Observer, Signal, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber)]
 #[rx_in(In)]
@@ -13,8 +13,8 @@ use rx_core_traits::{Observable, Observer, SignalBound, Subscriber, Subscription
 #[rx_delegate_teardown_collection_to_destination]
 pub struct MergeAllSubscriber<In, InError, Destination>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 	Destination: 'static + Subscriber<In = In::Out, InError = In::OutError, Context = In::Context>,
 {
 	#[destination]
@@ -24,8 +24,8 @@ where
 
 impl<In, InError, Destination> MergeAllSubscriber<In, InError, Destination>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 	Destination: 'static + Subscriber<In = In::Out, InError = In::OutError, Context = In::Context>,
 {
 	pub fn new(
@@ -41,8 +41,8 @@ where
 
 impl<In, InError, Destination> Observer for MergeAllSubscriber<In, InError, Destination>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 	Destination: 'static + Subscriber<In = In::Out, InError = In::OutError, Context = In::Context>,
 {
 	#[inline]

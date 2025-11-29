@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Observable, Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observable, Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::MergeAllSubscriber;
 
@@ -15,16 +15,16 @@ use crate::MergeAllSubscriber;
 #[rx_context(In::Context)]
 pub struct MergeAllOperator<In, InError>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 {
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
 impl<In, InError> MergeAllOperator<In, InError>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 {
 	pub fn new() -> Self {
 		Self {
@@ -35,8 +35,8 @@ where
 
 impl<In, InError> Operator for MergeAllOperator<In, InError>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 {
 	type Subscriber<Destination>
 		= MergeAllSubscriber<In, InError, Destination>

@@ -4,7 +4,7 @@ use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, UpgradeableObserver,
 };
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
@@ -18,8 +18,8 @@ use rx_core_traits::{
 #[rx_delegate_subscription_like_to_destination]
 pub struct ReplaySubject<const CAPACITY: usize, In, InError = Never, Context = ()>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	#[destination]
@@ -30,8 +30,8 @@ where
 
 impl<const CAPACITY: usize, In, InError, Context> ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	/// Returns a clone of the currently stored value
@@ -57,8 +57,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> Default
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn default() -> Self {
@@ -72,8 +72,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> Observer
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn next(&mut self, next: In, context: &mut Context::Item<'_, '_>) {
@@ -102,8 +102,8 @@ where
 impl<const CAPACITY: usize, In, InError, Context> Observable
 	for ReplaySubject<CAPACITY, In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Subscription<Destination>

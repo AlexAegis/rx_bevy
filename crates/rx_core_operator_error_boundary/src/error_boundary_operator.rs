@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::ErrorBoundarySubscriber;
 
@@ -21,7 +21,7 @@ use crate::ErrorBoundarySubscriber;
 #[rx_context(Context)]
 pub struct ErrorBoundaryOperator<In, Context>
 where
-	In: SignalBound,
+	In: Signal,
 	Context: SubscriptionContext,
 {
 	_phantom_data: PhantomData<(In, fn(Context))>,
@@ -29,7 +29,7 @@ where
 
 impl<In, Context> Operator for ErrorBoundaryOperator<In, Context>
 where
-	In: SignalBound,
+	In: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>

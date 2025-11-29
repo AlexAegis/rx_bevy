@@ -4,9 +4,7 @@ use bevy_ecs::resource::Resource;
 
 use rx_bevy_context::RxBevyContext;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{
-	Observable, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
-};
+use rx_core_traits::{Observable, Signal, Subscriber, SubscriptionContext, UpgradeableObserver};
 
 use crate::{ResourceSubscription, observable::ResourceObservableOptions};
 
@@ -18,8 +16,8 @@ pub struct ResourceObservable<R, Reader, Out, OutError>
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Out, OutError> + Clone + Send + Sync,
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	reader: Reader,
 	options: ResourceObservableOptions,
@@ -30,8 +28,8 @@ impl<R, Reader, Out, OutError> ResourceObservable<R, Reader, Out, OutError>
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Out, OutError> + Clone + Send + Sync,
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	pub fn new(reader: Reader, options: ResourceObservableOptions) -> Self {
 		Self {
@@ -46,8 +44,8 @@ impl<R, Reader, Out, OutError> Observable for ResourceObservable<R, Reader, Out,
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Out, OutError> + Clone + Send + Sync,
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	type Subscription<Destination>
 		= ResourceSubscription<R, Reader, Destination>

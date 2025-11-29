@@ -1,6 +1,6 @@
 use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::EntityCommands};
 use rx_bevy_common::Clock;
-use rx_core_traits::{SignalBound, UpgradeableObserver};
+use rx_core_traits::{Signal, UpgradeableObserver};
 
 use crate::{CommandSubscribeExtension, EntityDestination, RxBevyContext};
 
@@ -51,8 +51,8 @@ pub trait EntityCommandSubscribeExtension {
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
 	fn subscribe<Out, OutError, S, C>(&mut self, destination_entity: Entity) -> Entity
 	where
-		Out: SignalBound,
-		OutError: SignalBound,
+		Out: Signal,
+		OutError: Signal,
 		S: ScheduleLabel,
 		C: Clock;
 
@@ -66,8 +66,8 @@ pub trait EntityCommandSubscribeExtension {
 		observable_entity: Entity,
 	) -> Entity
 	where
-		Out: SignalBound,
-		OutError: SignalBound,
+		Out: Signal,
+		OutError: Signal,
 		S: ScheduleLabel,
 		C: Clock;
 }
@@ -86,8 +86,8 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 
 	fn subscribe<Out, OutError, S, C>(&mut self, destination_entity: Entity) -> Entity
 	where
-		Out: SignalBound,
-		OutError: SignalBound,
+		Out: Signal,
+		OutError: Signal,
 		S: ScheduleLabel,
 		C: Clock,
 	{
@@ -104,8 +104,8 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		observable_entity: Entity,
 	) -> Entity
 	where
-		Out: SignalBound,
-		OutError: SignalBound,
+		Out: Signal,
+		OutError: Signal,
 		S: ScheduleLabel,
 		C: Clock,
 	{

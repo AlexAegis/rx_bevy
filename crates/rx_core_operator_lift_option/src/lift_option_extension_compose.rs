@@ -1,12 +1,12 @@
 use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Operator, SignalBound};
+use rx_core_traits::{Operator, Signal};
 
 use crate::operator::LiftOptionOperator;
 
 /// Provides a convenient function to pipe the operator from another operator
 pub trait CompositeOperatorExtensionLiftOption<T>: Operator<Out = Option<T>> + Sized
 where
-	T: SignalBound,
+	T: Signal,
 {
 	fn lift_option(
 		self,
@@ -18,6 +18,6 @@ where
 impl<Op, T> CompositeOperatorExtensionLiftOption<T> for Op
 where
 	Op: Operator<Out = Option<T>>,
-	T: SignalBound,
+	T: Signal,
 {
 }

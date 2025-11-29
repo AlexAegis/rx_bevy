@@ -6,7 +6,7 @@ use bevy_ecs::{
 use disqualified::ShortName;
 use rx_bevy_common::Clock;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Never, SignalBound, UpgradeableObserver};
+use rx_core_traits::{Never, Signal, UpgradeableObserver};
 
 use crate::{CommandSubscribeExtension, ObservableOutputs, RxBevyContext, SubscribeError};
 
@@ -18,8 +18,8 @@ use crate::{CommandSubscribeExtension, ObservableOutputs, RxBevyContext, Subscri
 #[rx_context(RxBevyContext)]
 pub struct ObservableQuery<'w, 's, Out, OutError = Never>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	commands: Commands<'w, 's>,
 	observable: Query<'w, 's, &'static ObservableOutputs<Out, OutError>>,
@@ -27,8 +27,8 @@ where
 
 impl<'w, 's, Out, OutError> ObservableQuery<'w, 's, Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	/// Attempts a checked subscription to an observable entity, which if does
 	/// not contain an observable with outputs`Out` and `OutError` will return

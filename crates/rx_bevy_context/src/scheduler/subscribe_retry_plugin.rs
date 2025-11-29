@@ -1,6 +1,6 @@
 use bevy_app::{First, Plugin};
 use bevy_ecs::{resource::Resource, world::World};
-use rx_core_traits::SignalBound;
+use rx_core_traits::Signal;
 
 use crate::SubscribeCommand;
 
@@ -21,8 +21,8 @@ pub(crate) struct SubscribesToRetry {
 impl SubscribesToRetry {
 	pub(crate) fn push<Out, OutError>(&mut self, subscribe_command: SubscribeCommand<Out, OutError>)
 	where
-		Out: SignalBound,
-		OutError: SignalBound,
+		Out: Signal,
+		OutError: Signal,
 	{
 		self.retries.push(Box::new(move |world| {
 			world.commands().queue(subscribe_command);

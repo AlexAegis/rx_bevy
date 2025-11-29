@@ -2,8 +2,8 @@ use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	Never, Observer, SignalBound, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	Teardown, TeardownCollection, Tickable,
+	Never, Observer, Signal, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection, Tickable,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -14,8 +14,8 @@ use rx_core_traits::{
 #[rx_upgrades_to(self)]
 pub struct PrintObserver<In, InError = Never, Context = ()>
 where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
+	In: Signal + Debug,
+	InError: Signal + Debug,
 	Context: SubscriptionContext,
 {
 	prefix: Option<&'static str>,
@@ -25,8 +25,8 @@ where
 
 impl<In, InError, Context> PrintObserver<In, InError, Context>
 where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
+	In: Signal + Debug,
+	InError: Signal + Debug,
 	Context: SubscriptionContext,
 {
 	pub fn new(message: &'static str) -> Self {
@@ -46,8 +46,8 @@ where
 
 impl<In, InError, Context> Default for PrintObserver<In, InError, Context>
 where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
+	In: Signal + Debug,
+	InError: Signal + Debug,
 	Context: SubscriptionContext,
 {
 	fn default() -> Self {
@@ -61,8 +61,8 @@ where
 
 impl<In, InError, Context> Observer for PrintObserver<In, InError, Context>
 where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
+	In: Signal + Debug,
+	InError: Signal + Debug,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -91,8 +91,8 @@ where
 
 impl<In, InError, Context> Tickable for PrintObserver<In, InError, Context>
 where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
+	In: Signal + Debug,
+	InError: Signal + Debug,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -107,8 +107,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for PrintObserver<In, InError, Context>
 where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
+	In: Signal + Debug,
+	InError: Signal + Debug,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -126,8 +126,8 @@ where
 
 impl<In, InError, Context> TeardownCollection for PrintObserver<In, InError, Context>
 where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
+	In: Signal + Debug,
+	InError: Signal + Debug,
 	Context: SubscriptionContext,
 {
 	#[inline]

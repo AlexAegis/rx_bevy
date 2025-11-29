@@ -1,12 +1,12 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound};
+use rx_core_traits::{Observable, Signal};
 
 use crate::operator::ScanOperator;
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionScan: Observable + Sized {
 	fn scan<
-		NextOut: SignalBound + Clone,
+		NextOut: Signal + Clone,
 		Reducer: 'static + Fn(&NextOut, Self::Out) -> NextOut + Clone + Send + Sync,
 	>(
 		self,

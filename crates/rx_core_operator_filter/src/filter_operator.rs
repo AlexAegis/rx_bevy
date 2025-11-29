@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::FilterSubscriber;
 
@@ -15,8 +15,8 @@ use crate::FilterSubscriber;
 #[rx_context(Context)]
 pub struct FilterOperator<In, InError, Filter, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -26,8 +26,8 @@ where
 
 impl<In, InError, Filter, Context> FilterOperator<In, InError, Filter, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -41,8 +41,8 @@ where
 
 impl<In, InError, Filter, Context> Operator for FilterOperator<In, InError, Filter, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {

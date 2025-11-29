@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, SignalBound, SubscriptionContext};
+use rx_core_traits::{Observer, Signal, SubscriptionContext};
 
 #[derive_where(Default, Debug)]
 #[derive(RxObserver)]
@@ -11,8 +11,8 @@ use rx_core_traits::{Observer, SignalBound, SubscriptionContext};
 #[rx_context(Context)]
 pub struct NoopObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	_phantom_data: PhantomData<(In, InError, fn(Context))>,
@@ -20,8 +20,8 @@ where
 
 impl<In, InError, Context> Observer for NoopObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn next(

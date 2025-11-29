@@ -1,4 +1,4 @@
-use crate::{SignalBound, Subscriber, SubscriptionContext, WithSubscriptionContext};
+use crate::{Signal, Subscriber, SubscriptionContext, WithSubscriptionContext};
 
 /// An [ErasedSubscriberAllocator] that can create an [ErasedSharedDestination]
 /// out of a destination.
@@ -7,8 +7,8 @@ use crate::{SignalBound, Subscriber, SubscriptionContext, WithSubscriptionContex
 pub trait ErasedDestinationAllocator: WithSubscriptionContext {
 	type Shared<In, InError>: ErasedSharedDestination<In = In, InError = InError, Context = Self::Context>
 	where
-		In: SignalBound,
-		InError: SignalBound;
+		In: Signal,
+		InError: Signal;
 
 	fn share<Destination>(
 		destination: Destination,

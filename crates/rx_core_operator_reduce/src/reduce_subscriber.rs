@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionContext};
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
@@ -15,10 +15,10 @@ use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 #[rx_delegate_subscription_like_to_destination]
 pub struct ReduceSubscriber<In, InError, Reducer, Out, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Reducer: Fn(&Out, In) -> Out + Send + Sync,
-	Out: SignalBound + Clone,
+	Out: Signal + Clone,
 	Destination: Subscriber<In = Out, InError = InError>,
 {
 	#[destination]
@@ -31,10 +31,10 @@ where
 impl<In, InError, Reducer, Out, Destination>
 	ReduceSubscriber<In, InError, Reducer, Out, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Reducer: Fn(&Out, In) -> Out + Send + Sync,
-	Out: SignalBound + Clone,
+	Out: Signal + Clone,
 	Destination: Subscriber<In = Out, InError = InError>,
 {
 	pub fn new(destination: Destination, reducer: Reducer, seed: Out) -> Self {
@@ -50,10 +50,10 @@ where
 impl<In, InError, Reducer, Out, Destination> Observer
 	for ReduceSubscriber<In, InError, Reducer, Out, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Reducer: Fn(&Out, In) -> Out + Send + Sync,
-	Out: SignalBound + Clone,
+	Out: Signal + Clone,
 	Destination: Subscriber<In = Out, InError = InError>,
 {
 	fn next(

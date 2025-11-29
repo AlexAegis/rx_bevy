@@ -1,5 +1,5 @@
 use crate::{
-	ObserverNotification, SignalBound, Subscriber, SubscriptionContext, SubscriptionNotification,
+	ObserverNotification, Signal, Subscriber, SubscriptionContext, SubscriptionNotification,
 	Teardown, Tick,
 };
 
@@ -7,8 +7,8 @@ use crate::{
 #[derive(Debug)]
 pub enum SubscriberNotification<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	Next(In),
@@ -21,8 +21,8 @@ where
 
 impl<In, InError, Context> Clone for SubscriberNotification<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
@@ -40,8 +40,8 @@ where
 impl<In, InError, Context> From<ObserverNotification<In, InError>>
 	for SubscriberNotification<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn from(value: ObserverNotification<In, InError>) -> Self {
@@ -56,8 +56,8 @@ where
 impl<In, InError, Context> From<SubscriptionNotification<Context>>
 	for SubscriberNotification<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn from(value: SubscriptionNotification<Context>) -> Self {

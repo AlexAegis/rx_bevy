@@ -1,6 +1,6 @@
 use derive_where::derive_where;
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, SignalBound,
+	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, Signal,
 	Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Tick, Tickable,
 	UpgradeableObserver, WithPrimaryCategory, WithSubscriptionContext,
 	allocator::ErasedDestinationAllocator,
@@ -22,8 +22,8 @@ use crate::MulticastSubscription;
 #[derive_where(Debug)]
 pub struct Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	#[derive_where(skip(Debug))]
@@ -36,8 +36,8 @@ where
 
 impl<In, InError, Context> Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	/// Drops all closed subscribers
@@ -71,8 +71,8 @@ where
 
 impl<In, InError, Context> Observable for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Subscription<Destination>
@@ -102,8 +102,8 @@ where
 
 impl<In, InError, Context> Observer for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn next(
@@ -138,8 +138,8 @@ where
 
 impl<In, InError, Context> Tickable for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn tick(
@@ -156,8 +156,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	#[inline]
@@ -181,8 +181,8 @@ where
 
 impl<In, InError, Context> ObserverInput for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type In = In;
@@ -191,8 +191,8 @@ where
 
 impl<In, InError, Context> ObservableOutput for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Out = In;
@@ -201,8 +201,8 @@ where
 
 impl<In, InError, Context> WithPrimaryCategory for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type PrimaryCategory = PrimaryCategorySubject;
@@ -210,8 +210,8 @@ where
 
 impl<In, InError, Context> Default for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn default() -> Self {
@@ -224,8 +224,8 @@ where
 
 impl<In, InError, Context> WithSubscriptionContext for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Context = Context;
@@ -233,8 +233,8 @@ where
 
 impl<In, InError, Context> Drop for Multicast<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {

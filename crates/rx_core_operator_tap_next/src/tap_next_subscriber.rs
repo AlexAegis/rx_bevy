@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber, Debug)]
 #[rx_context(Destination::Context)]
@@ -14,8 +14,8 @@ pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	#[destination]
 	destination: Destination,
@@ -27,8 +27,8 @@ impl<In, InError, OnNext, Destination> TapNextSubscriber<In, InError, OnNext, De
 where
 	OnNext: 'static + Fn(&In, &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>),
 	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	pub fn new(destination: Destination, callback: OnNext) -> Self {
 		Self {
@@ -47,8 +47,8 @@ where
 		+ Send
 		+ Sync,
 	Destination: Subscriber<In = In, InError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	#[inline]
 	fn next(

@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, UpgradeableObserver,
 };
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -17,8 +17,8 @@ use rx_core_traits::{
 #[rx_delegate_subscription_like_to_destination]
 pub struct BehaviorSubject<In, InError = Never, Context = ()>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	#[destination]
@@ -29,8 +29,8 @@ where
 
 impl<In, InError, Context> BehaviorSubject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	pub fn new(value: In) -> Self {
@@ -57,8 +57,8 @@ where
 
 impl<In, InError, Context> Observer for BehaviorSubject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn next(
@@ -92,8 +92,8 @@ where
 
 impl<In, InError, Context> Observable for BehaviorSubject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Subscription<Destination>

@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike,
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -21,7 +21,7 @@ use rx_core_traits::{
 pub struct IteratorObservable<Iterator, Context = ()>
 where
 	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	iterator: Iterator,
@@ -31,7 +31,7 @@ where
 impl<Iterator, Context> IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn new(iterator: Iterator) -> Self {
@@ -45,7 +45,7 @@ where
 impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>
 where
 	Iterator: Clone + IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscription<Destination>

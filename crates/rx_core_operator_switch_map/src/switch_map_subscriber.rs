@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_switch::SwitchSubscriber;
-use rx_core_traits::{Observable, Observer, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observable, Observer, Signal, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber)]
 #[rx_in(In)]
@@ -13,10 +13,10 @@ use rx_core_traits::{Observable, Observer, SignalBound, Subscriber, Subscription
 #[rx_delegate_teardown_collection_to_destination]
 pub struct SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
+	In: Signal,
+	InError: Signal + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: Observable + SignalBound,
+	InnerObservable: Observable + Signal,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -33,10 +33,10 @@ where
 impl<In, InError, Switcher, InnerObservable, Destination>
 	SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
+	In: Signal,
+	InError: Signal + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable,
-	InnerObservable: Observable + SignalBound,
+	InnerObservable: Observable + Signal,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,
@@ -60,10 +60,10 @@ where
 impl<In, InError, Switcher, InnerObservable, Destination> Observer
 	for SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
+	In: Signal,
+	InError: Signal + Into<InnerObservable::OutError>,
 	Switcher: Fn(In) -> InnerObservable + Send + Sync,
-	InnerObservable: Observable + SignalBound,
+	InnerObservable: Observable + Signal,
 	Destination: 'static
 		+ Subscriber<
 			In = InnerObservable::Out,

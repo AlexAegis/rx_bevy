@@ -11,15 +11,15 @@ use bevy_log::{debug, error};
 use derive_where::derive_where;
 use disqualified::ShortName;
 use rx_bevy_common::Clock;
-use rx_core_traits::{SignalBound, UpgradeableObserver};
+use rx_core_traits::{Signal, UpgradeableObserver};
 use thiserror::Error;
 
 use crate::{RxBevyContext, Subscribe, SubscribeObserverTypeMarker, SubscribesToRetry};
 
 pub struct SubscribeCommand<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	retries_remaining: usize,
 	event: Subscribe<Out, OutError>,
@@ -27,8 +27,8 @@ where
 
 impl<Out, OutError> SubscribeCommand<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	pub(crate) fn new(event: Subscribe<Out, OutError>) -> Self {
 		Self {
@@ -75,8 +75,8 @@ impl<Out, OutError> SubscribeCommandMissed<Out, OutError> {
 
 impl<Out, OutError> Command<Result<(), BevyError>> for SubscribeCommand<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	fn apply(self, world: &mut bevy_ecs::world::World) -> Result<(), BevyError> {
 		let observable_entity = self.event.observable_entity;

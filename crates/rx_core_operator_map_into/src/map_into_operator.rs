@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::MapIntoSubscriber;
 
@@ -19,10 +19,10 @@ use crate::MapIntoSubscriber;
 #[rx_context(Context)]
 pub struct MapIntoOperator<In, InError, Out, OutError, Context = ()>
 where
-	In: SignalBound + Into<Out>,
-	InError: SignalBound + Into<OutError>,
-	Out: SignalBound,
-	OutError: SignalBound,
+	In: Signal + Into<Out>,
+	InError: Signal + Into<OutError>,
+	Out: Signal,
+	OutError: Signal,
 	Context: SubscriptionContext,
 {
 	_phantom_data: PhantomData<(In, InError, Out, OutError, Context)>,
@@ -31,10 +31,10 @@ where
 impl<In, InError, Out, OutError, Context> Operator
 	for MapIntoOperator<In, InError, Out, OutError, Context>
 where
-	In: SignalBound + Into<Out>,
-	InError: SignalBound + Into<OutError>,
-	Out: SignalBound,
-	OutError: SignalBound,
+	In: Signal + Into<Out>,
+	InError: Signal + Into<OutError>,
+	Out: Signal,
+	OutError: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>

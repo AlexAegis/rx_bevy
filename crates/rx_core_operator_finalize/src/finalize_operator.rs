@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_traits::{
-	Operator, SignalBound, Subscriber, SubscriptionContext, TeardownCollectionExtension,
+	Operator, Signal, Subscriber, SubscriptionContext, TeardownCollectionExtension,
 };
 
 #[derive_where(Clone, Debug)]
@@ -15,8 +15,8 @@ use rx_core_traits::{
 #[rx_context(Context)]
 pub struct FinalizeOperator<In, InError, Callback, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -27,8 +27,8 @@ where
 
 impl<In, InError, Callback, Context> FinalizeOperator<In, InError, Callback, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -42,8 +42,8 @@ where
 
 impl<In, InError, Callback, Context> Operator for FinalizeOperator<In, InError, Callback, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
 	Context: SubscriptionContext,
 {

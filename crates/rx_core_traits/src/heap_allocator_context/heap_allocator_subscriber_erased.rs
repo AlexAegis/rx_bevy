@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 use std::sync::{Arc, RwLock};
 
 use crate::{
-	SignalBound, Subscriber,
+	Signal, Subscriber,
 	context::{
 		SubscriptionContext, WithSubscriptionContext, allocator::ErasedDestinationAllocator,
 	},
@@ -30,8 +30,8 @@ where
 	type Shared<In, InError>
 		= Arc<RwLock<dyn Subscriber<In = In, InError = InError, Context = Context> + Send + Sync>>
 	where
-		In: SignalBound,
-		InError: SignalBound;
+		In: Signal,
+		InError: Signal;
 
 	fn share<Destination>(
 		destination: Destination,

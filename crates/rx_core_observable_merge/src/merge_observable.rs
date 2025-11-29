@@ -4,7 +4,7 @@ use rx_core_macro_observable_derive::RxObservable;
 use rx_core_operator_map_into::MapIntoSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, SignalBound, Subscriber, SubscriptionContext, SubscriptionData, UpgradeableObserver,
+	Observable, Signal, Subscriber, SubscriptionContext, SubscriptionData, UpgradeableObserver,
 };
 
 #[derive(RxObservable, Clone, Debug)]
@@ -13,8 +13,8 @@ use rx_core_traits::{
 #[rx_context(O1::Context)]
 pub struct MergeObservable<Out, OutError, O1, O2>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
@@ -29,8 +29,8 @@ where
 
 impl<Out, OutError, O1, O2> MergeObservable<Out, OutError, O1, O2>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
@@ -49,8 +49,8 @@ where
 
 impl<Out, OutError, O1, O2> Observable for MergeObservable<Out, OutError, O1, O2>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,

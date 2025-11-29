@@ -7,7 +7,7 @@ use bevy_mod_erased_component_registry::EntityCommandInsertErasedComponentByType
 use core::marker::PhantomData;
 use disqualified::ShortName;
 use rx_bevy_common::Clock;
-use rx_core_traits::{SignalBound, Subscriber, UpgradeableObserver};
+use rx_core_traits::{Signal, Subscriber, UpgradeableObserver};
 use std::any::TypeId;
 
 #[cfg(feature = "reflect")]
@@ -22,8 +22,8 @@ use crate::{RxBevyContext, SubscriptionSchedule};
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub(crate) struct Subscribe<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	/// From which entity should the subscription be created from.
 	// TODO(bevy-0.17): #[event_target]
@@ -46,8 +46,8 @@ pub struct UnfinishedSubscription;
 
 impl<Out, OutError> Subscribe<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	pub(crate) fn new<Destination, S, C>(
 		observable_entity: Entity,
@@ -114,8 +114,8 @@ where
 
 impl<Out, OutError> Drop for Subscribe<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	fn drop(&mut self) {
 		if let Some(destination) = self.try_consume_destination()

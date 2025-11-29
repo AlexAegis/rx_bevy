@@ -1,7 +1,7 @@
 use bevy_ecs::{schedule::ScheduleLabel, system::EntityCommands};
 
 use rx_bevy_common::Clock;
-use rx_core_traits::SignalBound;
+use rx_core_traits::Signal;
 
 use crate::observable::ProxyObservable;
 
@@ -9,8 +9,8 @@ use crate::observable::ProxyObservable;
 pub trait EntityCommandAsProxyObservableExtension {
 	fn as_proxy_observable<Out, OutError, S, C>(&mut self) -> ProxyObservable<Out, OutError, S, C>
 	where
-		Out: SignalBound + Clone,
-		OutError: SignalBound + Clone,
+		Out: Signal + Clone,
+		OutError: Signal + Clone,
 		S: ScheduleLabel,
 		C: Clock;
 }
@@ -18,8 +18,8 @@ pub trait EntityCommandAsProxyObservableExtension {
 impl<'a> EntityCommandAsProxyObservableExtension for EntityCommands<'a> {
 	fn as_proxy_observable<Out, OutError, S, C>(&mut self) -> ProxyObservable<Out, OutError, S, C>
 	where
-		Out: SignalBound + Clone,
-		OutError: SignalBound + Clone,
+		Out: Signal + Clone,
+		OutError: Signal + Clone,
 		S: ScheduleLabel,
 		C: Clock,
 	{

@@ -1,8 +1,8 @@
-use crate::{SignalBound, SubscriptionContext, WithSubscriptionContext};
+use crate::{Signal, SubscriptionContext, WithSubscriptionContext};
 
 pub trait ObserverInput {
-	type In: SignalBound;
-	type InError: SignalBound;
+	type In: Signal;
+	type InError: Signal;
 }
 
 pub trait Observer: ObserverInput + WithSubscriptionContext + Send + Sync {

@@ -1,5 +1,5 @@
 use rx_core_traits::{
-	Observer, ObserverInput, ObserverSubscriber, PrimaryCategoryObserver, SignalBound,
+	Observer, ObserverInput, ObserverSubscriber, PrimaryCategoryObserver, Signal,
 	SubscriptionContext, Tick, Tickable, UpgradeableObserver, WithPrimaryCategory,
 	WithSubscriptionContext,
 };
@@ -18,8 +18,8 @@ where
 
 impl<In, InError, Context> DynFnObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync>(
@@ -69,8 +69,8 @@ where
 
 impl<In, InError, Context> ObserverInput for DynFnObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type In = In;
@@ -79,8 +79,8 @@ where
 
 impl<In, InError, Context> WithSubscriptionContext for DynFnObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Context = Context;
@@ -88,8 +88,8 @@ where
 
 impl<In, InError, Context> WithPrimaryCategory for DynFnObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type PrimaryCategory = PrimaryCategoryObserver;
@@ -97,8 +97,8 @@ where
 
 impl<In, InError, Context> UpgradeableObserver for DynFnObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Upgraded = ObserverSubscriber<Self>;
@@ -110,8 +110,8 @@ where
 
 impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn next(
@@ -145,8 +145,8 @@ where
 
 impl<In, InError, Context> Tickable for DynFnObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn tick(
@@ -162,8 +162,8 @@ where
 
 impl<In, InError, Context> Default for DynFnObserver<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn default() -> Self {

@@ -11,7 +11,7 @@ use bevy::{
 use bevy_mod_alternate_system_on_press::alternate_systems_on_press;
 use rx_bevy_common::Clock;
 use rx_bevy_context::{CommandSubscribeExtension, EntityDestination};
-use rx_core_traits::SignalBound;
+use rx_core_traits::Signal;
 
 pub trait SubscriptionMapResource: Resource {
 	fn insert(&mut self, observable_destination_key: (Entity, Entity), subscription_entity: Entity);
@@ -20,8 +20,8 @@ pub trait SubscriptionMapResource: Resource {
 
 pub fn toggle_subscription_system<
 	R: SubscriptionMapResource,
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	S: ScheduleLabel,
 	C: Clock,
 >(
@@ -54,8 +54,8 @@ pub fn subscribe_entity<R, Out, OutError, S, C>(
 ) -> impl FnMut(Commands, ResMut<R>)
 where
 	R: SubscriptionMapResource,
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	S: ScheduleLabel,
 	C: Clock,
 {

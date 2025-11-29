@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber)]
 #[rx_in(In)]
@@ -12,10 +12,10 @@ use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 #[rx_delegate_subscription_like_to_destination]
 pub struct MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: SignalBound + Into<Out>,
-	InError: SignalBound + Into<OutError>,
-	Out: SignalBound,
-	OutError: SignalBound,
+	In: Signal + Into<Out>,
+	InError: Signal + Into<OutError>,
+	Out: Signal,
+	OutError: Signal,
 	Destination: Subscriber<In = Out, InError = OutError>,
 {
 	#[destination]
@@ -26,10 +26,10 @@ where
 impl<In, InError, Out, OutError, Destination>
 	MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: SignalBound + Into<Out>,
-	InError: SignalBound + Into<OutError>,
-	Out: SignalBound,
-	OutError: SignalBound,
+	In: Signal + Into<Out>,
+	InError: Signal + Into<OutError>,
+	Out: Signal,
+	OutError: Signal,
 	Destination: Subscriber<In = Out, InError = OutError>,
 {
 	pub fn new(destination: Destination) -> Self {
@@ -43,10 +43,10 @@ where
 impl<In, InError, Out, OutError, Destination> Observer
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
-	In: SignalBound + Into<Out>,
-	InError: SignalBound + Into<OutError>,
-	Out: SignalBound,
-	OutError: SignalBound,
+	In: Signal + Into<Out>,
+	InError: Signal + Into<OutError>,
+	Out: Signal,
+	OutError: Signal,
 	Destination: Subscriber<In = Out, InError = OutError>,
 {
 	#[inline]

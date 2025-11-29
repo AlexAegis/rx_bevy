@@ -4,6 +4,6 @@
 ///
 /// Signals must always be owned values in order avoid non-intentional
 /// side-effects.
-pub trait SignalBound: 'static + Send + Sync {}
+pub trait Signal: 'static + Send + Sync {}
 
-impl<T> SignalBound for T where T: 'static + Send + Sync {}
+impl<T> Signal for T where T: 'static + Send + Sync {}

@@ -1,12 +1,12 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound};
+use rx_core_traits::{Observable, Signal};
 
 use crate::operator::FilterMapOperator;
 
 /// Provides a convenient function to pipe the operator from an observable
 pub trait ObservableExtensionFilterMap: Observable + Sized {
 	fn filter_map<
-		NextOut: SignalBound,
+		NextOut: Signal,
 		Mapper: 'static + Fn(Self::Out) -> Option<NextOut> + Clone + Send + Sync,
 	>(
 		self,

@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike,
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -25,7 +25,7 @@ use crate::{OnTickIteratorSubscription, observable::OnTickObservableOptions};
 pub struct IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: 'static + Clone + IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	iterator: Iterator,
@@ -36,7 +36,7 @@ where
 impl<Iterator, Context> IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: 'static + Clone + IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn new(iterator: Iterator, options: OnTickObservableOptions) -> Self {
@@ -51,7 +51,7 @@ where
 impl<Iterator, Context> Observable for IteratorOnTickObservable<Iterator, Context>
 where
 	Iterator: 'static + Clone + IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Iterator::IntoIter: Send + Sync,
 	Context: SubscriptionContext,
 {

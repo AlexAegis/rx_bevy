@@ -1,5 +1,5 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, SignalBound};
+use rx_core_traits::{Observable, Signal};
 
 use crate::operator::LiftResultOperator;
 
@@ -7,8 +7,8 @@ use crate::operator::LiftResultOperator;
 pub trait ObservableExtensionLiftResult<ResultOut, ResultOutError>:
 	Observable<Out = Result<ResultOut, ResultOutError>> + Sized
 where
-	ResultOut: SignalBound,
-	ResultOutError: SignalBound,
+	ResultOut: Signal,
+	ResultOutError: Signal,
 {
 	fn lift_result<InErrorToResultError>(
 		self,
@@ -34,7 +34,7 @@ impl<Obs, ResultOut, ResultOutError> ObservableExtensionLiftResult<ResultOut, Re
 	for Obs
 where
 	Obs: Observable<Out = Result<ResultOut, ResultOutError>>,
-	ResultOut: SignalBound,
-	ResultOutError: SignalBound,
+	ResultOut: Signal,
+	ResultOutError: Signal,
 {
 }

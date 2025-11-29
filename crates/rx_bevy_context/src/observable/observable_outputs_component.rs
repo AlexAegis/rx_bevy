@@ -2,14 +2,14 @@ use std::marker::PhantomData;
 
 use bevy_ecs::component::Component;
 use derive_where::derive_where;
-use rx_core_traits::SignalBound;
+use rx_core_traits::Signal;
 
 #[derive_where(Default)]
 #[derive(Component, Debug)]
 pub struct ObservableOutputs<Out, OutError>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 {
 	_phantom_data: PhantomData<fn() -> (Out, OutError)>,
 }

@@ -1,13 +1,13 @@
 use thiserror::Error;
 
-use crate::{Never, Observer, SignalBound, SubscriberNotification, context::SubscriptionContext};
+use crate::{Never, Observer, Signal, SubscriberNotification, context::SubscriptionContext};
 
 /// Represents all signal events an observer can observe in a materialized form
 #[derive(Debug, Clone)]
 pub enum ObserverNotification<In, InError = Never>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	Next(In),
 	Error(InError),
@@ -17,8 +17,8 @@ where
 impl<In, InError, Context> TryFrom<SubscriberNotification<In, InError, Context>>
 	for ObserverNotification<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Error = SubscriberNotificationTryFromError;

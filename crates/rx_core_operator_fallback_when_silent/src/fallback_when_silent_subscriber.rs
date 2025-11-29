@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext, Tick, Tickable};
+use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionContext, Tick, Tickable};
 
 #[derive(RxSubscriber)]
 #[rx_in(In)]
@@ -11,8 +11,8 @@ use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext, Tic
 #[rx_delegate_subscription_like_to_destination]
 pub struct FallbackWhenSilentSubscriber<In, InError, Fallback, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Fallback: Fn() -> In + Send + Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -26,8 +26,8 @@ where
 impl<In, InError, Fallback, Destination>
 	FallbackWhenSilentSubscriber<In, InError, Fallback, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Fallback: Fn() -> In + Send + Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -44,8 +44,8 @@ where
 impl<In, InError, Fallback, Destination> Observer
 	for FallbackWhenSilentSubscriber<In, InError, Fallback, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Fallback: Fn() -> In + Send + Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 {
@@ -77,8 +77,8 @@ where
 impl<In, InError, Fallback, Destination> Tickable
 	for FallbackWhenSilentSubscriber<In, InError, Fallback, Destination>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Fallback: Fn() -> In + Send + Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 {

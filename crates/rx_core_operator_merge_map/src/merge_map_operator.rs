@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Observable, Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observable, Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::MergeMapSubscriber;
 
@@ -13,10 +13,10 @@ use crate::MergeMapSubscriber;
 #[rx_context(InnerObservable::Context)]
 pub struct MergeMapOperator<In, InError, Switcher, InnerObservable>
 where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
+	In: Signal,
+	InError: Signal + Into<InnerObservable::OutError>,
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: Observable + SignalBound,
+	InnerObservable: Observable + Signal,
 {
 	switcher: Switcher,
 	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
@@ -25,10 +25,10 @@ where
 impl<In, InError, Switcher, InnerObservable>
 	MergeMapOperator<In, InError, Switcher, InnerObservable>
 where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
+	In: Signal,
+	InError: Signal + Into<InnerObservable::OutError>,
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: Observable + SignalBound,
+	InnerObservable: Observable + Signal,
 {
 	pub fn new(switcher: Switcher) -> Self {
 		Self {
@@ -41,10 +41,10 @@ where
 impl<In, InError, Switcher, InnerObservable> Operator
 	for MergeMapOperator<In, InError, Switcher, InnerObservable>
 where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
+	In: Signal,
+	InError: Signal + Into<InnerObservable::OutError>,
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: Observable + SignalBound,
+	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>
 		= MergeMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
@@ -73,10 +73,10 @@ where
 impl<In, InError, Switcher, InnerObservable> Clone
 	for MergeMapOperator<In, InError, Switcher, InnerObservable>
 where
-	In: SignalBound,
-	InError: SignalBound + Into<InnerObservable::OutError>,
+	In: Signal,
+	InError: Signal + Into<InnerObservable::OutError>,
 	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: Observable + SignalBound,
+	InnerObservable: Observable + Signal,
 {
 	fn clone(&self) -> Self {
 		Self {

@@ -2,7 +2,7 @@ use bevy_ecs::{
 	entity::{ContainsEntity, Entity},
 	event::Event,
 };
-use rx_core_traits::{Never, ObserverNotification, SignalBound, SubscriberNotification};
+use rx_core_traits::{Never, ObserverNotification, Signal, SubscriberNotification};
 
 use crate::RxBevyContext;
 
@@ -12,8 +12,8 @@ use crate::RxBevyContext;
 #[doc(alias = "ObserverNotificationEvent")]
 pub struct RxSignal<In, InError = Never>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	// TODO(bevy-0.17): #[event_target]
 	target: Entity,
@@ -22,8 +22,8 @@ where
 
 impl<In, InError> ContainsEntity for RxSignal<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	fn entity(&self) -> Entity {
 		self.target
@@ -32,8 +32,8 @@ where
 
 impl<In, InError> RxSignal<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	pub fn signal(&self) -> &ObserverNotification<In, InError> {
 		&self.notification
@@ -52,8 +52,8 @@ where
 
 impl<In, InError> From<RxSignal<In, InError>> for ObserverNotification<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	fn from(value: RxSignal<In, InError>) -> Self {
 		value.notification
@@ -62,8 +62,8 @@ where
 
 impl<In, InError> From<RxSignal<In, InError>> for SubscriberNotification<In, InError, RxBevyContext>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	fn from(value: RxSignal<In, InError>) -> Self {
 		let observer_notification: ObserverNotification<In, InError> = value.into();

@@ -2,7 +2,7 @@ use std::iter::Peekable;
 
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Never, SignalBound, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike,
+	Never, Signal, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike,
 	TeardownCollection, Tick, Tickable,
 };
 
@@ -13,7 +13,7 @@ use crate::observable::OnTickObservableOptions;
 pub struct OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	observed_ticks: usize,
@@ -27,7 +27,7 @@ where
 impl<Iterator, Context> OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn new(
@@ -58,7 +58,7 @@ where
 impl<Iterator, Context> Tickable for OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	fn tick(
@@ -91,7 +91,7 @@ where
 impl<Iterator, Context> SubscriptionLike for OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
@@ -109,7 +109,7 @@ where
 impl<Iterator, Context> TeardownCollection for OnTickIteratorSubscription<Iterator, Context>
 where
 	Iterator: IntoIterator,
-	Iterator::Item: SignalBound,
+	Iterator::Item: Signal,
 	Context: SubscriptionContext,
 {
 	fn add_teardown(

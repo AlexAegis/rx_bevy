@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptions};
 
@@ -15,7 +15,7 @@ use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptio
 #[rx_context(Context)]
 pub struct AdsrOperator<InError, Context>
 where
-	InError: SignalBound,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	options: AdsrOperatorOptions,
@@ -24,7 +24,7 @@ where
 
 impl<InError, Context> AdsrOperator<InError, Context>
 where
-	InError: SignalBound,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn new(options: AdsrOperatorOptions) -> Self {
@@ -37,7 +37,7 @@ where
 
 impl<InError, Context> Operator for AdsrOperator<InError, Context>
 where
-	InError: SignalBound,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>

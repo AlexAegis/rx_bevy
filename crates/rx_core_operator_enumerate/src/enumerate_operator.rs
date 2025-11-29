@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::EnumerateSubscriber;
 
@@ -17,8 +17,8 @@ use crate::EnumerateSubscriber;
 #[rx_context(Context)]
 pub struct EnumerateOperator<In, InError, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	_phantom_data: PhantomData<(In, InError, Context)>,
@@ -26,8 +26,8 @@ where
 
 impl<In, InError, Context> Operator for EnumerateOperator<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>

@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber)]
 #[rx_in(In)]
@@ -12,7 +12,7 @@ use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 #[rx_delegate_subscription_like_to_destination]
 pub struct EnumerateSubscriber<In, Destination>
 where
-	In: SignalBound,
+	In: Signal,
 	Destination: Subscriber<In = (In, usize)>,
 {
 	#[destination]
@@ -23,7 +23,7 @@ where
 
 impl<In, Destination> EnumerateSubscriber<In, Destination>
 where
-	In: SignalBound,
+	In: Signal,
 	Destination: Subscriber<In = (In, usize)>,
 {
 	pub fn new(destination: Destination) -> Self {
@@ -37,7 +37,7 @@ where
 
 impl<In, Destination> Observer for EnumerateSubscriber<In, Destination>
 where
-	In: SignalBound,
+	In: Signal,
 	Destination: Subscriber<In = (In, usize)>,
 {
 	#[inline]

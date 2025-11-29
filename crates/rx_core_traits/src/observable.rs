@@ -1,5 +1,5 @@
 use crate::{
-	SignalBound, Subscriber, SubscriptionContext, SubscriptionScheduled, UpgradeableObserver,
+	Signal, Subscriber, SubscriptionContext, SubscriptionScheduled, UpgradeableObserver,
 	WithPrimaryCategory, WithSubscriptionContext,
 };
 
@@ -8,8 +8,8 @@ use crate::{
 /// Defines the outputs of an [Observable]. Also used for [Operator]s to define
 /// the new outputs once the operator is applies.
 pub trait ObservableOutput {
-	type Out: SignalBound;
-	type OutError: SignalBound;
+	type Out: Signal;
+	type OutError: Signal;
 }
 
 /// # [Observable]

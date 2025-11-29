@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionContext};
 
 #[derive(RxSubscriber)]
 #[rx_in(Result<ResultIn, ResultInError>)]
@@ -12,9 +12,9 @@ use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext};
 #[rx_delegate_subscription_like_to_destination]
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
+	InError: Signal,
 	InErrorToResultError: Fn(InError) -> ResultInError + Send + Sync,
 	Destination: Subscriber<In = ResultIn, InError = ResultInError>,
 {
@@ -27,9 +27,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 	LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
+	InError: Signal,
 	InErrorToResultError: Fn(InError) -> ResultInError + Send + Sync,
 	Destination: Subscriber<In = ResultIn, InError = ResultInError>,
 {
@@ -45,9 +45,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Destination> Observer
 	for LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
+	InError: Signal,
 	InErrorToResultError: Fn(InError) -> ResultInError + Send + Sync,
 	Destination: Subscriber<In = ResultIn, InError = ResultInError>,
 {

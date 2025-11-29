@@ -1,5 +1,5 @@
 use rx_core_traits::{
-	SignalBound, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown,
+	Signal, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown,
 	TeardownCollection, Tick, Tickable, WithSubscriptionContext,
 	allocator::ErasedDestinationAllocator,
 };
@@ -9,8 +9,8 @@ use rx_core_traits::{
 /// used in contexts (combinator observables like [ZipObservable] and [CombineLatestObservable]) where multiple subscriptions has to be wrapped in one
 pub struct MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	closed_flag: SubscriptionClosedFlag,
@@ -21,8 +21,8 @@ where
 
 impl<In, InError, Context> MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	pub fn new(
@@ -44,8 +44,8 @@ where
 
 impl<In, InError, Context> Default for MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn default() -> Self {
@@ -58,8 +58,8 @@ where
 
 impl<In, InError, Context> Clone for MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
@@ -72,8 +72,8 @@ where
 
 impl<In, InError, Context> WithSubscriptionContext for MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Context = Context;
@@ -81,8 +81,8 @@ where
 
 impl<In, InError, Context> Tickable for MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn tick(
@@ -98,8 +98,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
@@ -118,8 +118,8 @@ where
 
 impl<In, InError, Context> TeardownCollection for MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn add_teardown(
@@ -139,8 +139,8 @@ where
 
 impl<In, InError, Context> Drop for MulticastSubscription<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {

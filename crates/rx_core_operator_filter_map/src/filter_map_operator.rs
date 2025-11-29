@@ -5,7 +5,7 @@ use rx_core_macro_operator_derive::RxOperator;
 use rx_core_operator_composite::CompositeSubscriber;
 use rx_core_operator_lift_option::LiftOptionSubscriber;
 use rx_core_operator_map::MapSubscriber;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 pub type FilterMapSubscriber<In, InError, Mapper, Out, Destination> = CompositeSubscriber<
 	MapSubscriber<In, InError, Mapper, Option<Out>, LiftOptionSubscriber<Destination>>,
@@ -21,10 +21,10 @@ pub type FilterMapSubscriber<In, InError, Mapper, Out, Destination> = CompositeS
 #[rx_context(Context)]
 pub struct FilterMapOperator<In, InError, Mapper, Out, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
-	Out: SignalBound,
+	Out: Signal,
 	Context: SubscriptionContext,
 {
 	mapper: Mapper,
@@ -33,10 +33,10 @@ where
 
 impl<In, InError, Mapper, Out, Context> FilterMapOperator<In, InError, Mapper, Out, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
-	Out: SignalBound,
+	Out: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn new(mapper: Mapper) -> Self {
@@ -50,10 +50,10 @@ where
 impl<In, InError, Mapper, Out, Context> Operator
 	for FilterMapOperator<In, InError, Mapper, Out, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Mapper: 'static + Fn(In) -> Option<Out> + Clone + Send + Sync,
-	Out: SignalBound,
+	Out: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>

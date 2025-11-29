@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::TapNextSubscriber;
 
@@ -15,8 +15,8 @@ use crate::TapNextSubscriber;
 #[rx_context(Context)]
 pub struct TapNextOperator<In, InError, OnNext, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -27,8 +27,8 @@ where
 
 impl<In, InError, OnNext, Context> TapNextOperator<In, InError, OnNext, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -42,8 +42,8 @@ where
 
 impl<In, InError, OnNext, Context> Operator for TapNextOperator<In, InError, OnNext, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -73,8 +73,8 @@ where
 
 impl<In, InError, OnNext, Context> Clone for TapNextOperator<In, InError, OnNext, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {

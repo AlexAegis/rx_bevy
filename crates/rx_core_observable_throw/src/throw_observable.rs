@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, UpgradeableObserver,
 };
 
 #[derive(RxObservable, Clone, Debug)]
@@ -12,7 +12,7 @@ use rx_core_traits::{
 #[rx_context(Context)]
 pub struct ThrowObservable<OutError, Context>
 where
-	OutError: SignalBound + Clone,
+	OutError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	error: OutError,
@@ -21,7 +21,7 @@ where
 
 impl<OutError, Context> ThrowObservable<OutError, Context>
 where
-	OutError: SignalBound + Clone,
+	OutError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	pub fn new(error: OutError) -> Self {
@@ -34,7 +34,7 @@ where
 
 impl<OutError, Context> Observable for ThrowObservable<OutError, Context>
 where
-	OutError: SignalBound + Clone,
+	OutError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Subscription<Destination>

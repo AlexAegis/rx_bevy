@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::MapSubscriber;
 
@@ -16,10 +16,10 @@ use crate::MapSubscriber;
 #[rx_context(Context)]
 pub struct MapOperator<In, InError, Mapper, Out = In, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
-	Out: SignalBound,
+	Out: Signal,
 	Context: SubscriptionContext,
 {
 	mapper: Mapper,
@@ -28,10 +28,10 @@ where
 
 impl<In, InError, Mapper, Out, Context> MapOperator<In, InError, Mapper, Out, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
-	Out: SignalBound,
+	Out: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn new(mapper: Mapper) -> Self {
@@ -44,10 +44,10 @@ where
 
 impl<In, InError, Mapper, Out, Context> Operator for MapOperator<In, InError, Mapper, Out, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
-	Out: SignalBound,
+	Out: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
@@ -76,10 +76,10 @@ where
 
 impl<In, InError, Mapper, Out, Context> Clone for MapOperator<In, InError, Mapper, Out, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
-	Out: SignalBound,
+	Out: Signal,
 	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {

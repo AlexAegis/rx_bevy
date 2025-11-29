@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, SignalBound, Subscriber, SubscriptionContext, Tick, Tickable};
+use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionContext, Tick, Tickable};
 
 use crate::{
 	AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, AdsrTrigger, operator::AdsrOperatorOptions,
@@ -17,7 +17,7 @@ use crate::{
 #[rx_delegate_subscription_like_to_destination]
 pub struct AdsrSubscriber<InError, Destination>
 where
-	InError: SignalBound,
+	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	#[destination]
@@ -31,7 +31,7 @@ where
 
 impl<InError, Destination> AdsrSubscriber<InError, Destination>
 where
-	InError: SignalBound,
+	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	pub fn new(destination: Destination, options: AdsrOperatorOptions) -> Self {
@@ -48,7 +48,7 @@ where
 
 impl<InError, Destination> Observer for AdsrSubscriber<InError, Destination>
 where
-	InError: SignalBound,
+	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	#[inline]
@@ -81,7 +81,7 @@ where
 
 impl<InError, Destination> Tickable for AdsrSubscriber<InError, Destination>
 where
-	InError: SignalBound,
+	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	#[inline]

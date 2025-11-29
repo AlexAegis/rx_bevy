@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	Never, Observable, Observer, SignalBound, Subscriber, SubscriptionContext, SubscriptionLike,
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -18,8 +18,8 @@ use crate::{Multicast, MulticastSubscription};
 #[rx_context(Context)]
 pub struct Subject<In, InError = Never, Context = ()>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	pub multicast: Arc<RwLock<Multicast<In, InError, Context>>>,
@@ -27,8 +27,8 @@ where
 
 impl<In, InError, Context> Clone for Subject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	/// Cloning a subject keeps all existing destinations
@@ -41,8 +41,8 @@ where
 
 impl<In, InError, Context> Default for Subject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn default() -> Self {
@@ -54,8 +54,8 @@ where
 
 impl<In, InError, Context> Observable for Subject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Subscription<Destination>
@@ -80,8 +80,8 @@ where
 
 impl<In, InError, Context> Observer for Subject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn next(
@@ -107,8 +107,8 @@ where
 
 impl<In, InError, Context> SubscriptionLike for Subject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
@@ -134,8 +134,8 @@ where
 
 impl<In, InError, Context> Drop for Subject<In, InError, Context>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {

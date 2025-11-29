@@ -1,4 +1,4 @@
-use rx_core_traits::{SignalBound, SubscriptionContext};
+use rx_core_traits::{Signal, SubscriptionContext};
 
 use crate::operator::IdentityOperator;
 
@@ -6,8 +6,8 @@ use crate::operator::IdentityOperator;
 /// composite operator.
 pub fn compose_operator<In, InError, Context>() -> IdentityOperator<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	IdentityOperator::default()

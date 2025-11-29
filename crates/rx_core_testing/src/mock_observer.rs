@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	DropSafeSubscriptionContext, Never, Observer, SignalBound, SubscriberNotification,
+	DropSafeSubscriptionContext, Never, Observer, Signal, SubscriberNotification,
 	SubscriptionClosedFlag, SubscriptionContext, SubscriptionContextDropSafety, SubscriptionLike,
 	Teardown, TeardownCollection, Tick, Tickable,
 };
@@ -18,8 +18,8 @@ use crate::MockContext;
 #[rx_upgrades_to(self)]
 pub struct MockObserver<In, InError = Never, DropSafety = DropSafeSubscriptionContext>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	pub closed_flag: SubscriptionClosedFlag,
@@ -28,8 +28,8 @@ where
 
 impl<In, InError, DropSafety> Observer for MockObserver<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	fn next(
@@ -55,8 +55,8 @@ where
 
 impl<In, InError, DropSafety> Tickable for MockObserver<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	fn tick(
@@ -70,8 +70,8 @@ where
 
 impl<In, InError, DropSafety> SubscriptionLike for MockObserver<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	#[inline]
@@ -87,8 +87,8 @@ where
 
 impl<In, InError, DropSafety> TeardownCollection for MockObserver<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	#[inline]
@@ -106,8 +106,8 @@ where
 
 impl<In, InError, DropSafety> Default for MockObserver<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	fn default() -> Self {

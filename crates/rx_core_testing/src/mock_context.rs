@@ -2,9 +2,8 @@ use std::{any::Any, iter::Chain, slice::Iter};
 
 use disqualified::ShortName;
 use rx_core_traits::{
-	DropSafeSubscriptionContext, Never, SignalBound, SubscriberNotification,
-	SubscriptionClosedFlag, SubscriptionContext, SubscriptionContextAccess,
-	SubscriptionContextDropSafety,
+	DropSafeSubscriptionContext, Never, Signal, SubscriberNotification, SubscriptionClosedFlag,
+	SubscriptionContext, SubscriptionContextAccess, SubscriptionContextDropSafety,
 	heap_allocator_context::{
 		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
 		UnscheduledSubscriptionHeapAllocator,
@@ -24,8 +23,8 @@ impl ErasedMockContext {
 
 	pub fn assign<In, InError, DropSafety>(&mut self, context: MockContext<In, InError, DropSafety>)
 	where
-		In: SignalBound,
-		InError: SignalBound,
+		In: Signal,
+		InError: Signal,
 		DropSafety: SubscriptionContextDropSafety,
 	{
 		self.context = Some(Box::new(context));
@@ -33,8 +32,8 @@ impl ErasedMockContext {
 
 	pub fn take<In, InError, DropSafety>(&mut self) -> Box<MockContext<In, InError, DropSafety>>
 	where
-		In: SignalBound,
-		InError: SignalBound,
+		In: Signal,
+		InError: Signal,
 		DropSafety: SubscriptionContextDropSafety,
 	{
 		if let Some(context_ref) = self.context.take() {
@@ -52,8 +51,8 @@ pub const GLOBAL_SAFE_DROP_MOCK_CONTEXT: ErasedMockContext = ErasedMockContext::
 #[derive(Debug)]
 pub struct MockContext<In, InError = Never, DropSafety = DropSafeSubscriptionContext>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	observed_notifications:
@@ -65,8 +64,8 @@ where
 
 impl<In, InError, DropSafety> MockContext<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	/// Pushes a notification onto the notification stack.
@@ -351,8 +350,8 @@ where
 
 impl<In, InError, DropSafety> SubscriptionContext for MockContext<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	type Item<'w, 's> = MockContext<In, InError, DropSafety>;
@@ -387,8 +386,8 @@ where
 
 impl<In, InError, DropSafety> SubscriptionContextAccess for MockContext<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	type Context = MockContext<In, InError, DropSafety>;
@@ -396,8 +395,8 @@ where
 
 impl<In, InError, DropSafety> Default for MockContext<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	fn default() -> Self {
@@ -411,8 +410,8 @@ where
 
 impl<In, InError, DropSafety> Drop for MockContext<In, InError, DropSafety>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	DropSafety: SubscriptionContextDropSafety,
 {
 	fn drop(&mut self) {

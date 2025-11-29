@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Observable, Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observable, Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::SwitchAllSubscriber;
 
@@ -13,16 +13,16 @@ use crate::SwitchAllSubscriber;
 #[rx_context(In::Context)]
 pub struct SwitchAllOperator<In, InError>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 {
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
 impl<In, InError> Default for SwitchAllOperator<In, InError>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 {
 	fn default() -> Self {
 		Self {
@@ -33,8 +33,8 @@ where
 
 impl<In, InError> Operator for SwitchAllOperator<In, InError>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 {
 	type Subscriber<Destination>
 		= SwitchAllSubscriber<In, InError, Destination>
@@ -62,8 +62,8 @@ where
 
 impl<In, InError> Clone for SwitchAllOperator<In, InError>
 where
-	In: Observable + SignalBound,
-	InError: SignalBound + Into<In::OutError>,
+	In: Observable + Signal,
+	InError: Signal + Into<In::OutError>,
 {
 	fn clone(&self) -> Self {
 		Self {

@@ -1,5 +1,5 @@
 use crate::{
-	ObservableOutput, ObserverInput, Operator, SignalBound, Subscriber, WithSubscriptionContext,
+	ObservableOutput, ObserverInput, Operator, Signal, Subscriber, WithSubscriptionContext,
 	context::SubscriptionContext,
 };
 
@@ -12,8 +12,8 @@ use super::OptionSubscriber;
 impl<In, InError, Op> Operator for Option<Op>
 where
 	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	type Subscriber<Destination>
 		= OptionSubscriber<Op::Subscriber<Destination>, Destination>
@@ -47,8 +47,8 @@ where
 impl<In, InError, Op> ObserverInput for Option<Op>
 where
 	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	type In = In;
 	type InError = InError;
@@ -57,8 +57,8 @@ where
 impl<In, InError, Op> ObservableOutput for Option<Op>
 where
 	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	type Out = In;
 	type OutError = InError;
@@ -67,8 +67,8 @@ where
 impl<In, InError, Op> WithSubscriptionContext for Option<Op>
 where
 	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	type Context = Op::Context;
 }

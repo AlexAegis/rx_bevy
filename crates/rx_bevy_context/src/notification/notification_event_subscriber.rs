@@ -4,8 +4,7 @@ use bevy_ecs::{
 	event::Event,
 };
 use rx_core_traits::{
-	Never, ObserverNotification, SignalBound, SubscriberNotification,
-	SubscriberNotificationTryFromError,
+	Never, ObserverNotification, Signal, SubscriberNotification, SubscriberNotificationTryFromError,
 };
 
 use crate::RxBevyContext;
@@ -18,8 +17,8 @@ use crate::RxBevyContext;
 #[derive(Event, Clone, Deref, DerefMut)]
 pub struct SubscriberNotificationEvent<In, InError = Never>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	// TODO(bevy-0.17): #[event_target]
 	target: Entity,
@@ -29,8 +28,8 @@ where
 
 impl<In, InError> ContainsEntity for SubscriberNotificationEvent<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	fn entity(&self) -> Entity {
 		self.target
@@ -39,8 +38,8 @@ where
 
 impl<In, InError> SubscriberNotificationEvent<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	#[inline]
 	pub fn is_unsubscribe(&self) -> bool {
@@ -62,8 +61,8 @@ where
 impl<In, InError> From<SubscriberNotificationEvent<In, InError>>
 	for SubscriberNotification<In, InError, RxBevyContext>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	fn from(value: SubscriberNotificationEvent<In, InError>) -> Self {
 		value.notification
@@ -73,8 +72,8 @@ where
 impl<In, InError> TryFrom<SubscriberNotificationEvent<In, InError>>
 	for ObserverNotification<In, InError>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 {
 	type Error = SubscriberNotificationTryFromError;
 

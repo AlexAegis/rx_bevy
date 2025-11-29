@@ -5,9 +5,7 @@ use rx_bevy_common::Clock;
 use rx_bevy_context::RxBevyContext;
 use rx_core_macro_observable_derive::RxObservable;
 
-use rx_core_traits::{
-	Observable, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
-};
+use rx_core_traits::{Observable, Signal, Subscriber, SubscriptionContext, UpgradeableObserver};
 
 use super::proxy_subscription::ProxySubscription;
 
@@ -19,8 +17,8 @@ use super::proxy_subscription::ProxySubscription;
 #[rx_context(RxBevyContext)]
 pub struct ProxyObservable<In, InError, S, C>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	S: ScheduleLabel,
 	C: Clock,
 {
@@ -30,8 +28,8 @@ where
 
 impl<In, InError, S, C> ProxyObservable<In, InError, S, C>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	S: ScheduleLabel,
 	C: Clock,
 {
@@ -45,8 +43,8 @@ where
 
 impl<In, InError, S, C> Observable for ProxyObservable<In, InError, S, C>
 where
-	In: SignalBound + Clone,
-	InError: SignalBound + Clone,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 	S: ScheduleLabel,
 	C: Clock,
 {

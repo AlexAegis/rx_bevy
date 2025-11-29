@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::ReduceSubscriber;
 
@@ -16,10 +16,10 @@ use crate::ReduceSubscriber;
 #[rx_context(Context)]
 pub struct ReduceOperator<In, InError, Reducer, Out = In, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Reducer: 'static + Fn(&Out, In) -> Out + Clone + Send + Sync,
-	Out: SignalBound + Clone,
+	Out: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	reducer: Reducer,
@@ -29,10 +29,10 @@ where
 
 impl<In, InError, Reducer, Out, Context> ReduceOperator<In, InError, Reducer, Out, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Reducer: 'static + Fn(&Out, In) -> Out + Clone + Send + Sync,
-	Out: SignalBound + Clone,
+	Out: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	pub fn new(reducer: Reducer, seed: Out) -> Self {
@@ -47,10 +47,10 @@ where
 impl<In, InError, Reducer, Out, Context> Operator
 	for ReduceOperator<In, InError, Reducer, Out, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Reducer: 'static + Fn(&Out, In) -> Out + Clone + Send + Sync,
-	Out: SignalBound + Clone,
+	Out: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
@@ -80,10 +80,10 @@ where
 impl<In, InError, Reducer, Out, Context> Clone
 	for ReduceOperator<In, InError, Reducer, Out, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Reducer: 'static + Fn(&Out, In) -> Out + Clone + Send + Sync,
-	Out: SignalBound + Clone,
+	Out: Signal + Clone,
 	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {

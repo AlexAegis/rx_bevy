@@ -3,9 +3,7 @@ use std::marker::PhantomData;
 use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::EntityCommands};
 use rx_bevy_common::Clock;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{
-	Observable, SignalBound, Subscriber, SubscriptionContext, UpgradeableObserver,
-};
+use rx_core_traits::{Observable, Signal, Subscriber, SubscriptionContext, UpgradeableObserver};
 
 use crate::{EntityCommandSubscribeExtension, EntitySubscription, RxBevyContext};
 
@@ -67,8 +65,8 @@ pub trait EntityCommandsAsObservableExtension {
 		&mut self,
 	) -> EntityCommandsObservable<Out, OutError, S, C>
 	where
-		Out: SignalBound + Clone,
-		OutError: SignalBound + Clone,
+		Out: Signal + Clone,
+		OutError: Signal + Clone,
 		S: ScheduleLabel,
 		C: Clock;
 }
@@ -78,8 +76,8 @@ impl EntityCommandsAsObservableExtension for EntityCommands<'_> {
 		&mut self,
 	) -> EntityCommandsObservable<Out, OutError, S, C>
 	where
-		Out: SignalBound + Clone,
-		OutError: SignalBound + Clone,
+		Out: Signal + Clone,
+		OutError: Signal + Clone,
 		S: ScheduleLabel,
 		C: Clock,
 	{
@@ -92,8 +90,8 @@ impl EntityCommandsAsObservableExtension for Entity {
 		&mut self,
 	) -> EntityCommandsObservable<Out, OutError, S, C>
 	where
-		Out: SignalBound + Clone,
-		OutError: SignalBound + Clone,
+		Out: Signal + Clone,
+		OutError: Signal + Clone,
 		S: ScheduleLabel,
 		C: Clock,
 	{
@@ -107,8 +105,8 @@ impl EntityCommandsAsObservableExtension for Entity {
 #[rx_context(RxBevyContext)]
 pub struct EntityCommandsObservable<Out, OutError, S, C>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	S: ScheduleLabel,
 	C: Clock,
 {
@@ -118,8 +116,8 @@ where
 
 impl<Out, OutError, S, C> From<Entity> for EntityCommandsObservable<Out, OutError, S, C>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	S: ScheduleLabel,
 	C: Clock,
 {
@@ -133,8 +131,8 @@ where
 
 impl<Out, OutError, S, C> Observable for EntityCommandsObservable<Out, OutError, S, C>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	S: ScheduleLabel,
 	C: Clock,
 {

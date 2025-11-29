@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, SignalBound};
+use rx_core_traits::{Observable, Signal};
 
 use crate::observable::MergeObservable;
 
@@ -7,8 +7,8 @@ pub fn merge<Out, OutError, O1, O2>(
 	observable_2: O2,
 ) -> MergeObservable<Out, OutError, O1, O2>
 where
-	Out: SignalBound,
-	OutError: SignalBound,
+	Out: Signal,
+	OutError: Signal,
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,

@@ -12,15 +12,15 @@ use bevy::{
 use disqualified::ShortName;
 use rx_bevy_common::Clock;
 use rx_bevy_context::RxSignal;
-use rx_core_traits::SignalBound;
+use rx_core_traits::Signal;
 
 pub fn print_notification_observer<In, InError, C>(
 	next: Trigger<RxSignal<In, InError>>,
 	name_query: Query<&Name>,
 	time: Res<Time<C>>,
 ) where
-	In: SignalBound + Debug,
-	InError: SignalBound + Debug,
+	In: Signal + Debug,
+	InError: Signal + Debug,
 	C: Clock,
 {
 	println!(

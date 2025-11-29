@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::LiftResultSubscriber;
 
@@ -20,9 +20,9 @@ use crate::LiftResultSubscriber;
 #[rx_context(Context)]
 pub struct LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context = ()>
 where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
+	InError: Signal,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 	Context: SubscriptionContext,
 {
@@ -39,9 +39,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 	LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
+	InError: Signal,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 	Context: SubscriptionContext,
 {
@@ -56,9 +56,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> Operator
 	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
+	InError: Signal,
 	InErrorToResultError: 'static + Fn(InError) -> ResultInError + Clone + Send + Sync,
 	Context: SubscriptionContext,
 {
@@ -89,9 +89,9 @@ where
 impl<ResultIn, ResultInError, InError, InErrorToResultError, Context> Clone
 	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError, Context>
 where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
-	InError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
+	InError: Signal,
 	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 	Context: SubscriptionContext,
 {

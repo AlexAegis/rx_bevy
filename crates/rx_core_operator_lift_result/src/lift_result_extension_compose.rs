@@ -1,5 +1,5 @@
 use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Operator, SignalBound};
+use rx_core_traits::{Operator, Signal};
 
 use crate::operator::LiftResultOperator;
 
@@ -7,8 +7,8 @@ use crate::operator::LiftResultOperator;
 pub trait CompositeOperatorExtensionLiftResult<ResultIn, ResultInError>:
 	Operator<Out = Result<ResultIn, ResultInError>> + Sized
 where
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
 {
 	fn lift_result<InErrorToResultError>(
 		self,
@@ -34,7 +34,7 @@ impl<Op, ResultIn, ResultInError> CompositeOperatorExtensionLiftResult<ResultIn,
 	for Op
 where
 	Op: Operator<Out = Result<ResultIn, ResultInError>>,
-	ResultIn: SignalBound,
-	ResultInError: SignalBound,
+	ResultIn: Signal,
+	ResultInError: Signal,
 {
 }

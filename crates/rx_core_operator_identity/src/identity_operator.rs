@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::IdentitySubscriber;
 
@@ -19,8 +19,8 @@ use crate::IdentitySubscriber;
 #[rx_context(Context)]
 pub struct IdentityOperator<In, InError = Never, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	_phantom_data: PhantomData<(In, InError, Context)>,
@@ -28,8 +28,8 @@ where
 
 impl<In, InError, Context> Operator for IdentityOperator<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>

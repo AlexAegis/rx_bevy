@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::LiftOptionSubscriber;
 
@@ -13,8 +13,8 @@ use crate::LiftOptionSubscriber;
 #[rx_context(Context)]
 pub struct LiftOptionOperator<In, InError = Never, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	_phantom_data: PhantomData<(In, InError, Context)>,
@@ -22,8 +22,8 @@ where
 
 impl<In, InError, Context> Default for LiftOptionOperator<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn default() -> Self {
@@ -35,8 +35,8 @@ where
 
 impl<In, InError, Context> Operator for LiftOptionOperator<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
@@ -65,8 +65,8 @@ where
 
 impl<In, InError, Context> Clone for LiftOptionOperator<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {

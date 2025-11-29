@@ -9,7 +9,7 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_traits::{
-	DropUnsafeSubscriptionContext, ObserverNotification, SignalBound, Subscriber,
+	DropUnsafeSubscriptionContext, ObserverNotification, Signal, Subscriber,
 	SubscriberNotification, SubscriptionContext, SubscriptionContextAccess,
 	SubscriptionNotification, SubscriptionScheduled, SubscriptionWithTeardown,
 	heap_allocator_context::{ErasedSubscriberHeapAllocator, SubscriberHeapAllocator},
@@ -144,8 +144,8 @@ impl<'w, 's> RxBevyContextItem<'w, 's> {
 		target: Entity,
 		notification: ObserverNotification<In, InError>,
 	) where
-		In: SignalBound,
-		InError: SignalBound,
+		In: Signal,
+		InError: Signal,
 	{
 		let notification_event = RxSignal::<In, InError>::from_notification(notification, target);
 		// TODO(bevy-0.17): Use this
@@ -161,8 +161,8 @@ impl<'w, 's> RxBevyContextItem<'w, 's> {
 		target: Entity,
 		notification: SubscriberNotification<In, InError, RxBevyContext>,
 	) where
-		In: SignalBound,
-		InError: SignalBound,
+		In: Signal,
+		InError: Signal,
 	{
 		let notification_event =
 			SubscriberNotificationEvent::<In, InError>::from_notification(notification, target);

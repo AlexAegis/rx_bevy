@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, SignalBound, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Operator, Signal, Subscriber, SubscriptionContext};
 
 use crate::TakeSubscriber;
 
@@ -15,8 +15,8 @@ use crate::TakeSubscriber;
 #[rx_context(Context)]
 pub struct TakeOperator<In, InError = Never, Context = ()>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	count: usize,
@@ -25,8 +25,8 @@ where
 
 impl<In, InError, Context> TakeOperator<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	pub fn new(count: usize) -> Self {
@@ -39,8 +39,8 @@ where
 
 impl<In, InError, Context> Operator for TakeOperator<In, InError, Context>
 where
-	In: SignalBound,
-	InError: SignalBound,
+	In: Signal,
+	InError: Signal,
 	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
