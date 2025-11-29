@@ -7,6 +7,7 @@
 | Observable     | Status |
 | -------------- | ------ |
 | event          | ✔     |
-| message        | ❌     |
-| proximity      | ❌     |
-| world (?)      | ❌     |
+| keyboard       | ✔     |
+| message        | ✔     |
+| proxy          | ✔     |
+| resource       | ✔     |

@@ -4401,6 +4401,7 @@ dependencies = [
  "rx_core_operator_map_into",
  "rx_core_operator_merge_all",
  "rx_core_operator_merge_map",
+ "rx_core_operator_reduce",
  "rx_core_operator_scan",
  "rx_core_operator_skip",
  "rx_core_operator_switch_all",
@@ -4859,6 +4860,20 @@ dependencies = [
  "rx_core_observable_pipe",
  "rx_core_operator_composite",
  "rx_core_subscriber_merge",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_reduce"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
  "rx_core_testing",
  "rx_core_traits",
 ]

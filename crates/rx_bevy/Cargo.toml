@@ -125,6 +125,7 @@ all_core_operators = [
     "operator_map_into",
     "operator_merge_all",
     "operator_merge_map",
+    "operator_reduce",
     "operator_scan",
     "operator_skip",
     "operator_switch_all",
@@ -148,6 +149,7 @@ operator_map = ["rx_core/operator_map"]
 operator_map_into = ["rx_core/operator_map_into"]
 operator_merge_all = ["rx_core/operator_merge_all"]
 operator_merge_map = ["rx_core/operator_merge_map"]
+operator_reduce = ["rx_core/operator_reduce"]
 operator_scan = ["rx_core/operator_scan"]
 operator_skip = ["rx_core/operator_skip"]
 operator_switch_all = ["rx_core/operator_switch_all"]

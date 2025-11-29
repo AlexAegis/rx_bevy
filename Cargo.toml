@@ -85,6 +85,7 @@ rx_core_operator_map = { path = "crates/rx_core_operator_map" }
 rx_core_operator_map_into = { path = "crates/rx_core_operator_map_into" }
 rx_core_operator_merge_all = { path = "crates/rx_core_operator_merge_all" }
 rx_core_operator_merge_map = { path = "crates/rx_core_operator_merge_map" }
+rx_core_operator_reduce = { path = "crates/rx_core_operator_reduce" }
 rx_core_operator_scan = { path = "crates/rx_core_operator_scan" }
 rx_core_operator_skip = { path = "crates/rx_core_operator_skip" }
 rx_core_operator_switch_all = { path = "crates/rx_core_operator_switch_all" }
