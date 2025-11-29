@@ -120,9 +120,13 @@ jobs:
       - *install_alsa_and_udev
       - *install_binstall
       - name: xtask lint codecov
-        run: cargo run -p xtask -- lint codecov --ignore xtask,feature_checker,examples_common,bevy_mod_alternate_system_on_press
+        run: cargo run -p xtask -- lint codecov
       - name: xtask lint docs
         run: cargo run -p xtask -- lint docs
+      - name: xtask lint aggregators
+        run: cargo run -p xtask -- lint aggregators
+      - name: xtask lint readmes
+        run: cargo run -p xtask -- lint readmes
   conventional-commits:
     runs-on: ubuntu-latest
     steps:

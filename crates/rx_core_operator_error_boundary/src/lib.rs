@@ -11,7 +11,7 @@ pub mod operator {
 mod error_boundary_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::error_boundary_extension_compose::*;
 }
 

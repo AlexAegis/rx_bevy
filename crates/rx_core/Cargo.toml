@@ -21,7 +21,6 @@ default = [
     "all_observers",
     "all_operators",
     "all_subjects",
-    "all_subscriptions",
     "compose",
     "observable_fn",
     "pipe",
@@ -64,8 +63,6 @@ debug = [
     "rx_core_subject?/debug",
     "rx_core_subject_behavior?/debug",
     "rx_core_subject_replay?/debug",
-    "rx_core_subscription_drop?/debug",
-    "rx_core_subscription_inert?/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
 ]
@@ -206,10 +203,6 @@ all_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["dep:rx_core_subject"]
 subject_behavior = ["dep:rx_core_subject_behavior"]
 subject_replay = ["dep:rx_core_subject_replay"]
-# Subscriptions
-all_subscriptions = ["subscription_drop", "subscription_inert"]
-subscription_drop = ["dep:rx_core_subscription_drop"]
-subscription_inert = ["dep:rx_core_subscription_inert"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
@@ -257,9 +250,6 @@ rx_core_operator_into_result = { workspace = true, optional = true }
 rx_core_subject = { workspace = true, optional = true }
 rx_core_subject_behavior = { workspace = true, optional = true }
 rx_core_subject_replay = { workspace = true, optional = true }
-# Subscriptions
-rx_core_subscription_drop = { workspace = true, optional = true }
-rx_core_subscription_inert = { workspace = true, optional = true }
 
 [dev-dependencies]
 rx_core_testing = { workspace = true }

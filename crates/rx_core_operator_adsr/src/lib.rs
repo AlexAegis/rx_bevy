@@ -19,7 +19,7 @@ pub mod operator {
 mod adsr_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::adsr_extension_compose::*;
 }
 

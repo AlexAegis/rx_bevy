@@ -1,35 +1,25 @@
 use clap::Subcommand;
-use thiserror::Error;
 
-use crate::lints::{CodecovArgs, CodecovLintError, DocsLintError, lint_codecov, lint_docs};
+use crate::{
+	RxWorkspaceError, lint_readme,
+	lints::{lint_aggregator_package_features, lint_codecov, lint_docs},
+};
 
 #[derive(Subcommand, Debug)]
 pub enum LintCommand {
-	/// Verify coverage component configuration.
-	Codecov(CodecovArgs),
-	/// Verify crate documentation coverage.
+	Codecov,
 	Docs,
+	Aggregators,
+	Readme,
 }
 
 impl LintCommand {
-	pub fn run(self) -> Result<(), LintError> {
+	pub fn run(self) -> Result<(), RxWorkspaceError> {
 		match self {
-			LintCommand::Codecov(args) => {
-				lint_codecov(&args)?;
-				Ok(())
-			}
-			LintCommand::Docs => {
-				lint_docs()?;
-				Ok(())
-			}
+			LintCommand::Codecov => lint_codecov(),
+			LintCommand::Docs => lint_docs(),
+			LintCommand::Aggregators => lint_aggregator_package_features(),
+			LintCommand::Readme => lint_readme(),
 		}
 	}
-}
-
-#[derive(Debug, Error)]
-pub enum LintError {
-	#[error(transparent)]
-	Codecov(#[from] CodecovLintError),
-	#[error(transparent)]
-	Docs(#[from] DocsLintError),
 }

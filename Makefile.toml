@@ -254,22 +254,25 @@ args = ["audit"]
 description = "Checks that all creates have a codecov component"
 workspace = false
 command = "cargo"
-args = [
-    "run",
-    "-p",
-    "xtask",
-    "--",
-    "lint",
-    "codecov",
-    "--ignore",
-    "xtask,feature_checker,examples_common,bevy_mod_alternate_system_on_press",
-]
+args = ["run", "-p", "xtask", "--", "lint", "codecov"]
 
 [tasks.xtask-lint-docs]
 description = "Checks that all rx_* creates are part of the documentation"
 workspace = false
 command = "cargo"
 args = ["run", "-p", "xtask", "--", "lint", "docs"]
+
+[tasks.xtask-lint-aggregators]
+description = "Checks that all rx_* creates are part of the aggregators correctly"
+workspace = false
+command = "cargo"
+args = ["run", "-p", "xtask", "--", "lint", "aggregators"]
+
+[tasks.xtask-lint-readme]
+description = "Checks that all rx_* creates have their badges set up correctly"
+workspace = false
+command = "cargo"
+args = ["run", "-p", "xtask", "--", "lint", "readme"]
 
 ### Linting - Lint groups
 
@@ -282,7 +285,9 @@ run_task = { name = [
     "machete",
     "xtask-lint-codecov",
     "xtask-lint-docs",
-], parallel = true }
+    "xtask-lint-aggregators",
+    "xtask-lint-readme",
+], parallel = false } # Could be true, but that'd hide the failures
 
 [tasks.lint-ad-hoc]
 description = "Runs tasks that are not automatically run for various reasons. This task is mostly here to just highlight them."

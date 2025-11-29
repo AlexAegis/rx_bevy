@@ -25,8 +25,8 @@ pub mod operator {
 }
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
-	pub use rx_core::extension_composite::*;
+pub mod extension_compose {
+	pub use rx_core::extension_compose::*;
 }
 
 #[cfg(feature = "pipe")]
@@ -56,7 +56,7 @@ pub mod prelude {
 	pub use super::subject::*;
 
 	#[cfg(feature = "compose")]
-	pub use super::extension_composite::*;
+	pub use super::extension_compose::*;
 
 	#[cfg(feature = "pipe")]
 	pub use super::extension_pipe::*;

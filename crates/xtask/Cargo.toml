@@ -23,3 +23,5 @@ cargo_metadata = { workspace = true }
 clap = { workspace = true, features = ["derive", "help", "std", "usage"] }
 thiserror = { workspace = true }
 yaml-rust2 = { version = "0.10.4" }
+regex = { version = "1.12.2" }
+lazy_static = { version = "1.5.0" }

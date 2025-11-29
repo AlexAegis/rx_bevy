@@ -11,7 +11,7 @@ pub mod operator {
 mod enumerate_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::enumerate_extension_compose::*;
 }
 

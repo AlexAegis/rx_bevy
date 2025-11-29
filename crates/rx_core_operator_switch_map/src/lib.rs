@@ -11,7 +11,7 @@ pub mod operator {
 mod switch_map_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::switch_map_extension_compose::*;
 }
 

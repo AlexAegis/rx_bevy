@@ -37,6 +37,8 @@
   - [lift_result](12_operators_core/lift_result.md)
   - [map](12_operators_core/map.md)
   - [map_into](12_operators_core/map_into.md)
+  - [merge_all](12_operators_core/merge_all.md)
+  - [merge_map](12_operators_core/merge_map.md)
   - [scan](12_operators_core/scan.md)
   - [skip](12_operators_core/skip.md)
   - [switch_all](12_operators_core/switch_all.md)

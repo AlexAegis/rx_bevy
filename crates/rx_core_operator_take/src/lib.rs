@@ -11,7 +11,7 @@ pub mod operator {
 mod take_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::take_extension_compose::*;
 }
 

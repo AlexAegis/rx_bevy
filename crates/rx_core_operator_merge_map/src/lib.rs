@@ -11,7 +11,7 @@ pub mod operator {
 mod merge_map_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::merge_map_extension_compose::*;
 }
 

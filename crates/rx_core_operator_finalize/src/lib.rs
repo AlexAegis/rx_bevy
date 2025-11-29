@@ -8,7 +8,7 @@ pub mod operator {
 mod finalize_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::finalize_extension_compose::*;
 }
 

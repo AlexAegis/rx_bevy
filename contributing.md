@@ -401,7 +401,7 @@ Operators usually have 4-5 files besides `lib.rs`:
    mod map_extension_compose;
 
    #[cfg(feature = "compose")]
-   pub mod extension_composite {
+   pub mod extension_compose {
        pub use super::map_extension_compose::*;
    }
 
@@ -495,13 +495,13 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
       }
       ```
 
-   2. Add the compose extension to the `extension_composite` module:
+   2. Add the compose extension to the `extension_compose` module:
 
       ```rs
       #[cfg(feature = "compose")]
-      pub mod extension_composite {
+      pub mod extension_compose {
           #[cfg(feature = "operator_foo")]
-          pub use rx_core_operator_foo::extension_composite::*;
+          pub use rx_core_operator_foo::extension_compose::*;
       }
       ```
 

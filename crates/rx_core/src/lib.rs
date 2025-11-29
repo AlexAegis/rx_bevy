@@ -91,49 +91,49 @@ pub mod operator {
 }
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	#[cfg(feature = "operator_adsr")]
-	pub use rx_core_operator_adsr::extension_composite::*;
+	pub use rx_core_operator_adsr::extension_compose::*;
 	#[cfg(feature = "operator_composite")]
-	pub use rx_core_operator_composite::extension_composite::*;
+	pub use rx_core_operator_composite::extension_compose::*;
 	#[cfg(feature = "operator_enumerate")]
-	pub use rx_core_operator_enumerate::extension_composite::*;
+	pub use rx_core_operator_enumerate::extension_compose::*;
 	#[cfg(feature = "operator_error_boundary")]
-	pub use rx_core_operator_error_boundary::extension_composite::*;
+	pub use rx_core_operator_error_boundary::extension_compose::*;
 	#[cfg(feature = "operator_fallback_when_silent")]
-	pub use rx_core_operator_fallback_when_silent::extension_composite::*;
+	pub use rx_core_operator_fallback_when_silent::extension_compose::*;
 	#[cfg(feature = "operator_filter")]
-	pub use rx_core_operator_filter::extension_composite::*;
+	pub use rx_core_operator_filter::extension_compose::*;
 	#[cfg(feature = "operator_filter_map")]
-	pub use rx_core_operator_filter_map::extension_composite::*;
+	pub use rx_core_operator_filter_map::extension_compose::*;
 	#[cfg(feature = "operator_finalize")]
-	pub use rx_core_operator_finalize::extension_composite::*;
+	pub use rx_core_operator_finalize::extension_compose::*;
 	#[cfg(feature = "operator_into_result")]
-	pub use rx_core_operator_into_result::extension_composite::*;
+	pub use rx_core_operator_into_result::extension_compose::*;
 	#[cfg(feature = "operator_lift_option")]
-	pub use rx_core_operator_lift_option::extension_composite::*;
+	pub use rx_core_operator_lift_option::extension_compose::*;
 	#[cfg(feature = "operator_lift_result")]
-	pub use rx_core_operator_lift_result::extension_composite::*;
+	pub use rx_core_operator_lift_result::extension_compose::*;
 	#[cfg(feature = "operator_map")]
-	pub use rx_core_operator_map::extension_composite::*;
+	pub use rx_core_operator_map::extension_compose::*;
 	#[cfg(feature = "operator_map_into")]
-	pub use rx_core_operator_map_into::extension_composite::*;
+	pub use rx_core_operator_map_into::extension_compose::*;
 	#[cfg(feature = "operator_merge_all")]
-	pub use rx_core_operator_merge_all::extension_composite::*;
+	pub use rx_core_operator_merge_all::extension_compose::*;
 	#[cfg(feature = "operator_merge_map")]
-	pub use rx_core_operator_merge_map::extension_composite::*;
+	pub use rx_core_operator_merge_map::extension_compose::*;
 	#[cfg(feature = "operator_scan")]
-	pub use rx_core_operator_scan::extension_composite::*;
+	pub use rx_core_operator_scan::extension_compose::*;
 	#[cfg(feature = "operator_skip")]
-	pub use rx_core_operator_skip::extension_composite::*;
+	pub use rx_core_operator_skip::extension_compose::*;
 	#[cfg(feature = "operator_switch_all")]
-	pub use rx_core_operator_switch_all::extension_composite::*;
+	pub use rx_core_operator_switch_all::extension_compose::*;
 	#[cfg(feature = "operator_switch_map")]
-	pub use rx_core_operator_switch_map::extension_composite::*;
+	pub use rx_core_operator_switch_map::extension_compose::*;
 	#[cfg(feature = "operator_take")]
-	pub use rx_core_operator_take::extension_composite::*;
+	pub use rx_core_operator_take::extension_compose::*;
 	#[cfg(feature = "operator_tap_next")]
-	pub use rx_core_operator_tap_next::extension_composite::*;
+	pub use rx_core_operator_tap_next::extension_compose::*;
 }
 
 #[cfg(feature = "pipe")]
@@ -191,13 +191,6 @@ pub mod observer {
 	pub use rx_core_observer_print::observer::*;
 }
 
-pub mod subscription {
-	#[cfg(feature = "subscription_drop")]
-	pub use rx_core_subscription_drop::subscription::*;
-	#[cfg(feature = "subscription_inert")]
-	pub use rx_core_subscription_inert::subscription::*;
-}
-
 pub mod subject {
 	#[cfg(feature = "subject")]
 	pub use rx_core_subject::subject::*;
@@ -214,13 +207,12 @@ pub mod prelude {
 	pub use super::observer::*;
 	pub use super::operator::*;
 	pub use super::subject::*;
-	pub use super::subscription::*;
 
 	#[cfg(feature = "observable_fn")]
 	pub use super::observable_fn::*;
 
 	#[cfg(feature = "compose")]
-	pub use super::extension_composite::*;
+	pub use super::extension_compose::*;
 
 	#[cfg(feature = "pipe")]
 	pub use super::extension_pipe::*;

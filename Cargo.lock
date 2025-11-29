@@ -4410,8 +4410,6 @@ dependencies = [
  "rx_core_subject",
  "rx_core_subject_behavior",
  "rx_core_subject_replay",
- "rx_core_subscription_drop",
- "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -6556,6 +6554,8 @@ version = "0.1.0"
 dependencies = [
  "cargo_metadata",
  "clap",
+ "lazy_static",
+ "regex",
  "thiserror 2.0.17",
  "yaml-rust2",
 ]

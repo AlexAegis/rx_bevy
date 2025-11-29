@@ -11,7 +11,7 @@ pub mod operator {
 mod lift_result_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::lift_result_extension_compose::*;
 }
 

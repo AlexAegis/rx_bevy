@@ -72,8 +72,6 @@ all_observers = ["all_core_observers"]
 all_operators = ["all_core_operators"]
 # Bevy Subjects
 all_subjects = ["all_core_subjects"]
-# Bevy Subscriptions
-all_subscriptions = ["all_core_subscriptions"]
 
 # Core Features
 # Keep these in sync with `rx_core`'s features whenever a new feature of the
@@ -86,6 +84,7 @@ all_core_observables = [
     "observable_combine_latest",
     "observable_connectable",
     "observable_deferred",
+    "observable_interval",
     "observable_iterator",
     "observable_iterator_on_tick",
     "observable_merge",
@@ -160,10 +159,6 @@ all_core_subjects = ["subject", "subject_behavior", "subject_replay"]
 subject = ["rx_core/subject"]
 subject_behavior = ["rx_core/subject_behavior"]
 subject_replay = ["rx_core/subject_replay"]
-# Core Subscriptions
-all_core_subscriptions = ["subscription_drop", "subscription_inert"]
-subscription_drop = ["rx_core/subscription_drop"]
-subscription_inert = ["rx_core/subscription_inert"]
 
 [dependencies]
 rx_core = { workspace = true }

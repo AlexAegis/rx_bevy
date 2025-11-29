@@ -11,7 +11,7 @@ pub mod operator {
 mod tap_next_extension_compose;
 
 #[cfg(feature = "compose")]
-pub mod extension_composite {
+pub mod extension_compose {
 	pub use super::tap_next_extension_compose::*;
 }
 

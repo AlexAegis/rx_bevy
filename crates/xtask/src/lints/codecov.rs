@@ -1,114 +1,99 @@
-use cargo_metadata::MetadataCommand;
-use clap::Args;
-use std::{
-	collections::{BTreeSet, HashMap, HashSet},
-	fs,
-	path::PathBuf,
-};
+use cargo_metadata::camino::Utf8PathBuf;
+use std::fs;
 use thiserror::Error;
 use yaml_rust2::{ScanError, Yaml, YamlLoader};
 
-#[derive(Args, Debug, Default)]
-pub struct CodecovArgs {
-	/// Crate names to ignore when verifying codecov component coverage.
-	#[arg(long = "ignore", value_name = "CRATE", value_delimiter = ',')]
-	pub ignore: Vec<String>,
-}
+use crate::{RxWorkspace, RxWorkspaceError, WorkspaceProblems};
 
-pub fn lint_codecov(args: &CodecovArgs) -> Result<(), CodecovLintError> {
-	let metadata = MetadataCommand::new().exec()?;
-	let packages: HashMap<_, _> = metadata
-		.packages
-		.iter()
-		.map(|package| (package.id.clone(), package))
-		.collect();
+pub fn lint_codecov() -> Result<(), RxWorkspaceError> {
+	let rx_workspace = RxWorkspace::parse_workspace()?;
 
-	let workspace_crates: BTreeSet<String> = metadata
-		.workspace_members
-		.iter()
-		.filter_map(|id| packages.get(id))
-		.map(|package| package.name.clone().to_string())
-		.collect();
+	let ignored_packages = [
+		"xtask",
+		"feature_checker",
+		"examples_common",
+		"bevy_mod_alternate_system_on_press",
+	];
 
-	let config_path = PathBuf::from(&metadata.workspace_root).join("codecov.yml");
-	let raw_config =
-		fs::read_to_string(&config_path).map_err(|source| CodecovLintError::ReadConfig {
-			path: config_path.clone(),
-			source,
-		})?;
-	let configured_crates = configured_components(&raw_config)?;
-	let ignored: HashSet<&str> = args.ignore.iter().map(String::as_str).collect();
+	let mut workspace_problems = WorkspaceProblems::default();
 
-	let missing: Vec<String> = workspace_crates
-		.difference(&configured_crates)
-		.filter(|name| !ignored.contains(name.as_str()))
-		.cloned()
-		.collect();
+	let codecov_yml_path: Utf8PathBuf = "codecov.yml".into();
+	let codecov_yml_path_abs = rx_workspace.metadata.workspace_root.join(&codecov_yml_path);
+	let raw_config = fs::read_to_string(&codecov_yml_path_abs)
+		.map_err(|_| RxWorkspaceError::MissingFile(codecov_yml_path))?;
 
-	if missing.is_empty() {
-		println!("codecov lint passed");
-		Ok(())
-	} else {
-		eprintln!(
-			"codecov lint failed: the following workspace crates are missing from codecov.yml:",
-		);
-		for crate_name in &missing {
-			eprintln!("  - {crate_name}");
+	let codecov_yml = parse_yaml(&raw_config)?;
+
+	for workspace_package in rx_workspace
+		.workspace_packages_by_id
+		.values()
+		.filter(|p| !ignored_packages.contains(&p.name.as_str()))
+	{
+		let mut package_problems = workspace_problems.scope(&workspace_package.name);
+
+		let individual_components = &codecov_yml["component_management"]["individual_components"];
+		let package_component = match individual_components {
+			Yaml::Array(arr) => arr.iter().find(|individual_component| {
+				let component_id = &individual_component["component_id"];
+
+				component_id.as_str().expect("value") == *workspace_package.name
+			}),
+			_ => return Err(CodecovLintParseError::IndividualComponentsIsNotAnArray.into()),
+		};
+
+		if let Some(package_component) = package_component {
+			let paths_array = &package_component["paths"];
+			match paths_array {
+				Yaml::Array(paths) => {
+					if let Some(path) = paths.first().and_then(|path| path.as_str()) {
+						let should_be_path = format!("crates/{}/**", workspace_package.name);
+						if path != should_be_path {
+							package_problems.add_problem(CodecovLintProblems::IncorrectPath(
+								path.to_string(),
+								should_be_path,
+							));
+						}
+					} else {
+						package_problems.add_problem(CodecovLintProblems::MalformedPaths);
+					}
+				}
+				_ => {
+					package_problems.add_problem(CodecovLintProblems::MalformedPaths);
+				}
+			}
+		} else {
+			package_problems.add_problem(CodecovLintProblems::MissingComponent);
 		}
-
-		Err(CodecovLintError::MissingComponents { missing })
 	}
+
+	workspace_problems.try_into()
 }
 
-fn configured_components(raw_config: &str) -> Result<BTreeSet<String>, CodecovLintError> {
-	let documents = YamlLoader::load_from_str(raw_config).map_err(CodecovLintError::ParseConfig)?;
-	let document = documents
+fn parse_yaml(raw_config: &str) -> Result<Yaml, CodecovLintParseError> {
+	let documents =
+		YamlLoader::load_from_str(raw_config).map_err(CodecovLintParseError::ParseConfig)?;
+	documents
 		.into_iter()
 		.find(|doc| !doc.is_badvalue() && !doc.is_null())
-		.ok_or(CodecovLintError::EmptyConfig)?;
-
-	extract_component_ids(&document)
-}
-
-fn extract_component_ids(doc: &Yaml) -> Result<BTreeSet<String>, CodecovLintError> {
-	let components = match &doc["component_management"]["individual_components"] {
-		Yaml::BadValue | Yaml::Null => return Ok(BTreeSet::new()),
-		Yaml::Array(items) => items,
-		_ => return Err(CodecovLintError::ComponentsNotArray),
-	};
-
-	let mut ids = BTreeSet::new();
-	for (index, component) in components.iter().enumerate() {
-		let Some(component_id) = component["component_id"].as_str() else {
-			return Err(CodecovLintError::ComponentIdMissing { index });
-		};
-		ids.insert(component_id.to_owned());
-	}
-
-	Ok(ids)
+		.ok_or(CodecovLintParseError::EmptyConfig)
 }
 
 #[derive(Debug, Error)]
-pub enum CodecovLintError {
-	#[error("workspace metadata query failed")]
-	Metadata(#[from] cargo_metadata::Error),
-	#[error("failed to read codecov.yml at {path}")]
-	ReadConfig {
-		path: PathBuf,
-		#[source]
-		source: std::io::Error,
-	},
+pub enum CodecovLintParseError {
 	#[error("failed to parse codecov.yml")]
 	ParseConfig(#[source] ScanError),
 	#[error("codecov.yml does not contain any YAML documents")]
 	EmptyConfig,
-	#[error("codecov.yml component #{index} is missing a `component_id` string")]
-	ComponentIdMissing { index: usize },
-	#[error("codecov.yml `component_management.individual_components` must be an array")]
-	ComponentsNotArray,
-	#[error(
-		"codecov.yml is missing {missing_len} workspace crate entries",
-		missing_len = "{missing.len()}"
-	)]
-	MissingComponents { missing: Vec<String> },
+	#[error("codecov.yml does not have a `component_management.individual_components` array")]
+	IndividualComponentsIsNotAnArray,
+}
+
+#[derive(Debug, Error)]
+pub enum CodecovLintProblems {
+	#[error("Missing entry from codecov.yml")]
+	MissingComponent,
+	#[error("Entry in codecov.yml has malformed `paths`")]
+	MalformedPaths,
+	#[error("Incorrect path in codecov.yml \"{0}\" should be: \"{1}\"")]
+	IncorrectPath(String, String),
 }

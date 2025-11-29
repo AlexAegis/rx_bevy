@@ -1,10 +1,5 @@
-mod cli;
-mod lints;
-
-extern crate thiserror;
-
-use crate::cli::{Cli, Command};
 use clap::Parser;
+use xtask::{Cli, Command};
 
 fn main() {
 	let cli = Cli::parse();
