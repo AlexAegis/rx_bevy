@@ -3,8 +3,7 @@ use rx_core_traits::Operator;
 
 use crate::operator::SkipOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionSkip: Operator + Sized {
+pub trait OperatorComposeExtensionSkip: Operator + Sized {
 	fn skip(
 		self,
 		count: usize,
@@ -13,4 +12,4 @@ pub trait CompositeOperatorExtensionSkip: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionSkip for T where T: Operator {}
+impl<Op> OperatorComposeExtensionSkip for Op where Op: Operator {}

@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, ObservableOutput};
 
 use crate::operator::SwitchAllOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionSwitchAll: Observable + Sized {
+pub trait ObservablePipeExtensionSwitchAll: Observable + Sized {
 	fn switch_all(self) -> Pipe<Self, SwitchAllOperator<Self::Out, Self::OutError>>
 	where
 		Self::Out: Observable<Context = Self::Context>,
@@ -14,4 +13,4 @@ pub trait ObservableExtensionSwitchAll: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionSwitchAll for T where T: Observable {}
+impl<O> ObservablePipeExtensionSwitchAll for O where O: Observable {}

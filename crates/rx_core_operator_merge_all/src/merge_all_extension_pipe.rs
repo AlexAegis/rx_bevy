@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, ObservableOutput};
 
 use crate::operator::MergeAllOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionMergeAll: Observable + Sized {
+pub trait ObservablePipeExtensionMergeAll: Observable + Sized {
 	fn merge_all(self) -> Pipe<Self, MergeAllOperator<Self::Out, Self::OutError>>
 	where
 		Self::Out: Observable<Context = Self::Context>,
@@ -14,4 +13,4 @@ pub trait ObservableExtensionMergeAll: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionMergeAll for T where T: Observable {}
+impl<O> ObservablePipeExtensionMergeAll for O where O: Observable {}

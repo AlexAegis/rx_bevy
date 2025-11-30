@@ -3,8 +3,7 @@ use rx_core_traits::{Never, Operator};
 
 use crate::operator::ErrorBoundaryOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionErrorBoundary: Operator<OutError = Never> + Sized {
+pub trait OperatorComposeExtensionErrorBoundary: Operator<OutError = Never> + Sized {
 	fn error_boundary(
 		self,
 	) -> CompositeOperator<Self, ErrorBoundaryOperator<Self::Out, Self::Context>> {
@@ -12,4 +11,4 @@ pub trait CompositeOperatorExtensionErrorBoundary: Operator<OutError = Never> + 
 	}
 }
 
-impl<T> CompositeOperatorExtensionErrorBoundary for T where T: Operator<OutError = Never> {}
+impl<Op> OperatorComposeExtensionErrorBoundary for Op where Op: Operator<OutError = Never> {}

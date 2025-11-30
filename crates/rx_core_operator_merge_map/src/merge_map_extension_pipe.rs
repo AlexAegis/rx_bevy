@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, Signal};
 
 use crate::operator::MergeMapOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionMergeMap: Observable + Sized {
+pub trait ObservablePipeExtensionMergeMap: Observable + Sized {
 	fn merge_map<
 		NextInnerObservable: Observable<Context = Self::Context> + Signal,
 		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
@@ -19,4 +18,4 @@ pub trait ObservableExtensionMergeMap: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionMergeMap for T where T: Observable {}
+impl<O> ObservablePipeExtensionMergeMap for O where O: Observable {}

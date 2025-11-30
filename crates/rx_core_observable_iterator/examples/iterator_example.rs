@@ -7,5 +7,5 @@ fn main() {
 	let _s = iterator_observable
 		.take(4)
 		.finalize(|_| println!("fin"))
-		.subscribe(PrintObserver::new("hello once"), &mut ());
+		.subscribe(PrintObserver::new("iterator_observable"), &mut ());
 }

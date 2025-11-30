@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, ObservableOutput, Operator};
 
 use crate::operator::MergeAllOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionMergeAll: Operator + Sized {
+pub trait OperatorComposeExtensionMergeAll: Operator + Sized {
 	fn merge_all(self) -> CompositeOperator<Self, MergeAllOperator<Self::Out, Self::OutError>>
 	where
 		Self::Out: Observable<Context = Self::Context>,
@@ -14,4 +13,4 @@ pub trait CompositeOperatorExtensionMergeAll: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionMergeAll for T where T: Operator {}
+impl<Op> OperatorComposeExtensionMergeAll for Op where Op: Operator {}

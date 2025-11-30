@@ -3,8 +3,7 @@ use rx_core_traits::{Operator, Signal};
 
 use crate::operator::ScanOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionScan: Operator + Sized {
+pub trait OperatorComposeExtensionScan: Operator + Sized {
 	fn scan<
 		NextOut: Signal + Clone,
 		Reducer: 'static + Fn(&NextOut, Self::Out) -> NextOut + Clone + Send + Sync,
@@ -20,4 +19,4 @@ pub trait CompositeOperatorExtensionScan: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionScan for T where T: Operator {}
+impl<Op> OperatorComposeExtensionScan for Op where Op: Operator {}

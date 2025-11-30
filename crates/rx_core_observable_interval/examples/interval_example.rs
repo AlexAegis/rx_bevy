@@ -11,8 +11,7 @@ fn main() {
 
 	let mut interval_observable = IntervalObservable::<()>::new(IntervalObservableOptions {
 		duration: Duration::from_secs(1),
-		start_on_subscribe: false,
-		max_emissions_per_tick: 3,
+		..Default::default()
 	});
 	let mut subscription =
 		interval_observable.subscribe(PrintObserver::new("interval_observable"), &mut context);

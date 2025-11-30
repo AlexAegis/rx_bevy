@@ -3,8 +3,7 @@ use rx_core_traits::Operator;
 
 use crate::operator::FilterOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionFilter: Operator + Sized {
+pub trait OperatorComposeExtensionFilter: Operator + Sized {
 	fn filter<Filter: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync>(
 		self,
 		filter: Filter,
@@ -14,4 +13,4 @@ pub trait CompositeOperatorExtensionFilter: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionFilter for T where T: Operator {}
+impl<Op> OperatorComposeExtensionFilter for Op where Op: Operator {}

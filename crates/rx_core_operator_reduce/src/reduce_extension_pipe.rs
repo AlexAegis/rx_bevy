@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, Signal};
 
 use crate::operator::ReduceOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionReduce: Observable + Sized {
+pub trait ObservablePipeExtensionReduce: Observable + Sized {
 	fn reduce<
 		NextOut: Signal + Clone,
 		Reducer: 'static + Fn(&NextOut, Self::Out) -> NextOut + Clone + Send + Sync,
@@ -17,4 +16,4 @@ pub trait ObservableExtensionReduce: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionReduce for T where T: Observable {}
+impl<O> ObservablePipeExtensionReduce for O where O: Observable {}

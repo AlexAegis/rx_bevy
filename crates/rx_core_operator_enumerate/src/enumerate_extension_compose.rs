@@ -4,7 +4,7 @@ use rx_core_traits::Operator;
 use crate::operator::EnumerateOperator;
 
 /// Provides a convenient function to pipe the operator from another operator  
-pub trait CompositeOperatorExtensionEnumerate: Operator + Sized {
+pub trait OperatorComposeExtensionEnumerate: Operator + Sized {
 	fn enumerate(
 		self,
 	) -> CompositeOperator<Self, EnumerateOperator<Self::Out, Self::OutError, Self::Context>> {
@@ -12,4 +12,4 @@ pub trait CompositeOperatorExtensionEnumerate: Operator + Sized {
 	}
 }
 
-impl<Op> CompositeOperatorExtensionEnumerate for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionEnumerate for Op where Op: Operator {}

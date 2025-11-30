@@ -3,8 +3,7 @@ use rx_core_traits::Observable;
 
 use crate::operator::FilterOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionFilter: Observable + Sized {
+pub trait ObservablePipeExtensionFilter: Observable + Sized {
 	fn filter<Filter: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync>(
 		self,
 		filter: Filter,
@@ -13,4 +12,4 @@ pub trait ObservableExtensionFilter: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionFilter for T where T: Observable {}
+impl<O> ObservablePipeExtensionFilter for O where O: Observable {}

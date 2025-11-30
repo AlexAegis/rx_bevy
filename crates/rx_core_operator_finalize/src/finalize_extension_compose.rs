@@ -3,8 +3,7 @@ use rx_core_traits::{Operator, SubscriptionContext};
 
 use crate::operator::FinalizeOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionFinalize: Operator + Sized {
+pub trait OperatorComposeExtensionFinalize: Operator + Sized {
 	fn finalize<
 		Callback: 'static
 			+ Clone
@@ -20,4 +19,4 @@ pub trait CompositeOperatorExtensionFinalize: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionFinalize for T where T: Operator {}
+impl<Op> OperatorComposeExtensionFinalize for Op where Op: Operator {}

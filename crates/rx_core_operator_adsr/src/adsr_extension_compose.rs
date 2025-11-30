@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// Provides a convenient function to pipe the operator from another operator  
-pub trait CompositeOperatorExtensionAdsr: Operator<Out = AdsrTrigger> + Sized {
+pub trait OperatorComposeExtensionAdsr: Operator<Out = AdsrTrigger> + Sized {
 	fn adsr(
 		self,
 		options: AdsrOperatorOptions,
@@ -16,4 +16,4 @@ pub trait CompositeOperatorExtensionAdsr: Operator<Out = AdsrTrigger> + Sized {
 	}
 }
 
-impl<Op> CompositeOperatorExtensionAdsr for Op where Op: Operator<Out = AdsrTrigger> {}
+impl<Op> OperatorComposeExtensionAdsr for Op where Op: Operator<Out = AdsrTrigger> {}

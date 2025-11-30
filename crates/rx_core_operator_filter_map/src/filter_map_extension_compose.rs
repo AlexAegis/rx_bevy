@@ -3,8 +3,7 @@ use rx_core_traits::{Operator, Signal};
 
 use crate::operator::FilterMapOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionFilterMap: Operator + Sized {
+pub trait OperatorComposeExtensionFilterMap: Operator + Sized {
 	fn filter_map<
 		NextOut: Signal,
 		Mapper: 'static + Fn(Self::Out) -> Option<NextOut> + Clone + Send + Sync,
@@ -19,4 +18,4 @@ pub trait CompositeOperatorExtensionFilterMap: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionFilterMap for T where T: Operator {}
+impl<Op> OperatorComposeExtensionFilterMap for Op where Op: Operator {}

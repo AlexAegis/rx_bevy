@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, Signal};
 
 use crate::operator::LiftOptionOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionLiftOption<T>: Observable<Out = Option<T>> + Sized
+pub trait ObservablePipeExtensionLiftOption<T>: Observable<Out = Option<T>> + Sized
 where
 	T: Signal,
 {
@@ -13,9 +12,9 @@ where
 	}
 }
 
-impl<Obs, T> ObservableExtensionLiftOption<T> for Obs
+impl<O, T> ObservablePipeExtensionLiftOption<T> for O
 where
-	Obs: Observable<Out = Option<T>>,
+	O: Observable<Out = Option<T>>,
 	T: Signal,
 {
 }

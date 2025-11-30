@@ -2,9 +2,7 @@ use rx_core_traits::{Observable, Operator};
 
 use crate::observable::Pipe;
 
-/// Provides a convenient function to pipe an operator from an observable
-/// It's most useful for composite operators
-pub trait ObservableExtensionPipe: Observable + Sized {
+pub trait ObservablePipeExtensionPipe: Observable + Sized {
 	fn pipe<Op>(self, operator: Op) -> Pipe<Self, Op>
 	where
 		Self: Sized,
@@ -14,4 +12,4 @@ pub trait ObservableExtensionPipe: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionPipe for T where T: Observable {}
+impl<O> ObservablePipeExtensionPipe for O where O: Observable {}

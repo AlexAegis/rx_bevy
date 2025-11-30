@@ -3,8 +3,7 @@ use rx_core_traits::{Operator, Signal};
 
 use crate::operator::ReduceOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionReduce: Operator + Sized {
+pub trait OperatorComposeExtensionReduce: Operator + Sized {
 	fn reduce<
 		NextOut: Signal + Clone,
 		Reducer: 'static + Fn(&NextOut, Self::Out) -> NextOut + Clone + Send + Sync,
@@ -20,4 +19,4 @@ pub trait CompositeOperatorExtensionReduce: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionReduce for T where T: Operator {}
+impl<Op> OperatorComposeExtensionReduce for Op where Op: Operator {}

@@ -3,8 +3,7 @@ use rx_core_traits::Operator;
 
 use crate::operator::FallbackWhenSilentOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionFallbackWhenSilent: Operator + Sized {
+pub trait OperatorComposeExtensionFallbackWhenSilent: Operator + Sized {
 	fn fallback_when_silent<Fallback: 'static + Fn() -> Self::Out + Clone + Send + Sync>(
 		self,
 		fallback: Fallback,
@@ -16,4 +15,4 @@ pub trait CompositeOperatorExtensionFallbackWhenSilent: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionFallbackWhenSilent for T where T: Operator {}
+impl<Op> OperatorComposeExtensionFallbackWhenSilent for Op where Op: Operator {}

@@ -3,8 +3,7 @@ use rx_core_traits::{Operator, Signal};
 
 use crate::operator::MapIntoOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionInto: Operator + Sized {
+pub trait OperatorComposeExtensionInto: Operator + Sized {
 	fn map_into<NextOut: Signal, NextOutError: Signal>(
 		self,
 	) -> CompositeOperator<
@@ -19,4 +18,4 @@ pub trait CompositeOperatorExtensionInto: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionInto for T where T: Operator {}
+impl<Op> OperatorComposeExtensionInto for Op where Op: Operator {}

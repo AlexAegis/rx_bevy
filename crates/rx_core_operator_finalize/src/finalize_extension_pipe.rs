@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, SubscriptionContext};
 
 use crate::operator::FinalizeOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionFinalize: Observable + Sized {
+pub trait ObservablePipeExtensionFinalize: Observable + Sized {
 	fn finalize<
 		Callback: 'static
 			+ Clone
@@ -19,4 +18,4 @@ pub trait ObservableExtensionFinalize: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionFinalize for T where T: Observable {}
+impl<O> ObservablePipeExtensionFinalize for O where O: Observable {}

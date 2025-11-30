@@ -1,5 +1,4 @@
 use rx_core::prelude::*;
-use rx_core_operator_error_boundary::extension_pipe::ObservableExtensionErrorBoundary;
 
 /// The [IdentityOperator] does nothing. The only purpose it has
 /// is to define inputs for a [CompositeOperator]: an [Operator] that made out

@@ -6,8 +6,7 @@ use crate::{
 	operator::{AdsrOperator, AdsrOperatorOptions},
 };
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionAdsr: Observable<Out = AdsrTrigger> + Sized {
+pub trait ObservablePipeExtensionAdsr: Observable<Out = AdsrTrigger> + Sized {
 	fn adsr(
 		self,
 		options: AdsrOperatorOptions,
@@ -16,4 +15,4 @@ pub trait ObservableExtensionAdsr: Observable<Out = AdsrTrigger> + Sized {
 	}
 }
 
-impl<Obs> ObservableExtensionAdsr for Obs where Obs: Observable<Out = AdsrTrigger> {}
+impl<O> ObservablePipeExtensionAdsr for O where O: Observable<Out = AdsrTrigger> {}

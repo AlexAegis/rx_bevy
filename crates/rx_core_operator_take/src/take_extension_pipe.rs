@@ -3,8 +3,7 @@ use rx_core_traits::Observable;
 
 use crate::operator::TakeOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionTake: Observable + Sized {
+pub trait ObservablePipeExtensionTake: Observable + Sized {
 	fn take(
 		self,
 		count: usize,
@@ -13,4 +12,4 @@ pub trait ObservableExtensionTake: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionTake for T where T: Observable {}
+impl<O> ObservablePipeExtensionTake for O where O: Observable {}

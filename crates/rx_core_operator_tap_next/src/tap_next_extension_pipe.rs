@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, SubscriptionContext};
 
 use crate::operator::TapNextOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionTapNext: Observable + Sized {
+pub trait ObservablePipeExtensionTapNext: Observable + Sized {
 	fn tap_next<
 		OnNext: 'static
 			+ Fn(&Self::Out, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
@@ -19,4 +18,4 @@ pub trait ObservableExtensionTapNext: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionTapNext for T where T: Observable {}
+impl<O> ObservablePipeExtensionTapNext for O where O: Observable {}

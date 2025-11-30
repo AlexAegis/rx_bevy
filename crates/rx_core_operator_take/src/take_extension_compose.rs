@@ -3,8 +3,7 @@ use rx_core_traits::Operator;
 
 use crate::operator::TakeOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionTake: Operator + Sized {
+pub trait OperatorComposeExtensionTake: Operator + Sized {
 	fn take(
 		self,
 		count: usize,
@@ -13,4 +12,4 @@ pub trait CompositeOperatorExtensionTake: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionTake for T where T: Operator {}
+impl<Op> OperatorComposeExtensionTake for Op where Op: Operator {}

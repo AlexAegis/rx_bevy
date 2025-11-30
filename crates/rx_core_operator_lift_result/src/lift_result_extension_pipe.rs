@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, Signal};
 
 use crate::operator::LiftResultOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionLiftResult<ResultOut, ResultOutError>:
+pub trait ObservablePipeExtensionLiftResult<ResultOut, ResultOutError>:
 	Observable<Out = Result<ResultOut, ResultOutError>> + Sized
 where
 	ResultOut: Signal,
@@ -12,7 +11,7 @@ where
 {
 	fn lift_result<InErrorToResultError>(
 		self,
-		in_error_to_result_error: InErrorToResultError,
+		in_error_to_result_error: InErrorToResultError, // TODO: Remove this, use Into. Users should use the map_error operator when needed
 	) -> Pipe<
 		Self,
 		LiftResultOperator<
@@ -30,10 +29,10 @@ where
 	}
 }
 
-impl<Obs, ResultOut, ResultOutError> ObservableExtensionLiftResult<ResultOut, ResultOutError>
-	for Obs
+impl<O, ResultOut, ResultOutError> ObservablePipeExtensionLiftResult<ResultOut, ResultOutError>
+	for O
 where
-	Obs: Observable<Out = Result<ResultOut, ResultOutError>>,
+	O: Observable<Out = Result<ResultOut, ResultOutError>>,
 	ResultOut: Signal,
 	ResultOutError: Signal,
 {

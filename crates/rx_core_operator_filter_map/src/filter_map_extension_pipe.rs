@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, Signal};
 
 use crate::operator::FilterMapOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionFilterMap: Observable + Sized {
+pub trait ObservablePipeExtensionFilterMap: Observable + Sized {
 	fn filter_map<
 		NextOut: Signal,
 		Mapper: 'static + Fn(Self::Out) -> Option<NextOut> + Clone + Send + Sync,
@@ -16,4 +15,4 @@ pub trait ObservableExtensionFilterMap: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionFilterMap for T where T: Observable {}
+impl<O> ObservablePipeExtensionFilterMap for O where O: Observable {}

@@ -3,8 +3,7 @@ use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::SwitchMapOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionSwitchMap: Operator + Sized {
+pub trait OperatorComposeExtensionSwitchMap: Operator + Sized {
 	fn switch_map<
 		NextInnerObservable: Observable<Context = Self::Context> + Signal,
 		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
@@ -22,4 +21,4 @@ pub trait CompositeOperatorExtensionSwitchMap: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionSwitchMap for T where T: Operator {}
+impl<Op> OperatorComposeExtensionSwitchMap for Op where Op: Operator {}

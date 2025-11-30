@@ -4,7 +4,7 @@ use rx_core_traits::{Operator, Signal};
 use crate::operator::LiftResultOperator;
 
 /// Provides a convenient function to pipe the operator from another operator  
-pub trait CompositeOperatorExtensionLiftResult<ResultIn, ResultInError>:
+pub trait OperatorComposeExtensionLiftResult<ResultIn, ResultInError>:
 	Operator<Out = Result<ResultIn, ResultInError>> + Sized
 where
 	ResultIn: Signal,
@@ -30,8 +30,7 @@ where
 	}
 }
 
-impl<Op, ResultIn, ResultInError> CompositeOperatorExtensionLiftResult<ResultIn, ResultInError>
-	for Op
+impl<Op, ResultIn, ResultInError> OperatorComposeExtensionLiftResult<ResultIn, ResultInError> for Op
 where
 	Op: Operator<Out = Result<ResultIn, ResultInError>>,
 	ResultIn: Signal,

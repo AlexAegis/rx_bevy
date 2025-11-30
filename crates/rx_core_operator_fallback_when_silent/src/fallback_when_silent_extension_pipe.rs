@@ -3,8 +3,7 @@ use rx_core_traits::Observable;
 
 use crate::operator::FallbackWhenSilentOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionInto: Observable + Sized {
+pub trait ObservablePipeExtensionInto: Observable + Sized {
 	fn fallback_when_silent<Fallback: 'static + Fn() -> Self::Out + Clone + Send + Sync>(
 		self,
 		fallback: Fallback,
@@ -14,4 +13,4 @@ pub trait ObservableExtensionInto: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionInto for T where T: Observable {}
+impl<O> ObservablePipeExtensionInto for O where O: Observable {}

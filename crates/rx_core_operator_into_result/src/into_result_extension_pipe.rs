@@ -3,8 +3,7 @@ use rx_core_traits::Observable;
 
 use crate::operator::IntoResultOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionTryCapture: Observable + Sized {
+pub trait ObservablePipeExtensionTryCapture: Observable + Sized {
 	fn into_result(
 		self,
 	) -> Pipe<Self, IntoResultOperator<Self::Out, Self::OutError, Self::Context>> {
@@ -12,4 +11,4 @@ pub trait ObservableExtensionTryCapture: Observable + Sized {
 	}
 }
 
-impl<Obs> ObservableExtensionTryCapture for Obs where Obs: Observable {}
+impl<O> ObservablePipeExtensionTryCapture for O where O: Observable {}

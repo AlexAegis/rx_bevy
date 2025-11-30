@@ -13,8 +13,8 @@ where
 	Source: Observable,
 	Op: 'static + Operator<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
 {
-	pub(crate) source_observable: Source,
-	pub(crate) operator: Op,
+	source_observable: Source,
+	operator: Op,
 }
 
 impl<Source, Op> Pipe<Source, Op>

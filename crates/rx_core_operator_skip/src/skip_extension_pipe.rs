@@ -3,8 +3,7 @@ use rx_core_traits::Observable;
 
 use crate::operator::SkipOperator;
 
-/// Provides a convenient function to pipe the operator from an observable
-pub trait ObservableExtensionSkip: Observable + Sized {
+pub trait ObservablePipeExtensionSkip: Observable + Sized {
 	fn skip(
 		self,
 		count: usize,
@@ -13,4 +12,4 @@ pub trait ObservableExtensionSkip: Observable + Sized {
 	}
 }
 
-impl<T> ObservableExtensionSkip for T where T: Observable {}
+impl<O> ObservablePipeExtensionSkip for O where O: Observable {}

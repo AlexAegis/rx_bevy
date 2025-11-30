@@ -3,8 +3,7 @@ use rx_core_traits::{Operator, SubscriptionContext};
 
 use crate::operator::TapNextOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
-pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
+pub trait OperatorComposeExtensionTapNext: Operator + Sized {
 	fn tap_next<
 		OnNext: 'static
 			+ Fn(&Self::Out, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>)
@@ -20,4 +19,4 @@ pub trait CompositeOperatorExtensionTapNext: Operator + Sized {
 	}
 }
 
-impl<T> CompositeOperatorExtensionTapNext for T where T: Operator {}
+impl<Op> OperatorComposeExtensionTapNext for Op where Op: Operator {}
