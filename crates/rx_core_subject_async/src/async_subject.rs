@@ -1,0 +1,126 @@
+use std::sync::{Arc, RwLock};
+
+use rx_core_macro_subject_derive::RxSubject;
+use rx_core_subject::{MulticastSubscription, subject::Subject};
+use rx_core_traits::{
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, UpgradeableObserver,
+};
+
+/// The AsyncSubject will only emit the last observed value, when it completes.
+#[derive(RxSubject, Clone)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+#[rx_context(Context)]
+#[rx_delegate_subscription_like_to_destination]
+pub struct AsyncSubject<In, InError = Never, Context = ()>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+	Context: SubscriptionContext,
+{
+	#[destination]
+	subject: Subject<In, InError, Context>,
+	/// So cloned subjects retain the same current value across clones
+	value: Arc<RwLock<Option<In>>>,
+}
+
+impl<In, InError, Context> Default for AsyncSubject<In, InError, Context>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+	Context: SubscriptionContext,
+{
+	fn default() -> Self {
+		Self {
+			subject: Subject::default(),
+			value: Arc::new(RwLock::new(None)),
+		}
+	}
+}
+
+impl<In, InError, Context> AsyncSubject<In, InError, Context>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+	Context: SubscriptionContext,
+{
+	pub fn value(&self) -> Option<In> {
+		self.value
+			.read()
+			.unwrap_or_else(|poison_error| {
+				self.value.clear_poison();
+				poison_error.into_inner()
+			})
+			.clone()
+	}
+}
+
+impl<In, InError, Context> Observer for AsyncSubject<In, InError, Context>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+	Context: SubscriptionContext,
+{
+	fn next(
+		&mut self,
+		next: In,
+		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		let mut buffer = self.value.write().unwrap_or_else(|poison_error| {
+			self.value.clear_poison();
+			poison_error.into_inner()
+		});
+
+		*buffer = Some(next.clone());
+	}
+
+	#[inline]
+	fn error(
+		&mut self,
+		error: Self::InError,
+		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
+	) {
+		self.subject.error(error, context);
+	}
+
+	#[inline]
+	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+		let mut buffer = self.value.write().unwrap_or_else(|poison_error| {
+			self.value.clear_poison();
+			poison_error.into_inner()
+		});
+
+		if let Some(value) = buffer.take() {
+			self.subject.next(value, context);
+		}
+
+		self.subject.complete(context);
+	}
+}
+
+impl<In, InError, Context> Observable for AsyncSubject<In, InError, Context>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+	Context: SubscriptionContext,
+{
+	type Subscription<Destination>
+		= MulticastSubscription<In, InError, Context>
+	where
+		Destination:
+			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+
+	fn subscribe<Destination>(
+		&mut self,
+		destination: Destination,
+		context: &mut Context::Item<'_, '_>,
+	) -> Self::Subscription<Destination::Upgraded>
+	where
+		Destination: 'static
+			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+	{
+		self.subject.subscribe(destination.upgrade(), context)
+	}
+}

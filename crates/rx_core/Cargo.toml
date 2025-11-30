@@ -203,8 +203,14 @@ compose = [
     "rx_core_operator_tap_next?/compose",
 ]
 # Subjects
-all_subjects = ["subject", "subject_behavior", "subject_replay"]
+all_subjects = [
+    "subject",
+    "subject_async",
+    "subject_behavior",
+    "subject_replay",
+]
 subject = ["dep:rx_core_subject"]
+subject_async = ["dep:rx_core_subject_async"]
 subject_behavior = ["dep:rx_core_subject_behavior"]
 subject_replay = ["dep:rx_core_subject_replay"]
 
@@ -253,6 +259,7 @@ rx_core_operator_tap_next = { workspace = true, optional = true }
 rx_core_operator_into_result = { workspace = true, optional = true }
 # Subjects
 rx_core_subject = { workspace = true, optional = true }
+rx_core_subject_async = { workspace = true, optional = true }
 rx_core_subject_behavior = { workspace = true, optional = true }
 rx_core_subject_replay = { workspace = true, optional = true }
 

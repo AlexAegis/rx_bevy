@@ -200,6 +200,8 @@ pub mod observer {
 pub mod subject {
 	#[cfg(feature = "subject")]
 	pub use rx_core_subject::subject::*;
+	#[cfg(feature = "subject_async")]
+	pub use rx_core_subject_async::subject::*;
 	#[cfg(feature = "subject_behavior")]
 	pub use rx_core_subject_behavior::subject::*;
 	#[cfg(feature = "subject_replay")]

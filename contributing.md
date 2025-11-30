@@ -551,6 +551,22 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
     [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_core_operator_foo)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_core_operator_foo)
     ```
 
+### Documentation
+
+#### Doc Sync
+
+Some information appears in multiple places, so that it's accessible from
+GitHub when the repository is viewed, from the documentation book, and through
+doc comments to be viewed from the editor. Since the documentation book is
+mainly just a collection of the readme files of the individual crates, that's a
+given, but between that and doc comments, it must be manually synced.
+
+The primary place for the documentation is where the user can first see it
+during usage.
+
+For Observables this is the observable's struct. And for Operators this is
+the pipe extension function.
+
 ### Trusted Publishing
 
 > [!IMPORTANT]

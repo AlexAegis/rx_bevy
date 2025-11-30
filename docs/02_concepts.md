@@ -608,7 +608,44 @@ immediately received by the new subscription!
 
 #### AsyncSubject
 
-> TODO: Implement, it's like a reduce, emits once on complete.
+The AsyncSubject will emit only the last observed value, when it completes.
+
+Example:
+
+> Run this example:
+> `cargo run --package rx_core_subject_async --example async_subject_example`
+
+```rs
+let mut subject = AsyncSubject::<i32>::default();
+let mut context = ();
+
+let mut _subscription_1 = subject.clone().subscribe(
+    PrintObserver::<i32>::new("async_subject sub_1"),
+    &mut context,
+);
+
+subject.next(1, &mut context);
+subject.next(2, &mut context);
+
+let mut _subscription_2 = subject.clone().subscribe(
+    PrintObserver::<i32>::new("async_subject sub_2"),
+    &mut context,
+);
+
+subject.next(3, &mut context);
+subject.complete(&mut context);
+```
+
+Output:
+
+```sh
+async_subject sub_1 - next: 3
+async_subject sub_2 - next: 3
+async_subject sub_1 - completed
+async_subject sub_1 - unsubscribed
+async_subject sub_2 - completed
+async_subject sub_2 - unsubscribed
+```
 
 <!-- 
 TODO: Implement

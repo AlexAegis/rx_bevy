@@ -4409,6 +4409,7 @@ dependencies = [
  "rx_core_operator_take",
  "rx_core_operator_tap_next",
  "rx_core_subject",
+ "rx_core_subject_async",
  "rx_core_subject_behavior",
  "rx_core_subject_replay",
  "rx_core_testing",
@@ -4972,6 +4973,17 @@ dependencies = [
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
+]
+
+[[package]]
+name = "rx_core_subject_async"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_subject_derive",
+ "rx_core_subject",
+ "rx_core_testing",
+ "rx_core_traits",
 ]
 
 [[package]]

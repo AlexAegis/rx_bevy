@@ -157,8 +157,14 @@ operator_switch_map = ["rx_core/operator_switch_map"]
 operator_take = ["rx_core/operator_take"]
 operator_tap_next = ["rx_core/operator_tap_next"]
 # Core Subjects
-all_core_subjects = ["subject", "subject_behavior", "subject_replay"]
+all_core_subjects = [
+    "subject",
+    "subject_async",
+    "subject_behavior",
+    "subject_replay",
+]
 subject = ["rx_core/subject"]
+subject_async = ["rx_core/subject_async"]
 subject_behavior = ["rx_core/subject_behavior"]
 subject_replay = ["rx_core/subject_replay"]
 

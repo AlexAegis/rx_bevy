@@ -182,6 +182,9 @@ component_management:
     - component_id: rx_core_subject
       paths:
         - crates/rx_core_subject/**
+    - component_id: rx_core_subject_async
+      paths:
+        - crates/rx_core_subject_async/**
     - component_id: rx_core_subject_behavior
       paths:
         - crates/rx_core_subject_behavior/**
