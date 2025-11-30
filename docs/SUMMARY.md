@@ -4,6 +4,7 @@
 
 - [Concepts](02_concepts.md)
 - [Design](03_design.md)
+- [Usage Within Bevy](04_rx_in_bevy.md)
 - [Observables (Core)](10_observables_core.md)
   - [combine_latest](10_observables_core/combine_latest.md)
   - [connectable](10_observables_core/connectable.md)

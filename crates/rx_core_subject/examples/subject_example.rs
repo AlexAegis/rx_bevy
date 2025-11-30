@@ -2,31 +2,15 @@ use rx_core::prelude::*;
 
 fn main() {
 	let mut subject = Subject::<i32>::default();
+	let mut context = ();
+	subject.next(1, &mut context); // Meteora - Track 11
 
-	let context = &mut ();
-
-	let mut subscription_1 = subject
+	let mut subscription = subject
 		.clone()
-		.finalize(|_| println!("finalize 0"))
-		.subscribe(
-			PrintObserver::<i32>::new("subject_example (subscription 0)"),
-			context,
-		);
+		.subscribe(PrintObserver::<i32>::new("subject_example"), &mut context);
 
-	subject.next(1, context);
-
-	// Bind subscriptions to a variable if you want it to live until the end of the block (naming it "_" doesn't do that)
-	let _subscription_2 = subject
-		.clone()
-		.finalize(|_| println!("finalize 1"))
-		.subscribe(
-			PrintObserver::<i32>::new("subject_example (subscription 1)"),
-			context,
-		);
-
-	subject.next(2, context);
-	subscription_1.unsubscribe(context);
-	subject.next(3, context);
-	subject.complete(context);
-	subject.next(4, context); // Won't get emitted as it's already closed
+	subject.next(2, &mut context);
+	subject.next(3, &mut context);
+	subscription.unsubscribe(&mut context);
+	subject.next(4, &mut context);
 }

@@ -2,10 +2,10 @@
 
 Reactive Extensions for Bevy!
 
-`rx_bevy` brings observables and composable operators to simplify event
-orchestration!
+`rx_bevy` brings observables and composable operators to make event
+orchestration a breeze!
 
-Spawn **Observables** to serve as event sources, and **subscribe** to them to
+Use **Observables** to serve as event sources, and **subscribe** to them to
 spawn active **subscriptions** that send events to **Observers**!
 
 Use combination observables to combine other event sources, and use operators
@@ -14,26 +14,47 @@ to transform these events and their behavior!
 ## `rx_core` / `rx_bevy`
 
 While this project was built with the purpose of bringing reactive extensions to
-Bevy specifically, it was designed to be framework agnostic. And as such, all
-generic observables, operators, traits are shipped from the `rx_core` crate and
-crates prefixed with `rx_core`. `rx_bevy` re-exports the entirety of `rx_core`
-and some more, Bevy specific observables and operators and the context
+Bevy specifically, its core was designed to be framework agnostic. And as such
+all generic observables, operators, traits are shipped from the `rx_core` crate
+and are prefixed with `rx_core`. `rx_bevy` re-exports the entirety of `rx_core`
+and some more, Bevy specific observables and operators with the context
 implementation necessary to integrate with `bevy_ecs`.
 
 > This does not mean that `rx_bevy` is not a Bevy first project, as it suffers
 > no downsides from keeping its core framework agnostic. In fact, many core
 > trait design decisions were made to facilitate easy integration with ECS,
-> like push based scheduling and the context.
+> like push based scheduling and the context based allocation/deallocation.
 
-## Bevy Example
+## Book Contents
 
-> In this example, the KeyboardObservables subscription will emit `just_pressed`
-> KeyCodes, and the filter operator will limit them to just 4 of them. Then
-> `switch_map` creates an internal subscription to an `IntervalObservable`
-> whose speed will depend on the KeyCode observed! Then the scan operator will
-> ignore the intervals emissions (as they restart on every new KeyCode!) and
-> counts the number of emissions. The result is a counter whose speed changes
-> based on the key pressed.
+To learn the core concepts used throughout this project like what an Observable
+is, take a look at the [Concepts](./02_concepts.md) page.
+
+### Observables, Operators and Subjects
+
+Learn more about individual low level component from their readme file,
+accessible right here from the book.
+
+Every construct implemented follows the traditional Rx names, and behavior.
+So if you've used an Rx library before, even in another language, your knowledge
+applies here too.
+
+### rx_bevy specifics
+
+Once you know the core concepts and what each component offers, learn how to
+use them within Bevy at the [Usage Within Bevy](./04_usage_within_bevy.md) page.
+
+## Examples
+
+### Toggle a timers speed by keyboard
+
+In this example, the KeyboardObservables subscription will emit `just_pressed`
+KeyCodes, and the filter operator will limit them to just 4 of them. Then
+`switch_map` creates an internal subscription to an `IntervalObservable`
+whose speed will depend on the KeyCode observed! Then the scan operator will
+ignore the intervals emissions (as they restart on every new KeyCode!) and
+counts the number of emissions. The result is a counter whose speed changes
+based on the key pressed.
 
 Try this example in the observable gallery! Press `L` to subscribe/unsubscribe!
 
