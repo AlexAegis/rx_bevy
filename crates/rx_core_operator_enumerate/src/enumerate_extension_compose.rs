@@ -3,7 +3,6 @@ use rx_core_traits::Operator;
 
 use crate::operator::EnumerateOperator;
 
-/// Provides a convenient function to pipe the operator from another operator  
 pub trait OperatorComposeExtensionEnumerate: Operator + Sized {
 	fn enumerate(
 		self,

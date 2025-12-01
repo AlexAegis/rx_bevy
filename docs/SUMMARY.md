@@ -26,6 +26,7 @@
 - [Operators (Core)](12_operators_core.md)
   - [adsr](12_operators_core/adsr.md)
   - [composite](12_operators_core/composite.md)
+  - [delay](12_operators_core/delay.md)
   - [enumerate](12_operators_core/enumerate.md)
   - [error_boundary](12_operators_core/error_boundary.md)
   - [fallback_when_silent](12_operators_core/fallback_when_silent.md)

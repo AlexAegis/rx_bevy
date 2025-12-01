@@ -109,6 +109,7 @@ observer_print = ["dep:rx_core_observer_print"]
 all_operators = [
     "operator_adsr",
     "operator_composite",
+    "operator_delay",
     "operator_enumerate",
     "operator_error_boundary",
     "operator_fallback_when_silent",
@@ -133,6 +134,7 @@ all_operators = [
 ]
 operator_adsr = ["dep:rx_core_operator_adsr"]
 operator_composite = ["dep:rx_core_operator_composite"]
+operator_delay = ["dep:rx_core_operator_delay"]
 operator_enumerate = ["dep:rx_core_operator_enumerate"]
 operator_error_boundary = ["dep:rx_core_operator_error_boundary"]
 operator_fallback_when_silent = ["dep:rx_core_operator_fallback_when_silent"]
@@ -157,6 +159,7 @@ operator_tap_next = ["dep:rx_core_operator_tap_next"]
 pipe = [
     "observable_pipe",
     "rx_core_operator_adsr?/pipe",
+    "rx_core_operator_delay?/pipe",
     "rx_core_operator_enumerate?/pipe",
     "rx_core_operator_error_boundary?/pipe",
     "rx_core_operator_fallback_when_silent?/pipe",
@@ -181,6 +184,7 @@ pipe = [
 compose = [
     "operator_composite",
     "rx_core_operator_adsr?/compose",
+    "rx_core_operator_delay?/compose",
     "rx_core_operator_enumerate?/compose",
     "rx_core_operator_error_boundary?/compose",
     "rx_core_operator_fallback_when_silent?/compose",
@@ -236,6 +240,7 @@ rx_core_observer_print = { workspace = true, optional = true }
 # Operators
 rx_core_operator_adsr = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
+rx_core_operator_delay = { workspace = true, optional = true }
 rx_core_operator_enumerate = { workspace = true, optional = true }
 rx_core_operator_error_boundary = { workspace = true, optional = true }
 rx_core_operator_fallback_when_silent = { workspace = true, optional = true }

@@ -72,6 +72,7 @@ rx_core_subscriber_switch = { path = "crates/rx_core_subscriber_switch" }
 # Operators
 rx_core_operator_adsr = { path = "crates/rx_core_operator_adsr" }
 rx_core_operator_composite = { path = "crates/rx_core_operator_composite" }
+rx_core_operator_delay = { path = "crates/rx_core_operator_delay" }
 rx_core_operator_enumerate = { path = "crates/rx_core_operator_enumerate" }
 rx_core_operator_error_boundary = { path = "crates/rx_core_operator_error_boundary" }
 rx_core_operator_fallback_when_silent = { path = "crates/rx_core_operator_fallback_when_silent" }

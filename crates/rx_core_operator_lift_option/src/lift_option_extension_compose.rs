@@ -3,7 +3,6 @@ use rx_core_traits::{Operator, Signal};
 
 use crate::operator::LiftOptionOperator;
 
-/// Provides a convenient function to pipe the operator from another operator
 pub trait OperatorComposeExtensionLiftOption<T>: Operator<Out = Option<T>> + Sized
 where
 	T: Signal,

@@ -111,6 +111,7 @@ observer_print = ["rx_core/observer_print"]
 all_core_operators = [
     "operator_adsr",
     "operator_composite",
+    "operator_delay",
     "operator_enumerate",
     "operator_error_boundary",
     "operator_fallback_when_silent",
@@ -135,6 +136,7 @@ all_core_operators = [
 ]
 operator_adsr = ["rx_core/operator_adsr"]
 operator_composite = ["rx_core/operator_composite"]
+operator_delay = ["rx_core/operator_delay"]
 operator_enumerate = ["rx_core/operator_enumerate"]
 operator_error_boundary = ["rx_core/operator_error_boundary"]
 operator_fallback_when_silent = ["rx_core/operator_fallback_when_silent"]

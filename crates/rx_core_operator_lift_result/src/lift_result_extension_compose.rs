@@ -3,7 +3,6 @@ use rx_core_traits::{Operator, Signal};
 
 use crate::operator::LiftResultOperator;
 
-/// Provides a convenient function to pipe the operator from another operator  
 pub trait OperatorComposeExtensionLiftResult<ResultIn, ResultInError>:
 	Operator<Out = Result<ResultIn, ResultInError>> + Sized
 where

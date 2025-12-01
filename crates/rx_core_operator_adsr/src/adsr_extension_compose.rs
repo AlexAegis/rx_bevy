@@ -6,7 +6,6 @@ use crate::{
 	operator::{AdsrOperator, AdsrOperatorOptions},
 };
 
-/// Provides a convenient function to pipe the operator from another operator  
 pub trait OperatorComposeExtensionAdsr: Operator<Out = AdsrTrigger> + Sized {
 	fn adsr(
 		self,
