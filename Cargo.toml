@@ -102,6 +102,8 @@ rx_core_subject = { path = "crates/rx_core_subject" }
 rx_core_subject_async = { path = "crates/rx_core_subject_async" }
 rx_core_subject_behavior = { path = "crates/rx_core_subject_behavior" }
 rx_core_subject_replay = { path = "crates/rx_core_subject_replay" }
+# Schedulers
+rx_core_scheduler_ticking = { path = "crates/rx_core_scheduler_ticking" }
 # Bevy
 rx_bevy = { path = "crates/rx_bevy" }
 rx_bevy_common = { path = "crates/rx_bevy_common" }

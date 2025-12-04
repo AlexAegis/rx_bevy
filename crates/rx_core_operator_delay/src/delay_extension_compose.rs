@@ -1,23 +1,25 @@
 use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Operator, Signal};
+use rx_core_traits::{Operator, Scheduler, Signal};
 
 use crate::operator::{DelayOperator, DelayOperatorOptions};
 
-pub trait OperatorComposeExtensionDelay<T>: Operator<Out = T> + Sized
+pub trait OperatorComposeExtensionDelay<T, S>: Operator<Out = T> + Sized
 where
 	T: Signal,
+	S: 'static + Scheduler,
 {
 	fn delay(
 		self,
-		options: DelayOperatorOptions,
-	) -> CompositeOperator<Self, DelayOperator<T, Self::OutError, Self::Context>> {
+		options: DelayOperatorOptions<S>,
+	) -> CompositeOperator<Self, DelayOperator<T, Self::OutError, Self::Context, S>> {
 		CompositeOperator::new(self, DelayOperator::new(options))
 	}
 }
 
-impl<Op, T> OperatorComposeExtensionDelay<T> for Op
+impl<Op, T, S> OperatorComposeExtensionDelay<T, S> for Op
 where
 	Op: Operator<Out = T>,
 	T: Signal,
+	S: 'static + Scheduler,
 {
 }

@@ -567,6 +567,8 @@ during usage.
 For Observables this is the observable's struct. And for Operators this is
 the pipe extension function.
 
+The short description must be synced with the `description` field of the crate.
+
 ### Trusted Publishing
 
 > [!IMPORTANT]

@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Subscriber, SubscriptionContext, Tickable};
+use rx_core_traits::{Observer, Scheduler, Subscriber, SubscriptionContext, Tickable};
 
 use crate::operator::DelayOperatorOptions;
 
@@ -16,21 +16,23 @@ struct Delayed<T> {
 #[rx_context(Destination::Context)]
 #[rx_delegate_teardown_collection_to_destination]
 #[rx_delegate_subscription_like_to_destination]
-pub struct DelaySubscriber<Destination>
+pub struct DelaySubscriber<Destination, S>
 where
 	Destination: Subscriber,
+	S: Scheduler,
 {
 	#[destination]
 	destination: Destination,
-	options: DelayOperatorOptions,
+	options: DelayOperatorOptions<S>,
 	buffer: Vec<Delayed<Destination::In>>,
 }
 
-impl<Destination> DelaySubscriber<Destination>
+impl<Destination, S> DelaySubscriber<Destination, S>
 where
 	Destination: Subscriber,
+	S: Scheduler,
 {
-	pub fn new(destination: Destination, options: DelayOperatorOptions) -> Self {
+	pub fn new(destination: Destination, options: DelayOperatorOptions<S>) -> Self {
 		Self {
 			destination,
 			options,
@@ -39,9 +41,10 @@ where
 	}
 }
 
-impl<Destination> Observer for DelaySubscriber<Destination>
+impl<Destination, S> Observer for DelaySubscriber<Destination, S>
 where
 	Destination: Subscriber,
+	S: Scheduler,
 {
 	#[inline]
 	fn next(
@@ -49,6 +52,7 @@ where
 		next: Self::In,
 		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
+		// self.options.scheduler.schedule(task);
 		self.buffer.push(Delayed {
 			remaining_time: self.options.delay,
 			item: Some(next),
@@ -71,9 +75,10 @@ where
 	}
 }
 
-impl<Destination> Tickable for DelaySubscriber<Destination>
+impl<Destination, S> Tickable for DelaySubscriber<Destination, S>
 where
 	Destination: Subscriber,
+	S: Scheduler,
 {
 	fn tick(
 		&mut self,

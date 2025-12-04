@@ -4273,6 +4273,7 @@ dependencies = [
  "rx_core_macro_observer_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
+ "rx_core_scheduler_ticking",
  "rx_core_testing",
  "rx_core_traits",
  "stealcell",
@@ -4678,6 +4679,7 @@ dependencies = [
 name = "rx_core_operator_delay"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
@@ -4978,6 +4980,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_core_scheduler_ticking"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core",
+ "rx_core_testing",
+ "rx_core_traits",
+ "slab",
+]
+
+[[package]]
 name = "rx_core_subject"
 version = "0.1.0"
 dependencies = [
@@ -5084,6 +5097,7 @@ dependencies = [
  "disqualified",
  "rx_core",
  "rx_core_macro_observer_derive",
+ "rx_core_scheduler_ticking",
  "rx_core_traits",
 ]
 

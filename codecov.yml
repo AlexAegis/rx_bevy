@@ -182,6 +182,9 @@ component_management:
     - component_id: rx_core_operator_tap_next
       paths:
         - crates/rx_core_operator_tap_next/**
+    - component_id: rx_core_scheduler_ticking
+      paths:
+        - crates/rx_core_scheduler_ticking/**
     - component_id: rx_core_subject
       paths:
         - crates/rx_core_subject/**

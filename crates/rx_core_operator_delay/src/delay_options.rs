@@ -1,17 +1,16 @@
 use std::time::Duration;
 
-#[derive(Debug, Clone, Copy)]
-pub struct DelayOperatorOptions {
-	/// How much to delay each upstream emission before re-emitted downstream?
-	///
-	/// Default: 1 second
-	pub delay: Duration,
-}
+use derive_where::derive_where;
+use rx_core_traits::{Scheduler, SchedulerHandle};
 
-impl Default for DelayOperatorOptions {
-	fn default() -> Self {
-		Self {
-			delay: Duration::from_secs(1),
-		}
-	}
+#[derive(Debug)]
+#[derive_where(Clone)]
+pub struct DelayOperatorOptions<S>
+where
+	S: Scheduler,
+{
+	/// How much to delay each upstream emission before re-emitted downstream?
+	pub delay: Duration,
+
+	pub scheduler: SchedulerHandle<S>,
 }
