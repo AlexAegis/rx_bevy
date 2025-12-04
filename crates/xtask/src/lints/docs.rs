@@ -25,6 +25,22 @@ lazy_static! {
 			("rx_bevy".to_string(), RxCrateCategory::Operator),
 			"13_operators_bevy".into(),
 		);
+		hash_map.insert(
+			("rx_core".to_string(), RxCrateCategory::Scheduler),
+			"14_schedulers_core".into(),
+		);
+		hash_map.insert(
+			("rx_bevy".to_string(), RxCrateCategory::Scheduler),
+			"15_schedulers_bevy".into(),
+		);
+		hash_map.insert(
+			("rx_core".to_string(), RxCrateCategory::Subject),
+			"16_subjects_core".into(),
+		);
+		hash_map.insert(
+			("rx_bevy".to_string(), RxCrateCategory::Subject),
+			"17_subjects_bevy".into(),
+		);
 		hash_map
 	};
 }

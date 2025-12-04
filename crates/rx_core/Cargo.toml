@@ -20,6 +20,7 @@ default = [
     "all_observables",
     "all_observers",
     "all_operators",
+    "all_schedulers",
     "all_subjects",
     "compose",
     "observable_fn",
@@ -206,6 +207,9 @@ compose = [
     "rx_core_operator_take?/compose",
     "rx_core_operator_tap_next?/compose",
 ]
+# Schedulers
+all_schedulers = ["scheduler_ticking"]
+scheduler_ticking = ["dep:rx_core_scheduler_ticking"]
 # Subjects
 all_subjects = [
     "subject",
@@ -262,6 +266,8 @@ rx_core_operator_switch_map = { workspace = true, optional = true }
 rx_core_operator_take = { workspace = true, optional = true }
 rx_core_operator_tap_next = { workspace = true, optional = true }
 rx_core_operator_into_result = { workspace = true, optional = true }
+# Schedulers
+rx_core_scheduler_ticking = { workspace = true, optional = true }
 # Subjects
 rx_core_subject = { workspace = true, optional = true }
 rx_core_subject_async = { workspace = true, optional = true }

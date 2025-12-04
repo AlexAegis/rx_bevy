@@ -203,6 +203,11 @@ pub mod observer {
 	pub use rx_core_observer_print::observer::*;
 }
 
+pub mod scheduler {
+	#[cfg(feature = "scheduler_ticking")]
+	pub use rx_core_scheduler_ticking::scheduler::*;
+}
+
 pub mod subject {
 	#[cfg(feature = "subject")]
 	pub use rx_core_subject::subject::*;

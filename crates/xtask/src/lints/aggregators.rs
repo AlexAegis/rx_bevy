@@ -18,6 +18,7 @@ lazy_static! {
 		);
 		hash_map.insert(RxCrateCategory::Subscription, vec![]);
 		hash_map.insert(RxCrateCategory::Subscriber, vec![]);
+		hash_map.insert(RxCrateCategory::Scheduler, vec![]);
 		hash_map.insert(RxCrateCategory::Subject, vec![]);
 		hash_map.insert(RxCrateCategory::Observer, vec![]);
 		hash_map
@@ -301,7 +302,10 @@ fn lint_rx_package(
 		package_problems.add_problem(err);
 	};
 
-	if let Some(wrapped_package) = package.as_in_wrapper(aggregators) {
+	// Schedulers are not (necessarily) wrapped, as they probably wouldn't work in the new environment
+	if !matches!(package.category, RxCrateCategory::Scheduler)
+		&& let Some(wrapped_package) = package.as_in_wrapper(aggregators)
+	{
 		if let Err(err) = lint_rx_package_has_feature_in_aggregator(
 			&wrapped_package,
 			&rule_ignores.does_not_have_an_aggregator_feature,

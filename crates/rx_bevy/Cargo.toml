@@ -20,6 +20,7 @@ default = [
     "all_observables",
     "all_observers",
     "all_operators",
+    "all_schedulers",
     "all_subjects",
     "compose",
     "pipe",
@@ -70,6 +71,8 @@ observable_resource = ["dep:rx_bevy_observable_resource"]
 all_observers = ["all_core_observers"]
 # Bevy Operators
 all_operators = ["all_core_operators"]
+# Bevy Schedulers (Generic schedulers from rx_core are not usable in Bevy)
+all_schedulers = []
 # Bevy Subjects
 all_subjects = ["all_core_subjects"]
 

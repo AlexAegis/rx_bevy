@@ -4410,6 +4410,7 @@ dependencies = [
  "rx_core_operator_switch_map",
  "rx_core_operator_take",
  "rx_core_operator_tap_next",
+ "rx_core_scheduler_ticking",
  "rx_core_subject",
  "rx_core_subject_async",
  "rx_core_subject_behavior",

@@ -12,6 +12,6 @@ pub use tick_task_once_immediate::*;
 pub use tick_task_repeating::*;
 pub use ticking_scheduler::*;
 
-pub mod subscription {
+pub mod scheduler {
 	pub use super::ticking_scheduler::*;
 }
