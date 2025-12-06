@@ -5052,6 +5052,7 @@ dependencies = [
 name = "rx_core_subscriber_rc"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "disqualified",
  "rx_core",
  "rx_core_macro_subscriber_derive",

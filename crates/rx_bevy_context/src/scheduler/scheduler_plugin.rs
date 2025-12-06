@@ -151,14 +151,13 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	let index = world
+	let _index = world
 		.get_resource_or_init::<RxSchedulerTickIndex>()
 		.get_index_and_increment();
 	let time = world.resource::<Time<C>>();
 	let tick = Tick {
-		index,
-		now: time.elapsed(),
 		delta: time.delta(),
+		elapsed_since_start: time.elapsed(),
 	};
 
 	let mut subscription_query = world
@@ -174,7 +173,7 @@ where
 	{
 		let mut context = deferred_world.reborrow().into_rx_context();
 		for (_subscription_entity, subscription) in subscriptions.iter_mut() {
-			subscription.tick(tick.clone(), &mut context);
+			subscription.tick(tick, &mut context);
 		}
 	}
 

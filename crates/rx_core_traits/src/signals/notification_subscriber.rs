@@ -30,7 +30,7 @@ where
 			Self::Next(next) => Self::Next(next.clone()),
 			Self::Error(error) => Self::Error(error.clone()),
 			Self::Complete => Self::Complete,
-			Self::Tick(tick) => Self::Tick(tick.clone()),
+			Self::Tick(tick) => Self::Tick(*tick),
 			Self::Unsubscribe => Self::Unsubscribe,
 			Self::Add(_) => Self::Add(None),
 		}

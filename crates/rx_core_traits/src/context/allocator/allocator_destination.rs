@@ -3,7 +3,7 @@ use crate::{Subscriber, SubscriptionContext, WithSubscriptionContext};
 /// A [SubscriberAllocator] that can create a [SharedDestination] out of a
 /// destination subscriber.
 pub trait DestinationAllocator: WithSubscriptionContext {
-	type Shared<Destination>: SharedDestination<Destination>
+	type Shared<Destination>: Clone + SharedDestination<Destination>
 	where
 		Destination: 'static + Subscriber<Context = Self::Context> + Send + Sync;
 
@@ -35,29 +35,18 @@ pub trait SharedDestination<Destination>:
 where
 	Destination: ?Sized + 'static + Subscriber,
 {
-	fn clone_with_context(
-		&self,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self;
+	fn access<F>(&mut self, accessor: F)
+	where
+		F: Fn(&Destination);
 
-	fn access_with_context<F>(
-		&mut self,
-		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) where
-		F: Fn(&Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
-
-	fn access_with_context_mut<F>(
-		&mut self,
-		accessor: F,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) where
-		F: FnMut(&mut Destination, &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
+	fn access_mut<F>(&mut self, accessor: F)
+	where
+		F: FnMut(&mut Destination);
 }
 
 pub trait DestinationSharedTypes: 'static + Subscriber {
 	type Sharer: DestinationAllocator<Context = Self::Context>;
-	type Shared: ?Sized + SharedDestination<Self>;
+	type Shared: ?Sized + Clone + SharedDestination<Self>;
 }
 
 impl<Destination> DestinationSharedTypes for Destination

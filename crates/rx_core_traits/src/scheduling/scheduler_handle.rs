@@ -1,12 +1,10 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use disqualified::ShortName;
 
-use crate::{
-	Scheduler, SchedulerWithManualTick, Task, TaskCancellationError, TaskId, WithTaskInputOutput,
-};
+use crate::{Scheduler, WithTaskInputOutput};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SchedulerHandle<S>
 where
 	S: Scheduler,
@@ -35,6 +33,14 @@ where
 			scheduler: Arc::new(Mutex::new(scheduler)),
 		}
 	}
+
+	pub fn get_scheduler(&mut self) -> MutexGuard<'_, S> {
+		self.scheduler.lock().unwrap_or_else(|poison_error| {
+			eprintln!("Scheduler ({}) got poisoned!", ShortName::of::<Self>());
+			self.scheduler.clear_poison();
+			poison_error.into_inner()
+		})
+	}
 }
 
 impl<S> From<S> for SchedulerHandle<S>
@@ -51,62 +57,8 @@ where
 	S: Scheduler,
 {
 	type TickInput = S::TickInput;
-	type TaskResult = S::TaskResult;
 	type ContextProvider = S::ContextProvider;
 	type TaskError = S::TaskError;
-}
-
-impl<S> Scheduler for SchedulerHandle<S>
-where
-	S: Scheduler,
-{
-	// Since there's a finite type of tasks anyway, it could be an enum
-	fn schedule<T>(&mut self, task: T) -> TaskId
-	where
-		T: 'static
-			+ Task<
-				TickInput = Self::TickInput,
-				TaskResult = Self::TaskResult,
-				TaskError = Self::TaskError,
-				ContextProvider = Self::ContextProvider,
-			>,
-	{
-		let mut scheduler = self.scheduler.lock().unwrap_or_else(|poison_error| {
-			eprintln!("Scheduler ({}) got poisoned!", ShortName::of::<Self>());
-			self.scheduler.clear_poison();
-			poison_error.into_inner()
-		});
-		scheduler.schedule(task)
-	}
-
-	fn cancel(&mut self, task_id: TaskId) -> Result<(), TaskCancellationError> {
-		let mut scheduler = self.scheduler.lock().unwrap_or_else(|poison_error| {
-			eprintln!("Scheduler ({}) got poisoned!", ShortName::of::<Self>());
-			self.scheduler.clear_poison();
-			poison_error.into_inner()
-		});
-
-		scheduler.cancel(task_id)
-	}
-}
-
-impl<S> SchedulerWithManualTick for SchedulerHandle<S>
-where
-	S: SchedulerWithManualTick,
-{
-	fn tick(
-		&mut self,
-		delta_time: std::time::Duration,
-		context: &mut <Self::ContextProvider as super::TaskContextProvider>::Item<'_>,
-	) {
-		let mut scheduler = self.scheduler.lock().unwrap_or_else(|poison_error| {
-			eprintln!("Scheduler ({}) got poisoned!", ShortName::of::<Self>());
-			self.scheduler.clear_poison();
-			poison_error.into_inner()
-		});
-
-		scheduler.tick(delta_time, context);
-	}
 }
 
 pub trait IntoSchedulerHandle<S>

@@ -74,8 +74,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if !self.is_closed() {
-			let subscription =
-				next.subscribe(self.destination.clone_with_context(context), context);
+			let subscription = next.subscribe(self.destination.clone(), context);
 
 			self.inner_subscriptions.push(subscription);
 		}
@@ -117,7 +116,7 @@ where
 		// The RcSubscriber ensures only one tick reaches downstream, while
 		// still ticking all inner subscribtions
 		for inner_subscription in self.inner_subscriptions.iter_mut() {
-			inner_subscription.tick(tick.clone(), context);
+			inner_subscription.tick(tick, context);
 		}
 
 		if self.inner_subscriptions.is_empty() {

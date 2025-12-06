@@ -148,7 +148,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		for destination in self.subscribers.iter_mut() {
-			destination.tick(tick.clone(), context);
+			destination.tick(tick, context);
 		}
 		self.clean();
 	}

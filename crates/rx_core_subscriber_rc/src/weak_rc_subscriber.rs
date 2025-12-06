@@ -1,13 +1,15 @@
+use derive_where::derive_where;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable, allocator::DestinationSharedTypes,
+	Observer, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
+	Tick, Tickable, allocator::DestinationSharedTypes,
 };
 
 use crate::InnerRcSubscriber;
 
 /// Acquired by calling `downgrade` on `RcSubscriber`
 #[derive(RxSubscriber)]
+#[derive_where(Clone)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
 #[rx_context(Destination::Context)]
@@ -17,7 +19,6 @@ where
 {
 	pub(crate) shared_destination:
 		<InnerRcSubscriber<Destination> as DestinationSharedTypes>::Shared,
-	pub(crate) closed_flag: SubscriptionClosedFlag,
 }
 
 impl<Destination> Observer for WeakRcSubscriber<Destination>
@@ -67,12 +68,11 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		*self.closed_flag
+		self.shared_destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		if !self.is_closed() {
-			self.closed_flag.close();
 			self.shared_destination.unsubscribe(context);
 		}
 	}

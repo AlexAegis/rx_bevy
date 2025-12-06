@@ -76,8 +76,7 @@ where
 		if !self.is_closed() {
 			self.unsubscribe_inner(context);
 
-			let subscription =
-				next.subscribe(self.destination.clone_with_context(context), context);
+			let subscription = next.subscribe(self.destination.clone(), context);
 
 			self.inner_subscription = Some(subscription);
 		}
@@ -117,7 +116,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if let Some(inner_subscription) = &mut self.inner_subscription {
-			inner_subscription.tick(tick.clone(), context);
+			inner_subscription.tick(tick, context);
 		} else {
 			// The inner observable will tick downstream, only directly tick downstream if there is no inner
 			self.destination.tick(tick, context);

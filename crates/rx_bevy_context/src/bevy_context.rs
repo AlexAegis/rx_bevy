@@ -11,7 +11,7 @@ use disqualified::ShortName;
 use rx_core_traits::{
 	DropUnsafeSubscriptionContext, ObserverNotification, Signal, Subscriber,
 	SubscriberNotification, SubscriptionContext, SubscriptionContextAccess,
-	SubscriptionNotification, SubscriptionScheduled, SubscriptionWithTeardown, TaskContextProvider,
+	SubscriptionNotification, SubscriptionScheduled, SubscriptionWithTeardown,
 	heap_allocator_context::{ErasedSubscriberHeapAllocator, SubscriberHeapAllocator},
 };
 use stealcell::Stolen;
@@ -26,9 +26,9 @@ use crate::{
 #[derive(Debug)]
 pub struct RxBevyContext;
 
-impl TaskContextProvider for RxBevyContext {
-	type Item<'c> = RxBevyContextItem<'c, 'c>;
-}
+// impl TaskContextProvider for RxBevyContext {
+// 	type Item<'c> = RxBevyContextItem<'c, 'c>;
+// }
 
 impl SubscriptionContext for RxBevyContext {
 	type Item<'w, 's> = RxBevyContextItem<'w, 's>;

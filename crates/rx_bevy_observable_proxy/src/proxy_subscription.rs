@@ -39,9 +39,9 @@ where
 		destination: Destination,
 		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
-		let mut shared_destination = SharedSubscriber::new(destination, context);
+		let shared_destination = SharedSubscriber::new(destination, context);
 
-		let shared_destination_clone = shared_destination.clone_with_context(context);
+		let shared_destination_clone = shared_destination.clone();
 
 		let proxy_subscription_entity = context
 			.deferred_world

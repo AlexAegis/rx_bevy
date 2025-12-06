@@ -1,27 +1,52 @@
-use std::time::Duration;
+use std::{
+	ops::{Add, AddAssign},
+	time::Duration,
+};
 
 /// Used for scheduling, subscriptions are ticked with this event
-#[derive(Debug, Clone)]
+// TODO: Move this to the ticking scheduler once the tick channel is removed
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Tick {
-	/// The index of this tick, used to discard repeated ticks in contexts where
-	/// multiple sources are expected to tick one thing, such as shared
-	/// subscribers like the `RcSubscriber`.
-	///
-	/// > Even on a 32 bit target, running at a 144hz tickrate, it will still
-	/// > take almost a year to overflow.
-	/// >
-	/// > On 64 bit targets it would take 4059319764 years to overflow
-	/// > 18446744073709551615 / (144 * 60 * 60 * 24 * 365.25)
-	pub index: usize,
-	pub now: Duration,
+	pub elapsed_since_start: Duration,
 	pub delta: Duration,
 }
 
 impl Tick {
+	pub fn new(elapsed_since_start: Duration, delta: Duration) -> Self {
+		Self {
+			elapsed_since_start,
+			delta,
+		}
+	}
+
+	pub fn update(&mut self, tick: Tick) {
+		if self.elapsed_since_start < tick.elapsed_since_start {
+			self.elapsed_since_start = tick.elapsed_since_start;
+		}
+	}
+
 	pub fn is_newer_than(&self, other: Option<&Tick>) -> bool {
 		match other {
-			Some(other_tick) => self.index > other_tick.index,
+			Some(other_tick) => self.elapsed_since_start > other_tick.elapsed_since_start,
 			None => true,
 		}
+	}
+}
+
+impl Add<Duration> for Tick {
+	type Output = Tick;
+
+	fn add(self, rhs: Duration) -> Self::Output {
+		Tick {
+			elapsed_since_start: self.elapsed_since_start + rhs,
+			delta: rhs,
+		}
+	}
+}
+
+impl AddAssign<Duration> for Tick {
+	fn add_assign(&mut self, rhs: Duration) {
+		self.elapsed_since_start += rhs;
+		self.delta = rhs;
 	}
 }

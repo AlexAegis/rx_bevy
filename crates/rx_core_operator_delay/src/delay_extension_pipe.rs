@@ -1,12 +1,15 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Scheduler, Signal};
+use rx_core_traits::{Observable, Scheduler, Signal, WithSubscriptionContext};
 
 use crate::operator::{DelayOperator, DelayOperatorOptions};
 
 pub trait ObservablePipeExtensionDelay<T, S>: Observable<Out = T> + Sized
 where
 	T: Signal,
-	S: Scheduler,
+	S: 'static
+		+ Scheduler<ContextProvider = <Self as WithSubscriptionContext>::Context>
+		+ Send
+		+ Sync,
 {
 	fn delay(
 		self,
@@ -20,6 +23,9 @@ impl<O, T, S> ObservablePipeExtensionDelay<T, S> for O
 where
 	O: Observable<Out = T>,
 	T: Signal,
-	S: Scheduler,
+	S: 'static
+		+ Scheduler<ContextProvider = <Self as WithSubscriptionContext>::Context>
+		+ Send
+		+ Sync,
 {
 }

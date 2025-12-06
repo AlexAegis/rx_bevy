@@ -4,20 +4,18 @@ use rx_core_traits::Tick;
 
 #[derive(Default)]
 pub struct MockClock {
-	index: usize,
-	now: Duration,
+	elapsed_since_start: Duration,
 }
 
 impl MockClock {
 	pub fn elapse(&mut self, duration: Duration) -> Tick {
-		self.now += duration;
+		self.elapsed_since_start += duration;
 
-		let index = self.index;
-		self.index += 1;
+		//let index = self.index;
+		//self.index += 1;
 
 		Tick {
-			index,
-			now: self.now,
+			elapsed_since_start: self.elapsed_since_start,
 			delta: duration,
 		}
 	}

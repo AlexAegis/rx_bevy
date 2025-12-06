@@ -42,7 +42,7 @@ where
 	In: Signal,
 	InError: Signal,
 	Context: SubscriptionContext,
-	S: 'static + Scheduler,
+	S: 'static + Scheduler<ContextProvider = Context> + Send + Sync,
 {
 	type Subscriber<Destination>
 		= DelaySubscriber<Destination, S>
@@ -64,6 +64,6 @@ where
 			+ Send
 			+ Sync,
 	{
-		DelaySubscriber::new(destination, self.options.clone())
+		DelaySubscriber::new(destination, self.options.clone(), _context)
 	}
 }

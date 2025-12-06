@@ -41,7 +41,7 @@ impl AdsrEnvelopeState {
 	) -> AdsrSignal {
 		if !self.last_frame_input_signal && is_getting_activated {
 			self.reset();
-			self.activation_time_absolute = Some(tick.now);
+			self.activation_time_absolute = Some(tick.elapsed_since_start);
 		} else if self.last_frame_input_signal && !is_getting_activated {
 			self.deactivation_value = Some(self.last_frame_output_signal.value);
 			self.deactivation_time_relative = Some(self.t_relative.elapsed());

@@ -61,6 +61,8 @@ where
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
 {
 	fn next(&mut self, next: Self::In, context: &mut RxBevyContextItem<'_, '_>) {
+		// TODO: Figure out How to do this without a passed in context. maybe the schedulers
+		// TODO: tasks could just do it, if the task context is the same, needs an on-schedule return value that could come from that context, to acquire handles from it
 		let resource = context.deferred_world.resource_mut::<R>();
 		(self.writer)(resource, ObserverNotification::<In, InError>::Next(next));
 	}

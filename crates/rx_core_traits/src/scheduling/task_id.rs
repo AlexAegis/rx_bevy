@@ -4,7 +4,7 @@ use std::{fmt::Display, ops::Deref};
 ///
 /// Tasks that repeat, or otherwise spawned from the task, will reuse the id,
 /// so the source of the task can have full knowledge of the tasks it owns.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Hash, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TaskId(usize);
 
 impl Display for TaskId {
@@ -24,5 +24,18 @@ impl Deref for TaskId {
 impl From<usize> for TaskId {
 	fn from(value: usize) -> Self {
 		Self(value)
+	}
+}
+
+#[derive(Default, Debug)]
+pub struct TaskIdGenerator {
+	current_tick_index: usize,
+}
+
+impl TaskIdGenerator {
+	pub fn get_next(&mut self) -> TaskId {
+		let tick_id: TaskId = self.current_tick_index.into();
+		self.current_tick_index += 1;
+		tick_id
 	}
 }

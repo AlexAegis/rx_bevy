@@ -76,10 +76,9 @@ where
 		let destination = observer.upgrade();
 		let rc_subscriber = RcSubscriber::new(destination, context);
 
-		let s1 = self.observable_1.subscribe(
-			MapIntoSubscriber::new(rc_subscriber.clone_with_context(context)),
-			context,
-		);
+		let s1 = self
+			.observable_1
+			.subscribe(MapIntoSubscriber::new(rc_subscriber.clone()), context);
 
 		let s2 = self
 			.observable_2

@@ -68,12 +68,12 @@ where
 		);
 
 		let s1 = self.observable_1.subscribe(
-			IntoVariant1of2Subscriber::new(rc_subscriber.clone_with_context(context)),
+			IntoVariant1of2Subscriber::new(rc_subscriber.clone()),
 			context,
 		);
 
 		let s2 = self.observable_2.subscribe(
-			IntoVariant2of2Subscriber::new(rc_subscriber.clone_with_context(context)),
+			IntoVariant2of2Subscriber::new(rc_subscriber.clone()),
 			context,
 		);
 

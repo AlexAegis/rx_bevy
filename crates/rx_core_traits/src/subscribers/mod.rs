@@ -1,3 +1,4 @@
+mod arc_mutex_subscriber;
 mod arc_rw_lock_subscriber;
 mod box_subscriber;
 mod erased_subscriber;

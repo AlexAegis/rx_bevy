@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 
 use crate::{
 	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
@@ -8,31 +8,31 @@ use crate::{
 	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
 };
 
-impl<S> WithSubscriptionContext for Arc<RwLock<S>>
+impl<S> WithSubscriptionContext for Arc<Mutex<S>>
 where
 	S: ?Sized + WithSubscriptionContext,
 {
 	type Context = S::Context;
 }
 
-impl<Destination> WithPrimaryCategory for Arc<RwLock<Destination>>
+impl<Destination> WithPrimaryCategory for Arc<Mutex<Destination>>
 where
 	Destination: ?Sized + WithPrimaryCategory,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
 
-impl<Destination> ObserverUpgradesToSelf for Arc<RwLock<Destination>> where
+impl<Destination> ObserverUpgradesToSelf for Arc<Mutex<Destination>> where
 	Destination: ?Sized + ObserverUpgradesToSelf
 {
 }
 
-impl<Destination> ErasedSharedDestination for Arc<RwLock<Destination>> where
+impl<Destination> ErasedSharedDestination for Arc<Mutex<Destination>> where
 	Destination: 'static + ?Sized + Subscriber + Send + Sync
 {
 }
 
-impl<Destination> ObserverInput for Arc<RwLock<Destination>>
+impl<Destination> ObserverInput for Arc<Mutex<Destination>>
 where
 	Destination: ?Sized + ObserverInput,
 {
@@ -40,7 +40,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> SharedDestination<Destination> for Arc<RwLock<Destination>>
+impl<Destination> SharedDestination<Destination> for Arc<Mutex<Destination>>
 where
 	Destination: 'static + ?Sized + Subscriber + Send + Sync,
 {
@@ -48,7 +48,7 @@ where
 	where
 		F: Fn(&Destination),
 	{
-		if let Ok(destination) = self.read() {
+		if let Ok(destination) = self.lock() {
 			accessor(&*destination)
 		}
 	}
@@ -57,13 +57,13 @@ where
 	where
 		F: FnMut(&mut Destination),
 	{
-		if let Ok(mut destination) = self.write() {
+		if let Ok(mut destination) = self.lock() {
 			accessor(&mut *destination)
 		}
 	}
 }
 
-impl<Destination> Observer for Arc<RwLock<Destination>>
+impl<Destination> Observer for Arc<Mutex<Destination>>
 where
 	Destination: ?Sized + Observer + SubscriptionLike,
 {
@@ -76,7 +76,7 @@ where
 			return;
 		}
 
-		match self.write() {
+		match self.lock() {
 			Ok(mut lock) => lock.next(next, context),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(context),
 		}
@@ -91,7 +91,7 @@ where
 			return;
 		}
 
-		match self.write() {
+		match self.lock() {
 			Ok(mut lock) => lock.error(error, context),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(context),
 		}
@@ -102,14 +102,14 @@ where
 			return;
 		}
 
-		match self.write() {
+		match self.lock() {
 			Ok(mut lock) => lock.complete(context),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(context),
 		}
 	}
 }
 
-impl<Destination> Tickable for Arc<RwLock<Destination>>
+impl<Destination> Tickable for Arc<Mutex<Destination>>
 where
 	Destination: ?Sized + Tickable + SubscriptionLike,
 {
@@ -118,21 +118,21 @@ where
 		tick: Tick,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		match self.write() {
+		match self.lock() {
 			Ok(mut lock) => lock.tick(tick, context),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(context),
 		}
 	}
 }
 
-impl<Destination> SubscriptionLike for Arc<RwLock<Destination>>
+impl<Destination> SubscriptionLike for Arc<Mutex<Destination>>
 where
 	Destination: ?Sized + SubscriptionLike,
 {
 	// Ignore the poison for is_closed checks, so the other signals can still
 	// operate and unsubscribe when it's poisoned.
 	fn is_closed(&self) -> bool {
-		self.read()
+		self.lock()
 			.unwrap_or_else(|err| err.into_inner())
 			.is_closed()
 	}
@@ -146,13 +146,13 @@ where
 			return;
 		}
 
-		self.write()
+		self.lock()
 			.unwrap_or_else(|err| err.into_inner())
 			.unsubscribe(context)
 	}
 }
 
-impl<Destination> TeardownCollection for Arc<RwLock<Destination>>
+impl<Destination> TeardownCollection for Arc<Mutex<Destination>>
 where
 	Destination: ?Sized + TeardownCollection + SubscriptionLike,
 {
@@ -161,7 +161,7 @@ where
 		teardown: crate::Teardown<Self::Context>,
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		match self.write() {
+		match self.lock() {
 			Ok(mut lock) => {
 				lock.add_teardown(teardown, context);
 			}
@@ -173,7 +173,7 @@ where
 	}
 }
 
-impl<O> ObservableOutput for Arc<RwLock<O>>
+impl<O> ObservableOutput for Arc<Mutex<O>>
 where
 	O: ObservableOutput,
 {
@@ -181,7 +181,7 @@ where
 	type OutError = O::OutError;
 }
 
-impl<O> Observable for Arc<RwLock<O>>
+impl<O> Observable for Arc<Mutex<O>>
 where
 	O: Observable,
 {
@@ -208,7 +208,7 @@ where
 	{
 		let mut destination = destination.upgrade();
 
-		match self.write() {
+		match self.lock() {
 			Ok(mut lock) => lock.subscribe(destination, context),
 			Err(poison_error) => {
 				destination.unsubscribe(context);

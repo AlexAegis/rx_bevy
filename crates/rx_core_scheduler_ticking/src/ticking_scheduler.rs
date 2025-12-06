@@ -1,102 +1,76 @@
-use std::{marker::PhantomData, time::Duration};
-
+use derive_where::derive_where;
 use rx_core_traits::{
-	Scheduler, SchedulerWithManualTick, Task, TaskCancellationError, TaskContextProvider, TaskId,
-	Tick, TickResult, WithTaskInputOutput,
+	ScheduledTaskAction, Scheduler, Task, TaskContextProvider, TaskId, Tick, WithTaskInputOutput,
 };
-use slab::Slab;
 
-use crate::TickIndexGenerator;
+use crate::{
+	DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory, RepeatedTaskTickedFactory,
+	TaskIdGenerator,
+};
 
-#[derive(Default, Debug)]
-pub struct TickingScheduler<ContextProvider = (), TaskResult = (), TaskError = ()>
+#[derive_where(Default)]
+pub struct TickingScheduler<TaskError = (), ContextProvider = ()>
 where
-	ContextProvider: TaskContextProvider + Send + Sync,
+	ContextProvider: TaskContextProvider,
 {
-	tick_index_generator: TickIndexGenerator,
-	elapsed: Duration,
-	// ? If theres a finite type of tasks, we could just use multiple slabs of those specific types
-	active_tasks: Slab<
-		Box<
-			dyn Task<
-					TickInput = <Self as WithTaskInputOutput>::TickInput,
-					TaskResult = <Self as WithTaskInputOutput>::TaskResult,
-					TaskError = <Self as WithTaskInputOutput>::TaskError,
-					ContextProvider = <Self as WithTaskInputOutput>::ContextProvider,
-				>,
-		>,
-	>,
-	_phantom_data: PhantomData<ContextProvider>,
+	task_id_generator: TaskIdGenerator,
+	/// Updated by the executor at the start of each tick.
+	pub(crate) current_tick: Tick,
+	task_action_queue: Vec<ScheduledTaskAction<Tick, TaskError, ContextProvider>>,
+	//_phantom_data: PhantomData<fn((TaskError, ContextProvider)) -> (TaskError, ContextProvider)>,
 }
 
-impl<ContextProvider, TaskResult, TaskError> WithTaskInputOutput
-	for TickingScheduler<ContextProvider, TaskResult, TaskError>
+impl<TaskError, ContextProvider> TickingScheduler<TaskError, ContextProvider>
+where
+	ContextProvider: TaskContextProvider + Send + Sync,
+	TaskError: 'static,
+{
+	pub(crate) fn drain_queue(
+		&mut self,
+	) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, TaskError, ContextProvider>> {
+		self.task_action_queue.drain(..)
+	}
+}
+
+impl<TaskError, ContextProvider> WithTaskInputOutput
+	for TickingScheduler<TaskError, ContextProvider>
 where
 	ContextProvider: TaskContextProvider + Send + Sync,
 {
 	type TickInput = Tick;
-	type TaskResult = TaskResult;
 	type TaskError = TaskError;
 	type ContextProvider = ContextProvider;
 }
 
-impl<ContextProvider, TaskResult, TaskError> Scheduler
-	for TickingScheduler<ContextProvider, TaskResult, TaskError>
+impl<TaskError, ContextProvider> Scheduler for TickingScheduler<TaskError, ContextProvider>
 where
-	ContextProvider: TaskContextProvider + Send + Sync,
+	ContextProvider: 'static + TaskContextProvider + Send + Sync,
+	TaskError: 'static + Send + Sync,
 {
-	fn schedule<T>(&mut self, task: T) -> TaskId
+	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<TaskError, ContextProvider>;
+	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<TaskError, ContextProvider>;
+	type RepeatedTaskFactory = RepeatedTaskTickedFactory<TaskError, ContextProvider>;
+
+	fn schedule<T>(&mut self, mut task: T) -> TaskId
 	where
 		T: 'static
-			+ Task<
-				TickInput = Self::TickInput,
-				TaskResult = Self::TaskResult,
-				TaskError = Self::TaskError,
-				ContextProvider = Self::ContextProvider,
-			>,
+			+ Task<TickInput = Tick, TaskError = TaskError, ContextProvider = ContextProvider>
+			+ Send
+			+ Sync,
 	{
-		self.active_tasks.insert(Box::new(task)).into()
+		println!(
+			"ON SCHEDULED HOOK, SCHEDULERS CURRENT TICK IS {:?}",
+			self.current_tick
+		);
+		task.on_scheduled_hook(self.current_tick);
+		let task_id = self.task_id_generator.get_next();
+		self.task_action_queue
+			.push(ScheduledTaskAction::Activate((task_id, Box::new(task))));
+		task_id
 	}
 
-	fn cancel(&mut self, task_id: TaskId) -> Result<(), TaskCancellationError> {
-		self.active_tasks
-			.try_remove(*task_id)
-			.map(|_| ())
-			.ok_or(TaskCancellationError::TaskDoesNotExist(task_id))
-	}
-}
-
-impl<ContextProvider, TaskResult, TaskError> SchedulerWithManualTick
-	for TickingScheduler<ContextProvider, TaskResult, TaskError>
-where
-	ContextProvider: TaskContextProvider + Send + Sync,
-{
-	fn tick(&mut self, delta_time: Duration, context: &mut ContextProvider::Item<'_>) {
-		self.elapsed += delta_time;
-
-		let tick = Tick {
-			index: *self.tick_index_generator.get_next(),
-			delta: delta_time,
-			now: self.elapsed,
-		};
-
-		let done_tasks = self
-			.active_tasks
-			.iter_mut()
-			.filter_map(|(key, task)| {
-				let task_result = task.tick(tick.clone(), context);
-				match task_result {
-					TickResult::Done(_result) => Some(key),
-					TickResult::Error(_error) => Some(key),
-					TickResult::Pending => None,
-				}
-			})
-			.collect::<Vec<_>>();
-
-		// TODO: Repeatedly drain by ticking with 0 long ticks until there is nothing done. increment tick index
-
-		for task_id in done_tasks {
-			self.active_tasks.remove(task_id);
-		}
+	fn cancel(&mut self, task_id: TaskId) {
+		self.task_action_queue
+			.push(ScheduledTaskAction::Cancel(task_id));
 	}
 }

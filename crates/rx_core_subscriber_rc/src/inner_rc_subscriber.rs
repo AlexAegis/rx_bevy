@@ -144,7 +144,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		if tick.is_newer_than(self.last_observed_tick.as_ref()) {
-			self.last_observed_tick = Some(tick.clone());
+			self.last_observed_tick = Some(tick);
 			self.destination.tick(tick, context);
 		}
 	}

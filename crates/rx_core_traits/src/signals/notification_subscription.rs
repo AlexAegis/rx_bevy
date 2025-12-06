@@ -20,7 +20,7 @@ where
 {
 	fn clone(&self) -> Self {
 		match self {
-			Self::Tick(tick) => Self::Tick(tick.clone()),
+			Self::Tick(tick) => Self::Tick(*tick),
 			Self::Unsubscribe => Self::Unsubscribe,
 			Self::Add(_) => Self::Add(None), // Must not clone a unique resource
 		}

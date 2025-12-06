@@ -55,6 +55,7 @@ where
 		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
 		self.timer.tick(tick.delta);
+
 		let ticks = self
 			.timer
 			.times_finished_this_tick()
