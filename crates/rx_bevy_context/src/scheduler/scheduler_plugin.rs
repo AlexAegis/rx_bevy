@@ -7,7 +7,7 @@ use bevy_ecs::{
 	resource::Resource,
 	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_event},
 	system::{Commands, Query},
-	world::{DeferredWorld, World},
+	world::{DeferredWorld, Mut, World},
 };
 use bevy_log::warn;
 use bevy_mod_erased_component_registry::AppRegisterErasedComponentExtension;
@@ -19,8 +19,8 @@ use rx_bevy_common::Clock;
 use rx_core_traits::Tick;
 
 use crate::{
-	DeferredWorldAsRxBevyContextExtension, ScheduledSubscriptionComponent, SubscribeRetryPlugin,
-	SubscriptionSchedule, UnfinishedSubscription, execute_pending_retries,
+	DeferredWorldAsRxBevyContextExtension, RxBevyExecutor, ScheduledSubscriptionComponent,
+	SubscribeRetryPlugin, SubscriptionSchedule, UnfinishedSubscription, execute_pending_retries,
 };
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
@@ -52,6 +52,9 @@ where
 	C: Clock,
 {
 	fn build(&self, app: &mut App) {
+		app.init_resource::<RxBevyExecutor<S, C>>();
+		app.add_systems(self.schedule.clone(), tick_executor::<S, C>);
+
 		// Enables the creation of this component by its TypeId
 		app.register_erased_component::<SubscriptionSchedule<S, C>>();
 
@@ -184,4 +187,24 @@ where
 
 		subscription_component.return_stolen_subscription(subscription);
 	}
+}
+
+fn tick_executor<S, C>(world: &mut World)
+where
+	S: ScheduleLabel,
+	C: Clock,
+{
+	let tick = {
+		let time = world.resource::<Time<C>>();
+		Tick {
+			delta: time.delta(),
+			elapsed_since_start: time.elapsed(),
+		}
+	};
+
+	world.resource_scope(|world, mut executor: Mut<RxBevyExecutor<S, C>>| {
+		let mut deferred_world = DeferredWorld::from(world);
+		let mut context = deferred_world.reborrow().into_rx_context();
+		executor.tick(tick, &mut context);
+	});
 }

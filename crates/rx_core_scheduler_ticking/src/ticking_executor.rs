@@ -1,17 +1,22 @@
 use std::{fmt::Debug, time::Duration};
 
-use derive_where::derive_where;
 use rx_core_traits::{
-	ScheduledTaskAction, SchedulerHandle, Task, TaskContextProvider, TaskExecutor, TaskOwnerId,
-	Tick, TickResult, WithTaskInputOutput,
+	ScheduledTaskAction, Scheduler, SchedulerHandle, Task, TaskContextProvider, TaskExecutor,
+	TaskOwnerId, Tick, TickResult, WithTaskInputOutput,
 };
 use slab::Slab;
 
-use crate::TickingScheduler;
+pub trait TickingExecutorsScheduler: Scheduler {
+	fn update_tick(&mut self, tick: Tick);
 
-#[derive_where(Default)]
-pub struct TickingSchedulerExecutor<TaskError = (), ContextProvider = ()>
+	fn drain_queue(
+		&mut self,
+	) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, Self::TaskError, Self::ContextProvider>>;
+}
+
+pub struct TickingSchedulerExecutor<S, TaskError = (), ContextProvider = ()>
 where
+	S: Scheduler<TickInput = Tick, TaskError = TaskError, ContextProvider = ContextProvider>,
 	ContextProvider: 'static + TaskContextProvider + Send + Sync,
 	TaskError: 'static + Send + Sync + Debug,
 {
@@ -25,17 +30,30 @@ where
 				+ Sync,
 		>,
 	)>,
-	scheduler: SchedulerHandle<TickingScheduler<TaskError, ContextProvider>>,
+	scheduler: SchedulerHandle<S>,
 }
 
-impl<TaskError, ContextProvider> TickingSchedulerExecutor<TaskError, ContextProvider>
+impl<S, TaskError, ContextProvider> TickingSchedulerExecutor<S, TaskError, ContextProvider>
 where
+	S: TickingExecutorsScheduler<
+			TickInput = Tick,
+			TaskError = TaskError,
+			ContextProvider = ContextProvider,
+		>,
 	ContextProvider: 'static + TaskContextProvider + Send + Sync,
 	TaskError: 'static + Send + Sync + Debug,
 {
+	pub fn new(scheduler: S) -> Self {
+		Self {
+			current_tick: Tick::default(),
+			active_tasks: Slab::new(),
+			scheduler: SchedulerHandle::new(scheduler),
+		}
+	}
+
 	fn drain_scheduler_queue(&mut self, tick: Tick) {
 		let mut scheduler = self.scheduler.get_scheduler();
-		scheduler.current_tick.update(tick);
+		scheduler.update_tick(tick);
 
 		for task_action in scheduler.drain_queue() {
 			match task_action {
@@ -75,9 +93,14 @@ where
 	}
 }
 
-impl<TaskError, ContextProvider> WithTaskInputOutput
-	for TickingSchedulerExecutor<TaskError, ContextProvider>
+impl<S, TaskError, ContextProvider> WithTaskInputOutput
+	for TickingSchedulerExecutor<S, TaskError, ContextProvider>
 where
+	S: TickingExecutorsScheduler<
+			TickInput = Tick,
+			TaskError = TaskError,
+			ContextProvider = ContextProvider,
+		>,
 	ContextProvider: 'static + TaskContextProvider + Send + Sync,
 	TaskError: 'static + Send + Sync + Debug,
 {
@@ -86,13 +109,18 @@ where
 	type ContextProvider = ContextProvider;
 }
 
-impl<TaskError, ContextProvider> TaskExecutor
-	for TickingSchedulerExecutor<TaskError, ContextProvider>
+impl<S, TaskError, ContextProvider> TaskExecutor
+	for TickingSchedulerExecutor<S, TaskError, ContextProvider>
 where
+	S: TickingExecutorsScheduler<
+			TickInput = Tick,
+			TaskError = TaskError,
+			ContextProvider = ContextProvider,
+		>,
 	ContextProvider: 'static + TaskContextProvider + Send + Sync,
 	TaskError: 'static + Send + Sync + Debug,
 {
-	type Scheduler = TickingScheduler<TaskError, ContextProvider>;
+	type Scheduler = S;
 
 	#[inline]
 	fn get_scheduler(&self) -> SchedulerHandle<Self::Scheduler> {
@@ -100,9 +128,14 @@ where
 	}
 }
 
-impl<TaskError, ContextProvider> TaskExecutorWithManualTick
-	for TickingSchedulerExecutor<TaskError, ContextProvider>
+impl<S, TaskError, ContextProvider> TaskExecutorWithManualTick
+	for TickingSchedulerExecutor<S, TaskError, ContextProvider>
 where
+	S: TickingExecutorsScheduler<
+			TickInput = Tick,
+			TaskError = TaskError,
+			ContextProvider = ContextProvider,
+		>,
 	ContextProvider: 'static + TaskContextProvider + Send + Sync,
 	TaskError: 'static + Send + Sync + Debug,
 {

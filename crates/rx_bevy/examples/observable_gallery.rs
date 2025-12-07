@@ -108,6 +108,13 @@ impl SubscriptionMapResource for ExampleEntities {
 }
 
 fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
+	// TODO: Move this back to an arg, once the context is no longer needed here.
+	let update_virtual_scheduler = context
+		.deferred_world
+		.get_resource::<RxBevyExecutor<Update, Virtual>>()
+		.unwrap()
+		.get_scheduler();
+
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -184,6 +191,10 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 			Name::new("KeyboardObservable"),
 			KeyboardObservable::new(KeyboardObservableOptions {
 				emit: KeyboardObservableEmit::JustPressed,
+			})
+			.delay(DelayOperatorOptions {
+				delay: Duration::from_millis(1000),
+				scheduler: update_virtual_scheduler,
 			})
 			.into_component(),
 		))

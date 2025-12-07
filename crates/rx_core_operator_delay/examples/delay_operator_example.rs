@@ -1,12 +1,15 @@
 use std::time::Duration;
 
 use rx_core::prelude::*;
-use rx_core_testing::{SchedulerWithManualTickElapseExtension, TickingSchedulerExecutor};
+use rx_core_testing::{
+	SchedulerWithManualTickElapseExtension, TickingScheduler, TickingSchedulerExecutor,
+};
 
 /// The [DelaynOperator] re-emits every upstream value after a duration had
 /// elapsed.
 fn main() {
-	let mut executor = TickingSchedulerExecutor::<()>::default();
+	let mut executor =
+		TickingSchedulerExecutor::<TickingScheduler, ()>::new(TickingScheduler::default());
 	let mut scheduler = executor.get_scheduler();
 	let owner_id = scheduler.get_scheduler().generate_owner_id();
 

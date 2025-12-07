@@ -8,6 +8,7 @@ use rx_core_traits::{
 
 use crate::{
 	DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory, RepeatedTaskTickedFactory,
+	TickingExecutorsScheduler,
 };
 
 #[derive_where(Default)]
@@ -22,15 +23,20 @@ where
 	//_phantom_data: PhantomData<fn((TaskError, ContextProvider)) -> (TaskError, ContextProvider)>,
 }
 
-impl<TaskError, ContextProvider> TickingScheduler<TaskError, ContextProvider>
+impl<TaskError, ContextProvider> TickingExecutorsScheduler
+	for TickingScheduler<TaskError, ContextProvider>
 where
-	ContextProvider: TaskContextProvider + Send + Sync,
-	TaskError: 'static,
+	ContextProvider: 'static + TaskContextProvider + Send + Sync,
+	TaskError: 'static + Send + Sync + Debug,
 {
-	pub(crate) fn drain_queue(
+	fn drain_queue(
 		&mut self,
 	) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, TaskError, ContextProvider>> {
 		self.task_action_queue.drain(..)
+	}
+
+	fn update_tick(&mut self, tick: Tick) {
+		self.current_tick.update(tick);
 	}
 }
 
