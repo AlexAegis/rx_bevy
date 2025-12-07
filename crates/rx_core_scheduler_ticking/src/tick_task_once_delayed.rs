@@ -2,7 +2,9 @@ use std::fmt::Debug;
 use std::{marker::PhantomData, time::Duration};
 
 use derive_where::derive_where;
-use rx_core_traits::{DelayedTask, DelayedTaskFactory, TaskContextProvider, TickResultError};
+use rx_core_traits::{
+	DelayedTask, DelayedTaskFactory, ScheduledOnceWork, TaskContextProvider, TickResultError,
+};
 
 use rx_core_traits::{Task, Tick, TickResult, WithTaskInputOutput};
 
@@ -24,12 +26,10 @@ where
 	type Item<Work>
 		= DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
 	where
-		Work:
-			'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync;
+		Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>;
 	fn new<Work>(work: Work, delay: Duration) -> Self::Item<Work>
 	where
-		Work:
-			'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+		Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	{
 		DelayedOnceTaskTicked {
 			work: Some(work),
@@ -44,7 +44,7 @@ where
 #[derive_where(Debug)]
 pub struct DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
 	scheduled_on: Tick,
@@ -60,7 +60,7 @@ where
 impl<Work, TaskError, ContextProvider> WithTaskInputOutput
 	for DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
 	type TickInput = Tick;
@@ -71,7 +71,7 @@ where
 impl<Work, TaskError, ContextProvider> DelayedTask<Work, Tick, TaskError, ContextProvider>
 	for DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider + Send + Sync,
 	TaskError: Debug + Send + Sync,
 {
@@ -80,13 +80,13 @@ where
 impl<Work, TaskError, ContextProvider> Task
 	for DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 	TaskError: Debug,
 {
 	fn tick(
 		&mut self,
-		tick: Self::TickInput,
+		tick: Tick,
 		context: &mut ContextProvider::Item<'_>,
 	) -> TickResult<Self::TaskError> {
 		self.current_tick.update(tick);
@@ -95,7 +95,7 @@ where
 				return TickResult::Error(TickResultError::WorkAlreadyConsumed);
 			};
 
-			work.execute(context)
+			work.execute(tick, context)
 		} else {
 			TickResult::Pending
 		}

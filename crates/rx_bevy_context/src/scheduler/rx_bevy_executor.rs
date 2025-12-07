@@ -13,7 +13,7 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	ticking_executor: TickingSchedulerExecutor<BevyRxScheduler<S, C>, (), RxBevyContext>,
+	ticking_executor: TickingSchedulerExecutor<BevyRxScheduler<S, C>, (), RxBevyContext<C>>,
 	_phantom_data: PhantomData<(S, C)>,
 }
 
@@ -22,7 +22,7 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	pub fn tick<'a>(&mut self, tick: Tick, context: &mut RxBevyContextItem<'a, 'a>) {
+	pub fn tick<'a>(&mut self, tick: Tick, context: &mut RxBevyContextItem<'a, 'a, C>) {
 		self.ticking_executor.tick(tick, context);
 	}
 }
@@ -46,7 +46,7 @@ where
 {
 	type TickInput = Tick;
 	type TaskError = ();
-	type ContextProvider = RxBevyContext;
+	type ContextProvider = RxBevyContext<C>;
 }
 
 impl<S, C> TaskExecutor for RxBevyExecutor<S, C>

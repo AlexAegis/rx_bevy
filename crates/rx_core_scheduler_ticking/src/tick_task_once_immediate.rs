@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_traits::{
-	ImmediateTaskFactory, Task, TaskContextProvider, Tick, TickResult, TickResultError,
-	WithTaskInputOutput,
+	ImmediateTaskFactory, ScheduledOnceWork, Task, TaskContextProvider, Tick, TickResult,
+	TickResultError, WithTaskInputOutput,
 };
 
 use crate::ExecuteTaskWorkOnce;
@@ -24,12 +24,11 @@ where
 	type Item<Work>
 		= ImmediateOnceTaskTicked<Work, TaskError, ContextProvider>
 	where
-		Work:
-			'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync;
+		Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>;
+
 	fn new<Work>(work: Work) -> Self::Item<Work>
 	where
-		Work:
-			'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+		Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	{
 		ImmediateOnceTaskTicked {
 			work: Some(work),
@@ -41,18 +40,18 @@ where
 #[derive_where(Debug)]
 pub struct ImmediateOnceTaskTicked<Work, TaskError, ContextProvider>
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
 	#[derive_where(skip(Debug))]
 	work: Option<Work>,
-	_phantom_data: PhantomData<fn(ContextProvider) -> ContextProvider>,
+	_phantom_data: PhantomData<fn((ContextProvider, TaskError)) -> (ContextProvider, TaskError)>,
 }
 
 impl<Work, TaskError, ContextProvider> WithTaskInputOutput
 	for ImmediateOnceTaskTicked<Work, TaskError, ContextProvider>
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
 	/// Technically this task will never need a tick, the scheduler that will use
@@ -65,19 +64,19 @@ where
 impl<Work, TaskError, ContextProvider> Task
 	for ImmediateOnceTaskTicked<Work, TaskError, ContextProvider>
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
 	fn tick(
 		&mut self,
-		_tick: Self::TickInput,
-		context: &mut ContextProvider::Item<'_>,
+		tick: Tick,
+		task_input: &mut ContextProvider::Item<'_>,
 	) -> TickResult<Self::TaskError> {
 		let Some(work) = self.work.take() else {
 			return TickResult::Error(TickResultError::WorkAlreadyConsumed);
 		};
 
-		work.execute(context)
+		work.execute(tick, task_input)
 	}
 
 	fn on_scheduled_hook(&mut self, _tick_input: Self::TickInput) {}

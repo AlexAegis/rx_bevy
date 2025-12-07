@@ -109,7 +109,7 @@ impl SubscriptionMapResource for ExampleEntities {
 
 fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 	// TODO: Move this back to an arg, once the context is no longer needed here.
-	let update_virtual_scheduler = context
+	let scheduler = context
 		.deferred_world
 		.get_resource::<RxBevyExecutor<Update, Virtual>>()
 		.unwrap()
@@ -167,6 +167,7 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 				duration: Duration::from_millis(200),
 				start_on_subscribe: true,
 				max_emissions_per_tick: 2,
+				scheduler,
 			})
 			.into_component(),
 		));
@@ -194,7 +195,7 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 			})
 			.delay(DelayOperatorOptions {
 				delay: Duration::from_millis(1000),
-				scheduler: update_virtual_scheduler,
+				scheduler,
 			})
 			.into_component(),
 		))
@@ -207,6 +208,7 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 				duration: Duration::from_millis(1000),
 				start_on_subscribe: true,
 				max_emissions_per_tick: 2,
+				scheduler,
 			})
 			.into_component(),
 		))
@@ -246,6 +248,7 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 						duration,
 						start_on_subscribe: false,
 						max_emissions_per_tick: 4,
+						scheduler,
 					})
 				})
 				.scan(|acc, _next| acc + 1, 0_usize)

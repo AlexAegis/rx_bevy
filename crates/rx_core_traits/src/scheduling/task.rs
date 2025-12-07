@@ -11,16 +11,22 @@ pub trait WithTaskInputOutput {
 }
 
 pub trait TaskContextProvider {
-	type Item<'c>;
+	type Item<'c>: TaskContextItem<'c>;
+}
+
+pub trait TaskContextItem<'c> {
+	fn now(&self) -> Duration;
 }
 
 /// TODO: DELETE, Compat impl while SubContext still exists
 impl<C> TaskContextProvider for C
 where
 	C: SubscriptionContext,
+	for<'c> C::Item<'c, 'c>: TaskContextItem<'c>,
 {
 	type Item<'c> = C::Item<'c, 'c>;
 }
+
 /*
 impl<C> SubscriptionContext for C
 where
@@ -29,14 +35,28 @@ where
 	type Item<'w, 's> = C::Item<'w>;
 }
 */
-// impl TaskContextProvider for () {
-// 	type Item<'c> = ();
+/*impl TaskContextProvider for () {
+	type Item<'c> = ();
+}*/
+
+impl<'c> TaskContextItem<'c> for () {
+	fn now(&self) -> Duration {
+		Duration::from_millis(0)
+	}
+}
+
+// pub struct TaskInput<'a, TickInput, ContextProvider>
+// where
+// 	ContextProvider: TaskContextProvider,
+// {
+// 	pub tick_input: TickInput,
+// 	pub context: &'a mut ContextProvider::Item<'a>,
 // }
 
 pub trait Task: WithTaskInputOutput {
 	fn tick(
 		&mut self,
-		tick_input: Self::TickInput,
+		task_input: Self::TickInput,
 		context: &mut <Self::ContextProvider as TaskContextProvider>::Item<'_>,
 	) -> TickResult<Self::TaskError>;
 
@@ -96,23 +116,59 @@ impl<TaskError> AddAssign for TickResult<TaskError> {
 	}
 }
 
+pub trait ScheduledOnceWork<TickInput, TaskError, ContextProvider>:
+	'static + FnOnce(TickInput, &mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync
+where
+	ContextProvider: TaskContextProvider,
+{
+}
+
+impl<W, TickInput, TaskError, ContextProvider>
+	ScheduledOnceWork<TickInput, TaskError, ContextProvider> for W
+where
+	ContextProvider: TaskContextProvider,
+	W: 'static
+		+ FnOnce(TickInput, &mut ContextProvider::Item<'_>) -> Result<(), TaskError>
+		+ Send
+		+ Sync,
+{
+}
+
+pub trait ScheduledRepeatedWork<TickInput, TaskError, ContextProvider>:
+	'static + FnMut(TickInput, &mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync
+where
+	ContextProvider: TaskContextProvider,
+{
+}
+
+impl<W, TickInput, TaskError, ContextProvider>
+	ScheduledRepeatedWork<TickInput, TaskError, ContextProvider> for W
+where
+	ContextProvider: TaskContextProvider,
+	W: 'static
+		+ FnMut(TickInput, &mut ContextProvider::Item<'_>) -> Result<(), TaskError>
+		+ Send
+		+ Sync,
+{
+}
+
 pub trait ImmediateTask<Work, TickInput, TaskError, ContextProvider>: Task
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<TickInput, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
 }
 
 pub trait RepeatedTask<Work, TickInput, TaskError, ContextProvider>: Task
 where
-	Work: 'static + FnMut(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledRepeatedWork<TickInput, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
 }
 
 pub trait DelayedTask<Work, TickInput, TaskError, ContextProvider>: Task
 where
-	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
+	Work: ScheduledOnceWork<TickInput, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
 }
@@ -126,13 +182,11 @@ where
 		+ Send
 		+ Sync
 	where
-		Work:
-			'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync;
+		Work: ScheduledOnceWork<TickInput, TaskError, ContextProvider>;
 
 	fn new<Work>(work: Work) -> Self::Item<Work>
 	where
-		Work:
-			'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync;
+		Work: ScheduledOnceWork<TickInput, TaskError, ContextProvider>;
 }
 
 pub trait RepeatedTaskFactory<TickInput, TaskError, ContextProvider>
@@ -144,13 +198,11 @@ where
 		+ Send
 		+ Sync
 	where
-		Work:
-			'static + FnMut(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync;
+		Work: ScheduledRepeatedWork<TickInput, TaskError, ContextProvider>;
 
 	fn new<Work>(work: Work, interval: Duration, start_immediately: bool) -> Self::Item<Work>
 	where
-		Work:
-			'static + FnMut(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync;
+		Work: ScheduledRepeatedWork<TickInput, TaskError, ContextProvider>;
 }
 
 pub trait DelayedTaskFactory<TickInput, TaskError, ContextProvider>
@@ -162,11 +214,9 @@ where
 		+ Send
 		+ Sync
 	where
-		Work:
-			'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync;
+		Work: ScheduledOnceWork<TickInput, TaskError, ContextProvider>;
 
 	fn new<Work>(work: Work, delay: Duration) -> Self::Item<Work>
 	where
-		Work:
-			'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync;
+		Work: ScheduledOnceWork<TickInput, TaskError, ContextProvider>;
 }

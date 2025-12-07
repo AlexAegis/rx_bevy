@@ -3,7 +3,8 @@ use std::sync::{Arc, Mutex};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observer, Scheduler, SchedulerScheduleTaskExtension, Subscriber, SubscriptionClosedFlag,
-	SubscriptionContext, SubscriptionLike, TaskOwnerId, Tickable,
+	SubscriptionContext, SubscriptionLike, TaskContextItem, TaskOwnerId, Tickable,
+	WithSubscriptionContext,
 };
 
 use crate::operator::DelayOperatorOptions;
@@ -50,6 +51,8 @@ impl<Destination, S> Observer for DelaySubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler<ContextProvider = Destination::Context> + Send + Sync,
+	for<'c> <<Destination as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'c, 'c>:
+		TaskContextItem<'c>,
 {
 	#[inline]
 	fn next(
@@ -62,7 +65,7 @@ where
 			let mut scheduler = self.options.scheduler.get_scheduler();
 
 			scheduler.schedule_delayed_task(
-				move |context| {
+				move |_, context| {
 					destination.next(next, context);
 					Ok(())
 				},
@@ -87,7 +90,7 @@ where
 			let mut destination = self.destination.clone();
 			let mut scheduler = self.options.scheduler.get_scheduler();
 			scheduler.schedule_delayed_task(
-				move |context| {
+				move |_, context| {
 					destination.complete(context);
 					Ok(())
 				},
@@ -102,6 +105,8 @@ impl<Destination, S> SubscriptionLike for DelaySubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler<ContextProvider = Destination::Context> + Send + Sync,
+	for<'c> <<Destination as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'c, 'c>:
+		TaskContextItem<'c>,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -115,7 +120,7 @@ where
 		let owner_id_copy = self.owner_id;
 
 		scheduler.schedule_delayed_task(
-			move |context| {
+			move |_, context| {
 				destination.unsubscribe(context);
 				scheduler_clone.get_scheduler().cancel(owner_id_copy);
 				Ok(())

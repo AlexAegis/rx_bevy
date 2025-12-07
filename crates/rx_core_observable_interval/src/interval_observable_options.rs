@@ -1,13 +1,18 @@
 use std::time::Duration;
 
-#[derive(Clone, Debug)]
-pub struct IntervalObservableOptions {
+use derive_where::derive_where;
+use rx_core_traits::{Scheduler, SchedulerHandle};
+
+#[derive(Debug)]
+#[derive_where(Clone)]
+pub struct IntervalObservableOptions<S>
+where
+	S: Scheduler,
+{
 	/// How much time must elapse between emissions
 	pub duration: Duration,
 	/// Whether or not the first emission, `0` should happen on subscribe
 	/// or after the duration had elapsed once.
-	///
-	/// Default: true,
 	pub start_on_subscribe: bool,
 	/// If the internal timer rolls over multiple times during a single tick,
 	/// all of them will result in an emissin. To prevent emitting too much
@@ -18,14 +23,6 @@ pub struct IntervalObservableOptions {
 	/// It doesn't need to be a `usize` as the number it's compared against is
 	/// a `u32` coming from [bevy_time::Timer::times_finished_this_tick]
 	pub max_emissions_per_tick: u32,
-}
 
-impl Default for IntervalObservableOptions {
-	fn default() -> Self {
-		Self {
-			duration: Duration::from_secs(1),
-			max_emissions_per_tick: 1,
-			start_on_subscribe: true,
-		}
-	}
+	pub scheduler: SchedulerHandle<S>,
 }

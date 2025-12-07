@@ -20,6 +20,7 @@ pub trait WithSubscriptionContext {
 /// ## [SubscriptionContext][crate::SubscriptionContext]
 ///
 /// The context defines how new subscriptions can be acquired in an observable.
+#[deprecated]
 pub trait SubscriptionContext: 'static {
 	/// The actual context reference that will be passed into subscriptions
 	/// and subscribers. The lifetime parameters allow for decoupling the

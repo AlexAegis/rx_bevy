@@ -15,7 +15,7 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	ticking_scheduler: TickingScheduler<(), RxBevyContext>,
+	ticking_scheduler: TickingScheduler<(), RxBevyContext<C>>,
 	_phantom_data: PhantomData<(S, C)>,
 }
 
@@ -40,7 +40,7 @@ where
 	#[inline]
 	fn drain_queue(
 		&mut self,
-	) -> std::vec::Drain<'_, rx_core_traits::ScheduledTaskAction<Tick, (), RxBevyContext>> {
+	) -> std::vec::Drain<'_, rx_core_traits::ScheduledTaskAction<Tick, (), RxBevyContext<C>>> {
 		self.ticking_scheduler.drain_queue()
 	}
 
@@ -57,7 +57,7 @@ where
 {
 	type TickInput = Tick;
 	type TaskError = ();
-	type ContextProvider = RxBevyContext;
+	type ContextProvider = RxBevyContext<C>;
 }
 
 impl<S, C> Scheduler for BevyRxScheduler<S, C>
@@ -65,9 +65,9 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<(), RxBevyContext>;
-	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<(), RxBevyContext>;
-	type RepeatedTaskFactory = RepeatedTaskTickedFactory<(), RxBevyContext>;
+	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<(), RxBevyContext<C>>;
+	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<(), RxBevyContext<C>>;
+	type RepeatedTaskFactory = RepeatedTaskTickedFactory<(), RxBevyContext<C>>;
 
 	#[inline]
 	fn schedule<T>(&mut self, task: T, owner_id: rx_core_traits::TaskOwnerId)

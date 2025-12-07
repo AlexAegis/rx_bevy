@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use rx_core_traits::Tick;
 
+#[deprecated]
 #[derive(Default)]
 pub struct MockClock {
 	elapsed_since_start: Duration,

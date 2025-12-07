@@ -4531,6 +4531,7 @@ name = "rx_core_observable_interval"
 version = "0.1.0"
 dependencies = [
  "bevy_time",
+ "derive-where",
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",

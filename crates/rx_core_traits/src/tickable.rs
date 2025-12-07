@@ -1,5 +1,6 @@
 use crate::{SubscriptionContext, Tick, WithSubscriptionContext};
 
+#[deprecated]
 pub trait Tickable: WithSubscriptionContext {
 	/// A channel for push based scheduling, processing ticks issued by
 	/// schedulers.

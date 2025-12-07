@@ -1,8 +1,8 @@
 use std::{fmt::Debug, time::Duration};
 
 use rx_core_traits::{
-	ScheduledTaskAction, Scheduler, SchedulerHandle, Task, TaskContextProvider, TaskExecutor,
-	TaskOwnerId, Tick, TickResult, WithTaskInputOutput,
+	ImmediateTaskFactory, ScheduledTaskAction, Scheduler, SchedulerHandle, Task,
+	TaskContextProvider, TaskExecutor, TaskOwnerId, Tick, TickResult, WithTaskInputOutput,
 };
 use slab::Slab;
 
@@ -109,10 +109,11 @@ where
 		context: &mut ContextProvider::Item<'_>,
 	) -> Vec<Option<usize>> {
 		self.current_tick.update(tick);
+
 		self.active_tasks
 			.iter_mut()
 			.filter_map(|(key, (_owner_id, task))| {
-				let task_result = task.tick(self.current_tick, context);
+				let task_result = task.tick(tick, context);
 				// TODO: Do something with errors, maybe collect them and return? or define a handler and just pass them into? the tick fn should not have a return type.
 				match task_result {
 					TickResult::Done => Some(Some(key)),

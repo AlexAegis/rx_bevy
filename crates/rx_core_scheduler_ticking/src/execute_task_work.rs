@@ -1,39 +1,59 @@
-use rx_core_traits::{TaskContextProvider, TickResult, TickResultError};
+use rx_core_traits::{
+	ScheduledOnceWork, ScheduledRepeatedWork, TaskContextProvider, TickResult, TickResultError,
+};
 
-pub trait ExecuteTaskWorkMut<TaskError, ContextProvider>
+pub trait ExecuteTaskWorkMut<TickInput, TaskError, ContextProvider>
 where
 	ContextProvider: TaskContextProvider,
 {
-	fn execute(&mut self, context: &mut ContextProvider::Item<'_>) -> TickResult<TaskError>;
+	fn execute(
+		&mut self,
+		tick_input: TickInput,
+		context: &mut ContextProvider::Item<'_>,
+	) -> TickResult<TaskError>;
 }
 
-impl<F, TaskError, ContextProvider> ExecuteTaskWorkMut<TaskError, ContextProvider> for F
+impl<F, TickInput, TaskError, ContextProvider>
+	ExecuteTaskWorkMut<TickInput, TaskError, ContextProvider> for F
 where
-	F: FnMut(&mut ContextProvider::Item<'_>) -> Result<(), TaskError>,
+	F: ScheduledRepeatedWork<TickInput, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
-	fn execute(&mut self, context: &mut ContextProvider::Item<'_>) -> TickResult<TaskError> {
-		match (self)(context) {
+	fn execute(
+		&mut self,
+		tick_input: TickInput,
+		context: &mut ContextProvider::Item<'_>,
+	) -> TickResult<TaskError> {
+		match (self)(tick_input, context) {
 			Ok(_) => TickResult::Done,
 			Err(error) => TickResult::Error(TickResultError::TaskError(error)),
 		}
 	}
 }
 
-pub trait ExecuteTaskWorkOnce<TaskError, ContextProvider>
+pub trait ExecuteTaskWorkOnce<TickInput, TaskError, ContextProvider>
 where
 	ContextProvider: TaskContextProvider,
 {
-	fn execute(self, context: &mut ContextProvider::Item<'_>) -> TickResult<TaskError>;
+	fn execute(
+		self,
+		tick_input: TickInput,
+		context: &mut ContextProvider::Item<'_>,
+	) -> TickResult<TaskError>;
 }
 
-impl<F, TaskError, ContextProvider> ExecuteTaskWorkOnce<TaskError, ContextProvider> for F
+impl<F, TickInput, TaskError, ContextProvider>
+	ExecuteTaskWorkOnce<TickInput, TaskError, ContextProvider> for F
 where
-	F: FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError>,
+	F: ScheduledOnceWork<TickInput, TaskError, ContextProvider>,
 	ContextProvider: TaskContextProvider,
 {
-	fn execute(self, context: &mut ContextProvider::Item<'_>) -> TickResult<TaskError> {
-		match (self)(context) {
+	fn execute(
+		self,
+		tick_input: TickInput,
+		context: &mut ContextProvider::Item<'_>,
+	) -> TickResult<TaskError> {
+		match (self)(tick_input, context) {
 			Ok(_) => TickResult::Done,
 			Err(error) => TickResult::Error(TickResultError::TaskError(error)),
 		}

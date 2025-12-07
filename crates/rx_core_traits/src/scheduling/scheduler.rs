@@ -1,8 +1,9 @@
 use std::time::Duration;
 
 use crate::{
-	DelayedTaskFactory, ImmediateTaskFactory, RepeatedTaskFactory, SchedulerHandle, Task,
-	TaskContextProvider, TaskOwnerId, WithTaskInputOutput,
+	DelayedTaskFactory, ImmediateTaskFactory, RepeatedTaskFactory, ScheduledOnceWork,
+	ScheduledRepeatedWork, SchedulerHandle, Task, TaskContextProvider, TaskOwnerId,
+	WithTaskInputOutput,
 };
 
 /// Schedulers define a set of tasks that can be offloaded to the scheduler to
@@ -66,12 +67,7 @@ pub trait TaskExecutor: WithTaskInputOutput {
 pub trait SchedulerScheduleTaskExtension: Scheduler {
 	fn schedule_delayed_task<Work>(&mut self, work: Work, delay: Duration, owner_id: TaskOwnerId)
 	where
-		Work: 'static
-			+ FnOnce(
-				&mut <Self::ContextProvider as TaskContextProvider>::Item<'_>,
-			) -> Result<(), Self::TaskError>
-			+ Send
-			+ Sync,
+		Work: ScheduledOnceWork<Self::TickInput, Self::TaskError, Self::ContextProvider>,
 	{
 		self.schedule(Self::DelayedTaskFactory::new(work, delay), owner_id)
 	}
@@ -83,12 +79,7 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 		start_immediately: bool,
 		owner_id: TaskOwnerId,
 	) where
-		Work: 'static
-			+ FnMut(
-				&mut <Self::ContextProvider as TaskContextProvider>::Item<'_>,
-			) -> Result<(), Self::TaskError>
-			+ Send
-			+ Sync,
+		Work: ScheduledRepeatedWork<Self::TickInput, Self::TaskError, Self::ContextProvider>,
 	{
 		self.schedule(
 			Self::RepeatedTaskFactory::new(work, interval, start_immediately),
@@ -98,12 +89,7 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 
 	fn schedule_immediate_task<Work>(&mut self, work: Work, owner_id: TaskOwnerId)
 	where
-		Work: 'static
-			+ FnOnce(
-				&mut <Self::ContextProvider as TaskContextProvider>::Item<'_>,
-			) -> Result<(), Self::TaskError>
-			+ Send
-			+ Sync,
+		Work: ScheduledOnceWork<Self::TickInput, Self::TaskError, Self::ContextProvider>,
 	{
 		self.schedule(Self::ImmediateTaskFactory::new(work), owner_id)
 	}

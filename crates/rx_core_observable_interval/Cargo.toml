@@ -24,6 +24,7 @@ bevy_time = { workspace = true }
 rx_core_traits = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_subscription_derive = { workspace = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

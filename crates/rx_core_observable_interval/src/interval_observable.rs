@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Never, Observable, Observer, Subscriber, SubscriptionContext, UpgradeableObserver,
+	Never, Observable, Observer, Scheduler, Subscriber, SubscriptionContext, UpgradeableObserver,
 };
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
@@ -10,33 +10,32 @@ use crate::{IntervalSubscription, observable::IntervalObservableOptions};
 #[derive(RxObservable, Debug)]
 #[rx_out(usize)]
 #[rx_out_error(Never)]
-#[rx_context(Context)]
-pub struct IntervalObservable<Context = ()>
+#[rx_context(S::ContextProvider)]
+pub struct IntervalObservable<S>
 where
-	Context: SubscriptionContext,
+	S: Scheduler,
+	S::ContextProvider: SubscriptionContext,
 {
-	options: IntervalObservableOptions,
-	_phantom_data: PhantomData<fn(Context)>,
+	options: IntervalObservableOptions<S>,
 }
 
-impl<Context> IntervalObservable<Context>
+impl<S> IntervalObservable<S>
 where
-	Context: SubscriptionContext,
+	S: Scheduler,
+	S::ContextProvider: SubscriptionContext,
 {
-	pub fn new(options: IntervalObservableOptions) -> Self {
-		Self {
-			options,
-			_phantom_data: PhantomData,
-		}
+	pub fn new(options: IntervalObservableOptions<S>) -> Self {
+		Self { options }
 	}
 }
 
-impl<Context> Observable for IntervalObservable<Context>
+impl<S> Observable for IntervalObservable<S>
 where
-	Context: SubscriptionContext,
+	S: 'static + Scheduler + Send + Sync,
+	S::ContextProvider: SubscriptionContext,
 {
 	type Subscription<Destination>
-		= IntervalSubscription<Context>
+		= IntervalSubscription<S>
 	where
 		Destination:
 			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
