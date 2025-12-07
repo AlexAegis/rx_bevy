@@ -166,7 +166,6 @@ where
 	}
 
 	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
-		println!("multicast unsub!!");
 		if !self.is_closed() {
 			self.closed_flag.close();
 

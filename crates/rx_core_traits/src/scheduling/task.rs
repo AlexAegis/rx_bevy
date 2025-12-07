@@ -21,7 +21,14 @@ where
 {
 	type Item<'c> = C::Item<'c, 'c>;
 }
-
+/*
+impl<C> SubscriptionContext for C
+where
+	C: TaskContextProvider,
+{
+	type Item<'w, 's> = C::Item<'w>;
+}
+*/
 // impl TaskContextProvider for () {
 // 	type Item<'c> = ();
 // }
@@ -38,6 +45,8 @@ pub trait Task: WithTaskInputOutput {
 	///
 	/// TODO: VErify if it even makes sense or just defer to the next first tick
 	/// on drain to act as initialize
+	///
+	/// TODO: ADD A RETURN VALUE AND RETURN IT TO THE USER, BUT ONLY MAKES SENSE WITH THE CONTEXT, BUT THAT CAN'T BE CALLED??
 	fn on_scheduled_hook(&mut self, tick_input: Self::TickInput);
 }
 
@@ -50,7 +59,8 @@ pub enum TickResult<TaskError> {
 	Pending,
 	/// Done with result
 	Done,
-
+	/// Not done, but a new job may have been scheduled
+	Dirty,
 	/// Done with error
 	Error(TickResultError<TaskError>),
 }
@@ -64,14 +74,18 @@ pub enum TickResultError<TaskError> {
 impl<TaskError> AddAssign for TickResult<TaskError> {
 	fn add_assign(&mut self, rhs: Self) {
 		let change = match self {
-			TickResult::Pending => Some(rhs),
-			TickResult::Done => match rhs {
+			Self::Pending => Some(rhs),
+			Self::Dirty => match rhs {
 				Self::Pending => None,
 				_ => Some(rhs),
 			},
-			TickResult::Error(_) => match rhs {
+			Self::Done => match rhs {
+				Self::Pending | Self::Dirty => None,
+				_ => Some(rhs),
+			},
+			Self::Error(_) => match rhs {
 				// TODO: Accumulate errors
-				Self::Pending | Self::Done => None,
+				Self::Pending | Self::Dirty | Self::Done => None,
 				_ => Some(rhs),
 			},
 		};

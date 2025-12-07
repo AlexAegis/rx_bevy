@@ -8,39 +8,50 @@ use rx_core_testing::{SchedulerWithManualTickElapseExtension, TickingSchedulerEx
 fn main() {
 	let mut executor = TickingSchedulerExecutor::<()>::default();
 	let mut scheduler = executor.get_scheduler();
-	executor.tick_by_delta(Duration::from_millis(200), &mut ());
+	let owner_id = scheduler.get_scheduler().generate_owner_id();
 
-	scheduler.get_scheduler().schedule_delayed_task(
-		|_| {
-			println!("late hello");
-			Ok(())
-		},
-		Duration::from_millis(4000),
-	);
-
-	scheduler.get_scheduler().schedule_delayed_task(
-		|_| {
-			println!("early hello");
-			Ok(())
-		},
-		Duration::from_millis(10),
-	);
-
-	executor.tick_by_delta(Duration::from_millis(200), &mut ());
-
-	let _subscription = (1..=5)
+	let mut subscription = (1..=5)
 		.into_observable::<()>()
+		.map(|i| i * 2)
 		.delay(DelayOperatorOptions {
 			delay: Duration::from_millis(1000),
 			scheduler: scheduler.clone(),
 		})
 		.subscribe(PrintObserver::new("delay_operator"), &mut ());
 
-	executor.tick_by_delta(Duration::from_millis(1200), &mut ());
-	println!("ticked 1200ms");
-	executor.tick_by_delta(Duration::from_millis(4200), &mut ());
+	let mut scheduler_clone = scheduler.clone();
+	scheduler.get_scheduler().schedule_delayed_task(
+		move |_| {
+			println!("late hello");
 
-	//subscription.tick(clock.elapse(Duration::from_millis(800)), &mut ());
-	//subscription.tick(clock.elapse(Duration::from_millis(400)), &mut ());
-	//println!("ticked 400ms");
+			Ok(())
+		},
+		Duration::from_millis(4000),
+		owner_id,
+	);
+
+	scheduler.clone().get_scheduler().schedule_delayed_task(
+		move |_| {
+			println!("early hello");
+			scheduler_clone.get_scheduler().schedule_immediate_task(
+				|_| {
+					println!("immediate");
+					Ok(())
+				},
+				owner_id,
+			);
+			Ok(())
+		},
+		Duration::from_millis(10),
+		owner_id,
+	);
+
+	subscription.unsubscribe(&mut ());
+	println!("unsubscribed");
+
+	executor.tick_by_delta(Duration::from_millis(200), &mut ());
+	println!("ticked 200ms");
+	executor.tick_by_delta(Duration::from_millis(1200), &mut ());
+
+	println!("ticked 1200ms");
 }

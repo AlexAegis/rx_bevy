@@ -2,8 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Scheduler, SchedulerScheduleTaskExtension, Subscriber, SubscriptionContext,
-	SubscriptionLike, Tickable,
+	Observer, Scheduler, SchedulerScheduleTaskExtension, Subscriber, SubscriptionClosedFlag,
+	SubscriptionContext, SubscriptionLike, TaskOwnerId, Tickable,
 };
 
 use crate::operator::DelayOperatorOptions;
@@ -21,6 +21,8 @@ where
 	#[destination]
 	destination: Arc<Mutex<Destination>>,
 	options: DelayOperatorOptions<S>,
+	closed: SubscriptionClosedFlag,
+	owner_id: TaskOwnerId,
 }
 
 impl<Destination, S> DelaySubscriber<Destination, S>
@@ -30,12 +32,16 @@ where
 {
 	pub fn new(
 		destination: Destination,
-		options: DelayOperatorOptions<S>,
+		mut options: DelayOperatorOptions<S>,
 		_context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
+		let owner_id = options.scheduler.get_scheduler().generate_owner_id();
+
 		Self {
+			closed: SubscriptionClosedFlag::default(),
 			destination: Arc::new(Mutex::new(destination)),
 			options,
+			owner_id,
 		}
 	}
 }
@@ -51,22 +57,19 @@ where
 		next: Self::In,
 		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) {
-		let mut weak_destination = self.destination.clone();
-		let mut scheduler = self.options.scheduler.get_scheduler();
+		if !self.is_closed() {
+			let mut destination = self.destination.clone();
+			let mut scheduler = self.options.scheduler.get_scheduler();
 
-		// TODO: Instead of task id's use owner id's issued by schedulers, the tasks are going to be inside a slab, id'd, and a separate hashmap will store the owner_id/task_id map
-		let _task_id = scheduler.schedule_delayed_task(
-			move |context| {
-				weak_destination.next(next, context);
-				Ok(())
-			},
-			self.options.delay,
-		);
-		// self.buffer.push(Delayed {
-		// 	remaining_time: self.options.delay,
-		// 	item: Some(next),
-		// });
-		// TODO: With the better scheduler, it will be a task in the task pool. Try it in bevy
+			scheduler.schedule_delayed_task(
+				move |context| {
+					destination.next(next, context);
+					Ok(())
+				},
+				self.options.delay,
+				self.owner_id,
+			);
+		}
 	}
 
 	#[inline]
@@ -80,16 +83,18 @@ where
 
 	#[inline]
 	fn complete(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		// let mut weak_destination = self.destination.downgrade(context);
-		let mut destination = self.destination.clone();
-		let mut scheduler = self.options.scheduler.get_scheduler();
-		let _task_id = scheduler.schedule_delayed_task(
-			move |context| {
-				destination.complete(context);
-				Ok(())
-			},
-			self.options.delay,
-		);
+		if !self.is_closed() {
+			let mut destination = self.destination.clone();
+			let mut scheduler = self.options.scheduler.get_scheduler();
+			scheduler.schedule_delayed_task(
+				move |context| {
+					destination.complete(context);
+					Ok(())
+				},
+				self.options.delay,
+				self.owner_id,
+			);
+		}
 	}
 }
 
@@ -100,19 +105,26 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
+		*self.closed || self.destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
 		let mut destination = self.destination.clone();
+		let mut scheduler_clone = self.options.scheduler.clone();
 		let mut scheduler = self.options.scheduler.get_scheduler();
-		let _task_id = scheduler.schedule_delayed_task(
+		let owner_id_copy = self.owner_id;
+
+		scheduler.schedule_delayed_task(
 			move |context| {
 				destination.unsubscribe(context);
+				scheduler_clone.get_scheduler().cancel(owner_id_copy);
 				Ok(())
 			},
 			self.options.delay,
+			self.owner_id,
 		);
+
+		self.closed.close();
 	}
 }
 
@@ -143,5 +155,15 @@ where
 		// }
 
 		self.destination.tick(tick, context);
+	}
+}
+
+impl<Destination, S> Drop for DelaySubscriber<Destination, S>
+where
+	Destination: 'static + Subscriber,
+	S: Scheduler,
+{
+	fn drop(&mut self) {
+		self.closed.close();
 	}
 }

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::{marker::PhantomData, time::Duration};
 
 use derive_where::derive_where;
@@ -18,7 +19,7 @@ impl<TaskError, ContextProvider> DelayedTaskFactory<Tick, TaskError, ContextProv
 	for DelayedOnceTaskTickedFactory<TaskError, ContextProvider>
 where
 	ContextProvider: 'static + TaskContextProvider + Send + Sync,
-	TaskError: 'static + Send + Sync,
+	TaskError: 'static + Debug + Send + Sync,
 {
 	type Item<Work>
 		= DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
@@ -72,7 +73,7 @@ impl<Work, TaskError, ContextProvider> DelayedTask<Work, Tick, TaskError, Contex
 where
 	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
 	ContextProvider: TaskContextProvider + Send + Sync,
-	TaskError: Send + Sync,
+	TaskError: Debug + Send + Sync,
 {
 }
 
@@ -81,6 +82,7 @@ impl<Work, TaskError, ContextProvider> Task
 where
 	Work: 'static + FnOnce(&mut ContextProvider::Item<'_>) -> Result<(), TaskError> + Send + Sync,
 	ContextProvider: TaskContextProvider,
+	TaskError: Debug,
 {
 	fn tick(
 		&mut self,
@@ -88,7 +90,6 @@ where
 		context: &mut ContextProvider::Item<'_>,
 	) -> TickResult<Self::TaskError> {
 		self.current_tick.update(tick);
-		// TODO: it should take into account when the task started
 		if self.scheduled_on + self.delay <= self.current_tick {
 			let Some(work) = self.work.take() else {
 				return TickResult::Error(TickResultError::WorkAlreadyConsumed);

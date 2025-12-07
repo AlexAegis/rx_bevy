@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::{
 	DelayedTaskFactory, ImmediateTaskFactory, RepeatedTaskFactory, SchedulerHandle, Task,
-	TaskContextProvider, TaskId, WithTaskInputOutput,
+	TaskContextProvider, TaskOwnerId, WithTaskInputOutput,
 };
 
 /// Schedulers define a set of tasks that can be offloaded to the scheduler to
@@ -17,7 +17,7 @@ pub trait Scheduler: WithTaskInputOutput {
 	type RepeatedTaskFactory: RepeatedTaskFactory<Self::TickInput, Self::TaskError, Self::ContextProvider>;
 	type ImmediateTaskFactory: ImmediateTaskFactory<Self::TickInput, Self::TaskError, Self::ContextProvider>;
 
-	fn schedule<T>(&mut self, task: T) -> TaskId
+	fn schedule<T>(&mut self, task: T, owner_id: TaskOwnerId)
 	where
 		T: 'static
 			+ Task<
@@ -28,7 +28,9 @@ pub trait Scheduler: WithTaskInputOutput {
 			+ Send
 			+ Sync;
 
-	fn cancel(&mut self, task_id: TaskId);
+	fn cancel(&mut self, owner_id: TaskOwnerId);
+
+	fn generate_owner_id(&mut self) -> TaskOwnerId;
 }
 
 pub enum ScheduledTaskAction<TickInput, TaskError, ContextProvider>
@@ -37,7 +39,7 @@ where
 {
 	Activate(
 		(
-			TaskId,
+			TaskOwnerId,
 			Box<
 				dyn Task<
 						TickInput = TickInput,
@@ -48,7 +50,7 @@ where
 			>,
 		),
 	),
-	Cancel(TaskId),
+	CancelAll(TaskOwnerId),
 }
 
 pub trait TaskExecutor: WithTaskInputOutput {
@@ -62,7 +64,7 @@ pub trait TaskExecutor: WithTaskInputOutput {
 }
 
 pub trait SchedulerScheduleTaskExtension: Scheduler {
-	fn schedule_delayed_task<Work>(&mut self, work: Work, delay: Duration) -> TaskId
+	fn schedule_delayed_task<Work>(&mut self, work: Work, delay: Duration, owner_id: TaskOwnerId)
 	where
 		Work: 'static
 			+ FnOnce(
@@ -71,7 +73,7 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 			+ Send
 			+ Sync,
 	{
-		self.schedule(Self::DelayedTaskFactory::new(work, delay))
+		self.schedule(Self::DelayedTaskFactory::new(work, delay), owner_id)
 	}
 
 	fn schedule_repeated_task<Work>(
@@ -79,8 +81,8 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
-	) -> TaskId
-	where
+		owner_id: TaskOwnerId,
+	) where
 		Work: 'static
 			+ FnMut(
 				&mut <Self::ContextProvider as TaskContextProvider>::Item<'_>,
@@ -88,14 +90,13 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 			+ Send
 			+ Sync,
 	{
-		self.schedule(Self::RepeatedTaskFactory::new(
-			work,
-			interval,
-			start_immediately,
-		))
+		self.schedule(
+			Self::RepeatedTaskFactory::new(work, interval, start_immediately),
+			owner_id,
+		)
 	}
 
-	fn schedule_immediate_task<Work>(&mut self, work: Work) -> TaskId
+	fn schedule_immediate_task<Work>(&mut self, work: Work, owner_id: TaskOwnerId)
 	where
 		Work: 'static
 			+ FnOnce(
@@ -104,7 +105,7 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 			+ Send
 			+ Sync,
 	{
-		self.schedule(Self::ImmediateTaskFactory::new(work))
+		self.schedule(Self::ImmediateTaskFactory::new(work), owner_id)
 	}
 }
 

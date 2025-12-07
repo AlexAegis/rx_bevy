@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { finalize, of, tap } from "rxjs";
+import { delay, finalize, of, tap } from "rxjs";
 
 const subscription = of(1, 2)
   .pipe(
@@ -8,17 +8,12 @@ const subscription = of(1, 2)
       complete: () => {
         console.log("complete tap 1");
       },
-      unsubscribe: () => {
-        console.log("unsubscribe tap 1");
-      },
     }),
+    delay(100),
     finalize(() => console.log("finalize 1")),
     tap({
       complete: () => {
         console.log("complete tap 2");
-      },
-      unsubscribe: () => {
-        console.log("unsubscribe tap 2");
       },
     }),
     finalize(() => console.log("finalize 2"))
@@ -29,7 +24,10 @@ const subscription = of(1, 2)
     },
   });
 
+console.log("sub");
+
 subscription.unsubscribe();
+console.log("unsub");
 
 /*
 complete tap 1

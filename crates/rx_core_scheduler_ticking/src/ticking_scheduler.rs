@@ -1,11 +1,13 @@
+use std::fmt::Debug;
+
 use derive_where::derive_where;
 use rx_core_traits::{
-	ScheduledTaskAction, Scheduler, Task, TaskContextProvider, TaskId, Tick, WithTaskInputOutput,
+	ScheduledTaskAction, Scheduler, Task, TaskContextProvider, TaskOwnerId, TaskOwnerIdGenerator,
+	Tick, WithTaskInputOutput,
 };
 
 use crate::{
 	DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory, RepeatedTaskTickedFactory,
-	TaskIdGenerator,
 };
 
 #[derive_where(Default)]
@@ -13,7 +15,7 @@ pub struct TickingScheduler<TaskError = (), ContextProvider = ()>
 where
 	ContextProvider: TaskContextProvider,
 {
-	task_id_generator: TaskIdGenerator,
+	task_owner_id_generator: TaskOwnerIdGenerator,
 	/// Updated by the executor at the start of each tick.
 	pub(crate) current_tick: Tick,
 	task_action_queue: Vec<ScheduledTaskAction<Tick, TaskError, ContextProvider>>,
@@ -45,32 +47,34 @@ where
 impl<TaskError, ContextProvider> Scheduler for TickingScheduler<TaskError, ContextProvider>
 where
 	ContextProvider: 'static + TaskContextProvider + Send + Sync,
-	TaskError: 'static + Send + Sync,
+	TaskError: 'static + Send + Sync + Debug,
 {
 	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<TaskError, ContextProvider>;
 	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<TaskError, ContextProvider>;
 	type RepeatedTaskFactory = RepeatedTaskTickedFactory<TaskError, ContextProvider>;
 
-	fn schedule<T>(&mut self, mut task: T) -> TaskId
+	fn schedule<T>(&mut self, mut task: T, owner_id: TaskOwnerId)
 	where
 		T: 'static
 			+ Task<TickInput = Tick, TaskError = TaskError, ContextProvider = ContextProvider>
 			+ Send
 			+ Sync,
 	{
-		println!(
-			"ON SCHEDULED HOOK, SCHEDULERS CURRENT TICK IS {:?}",
-			self.current_tick
-		);
 		task.on_scheduled_hook(self.current_tick);
-		let task_id = self.task_id_generator.get_next();
+
 		self.task_action_queue
-			.push(ScheduledTaskAction::Activate((task_id, Box::new(task))));
-		task_id
+			.push(ScheduledTaskAction::Activate((owner_id, Box::new(task))));
+
+		//	let mut s = SubscriptionData::<ContextProvider>::default();
+		// TODO: Try returning subscriptions instead of ownerids
 	}
 
-	fn cancel(&mut self, task_id: TaskId) {
+	fn cancel(&mut self, owner_id: TaskOwnerId) {
 		self.task_action_queue
-			.push(ScheduledTaskAction::Cancel(task_id));
+			.push(ScheduledTaskAction::CancelAll(owner_id));
+	}
+
+	fn generate_owner_id(&mut self) -> TaskOwnerId {
+		self.task_owner_id_generator.get_next()
 	}
 }
