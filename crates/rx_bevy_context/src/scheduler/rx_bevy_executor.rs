@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use crate::{BevyRxScheduler, RxBevyContext, RxBevyContextItem};
 use bevy_ecs::{resource::Resource, schedule::ScheduleLabel, world::FromWorld};
 use rx_bevy_common::Clock;
-use rx_core_scheduler_ticking::{TaskExecutorWithManualTick, TickingSchedulerExecutor};
+use rx_core_scheduler_ticking::TickingSchedulerExecutor;
 use rx_core_traits::{TaskExecutor, Tick, WithTaskInputOutput};
 
 // TODO: SystemParam that is the scheduler directly, maybe use the builder pattern of sysparams

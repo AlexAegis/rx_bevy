@@ -51,6 +51,38 @@ where
 		}
 	}
 
+	pub fn get_current_tick(&mut self) -> Tick {
+		self.current_tick
+	}
+
+	pub fn tick(&mut self, tick: Tick, context: &mut ContextProvider::Item<'_>) {
+		loop {
+			self.drain_scheduler_queue(tick);
+
+			let done_tasks = self.tick_tasks(tick, context);
+
+			if done_tasks.is_empty() {
+				break;
+			}
+
+			for task_id in done_tasks
+				.iter()
+				.filter_map(|task_id_to_remove| *task_id_to_remove)
+			{
+				self.active_tasks.remove(task_id);
+			}
+		}
+	}
+
+	pub fn tick_by_delta(
+		&mut self,
+		delta: Duration,
+		context: &mut <ContextProvider as TaskContextProvider>::Item<'_>,
+	) {
+		let next_tick = self.get_current_tick() + delta;
+		self.tick(next_tick, context);
+	}
+
 	fn drain_scheduler_queue(&mut self, tick: Tick) {
 		let mut scheduler = self.scheduler.get_scheduler();
 		scheduler.update_tick(tick);
@@ -127,61 +159,3 @@ where
 		self.scheduler.clone()
 	}
 }
-
-impl<S, TaskError, ContextProvider> TaskExecutorWithManualTick
-	for TickingSchedulerExecutor<S, TaskError, ContextProvider>
-where
-	S: TickingExecutorsScheduler<
-			TickInput = Tick,
-			TaskError = TaskError,
-			ContextProvider = ContextProvider,
-		>,
-	ContextProvider: 'static + TaskContextProvider + Send + Sync,
-	TaskError: 'static + Send + Sync + Debug,
-{
-	fn tick(&mut self, tick: Tick, context: &mut ContextProvider::Item<'_>) {
-		loop {
-			self.drain_scheduler_queue(tick);
-
-			let done_tasks = self.tick_tasks(tick, context);
-
-			if done_tasks.is_empty() {
-				break;
-			}
-
-			for task_id in done_tasks
-				.iter()
-				.filter_map(|task_id_to_remove| *task_id_to_remove)
-			{
-				self.active_tasks.remove(task_id);
-			}
-		}
-	}
-
-	fn get_current_tick(&mut self) -> Tick {
-		self.current_tick
-	}
-}
-
-pub trait TaskExecutorWithManualTick: TaskExecutor {
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::ContextProvider as TaskContextProvider>::Item<'_>,
-	);
-
-	fn get_current_tick(&mut self) -> Tick;
-}
-
-pub trait SchedulerWithManualTickElapseExtension: TaskExecutorWithManualTick {
-	fn tick_by_delta(
-		&mut self,
-		delta: Duration,
-		context: &mut <Self::ContextProvider as TaskContextProvider>::Item<'_>,
-	) {
-		let next_tick = self.get_current_tick() + delta;
-		self.tick(next_tick, context);
-	}
-}
-
-impl<S> SchedulerWithManualTickElapseExtension for S where S: TaskExecutorWithManualTick {}
