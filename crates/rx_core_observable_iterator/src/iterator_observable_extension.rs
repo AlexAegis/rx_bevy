@@ -1,12 +1,11 @@
-use rx_core_traits::{Signal, SubscriptionContext};
+use rx_core_traits::Signal;
 
 use crate::observable::IteratorObservable;
 
 pub trait IntoIteratorObservableExtension: IntoIterator + Clone {
-	fn into_observable<Context>(self) -> IteratorObservable<Self, Context>
+	fn into_observable(self) -> IteratorObservable<Self>
 	where
 		Self::Item: Signal,
-		Context: SubscriptionContext,
 	{
 		IteratorObservable::new(self)
 	}

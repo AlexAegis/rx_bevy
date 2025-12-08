@@ -1,118 +1,113 @@
 use core::marker::PhantomData;
+use std::sync::{Arc, Mutex};
 
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	DropSafeSubscriptionContext, Never, Observer, Signal, SubscriberNotification,
-	SubscriptionClosedFlag, SubscriptionContext, SubscriptionContextDropSafety, SubscriptionLike,
-	Teardown, TeardownCollection, Tick, Tickable,
+	Never, Observer, Signal, SubscriberNotification, SubscriptionClosedFlag, SubscriptionLike,
+	Teardown, TeardownCollection,
 };
 
-use crate::MockContext;
+use crate::notification_collector::TestNotificationCollector;
 
 /// While this is conceptually an Observer, used as an Observer, for testing
 /// purposes it behaves like a Subscriber by not being detached on upgrade.
 #[derive(RxObserver, Debug)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_context(MockContext<In, InError, DropSafety>)]
 #[rx_upgrades_to(self)]
-pub struct MockObserver<In, InError = Never, DropSafety = DropSafeSubscriptionContext>
+pub struct MockObserver<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
 	pub closed_flag: SubscriptionClosedFlag,
-	_phantom_data: PhantomData<(In, InError, fn(DropSafety))>,
+	notification_collector: Arc<Mutex<TestNotificationCollector<In, InError>>>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, DropSafety> Observer for MockObserver<In, InError, DropSafety>
+impl<In, InError> MockObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		context.push(SubscriberNotification::Next(next));
+	pub fn new(notification_collector: Arc<Mutex<TestNotificationCollector<In, InError>>>) -> Self {
+		Self {
+			notification_collector,
+			closed_flag: SubscriptionClosedFlag::default(),
+			_phantom_data: PhantomData,
+		}
 	}
 
-	fn error(
+	fn lock_collector(
 		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		context.push(SubscriberNotification::Error(error));
-	}
-
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		context.push(SubscriberNotification::Complete);
+	) -> std::sync::MutexGuard<'_, TestNotificationCollector<In, InError>> {
+		self.notification_collector
+			.lock()
+			.unwrap_or_else(|p| p.into_inner())
 	}
 }
 
-impl<In, InError, DropSafety> Tickable for MockObserver<In, InError, DropSafety>
+impl<In, InError> Observer for MockObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		context.push(SubscriberNotification::Tick(tick));
+	fn next(&mut self, next: Self::In) {
+		self.lock_collector()
+			.push(SubscriberNotification::Next(next));
+	}
+
+	fn error(&mut self, error: Self::InError) {
+		self.lock_collector()
+			.push(SubscriberNotification::Error(error));
+	}
+
+	fn complete(&mut self) {
+		self.lock_collector().push(SubscriberNotification::Complete);
 	}
 }
 
-impl<In, InError, DropSafety> SubscriptionLike for MockObserver<In, InError, DropSafety>
+impl<In, InError> SubscriptionLike for MockObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		*self.closed_flag
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		self.closed_flag.close();
-		context.push(SubscriberNotification::Unsubscribe);
+		self.lock_collector()
+			.push(SubscriberNotification::Unsubscribe);
 	}
 }
 
-impl<In, InError, DropSafety> TeardownCollection for MockObserver<In, InError, DropSafety>
+impl<In, InError> TeardownCollection for MockObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn add_teardown(&mut self, teardown: Teardown) {
 		if self.is_closed() {
-			teardown.execute(context);
+			teardown.execute();
 		}
-		context.push(SubscriberNotification::Add(None));
+		self.lock_collector()
+			.push(SubscriberNotification::Add(None));
 	}
 }
 
-impl<In, InError, DropSafety> Default for MockObserver<In, InError, DropSafety>
+impl<In, InError> Default for MockObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
 	fn default() -> Self {
 		Self {
 			closed_flag: false.into(),
+			notification_collector: Arc::new(Mutex::new(TestNotificationCollector::default())),
 			_phantom_data: PhantomData,
 		}
 	}

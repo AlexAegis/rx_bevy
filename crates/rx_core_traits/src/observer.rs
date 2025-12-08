@@ -1,20 +1,12 @@
-use crate::{Signal, SubscriptionContext, WithSubscriptionContext};
+use crate::Signal;
 
 pub trait ObserverInput {
 	type In: Signal;
 	type InError: Signal;
 }
 
-pub trait Observer: ObserverInput + WithSubscriptionContext + Send + Sync {
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	);
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	);
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
+pub trait Observer: ObserverInput {
+	fn next(&mut self, next: Self::In);
+	fn error(&mut self, error: Self::InError);
+	fn complete(&mut self);
 }

@@ -6,7 +6,7 @@ use crate::operator::MergeAllOperator;
 pub trait OperatorComposeExtensionMergeAll: Operator + Sized {
 	fn merge_all(self) -> CompositeOperator<Self, MergeAllOperator<Self::Out, Self::OutError>>
 	where
-		Self::Out: Observable<Context = Self::Context>,
+		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
 	{
 		CompositeOperator::new(self, MergeAllOperator::default())

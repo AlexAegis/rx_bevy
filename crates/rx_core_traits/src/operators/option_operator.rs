@@ -1,7 +1,4 @@
-use crate::{
-	ObservableOutput, ObserverInput, Operator, Signal, Subscriber, WithSubscriptionContext,
-	context::SubscriptionContext,
-};
+use crate::{ObservableOutput, ObserverInput, Operator, Signal, Subscriber};
 
 use super::OptionSubscriber;
 
@@ -18,27 +15,18 @@ where
 	type Subscriber<Destination>
 		= OptionSubscriber<Op::Subscriber<Destination>, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 		Op::Subscriber<Destination>: Subscriber;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		match self {
-			Some(operator) => {
-				OptionSubscriber::Some(operator.operator_subscribe(destination, context))
-			}
+			Some(operator) => OptionSubscriber::Some(operator.operator_subscribe(destination)),
 			None => OptionSubscriber::None(destination),
 		}
 	}
@@ -62,13 +50,4 @@ where
 {
 	type Out = In;
 	type OutError = InError;
-}
-
-impl<In, InError, Op> WithSubscriptionContext for Option<Op>
-where
-	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: Signal,
-	InError: Signal,
-{
-	type Context = Op::Context;
 }

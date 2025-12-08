@@ -2,9 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{
-	Operator, Signal, Subscriber, SubscriptionContext, TeardownCollectionExtension,
-};
+use rx_core_traits::{Operator, Signal, Subscriber, Teardown};
 
 #[derive_where(Clone, Debug)]
 #[derive(RxOperator)]
@@ -12,25 +10,22 @@ use rx_core_traits::{
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct FinalizeOperator<In, InError, Callback, Context = ()>
+pub struct FinalizeOperator<In, InError, Callback>
 where
 	In: Signal,
 	InError: Signal,
-	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
+	Callback: 'static + Clone + Into<Teardown> + Send + Sync,
 {
 	#[derive_where(skip(Debug))]
 	callback: Callback,
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Callback, Context> FinalizeOperator<In, InError, Callback, Context>
+impl<In, InError, Callback> FinalizeOperator<In, InError, Callback>
 where
 	In: Signal,
 	InError: Signal,
-	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
+	Callback: 'static + Clone + Into<Teardown> + Send + Sync,
 {
 	pub fn new(callback: Callback) -> Self {
 		Self {
@@ -40,34 +35,26 @@ where
 	}
 }
 
-impl<In, InError, Callback, Context> Operator for FinalizeOperator<In, InError, Callback, Context>
+impl<In, InError, Callback> Operator for FinalizeOperator<In, InError, Callback>
 where
 	In: Signal,
 	InError: Signal,
-	Callback: 'static + Clone + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
-	Context: SubscriptionContext,
+	Callback: 'static + Clone + Into<Teardown> + Send + Sync,
 {
 	type Subscriber<Destination>
 		= Destination
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		mut destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		destination.add_fn(self.callback.clone(), context);
+		destination.add_teardown(self.callback.clone().into());
 		destination
 	}
 }

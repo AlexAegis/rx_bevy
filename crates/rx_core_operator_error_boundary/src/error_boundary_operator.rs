@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Operator, Signal, Subscriber};
 
 use crate::ErrorBoundarySubscriber;
 
@@ -18,39 +18,29 @@ use crate::ErrorBoundarySubscriber;
 #[rx_in_error(Never)]
 #[rx_out(In)]
 #[rx_out_error(Never)]
-#[rx_context(Context)]
-pub struct ErrorBoundaryOperator<In, Context>
+pub struct ErrorBoundaryOperator<In>
 where
 	In: Signal,
-	Context: SubscriptionContext,
 {
-	_phantom_data: PhantomData<(In, fn(Context))>,
+	_phantom_data: PhantomData<In>,
 }
 
-impl<In, Context> Operator for ErrorBoundaryOperator<In, Context>
+impl<In> Operator for ErrorBoundaryOperator<In>
 where
 	In: Signal,
-	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
 		= ErrorBoundarySubscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		ErrorBoundarySubscriber::new(destination)
 	}

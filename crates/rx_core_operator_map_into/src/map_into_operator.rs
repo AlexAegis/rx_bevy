@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber};
 
 use crate::MapIntoSubscriber;
 
@@ -16,45 +16,34 @@ use crate::MapIntoSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-#[rx_context(Context)]
-pub struct MapIntoOperator<In, InError, Out, OutError, Context = ()>
+pub struct MapIntoOperator<In, InError, Out, OutError>
 where
 	In: Signal + Into<Out>,
 	InError: Signal + Into<OutError>,
 	Out: Signal,
 	OutError: Signal,
-	Context: SubscriptionContext,
 {
-	_phantom_data: PhantomData<(In, InError, Out, OutError, Context)>,
+	_phantom_data: PhantomData<(In, InError, Out, OutError)>,
 }
 
-impl<In, InError, Out, OutError, Context> Operator
-	for MapIntoOperator<In, InError, Out, OutError, Context>
+impl<In, InError, Out, OutError> Operator for MapIntoOperator<In, InError, Out, OutError>
 where
 	In: Signal + Into<Out>,
 	InError: Signal + Into<OutError>,
 	Out: Signal,
 	OutError: Signal,
-	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
 		= MapIntoSubscriber<In, InError, Out, OutError, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		MapIntoSubscriber::new(destination)
 	}

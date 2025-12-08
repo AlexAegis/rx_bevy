@@ -1,7 +1,4 @@
-use crate::{
-	Signal, Subscriber, SubscriptionContext, SubscriptionScheduled, UpgradeableObserver,
-	WithPrimaryCategory, WithSubscriptionContext,
-};
+use crate::{Signal, Subscriber, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory};
 
 /// # [ObservableOutput]
 ///
@@ -76,7 +73,7 @@ pub trait ObservableOutput {
 /// > Note that not assigning the subscription to a variable (or assining it to
 /// > `let _ =`) will cause it to be immediately dropped, hence `subscribe` is
 /// > `#[must_use]`!
-pub trait Observable: ObservableOutput + WithSubscriptionContext + WithPrimaryCategory {
+pub trait Observable: ObservableOutput + WithPrimaryCategory {
 	/// The subscription produced by this [Observable]. As this is the only kind
 	/// of subscription that is handled directly by users, only here are
 	/// subscriptions required to implement [Drop] to ensure resources
@@ -84,14 +81,9 @@ pub trait Observable: ObservableOutput + WithSubscriptionContext + WithPrimaryCa
 	/// be attempted. This attempt at unsubscribing on drop, if the subscription
 	/// wasn't already unsubscribed, can panic if the SubscriptionContext used
 	/// is not a [DropSafeSubscriptionContext].
-	type Subscription<Destination>: 'static
-		+ SubscriptionScheduled<Context = Self::Context>
-		+ Drop
-		+ Send
-		+ Sync
+	type Subscription<Destination>: 'static + SubscriptionLike + Drop + Send + Sync
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	/// Create a Subscription for this [Observable]. This action allocates
 	/// resources to execute the behavior this [Observable] defines,
@@ -139,33 +131,8 @@ pub trait Observable: ObservableOutput + WithSubscriptionContext + WithPrimaryCa
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination:
+			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync;
 }
-
-/// For usecases where the context is not used at all, some convenience
-/// functions are provided
-pub trait ObservableWithDefaultDropContext: Observable {
-	/// Convenience function that uses the default drop context to `subscribe`
-	#[must_use = "If unused, the subscription will immediately unsubscribe."]
-	fn subscribe_noctx<Destination>(
-		&mut self,
-		destination: Destination,
-	) -> Self::Subscription<Destination::Upgraded>
-	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
-	{
-		let mut context = Self::Context::create_context_to_unsubscribe_on_drop();
-		self.subscribe(destination, &mut context)
-	}
-}
-
-impl<T> ObservableWithDefaultDropContext for T where T: Observable {}

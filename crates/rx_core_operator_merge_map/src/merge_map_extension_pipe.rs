@@ -5,7 +5,7 @@ use crate::operator::MergeMapOperator;
 
 pub trait ObservablePipeExtensionMergeMap: Observable + Sized {
 	fn merge_map<
-		NextInnerObservable: Observable<Context = Self::Context> + Signal,
+		NextInnerObservable: Observable + Signal,
 		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,

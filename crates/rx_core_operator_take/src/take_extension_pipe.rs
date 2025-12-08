@@ -4,10 +4,7 @@ use rx_core_traits::Observable;
 use crate::operator::TakeOperator;
 
 pub trait ObservablePipeExtensionTake: Observable + Sized {
-	fn take(
-		self,
-		count: usize,
-	) -> Pipe<Self, TakeOperator<Self::Out, Self::OutError, Self::Context>> {
+	fn take(self, count: usize) -> Pipe<Self, TakeOperator<Self::Out, Self::OutError>> {
 		Pipe::new(self, TakeOperator::new(count))
 	}
 }

@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Operator, Signal, Subscriber};
 
 use crate::LiftOptionSubscriber;
 
@@ -10,21 +10,18 @@ use crate::LiftOptionSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct LiftOptionOperator<In, InError = Never, Context = ()>
+pub struct LiftOptionOperator<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Context> Default for LiftOptionOperator<In, InError, Context>
+impl<In, InError> Default for LiftOptionOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -33,41 +30,32 @@ where
 	}
 }
 
-impl<In, InError, Context> Operator for LiftOptionOperator<In, InError, Context>
+impl<In, InError> Operator for LiftOptionOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
 		= LiftOptionSubscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		LiftOptionSubscriber::new(destination)
 	}
 }
 
-impl<In, InError, Context> Clone for LiftOptionOperator<In, InError, Context>
+impl<In, InError> Clone for LiftOptionOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {

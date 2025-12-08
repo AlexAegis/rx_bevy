@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber};
 
 use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptions};
 
@@ -12,20 +12,17 @@ use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptio
 #[rx_in_error(InError)]
 #[rx_out(AdsrSignal)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct AdsrOperator<InError, Context>
+pub struct AdsrOperator<InError>
 where
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	options: AdsrOperatorOptions,
-	_phantom_data: PhantomData<(InError, fn(Context))>,
+	_phantom_data: PhantomData<InError>,
 }
 
-impl<InError, Context> AdsrOperator<InError, Context>
+impl<InError> AdsrOperator<InError>
 where
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	pub fn new(options: AdsrOperatorOptions) -> Self {
 		Self {
@@ -35,29 +32,21 @@ where
 	}
 }
 
-impl<InError, Context> Operator for AdsrOperator<InError, Context>
+impl<InError> Operator for AdsrOperator<InError>
 where
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
 		= AdsrSubscriber<InError, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		AdsrSubscriber::new(destination, self.options.clone())
 	}

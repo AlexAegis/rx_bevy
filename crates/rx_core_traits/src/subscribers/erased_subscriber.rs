@@ -1,35 +1,31 @@
 use derive_where::derive_where;
 
 use crate::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, Signal, Subscriber, SubscriptionContext,
-	SubscriptionLike, Teardown, TeardownCollection, Tickable, WithPrimaryCategory,
-	WithSubscriptionContext,
+	Observer, ObserverInput, PrimaryCategorySubscriber, Signal, Subscriber, SubscriptionLike,
+	Teardown, TeardownCollection, WithPrimaryCategory,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
-pub type DynSubscriber<In, InError, Context> =
-	Box<dyn Subscriber<In = In, InError = InError, Context = Context>>;
+pub type DynSubscriber<In, InError> = Box<dyn Subscriber<In = In, InError = InError>>;
 
 #[derive_where(Debug)]
-pub struct ErasedSubscriber<In, InError, Context>
+pub struct ErasedSubscriber<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	#[derive_where(skip(Debug))]
-	destination: Box<dyn Subscriber<In = In, InError = InError, Context = Context>>,
+	destination: Box<dyn Subscriber<In = In, InError = InError>>,
 }
 
-impl<In, InError, Context> ErasedSubscriber<In, InError, Context>
+impl<In, InError> ErasedSubscriber<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
-		Destination: 'static + Subscriber<In = In, InError = InError, Context = Context>,
+		Destination: 'static + Subscriber<In = In, InError = InError>,
 	{
 		Self {
 			destination: Box::new(destination),
@@ -37,85 +33,48 @@ where
 	}
 }
 
-impl<In, InError, Context> WithPrimaryCategory for ErasedSubscriber<In, InError, Context>
+impl<In, InError> WithPrimaryCategory for ErasedSubscriber<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
 
-impl<In, InError, Context> ObserverInput for ErasedSubscriber<In, InError, Context>
+impl<In, InError> ObserverInput for ErasedSubscriber<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Context> WithSubscriptionContext for ErasedSubscriber<In, InError, Context>
+impl<In, InError> Observer for ErasedSubscriber<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<In, InError, Context> Observer for ErasedSubscriber<In, InError, Context>
-where
-	In: Signal,
-	InError: Signal,
-	Context: SubscriptionContext,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.next(next, context);
+	fn next(&mut self, next: Self::In) {
+		self.destination.next(next);
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.error(error, context);
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.complete(context);
+	fn complete(&mut self) {
+		self.destination.complete();
 	}
 }
 
-impl<In, InError, Context> Tickable for ErasedSubscriber<In, InError, Context>
+impl<In, InError> SubscriptionLike for ErasedSubscriber<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: crate::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<In, InError, Context> SubscriptionLike for ErasedSubscriber<In, InError, Context>
-where
-	In: Signal,
-	InError: Signal,
-	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -123,37 +82,30 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
+	fn unsubscribe(&mut self) {
+		self.destination.unsubscribe();
 	}
 }
 
-impl<In, InError, Context> TeardownCollection for ErasedSubscriber<In, InError, Context>
+impl<In, InError> TeardownCollection for ErasedSubscriber<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
+	fn add_teardown(&mut self, teardown: Teardown) {
+		self.destination.add_teardown(teardown);
 	}
 }
 
-impl<In, InError, Context> Drop for ErasedSubscriber<In, InError, Context>
+impl<In, InError> Drop for ErasedSubscriber<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
+			self.unsubscribe();
 		}
 	}
 }

@@ -1,7 +1,6 @@
 use crate::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SubscriptionLike,
+	Teardown, TeardownCollection, WithPrimaryCategory,
 };
 
 use crate::SubscriptionData;
@@ -15,7 +14,7 @@ where
 	Destination: Observer,
 {
 	destination: Destination,
-	teardown: SubscriptionData<Destination::Context>,
+	teardown: SubscriptionData,
 }
 
 impl<Destination> ObserverSubscriber<Destination>
@@ -42,59 +41,29 @@ impl<Destination> ObserverUpgradesToSelf for ObserverSubscriber<Destination> whe
 {
 }
 
-impl<Destination> WithSubscriptionContext for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	type Context = Destination::Context;
-}
-
 impl<Destination> Observer for ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
-			self.destination.next(next, context);
+			self.destination.next(next);
 		}
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			self.destination.error(error, context);
+			self.destination.error(error);
 		}
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self) {
 		if !self.is_closed() {
-			self.destination.complete(context);
+			self.destination.complete();
 		}
-	}
-}
-
-impl<Destination> Tickable for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		_tick: Tick,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		// Does not do anything on tick as the destination is not (necessarily)
-		// tickable!
 	}
 }
 
@@ -108,8 +77,8 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.teardown.unsubscribe(context);
+	fn unsubscribe(&mut self) {
+		self.teardown.unsubscribe();
 	}
 }
 
@@ -118,12 +87,8 @@ where
 	Destination: Observer,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.teardown.add_teardown(teardown, context);
+	fn add_teardown(&mut self, teardown: Teardown) {
+		self.teardown.add_teardown(teardown);
 	}
 }
 
@@ -141,9 +106,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			println!("DROPPING UNCLOSED DETACHED SUB!!!!!");
-			let mut context = Destination::Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
+			self.unsubscribe();
 		}
 	}
 }

@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber};
 
 use crate::MapSubscriber;
 
@@ -13,26 +13,23 @@ use crate::MapSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(Out)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct MapOperator<In, InError, Mapper, Out = In, Context = ()>
+pub struct MapOperator<In, InError, Mapper, Out = In>
 where
 	In: Signal,
 	InError: Signal,
 	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
 	Out: Signal,
-	Context: SubscriptionContext,
 {
 	mapper: Mapper,
-	_phantom_data: PhantomData<(In, InError, Out, Context)>,
+	_phantom_data: PhantomData<(In, InError, Out)>,
 }
 
-impl<In, InError, Mapper, Out, Context> MapOperator<In, InError, Mapper, Out, Context>
+impl<In, InError, Mapper, Out> MapOperator<In, InError, Mapper, Out>
 where
 	In: Signal,
 	InError: Signal,
 	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
 	Out: Signal,
-	Context: SubscriptionContext,
 {
 	pub fn new(mapper: Mapper) -> Self {
 		Self {
@@ -42,45 +39,36 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out, Context> Operator for MapOperator<In, InError, Mapper, Out, Context>
+impl<In, InError, Mapper, Out> Operator for MapOperator<In, InError, Mapper, Out>
 where
 	In: Signal,
 	InError: Signal,
 	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
 	Out: Signal,
-	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
 		= MapSubscriber<In, InError, Mapper, Out, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		MapSubscriber::new(destination, self.mapper.clone())
 	}
 }
 
-impl<In, InError, Mapper, Out, Context> Clone for MapOperator<In, InError, Mapper, Out, Context>
+impl<In, InError, Mapper, Out> Clone for MapOperator<In, InError, Mapper, Out>
 where
 	In: Signal,
 	InError: Signal,
 	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
 	Out: Signal,
-	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {

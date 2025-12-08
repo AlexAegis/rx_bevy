@@ -5,7 +5,7 @@ use crate::operator::CompositeOperator;
 pub trait OperatorComposeExtension: Operator + Sized {
 	fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
 	where
-		NextOp: Operator<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		NextOp: Operator<In = Self::Out, InError = Self::OutError>,
 	{
 		CompositeOperator::new(self, next_operator)
 	}

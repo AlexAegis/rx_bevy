@@ -12,7 +12,7 @@ where
 	O1: Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: Observable<Context = O1::Context>,
+	O2: Observable,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {

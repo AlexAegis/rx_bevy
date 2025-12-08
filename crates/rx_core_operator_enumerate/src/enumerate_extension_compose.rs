@@ -4,9 +4,7 @@ use rx_core_traits::Operator;
 use crate::operator::EnumerateOperator;
 
 pub trait OperatorComposeExtensionEnumerate: Operator + Sized {
-	fn enumerate(
-		self,
-	) -> CompositeOperator<Self, EnumerateOperator<Self::Out, Self::OutError, Self::Context>> {
+	fn enumerate(self) -> CompositeOperator<Self, EnumerateOperator<Self::Out, Self::OutError>> {
 		CompositeOperator::new(self, EnumerateOperator::default())
 	}
 }

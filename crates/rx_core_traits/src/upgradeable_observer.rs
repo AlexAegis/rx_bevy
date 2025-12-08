@@ -1,4 +1,4 @@
-use crate::{ObserverInput, Subscriber, WithSubscriptionContext};
+use crate::{ObserverInput, Subscriber};
 
 /// When a subscription is established, the destination must only receive the
 /// `next`, `error` and `complete` signals, but not `unsubscribe`. And since
@@ -22,8 +22,8 @@ use crate::{ObserverInput, Subscriber, WithSubscriptionContext};
 /// To prevent erroneously missing calling `upgrade` in an Observable's
 /// subscribe function, [UpgradeableObserver] does NOT have [Observer] as it's
 /// supertrait!
-pub trait UpgradeableObserver: ObserverInput + WithSubscriptionContext + Send + Sync {
-	type Upgraded: Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>;
+pub trait UpgradeableObserver: ObserverInput + Send + Sync {
+	type Upgraded: Subscriber<In = Self::In, InError = Self::InError>;
 
 	fn upgrade(self) -> Self::Upgraded;
 }

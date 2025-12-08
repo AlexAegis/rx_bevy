@@ -1,10 +1,7 @@
-use core::marker::PhantomData;
-
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{
-	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, SubscriptionLike,
-	UpgradeableObserver,
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionLike, UpgradeableObserver,
 };
 
 /// Emits all values from an iterator then immediately completes.
@@ -17,62 +14,51 @@ use rx_core_traits::{
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(Iterator::Item)]
 #[rx_out_error(Never)]
-#[rx_context(Context)]
-pub struct IteratorObservable<Iterator, Context = ()>
+pub struct IteratorObservable<Iterator>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
 {
 	iterator: Iterator,
-	_phantom_data: PhantomData<fn(Context)>,
 }
 
-impl<Iterator, Context> IteratorObservable<Iterator, Context>
+impl<Iterator> IteratorObservable<Iterator>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
 {
 	pub fn new(iterator: Iterator) -> Self {
-		Self {
-			iterator,
-			_phantom_data: PhantomData,
-		}
+		Self { iterator }
 	}
 }
 
-impl<Iterator, Context> Observable for IteratorObservable<Iterator, Context>
+impl<Iterator> Observable for IteratorObservable<Iterator>
 where
 	Iterator: Clone + IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
 {
 	type Subscription<Destination>
-		= InertSubscription<Context>
+		= InertSubscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let mut destination = observer.upgrade();
 		for item in self.iterator.clone().into_iter() {
 			if destination.is_closed() {
 				break;
 			}
-			destination.next(item, context);
+			destination.next(item);
 		}
 
-		destination.complete(context);
-		InertSubscription::new(destination, context)
+		destination.complete();
+		InertSubscription::new(destination)
 	}
 }
 

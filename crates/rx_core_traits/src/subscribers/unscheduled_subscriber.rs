@@ -1,7 +1,6 @@
 use crate::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	SubscriptionLike, Teardown, TeardownCollection, WithPrimaryCategory,
 };
 
 /// A wrapper around a subscriber, that simply forwards everything except ticks.
@@ -33,53 +32,23 @@ impl<Destination> ObserverUpgradesToSelf for UnscheduledSubscriber<Destination> 
 {
 }
 
-impl<Destination> WithSubscriptionContext for UnscheduledSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	type Context = Destination::Context;
-}
-
 impl<Destination> Observer for UnscheduledSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.next(next, context);
+	fn next(&mut self, next: Self::In) {
+		self.destination.next(next);
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.error(error, context);
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.complete(context);
-	}
-}
-
-impl<Destination> Tickable for UnscheduledSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		_tick: Tick,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		// Does not do anything on tick as the destination is not (necessarily)
-		// tickable!
+	fn complete(&mut self) {
+		self.destination.complete();
 	}
 }
 
@@ -93,8 +62,8 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.unsubscribe(context);
+	fn unsubscribe(&mut self) {
+		self.destination.unsubscribe();
 	}
 }
 
@@ -103,12 +72,8 @@ where
 	Destination: Subscriber,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.add_teardown(teardown, context);
+	fn add_teardown(&mut self, teardown: Teardown) {
+		self.destination.add_teardown(teardown);
 	}
 }
 

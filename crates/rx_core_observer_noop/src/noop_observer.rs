@@ -2,45 +2,33 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, Signal, SubscriptionContext};
+use rx_core_traits::{Observer, Signal};
 
 #[derive_where(Default, Debug)]
 #[derive(RxObserver)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_context(Context)]
-pub struct NoopObserver<In, InError, Context>
+pub struct NoopObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
-	_phantom_data: PhantomData<(In, InError, fn(Context))>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Context> Observer for NoopObserver<In, InError, Context>
+impl<In, InError> Observer for NoopObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
-	fn next(
-		&mut self,
-		_next: Self::In,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-	}
+	fn next(&mut self, _next: Self::In) {}
 
-	fn error(
-		&mut self,
-		_error: Self::InError,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, _error: Self::InError) {
 		#[cfg(feature = "panic_on_error")]
 		{
 			panic!("noop observer observed an error!")
 		}
 	}
 
-	fn complete(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {}
+	fn complete(&mut self) {}
 }

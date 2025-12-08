@@ -1,8 +1,9 @@
+use std::sync::{Arc, Mutex};
+
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable,
-	allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
+	Observer, SharedDestination, Subscriber, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection,
 };
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
@@ -10,13 +11,12 @@ use crate::{InnerRcSubscriber, WeakRcSubscriber};
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
-#[rx_context(Destination::Context)]
 pub struct RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	shared_destination: <InnerRcSubscriber<Destination> as DestinationSharedTypes>::Shared,
-	pub inner_teardown: Option<SubscriptionData<Destination::Context>>,
+	shared_destination: Arc<Mutex<InnerRcSubscriber<Destination>>>,
+	pub inner_teardown: Option<SubscriptionData>,
 	completed: bool,
 	unsubscribed: bool,
 }
@@ -53,16 +53,9 @@ impl<Destination> RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	pub fn new(
-		destination: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self {
+	pub fn new(destination: Destination) -> Self {
 		Self {
-			shared_destination:
-				<InnerRcSubscriber<Destination> as DestinationSharedTypes>::Sharer::share(
-					InnerRcSubscriber::new(destination),
-					context,
-				),
+			shared_destination: Arc::new(Mutex::new(InnerRcSubscriber::new(destination))),
 			inner_teardown: None,
 			completed: false,
 			unsubscribed: false,
@@ -89,22 +82,15 @@ where
 	}
 
 	#[inline]
-	pub fn add_downstream_teardown(
-		&mut self,
-		teardown: Teardown<Destination::Context>,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.shared_destination.add_teardown(teardown, context);
+	pub fn add_downstream_teardown(&mut self, teardown: Teardown) {
+		self.shared_destination.add_teardown(teardown);
 	}
 
 	/// Acquire a clone to the same reference which will not interact with
 	/// the reference counts, and only attempts to complete or unsubscribe it
 	/// when it too completes or unsubscribes. And can still be used as a
 	/// subscriber
-	pub fn downgrade(
-		&self,
-		_context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> WeakRcSubscriber<Destination> {
+	pub fn downgrade(&self) -> WeakRcSubscriber<Destination> {
 		WeakRcSubscriber {
 			shared_destination: self.shared_destination.clone(),
 		}
@@ -115,51 +101,28 @@ impl<Destination> Observer for RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: Self::In) {
 		if !self.is_this_clone_closed() {
-			self.shared_destination.next(next, context);
+			self.shared_destination.next(next);
 		}
 	}
 
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: Self::InError) {
 		if !self.is_this_clone_closed() {
-			self.shared_destination.error(error, context);
-			self.unsubscribe(context);
+			self.shared_destination.error(error);
+			self.unsubscribe();
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self) {
 		if !self.is_this_clone_closed() {
 			self.completed = true;
 			self.shared_destination.access_mut(|destination| {
 				destination.completion_count += 1;
-				destination.complete_if_can(context);
+				destination.complete_if_can();
 			});
-			self.shared_destination.complete(context);
+			self.shared_destination.complete();
 		}
-	}
-}
-
-impl<Destination> Tickable for RcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		// The inner shared destination ensures downstream will only receive
-		// one tick if multiple clones of this are all trying to tick it.
-		self.shared_destination.tick(tick, context);
 	}
 }
 
@@ -172,13 +135,13 @@ where
 		self.shared_destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		if !self.unsubscribed {
 			self.unsubscribed = true;
 			self.shared_destination.access_mut(|destination| {
 				destination.unsubscribe_count += 1;
 			});
-			self.shared_destination.unsubscribe(context);
+			self.shared_destination.unsubscribe();
 		}
 	}
 }
@@ -188,17 +151,13 @@ where
 	Destination: 'static + Subscriber,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn add_teardown(&mut self, teardown: Teardown) {
 		// The inner subscriptions additional teardowns will be stored here, not downstream.
 		// Additional downstream teardowns can only be added from upstream, using an externally
 		// accessed function.
 		self.inner_teardown
 			.get_or_insert_default()
-			.add_teardown(teardown, context);
+			.add_teardown(teardown);
 	}
 }
 
@@ -212,18 +171,17 @@ mod test {
 
 	use crate::RcSubscriber;
 
-	fn setup() -> (RcSubscriber<MockObserver<i32>>, MockContext<i32>) {
-		let mut context = MockContext::default();
+	fn setup() -> RcSubscriber<MockObserver<i32>> {
 		let mock_destination = MockObserver::<i32>::default();
 
-		let rc_subscriber = RcSubscriber::new(mock_destination, &mut context);
+		let rc_subscriber = RcSubscriber::new(mock_destination);
 
-		(rc_subscriber, context)
+		rc_subscriber
 	}
 
 	#[test]
 	fn rc_subscriber_starts_with_ref_1() {
-		let (mut rc_subscriber, mut context) = setup();
+		let mut rc_subscriber = setup();
 
 		{
 			let destination = rc_subscriber.shared_destination.read().unwrap();
@@ -231,15 +189,15 @@ mod test {
 			assert_eq!(destination.unsubscribe_count, 0);
 		}
 
-		rc_subscriber.unsubscribe(&mut context);
+		rc_subscriber.unsubscribe();
 	}
 
 	#[test]
 	fn rc_subscriber_unsubscribes() {
-		let (mut rc_subscriber, mut context) = setup();
+		let (mut rc_subscriber) = setup();
 
-		Observer::next(&mut rc_subscriber, 1, &mut context);
-		rc_subscriber.unsubscribe(&mut context);
+		Observer::next(&mut rc_subscriber, 1);
+		rc_subscriber.unsubscribe();
 
 		assert_eq!(context.count_all_observed_unsubscribes(), 1);
 	}

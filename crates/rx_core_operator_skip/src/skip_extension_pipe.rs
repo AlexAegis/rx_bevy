@@ -4,10 +4,7 @@ use rx_core_traits::Observable;
 use crate::operator::SkipOperator;
 
 pub trait ObservablePipeExtensionSkip: Observable + Sized {
-	fn skip(
-		self,
-		count: usize,
-	) -> Pipe<Self, SkipOperator<Self::Out, Self::OutError, Self::Context>> {
+	fn skip(self, count: usize) -> Pipe<Self, SkipOperator<Self::Out, Self::OutError>> {
 		Pipe::new(self, SkipOperator::new(count))
 	}
 }

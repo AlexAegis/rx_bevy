@@ -1,122 +1,140 @@
-use std::iter::Peekable;
+use std::{
+	iter::Peekable,
+	sync::{Arc, Mutex},
+	time::Duration,
+};
 
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Never, Signal, Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	TeardownCollection, Tick, Tickable,
+	Never, Scheduler, SchedulerScheduleTaskExtension, Signal, Subscriber, SubscriptionData,
+	SubscriptionLike, TaskContextItem, TaskOwnerId, Teardown, TeardownCollection,
 };
 
 use crate::observable::OnTickObservableOptions;
 
-#[derive(RxSubscription)]
-#[rx_context(Context)]
-pub struct OnTickIteratorSubscription<Iterator, Context>
+struct OnTickIteratorState<Iterator>
 where
 	Iterator: IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
 {
+	last_now_observed: Duration,
 	observed_ticks: usize,
 	peekable_iterator: Peekable<Iterator::IntoIter>,
-	options: OnTickObservableOptions,
-	destination:
-		Box<dyn Subscriber<In = Iterator::Item, InError = Never, Context = Context> + Send + Sync>,
-	teardown: SubscriptionData<Context>,
 }
 
-impl<Iterator, Context> OnTickIteratorSubscription<Iterator, Context>
+#[derive(RxSubscription)]
+pub struct OnTickIteratorSubscription<Iterator, S>
 where
 	Iterator: IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
+	S: Scheduler,
+{
+	options: OnTickObservableOptions<S>,
+	destination: Arc<Mutex<dyn Subscriber<In = Iterator::Item, InError = Never> + Send + Sync>>,
+	owner_id: TaskOwnerId,
+	teardown: SubscriptionData,
+}
+
+impl<Iterator, S> OnTickIteratorSubscription<Iterator, S>
+where
+	Iterator: IntoIterator,
+	Iterator::Item: Signal,
+	S: Scheduler,
 {
 	pub fn new(
-		mut destination: impl Subscriber<In = Iterator::Item, InError = Never, Context = Context>
-		+ 'static,
+		mut destination: impl Subscriber<In = Iterator::Item, InError = Never> + 'static,
 		iterator: Iterator::IntoIter,
-		options: OnTickObservableOptions,
-		context: &mut Context::Item<'_, '_>,
+		options: OnTickObservableOptions<S>,
 	) -> Self {
 		let mut peekable_iterator = iterator.peekable();
+
+		let mut state = OnTickIteratorState {
+			last_now_observed: Duration::from_millis(0),
+			observed_ticks: 0,
+			peekable_iterator,
+		};
 
 		if options.start_on_subscribe
 			&& let Some(value) = peekable_iterator.next()
 		{
-			destination.next(value, context);
+			destination.next(value);
 		}
 
+		let destination = Arc::new(Mutex::new(destination));
+
+		let owner_id = {
+			let scheduler = options.scheduler.get_scheduler();
+			let owner_id = scheduler.generate_owner_id();
+			scheduler.schedule_repeated_task(
+				move |_, context| {
+					let is_new_tick = {
+						let now = context.now();
+						let diff = state.last_now_observed == now;
+						state.last_now_observed = now;
+						diff
+					};
+
+					Ok(())
+				},
+				Duration::from_nanos(0),
+				false,
+				owner_id,
+			);
+
+			state.observed_ticks += 1;
+
+			if state.emit_at_every_nth_tick != 0
+				&& state
+					.observed_ticks
+					.is_multiple_of(state.emit_at_every_nth_tick)
+				&& let Some(value) = state.peekable_iterator.next()
+			{
+				state.observed_ticks = 0; // Reset to avoid overflow
+				state.destination.next(value);
+				if self.peekable_iterator.peek().is_none() {
+					self.destination.complete();
+					self.unsubscribe();
+				}
+			}
+
+			owner_id
+		};
+
 		OnTickIteratorSubscription {
-			observed_ticks: 0,
-			peekable_iterator,
 			options,
-			destination: Box::new(destination),
+			destination,
+			owner_id,
 			teardown: SubscriptionData::default(),
 		}
 	}
 }
 
-impl<Iterator, Context> Tickable for OnTickIteratorSubscription<Iterator, Context>
+impl<Iterator, S> SubscriptionLike for OnTickIteratorSubscription<Iterator, S>
 where
 	Iterator: IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
-{
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		if !self.is_closed() {
-			self.observed_ticks += 1;
-
-			if self.options.emit_at_every_nth_tick != 0
-				&& self
-					.observed_ticks
-					.is_multiple_of(self.options.emit_at_every_nth_tick)
-				&& let Some(value) = self.peekable_iterator.next()
-			{
-				self.observed_ticks = 0; // Reset to avoid overflow
-				self.destination.next(value, context);
-				if self.peekable_iterator.peek().is_none() {
-					self.destination.complete(context);
-					self.unsubscribe(context);
-				}
-			}
-		}
-
-		self.destination.tick(tick, context);
-	}
-}
-
-impl<Iterator, Context> SubscriptionLike for OnTickIteratorSubscription<Iterator, Context>
-where
-	Iterator: IntoIterator,
-	Iterator::Item: Signal,
-	Context: SubscriptionContext,
+	S: Scheduler,
 {
 	fn is_closed(&self) -> bool {
 		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
+		self.options.scheduler.get_scheduler().cancel(self.owner_id);
 		if !self.teardown.is_closed() {
-			self.destination.unsubscribe(context);
-			self.teardown.unsubscribe(context);
+			self.destination.unsubscribe();
+			self.teardown.unsubscribe();
 		}
 	}
 }
 
-impl<Iterator, Context> TeardownCollection for OnTickIteratorSubscription<Iterator, Context>
+impl<Iterator, S> TeardownCollection for OnTickIteratorSubscription<Iterator, S>
 where
 	Iterator: IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
+	S: Scheduler,
 {
-	fn add_teardown(
-		&mut self,
-		teardown: rx_core_traits::Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.teardown.add_teardown(teardown, context);
+	fn add_teardown(&mut self, teardown: Teardown) {
+		self.teardown.add_teardown(teardown);
 	}
 }

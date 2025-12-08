@@ -1,9 +1,8 @@
+use std::sync::{Arc, Mutex};
+
 use derive_where::derive_where;
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
-	Observer, Subscriber, SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection,
-	Tick, Tickable, allocator::DestinationSharedTypes,
-};
+use rx_core_traits::{Observer, Subscriber, SubscriptionLike, Teardown, TeardownCollection};
 
 use crate::InnerRcSubscriber;
 
@@ -12,53 +11,30 @@ use crate::InnerRcSubscriber;
 #[derive_where(Clone)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
-#[rx_context(Destination::Context)]
 pub struct WeakRcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	pub(crate) shared_destination:
-		<InnerRcSubscriber<Destination> as DestinationSharedTypes>::Shared,
+	pub(crate) shared_destination: Arc<Mutex<InnerRcSubscriber<Destination>>>,
 }
 
 impl<Destination> Observer for WeakRcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.shared_destination.next(next, context);
+	fn next(&mut self, next: Self::In) {
+		self.shared_destination.next(next);
 	}
 
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			self.shared_destination.error(error, context);
-			self.unsubscribe(context);
+			self.shared_destination.error(error);
+			self.unsubscribe();
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.shared_destination.complete(context);
-	}
-}
-
-impl<Destination> Tickable for WeakRcSubscriber<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.shared_destination.tick(tick, context);
+	fn complete(&mut self) {
+		self.shared_destination.complete();
 	}
 }
 
@@ -71,9 +47,9 @@ where
 		self.shared_destination.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
-			self.shared_destination.unsubscribe(context);
+			self.shared_destination.unsubscribe();
 		}
 	}
 }
@@ -83,11 +59,7 @@ where
 	Destination: 'static + Subscriber,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.shared_destination.add_teardown(teardown, context);
+	fn add_teardown(&mut self, teardown: Teardown) {
+		self.shared_destination.add_teardown(teardown);
 	}
 }

@@ -2,8 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Observable, SubjectLike, Subscriber, SubscriptionContext, SubscriptionLike,
-	UpgradeableObserver, WithSubscriptionContext,
+	Observable, SubjectLike, Subscriber, SubscriptionLike, TeardownCollection, UpgradeableObserver,
 };
 
 use crate::{
@@ -14,15 +13,13 @@ use crate::{
 #[derive(RxObservable)]
 #[rx_out(Connector::Out)]
 #[rx_out_error(Connector::OutError)]
-#[rx_context(Source::Context)]
 pub struct ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	/// The only reason this field is behind an `Arc<RwLock>` is to be able to
 	/// pipe operators over a connectable observable.
@@ -35,11 +32,10 @@ where
 impl<Source, ConnectorCreator, Connector> ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
@@ -53,11 +49,8 @@ where
 		self.connector.is_closed()
 	}
 
-	pub fn unsubscribe(
-		&mut self,
-		context: &mut <Connector::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.connector.unsubscribe(context);
+	pub fn unsubscribe(&mut self) {
+		self.connector.unsubscribe();
 	}
 }
 
@@ -65,11 +58,10 @@ impl<Source, ConnectorCreator, Connector> Clone
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -82,36 +74,32 @@ impl<Source, ConnectorCreator, Connector> Observable
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	type Subscription<Destination>
 		= Connector::Subscription<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let mut destination = observer.upgrade();
 
 		match self.connector.write() {
-			Ok(mut connector) => connector.subscribe(destination, context),
+			Ok(mut connector) => connector.subscribe(destination),
 			Err(poison_error) => {
 				let error_message =
 					format!("Poisoned lock encountered, unable to subscribe! {poison_error:?}");
-				poison_error.into_inner().unsubscribe(context);
-				destination.unsubscribe(context);
+				poison_error.into_inner().unsubscribe();
+				destination.unsubscribe();
 				panic!("{}", error_message)
 			}
 		}
@@ -122,25 +110,21 @@ impl<Source, ConnectorCreator, Connector> Connectable
 	for ConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	type ConnectionSubscription =
-		Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>;
+		<Source as Observable>::Subscription<<Connector as UpgradeableObserver>::Upgraded>;
 
-	fn connect(
-		&mut self,
-		context: &mut <<Self::ConnectionSubscription as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> ConnectionHandle<Self::ConnectionSubscription> {
+	fn connect(&mut self) -> ConnectionHandle<Self::ConnectionSubscription> {
 		match self.connector.write() {
-			Ok(mut connector) => connector.connect(context),
+			Ok(mut connector) => connector.connect(),
 			Err(poison_error) => {
 				let error_message =
 					format!("Poisoned lock encountered, unable to subscribe! {poison_error:?}");
-				poison_error.into_inner().unsubscribe(context);
+				poison_error.into_inner().unsubscribe();
 				panic!("{}", error_message)
 			}
 		}

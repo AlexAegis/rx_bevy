@@ -1,8 +1,6 @@
-use core::marker::PhantomData;
-
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, SubscriptionLike,
+	Never, Observable, Observer, Scheduler, Signal, Subscriber, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -21,54 +19,45 @@ use crate::{OnTickIteratorSubscription, observable::OnTickObservableOptions};
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(Iterator::Item)]
 #[rx_out_error(Never)]
-#[rx_context(Context)]
-pub struct IteratorOnTickObservable<Iterator, Context>
+pub struct IteratorOnTickObservable<Iterator, S>
 where
 	Iterator: 'static + Clone + IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
+	S: Scheduler,
 {
 	iterator: Iterator,
-	options: OnTickObservableOptions,
-	_phantom_data: PhantomData<fn(Context)>,
+	options: OnTickObservableOptions<S>,
 }
 
-impl<Iterator, Context> IteratorOnTickObservable<Iterator, Context>
+impl<Iterator, S> IteratorOnTickObservable<Iterator, S>
 where
 	Iterator: 'static + Clone + IntoIterator,
 	Iterator::Item: Signal,
-	Context: SubscriptionContext,
+	S: Scheduler,
 {
-	pub fn new(iterator: Iterator, options: OnTickObservableOptions) -> Self {
-		Self {
-			iterator,
-			options,
-			_phantom_data: PhantomData,
-		}
+	pub fn new(iterator: Iterator, options: OnTickObservableOptions<S>) -> Self {
+		Self { iterator, options }
 	}
 }
 
-impl<Iterator, Context> Observable for IteratorOnTickObservable<Iterator, Context>
+impl<Iterator, S> Observable for IteratorOnTickObservable<Iterator, S>
 where
 	Iterator: 'static + Clone + IntoIterator,
 	Iterator::Item: Signal,
 	Iterator::IntoIter: Send + Sync,
-	Context: SubscriptionContext,
+	S: 'static + Scheduler + Send + Sync,
 {
 	type Subscription<Destination>
-		= OnTickIteratorSubscription<Iterator, Context>
+		= OnTickIteratorSubscription<Iterator, S>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let mut destination = observer.upgrade();
 		let mut iter = self.iterator.clone().into_iter();
@@ -79,13 +68,13 @@ where
 					completed = false;
 					break;
 				}
-				destination.next(item, context);
+				destination.next(item);
 			}
 			if completed {
-				destination.complete(context);
+				destination.complete();
 			}
 		}
-		OnTickIteratorSubscription::new(destination, iter, self.options.clone(), context)
+		OnTickIteratorSubscription::new(destination, iter, self.options.clone())
 	}
 }
 
@@ -97,7 +86,7 @@ mod test_iterator_on_tick_observable {
 		use std::time::Duration;
 
 		use rx_core::prelude::*;
-		use rx_core_testing::prelude::*;
+		use rx_core_testing::{MockExecutor, prelude::*};
 		use rx_core_traits::SubscriberNotification;
 
 		use crate::observable::{IntoIteratorOnTickObservableExtension, OnTickObservableOptions};
@@ -109,16 +98,16 @@ mod test_iterator_on_tick_observable {
 		/// - RX_ALWAYS_FORWARD_TICKS
 		#[test]
 		fn should_emit_its_values_every_two_ticks_then_complete() {
-			let mut mock_clock = MockClock::default();
-			let mut context = MockContext::default();
+			let mock_executor = MockExecutor::default();
+			let scheduler = mock_executor.get_scheduler();
+
 			let mock_destination = MockObserver::<i32>::default();
 
-			let mut source = (1..=3).into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
-				OnTickObservableOptions {
-					emit_at_every_nth_tick: 2,
-					start_on_subscribe: true,
-				},
-			);
+			let mut source = (1..=3).into_observable_on_every_nth_tick(OnTickObservableOptions {
+				emit_at_every_nth_tick: 2,
+				start_on_subscribe: true,
+				scheduler,
+			});
 			let mut subscription = source.subscribe(mock_destination, &mut context);
 			assert!(matches!(
 				context.nth_notification(0),

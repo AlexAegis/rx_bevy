@@ -53,6 +53,8 @@ where
 {
 	fn build(&self, app: &mut App) {
 		app.init_resource::<RxBevyExecutor<S, C>>();
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// TODO: This has to run at the very end of this schedule, or offer a label so users can make sure it's scheduled before the executor
 		app.add_systems(self.schedule.clone(), tick_executor::<S, C>);
 
 		// Enables the creation of this component by its TypeId

@@ -7,10 +7,7 @@ use crate::{
 };
 
 pub trait ObservablePipeExtensionAdsr: Observable<Out = AdsrTrigger> + Sized {
-	fn adsr(
-		self,
-		options: AdsrOperatorOptions,
-	) -> Pipe<Self, AdsrOperator<Self::OutError, Self::Context>> {
+	fn adsr(self, options: AdsrOperatorOptions) -> Pipe<Self, AdsrOperator<Self::OutError>> {
 		Pipe::new(self, AdsrOperator::new(options))
 	}
 }

@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Observable, Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observable, Operator, Signal, Subscriber};
 
 use crate::SwitchAllSubscriber;
 
@@ -10,7 +10,6 @@ use crate::SwitchAllSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(In::Out)]
 #[rx_out_error(In::OutError)]
-#[rx_context(In::Context)]
 pub struct SwitchAllOperator<In, InError>
 where
 	In: Observable + Signal,
@@ -39,24 +38,17 @@ where
 	type Subscriber<Destination>
 		= SwitchAllSubscriber<In, InError, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		SwitchAllSubscriber::new(destination, context)
+		SwitchAllSubscriber::new(destination)
 	}
 }
 

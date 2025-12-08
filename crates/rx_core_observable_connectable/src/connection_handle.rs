@@ -1,30 +1,24 @@
-use rx_core_traits::{
-	SubscriptionContext, SubscriptionLike, SubscriptionWithTeardown, Teardown, TeardownCollection,
-	WithSubscriptionContext, allocator::UnscheduledSubscriptionAllocator,
-};
+use std::sync::{Arc, RwLock};
+
+use rx_core_traits::{SubscriptionLike, SubscriptionWithTeardown, Teardown, TeardownCollection};
 
 /// Subscription that represents an active connection for a
 /// [ConnectableObservable][crate::ConnectableObservable].
 pub struct ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionWithTeardown  + Send + Sync,
+	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 {
-	handle: <<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator as UnscheduledSubscriptionAllocator>::UnscheduledHandle<Subscription>,
+	handle: Arc<RwLock<Subscription>>,
 }
 
 impl<Subscription> ConnectionHandle<Subscription>
 where
 	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 {
-	pub fn new(
-		subscription: Subscription,
-		context: &mut <Subscription::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self {
-		let handle =
-			<<Subscription::Context as SubscriptionContext>::UnscheduledSubscriptionAllocator as UnscheduledSubscriptionAllocator>::allocate_unscheduled_subscription(
-				subscription, context
-			);
-		Self { handle }
+	pub fn new(subscription: Subscription) -> Self {
+		Self {
+			handle: Arc::new(RwLock::new(subscription)),
+		}
 	}
 }
 
@@ -39,13 +33,6 @@ where
 	}
 }
 
-impl<Subscription> WithSubscriptionContext for ConnectionHandle<Subscription>
-where
-	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
-{
-	type Context = Subscription::Context;
-}
-
 impl<Subscription> SubscriptionLike for ConnectionHandle<Subscription>
 where
 	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
@@ -55,8 +42,8 @@ where
 		self.handle.is_closed()
 	}
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.handle.unsubscribe(context);
+	fn unsubscribe(&mut self) {
+		self.handle.unsubscribe();
 	}
 }
 
@@ -65,12 +52,8 @@ where
 	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.handle.add_teardown(teardown, context);
+	fn add_teardown(&mut self, teardown: Teardown) {
+		self.handle.add_teardown(teardown);
 	}
 }
 
@@ -80,8 +63,7 @@ where
 {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			let mut context = Subscription::Context::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
+			self.unsubscribe();
 		}
 	}
 }

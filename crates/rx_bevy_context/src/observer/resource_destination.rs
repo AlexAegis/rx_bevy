@@ -4,12 +4,11 @@ use bevy_ecs::{resource::Resource, world::Mut};
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{Observer, ObserverNotification, Signal, UpgradeableObserver};
 
-use crate::{DetachedSubscriber, RxBevyContext, RxBevyContextItem};
+use crate::{DetachedSubscriber, RxBevyContextItem};
 
 #[derive(RxObserver, Copy, Clone, Debug)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_context(RxBevyContext)]
 #[rx_does_not_upgrade_to_observer_subscriber]
 pub struct ResourceDestination<In, InError, R, ResourceWriter>
 where

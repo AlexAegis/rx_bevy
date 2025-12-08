@@ -1,8 +1,5 @@
 use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
-	SubscriptionContext, SubscriptionLike, SubscriptionScheduled, Teardown, TeardownCollection,
-	Tick, Tickable,
-};
+use rx_core_traits::{SubscriptionLike, Teardown, TeardownCollection};
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
 /// runs any [Teardown] you may add into it.
@@ -12,78 +9,38 @@ use rx_core_traits::{
 /// subscriptions made with drop-unsafe contexts can (obviously) be dropped once
 /// they are unsubscribed, and that is guaranteed here.
 #[derive(RxSubscription)]
-#[rx_context(Context)]
 #[rx_skip_unsubscribe_on_drop_impl]
-pub struct InertSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
-	tickable: Box<dyn Tickable<Context = Context> + Send + Sync>,
-}
+pub struct InertSubscription;
 
-impl<Context> InertSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
-	pub fn new(
-		mut destination: impl SubscriptionScheduled<Context = Context> + 'static + Send + Sync,
-		context: &mut Context::Item<'_, '_>,
-	) -> Self {
+impl InertSubscription {
+	pub fn new(mut destination: impl SubscriptionLike + 'static + Send + Sync) -> Self {
 		// Immediately unsubscribes if it's not already closed.
 		if !destination.is_closed() {
-			destination.unsubscribe(context);
+			destination.unsubscribe();
 		}
 
-		Self {
-			tickable: Box::new(destination),
-		}
+		Self
 	}
 }
 
-impl<Context> Tickable for InertSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.tickable.tick(tick, context);
-	}
-}
-
-impl<Context> SubscriptionLike for InertSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
+impl SubscriptionLike for InertSubscription {
 	fn is_closed(&self) -> bool {
 		true
 	}
 
-	fn unsubscribe(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		// Does not need to do anything on unsubscribe
 	}
 }
 
-impl<Context> TeardownCollection for InertSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+impl TeardownCollection for InertSubscription {
+	fn add_teardown(&mut self, teardown: Teardown) {
 		// The added teardown is executed immediately as this subscription is always closed.
-		teardown.execute(context);
+		teardown.execute();
 	}
 }
 
-impl<Context> Drop for InertSubscription<Context>
-where
-	Context: SubscriptionContext,
-{
+impl Drop for InertSubscription {
 	fn drop(&mut self) {
 		// Does not need to do anything on drop, as it contains nothing.
 	}

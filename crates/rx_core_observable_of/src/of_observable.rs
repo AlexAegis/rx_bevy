@@ -1,64 +1,48 @@
-use core::marker::PhantomData;
-
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
-use rx_core_traits::{
-	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, UpgradeableObserver,
-};
+use rx_core_traits::{Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver};
 
 /// Emits a single value then immediately completes
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(Out)]
 #[rx_out_error(Never)]
-#[rx_context(Context)]
-pub struct OfObservable<Out, Context = ()>
+pub struct OfObservable<Out>
 where
 	Out: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	value: Out,
-	_phantom_data: PhantomData<Context>,
 }
 
-impl<Out, Context> OfObservable<Out, Context>
+impl<Out> OfObservable<Out>
 where
 	Out: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	pub fn new(value: Out) -> Self {
-		Self {
-			value,
-			_phantom_data: PhantomData,
-		}
+		Self { value }
 	}
 }
 
-impl<Out, Context> Observable for OfObservable<Out, Context>
+impl<Out> Observable for OfObservable<Out>
 where
 	Out: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	type Subscription<Destination>
-		= InertSubscription<Context>
+		= InertSubscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
-		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		let mut destination = observer.upgrade();
-		destination.next(self.value.clone(), context);
-		destination.complete(context);
-		InertSubscription::new(destination, context)
+		destination.next(self.value.clone());
+		destination.complete();
+		InertSubscription::new(destination)
 	}
 }
 
@@ -74,10 +58,9 @@ mod tests {
 		let value = 4;
 		let mut observable = OfObservable::new(value);
 		let mock_observer = MockObserver::<_, _, DropSafeSubscriptionContext>::default();
-		let mut mock_context = MockContext::default();
 
-		let mut subscription = observable.subscribe(mock_observer, &mut mock_context);
-		subscription.unsubscribe(&mut mock_context);
+		let mut subscription = observable.subscribe(mock_observer);
+		subscription.unsubscribe();
 
 		assert_eq!(mock_context.all_observed_values(), vec![value]);
 	}

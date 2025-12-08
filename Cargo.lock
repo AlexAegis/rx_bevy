@@ -5074,16 +5074,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_core_subscription_drop"
-version = "0.1.0"
-dependencies = [
- "rx_core",
- "rx_core_macro_subscription_derive",
- "rx_core_testing",
- "rx_core_traits",
-]
-
-[[package]]
 name = "rx_core_subscription_inert"
 version = "0.1.0"
 dependencies = [

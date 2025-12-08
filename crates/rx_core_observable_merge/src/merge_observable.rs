@@ -4,13 +4,12 @@ use rx_core_macro_observable_derive::RxObservable;
 use rx_core_operator_map_into::MapIntoSubscriber;
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, Signal, Subscriber, SubscriptionContext, SubscriptionData, UpgradeableObserver,
+	Observable, Signal, Subscriber, SubscriptionData, TeardownCollection, UpgradeableObserver,
 };
 
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-#[rx_context(O1::Context)]
 pub struct MergeObservable<Out, OutError, O1, O2>
 where
 	Out: Signal,
@@ -18,7 +17,7 @@ where
 	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -34,7 +33,7 @@ where
 	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
@@ -54,39 +53,36 @@ where
 	O1: 'static + Observable,
 	O1::Out: Into<Out>,
 	O1::OutError: Into<OutError>,
-	O2: 'static + Observable<Context = O1::Context>,
+	O2: 'static + Observable,
 	O2::Out: Into<Out>,
 	O2::OutError: Into<OutError>,
 {
 	type Subscription<Destination>
-		= SubscriptionData<O1::Context>
+		= SubscriptionData
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let destination = observer.upgrade();
-		let rc_subscriber = RcSubscriber::new(destination, context);
+		let rc_subscriber = RcSubscriber::new(destination);
 
 		let s1 = self
 			.observable_1
-			.subscribe(MapIntoSubscriber::new(rc_subscriber.clone()), context);
+			.subscribe(MapIntoSubscriber::new(rc_subscriber.clone()));
 
 		let s2 = self
 			.observable_2
-			.subscribe(MapIntoSubscriber::new(rc_subscriber), context);
+			.subscribe(MapIntoSubscriber::new(rc_subscriber));
 
 		let mut subscription = SubscriptionData::default();
-		subscription.add_notifiable(s1.into(), context);
-		subscription.add_notifiable(s2.into(), context);
+		subscription.add_teardown(s1.into());
+		subscription.add_teardown(s2.into());
 		subscription
 	}
 }

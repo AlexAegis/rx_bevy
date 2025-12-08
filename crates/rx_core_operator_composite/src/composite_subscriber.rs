@@ -8,7 +8,6 @@ use rx_core_traits::{Observer, Subscriber};
 #[derive_where(Debug; Inner)]
 #[rx_in(Inner::In)]
 #[rx_in_error(Inner::InError)]
-#[rx_context(Inner::Context)]
 #[rx_delegate_observer_to_destination]
 #[rx_delegate_tickable_to_destination]
 #[rx_delegate_subscription_like_to_destination]

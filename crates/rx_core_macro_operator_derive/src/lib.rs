@@ -1,8 +1,5 @@
 use quote::quote;
-use rx_core_macro_common::{
-	impl_observable_output, impl_observer_input, impl_primary_category,
-	impl_with_subscription_context,
-};
+use rx_core_macro_common::{impl_observable_output, impl_observer_input, impl_primary_category};
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
 fn primary_category_operator() -> Type {
@@ -22,8 +19,6 @@ fn primary_category_operator() -> Type {
 /// ## Traits Implemented
 ///
 /// - `WithPrimaryCategory`: Sets the associated type to `PrimaryCategoryOperator`
-/// - `WithSubscriptionContext`: Sets the associated type to the values of the
-///   `#[rx_context(...)]` attribute
 /// - `ObserverInput`: Sets the associated type `In` to the value of the
 ///   `#[rx_in(...)]` attribute, or to `Never` (`Infallible`) if missing. Also
 ///   sets the associated `InError` type to the value of the
@@ -45,18 +40,13 @@ fn primary_category_operator() -> Type {
 ///   the operator, usually it's the same as the input type
 /// - `#[rx_out_error(...)]` (optional, default: `Never`): Defines the output
 ///   error type of the operator, usually it's the same as the input error type
-/// - `#[rx_context(...)]`: Defines the Context this operator is compatible with
-#[proc_macro_derive(
-	RxOperator,
-	attributes(rx_in, rx_in_error, rx_out, rx_out_error, rx_context)
-)]
+#[proc_macro_derive(RxOperator, attributes(rx_in, rx_in_error, rx_out, rx_out_error))]
 pub fn operator_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	let derive_input = parse_macro_input!(input as DeriveInput);
 
 	let primary_category_impl = impl_primary_category(&derive_input, primary_category_operator());
 	let observable_output_impl = impl_observable_output(&derive_input);
 	let observer_input_impl = impl_observer_input(&derive_input);
-	let with_subscription_context_impl = impl_with_subscription_context(&derive_input);
 
 	(quote! {
 		#primary_category_impl
@@ -64,9 +54,6 @@ pub fn operator_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 		#observable_output_impl
 
 		#observer_input_impl
-
-		#with_subscription_context_impl
-
 	})
 	.into()
 }

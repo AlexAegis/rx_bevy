@@ -2,32 +2,28 @@ use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	Never, Observer, Signal, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
-	TeardownCollection, Tickable,
+	Never, Observer, Signal, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 #[derive(RxObserver)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_context(Context)]
 #[rx_upgrades_to(self)]
-pub struct PrintObserver<In, InError = Never, Context = ()>
+pub struct PrintObserver<In, InError = Never>
 where
 	In: Signal + Debug,
 	InError: Signal + Debug,
-	Context: SubscriptionContext,
 {
 	prefix: Option<&'static str>,
-	teardown: SubscriptionData<Context>,
-	_phantom_data: PhantomData<(In, InError, fn(Context))>,
+	teardown: SubscriptionData,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Context> PrintObserver<In, InError, Context>
+impl<In, InError> PrintObserver<In, InError>
 where
 	In: Signal + Debug,
 	InError: Signal + Debug,
-	Context: SubscriptionContext,
 {
 	pub fn new(message: &'static str) -> Self {
 		Self {
@@ -44,11 +40,10 @@ where
 	}
 }
 
-impl<In, InError, Context> Default for PrintObserver<In, InError, Context>
+impl<In, InError> Default for PrintObserver<In, InError>
 where
 	In: Signal + Debug,
 	InError: Signal + Debug,
-	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -59,83 +54,52 @@ where
 	}
 }
 
-impl<In, InError, Context> Observer for PrintObserver<In, InError, Context>
+impl<In, InError> Observer for PrintObserver<In, InError>
 where
 	In: Signal + Debug,
 	InError: Signal + Debug,
-	Context: SubscriptionContext,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: Self::In) {
 		println!("{}next: {:?}", self.get_prefix(), next);
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: Self::InError) {
 		println!("{}error: {:?}", self.get_prefix(), error);
 	}
 
 	#[inline]
-	fn complete(&mut self, _context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self) {
 		println!("{}completed", self.get_prefix());
 	}
 }
 
-impl<In, InError, Context> Tickable for PrintObserver<In, InError, Context>
+impl<In, InError> SubscriptionLike for PrintObserver<In, InError>
 where
 	In: Signal + Debug,
 	InError: Signal + Debug,
-	Context: SubscriptionContext,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		tick: rx_core_traits::Tick,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		println!("{}tick: {:?}", self.get_prefix(), tick);
-	}
-}
-
-impl<In, InError, Context> SubscriptionLike for PrintObserver<In, InError, Context>
-where
-	In: Signal + Debug,
-	InError: Signal + Debug,
-	Context: SubscriptionContext,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		if !self.teardown.is_closed() {
-			self.teardown.unsubscribe(context);
+			self.teardown.unsubscribe();
 			println!("{}unsubscribed", self.get_prefix());
 		}
 	}
 }
 
-impl<In, InError, Context> TeardownCollection for PrintObserver<In, InError, Context>
+impl<In, InError> TeardownCollection for PrintObserver<In, InError>
 where
 	In: Signal + Debug,
 	InError: Signal + Debug,
-	Context: SubscriptionContext,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.teardown.add_teardown(teardown, context);
+	fn add_teardown(&mut self, teardown: Teardown) {
+		self.teardown.add_teardown(teardown);
 	}
 }

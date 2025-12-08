@@ -6,7 +6,7 @@ use crate::operator::SwitchAllOperator;
 pub trait ObservablePipeExtensionSwitchAll: Observable + Sized {
 	fn switch_all(self) -> Pipe<Self, SwitchAllOperator<Self::Out, Self::OutError>>
 	where
-		Self::Out: Observable<Context = Self::Context>,
+		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
 	{
 		Pipe::new(self, SwitchAllOperator::default())

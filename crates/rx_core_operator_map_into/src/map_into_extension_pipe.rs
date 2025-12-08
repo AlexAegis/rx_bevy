@@ -6,7 +6,7 @@ use crate::operator::MapIntoOperator;
 pub trait ObservablePipeExtensionMapInto: Observable + Sized {
 	fn map_into<NextOut: Signal, NextOutError: Signal>(
 		self,
-	) -> Pipe<Self, MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError, Self::Context>>
+	) -> Pipe<Self, MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError>>
 	where
 		Self::Out: Into<NextOut>,
 		Self::OutError: Into<NextOutError>,

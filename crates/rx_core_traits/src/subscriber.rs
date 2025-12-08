@@ -1,7 +1,4 @@
-use crate::{
-	Observer, ObserverUpgradesToSelf, SubscriptionWithTeardown, Tickable,
-	context::WithSubscriptionContext,
-};
+use crate::{Observer, ObserverUpgradesToSelf, SubscriptionWithTeardown};
 
 /// # [Subscriber]
 ///
@@ -19,23 +16,11 @@ use crate::{
 /// that just simply forward the signal to its destination should always
 /// be `#[inline]`.
 pub trait Subscriber:
-	Observer
-	+ ObserverUpgradesToSelf
-	+ SubscriptionWithTeardown
-	+ Tickable
-	+ WithSubscriptionContext
-	+ Send
-	+ Sync
+	Observer + ObserverUpgradesToSelf + SubscriptionWithTeardown + Send + Sync
 {
 }
 
 impl<T> Subscriber for T where
-	T: Observer
-		+ ObserverUpgradesToSelf
-		+ SubscriptionWithTeardown
-		+ Tickable
-		+ WithSubscriptionContext
-		+ Send
-		+ Sync
+	T: Observer + ObserverUpgradesToSelf + SubscriptionWithTeardown + Send + Sync
 {
 }

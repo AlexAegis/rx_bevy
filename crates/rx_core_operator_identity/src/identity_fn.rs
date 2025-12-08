@@ -1,14 +1,13 @@
-use rx_core_traits::{Signal, SubscriptionContext};
+use rx_core_traits::Signal;
 
 use crate::operator::IdentityOperator;
 
 /// It creates an IdentityOperator to easily define the input types of a
 /// composite operator.
-pub fn compose_operator<In, InError, Context>() -> IdentityOperator<In, InError, Context>
+pub fn compose_operator<In, InError>() -> IdentityOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	IdentityOperator::default()
 }

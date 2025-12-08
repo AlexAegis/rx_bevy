@@ -1,8 +1,8 @@
 use std::{fmt::Debug, time::Duration};
 
 use rx_core_traits::{
-	ImmediateTaskFactory, ScheduledTaskAction, Scheduler, SchedulerHandle, Task,
-	TaskContextProvider, TaskExecutor, TaskOwnerId, Tick, TickResult, WithTaskInputOutput,
+	ScheduledTaskAction, Scheduler, SchedulerHandle, Task, TaskContextProvider, TaskExecutor,
+	TaskOwnerId, Tick, TickResult, WithTaskInputOutput,
 };
 use slab::Slab;
 

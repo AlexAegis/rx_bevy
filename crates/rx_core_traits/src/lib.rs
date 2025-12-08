@@ -1,6 +1,3 @@
-pub mod heap_allocator_context;
-
-mod context;
 mod observable;
 mod observer;
 mod operator;
@@ -12,10 +9,8 @@ mod subject;
 mod subscriber;
 mod subscribers;
 mod subscription;
-mod tickable;
 mod upgradeable_observer;
 
-pub use context::*;
 pub use observable::*;
 pub use observer::*;
 pub use operator::*;
@@ -27,5 +22,4 @@ pub use subject::*;
 pub use subscriber::*;
 pub use subscribers::*;
 pub use subscription::*;
-pub use tickable::*;
 pub use upgradeable_observer::*;

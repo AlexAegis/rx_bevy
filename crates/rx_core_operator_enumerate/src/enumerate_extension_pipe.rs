@@ -4,7 +4,7 @@ use rx_core_traits::Observable;
 use crate::operator::EnumerateOperator;
 
 pub trait ObservablePipeExtensionEnumerate: Observable + Sized {
-	fn enumerate(self) -> Pipe<Self, EnumerateOperator<Self::Out, Self::OutError, Self::Context>> {
+	fn enumerate(self) -> Pipe<Self, EnumerateOperator<Self::Out, Self::OutError>> {
 		Pipe::new(self, EnumerateOperator::default())
 	}
 }

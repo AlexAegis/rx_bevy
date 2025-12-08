@@ -3,9 +3,7 @@ use std::sync::{Arc, RwLock};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
-use rx_core_traits::{
-	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, UpgradeableObserver,
-};
+use rx_core_traits::{Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver};
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.
@@ -14,25 +12,22 @@ use rx_core_traits::{
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
 #[rx_delegate_subscription_like_to_destination]
-pub struct ReplaySubject<const CAPACITY: usize, In, InError = Never, Context = ()>
+pub struct ReplaySubject<const CAPACITY: usize, In, InError = Never>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	#[destination]
-	subject: Subject<In, InError, Context>,
+	subject: Subject<In, InError>,
 	/// Shared data across clones
 	values: Arc<RwLock<ConstGenericRingBuffer<In, CAPACITY>>>,
 }
 
-impl<const CAPACITY: usize, In, InError, Context> ReplaySubject<CAPACITY, In, InError, Context>
+impl<const CAPACITY: usize, In, InError> ReplaySubject<CAPACITY, In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	/// Returns a clone of the currently stored value
 	/// In case you want to access the current value, prefer using a
@@ -54,12 +49,10 @@ where
 	}
 }
 
-impl<const CAPACITY: usize, In, InError, Context> Default
-	for ReplaySubject<CAPACITY, In, InError, Context>
+impl<const CAPACITY: usize, In, InError> Default for ReplaySubject<CAPACITY, In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -69,14 +62,12 @@ where
 	}
 }
 
-impl<const CAPACITY: usize, In, InError, Context> Observer
-	for ReplaySubject<CAPACITY, In, InError, Context>
+impl<const CAPACITY: usize, In, InError> Observer for ReplaySubject<CAPACITY, In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
-	fn next(&mut self, next: In, context: &mut Context::Item<'_, '_>) {
+	fn next(&mut self, next: In) {
 		self.values
 			.write()
 			.unwrap_or_else(|poison_error| {
@@ -85,41 +76,36 @@ where
 			})
 			.enqueue(next.clone());
 
-		self.subject.next(next, context);
+		self.subject.next(next);
 	}
 
 	#[inline]
-	fn error(&mut self, error: Self::InError, context: &mut Context::Item<'_, '_>) {
-		self.subject.error(error, context);
+	fn error(&mut self, error: Self::InError) {
+		self.subject.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut Context::Item<'_, '_>) {
-		self.subject.complete(context);
+	fn complete(&mut self) {
+		self.subject.complete();
 	}
 }
 
-impl<const CAPACITY: usize, In, InError, Context> Observable
-	for ReplaySubject<CAPACITY, In, InError, Context>
+impl<const CAPACITY: usize, In, InError> Observable for ReplaySubject<CAPACITY, In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	type Subscription<Destination>
-		= MulticastSubscription<In, InError, Context>
+		= MulticastSubscription<In, InError>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let mut downstream_subscriber = destination.upgrade();
 		let buffer_iter = self
@@ -133,9 +119,9 @@ where
 			.into_iter();
 
 		for value in buffer_iter {
-			downstream_subscriber.next(value, context);
+			downstream_subscriber.next(value);
 		}
 
-		self.subject.subscribe(downstream_subscriber, context)
+		self.subject.subscribe(downstream_subscriber)
 	}
 }

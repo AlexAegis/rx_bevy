@@ -12,10 +12,6 @@ pub fn find_attribute<'a>(attrs: &'a [Attribute], attribute_name: &str) -> Optio
 		.find(|attr| attr.path().is_ident(attribute_name))
 }
 
-pub fn find_attribute_required<'a>(attrs: &'a [Attribute], attribute_name: &str) -> &'a Attribute {
-	find_attribute(attrs, attribute_name).expect("Missing #[{attribute_name}] attribute!")
-}
-
 pub fn read_attribute_type(attr: &Attribute) -> Type {
 	let attribute_name = attr.path().get_ident().expect("Missing attribute name!");
 	match &attr.meta {
@@ -54,21 +50,6 @@ pub fn impl_primary_category(derive_input: &DeriveInput, primary_category: Type)
 	quote! {
 		impl #impl_generics rx_core_traits::WithPrimaryCategory for #ident #ty_generics #where_clause {
 			type PrimaryCategory = #primary_category;
-		}
-	}
-}
-
-pub fn impl_with_subscription_context(derive_input: &DeriveInput) -> TokenStream {
-	let ident = derive_input.ident.clone();
-	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
-
-	let context_type = find_attribute(&derive_input.attrs, "rx_context")
-		.map(read_attribute_type)
-		.expect("Missing #[rx_context(...)] attribute!");
-
-	quote! {
-		impl #impl_generics rx_core_traits::WithSubscriptionContext for #ident #ty_generics #where_clause {
-			type Context = #context_type;
 		}
 	}
 }
@@ -236,42 +217,6 @@ fn find_field_ident_with_attribute(
 		)
 }
 
-pub fn impl_delegate_tickable_to_destination(derive_input: &DeriveInput) -> Option<TokenStream> {
-	let rx_delegate_tickable_to_destination =
-		find_attribute(&derive_input.attrs, "rx_delegate_tickable_to_destination").is_some();
-
-	if rx_delegate_tickable_to_destination {
-		Some(impl_delegate_tickable_to_destination_inner(derive_input))
-	} else {
-		None
-	}
-}
-
-fn impl_delegate_tickable_to_destination_inner(derive_input: &DeriveInput) -> TokenStream {
-	let ident = derive_input.ident.clone();
-	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
-
-	let destination_field = find_field_ident_with_attribute(
-		derive_input,
-		"destination",
-		"rx_delegate_tickable_to_destination",
-		"Tickable",
-	);
-
-	quote! {
-		impl #impl_generics rx_core_traits::Tickable for #ident #ty_generics #where_clause {
-			#[inline]
-			fn tick(
-				&mut self,
-				tick: rx_core_traits::Tick,
-				context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-			) {
-				self.#destination_field.tick(tick, context);
-			}
-		}
-	}
-}
-
 pub fn impl_delegate_teardown_collection_to_destination(
 	derive_input: &DeriveInput,
 ) -> Option<TokenStream> {
@@ -308,10 +253,9 @@ fn impl_delegate_teardown_collection_to_destination_inner(
 			#[inline]
 			fn add_teardown(
 				&mut self,
-				teardown: rx_core_traits::Teardown<Self::Context>,
-				context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+				teardown: rx_core_traits::Teardown
 			) {
-				self.#destination_field.add_teardown(teardown, context);
+				self.#destination_field.add_teardown(teardown);
 			}
 		}
 	}
@@ -354,8 +298,8 @@ fn impl_delegate_subscription_like_to_destination_inner(derive_input: &DeriveInp
 			}
 
 			#[inline]
-			fn unsubscribe(&mut self, context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>) {
-				self.#destination_field.unsubscribe(context);
+			fn unsubscribe(&mut self) {
+				self.#destination_field.unsubscribe();
 			}
 		}
 	}
@@ -388,24 +332,22 @@ fn impl_delegate_observer_to_destination_inner(derive_input: &DeriveInput) -> To
 			#[inline]
 			fn next(
 				&mut self,
-				next: Self::In,
-				context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+				next: Self::In
 			) {
-				self.#destination_field.next(next, context);
+				self.#destination_field.next(next);
 			}
 
 			#[inline]
 			fn error(
 				&mut self,
-				error: Self::InError,
-				context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
+				error: Self::InError
 			) {
-				self.#destination_field.error(error, context);
+				self.#destination_field.error(error);
 			}
 
 			#[inline]
-			fn complete(&mut self, context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>) {
-				self.#destination_field.complete(context);
+			fn complete(&mut self) {
+				self.#destination_field.complete();
 			}
 		}
 	}
@@ -424,8 +366,7 @@ fn impl_unsubscribe_on_drop(derive_input: &DeriveInput) -> TokenStream {
 			#[track_caller]
 			fn drop(&mut self) {
 				if !rx_core_traits::SubscriptionLike::is_closed(self) {
-					let mut context = <<Self as rx_core_traits::WithSubscriptionContext>::Context as rx_core_traits::SubscriptionContext>::create_context_to_unsubscribe_on_drop();
-					rx_core_traits::SubscriptionLike::unsubscribe(self, &mut context);
+					rx_core_traits::SubscriptionLike::unsubscribe(self);
 				}
 			}
 		}

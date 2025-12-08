@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Operator, Signal, Subscriber};
 
 use crate::IdentitySubscriber;
 
@@ -16,41 +16,31 @@ use crate::IdentitySubscriber;
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct IdentityOperator<In, InError = Never, Context = ()>
+pub struct IdentityOperator<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Context> Operator for IdentityOperator<In, InError, Context>
+impl<In, InError> Operator for IdentityOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
 		= IdentitySubscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		IdentitySubscriber::new(destination)
 	}

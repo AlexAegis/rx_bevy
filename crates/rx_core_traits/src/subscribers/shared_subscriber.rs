@@ -1,13 +1,10 @@
 use core::marker::PhantomData;
+use std::sync::{Arc, Mutex};
 
 use crate::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionLike, Teardown, TeardownCollection, Tick, Tickable, UpgradeableObserver,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SharedDestination,
+	Subscriber, SubscriptionLike, Teardown, TeardownCollection, UpgradeableObserver,
 	WithPrimaryCategory,
-	context::{
-		SubscriptionContext, WithSubscriptionContext,
-		allocator::{DestinationAllocator, DestinationSharedTypes, SharedDestination},
-	},
 };
 
 /// A SharedSubscriber is a subscriber that guarantees that if you clone it,
@@ -17,7 +14,7 @@ pub struct SharedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + UpgradeableObserver + Send + Sync,
 {
-	shared_destination: <Destination as DestinationSharedTypes>::Shared,
+	shared_destination: Arc<Mutex<Destination>>,
 	_phantom_data: PhantomData<Destination>,
 }
 
@@ -25,15 +22,9 @@ impl<Destination> SharedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + UpgradeableObserver + Send + Sync,
 {
-	pub fn new(
-		destination: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> Self {
+	pub fn new(destination: Destination) -> Self {
 		Self {
-			shared_destination: <Destination as DestinationSharedTypes>::Sharer::share(
-				destination,
-				context,
-			),
+			shared_destination: Arc::new(Mutex::new(destination)),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -59,13 +50,6 @@ where
 {
 	type In = Destination::In;
 	type InError = Destination::InError;
-}
-
-impl<Destination> WithSubscriptionContext for SharedSubscriber<Destination>
-where
-	Destination: 'static + Subscriber + Send + Sync,
-{
-	type Context = Destination::Context;
 }
 
 impl<Destination> WithPrimaryCategory for SharedSubscriber<Destination>
@@ -97,43 +81,18 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.shared_destination.next(next, context);
+	fn next(&mut self, next: Self::In) {
+		self.shared_destination.next(next);
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.shared_destination.error(error, context);
+	fn error(&mut self, error: Self::InError) {
+		self.shared_destination.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.shared_destination.complete(context);
-	}
-}
-
-impl<Destination> Tickable for SharedSubscriber<Destination>
-where
-	Destination: 'static + Subscriber + Send + Sync,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		_tick: Tick,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		// TODO: THIS WOULD COMPLETELY BREAK A HYBRID CHANNEL CONTEXT + SCHEDULER SOLUTION, ONLY ONE CAN STAY!
-		// self.access_with_context_mut(move |destination: &mut Destination| {
-		// 	destination.tick(tick.clone(), context)
-		// });
+	fn complete(&mut self) {
+		self.shared_destination.complete();
 	}
 }
 
@@ -147,8 +106,8 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.shared_destination.unsubscribe(context);
+	fn unsubscribe(&mut self) {
+		self.shared_destination.unsubscribe();
 	}
 }
 
@@ -157,12 +116,8 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	#[inline]
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.shared_destination.add_teardown(teardown, context);
+	fn add_teardown(&mut self, teardown: Teardown) {
+		self.shared_destination.add_teardown(teardown);
 	}
 }
 

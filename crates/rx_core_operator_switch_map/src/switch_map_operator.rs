@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Observable, Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Observable, Operator, Signal, Subscriber};
 
 use crate::SwitchMapSubscriber;
 
@@ -10,7 +10,6 @@ use crate::SwitchMapSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(InnerObservable::Out)]
 #[rx_out_error(InnerObservable::OutError)]
-#[rx_context(InnerObservable::Context)]
 pub struct SwitchMapOperator<In, InError, Switcher, InnerObservable>
 where
 	In: Signal,
@@ -49,24 +48,17 @@ where
 	type Subscriber<Destination>
 		= SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		SwitchMapSubscriber::new(destination, self.switcher.clone(), context)
+		SwitchMapSubscriber::new(destination, self.switcher.clone())
 	}
 }
 

@@ -1,17 +1,12 @@
 use crate::{
 	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionContext, SubscriptionLike, Teardown, TeardownCollection, Tickable,
-	WithPrimaryCategory, WithSubscriptionContext,
+	SubscriptionLike, Teardown, TeardownCollection, WithPrimaryCategory,
 };
 
 pub enum OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
+	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
 {
 	Some(InnerSubscriber),
 	None(Destination),
@@ -20,40 +15,17 @@ where
 impl<InnerSubscriber, Destination> ObserverInput for OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
+	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
 {
 	type In = InnerSubscriber::In;
 	type InError = InnerSubscriber::InError;
-}
-
-impl<InnerSubscriber, Destination> WithSubscriptionContext
-	for OptionSubscriber<InnerSubscriber, Destination>
-where
-	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
-	InnerSubscriber::In: 'static,
-	InnerSubscriber::InError: 'static,
-{
-	type Context = InnerSubscriber::Context;
 }
 
 impl<InnerSubscriber, Destination> WithPrimaryCategory
 	for OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
+	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
 	InnerSubscriber::In: 'static,
 	InnerSubscriber::InError: 'static,
 {
@@ -64,11 +36,7 @@ impl<InnerSubscriber, Destination> ObserverUpgradesToSelf
 	for OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
+	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
 	InnerSubscriber::In: 'static,
 	InnerSubscriber::InError: 'static,
 {
@@ -77,67 +45,28 @@ where
 impl<InnerSubscriber, Destination> Observer for OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
+	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
 	InnerSubscriber::In: 'static,
 	InnerSubscriber::InError: 'static,
 {
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: Self::In) {
 		match self {
-			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.next(next, context),
-			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.next(next, context),
+			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.next(next),
+			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.next(next),
 		}
 	}
 
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: Self::InError) {
 		match self {
-			OptionSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.error(error, context)
-			}
-			OptionSubscriber::None(fallback_subscriber) => {
-				fallback_subscriber.error(error, context)
-			}
+			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.error(error),
+			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.error(error),
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self) {
 		match self {
-			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.complete(context),
-			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.complete(context),
-		}
-	}
-}
-
-impl<InnerSubscriber, Destination> Tickable for OptionSubscriber<InnerSubscriber, Destination>
-where
-	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
-	InnerSubscriber::In: 'static,
-	InnerSubscriber::InError: 'static,
-{
-	fn tick(
-		&mut self,
-		tick: crate::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		match self {
-			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.tick(tick, context),
-			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.tick(tick, context),
+			OptionSubscriber::Some(internal_subscriber) => internal_subscriber.complete(),
+			OptionSubscriber::None(fallback_subscriber) => fallback_subscriber.complete(),
 		}
 	}
 }
@@ -146,11 +75,7 @@ impl<InnerSubscriber, Destination> SubscriptionLike
 	for OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
+	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
 	InnerSubscriber::In: 'static,
 	InnerSubscriber::InError: 'static,
 {
@@ -161,16 +86,13 @@ where
 		}
 	}
 
-	fn unsubscribe(
-		&mut self,
-		context: &mut <InnerSubscriber::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn unsubscribe(&mut self) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.unsubscribe(context);
+				internal_subscriber.unsubscribe();
 			}
 			OptionSubscriber::None(fallback_subscriber) => {
-				fallback_subscriber.unsubscribe(context);
+				fallback_subscriber.unsubscribe();
 			}
 		}
 	}
@@ -180,25 +102,17 @@ impl<InnerSubscriber, Destination> TeardownCollection
 	for OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
-	Destination: Subscriber<
-			In = InnerSubscriber::In,
-			InError = InnerSubscriber::InError,
-			Context = InnerSubscriber::Context,
-		>,
+	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
 	InnerSubscriber::In: 'static,
 	InnerSubscriber::InError: 'static,
 {
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn add_teardown(&mut self, teardown: Teardown) {
 		match self {
 			OptionSubscriber::Some(internal_subscriber) => {
-				internal_subscriber.add_teardown(teardown, context);
+				internal_subscriber.add_teardown(teardown);
 			}
 			OptionSubscriber::None(fallback_subscriber) => {
-				fallback_subscriber.add_teardown(teardown, context);
+				fallback_subscriber.add_teardown(teardown);
 			}
 		}
 	}

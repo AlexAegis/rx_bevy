@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::{Never, Observer, Signal, SubscriberNotification, context::SubscriptionContext};
+use crate::{Never, Observer, Signal, SubscriberNotification};
 
 /// Represents all signal events an observer can observe in a materialized form
 #[derive(Debug, Clone)]
@@ -14,18 +14,16 @@ where
 	Complete,
 }
 
-impl<In, InError, Context> TryFrom<SubscriberNotification<In, InError, Context>>
-	for ObserverNotification<In, InError>
+impl<In, InError> TryFrom<SubscriberNotification<In, InError>> for ObserverNotification<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type Error = SubscriberNotificationTryFromError;
 
 	fn try_from(
-		value: SubscriberNotification<In, InError, Context>,
-	) -> Result<Self, <Self as TryFrom<SubscriberNotification<In, InError, Context>>>::Error> {
+		value: SubscriberNotification<In, InError>,
+	) -> Result<Self, <Self as TryFrom<SubscriberNotification<In, InError>>>::Error> {
 		match value {
 			SubscriberNotification::Next(next) => Ok(ObserverNotification::Next(next)),
 			SubscriberNotification::Error(error) => Ok(ObserverNotification::Error(error)),
@@ -42,26 +40,18 @@ where
 pub struct SubscriberNotificationTryFromError;
 
 pub trait ObserverPushObserverNotificationExtention: Observer {
-	fn push(
-		&mut self,
-		notification: impl Into<ObserverNotification<Self::In, Self::InError>>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	);
+	fn push(&mut self, notification: impl Into<ObserverNotification<Self::In, Self::InError>>);
 }
 
 impl<T> ObserverPushObserverNotificationExtention for T
 where
 	T: Observer,
 {
-	fn push(
-		&mut self,
-		notification: impl Into<ObserverNotification<Self::In, Self::InError>>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn push(&mut self, notification: impl Into<ObserverNotification<Self::In, Self::InError>>) {
 		match notification.into() {
-			ObserverNotification::Next(next) => self.next(next, context),
-			ObserverNotification::Error(error) => self.error(error, context),
-			ObserverNotification::Complete => self.complete(context),
+			ObserverNotification::Next(next) => self.next(next),
+			ObserverNotification::Error(error) => self.error(error),
+			ObserverNotification::Complete => self.complete(),
 		}
 	}
 }

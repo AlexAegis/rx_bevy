@@ -1,12 +1,11 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{FromSubscriptionContext, SubjectLike, SubscriptionContext};
+use rx_core_traits::SubjectLike;
 
 #[derive(Clone)]
 pub struct ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator:
-		Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
+	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub(crate) connector_creator: ConnectorCreator,
@@ -16,8 +15,7 @@ where
 
 impl<ConnectorCreator, Connector> ConnectableOptions<ConnectorCreator, Connector>
 where
-	ConnectorCreator:
-		Fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
+	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike,
 {
 	pub fn new(connector_creator: ConnectorCreator) -> Self {
@@ -38,22 +36,5 @@ where
 	) -> Self {
 		self.unsubscribe_connector_on_disconnect = unsubscribe_connector_on_disconnect;
 		self
-	}
-}
-
-impl<Connector> Default
-	for ConnectableOptions<
-		fn(&mut <Connector::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-		Connector,
-	>
-where
-	Connector: 'static + FromSubscriptionContext + SubjectLike,
-{
-	fn default() -> Self {
-		Self {
-			connector_creator: |context| Connector::from_context(context),
-			unsubscribe_connector_on_disconnect: true,
-			_phantom_data: PhantomData,
-		}
 	}
 }

@@ -1,5 +1,3 @@
-use crate::{SubscriptionContext, WithSubscriptionContext};
-
 /// A [SubscriptionLike] is something that can be "unsubscribed" from, which
 /// will close it, rendering it no longer operational. If it also owns
 /// resources, it will also release those resources, usually by executing
@@ -14,7 +12,7 @@ use crate::{SubscriptionContext, WithSubscriptionContext};
 /// properly released on drop. Note that some subscriptions do not need to
 /// do anything on drop. If that's the case, the `drop` fn should only contain
 /// a comment on why it doesn't need to do anything.
-pub trait SubscriptionLike: WithSubscriptionContext {
+pub trait SubscriptionLike {
 	/// Returns if the subscription is closed or not. A subscription can be
 	/// closed by calling unsubscribe on it. Some special subscriptions made
 	/// by observables that only ever emit values during subscribe, will produce
@@ -27,5 +25,5 @@ pub trait SubscriptionLike: WithSubscriptionContext {
 	/// as closed.
 	///
 	/// Once closed, a subscription stays closed.
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>);
+	fn unsubscribe(&mut self);
 }

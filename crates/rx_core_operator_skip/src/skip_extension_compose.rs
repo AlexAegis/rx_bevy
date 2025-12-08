@@ -7,7 +7,7 @@ pub trait OperatorComposeExtensionSkip: Operator + Sized {
 	fn skip(
 		self,
 		count: usize,
-	) -> CompositeOperator<Self, SkipOperator<Self::Out, Self::OutError, Self::Context>> {
+	) -> CompositeOperator<Self, SkipOperator<Self::Out, Self::OutError>> {
 		CompositeOperator::new(self, SkipOperator::new(count))
 	}
 }

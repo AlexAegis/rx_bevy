@@ -11,7 +11,7 @@ pub trait ObservablePipeExtensionReduce: Observable + Sized {
 		self,
 		reducer: Reducer,
 		seed: NextOut,
-	) -> Pipe<Self, ReduceOperator<Self::Out, Self::OutError, Reducer, NextOut, Self::Context>> {
+	) -> Pipe<Self, ReduceOperator<Self::Out, Self::OutError, Reducer, NextOut>> {
 		Pipe::new(self, ReduceOperator::new(reducer, seed))
 	}
 }

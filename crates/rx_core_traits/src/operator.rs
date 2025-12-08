@@ -1,7 +1,4 @@
-use crate::{
-	ObservableOutput, ObserverInput, Subscriber, WithSubscriptionContext,
-	context::SubscriptionContext,
-};
+use crate::{ObservableOutput, ObserverInput, Subscriber};
 
 /// # [Operator]
 ///
@@ -47,25 +44,18 @@ use crate::{
 /// and quick, when it comes to performance it may be better to write a new
 /// operator.
 ///
-pub trait Operator: ObserverInput + ObservableOutput + WithSubscriptionContext {
+pub trait Operator: ObserverInput + ObservableOutput {
 	type Subscriber<Destination>: 'static
-		+ Subscriber<In = Self::In, InError = Self::InError, Context = Self::Context>
+		+ Subscriber<In = Self::In, InError = Self::InError>
 		+ Send
 		+ Sync
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 }

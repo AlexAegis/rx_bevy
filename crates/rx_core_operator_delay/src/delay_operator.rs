@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Scheduler, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Scheduler, Signal, Subscriber};
 
 use crate::{DelaySubscriber, operator::DelayOperatorOptions};
 
@@ -10,23 +10,20 @@ use crate::{DelaySubscriber, operator::DelayOperatorOptions};
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct DelayOperator<In, InError, Context, S>
+pub struct DelayOperator<In, InError, S>
 where
 	In: Signal,
 	InError: Signal,
 	S: Scheduler,
-	Context: SubscriptionContext,
 {
 	options: DelayOperatorOptions<S>,
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Context, S> DelayOperator<In, InError, Context, S>
+impl<In, InError, S> DelayOperator<In, InError, S>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 	S: Scheduler,
 {
 	pub fn new(options: DelayOperatorOptions<S>) -> Self {
@@ -37,33 +34,25 @@ where
 	}
 }
 
-impl<In, InError, Context, S> Operator for DelayOperator<In, InError, Context, S>
+impl<In, InError, S> Operator for DelayOperator<In, InError, S>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
-	S: 'static + Scheduler<ContextProvider = Context> + Send + Sync,
+	S: 'static + Scheduler + Send + Sync,
 {
 	type Subscriber<Destination>
 		= DelaySubscriber<Destination, S>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		DelaySubscriber::new(destination, self.options.clone(), _context)
+		DelaySubscriber::new(destination, self.options.clone())
 	}
 }

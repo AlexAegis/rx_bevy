@@ -140,8 +140,8 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 		.with_observable::<_, Update, Real>(KeyboardObservable::new(KeyboardObservableOptions {
 			emit: KeyboardObservableEmit::JustPressed,
 		}))
-		.subscribe(
-			ResourceDestination::<_, _, Time<Virtual>, _>::new(|mut virtual_time, signal| {
+		.subscribe(ResourceDestination::<_, _, Time<Virtual>, _>::new(
+			|mut virtual_time, signal| {
 				let speed = match signal {
 					ObserverNotification::Next(key_code) => match key_code {
 						KeyCode::KeyX => 0.5,
@@ -155,9 +155,8 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 				println!("Setting the virtual clocks relative speed to {speed}!");
 
 				virtual_time.set_relative_speed(speed);
-			}),
-			&mut context,
-		)
+			},
+		))
 		.into_entity();
 
 	let instant_subscription_entity = {

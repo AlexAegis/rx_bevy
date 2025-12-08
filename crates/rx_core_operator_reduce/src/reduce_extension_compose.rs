@@ -11,10 +11,7 @@ pub trait OperatorComposeExtensionReduce: Operator + Sized {
 		self,
 		reducer: Reducer,
 		seed: NextOut,
-	) -> CompositeOperator<
-		Self,
-		ReduceOperator<Self::Out, Self::OutError, Reducer, NextOut, Self::Context>,
-	> {
+	) -> CompositeOperator<Self, ReduceOperator<Self::Out, Self::OutError, Reducer, NextOut>> {
 		CompositeOperator::new(self, ReduceOperator::new(reducer, seed))
 	}
 }

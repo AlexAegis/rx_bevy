@@ -1,5 +1,5 @@
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Subscriber};
 
 use crate::CompositeSubscriber;
 
@@ -8,10 +8,9 @@ use crate::CompositeSubscriber;
 #[rx_in_error(PrevOp::InError)]
 #[rx_out(Op::Out)]
 #[rx_out_error(Op::OutError)]
-#[rx_context(Op::Context)]
 pub struct CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
 	prev_op: PrevOp,
@@ -20,7 +19,7 @@ where
 
 impl<PrevOp, Op> CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
 	pub fn new(first_operator: PrevOp, second_operator: Op) -> Self {
@@ -32,7 +31,7 @@ where
 
 	pub fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
 	where
-		NextOp: Operator<In = Op::Out, InError = Op::OutError, Context = Op::Context>,
+		NextOp: Operator<In = Op::Out, InError = Op::OutError>,
 	{
 		CompositeOperator {
 			prev_op: self,
@@ -43,35 +42,27 @@ where
 
 impl<PrevOp, Op> Operator for CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError, Context = Op::Context>,
+	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
 	Op: Operator,
 {
 	type Subscriber<Destination>
 		= CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<Destination>>, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
-		Op::Subscriber<Destination>:
-			Subscriber<In = Op::In, InError = Op::InError, Context = Self::Context>,
-		PrevOp::Subscriber<Op::Subscriber<Destination>>: Subscriber<Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
+		Op::Subscriber<Destination>: Subscriber<In = Op::In, InError = Op::InError>,
+		PrevOp::Subscriber<Op::Subscriber<Destination>>: Subscriber;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		CompositeSubscriber::new(
 			self.prev_op
-				.operator_subscribe(self.op.operator_subscribe(destination, context), context),
+				.operator_subscribe(self.op.operator_subscribe(destination)),
 		)
 	}
 }

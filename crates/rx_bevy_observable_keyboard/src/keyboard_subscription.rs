@@ -9,10 +9,10 @@ use rx_core_traits::{
 use crate::{KeyboardObservableEmit, KeyboardObservableOptions};
 
 #[derive(RxSubscription)]
-#[rx_context(RxBevyContext)]
-pub struct KeyboardSubscription<Destination>
+pub struct KeyboardSubscription<Destination, S>
 where
 	Destination: Subscriber<Context = RxBevyContext>,
+	S: Scheduler,
 {
 	destination: Destination,
 	options: KeyboardObservableOptions,

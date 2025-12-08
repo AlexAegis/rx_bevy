@@ -6,7 +6,7 @@ use crate::operator::SwitchAllOperator;
 pub trait OperatorComposeExtensionSwitchAll: Operator + Sized {
 	fn switch_all(self) -> CompositeOperator<Self, SwitchAllOperator<Self::Out, Self::OutError>>
 	where
-		Self::Out: Observable<Context = Self::Context>,
+		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
 	{
 		CompositeOperator::new(self, SwitchAllOperator::default())

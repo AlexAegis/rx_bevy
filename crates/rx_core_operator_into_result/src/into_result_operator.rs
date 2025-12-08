@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Operator, Signal, Subscriber};
 
 use crate::IntoResultSubscriber;
 
@@ -12,21 +12,18 @@ use crate::IntoResultSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(Result<In, InError>)]
 #[rx_out_error(Never)]
-#[rx_context(Context)]
-pub struct IntoResultOperator<In, InError = Never, Context = ()>
+pub struct IntoResultOperator<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Context> Default for IntoResultOperator<In, InError, Context>
+impl<In, InError> Default for IntoResultOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -35,41 +32,32 @@ where
 	}
 }
 
-impl<In, InError, Context> Operator for IntoResultOperator<In, InError, Context>
+impl<In, InError> Operator for IntoResultOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
 		= IntoResultSubscriber<In, InError, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		IntoResultSubscriber::new(destination)
 	}
 }
 
-impl<In, InError, Context> Clone for IntoResultOperator<In, InError, Context>
+impl<In, InError> Clone for IntoResultOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	fn clone(&self) -> Self {
 		Self {

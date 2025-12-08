@@ -1,7 +1,7 @@
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Observable, SubjectLike, Subscriber, SubscriptionContext, SubscriptionLike, Teardown,
-	TeardownCollectionExtension, UpgradeableObserver, WithSubscriptionContext,
+	Observable, SubjectLike, Subscriber, SubscriptionLike, Teardown, TeardownCollection,
+	TeardownCollectionExtension, UpgradeableObserver,
 };
 
 use crate::observable::{Connectable, ConnectableOptions, ConnectionHandle};
@@ -9,15 +9,13 @@ use crate::observable::{Connectable, ConnectableOptions, ConnectionHandle};
 #[derive(RxObservable)]
 #[rx_out(Connector::Out)]
 #[rx_out_error(Connector::OutError)]
-#[rx_context(Source::Context)]
 pub struct InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	/// Upon connection, the connector subject will subscribe to this source
 	/// observable
@@ -38,11 +36,10 @@ impl<Source, ConnectorCreator, Connector>
 	InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
 		Self {
@@ -53,18 +50,12 @@ where
 		}
 	}
 
-	fn get_connector(
-		&mut self,
-		context: &mut <Connector::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> &mut Connector {
+	fn get_connector(&mut self) -> &mut Connector {
 		self.connector
-			.get_or_insert_with(|| (self.options.connector_creator)(context))
+			.get_or_insert_with(|| (self.options.connector_creator)())
 	}
 
-	fn get_active_connector(
-		&mut self,
-		context: &mut <Connector::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> &mut Connector {
+	fn get_active_connector(&mut self) -> &mut Connector {
 		// Remove the connector if it's closed, and only when it's closed
 		if self
 			.connector
@@ -75,7 +66,7 @@ where
 			self.connector.take();
 		}
 
-		self.get_connector(context)
+		self.get_connector()
 	}
 
 	fn get_active_connection(
@@ -100,23 +91,19 @@ impl<Source, ConnectorCreator, Connector> SubscriptionLike
 	for InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		self.is_connection_closed()
 	}
 
-	fn unsubscribe(
-		&mut self,
-		context: &mut <Connector::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn unsubscribe(&mut self) {
 		if let Some(connector) = &mut self.connector {
-			connector.unsubscribe(context);
+			connector.unsubscribe();
 		}
 	}
 }
@@ -125,31 +112,26 @@ impl<Source, ConnectorCreator, Connector> Observable
 	for InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	type Subscription<Destination>
 		= Connector::Subscription<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		let connector = self.get_active_connector(context);
-		connector.subscribe(observer, context)
+		let connector = self.get_active_connector();
+		connector.subscribe(observer)
 	}
 }
 
@@ -157,30 +139,22 @@ impl<Source, ConnectorCreator, Connector> Connectable
 	for InnerConnectableObservable<Source, ConnectorCreator, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn(&mut <Source::Context as SubscriptionContext>::Item<'_, '_>) -> Connector,
-	Connector: 'static
-		+ Clone
-		+ SubjectLike<In = Source::Out, InError = Source::OutError, Context = Source::Context>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>: 'static,
+	ConnectorCreator: Fn() -> Connector,
+	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
+	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
+		'static + TeardownCollection,
 {
 	type ConnectionSubscription =
 		Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>;
 
-	fn connect(
-		&mut self,
-		context: &mut <<Self::ConnectionSubscription as WithSubscriptionContext>::Context as SubscriptionContext>::Item<'_, '_>,
-	) -> ConnectionHandle<Self::ConnectionSubscription> {
+	fn connect(&mut self) -> ConnectionHandle<Self::ConnectionSubscription> {
 		self.get_active_connection().unwrap_or_else(|| {
-			let mut connector = self.get_connector(context).clone();
+			let mut connector = self.get_connector().clone();
 
-			let mut connection =
-				ConnectionHandle::new(self.source.subscribe(connector.clone(), context), context);
+			let mut connection = ConnectionHandle::new(self.source.subscribe(connector.clone()));
 
 			if self.options.unsubscribe_connector_on_disconnect {
-				connection.add(
-					Teardown::new(move |context| connector.unsubscribe(context)),
-					context,
-				);
+				connection.add(Teardown::new(move || connector.unsubscribe()));
 			}
 
 			self.connection.replace(connection.clone());

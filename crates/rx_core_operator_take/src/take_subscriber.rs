@@ -1,12 +1,9 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
-	Observer, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
-};
+use rx_core_traits::{Observer, Subscriber, SubscriptionClosedFlag, SubscriptionLike};
 
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
-#[rx_context(Destination::Context)]
 #[rx_delegate_tickable_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
 pub struct TakeSubscriber<Destination>
@@ -37,37 +34,29 @@ where
 	Destination: Subscriber,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() && self.count > 0 {
 			self.count -= 1;
-			self.destination.next(next, context);
+			self.destination.next(next);
 
 			if self.count == 0 {
-				self.complete(context);
+				self.complete();
 			}
 		}
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			self.destination.error(error, context);
+			self.destination.error(error);
 		}
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self) {
 		if !self.is_closed() {
-			self.destination.complete(context);
-			self.unsubscribe(context);
+			self.destination.complete();
+			self.unsubscribe();
 		}
 	}
 }
@@ -82,10 +71,10 @@ where
 	}
 
 	#[inline]
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
 			self.closed_flag.close();
-			self.destination.unsubscribe(context);
+			self.destination.unsubscribe();
 		}
 	}
 }

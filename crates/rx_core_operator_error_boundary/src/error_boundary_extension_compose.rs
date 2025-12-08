@@ -4,9 +4,7 @@ use rx_core_traits::{Never, Operator};
 use crate::operator::ErrorBoundaryOperator;
 
 pub trait OperatorComposeExtensionErrorBoundary: Operator<OutError = Never> + Sized {
-	fn error_boundary(
-		self,
-	) -> CompositeOperator<Self, ErrorBoundaryOperator<Self::Out, Self::Context>> {
+	fn error_boundary(self) -> CompositeOperator<Self, ErrorBoundaryOperator<Self::Out>> {
 		CompositeOperator::new(self, ErrorBoundaryOperator::default())
 	}
 }

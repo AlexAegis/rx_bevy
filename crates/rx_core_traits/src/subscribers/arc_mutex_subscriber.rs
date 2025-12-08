@@ -2,18 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
 	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, Subscriber, SubscriptionLike, TeardownCollection, Tick, Tickable,
-	WithPrimaryCategory,
-	allocator::ErasedSharedDestination,
-	context::{SubscriptionContext, WithSubscriptionContext, allocator::SharedDestination},
+	PrimaryCategorySubscriber, SharedDestination, Subscriber, SubscriptionLike, Teardown,
+	TeardownCollection, WithPrimaryCategory,
 };
-
-impl<S> WithSubscriptionContext for Arc<Mutex<S>>
-where
-	S: ?Sized + WithSubscriptionContext,
-{
-	type Context = S::Context;
-}
 
 impl<Destination> WithPrimaryCategory for Arc<Mutex<Destination>>
 where
@@ -24,11 +15,6 @@ where
 
 impl<Destination> ObserverUpgradesToSelf for Arc<Mutex<Destination>> where
 	Destination: ?Sized + ObserverUpgradesToSelf
-{
-}
-
-impl<Destination> ErasedSharedDestination for Arc<Mutex<Destination>> where
-	Destination: 'static + ?Sized + Subscriber + Send + Sync
 {
 }
 
@@ -67,60 +53,36 @@ impl<Destination> Observer for Arc<Mutex<Destination>>
 where
 	Destination: ?Sized + Observer + SubscriptionLike,
 {
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: Self::In) {
 		if self.is_closed() {
 			return;
 		}
 
 		match self.lock() {
-			Ok(mut lock) => lock.next(next, context),
-			Err(poison_error) => poison_error.into_inner().unsubscribe(context),
+			Ok(mut lock) => lock.next(next),
+			Err(poison_error) => poison_error.into_inner().unsubscribe(),
 		}
 	}
 
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: Self::InError) {
 		if self.is_closed() {
 			return;
 		}
 
 		match self.lock() {
-			Ok(mut lock) => lock.error(error, context),
-			Err(poison_error) => poison_error.into_inner().unsubscribe(context),
+			Ok(mut lock) => lock.error(error),
+			Err(poison_error) => poison_error.into_inner().unsubscribe(),
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self) {
 		if self.is_closed() {
 			return;
 		}
 
 		match self.lock() {
-			Ok(mut lock) => lock.complete(context),
-			Err(poison_error) => poison_error.into_inner().unsubscribe(context),
-		}
-	}
-}
-
-impl<Destination> Tickable for Arc<Mutex<Destination>>
-where
-	Destination: ?Sized + Tickable + SubscriptionLike,
-{
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		match self.lock() {
-			Ok(mut lock) => lock.tick(tick, context),
-			Err(poison_error) => poison_error.into_inner().unsubscribe(context),
+			Ok(mut lock) => lock.complete(),
+			Err(poison_error) => poison_error.into_inner().unsubscribe(),
 		}
 	}
 }
@@ -141,14 +103,14 @@ where
 	// want to do something with it using the other signals. They will print
 	// errors on poison and unsubscribe instead. (And that would cause a double
 	// print)
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		if self.is_closed() {
 			return;
 		}
 
 		self.lock()
 			.unwrap_or_else(|err| err.into_inner())
-			.unsubscribe(context)
+			.unsubscribe()
 	}
 }
 
@@ -156,18 +118,14 @@ impl<Destination> TeardownCollection for Arc<Mutex<Destination>>
 where
 	Destination: ?Sized + TeardownCollection + SubscriptionLike,
 {
-	fn add_teardown(
-		&mut self,
-		teardown: crate::Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn add_teardown(&mut self, teardown: Teardown) {
 		match self.lock() {
 			Ok(mut lock) => {
-				lock.add_teardown(teardown, context);
+				lock.add_teardown(teardown);
 			}
 			Err(poison_error) => {
-				teardown.execute(context);
-				poison_error.into_inner().unsubscribe(context);
+				teardown.execute();
+				poison_error.into_inner().unsubscribe();
 			}
 		}
 	}
@@ -188,30 +146,24 @@ where
 	type Subscription<Destination>
 		= O::Subscription<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
-			+ crate::UpgradeableObserver<
-				In = Self::Out,
-				InError = Self::OutError,
-				Context = Self::Context,
-			>
+			+ crate::UpgradeableObserver<In = Self::Out, InError = Self::OutError>
 			+ Send
 			+ Sync,
 	{
 		let mut destination = destination.upgrade();
 
 		match self.lock() {
-			Ok(mut lock) => lock.subscribe(destination, context),
+			Ok(mut lock) => lock.subscribe(destination),
 			Err(poison_error) => {
-				destination.unsubscribe(context);
+				destination.unsubscribe();
 				panic!("Poisoned lock encountered, unable to subscribe! {poison_error:?}")
 			}
 		}

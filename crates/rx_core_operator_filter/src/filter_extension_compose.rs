@@ -7,8 +7,7 @@ pub trait OperatorComposeExtensionFilter: Operator + Sized {
 	fn filter<Filter: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync>(
 		self,
 		filter: Filter,
-	) -> CompositeOperator<Self, FilterOperator<Self::Out, Self::OutError, Filter, Self::Context>>
-	{
+	) -> CompositeOperator<Self, FilterOperator<Self::Out, Self::OutError, Filter>> {
 		CompositeOperator::new(self, FilterOperator::new(filter))
 	}
 }

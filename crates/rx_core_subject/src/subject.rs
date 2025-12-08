@@ -2,8 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	Never, Observable, Observer, Signal, Subscriber, SubscriptionContext, SubscriptionLike,
-	UpgradeableObserver,
+	Never, Observable, Observer, Signal, Subscriber, SubscriptionLike, UpgradeableObserver,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -15,21 +14,18 @@ use crate::{Multicast, MulticastSubscription};
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct Subject<In, InError = Never, Context = ()>
+pub struct Subject<In, InError = Never>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
-	pub multicast: Arc<RwLock<Multicast<In, InError, Context>>>,
+	pub multicast: Arc<RwLock<Multicast<In, InError>>>,
 }
 
-impl<In, InError, Context> Clone for Subject<In, InError, Context>
+impl<In, InError> Clone for Subject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	/// Cloning a subject keeps all existing destinations
 	fn clone(&self) -> Self {
@@ -39,11 +35,10 @@ where
 	}
 }
 
-impl<In, InError, Context> Default for Subject<In, InError, Context>
+impl<In, InError> Default for Subject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
@@ -52,70 +47,56 @@ where
 	}
 }
 
-impl<In, InError, Context> Observable for Subject<In, InError, Context>
+impl<In, InError> Observable for Subject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	type Subscription<Destination>
-		= MulticastSubscription<In, InError, Context>
+		= MulticastSubscription<In, InError>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut Context::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		let mut multicast = self.multicast.write().expect("asd");
-		multicast.subscribe(destination, context)
+		let mut multicast = self.multicast.write().unwrap_or_else(|a| a.into_inner());
+		multicast.subscribe(destination)
 	}
 }
 
-impl<In, InError, Context> Observer for Subject<In, InError, Context>
+impl<In, InError> Observer for Subject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.multicast.next(next, context);
+	fn next(&mut self, next: Self::In) {
+		self.multicast.next(next);
 	}
 
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.multicast.error(error, context);
+	fn error(&mut self, error: Self::InError) {
+		self.multicast.error(error);
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.multicast.complete(context);
+	fn complete(&mut self) {
+		self.multicast.complete();
 	}
 }
 
-impl<In, InError, Context> SubscriptionLike for Subject<In, InError, Context>
+impl<In, InError> SubscriptionLike for Subject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	fn is_closed(&self) -> bool {
 		self.multicast.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		// It's an unsubscribe, we can ignore the poison
 		if let Some(subscribers) = {
 			let mut lock = self
@@ -126,17 +107,16 @@ where
 			lock.close()
 		} {
 			for mut destination in subscribers {
-				destination.unsubscribe(context);
+				destination.unsubscribe();
 			}
 		}
 	}
 }
 
-impl<In, InError, Context> Drop for Subject<In, InError, Context>
+impl<In, InError> Drop for Subject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	Context: SubscriptionContext,
 {
 	fn drop(&mut self) {
 		// Must not unsubscribe on drop, it's the shared destination that should do that

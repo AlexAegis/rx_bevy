@@ -7,7 +7,7 @@ pub trait ObservablePipeExtensionLiftOption<T>: Observable<Out = Option<T>> + Si
 where
 	T: Signal,
 {
-	fn lift_option(self) -> Pipe<Self, LiftOptionOperator<T, Self::OutError, Self::Context>> {
+	fn lift_option(self) -> Pipe<Self, LiftOptionOperator<T, Self::OutError>> {
 		Pipe::new(self, LiftOptionOperator::default())
 	}
 }

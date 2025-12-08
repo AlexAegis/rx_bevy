@@ -11,10 +11,7 @@ pub trait OperatorComposeExtensionScan: Operator + Sized {
 		self,
 		reducer: Reducer,
 		seed: NextOut,
-	) -> CompositeOperator<
-		Self,
-		ScanOperator<Self::Out, Self::OutError, Reducer, NextOut, Self::Context>,
-	> {
+	) -> CompositeOperator<Self, ScanOperator<Self::Out, Self::OutError, Reducer, NextOut>> {
 		CompositeOperator::new(self, ScanOperator::new(reducer, seed))
 	}
 }

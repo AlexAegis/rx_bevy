@@ -1,54 +1,37 @@
-use crate::{SubscriptionScheduled, Teardown, Tick, context::SubscriptionContext};
+use crate::{SubscriptionWithTeardown, Teardown};
 
 /// Represents a signal event in a materialized form
 #[derive(Debug)]
-pub enum SubscriptionNotification<Context>
-where
-	Context: SubscriptionContext,
-{
+pub enum SubscriptionNotification {
 	Unsubscribe,
 	/// Add contains an Option of a teardown because cloned versions of a
 	/// SubscriptionNotification::Add cannot have a cloned version of a unique
 	/// resource it owns. The teardown must be unique.
-	Add(Option<Teardown<Context>>),
-	Tick(Tick),
+	Add(Option<Teardown>),
 }
 
-impl<Context> Clone for SubscriptionNotification<Context>
-where
-	Context: SubscriptionContext,
-{
+impl Clone for SubscriptionNotification {
 	fn clone(&self) -> Self {
 		match self {
-			Self::Tick(tick) => Self::Tick(*tick),
 			Self::Unsubscribe => Self::Unsubscribe,
 			Self::Add(_) => Self::Add(None), // Must not clone a unique resource
 		}
 	}
 }
 
-pub trait SubscriptionScheduledPushNotificationExtention: SubscriptionScheduled {
-	fn push(
-		&mut self,
-		notification: impl Into<SubscriptionNotification<Self::Context>>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	);
+pub trait SubscriptionLikePushNotificationExtention: SubscriptionWithTeardown {
+	fn push(&mut self, notification: impl Into<SubscriptionNotification>);
 }
 
-impl<T> SubscriptionScheduledPushNotificationExtention for T
+impl<T> SubscriptionLikePushNotificationExtention for T
 where
-	T: SubscriptionScheduled,
+	T: SubscriptionWithTeardown,
 {
-	fn push(
-		&mut self,
-		notification: impl Into<SubscriptionNotification<Self::Context>>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn push(&mut self, notification: impl Into<SubscriptionNotification>) {
 		match notification.into() {
-			SubscriptionNotification::Tick(tick) => self.tick(tick, context),
-			SubscriptionNotification::Add(Some(teardown)) => self.add_teardown(teardown, context),
+			SubscriptionNotification::Add(Some(teardown)) => self.add_teardown(teardown),
 			SubscriptionNotification::Add(None) => {}
-			SubscriptionNotification::Unsubscribe => self.unsubscribe(context),
+			SubscriptionNotification::Unsubscribe => self.unsubscribe(),
 		}
 	}
 }

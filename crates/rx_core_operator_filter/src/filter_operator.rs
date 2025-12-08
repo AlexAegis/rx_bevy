@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber};
 
 use crate::FilterSubscriber;
 
@@ -12,24 +12,21 @@ use crate::FilterSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct FilterOperator<In, InError, Filter, Context = ()>
+pub struct FilterOperator<In, InError, Filter>
 where
 	In: Signal,
 	InError: Signal,
 	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
-	Context: SubscriptionContext,
 {
 	filter: Filter,
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Filter, Context> FilterOperator<In, InError, Filter, Context>
+impl<In, InError, Filter> FilterOperator<In, InError, Filter>
 where
 	In: Signal,
 	InError: Signal,
 	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
-	Context: SubscriptionContext,
 {
 	pub fn new(filter: Filter) -> Self {
 		Self {
@@ -39,32 +36,24 @@ where
 	}
 }
 
-impl<In, InError, Filter, Context> Operator for FilterOperator<In, InError, Filter, Context>
+impl<In, InError, Filter> Operator for FilterOperator<In, InError, Filter>
 where
 	In: Signal,
 	InError: Signal,
 	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
-	Context: SubscriptionContext,
 {
 	type Subscriber<Destination>
 		= FilterSubscriber<Filter, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		FilterSubscriber::new(destination, self.filter.clone())
 	}

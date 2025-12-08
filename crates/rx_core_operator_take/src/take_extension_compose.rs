@@ -7,7 +7,7 @@ pub trait OperatorComposeExtensionTake: Operator + Sized {
 	fn take(
 		self,
 		count: usize,
-	) -> CompositeOperator<Self, TakeOperator<Self::Out, Self::OutError, Self::Context>> {
+	) -> CompositeOperator<Self, TakeOperator<Self::Out, Self::OutError>> {
 		CompositeOperator::new(self, TakeOperator::new(count))
 	}
 }

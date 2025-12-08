@@ -7,7 +7,7 @@ pub trait ObservablePipeExtensionFilter: Observable + Sized {
 	fn filter<Filter: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync>(
 		self,
 		filter: Filter,
-	) -> Pipe<Self, FilterOperator<Self::Out, Self::OutError, Filter, Self::Context>> {
+	) -> Pipe<Self, FilterOperator<Self::Out, Self::OutError, Filter>> {
 		Pipe::new(self, FilterOperator::new(filter))
 	}
 }

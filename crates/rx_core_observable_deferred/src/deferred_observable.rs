@@ -1,13 +1,12 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, Subscriber, SubscriptionContext, UpgradeableObserver};
+use rx_core_traits::{Observable, Subscriber, UpgradeableObserver};
 
 /// Defers the creation of its source [Observable] until subscribe
 #[derive(RxObservable, Clone)]
 #[rx_out(Source::Out)]
 #[rx_out_error(Source::OutError)]
-#[rx_context(Source::Context)]
 pub struct DeferredObservable<F, Source>
 where
 	Source: Observable,
@@ -38,20 +37,17 @@ where
 	type Subscription<Destination>
 		= Source::Subscription<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		observer: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let destination = observer.upgrade();
 		let mut source = (self.observable_creator)();
-		source.subscribe(destination, context)
+		source.subscribe(destination)
 	}
 }

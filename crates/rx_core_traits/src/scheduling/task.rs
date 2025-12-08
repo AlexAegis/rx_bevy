@@ -1,7 +1,5 @@
 use std::{fmt::Debug, ops::AddAssign, time::Duration};
 
-use crate::SubscriptionContext;
-
 pub trait WithTaskInputOutput {
 	/// Some schedulers pass inputs - such as the time passed - into the task
 	/// to advance it.
@@ -18,26 +16,9 @@ pub trait TaskContextItem<'c> {
 	fn now(&self) -> Duration;
 }
 
-/// TODO: DELETE, Compat impl while SubContext still exists
-impl<C> TaskContextProvider for C
-where
-	C: SubscriptionContext,
-	for<'c> C::Item<'c, 'c>: TaskContextItem<'c>,
-{
-	type Item<'c> = C::Item<'c, 'c>;
-}
-
-/*
-impl<C> SubscriptionContext for C
-where
-	C: TaskContextProvider,
-{
-	type Item<'w, 's> = C::Item<'w>;
-}
-*/
-/*impl TaskContextProvider for () {
+impl TaskContextProvider for () {
 	type Item<'c> = ();
-}*/
+}
 
 impl<'c> TaskContextItem<'c> for () {
 	fn now(&self) -> Duration {

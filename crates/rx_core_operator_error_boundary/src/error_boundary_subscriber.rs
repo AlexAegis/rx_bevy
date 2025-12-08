@@ -1,9 +1,8 @@
 use disqualified::ShortName;
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Never, Observer, Subscriber, SubscriptionContext};
+use rx_core_traits::{Never, Observer, Subscriber};
 
 #[derive(RxSubscriber, Debug)]
-#[rx_context(Destination::Context)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Never)]
 #[rx_delegate_tickable_to_destination]
@@ -31,20 +30,12 @@ where
 	Destination: Subscriber<InError = Never>,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.next(next, context);
+	fn next(&mut self, next: Self::In) {
+		self.destination.next(next);
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		_error: Self::InError,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, _error: Self::InError) {
 		// The operator only compiles if the upstream error is of type `Never`,
 		// which is impossible to construct as it's an enum with no variants.
 
@@ -56,7 +47,7 @@ where
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.complete(context);
+	fn complete(&mut self) {
+		self.destination.complete();
 	}
 }

@@ -206,9 +206,6 @@ component_management:
     - component_id: rx_core_subscriber_switch
       paths:
         - crates/rx_core_subscriber_switch/**
-    - component_id: rx_core_subscription_drop
-      paths:
-        - crates/rx_core_subscription_drop/**
     - component_id: rx_core_subscription_inert
       paths:
         - crates/rx_core_subscription_inert/**

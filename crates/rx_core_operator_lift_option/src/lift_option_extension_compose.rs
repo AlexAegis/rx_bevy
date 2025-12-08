@@ -7,9 +7,7 @@ pub trait OperatorComposeExtensionLiftOption<T>: Operator<Out = Option<T>> + Siz
 where
 	T: Signal,
 {
-	fn lift_option(
-		self,
-	) -> CompositeOperator<Self, LiftOptionOperator<T, Self::OutError, Self::Context>> {
+	fn lift_option(self) -> CompositeOperator<Self, LiftOptionOperator<T, Self::OutError>> {
 		CompositeOperator::new(self, LiftOptionOperator::default())
 	}
 }

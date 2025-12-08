@@ -1,72 +1,22 @@
-use std::{any::Any, iter::Chain, slice::Iter};
+use std::{iter::Chain, slice::Iter};
 
-use disqualified::ShortName;
-use rx_core_traits::{
-	DropSafeSubscriptionContext, Never, Signal, SubscriberNotification, SubscriptionClosedFlag,
-	SubscriptionContext, SubscriptionContextAccess, SubscriptionContextDropSafety,
-	heap_allocator_context::{
-		ErasedSubscriberHeapAllocator, ScheduledSubscriptionHeapAllocator, SubscriberHeapAllocator,
-		UnscheduledSubscriptionHeapAllocator,
-	},
-};
-
-// TODO: Finish idea, it's for the ability to test things on drop, a global context is a must
-#[derive(Default)]
-pub struct ErasedMockContext {
-	context: Option<Box<dyn Any>>,
-}
-
-impl ErasedMockContext {
-	pub const fn new() -> Self {
-		ErasedMockContext { context: None }
-	}
-
-	pub fn assign<In, InError, DropSafety>(&mut self, context: MockContext<In, InError, DropSafety>)
-	where
-		In: Signal,
-		InError: Signal,
-		DropSafety: SubscriptionContextDropSafety,
-	{
-		self.context = Some(Box::new(context));
-	}
-
-	pub fn take<In, InError, DropSafety>(&mut self) -> Box<MockContext<In, InError, DropSafety>>
-	where
-		In: Signal,
-		InError: Signal,
-		DropSafety: SubscriptionContextDropSafety,
-	{
-		if let Some(context_ref) = self.context.take() {
-			context_ref
-				.downcast::<MockContext<In, InError, DropSafety>>()
-				.expect("global mock context was initialized with different types!")
-		} else {
-			panic!("No MockContext was set globally!");
-		}
-	}
-}
-
-pub const GLOBAL_SAFE_DROP_MOCK_CONTEXT: ErasedMockContext = ErasedMockContext::new();
+use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriptionClosedFlag};
 
 #[derive(Debug)]
-pub struct MockContext<In, InError = Never, DropSafety = DropSafeSubscriptionContext>
+pub struct TestNotificationCollector<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
-	observed_notifications:
-		Vec<SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>>,
-	observed_notifications_after_close:
-		Vec<SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>>,
+	observed_notifications: Vec<SubscriberNotification<In, InError>>,
+	observed_notifications_after_close: Vec<SubscriberNotification<In, InError>>,
 	closed_flag: SubscriptionClosedFlag,
 }
 
-impl<In, InError, DropSafety> MockContext<In, InError, DropSafety>
+impl<In, InError> TestNotificationCollector<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
 	/// Pushes a notification onto the notification stack.
 	///
@@ -80,10 +30,7 @@ where
 	/// do, you should not make any distinctions after notifications observed
 	/// before or after the first [SubscriberNotification::Unsubscribe]
 	/// notification as each separate subscription is expected to unsubscribed.
-	pub fn push(
-		&mut self,
-		notification: SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>,
-	) {
+	pub fn push(&mut self, notification: SubscriberNotification<In, InError>) {
 		// If we observe an unsubscribe notification, that means the observer should be closed
 		if !self.closed_flag.is_closed() {
 			if matches!(notification, SubscriberNotification::Unsubscribe) {
@@ -97,10 +44,7 @@ where
 
 	/// Returns the `n`th observed notification. Including from the notifications
 	/// observed after the first [SubscriberNotification::Unsubscribe] notification.
-	pub fn nth_notification(
-		&self,
-		n: usize,
-	) -> &SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>> {
+	pub fn nth_notification(&self, n: usize) -> &SubscriberNotification<In, InError> {
 		if n < self.observed_notifications.len() {
 			self.observed_notifications
 				.get(n)
@@ -126,10 +70,7 @@ where
 	/// [SubscriberNotification::Unsubscribe] notification.
 	/// Tick notifications are allowed.
 	pub fn nothing_happened_after_closed(&self) -> bool {
-		self.observed_notifications_after_close
-			.iter()
-			.filter(|n| !matches!(n, SubscriberNotification::Tick(_)))
-			.count() == 0
+		self.observed_notifications_after_close.iter().count() == 0
 	}
 
 	/// Returns an iterator over all observed [SubscriberNotification]
@@ -138,8 +79,8 @@ where
 	pub fn all_observed_notifications(
 		&self,
 	) -> Chain<
-		Iter<'_, SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>>,
-		Iter<'_, SubscriberNotification<In, InError, MockContext<In, InError, DropSafety>>>,
+		Iter<'_, SubscriberNotification<In, InError>>,
+		Iter<'_, SubscriberNotification<In, InError>>,
 	> {
 		self.observed_notifications
 			.iter()
@@ -319,85 +260,12 @@ where
 	pub fn count_all_observed_unsubscribes(&self) -> usize {
 		self.count_observed_unsubscribes() + self.count_observed_unsubscribes_after_close()
 	}
-
-	/// Returns the number of observed [SubscriberNotification::Tick]
-	/// notifications before the first [SubscriberNotification::Unsubscribe]
-	/// notification.
-	pub fn count_observed_ticks(&self) -> usize {
-		self.observed_notifications
-			.iter()
-			.filter(|notification| matches!(notification, SubscriberNotification::Tick(_)))
-			.count()
-	}
-
-	/// Returns the number of observed [SubscriberNotification::Tick]
-	/// notifications after the first [SubscriberNotification::Unsubscribe]
-	/// notification.
-	pub fn count_observed_ticks_after_close(&self) -> usize {
-		self.observed_notifications_after_close
-			.iter()
-			.filter(|notification| matches!(notification, SubscriberNotification::Tick(_)))
-			.count()
-	}
-
-	/// Returns the total observed [SubscriberNotification::Tick] notifications,
-	/// regardless of whether or not it was observed before or after the first
-	/// [SubscriberNotification::Unsubscribe] notification.
-	pub fn count_all_observed_ticks(&self) -> usize {
-		self.count_observed_ticks() + self.count_observed_ticks_after_close()
-	}
 }
 
-impl<In, InError, DropSafety> SubscriptionContext for MockContext<In, InError, DropSafety>
+impl<In, InError> Default for TestNotificationCollector<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
-{
-	type Item<'w, 's> = MockContext<In, InError, DropSafety>;
-
-	/// The DropSafety is parametric for the sake of testability, the context will always panic on drop if not closed to ensure proper tests.
-	type DropSafety = DropSafety;
-
-	type DestinationAllocator = SubscriberHeapAllocator<Self>;
-	type ErasedDestinationAllocator = ErasedSubscriberHeapAllocator<Self>;
-	type ScheduledSubscriptionAllocator = ScheduledSubscriptionHeapAllocator<Self>;
-	type UnscheduledSubscriptionAllocator = UnscheduledSubscriptionHeapAllocator<Self>;
-
-	/// While this context could be constructed very easily
-	/// letting subscriptions implicitly unsubscribe on drop would lead to
-	/// tests that you cannot trust!
-	fn create_context_to_unsubscribe_on_drop<'w, 's>() -> Self::Item<'w, 's> {
-		if DropSafety::DROP_SAFE {
-			// TODO: impl a global store and  use from that
-			// *GLOBAL_SAFE_DROP_MOCK_CONTEXT.take::<In, InError, DropSafety>()
-			panic!(
-				"An unclosed Subscription was dropped during a test, but only in a SAFE context! Still, for tests, the context must be explicitly supplied as it stores the data used for asserts! {}",
-				ShortName::of::<Self>()
-			)
-		} else {
-			panic!(
-				"An unclosed Subscription was dropped during a test in an UNSAFE context! For tests, the context must be explicitly supplied as it stores the data used for asserts! {}",
-				ShortName::of::<Self>()
-			)
-		}
-	}
-}
-
-impl<In, InError, DropSafety> SubscriptionContextAccess for MockContext<In, InError, DropSafety>
-where
-	In: Signal,
-	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
-{
-	type Context = MockContext<In, InError, DropSafety>;
-}
-
-impl<In, InError, DropSafety> Default for MockContext<In, InError, DropSafety>
-where
-	In: Signal,
-	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
 	fn default() -> Self {
 		Self {
@@ -408,11 +276,10 @@ where
 	}
 }
 
-impl<In, InError, DropSafety> Drop for MockContext<In, InError, DropSafety>
+impl<In, InError> Drop for TestNotificationCollector<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	DropSafety: SubscriptionContextDropSafety,
 {
 	fn drop(&mut self) {
 		self.closed_flag.close();

@@ -7,7 +7,7 @@ pub trait ObservablePipeExtensionMap: Observable + Sized {
 	fn map<NextOut: Signal, Mapper: 'static + Fn(Self::Out) -> NextOut + Clone + Send + Sync>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, MapOperator<Self::Out, Self::OutError, Mapper, NextOut, Self::Context>> {
+	) -> Pipe<Self, MapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
 		Pipe::new(self, MapOperator::new(mapper))
 	}
 }

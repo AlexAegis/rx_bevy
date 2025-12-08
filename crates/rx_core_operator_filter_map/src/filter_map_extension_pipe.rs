@@ -10,7 +10,7 @@ pub trait ObservablePipeExtensionFilterMap: Observable + Sized {
 	>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut, Self::Context>> {
+	) -> Pipe<Self, FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
 		Pipe::new(self, FilterMapOperator::new(mapper))
 	}
 }

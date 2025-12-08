@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Scheduler, SchedulerHandle, Signal, Subscriber};
 
 use crate::FallbackWhenSilentSubscriber;
 
@@ -14,60 +14,57 @@ use crate::FallbackWhenSilentSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct FallbackWhenSilentOperator<In, InError, Fallback, Context = ()>
+pub struct FallbackWhenSilentOperator<In, InError, Fallback, S>
 where
 	In: Signal,
 	InError: Signal,
 	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
-	Context: SubscriptionContext,
+	S: Scheduler,
 {
 	fallback: Fallback,
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	scheduler: SchedulerHandle<S>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Fallback, Context> FallbackWhenSilentOperator<In, InError, Fallback, Context>
+impl<In, InError, Fallback, S> FallbackWhenSilentOperator<In, InError, Fallback, S>
 where
 	In: Signal,
 	InError: Signal,
 	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
-	Context: SubscriptionContext,
+	S: Scheduler,
 {
-	pub fn new(fallback: Fallback) -> Self {
+	pub fn new(fallback: Fallback, scheduler: SchedulerHandle<S>) -> Self {
 		Self {
 			fallback,
+			scheduler,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, Fallback, Context> Operator
-	for FallbackWhenSilentOperator<In, InError, Fallback, Context>
+impl<In, InError, Fallback, S> Operator for FallbackWhenSilentOperator<In, InError, Fallback, S>
 where
 	In: Signal,
 	InError: Signal,
 	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
-	Context: SubscriptionContext,
+	S: 'static + Scheduler + Send,
 {
 	type Subscriber<Destination>
-		= FallbackWhenSilentSubscriber<In, InError, Fallback, Destination>
+		= FallbackWhenSilentSubscriber<In, InError, Fallback, Destination, S>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		FallbackWhenSilentSubscriber::new(destination, self.fallback.clone())
+		FallbackWhenSilentSubscriber::new(
+			destination,
+			self.fallback.clone(),
+			self.scheduler.clone(),
+		)
 	}
 }

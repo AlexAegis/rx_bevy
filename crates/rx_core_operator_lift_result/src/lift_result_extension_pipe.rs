@@ -14,13 +14,7 @@ where
 		in_error_to_result_error: InErrorToResultError, // TODO: Remove this, use Into. Users should use the map_error operator when needed
 	) -> Pipe<
 		Self,
-		LiftResultOperator<
-			ResultOut,
-			ResultOutError,
-			Self::OutError,
-			InErrorToResultError,
-			Self::Context,
-		>,
+		LiftResultOperator<ResultOut, ResultOutError, Self::OutError, InErrorToResultError>,
 	>
 	where
 		InErrorToResultError: Fn(Self::OutError) -> ResultOutError + Clone + Send + Sync,

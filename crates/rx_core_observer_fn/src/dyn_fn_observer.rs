@@ -1,38 +1,27 @@
 use rx_core_traits::{
 	Observer, ObserverInput, ObserverSubscriber, PrimaryCategoryObserver, Signal,
-	SubscriptionContext, Tick, Tickable, UpgradeableObserver, WithPrimaryCategory,
-	WithSubscriptionContext,
+	UpgradeableObserver, WithPrimaryCategory,
 };
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
-pub struct DynFnObserver<In, Error, Context>
-where
-	Context: SubscriptionContext,
-{
-	on_next: Option<Box<dyn FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync>>,
-	on_error: Option<Box<dyn FnMut(Error, &mut Context::Item<'_, '_>) + Send + Sync>>,
-	on_complete: Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
-	on_tick: Option<Box<dyn FnMut(Tick, &mut Context::Item<'_, '_>) + Send + Sync>>,
-	on_unsubscribe: Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
+pub struct DynFnObserver<In, Error> {
+	on_next: Option<Box<dyn FnMut(In) + Send + Sync>>,
+	on_error: Option<Box<dyn FnMut(Error) + Send + Sync>>,
+	on_complete: Option<Box<dyn FnOnce() + Send + Sync>>,
+	on_unsubscribe: Option<Box<dyn FnOnce() + Send + Sync>>,
 }
 
-impl<In, InError, Context> DynFnObserver<In, InError, Context>
+impl<In, InError> DynFnObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
-	pub fn with_next<OnNext: 'static + FnMut(In, &mut Context::Item<'_, '_>) + Send + Sync>(
-		mut self,
-		on_next: OnNext,
-	) -> Self {
+	pub fn with_next<OnNext: 'static + FnMut(In) + Send + Sync>(mut self, on_next: OnNext) -> Self {
 		self.on_next.replace(Box::new(on_next));
 		self
 	}
 
-	pub fn with_error<
-		OnError: 'static + FnMut(InError, &mut Context::Item<'_, '_>) + Send + Sync,
-	>(
+	pub fn with_error<OnError: 'static + FnMut(InError) + Send + Sync>(
 		mut self,
 		on_error: OnError,
 	) -> Self {
@@ -40,7 +29,7 @@ where
 		self
 	}
 
-	pub fn with_complete<OnComplete: 'static + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>(
+	pub fn with_complete<OnComplete: 'static + FnOnce() + Send + Sync>(
 		mut self,
 		on_complete: OnComplete,
 	) -> Self {
@@ -56,9 +45,7 @@ where
 	/// used during the creation of the observer, which enables us to have
 	/// a nicer signature by leaving the context argument off from the method,
 	/// and making it chainable.
-	pub fn with_unsubscribe<
-		OnUnsubscribe: 'static + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
-	>(
+	pub fn with_unsubscribe<OnUnsubscribe: 'static + FnOnce() + Send + Sync>(
 		mut self,
 		on_unsubscribe: OnUnsubscribe,
 	) -> Self {
@@ -67,39 +54,27 @@ where
 	}
 }
 
-impl<In, InError, Context> ObserverInput for DynFnObserver<In, InError, Context>
+impl<In, InError> ObserverInput for DynFnObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError, Context> WithSubscriptionContext for DynFnObserver<In, InError, Context>
+impl<In, InError> WithPrimaryCategory for DynFnObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
-{
-	type Context = Context;
-}
-
-impl<In, InError, Context> WithPrimaryCategory for DynFnObserver<In, InError, Context>
-where
-	In: Signal,
-	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type PrimaryCategory = PrimaryCategoryObserver;
 }
 
-impl<In, InError, Context> UpgradeableObserver for DynFnObserver<In, InError, Context>
+impl<In, InError> UpgradeableObserver for DynFnObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
 	type Upgraded = ObserverSubscriber<Self>;
 
@@ -108,70 +83,42 @@ where
 	}
 }
 
-impl<In, InError, Context> Observer for DynFnObserver<In, InError, Context>
+impl<In, InError> Observer for DynFnObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
 {
-	fn next(
-		&mut self,
-		next: In,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: In) {
 		if let Some(on_next) = &mut self.on_next {
-			(on_next)(next, context);
+			(on_next)(next);
 		}
 	}
 
-	fn error(
-		&mut self,
-		error: InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn error(&mut self, error: InError) {
 		if let Some(on_error) = &mut self.on_error {
-			(on_error)(error, context);
+			(on_error)(error);
 		} else {
 			panic!("DynFnObserver without an error observer encountered an error!");
 		}
 	}
 
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn complete(&mut self) {
 		if let Some(on_complete) = self.on_complete.take() {
-			(on_complete)(context);
+			(on_complete)();
 		}
 	}
 }
 
-impl<In, InError, Context> Tickable for DynFnObserver<In, InError, Context>
+impl<In, InError> Default for DynFnObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,
-	Context: SubscriptionContext,
-{
-	fn tick(
-		&mut self,
-		tick: rx_core_traits::Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		if let Some(on_tick) = &mut self.on_tick {
-			(on_tick)(tick, context);
-		}
-	}
-}
-
-impl<In, InError, Context> Default for DynFnObserver<In, InError, Context>
-where
-	In: Signal,
-	InError: Signal,
-	Context: SubscriptionContext,
 {
 	fn default() -> Self {
 		Self {
 			on_next: None,
 			on_error: None,
 			on_complete: None,
-			on_tick: None,
 			on_unsubscribe: None,
 		}
 	}

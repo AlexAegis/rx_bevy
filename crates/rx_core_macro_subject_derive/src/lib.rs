@@ -2,7 +2,6 @@ use quote::quote;
 use rx_core_macro_common::{
 	impl_delegate_subscription_like_to_destination, impl_does_not_upgrade_to_observer_subscriber,
 	impl_observable_output, impl_observer_input, impl_observer_upgrades_to, impl_primary_category,
-	impl_with_subscription_context,
 };
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
@@ -78,7 +77,6 @@ fn primary_category_subject() -> Type {
 		rx_in_error,
 		rx_out,
 		rx_out_error,
-		rx_context,
 		rx_does_not_upgrade_to_observer_subscriber,
 		rx_upgrades_to,
 		rx_delegate_subscription_like_to_destination,
@@ -91,7 +89,6 @@ pub fn subject_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream
 	let primary_category_impl = impl_primary_category(&derive_input, primary_category_subject());
 	let observable_output_impl = impl_observable_output(&derive_input);
 	let observer_input_impl = impl_observer_input(&derive_input);
-	let with_subscription_context_impl = impl_with_subscription_context(&derive_input);
 	let observer_upgrades_to_impl = impl_observer_upgrades_to(&derive_input);
 	let does_not_upgrade_to_observer_subscriber_impl =
 		impl_does_not_upgrade_to_observer_subscriber(&derive_input);
@@ -104,8 +101,6 @@ pub fn subject_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream
 		#observable_output_impl
 
 		#observer_input_impl
-
-		#with_subscription_context_impl
 
 		#observer_upgrades_to_impl
 

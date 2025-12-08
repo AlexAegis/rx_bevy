@@ -10,10 +10,7 @@ pub trait OperatorComposeExtensionFilterMap: Operator + Sized {
 	>(
 		self,
 		mapper: Mapper,
-	) -> CompositeOperator<
-		Self,
-		FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut, Self::Context>,
-	> {
+	) -> CompositeOperator<Self, FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
 		CompositeOperator::new(self, FilterMapOperator::new(mapper))
 	}
 }

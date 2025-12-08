@@ -6,10 +6,7 @@ use crate::operator::MapIntoOperator;
 pub trait OperatorComposeExtensionInto: Operator + Sized {
 	fn map_into<NextOut: Signal, NextOutError: Signal>(
 		self,
-	) -> CompositeOperator<
-		Self,
-		MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError, Self::Context>,
-	>
+	) -> CompositeOperator<Self, MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError>>
 	where
 		Self::Out: Into<NextOut>,
 		Self::OutError: Into<NextOutError>,

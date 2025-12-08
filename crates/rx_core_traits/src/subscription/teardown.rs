@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use disqualified::ShortName;
 
-use crate::{SubscriptionLike, context::SubscriptionContext};
+use crate::SubscriptionLike;
 
 /// A teardown is a closure which owns resources, by the nature of them being
 /// moved into said closure. The closure itself is responsible for releasing
@@ -20,17 +20,11 @@ use crate::{SubscriptionLike, context::SubscriptionContext};
 /// the [SubscriptionCollection][crate::SubscriptionCollection] trait which
 /// uses [Teardown] as the base type of operation. Allowing generic functions
 /// where you can add anything that is `Into<Teardown>` such as Subscriptions.
-pub struct Teardown<Context>
-where
-	Context: SubscriptionContext,
-{
-	teardown_fn: Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>>,
+pub struct Teardown {
+	teardown_fn: Option<Box<dyn FnOnce() + Send + Sync>>,
 }
 
-impl<Context> Debug for Teardown<Context>
-where
-	Context: SubscriptionContext,
-{
+impl Debug for Teardown {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.write_fmt(format_args!(
 			"{} {{ is_closed: {} }}",
@@ -46,29 +40,23 @@ where
 ///
 /// It most not be cloned as it owns resources and the uniquiness of that must
 /// be ensured.
-impl<Context> Clone for Teardown<Context>
-where
-	Context: SubscriptionContext,
-{
+impl Clone for Teardown {
 	fn clone(&self) -> Self {
 		Self { teardown_fn: None }
 	}
 }
 
-impl<Context> Teardown<Context>
-where
-	Context: SubscriptionContext,
-{
+impl Teardown {
 	pub fn new<F>(f: F) -> Self
 	where
-		F: 'static + FnOnce(&mut Context::Item<'_, '_>) + Send + Sync,
+		F: 'static + FnOnce() + Send + Sync,
 	{
 		Self {
 			teardown_fn: Some(Box::new(f)),
 		}
 	}
 
-	pub fn new_from_box(f: Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>) -> Self {
+	pub fn new_from_box(f: Box<dyn FnOnce() + Send + Sync>) -> Self {
 		Self {
 			teardown_fn: Some(f),
 		}
@@ -82,16 +70,16 @@ where
 	/// It's private to ensure that it's not taken without either executing it
 	/// or placing it somewhere else where execution is also guaranteed.
 	#[inline]
-	pub fn take(mut self) -> Option<Box<dyn FnOnce(&mut Context::Item<'_, '_>) + Send + Sync>> {
+	pub fn take(mut self) -> Option<Box<dyn FnOnce() + Send + Sync>> {
 		self.teardown_fn.take()
 	}
 
 	/// Immediately consumes and calls the teardowns closure, leaving a None
 	/// behind, rendering the teardown permamently closed.
 	#[inline]
-	pub fn execute(mut self, context: &mut Context::Item<'_, '_>) {
+	pub fn execute(mut self) {
 		if let Some(teardown) = self.teardown_fn.take() {
-			(teardown)(context);
+			(teardown)();
 		}
 	}
 
@@ -101,10 +89,7 @@ where
 	}
 }
 
-impl<Context> Default for Teardown<Context>
-where
-	Context: SubscriptionContext,
-{
+impl Default for Teardown {
 	fn default() -> Self {
 		Self { teardown_fn: None }
 	}
@@ -115,7 +100,7 @@ where
 ///
 /// This means that when you convert an already closed subscription into a
 /// teardown, it will be immediately dropped.
-impl<S> From<S> for Teardown<S::Context>
+impl<S> From<S> for Teardown
 where
 	S: 'static + SubscriptionLike + Send + Sync,
 {
@@ -124,10 +109,7 @@ where
 			teardown_fn: if subscription.is_closed() {
 				None
 			} else {
-				let closure = move |context: &mut <S::Context as SubscriptionContext>::Item<
-					'_,
-					'_,
-				>| { subscription.unsubscribe(context) };
+				let closure = move || subscription.unsubscribe();
 				Some(Box::new(closure))
 			},
 		}

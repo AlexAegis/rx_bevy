@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber, SubscriptionContext};
+use rx_core_traits::{Operator, Signal, Subscriber};
 
 use crate::TapNextSubscriber;
 
@@ -12,25 +12,22 @@ use crate::TapNextSubscriber;
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(Context)]
-pub struct TapNextOperator<In, InError, OnNext, Context>
+pub struct TapNextOperator<In, InError, OnNext>
 where
 	In: Signal,
 	InError: Signal,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
-	Context: SubscriptionContext,
+	OnNext: 'static + Fn(&In) + Clone + Send + Sync,
 {
 	#[derive_where(skip(Debug))]
 	on_next: OnNext,
-	_phantom_data: PhantomData<(In, InError, Context)>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, OnNext, Context> TapNextOperator<In, InError, OnNext, Context>
+impl<In, InError, OnNext> TapNextOperator<In, InError, OnNext>
 where
 	In: Signal,
 	InError: Signal,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
-	Context: SubscriptionContext,
+	OnNext: 'static + Fn(&In) + Clone + Send + Sync,
 {
 	pub fn new(on_next: OnNext) -> Self {
 		Self {
@@ -40,43 +37,34 @@ where
 	}
 }
 
-impl<In, InError, OnNext, Context> Operator for TapNextOperator<In, InError, OnNext, Context>
+impl<In, InError, OnNext> Operator for TapNextOperator<In, InError, OnNext>
 where
 	In: Signal,
 	InError: Signal,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
-	Context: SubscriptionContext,
+	OnNext: 'static + Fn(&In) + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
 		= TapNextSubscriber<In, InError, OnNext, Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static
-			+ Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		TapNextSubscriber::new(destination, self.on_next.clone())
 	}
 }
 
-impl<In, InError, OnNext, Context> Clone for TapNextOperator<In, InError, OnNext, Context>
+impl<In, InError, OnNext> Clone for TapNextOperator<In, InError, OnNext>
 where
 	In: Signal,
 	InError: Signal,
-	OnNext: 'static + Fn(&In, &mut Context::Item<'_, '_>) + Clone + Send + Sync,
-	Context: SubscriptionContext,
+	OnNext: 'static + Fn(&In) + Clone + Send + Sync,
 {
 	fn clone(&self) -> Self {
 		Self {

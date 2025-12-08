@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionContext, Tick, Tickable};
+use rx_core_traits::{Observer, Signal, Subscriber, Tick};
 
 use crate::{
 	AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, AdsrTrigger, operator::AdsrOperatorOptions,
@@ -12,7 +12,6 @@ use crate::{
 #[derive(RxSubscriber)]
 #[rx_in(AdsrTrigger)]
 #[rx_in_error(InError)]
-#[rx_context(Destination::Context)]
 #[rx_delegate_teardown_collection_to_destination]
 #[rx_delegate_subscription_like_to_destination]
 pub struct AdsrSubscriber<InError, Destination>
@@ -52,11 +51,7 @@ where
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
 	#[inline]
-	fn next(
-		&mut self,
-		next: Self::In,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn next(&mut self, next: Self::In) {
 		self.is_getting_activated = next.activated;
 
 		if let Some(envelope_change) = next.envelope_changes {
@@ -65,31 +60,24 @@ where
 	}
 
 	#[inline]
-	fn error(
-		&mut self,
-		error: Self::InError,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
-		self.destination.error(error, context);
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
 	}
 
 	#[inline]
-	fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
-		self.destination.complete(context);
+	fn complete(&mut self) {
+		self.destination.complete();
 	}
 }
 
-impl<InError, Destination> Tickable for AdsrSubscriber<InError, Destination>
+impl<InError, Destination> AdsrSubscriber<InError, Destination>
 where
 	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
 {
+	/// TODO: MIGRATE IT INTO THE SCHEDULER
 	#[inline]
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn tick(&mut self, tick: Tick) {
 		let next =
 			self.state
 				.calculate_output(self.options.envelope, self.is_getting_activated, &tick);
@@ -104,11 +92,9 @@ where
 		// If the last signal was not `None`, then the current value should be emitted even if it's
 		// a `None` to have at least one `None` emitted at the end of an activation.
 		if self.options.always_emit_none || !current_phase_is_none || !self.last_signal_was_none {
-			self.destination.next(next, context);
+			self.destination.next(next);
 		}
 
 		self.last_signal_was_none = current_phase_is_none;
-
-		self.destination.tick(tick, context);
 	}
 }

@@ -1,15 +1,15 @@
-use rx_core_traits::{Signal, SubscriptionContext};
+use rx_core_traits::{Scheduler, Signal};
 
 use crate::observable::{IteratorOnTickObservable, OnTickObservableOptions};
 
 pub trait IntoIteratorOnTickObservableExtension: IntoIterator + Clone {
-	fn into_observable_on_every_nth_tick<Context>(
+	fn into_observable_on_every_nth_tick<S>(
 		self,
-		options: OnTickObservableOptions,
-	) -> IteratorOnTickObservable<Self, Context>
+		options: OnTickObservableOptions<S>,
+	) -> IteratorOnTickObservable<Self, S>
 	where
 		Self::Item: Signal,
-		Context: SubscriptionContext,
+		S: Scheduler,
 	{
 		IteratorOnTickObservable::new(self, options)
 	}
