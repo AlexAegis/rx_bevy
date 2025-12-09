@@ -1,34 +1,30 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_traits::{
-	ImmediateTaskFactory, ScheduledOnceWork, Task, TaskContextProvider, Tick, TickResult,
-	TickResultError, WithTaskInputOutput,
-};
+use rx_core_macro_task_derive::RxTask;
+use rx_core_traits::{ContextProvider, ImmediateTaskFactory, ScheduledOnceWork, Task, TickResult};
 
-use crate::ExecuteTaskWorkOnce;
+use crate::Tick;
 
-pub struct ImmediateOnceTaskTickedFactory<TaskError, ContextProvider>
+pub struct ImmediateOnceTaskTickedFactory<C>
 where
-	ContextProvider: TaskContextProvider,
+	C: ContextProvider,
 {
-	_phantom_data: PhantomData<(TaskError, ContextProvider)>,
+	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<TaskError, ContextProvider> ImmediateTaskFactory<Tick, TaskError, ContextProvider>
-	for ImmediateOnceTaskTickedFactory<TaskError, ContextProvider>
+impl<C> ImmediateTaskFactory<Tick, C> for ImmediateOnceTaskTickedFactory<C>
 where
-	ContextProvider: 'static + TaskContextProvider,
-	TaskError: 'static,
+	C: 'static + ContextProvider,
 {
 	type Item<Work>
-		= ImmediateOnceTaskTicked<Work, TaskError, ContextProvider>
+		= ImmediateOnceTaskTicked<Work, C>
 	where
-		Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>;
+		Work: ScheduledOnceWork<Tick, C>;
 
 	fn new<Work>(work: Work) -> Self::Item<Work>
 	where
-		Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
+		Work: ScheduledOnceWork<Tick, C>,
 	{
 		ImmediateOnceTaskTicked {
 			work: Some(work),
@@ -37,47 +33,32 @@ where
 	}
 }
 
+#[derive(RxTask)]
+#[rx_tick(Tick)]
+#[rx_context(C)]
 #[derive_where(Debug)]
-pub struct ImmediateOnceTaskTicked<Work, TaskError, ContextProvider>
+pub struct ImmediateOnceTaskTicked<Work, C>
 where
-	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
+	Work: ScheduledOnceWork<Tick, C>,
+	C: ContextProvider,
 {
 	#[derive_where(skip(Debug))]
 	work: Option<Work>,
-	_phantom_data: PhantomData<fn((ContextProvider, TaskError)) -> (ContextProvider, TaskError)>,
+	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<Work, TaskError, ContextProvider> WithTaskInputOutput
-	for ImmediateOnceTaskTicked<Work, TaskError, ContextProvider>
+impl<Work, C> Task for ImmediateOnceTaskTicked<Work, C>
 where
-	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
+	Work: ScheduledOnceWork<Tick, C>,
+	C: ContextProvider,
 {
-	/// Technically this task will never need a tick, the scheduler that will use
-	/// it will still want to give it one.
-	type TickInput = Tick;
-	type ContextProvider = ContextProvider;
-	type TaskError = TaskError;
-}
-
-impl<Work, TaskError, ContextProvider> Task
-	for ImmediateOnceTaskTicked<Work, TaskError, ContextProvider>
-where
-	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
-{
-	fn tick(
-		&mut self,
-		tick: Tick,
-		task_input: &mut ContextProvider::Item<'_>,
-	) -> TickResult<Self::TaskError> {
+	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> TickResult {
 		let Some(work) = self.work.take() else {
-			return TickResult::Error(TickResultError::WorkAlreadyConsumed);
+			return TickResult::Done;
 		};
-
-		work.execute(tick, task_input)
+		(work)(tick, context);
+		TickResult::Done
 	}
 
-	fn on_scheduled_hook(&mut self, _tick_input: Self::TickInput) {}
+	fn on_scheduled_hook(&mut self, _tick_input: Self::Tick) {}
 }

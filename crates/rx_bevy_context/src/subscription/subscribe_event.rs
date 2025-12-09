@@ -1,19 +1,13 @@
 use bevy_ecs::{
-	component::Component, entity::Entity, event::Event, hierarchy::ChildOf,
-	schedule::ScheduleLabel, system::Commands,
+	component::Component, entity::Entity, event::Event, hierarchy::ChildOf, system::Commands,
 };
 use bevy_log::error;
-use bevy_mod_erased_component_registry::EntityCommandInsertErasedComponentByTypeIdExtension;
 use core::marker::PhantomData;
 use disqualified::ShortName;
-use rx_bevy_common::Clock;
 use rx_core_traits::{Signal, Subscriber, UpgradeableObserver};
-use std::any::TypeId;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
-
-use crate::{RxBevyContext, SubscriptionSchedule};
 
 /// The destination is erased so observers can listen to this event based on
 /// the observables output types only.
@@ -33,8 +27,7 @@ where
 	/// consumed during subscription and a `None` is left in its place.
 	/// Therefore you can't trigger a [Subscribe] event on multiple entities
 	/// at once, but there isn't an api to do that anyway.
-	pub(crate) consumable_destination:
-		Option<Box<dyn Subscriber<In = Out, InError = OutError, Context = RxBevyContext>>>,
+	pub(crate) consumable_destination: Option<Box<dyn Subscriber<In = Out, InError = OutError>>>,
 	/// This entity can only be spawned from this events constructors
 	pub(crate) subscription_entity: Entity,
 
@@ -49,49 +42,16 @@ where
 	Out: Signal,
 	OutError: Signal,
 {
-	pub(crate) fn new<Destination, S, C>(
+	pub(crate) fn new<Destination>(
 		observable_entity: Entity,
 		destination: Destination,
 		commands: &mut Commands,
 	) -> (Self, Entity)
 	where
-		S: ScheduleLabel,
-		C: Clock,
-		Destination:
-			'static + UpgradeableObserver<In = Out, InError = OutError, Context = RxBevyContext>,
-	{
-		let subscription_entity = commands
-			.spawn((
-				ChildOf(observable_entity),
-				UnfinishedSubscription,
-				SubscriptionSchedule::<S, C>::default(),
-			))
-			.id();
-
-		(
-			Self {
-				observable_entity,
-				consumable_destination: Some(Box::new(destination.upgrade())),
-				subscription_entity,
-				_phantom_data: PhantomData,
-			},
-			subscription_entity,
-		)
-	}
-
-	pub(crate) fn new_with_erased_schedule<Destination>(
-		observable_entity: Entity,
-		destination: Destination,
-		schedule_component_type_id: TypeId,
-		commands: &mut Commands,
-	) -> (Self, Entity)
-	where
-		Destination:
-			'static + UpgradeableObserver<In = Out, InError = OutError, Context = RxBevyContext>,
+		Destination: 'static + UpgradeableObserver<In = Out, InError = OutError>,
 	{
 		let subscription_entity = commands
 			.spawn((ChildOf(observable_entity), UnfinishedSubscription))
-			.insert_component_by_type_id(schedule_component_type_id)
 			.id();
 
 		(
@@ -107,7 +67,7 @@ where
 
 	pub(crate) fn try_consume_destination(
 		&mut self,
-	) -> Option<Box<dyn Subscriber<In = Out, InError = OutError, Context = RxBevyContext>>> {
+	) -> Option<Box<dyn Subscriber<In = Out, InError = OutError>>> {
 		self.consumable_destination.take()
 	}
 }

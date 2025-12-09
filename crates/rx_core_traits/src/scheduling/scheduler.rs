@@ -1,8 +1,11 @@
 use std::time::Duration;
 
+use derive_where::derive_where;
+
 use crate::{
-	DelayedTaskFactory, ImmediateTaskFactory, RepeatedTaskFactory, ScheduledOnceWork,
-	ScheduledRepeatedWork, SchedulerHandle, Task, TaskContextProvider, TaskOwnerId,
+	ContextProvider, ContinuousTaskFactory, DelayedTaskFactory, ImmediateTaskFactory,
+	InvokedTaskFactory, RepeatedTaskFactory, ScheduledOnceWork, ScheduledRepeatedWork,
+	SchedulerHandle, Task, TaskCancellationId, TaskInvokeId, WithContextProvider,
 	WithTaskInputOutput,
 };
 
@@ -10,66 +13,75 @@ use crate::{
 /// be executed, and cancelled when no longer needed.
 ///
 /// Store schedulers by a [SchedulerHandle]!
-pub trait Scheduler: WithTaskInputOutput {
+pub trait Scheduler: WithTaskInputOutput + WithContextProvider + Send + Sync {
 	// Different types of tasks defined on the scheduler, so different  environments can create different ones, with just one subscriber
 	// type DelayedTask: DelayedTaskFactory?;
 
-	type DelayedTaskFactory: DelayedTaskFactory<Self::TickInput, Self::TaskError, Self::ContextProvider>;
-	type RepeatedTaskFactory: RepeatedTaskFactory<Self::TickInput, Self::TaskError, Self::ContextProvider>;
-	type ImmediateTaskFactory: ImmediateTaskFactory<Self::TickInput, Self::TaskError, Self::ContextProvider>;
+	type DelayedTaskFactory: DelayedTaskFactory<Self::Tick, Self::ContextProvider>;
+	type RepeatedTaskFactory: RepeatedTaskFactory<Self::Tick, Self::ContextProvider>;
+	type ContinuousTaskFactory: ContinuousTaskFactory<Self::Tick, Self::ContextProvider>;
+	type ImmediateTaskFactory: ImmediateTaskFactory<Self::Tick, Self::ContextProvider>;
+	type InvokedTaskFactory: InvokedTaskFactory<Self::Tick, Self::ContextProvider>;
 
-	fn schedule<T>(&mut self, task: T, owner_id: TaskOwnerId)
+	fn schedule_task<T>(&mut self, task: T, cancellation_id: TaskCancellationId)
 	where
-		T: 'static
-			+ Task<
-				TickInput = Self::TickInput,
-				TaskError = Self::TaskError,
-				ContextProvider = Self::ContextProvider,
-			>
-			+ Send
-			+ Sync;
+		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync;
 
-	fn cancel(&mut self, owner_id: TaskOwnerId);
+	fn schedule_invoked_task<T>(&mut self, task: T, invoke_id: TaskInvokeId)
+	where
+		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync;
 
-	fn generate_owner_id(&mut self) -> TaskOwnerId;
+	fn cancel(&mut self, cancellation_id: TaskCancellationId);
+
+	fn invoke(&mut self, invoke_id: TaskInvokeId);
+
+	fn cancel_invoked(&mut self, invoke_id: TaskInvokeId);
+
+	fn generate_cancellation_id(&mut self) -> TaskCancellationId;
+
+	fn generate_invoke_id(&mut self) -> TaskInvokeId;
 }
 
-pub enum ScheduledTaskAction<TickInput, TaskError, ContextProvider>
+#[derive_where(Debug)]
+pub enum ScheduledTaskAction<TickInput, Context>
 where
-	ContextProvider: TaskContextProvider,
+	Context: ContextProvider,
 {
 	Activate(
+		#[derive_where(skip)]
 		(
-			TaskOwnerId,
-			Box<
-				dyn Task<
-						TickInput = TickInput,
-						TaskError = TaskError,
-						ContextProvider = ContextProvider,
-					> + Send
-					+ Sync,
-			>,
+			TaskCancellationId,
+			Box<dyn Task<Tick = TickInput, ContextProvider = Context> + Send + Sync>,
 		),
 	),
-	CancelAll(TaskOwnerId),
+	Cancel(TaskCancellationId),
+	AddInvoked(
+		#[derive_where(skip)]
+		(
+			TaskInvokeId,
+			Box<dyn Task<Tick = TickInput, ContextProvider = Context> + Send + Sync>,
+		),
+	),
+	Invoke(TaskInvokeId),
+	CancelInvoked(TaskInvokeId),
 }
 
-pub trait TaskExecutor: WithTaskInputOutput {
-	type Scheduler: Scheduler<
-			TickInput = Self::TickInput,
-			TaskError = Self::TaskError,
-			ContextProvider = Self::ContextProvider,
-		>;
+pub trait TaskExecutor: WithTaskInputOutput + WithContextProvider {
+	type Scheduler: Scheduler<Tick = Self::Tick, ContextProvider = Self::ContextProvider>;
 
-	fn get_scheduler(&self) -> SchedulerHandle<Self::Scheduler>;
+	fn get_scheduler_handle(&self) -> SchedulerHandle<Self::Scheduler>;
 }
 
 pub trait SchedulerScheduleTaskExtension: Scheduler {
-	fn schedule_delayed_task<Work>(&mut self, work: Work, delay: Duration, owner_id: TaskOwnerId)
-	where
-		Work: ScheduledOnceWork<Self::TickInput, Self::TaskError, Self::ContextProvider>,
+	fn schedule_delayed_task<Work>(
+		&mut self,
+		work: Work,
+		delay: Duration,
+		owner_id: TaskCancellationId,
+	) where
+		Work: ScheduledOnceWork<Self::Tick, Self::ContextProvider>,
 	{
-		self.schedule(Self::DelayedTaskFactory::new(work, delay), owner_id)
+		self.schedule_task(Self::DelayedTaskFactory::new(work, delay), owner_id)
 	}
 
 	fn schedule_repeated_task<Work>(
@@ -77,21 +89,28 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
-		owner_id: TaskOwnerId,
+		owner_id: TaskCancellationId,
 	) where
-		Work: ScheduledRepeatedWork<Self::TickInput, Self::TaskError, Self::ContextProvider>,
+		Work: ScheduledRepeatedWork<Self::Tick, Self::ContextProvider>,
 	{
-		self.schedule(
+		self.schedule_task(
 			Self::RepeatedTaskFactory::new(work, interval, start_immediately),
 			owner_id,
 		)
 	}
 
-	fn schedule_immediate_task<Work>(&mut self, work: Work, owner_id: TaskOwnerId)
+	fn schedule_continuous_task<Work>(&mut self, work: Work, owner_id: TaskCancellationId)
 	where
-		Work: ScheduledOnceWork<Self::TickInput, Self::TaskError, Self::ContextProvider>,
+		Work: ScheduledRepeatedWork<Self::Tick, Self::ContextProvider>,
 	{
-		self.schedule(Self::ImmediateTaskFactory::new(work), owner_id)
+		self.schedule_task(Self::ContinuousTaskFactory::new(work), owner_id)
+	}
+
+	fn schedule_immediate_task<Work>(&mut self, work: Work, owner_id: TaskCancellationId)
+	where
+		Work: ScheduledOnceWork<Self::Tick, Self::ContextProvider>,
+	{
+		self.schedule_task(Self::ImmediateTaskFactory::new(work), owner_id)
 	}
 }
 

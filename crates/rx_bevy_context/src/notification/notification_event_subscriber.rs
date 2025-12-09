@@ -7,8 +7,6 @@ use rx_core_traits::{
 	Never, ObserverNotification, Signal, SubscriberNotification, SubscriberNotificationTryFromError,
 };
 
-use crate::RxBevyContext;
-
 /// Since events are passed around as references and signals must be owned, we
 /// can levarage the fact that these events are sent only once, and only to
 /// one destination and let the `In` and `InError` signals be taken out of the
@@ -23,7 +21,7 @@ where
 	// TODO(bevy-0.17): #[event_target]
 	target: Entity,
 	#[deref]
-	notification: SubscriberNotification<In, InError, RxBevyContext>,
+	notification: SubscriberNotification<In, InError>,
 }
 
 impl<In, InError> ContainsEntity for SubscriberNotificationEvent<In, InError>
@@ -48,7 +46,7 @@ where
 
 	#[inline]
 	pub fn from_notification(
-		notification: SubscriberNotification<In, InError, RxBevyContext>,
+		notification: SubscriberNotification<In, InError>,
 		target: Entity,
 	) -> Self {
 		Self {
@@ -59,7 +57,7 @@ where
 }
 
 impl<In, InError> From<SubscriberNotificationEvent<In, InError>>
-	for SubscriberNotification<In, InError, RxBevyContext>
+	for SubscriberNotification<In, InError>
 where
 	In: Signal,
 	InError: Signal,

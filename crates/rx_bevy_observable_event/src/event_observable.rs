@@ -1,9 +1,9 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event};
-use rx_bevy_context::RxBevyContext;
+use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Never, Observable, Subscriber, SubscriptionContext, UpgradeableObserver};
+use rx_core_traits::{Never, Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 
 use crate::EntityEventSubscription;
 
@@ -11,12 +11,12 @@ use crate::EntityEventSubscription;
 #[derive(RxObservable)]
 #[rx_out(E)]
 #[rx_out_error(Never)]
-#[rx_context(RxBevyContext)]
 pub struct EventObservable<E>
 where
 	E: Event + Clone,
 {
 	observed_entity: Entity,
+	scheduler: SchedulerHandle<RxBevyScheduler>,
 	_phantom_data: PhantomData<E>,
 }
 
@@ -24,9 +24,10 @@ impl<E> EventObservable<E>
 where
 	E: Event + Clone,
 {
-	pub fn new(observed_entity: Entity) -> Self {
+	pub fn new(observed_entity: Entity, scheduler: SchedulerHandle<RxBevyScheduler>) -> Self {
 		Self {
 			observed_entity,
+			scheduler,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -39,20 +40,20 @@ where
 	type Subscription<Destination>
 		= EntityEventSubscription<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		EntityEventSubscription::new(self.observed_entity, destination.upgrade(), context)
+		EntityEventSubscription::new(
+			self.observed_entity,
+			destination.upgrade(),
+			self.scheduler.clone(),
+		)
 	}
 }

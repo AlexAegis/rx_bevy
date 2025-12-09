@@ -1,4 +1,6 @@
-use crate::{Signal, Subscriber, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory};
+use crate::{
+	Signal, Subscriber, SubscriptionWithTeardown, UpgradeableObserver, WithPrimaryCategory,
+};
 
 /// # [ObservableOutput]
 ///
@@ -81,7 +83,7 @@ pub trait Observable: ObservableOutput + WithPrimaryCategory {
 	/// be attempted. This attempt at unsubscribing on drop, if the subscription
 	/// wasn't already unsubscribed, can panic if the SubscriptionContext used
 	/// is not a [DropSafeSubscriptionContext].
-	type Subscription<Destination>: 'static + SubscriptionLike + Drop + Send + Sync
+	type Subscription<Destination>: 'static + SubscriptionWithTeardown + Drop + Send + Sync
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 

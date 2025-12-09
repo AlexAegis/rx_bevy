@@ -1,102 +1,99 @@
-use std::marker::PhantomData;
-
-use bevy_ecs::{entity::Entity, schedule::ScheduleLabel};
-use rx_bevy_common::Clock;
+use bevy_ecs::entity::Entity;
 use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
-	SharedSubscriber, Subscriber, SubscriptionClosedFlag, SubscriptionContext, SubscriptionLike,
-	TeardownCollection, UpgradeableObserver,
+use rx_core_traits::prelude::*;
+
+use rx_bevy_context::{
+	CommandSubscribeExtension, RxBevyScheduler, RxBevySchedulerDespawnEntityExtension,
 };
 
-use rx_bevy_context::{CommandSubscribeExtension, RxBevyContext};
-
 #[derive(RxSubscription)]
-#[rx_context(RxBevyContext)]
-#[rx_delegate_tickable_to_destination]
-pub struct ProxySubscription<Destination, S, C>
+pub struct ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
-	S: ScheduleLabel,
-	C: Clock,
+	Destination: 'static + Subscriber,
 {
-	proxy_subscription_entity: Entity,
+	scheduler: SchedulerHandle<RxBevyScheduler>,
 	#[destination]
 	destination: SharedSubscriber<Destination>,
 	closed_flag: SubscriptionClosedFlag,
-	_phantom_data: PhantomData<(S, C)>,
+	despawn_invoke_id: TaskInvokeId,
+	cancellation_id: TaskCancellationId,
 }
 
-impl<Destination, S, C> ProxySubscription<Destination, S, C>
+impl<Destination> ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = RxBevyContext> + UpgradeableObserver,
+	Destination: 'static + Subscriber + UpgradeableObserver,
 	Destination::In: Clone,
 	Destination::InError: Clone,
-	S: ScheduleLabel,
-	C: Clock,
 {
 	pub fn new(
 		target_observable_entity: Entity,
 		destination: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
+		mut scheduler: SchedulerHandle<RxBevyScheduler>,
 	) -> Self {
-		let shared_destination = SharedSubscriber::new(destination, context);
+		let shared_destination = SharedSubscriber::new(destination);
 
 		let shared_destination_clone = shared_destination.clone();
 
-		let proxy_subscription_entity = context
-			.deferred_world
-			.commands()
-			.subscribe::<_, S, C>(target_observable_entity, shared_destination_clone);
+		let scheduler_subscription_clone = scheduler.clone();
+		let mut scheduler_schedule_clone = scheduler.clone();
+		let mut scheduler = scheduler.lock();
+		let cancellation_id = scheduler.generate_cancellation_id();
+		let despawn_invoke_id = scheduler.generate_invoke_id();
+
+		scheduler.schedule_immediate_task(
+			move |_, context| {
+				let proxy_subscription_entity = context
+					.deferred_world
+					.commands()
+					.subscribe::<_>(target_observable_entity, shared_destination_clone);
+
+				scheduler_schedule_clone
+					.lock()
+					.schedule_invoked_despawn_entity(proxy_subscription_entity, despawn_invoke_id);
+			},
+			cancellation_id,
+		);
 
 		Self {
-			proxy_subscription_entity,
+			despawn_invoke_id,
+			cancellation_id,
+			scheduler: scheduler_subscription_clone,
 			destination: shared_destination,
 			closed_flag: false.into(),
-			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Destination, S, C> SubscriptionLike for ProxySubscription<Destination, S, C>
+impl<Destination> SubscriptionLike for ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
-	S: ScheduleLabel,
-	C: Clock,
+	Destination: 'static + Subscriber,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		*self.closed_flag
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
 			self.closed_flag.close();
-			self.destination.unsubscribe(context);
+			self.destination.unsubscribe();
 
-			context
-				.deferred_world
-				.commands()
-				.entity(self.proxy_subscription_entity)
-				.despawn();
+			let mut scheduler = self.scheduler.lock();
+			scheduler.invoke(self.despawn_invoke_id);
+			scheduler.cancel(self.cancellation_id);
 		}
 	}
 }
 
-impl<Destination, S, C> TeardownCollection for ProxySubscription<Destination, S, C>
+impl<Destination> TeardownCollection for ProxySubscription<Destination>
 where
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
-	S: ScheduleLabel,
-	C: Clock,
+	Destination: 'static + Subscriber,
 {
-	fn add_teardown(
-		&mut self,
-		teardown: rx_core_traits::Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn add_teardown(&mut self, teardown: Teardown) {
 		if !self.is_closed() {
-			self.destination.add_teardown(teardown, context);
+			self.destination.add_teardown(teardown);
 		} else {
-			teardown.execute(context);
+			teardown.execute();
 		}
 	}
 }

@@ -1,6 +1,8 @@
+use derive_where::derive_where;
 use rx_core_traits::{Scheduler, SchedulerHandle};
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
+#[derive_where(Clone)]
 pub struct OnTickObservableOptions<S>
 where
 	S: Scheduler,

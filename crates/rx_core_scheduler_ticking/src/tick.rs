@@ -1,5 +1,5 @@
 use std::{
-	ops::{Add, AddAssign},
+	ops::{Add, AddAssign, Sub},
 	time::Duration,
 };
 
@@ -39,6 +39,17 @@ impl Add<Duration> for Tick {
 	fn add(self, rhs: Duration) -> Self::Output {
 		Tick {
 			elapsed_since_start: self.elapsed_since_start + rhs,
+			delta: rhs,
+		}
+	}
+}
+
+impl Sub<Duration> for Tick {
+	type Output = Tick;
+
+	fn sub(self, rhs: Duration) -> Self::Output {
+		Tick {
+			elapsed_since_start: self.elapsed_since_start - rhs,
 			delta: rhs,
 		}
 	}

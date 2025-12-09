@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
+use std::time::Duration;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Signal, Subscriber, Tick};
+use rx_core_traits::{Observer, Signal, Subscriber};
 
 use crate::{
 	AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, AdsrTrigger, operator::AdsrOperatorOptions,
@@ -77,10 +78,13 @@ where
 {
 	/// TODO: MIGRATE IT INTO THE SCHEDULER
 	#[inline]
-	fn tick(&mut self, tick: Tick) {
-		let next =
-			self.state
-				.calculate_output(self.options.envelope, self.is_getting_activated, &tick);
+	fn tick(&mut self, elapsed_since_start: Duration, tick_delta: Duration) {
+		let next = self.state.calculate_output(
+			self.options.envelope,
+			self.is_getting_activated,
+			elapsed_since_start,
+			tick_delta,
+		);
 		if self.options.reset_input_on_tick {
 			self.is_getting_activated = false;
 		}

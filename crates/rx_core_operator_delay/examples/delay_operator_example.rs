@@ -8,7 +8,7 @@ use rx_core_testing::MockExecutor;
 fn main() {
 	let mut executor = MockExecutor::default();
 	let mut scheduler = executor.get_scheduler();
-	let owner_id = scheduler.get_scheduler().generate_owner_id();
+	let owner_id = scheduler.lock().generate_owner_id();
 
 	let mut subscription = (1..=5)
 		.into_observable::<()>()
@@ -20,7 +20,7 @@ fn main() {
 		.subscribe(PrintObserver::new("delay_operator"), &mut ());
 
 	let mut scheduler_clone = scheduler.clone();
-	scheduler.get_scheduler().schedule_delayed_task(
+	scheduler.lock().schedule_delayed_task(
 		move |_| {
 			println!("late hello");
 
@@ -30,10 +30,10 @@ fn main() {
 		owner_id,
 	);
 
-	scheduler.clone().get_scheduler().schedule_delayed_task(
+	scheduler.clone().lock().schedule_delayed_task(
 		move |_| {
 			println!("early hello");
-			scheduler_clone.get_scheduler().schedule_immediate_task(
+			scheduler_clone.lock().schedule_immediate_task(
 				|_| {
 					println!("immediate");
 					Ok(())

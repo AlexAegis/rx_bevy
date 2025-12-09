@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use disqualified::ShortName;
 
-use crate::{Scheduler, WithTaskInputOutput};
+use crate::{Scheduler, WithContextProvider, WithTaskInputOutput};
 
 #[derive(Debug, Default)]
 pub struct SchedulerHandle<S>
@@ -34,12 +34,16 @@ where
 		}
 	}
 
-	pub fn get_scheduler(&mut self) -> MutexGuard<'_, S> {
+	pub fn lock(&mut self) -> MutexGuard<'_, S> {
 		self.scheduler.lock().unwrap_or_else(|poison_error| {
 			eprintln!("Scheduler ({}) got poisoned!", ShortName::of::<Self>());
 			self.scheduler.clear_poison();
 			poison_error.into_inner()
 		})
+	}
+
+	pub fn get_scheduler_handle(&self) -> Self {
+		self.clone()
 	}
 }
 
@@ -56,9 +60,14 @@ impl<S> WithTaskInputOutput for SchedulerHandle<S>
 where
 	S: Scheduler,
 {
-	type TickInput = S::TickInput;
+	type Tick = S::Tick;
+}
+
+impl<S> WithContextProvider for SchedulerHandle<S>
+where
+	S: Scheduler,
+{
 	type ContextProvider = S::ContextProvider;
-	type TaskError = S::TaskError;
 }
 
 pub trait IntoSchedulerHandle<S>

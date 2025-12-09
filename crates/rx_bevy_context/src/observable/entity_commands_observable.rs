@@ -1,11 +1,16 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::EntityCommands};
-use rx_bevy_common::Clock;
+use bevy_ecs::{entity::Entity, system::EntityCommands};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, Signal, Subscriber, SubscriptionContext, UpgradeableObserver};
+use rx_core_traits::{
+	Observable, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, Signal, Subscriber,
+	UpgradeableObserver,
+};
 
-use crate::{EntityCommandSubscribeExtension, EntitySubscription, RxBevyContext};
+use crate::{
+	AsyncSubscription, EntityCommandSubscribeExtension, RxBevyScheduler,
+	RxBevySchedulerDespawnEntityExtension,
+};
 
 pub trait EntityCommandsAsObservableExtension {
 	/// # `as_observable`
@@ -61,107 +66,106 @@ pub trait EntityCommandsAsObservableExtension {
 	/// inserted an observable component onto your observable
 	/// entity, and only then you issued the subscribe command, you can be
 	/// sure that the subscription will be established in the same frame.
-	fn as_observable<Out, OutError, S, C>(
+	fn as_observable<Out, OutError>(
 		&mut self,
-	) -> EntityCommandsObservable<Out, OutError, S, C>
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> EntityCommandsObservable<Out, OutError>
 	where
 		Out: Signal + Clone,
-		OutError: Signal + Clone,
-		S: ScheduleLabel,
-		C: Clock;
+		OutError: Signal + Clone;
 }
 
 impl EntityCommandsAsObservableExtension for EntityCommands<'_> {
-	fn as_observable<Out, OutError, S, C>(
+	fn as_observable<Out, OutError>(
 		&mut self,
-	) -> EntityCommandsObservable<Out, OutError, S, C>
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> EntityCommandsObservable<Out, OutError>
 	where
 		Out: Signal + Clone,
 		OutError: Signal + Clone,
-		S: ScheduleLabel,
-		C: Clock,
 	{
-		self.id().into()
+		EntityCommandsObservable {
+			observable_entity: self.id(),
+			scheduler,
+			phantom_data: PhantomData,
+		}
 	}
 }
 
 impl EntityCommandsAsObservableExtension for Entity {
-	fn as_observable<Out, OutError, S, C>(
+	fn as_observable<Out, OutError>(
 		&mut self,
-	) -> EntityCommandsObservable<Out, OutError, S, C>
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> EntityCommandsObservable<Out, OutError>
 	where
 		Out: Signal + Clone,
 		OutError: Signal + Clone,
-		S: ScheduleLabel,
-		C: Clock,
 	{
-		(*self).into()
+		EntityCommandsObservable {
+			observable_entity: *self,
+			scheduler,
+			phantom_data: PhantomData,
+		}
 	}
 }
 
 #[derive(RxObservable)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-#[rx_context(RxBevyContext)]
-pub struct EntityCommandsObservable<Out, OutError, S, C>
+pub struct EntityCommandsObservable<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
-	S: ScheduleLabel,
-	C: Clock,
 {
 	observable_entity: Entity,
-	phantom_data: PhantomData<(Out, OutError, S, C)>,
+	scheduler: SchedulerHandle<RxBevyScheduler>,
+	phantom_data: PhantomData<(Out, OutError)>,
 }
 
-impl<Out, OutError, S, C> From<Entity> for EntityCommandsObservable<Out, OutError, S, C>
+impl<Out, OutError> Observable for EntityCommandsObservable<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
-	S: ScheduleLabel,
-	C: Clock,
-{
-	fn from(entity: Entity) -> Self {
-		Self {
-			observable_entity: entity,
-			phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<Out, OutError, S, C> Observable for EntityCommandsObservable<Out, OutError, S, C>
-where
-	Out: Signal,
-	OutError: Signal,
-	S: ScheduleLabel,
-	C: Clock,
 {
 	type Subscription<Destination>
-		= EntitySubscription
+		= AsyncSubscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		// If the observable was spawned in the same system from where you call
-		// subscribe, the command that would insert the Observable onto
-		// `self.observable_entity`, has definitely not happend yet.
-		// This would be a big problem if not for retry-able subscribe commands!
-		let subscription_entity = context
-			.deferred_world
-			.commands()
-			.entity(self.observable_entity)
-			.subscribe_destination::<_, S, C>(destination);
-		EntitySubscription::new(subscription_entity)
+		let scheduler_subscription_clone = self.scheduler.clone();
+		let mut scheduler_schedule_clone = self.scheduler.clone();
+		let mut scheduler = self.scheduler.lock();
+		let cancellation_id = scheduler.generate_cancellation_id();
+		let despawn_invoke_id = scheduler.generate_invoke_id();
+		let observable_entity = self.observable_entity;
+
+		scheduler.schedule_immediate_task(
+			move |_, context| {
+				let subscription_entity = context
+					.deferred_world
+					.commands()
+					.entity(observable_entity)
+					.subscribe_destination::<_>(destination);
+
+				scheduler_schedule_clone
+					.lock()
+					.schedule_invoked_despawn_entity(subscription_entity, despawn_invoke_id);
+			},
+			cancellation_id,
+		);
+
+		AsyncSubscription::new(
+			scheduler_subscription_clone,
+			cancellation_id,
+			despawn_invoke_id,
+		)
 	}
 }

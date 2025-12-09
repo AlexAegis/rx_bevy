@@ -9,7 +9,6 @@ use rx_core_traits::{Observer, Signal, Subscriber};
 #[derive(RxSubscriber)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_delegate_tickable_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
 #[rx_delegate_subscription_like_to_destination]
 pub struct ReduceSubscriber<In, InError, Reducer, Out, Destination>

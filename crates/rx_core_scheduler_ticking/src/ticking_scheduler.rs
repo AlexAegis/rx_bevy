@@ -1,38 +1,40 @@
-use std::fmt::Debug;
-
 use derive_where::derive_where;
+use rx_core_macro_scheduler_derive::RxScheduler;
 use rx_core_traits::{
-	ScheduledTaskAction, Scheduler, Task, TaskContextProvider, TaskOwnerId, TaskOwnerIdGenerator,
-	Tick, WithTaskInputOutput,
+	ContextProvider, ScheduledTaskAction, Scheduler, Task, TaskCancellationId,
+	TaskCancellationIdGenerator, TaskInvokeId, TaskInvokeIdGenerator,
 };
 
 use crate::{
-	DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory, RepeatedTaskTickedFactory,
-	TickingExecutorsScheduler,
+	ContinuousTaskTickedFactory, DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory,
+	InvokedTaskTickedFactory, RepeatedTaskTickedFactory, Tick, TickingExecutorsScheduler,
 };
 
-#[derive_where(Default)]
-pub struct TickingScheduler<TaskError = (), ContextProvider = ()>
+#[derive(RxScheduler)]
+#[derive_where(Default, Debug)]
+#[rx_tick(Tick)]
+#[rx_context(C)]
+pub struct TickingScheduler<C = ()>
 where
-	ContextProvider: TaskContextProvider,
+	C: ContextProvider,
 {
-	task_owner_id_generator: TaskOwnerIdGenerator,
+	task_cancellation_id_generator: TaskCancellationIdGenerator,
+	task_invoke_id_generator: TaskInvokeIdGenerator,
 	/// Updated by the executor at the start of each tick.
 	pub(crate) current_tick: Tick,
-	task_action_queue: Vec<ScheduledTaskAction<Tick, TaskError, ContextProvider>>,
-	//_phantom_data: PhantomData<fn((TaskError, ContextProvider)) -> (TaskError, ContextProvider)>,
+	task_action_queue: Vec<ScheduledTaskAction<Tick, C>>,
 }
 
-impl<TaskError, ContextProvider> TickingExecutorsScheduler
-	for TickingScheduler<TaskError, ContextProvider>
+impl<C> TickingExecutorsScheduler for TickingScheduler<C>
 where
-	ContextProvider: 'static + TaskContextProvider + Send + Sync,
-	TaskError: 'static + Send + Sync + Debug,
+	C: 'static + ContextProvider + Send + Sync,
 {
-	fn drain_queue(
-		&mut self,
-	) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, TaskError, ContextProvider>> {
+	fn drain_tasks(&mut self) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, C>> {
 		self.task_action_queue.drain(..)
+	}
+
+	fn has_tasks(&self) -> bool {
+		self.task_action_queue.len() > 0
 	}
 
 	fn update_tick(&mut self, tick: Tick) {
@@ -40,31 +42,19 @@ where
 	}
 }
 
-impl<TaskError, ContextProvider> WithTaskInputOutput
-	for TickingScheduler<TaskError, ContextProvider>
+impl<C> Scheduler for TickingScheduler<C>
 where
-	ContextProvider: TaskContextProvider + Send + Sync,
+	C: 'static + ContextProvider + Send + Sync,
 {
-	type TickInput = Tick;
-	type TaskError = TaskError;
-	type ContextProvider = ContextProvider;
-}
+	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<C>;
+	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<C>;
+	type RepeatedTaskFactory = RepeatedTaskTickedFactory<C>;
+	type InvokedTaskFactory = InvokedTaskTickedFactory<C>;
+	type ContinuousTaskFactory = ContinuousTaskTickedFactory<C>;
 
-impl<TaskError, ContextProvider> Scheduler for TickingScheduler<TaskError, ContextProvider>
-where
-	ContextProvider: 'static + TaskContextProvider + Send + Sync,
-	TaskError: 'static + Send + Sync + Debug,
-{
-	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<TaskError, ContextProvider>;
-	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<TaskError, ContextProvider>;
-	type RepeatedTaskFactory = RepeatedTaskTickedFactory<TaskError, ContextProvider>;
-
-	fn schedule<T>(&mut self, mut task: T, owner_id: TaskOwnerId)
+	fn schedule_task<T>(&mut self, mut task: T, owner_id: TaskCancellationId)
 	where
-		T: 'static
-			+ Task<TickInput = Tick, TaskError = TaskError, ContextProvider = ContextProvider>
-			+ Send
-			+ Sync,
+		T: 'static + Task<Tick = Tick, ContextProvider = C> + Send + Sync,
 	{
 		task.on_scheduled_hook(self.current_tick);
 
@@ -75,12 +65,37 @@ where
 		// TODO: Try returning subscriptions instead of ownerids
 	}
 
-	fn cancel(&mut self, owner_id: TaskOwnerId) {
+	fn schedule_invoked_task<T>(&mut self, mut task: T, invoke_id: TaskInvokeId)
+	where
+		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync,
+	{
+		task.on_scheduled_hook(self.current_tick);
+
 		self.task_action_queue
-			.push(ScheduledTaskAction::CancelAll(owner_id));
+			.push(ScheduledTaskAction::AddInvoked((invoke_id, Box::new(task))));
 	}
 
-	fn generate_owner_id(&mut self) -> TaskOwnerId {
-		self.task_owner_id_generator.get_next()
+	fn invoke(&mut self, invoke_id: TaskInvokeId) {
+		self.task_action_queue
+			.push(ScheduledTaskAction::Invoke(invoke_id));
+	}
+
+	#[inline]
+	fn cancel_invoked(&mut self, invoke_id: TaskInvokeId) {
+		self.task_action_queue
+			.push(ScheduledTaskAction::CancelInvoked(invoke_id));
+	}
+
+	fn cancel(&mut self, owner_id: TaskCancellationId) {
+		self.task_action_queue
+			.push(ScheduledTaskAction::Cancel(owner_id));
+	}
+
+	fn generate_cancellation_id(&mut self) -> TaskCancellationId {
+		self.task_cancellation_id_generator.get_next()
+	}
+
+	fn generate_invoke_id(&mut self) -> TaskInvokeId {
+		self.task_invoke_id_generator.get_next()
 	}
 }

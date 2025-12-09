@@ -1,28 +1,30 @@
-use bevy_ecs::{schedule::ScheduleLabel, system::EntityCommands};
+use bevy_ecs::system::EntityCommands;
 
-use rx_bevy_common::Clock;
-use rx_core_traits::Signal;
+use rx_bevy_context::RxBevyScheduler;
+use rx_core_traits::{SchedulerHandle, Signal};
 
 use crate::observable::ProxyObservable;
 
 /// Provides commands for subscription relative to this entity
 pub trait EntityCommandAsProxyObservableExtension {
-	fn as_proxy_observable<Out, OutError, S, C>(&mut self) -> ProxyObservable<Out, OutError, S, C>
+	fn as_proxy_observable<Out, OutError>(
+		&mut self,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> ProxyObservable<Out, OutError>
 	where
 		Out: Signal + Clone,
-		OutError: Signal + Clone,
-		S: ScheduleLabel,
-		C: Clock;
+		OutError: Signal + Clone;
 }
 
 impl<'a> EntityCommandAsProxyObservableExtension for EntityCommands<'a> {
-	fn as_proxy_observable<Out, OutError, S, C>(&mut self) -> ProxyObservable<Out, OutError, S, C>
+	fn as_proxy_observable<Out, OutError>(
+		&mut self,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> ProxyObservable<Out, OutError>
 	where
 		Out: Signal + Clone,
 		OutError: Signal + Clone,
-		S: ScheduleLabel,
-		C: Clock,
 	{
-		ProxyObservable::<Out, OutError, S, C>::new(self.id())
+		ProxyObservable::<Out, OutError>::new(self.id(), scheduler)
 	}
 }

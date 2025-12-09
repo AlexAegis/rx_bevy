@@ -8,7 +8,7 @@
 
 ## Usage
 
-Refer to the [documentation](https://alexaegis.github.io/bevy_mod_erased_component_registry/)!
+Refer to the [documentation](https://alexaegis.github.io/rx_bevy/)!
 
 ## Bevy Compatibility Table
 

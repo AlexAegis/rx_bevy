@@ -1,17 +1,14 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::resource::Resource;
-
-use rx_bevy_context::RxBevyContext;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, Signal, Subscriber, SubscriptionContext, UpgradeableObserver};
+use rx_core_traits::{Observable, Signal, Subscriber, UpgradeableObserver};
 
 use crate::{ResourceSubscription, observable::ResourceObservableOptions};
 
 #[derive(RxObservable)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-#[rx_context(RxBevyContext)]
 pub struct ResourceObservable<R, Reader, Out, OutError>
 where
 	R: Resource,
@@ -50,25 +47,20 @@ where
 	type Subscription<Destination>
 		= ResourceSubscription<R, Reader, Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		ResourceSubscription::new(
 			self.reader.clone(),
 			self.options.clone(),
 			destination.upgrade(),
-			context,
 		)
 	}
 }

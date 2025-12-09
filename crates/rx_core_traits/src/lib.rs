@@ -23,3 +23,18 @@ pub use subscriber::*;
 pub use subscribers::*;
 pub use subscription::*;
 pub use upgradeable_observer::*;
+
+pub mod prelude {
+	pub use super::observable::*;
+	pub use super::observer::*;
+	pub use super::operator::*;
+	pub use super::operators::*;
+	pub use super::rx_category::*;
+	pub use super::scheduling::*;
+	pub use super::signals::*;
+	pub use super::subject::*;
+	pub use super::subscriber::*;
+	pub use super::subscribers::*;
+	pub use super::subscription::*;
+	pub use super::upgradeable_observer::*;
+}

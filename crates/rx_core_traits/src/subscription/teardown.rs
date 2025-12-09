@@ -20,6 +20,7 @@ use crate::SubscriptionLike;
 /// the [SubscriptionCollection][crate::SubscriptionCollection] trait which
 /// uses [Teardown] as the base type of operation. Allowing generic functions
 /// where you can add anything that is `Into<Teardown>` such as Subscriptions.
+#[derive(Default)]
 pub struct Teardown {
 	teardown_fn: Option<Box<dyn FnOnce() + Send + Sync>>,
 }
@@ -86,12 +87,6 @@ impl Teardown {
 	#[inline]
 	pub fn is_closed(&self) -> bool {
 		self.teardown_fn.is_none()
-	}
-}
-
-impl Default for Teardown {
-	fn default() -> Self {
-		Self { teardown_fn: None }
 	}
 }
 

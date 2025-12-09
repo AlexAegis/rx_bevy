@@ -1,15 +1,15 @@
 use std::{fmt::Display, ops::Deref};
 
 #[derive(Clone, Copy, Hash, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct TaskOwnerId(usize);
+pub struct TaskInvokeId(usize);
 
-impl Display for TaskOwnerId {
+impl Display for TaskInvokeId {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{:?}", self.0)
 	}
 }
 
-impl Deref for TaskOwnerId {
+impl Deref for TaskInvokeId {
 	type Target = usize;
 
 	fn deref(&self) -> &Self::Target {
@@ -17,20 +17,20 @@ impl Deref for TaskOwnerId {
 	}
 }
 
-impl From<usize> for TaskOwnerId {
+impl From<usize> for TaskInvokeId {
 	fn from(value: usize) -> Self {
 		Self(value)
 	}
 }
 
 #[derive(Default, Debug)]
-pub struct TaskOwnerIdGenerator {
+pub struct TaskInvokeIdGenerator {
 	current_tick_index: usize,
 }
 
-impl TaskOwnerIdGenerator {
-	pub fn get_next(&mut self) -> TaskOwnerId {
-		let tick_id: TaskOwnerId = self.current_tick_index.into();
+impl TaskInvokeIdGenerator {
+	pub fn get_next(&mut self) -> TaskInvokeId {
+		let tick_id: TaskInvokeId = self.current_tick_index.into();
 		self.current_tick_index += 1;
 		tick_id
 	}

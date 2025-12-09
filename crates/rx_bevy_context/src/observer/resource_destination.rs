@@ -1,48 +1,60 @@
 use core::marker::PhantomData;
+use std::sync::{Arc, Mutex};
 
 use bevy_ecs::{resource::Resource, world::Mut};
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, ObserverNotification, Signal, UpgradeableObserver};
+use rx_core_traits::{
+	Observer, ObserverNotification, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension,
+	Signal, TaskCancellationId, UpgradeableObserver,
+};
 
-use crate::{DetachedSubscriber, RxBevyContextItem};
+use crate::{DetachedSubscriber, RxBevyContext};
 
-#[derive(RxObserver, Copy, Clone, Debug)]
+#[derive(RxObserver, Clone, Debug)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_does_not_upgrade_to_observer_subscriber]
-pub struct ResourceDestination<In, InError, R, ResourceWriter>
+pub struct ResourceDestination<In, InError, R, ResourceWriter, S>
 where
 	In: Signal,
 	InError: Signal,
 	R: Resource,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
+	S: Scheduler<ContextProvider = RxBevyContext>,
 {
-	writer: ResourceWriter,
+	writer: Arc<Mutex<ResourceWriter>>,
+	owner_id: TaskCancellationId,
+	scheduler: SchedulerHandle<S>,
 	_phantom_data: PhantomData<(In, InError, R)>,
 }
 
-impl<In, InError, R, ResourceWriter> ResourceDestination<In, InError, R, ResourceWriter>
+impl<In, InError, R, ResourceWriter, S> ResourceDestination<In, InError, R, ResourceWriter, S>
 where
 	In: Signal,
 	InError: Signal,
 	R: Resource,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
+	S: Scheduler<ContextProvider = RxBevyContext>,
 {
-	pub fn new(writer: ResourceWriter) -> Self {
+	pub fn new(writer: ResourceWriter, mut scheduler: SchedulerHandle<S>) -> Self {
+		let owner_id = scheduler.lock().generate_cancellation_id();
 		Self {
-			writer,
+			writer: Arc::new(Mutex::new(writer)),
+			owner_id,
+			scheduler,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, R, ResourceWriter> UpgradeableObserver
-	for ResourceDestination<In, InError, R, ResourceWriter>
+impl<In, InError, R, ResourceWriter, S> UpgradeableObserver
+	for ResourceDestination<In, InError, R, ResourceWriter, S>
 where
 	In: Signal,
 	InError: Signal,
 	R: Resource,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
+	S: Scheduler<ContextProvider = RxBevyContext>,
 {
 	type Upgraded = DetachedSubscriber<Self>;
 
@@ -51,28 +63,52 @@ where
 	}
 }
 
-impl<In, InError, R, ResourceWriter> Observer
-	for ResourceDestination<In, InError, R, ResourceWriter>
+impl<In, InError, R, ResourceWriter, S> Observer
+	for ResourceDestination<In, InError, R, ResourceWriter, S>
 where
 	In: Signal,
 	InError: Signal,
 	R: Resource,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
+	S: Scheduler<ContextProvider = RxBevyContext>,
 {
-	fn next(&mut self, next: Self::In, context: &mut RxBevyContextItem<'_, '_>) {
-		// TODO: Figure out How to do this without a passed in context. maybe the schedulers
-		// TODO: tasks could just do it, if the task context is the same, needs an on-schedule return value that could come from that context, to acquire handles from it
-		let resource = context.deferred_world.resource_mut::<R>();
-		(self.writer)(resource, ObserverNotification::<In, InError>::Next(next));
+	fn next(&mut self, next: Self::In) {
+		let writer = self.writer.clone();
+		self.scheduler.lock().schedule_immediate_task(
+			move |_, context| {
+				if let Ok(mut writer) = writer.lock() {
+					let resource = context.deferred_world.resource_mut::<R>();
+					(writer)(resource, ObserverNotification::<In, InError>::Next(next));
+				}
+			},
+			self.owner_id,
+		);
 	}
 
-	fn error(&mut self, error: Self::InError, context: &mut RxBevyContextItem<'_, '_>) {
-		let resource = context.deferred_world.resource_mut::<R>();
-		(self.writer)(resource, ObserverNotification::<In, InError>::Error(error));
+	fn error(&mut self, error: Self::InError) {
+		let writer = self.writer.clone();
+
+		self.scheduler.lock().schedule_immediate_task(
+			move |_, context| {
+				if let Ok(mut writer) = writer.lock() {
+					let resource = context.deferred_world.resource_mut::<R>();
+					(writer)(resource, ObserverNotification::<In, InError>::Error(error));
+				}
+			},
+			self.owner_id,
+		);
 	}
 
-	fn complete(&mut self, context: &mut RxBevyContextItem<'_, '_>) {
-		let resource = context.deferred_world.resource_mut::<R>();
-		(self.writer)(resource, ObserverNotification::<In, InError>::Complete);
+	fn complete(&mut self) {
+		let writer = self.writer.clone();
+		self.scheduler.lock().schedule_immediate_task(
+			move |_, context| {
+				if let Ok(mut writer) = writer.lock() {
+					let resource = context.deferred_world.resource_mut::<R>();
+					(writer)(resource, ObserverNotification::<In, InError>::Complete);
+				}
+			},
+			self.owner_id,
+		);
 	}
 }

@@ -10,7 +10,6 @@ use crate::{
 #[derive(RxSubscriber)]
 #[rx_in(EitherOut2<O1, O2>)]
 #[rx_in_error(EitherOutError2<O1, O2>)]
-#[rx_delegate_tickable_to_destination]
 #[rx_delegate_subscription_like_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
 pub struct ZipSubscriber<Destination, O1, O2>

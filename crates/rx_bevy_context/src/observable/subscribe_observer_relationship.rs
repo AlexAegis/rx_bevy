@@ -9,8 +9,6 @@ use std::fmt::Debug;
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
-use crate::RxBevyContext;
-
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref, DerefMut)]
@@ -19,7 +17,7 @@ use crate::RxBevyContext;
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscribeObserverRef<O>
 where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
+	O: 'static + Observable + Send + Sync,
 {
 	#[relationship]
 	#[deref]
@@ -30,7 +28,7 @@ where
 
 impl<O> SubscribeObserverRef<O>
 where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
+	O: 'static + Observable + Send + Sync,
 {
 	pub fn new(subscribe_observer_entity: Entity) -> Self {
 		Self {
@@ -46,7 +44,7 @@ where
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscribeObserverOf<O>
 where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
+	O: 'static + Observable + Send + Sync,
 {
 	#[relationship]
 	#[deref]
@@ -57,7 +55,7 @@ where
 
 impl<O> SubscribeObserverOf<O>
 where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
+	O: 'static + Observable + Send + Sync,
 {
 	pub fn new(observable_entity: Entity) -> Self {
 		Self {

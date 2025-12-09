@@ -43,6 +43,12 @@ pub fn never_type() -> Type {
 	}
 }
 
+pub fn unit_type() -> Type {
+	parse_quote! {
+		()
+	}
+}
+
 pub fn impl_primary_category(derive_input: &DeriveInput, primary_category: Type) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
@@ -381,5 +387,62 @@ pub fn impl_skip_unsubscribe_on_drop_impl(derive_input: &DeriveInput) -> Option<
 		None
 	} else {
 		Some(impl_unsubscribe_on_drop(derive_input))
+	}
+}
+
+pub fn impl_with_context_provider(derive_input: &DeriveInput) -> TokenStream {
+	let ident = derive_input.ident.clone();
+	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
+
+	let context_type = find_attribute(&derive_input.attrs, "rx_context")
+		.map(read_attribute_type)
+		.unwrap_or(unit_type());
+
+	quote! {
+		impl #impl_generics rx_core_traits::WithContextProvider for #ident #ty_generics #where_clause {
+			type ContextProvider = #context_type;
+		}
+	}
+}
+
+pub fn impl_with_task_input_output(derive_input: &DeriveInput) -> TokenStream {
+	let ident = derive_input.ident.clone();
+	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
+
+	let tick_input_type = find_attribute(&derive_input.attrs, "rx_tick")
+		.map(read_attribute_type)
+		.unwrap_or(never_type());
+
+	quote! {
+		impl #impl_generics rx_core_traits::WithTaskInputOutput for #ident #ty_generics #where_clause {
+			type Tick = #tick_input_type;
+		}
+	}
+}
+
+pub fn impl_executor(derive_input: &DeriveInput) -> TokenStream {
+	let ident = derive_input.ident.clone();
+	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
+
+	let scheduler_type = find_attribute(&derive_input.attrs, "rx_scheduler")
+		.map(read_attribute_type)
+		.expect("#[rx_scheduler(...)] must be defined with a Scheduler type!");
+
+	let scheduler_field = find_field_ident_with_attribute(
+		derive_input,
+		"scheduler_handle",
+		"rx_scheduler",
+		"Scheduler",
+	);
+
+	quote! {
+		impl #impl_generics rx_core_traits::TaskExecutor for #ident #ty_generics #where_clause {
+			type Scheduler = #scheduler_type;
+
+			#[inline]
+			fn get_scheduler_handle(&self) -> SchedulerHandle<Self::Scheduler> {
+				self.#scheduler_field.get_scheduler_handle()
+			}
+		}
 	}
 }

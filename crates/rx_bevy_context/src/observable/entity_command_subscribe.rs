@@ -1,8 +1,7 @@
-use bevy_ecs::{entity::Entity, schedule::ScheduleLabel, system::EntityCommands};
-use rx_bevy_common::Clock;
-use rx_core_traits::{Signal, UpgradeableObserver};
+use bevy_ecs::{entity::Entity, system::EntityCommands};
+use rx_core_traits::{SchedulerHandle, Signal, UpgradeableObserver};
 
-use crate::{CommandSubscribeExtension, EntityDestination, RxBevyContext};
+use crate::{CommandSubscribeExtension, EntityDestination, RxBevyScheduler};
 
 /// Provides commands for subscription relative to this entity
 pub trait EntityCommandSubscribeExtension {
@@ -26,11 +25,9 @@ pub trait EntityCommandSubscribeExtension {
 	///
 	///
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
-	fn subscribe_destination<Destination, S, C>(&mut self, destination: Destination) -> Entity
+	fn subscribe_destination<Destination>(&mut self, destination: Destination) -> Entity
 	where
-		Destination: 'static + UpgradeableObserver<Context = RxBevyContext>,
-		S: ScheduleLabel,
-		C: Clock;
+		Destination: 'static + UpgradeableObserver;
 
 	/// # subscribe
 	///
@@ -49,71 +46,72 @@ pub trait EntityCommandSubscribeExtension {
 	///
 	/// Returns the entity of the subscription which you can despawn to unsubscribe it
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
-	fn subscribe<Out, OutError, S, C>(&mut self, destination_entity: Entity) -> Entity
+	fn subscribe<Out, OutError>(
+		&mut self,
+		destination_entity: Entity,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> Entity
 	where
 		Out: Signal,
-		OutError: Signal,
-		S: ScheduleLabel,
-		C: Clock;
+		OutError: Signal;
 
 	/// # subscribes_to_observable_entity
 	///
 	/// Subscribes to the observable on the entity passed in, with this entity
 	/// as the destination entity. This entity will receive the notifications.
 	#[must_use = "It is advised to save the subscriptions entity reference somewhere to be able to unsubscribe from it at will."]
-	fn subscribes_to_observable_entity<Out, OutError, S, C>(
+	fn subscribes_to_observable_entity<Out, OutError>(
 		&mut self,
 		observable_entity: Entity,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
 	) -> Entity
 	where
 		Out: Signal,
-		OutError: Signal,
-		S: ScheduleLabel,
-		C: Clock;
+		OutError: Signal;
 }
 
 impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
-	fn subscribe_destination<Destination, S, C>(&mut self, destination: Destination) -> Entity
+	fn subscribe_destination<Destination>(&mut self, destination: Destination) -> Entity
 	where
-		Destination: 'static + UpgradeableObserver<Context = RxBevyContext>,
-		S: ScheduleLabel,
-		C: Clock,
+		Destination: 'static + UpgradeableObserver,
 	{
 		let observable_entity = self.id();
 		let commands = self.commands_mut();
-		commands.subscribe::<_, S, C>(observable_entity, destination)
+		commands.subscribe::<_>(observable_entity, destination)
 	}
 
-	fn subscribe<Out, OutError, S, C>(&mut self, destination_entity: Entity) -> Entity
-	where
-		Out: Signal,
-		OutError: Signal,
-		S: ScheduleLabel,
-		C: Clock,
-	{
-		let observable_entity = self.id();
-		let commands = self.commands_mut();
-		commands.subscribe::<_, S, C>(
-			observable_entity,
-			EntityDestination::<Out, OutError>::new(destination_entity),
-		)
-	}
-
-	fn subscribes_to_observable_entity<Out, OutError, S, C>(
+	fn subscribe<Out, OutError>(
 		&mut self,
-		observable_entity: Entity,
+		destination_entity: Entity,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
 	) -> Entity
 	where
 		Out: Signal,
 		OutError: Signal,
-		S: ScheduleLabel,
-		C: Clock,
+	{
+		let observable_entity = self.id();
+		let commands = self.commands_mut();
+
+		commands.subscribe::<_>(
+			observable_entity,
+			EntityDestination::<Out, OutError>::new(destination_entity, scheduler),
+		)
+	}
+
+	fn subscribes_to_observable_entity<Out, OutError>(
+		&mut self,
+		observable_entity: Entity,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> Entity
+	where
+		Out: Signal,
+		OutError: Signal,
 	{
 		let destination_entity = self.id();
 		let commands = self.commands_mut();
-		commands.subscribe::<_, S, C>(
+		commands.subscribe::<_>(
 			observable_entity,
-			EntityDestination::<Out, OutError>::new(destination_entity),
+			EntityDestination::<Out, OutError>::new(destination_entity, scheduler),
 		)
 	}
 }

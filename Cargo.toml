@@ -43,12 +43,15 @@ rx_core_emission_variants = { path = "crates/rx_core_emission_variants" }
 rx_core_testing = { path = "crates/rx_core_testing" }
 # Macros
 rx_core_macro_common = { path = "crates/rx_core_macro_common" }
+rx_core_macro_executor_derive = { path = "crates/rx_core_macro_executor_derive" }
 rx_core_macro_observable_derive = { path = "crates/rx_core_macro_observable_derive" }
 rx_core_macro_observer_derive = { path = "crates/rx_core_macro_observer_derive" }
 rx_core_macro_operator_derive = { path = "crates/rx_core_macro_operator_derive" }
+rx_core_macro_scheduler_derive = { path = "crates/rx_core_macro_scheduler_derive" }
 rx_core_macro_subject_derive = { path = "crates/rx_core_macro_subject_derive" }
 rx_core_macro_subscriber_derive = { path = "crates/rx_core_macro_subscriber_derive" }
 rx_core_macro_subscription_derive = { path = "crates/rx_core_macro_subscription_derive" }
+rx_core_macro_task_derive = { path = "crates/rx_core_macro_task_derive" }
 # Observables
 rx_core_observable_connectable = { path = "crates/rx_core_observable_connectable" }
 rx_core_observable_combine_latest = { path = "crates/rx_core_observable_combine_latest" }
@@ -156,14 +159,12 @@ bevy-inspector-egui = { version = "0.31.0", default-features = false, features =
 bevy_egui = { version = "0.34.1", default-features = false, features = [
     "immutable_ctx",
 ] }
-bevy_mod_erased_component_registry = { version = "0.1.0", default-features = false }
 # Data Structures
 bitflags = { version = "2.10.0", default-features = false }
 smallvec = { version = "1.15.1", default-features = false }
 slab = { version = "0.4.9", default-features = false }
 ringbuffer = { version = "0.16.0", default-features = false }
 either = { version = "1.15.0", default-features = false }
-stealcell = { version = "0.1.0", default-features = false }
 # Error Handling
 thiserror = { version = "2.0.17", default-features = false }
 # Serialization

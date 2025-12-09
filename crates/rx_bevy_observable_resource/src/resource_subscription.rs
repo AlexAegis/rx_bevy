@@ -1,54 +1,88 @@
-use std::marker::PhantomData;
+use std::{
+	marker::PhantomData,
+	sync::{Arc, Mutex},
+};
 
 use bevy_ecs::resource::Resource;
-use rx_bevy_context::{RxBevyContext, RxBevyContextItem};
+use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Subscriber, SubscriptionContext, SubscriptionData, SubscriptionLike, Teardown,
-	TeardownCollection, Tick, Tickable,
+	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, Subscriber,
+	SubscriptionData, SubscriptionLike, TaskCancellationId, Teardown, TeardownCollection,
+	TickResult,
 };
 
 use crate::observable::ResourceObservableOptions;
 
 #[derive(RxSubscription)]
-#[rx_context(RxBevyContext)]
 pub struct ResourceSubscription<R, Reader, Destination>
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
+	Destination: 'static + Subscriber,
 {
-	destination: Destination,
-	reader: Reader,
-	options: ResourceObservableOptions,
-	teardown: SubscriptionData<RxBevyContext>,
-	// The `is_resource_added` method doesn't seem to work in this context, so
-	// it will be tracked here instead.
-	resource_existed_in_the_previous_tick: bool,
-	_phantom_data: PhantomData<R>,
+	shared_destination: Arc<Mutex<Destination>>,
+	teardown: SubscriptionData,
+	scheduler: SchedulerHandle<RxBevyScheduler>,
+	cancellation_id: TaskCancellationId,
+	_phantom_data: PhantomData<(R, Reader)>,
 }
 
 impl<R, Reader, Destination> ResourceSubscription<R, Reader, Destination>
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
+	Destination: 'static + Subscriber,
 {
 	pub fn new(
 		reader: Reader,
-		options: ResourceObservableOptions,
+		mut options: ResourceObservableOptions,
 		destination: Destination,
-		context: &mut <Destination::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self {
+		let shared_destination = Arc::new(Mutex::new(destination));
+		let subscription_scheduler = options.scheduler.clone();
+
+		let mut shared_destination_clone = shared_destination.clone();
+		let mut scheduler_lock = options.scheduler.lock();
+		let cancellation_id = scheduler_lock.generate_cancellation_id();
+		let mut resource_existed_in_the_previous_tick = false;
+
+		scheduler_lock.schedule_continuous_task(
+			move |_tick, context| {
+				let resource_option = context.deferred_world.get_resource::<R>();
+				let is_changed = context.deferred_world.is_resource_changed::<R>();
+				let is_added = {
+					let resource_exists_this_tick = resource_option.is_some();
+					let is_added =
+						!resource_existed_in_the_previous_tick && resource_exists_this_tick;
+					resource_existed_in_the_previous_tick = resource_exists_this_tick;
+					is_added
+				};
+
+				// is_changed is always true when is_added is true
+				let is_changed_condition = options.trigger_on_is_changed && is_changed && !is_added;
+				let is_added_condition = options.trigger_on_is_added && is_added;
+
+				if (is_changed_condition || is_added_condition)
+					&& let Some(resource) = resource_option
+				{
+					let next = (reader)(resource);
+					match next {
+						Ok(next) => shared_destination_clone.next(next),
+						Err(error) => shared_destination_clone.error(error),
+					}
+				}
+
+				TickResult::Pending
+			},
+			cancellation_id,
+		);
+
 		Self {
-			reader,
-			options,
-			destination,
-			resource_existed_in_the_previous_tick: context
-				.deferred_world
-				.get_resource::<R>()
-				.is_some(),
+			shared_destination,
+			scheduler: subscription_scheduler,
 			teardown: SubscriptionData::default(),
+			cancellation_id,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -58,17 +92,19 @@ impl<R, Reader, Destination> SubscriptionLike for ResourceSubscription<R, Reader
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
+	Destination: 'static + Subscriber,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		self.teardown.is_closed()
 	}
 
-	fn unsubscribe(&mut self, context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>) {
+	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
-			self.destination.unsubscribe(context);
-			self.teardown.unsubscribe(context);
+			self.shared_destination.unsubscribe();
+			self.teardown.unsubscribe();
+
+			self.scheduler.lock().cancel(self.cancellation_id);
 		}
 	}
 }
@@ -77,51 +113,13 @@ impl<R, Reader, Destination> TeardownCollection for ResourceSubscription<R, Read
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
+	Destination: 'static + Subscriber,
 {
-	fn add_teardown(
-		&mut self,
-		teardown: Teardown<Self::Context>,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn add_teardown(&mut self, teardown: Teardown) {
 		if !self.is_closed() {
-			self.teardown.add_teardown(teardown, context);
+			self.teardown.add_teardown(teardown);
 		} else {
-			teardown.execute(context);
+			teardown.execute();
 		}
-	}
-}
-
-impl<R, Reader, Destination> Tickable for ResourceSubscription<R, Reader, Destination>
-where
-	R: Resource,
-	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber<Context = RxBevyContext>,
-{
-	fn tick(&mut self, tick: Tick, context: &mut RxBevyContextItem<'_, '_>) {
-		let resource_option = context.deferred_world.get_resource::<R>();
-		let is_changed = context.deferred_world.is_resource_changed::<R>();
-		let is_added = {
-			let resource_exists_this_tick = resource_option.is_some();
-			let is_added = !self.resource_existed_in_the_previous_tick && resource_exists_this_tick;
-			self.resource_existed_in_the_previous_tick = resource_exists_this_tick;
-			is_added
-		};
-
-		// is_changed is always true when is_added is true
-		let is_changed_condition = self.options.trigger_on_is_changed && is_changed && !is_added;
-		let is_added_condition = self.options.trigger_on_is_added && is_added;
-
-		if (is_changed_condition || is_added_condition)
-			&& let Some(resource) = resource_option
-		{
-			let next = (self.reader)(resource);
-			match next {
-				Ok(next) => self.destination.next(next, context),
-				Err(error) => self.destination.error(error, context),
-			}
-		}
-
-		self.destination.tick(tick, context);
 	}
 }

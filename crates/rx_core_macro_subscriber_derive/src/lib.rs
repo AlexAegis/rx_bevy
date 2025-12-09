@@ -58,9 +58,6 @@ fn primary_category_subscriber() -> Type {
 ///   - `observer_subscriber`: Upgraded version is itself wrapped in
 ///     `ObserverSubscriber`, causing it to **not** be unsubscribed when
 ///     upstream is unsubscribed when used as an observables destination.
-/// - `#[rx_delegate_tickable_to_destination]` (optional): Opts into
-///   the trivial implementation of `Tickable` where the traits methods
-///   are just simply called on the field marked as `#[destination]`.
 /// - `#[rx_delegate_teardown_collection_to_destination]` (optional): Opts into
 ///   the trivial implementation of `TeardownCollection` where the traits
 ///   methods are just simply called on the field marked as `#[destination]`.
@@ -77,7 +74,6 @@ fn primary_category_subscriber() -> Type {
 		rx_in_error,
 		rx_does_not_upgrade_to_self,
 		rx_upgrades_to,
-		rx_delegate_tickable_to_destination,
 		rx_delegate_teardown_collection_to_destination,
 		rx_delegate_subscription_like_to_destination,
 		rx_delegate_observer_to_destination,

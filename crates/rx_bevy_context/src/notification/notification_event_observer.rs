@@ -4,8 +4,6 @@ use bevy_ecs::{
 };
 use rx_core_traits::{Never, ObserverNotification, Signal, SubscriberNotification};
 
-use crate::RxBevyContext;
-
 /// # RxSignal (ObserverNotificationEvent)
 ///  TODO(bevy-0.17): Use EntityEvent
 #[derive(Event, Clone, Debug)]
@@ -60,7 +58,7 @@ where
 	}
 }
 
-impl<In, InError> From<RxSignal<In, InError>> for SubscriberNotification<In, InError, RxBevyContext>
+impl<In, InError> From<RxSignal<In, InError>> for SubscriberNotification<In, InError>
 where
 	In: Signal,
 	InError: Signal,

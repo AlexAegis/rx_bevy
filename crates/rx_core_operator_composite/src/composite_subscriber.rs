@@ -9,7 +9,6 @@ use rx_core_traits::{Observer, Subscriber};
 #[rx_in(Inner::In)]
 #[rx_in_error(Inner::InError)]
 #[rx_delegate_observer_to_destination]
-#[rx_delegate_tickable_to_destination]
 #[rx_delegate_subscription_like_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
 pub struct CompositeSubscriber<Inner, Destination>

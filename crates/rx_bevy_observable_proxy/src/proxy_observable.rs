@@ -1,11 +1,10 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{entity::Entity, schedule::ScheduleLabel};
-use rx_bevy_common::Clock;
-use rx_bevy_context::RxBevyContext;
+use bevy_ecs::entity::Entity;
+use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_observable_derive::RxObservable;
 
-use rx_core_traits::{Observable, Signal, Subscriber, SubscriptionContext, UpgradeableObserver};
+use rx_core_traits::{Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
 
 use super::proxy_subscription::ProxySubscription;
 
@@ -14,59 +13,54 @@ use super::proxy_subscription::ProxySubscription;
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-#[rx_context(RxBevyContext)]
-pub struct ProxyObservable<In, InError, S, C>
+pub struct ProxyObservable<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	S: ScheduleLabel,
-	C: Clock,
 {
 	target_observable_entity: Entity,
-	_phantom_data: PhantomData<(In, InError, S, C)>,
+	scheduler: SchedulerHandle<RxBevyScheduler>,
+	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, S, C> ProxyObservable<In, InError, S, C>
+impl<In, InError> ProxyObservable<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	S: ScheduleLabel,
-	C: Clock,
 {
-	pub fn new(target_observable_entity: Entity) -> Self {
+	pub fn new(
+		target_observable_entity: Entity,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> Self {
 		Self {
 			target_observable_entity,
+			scheduler,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, S, C> Observable for ProxyObservable<In, InError, S, C>
+impl<In, InError> Observable for ProxyObservable<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
-	S: ScheduleLabel,
-	C: Clock,
 {
 	type Subscription<Destination>
-		= ProxySubscription<Destination, S, C>
+		= ProxySubscription<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>,
+		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		ProxySubscription::new(
 			self.target_observable_entity,
 			destination.upgrade(),
-			context,
+			self.scheduler.clone(),
 		)
 	}
 }

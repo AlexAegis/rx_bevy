@@ -1028,19 +1028,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_mod_erased_component_registry"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c042306bf913a6ed4dd4ac7d3d00faee9e459623ebe359d0b77171ea9766b97e"
-dependencies = [
- "bevy_app",
- "bevy_ecs",
- "bevy_platform",
- "bevy_ptr",
- "derive-where",
-]
-
-[[package]]
 name = "bevy_pbr"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4261,7 +4248,7 @@ dependencies = [
  "bevy_ecs",
  "bevy_input",
  "bevy_log",
- "bevy_mod_erased_component_registry",
+ "bevy_platform",
  "bevy_reflect",
  "bevy_time",
  "bevy_window",
@@ -4269,14 +4256,17 @@ dependencies = [
  "disqualified",
  "rx_bevy",
  "rx_bevy_common",
+ "rx_core_macro_executor_derive",
  "rx_core_macro_observable_derive",
  "rx_core_macro_observer_derive",
+ "rx_core_macro_scheduler_derive",
+ "rx_core_macro_subject_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
+ "rx_core_macro_task_derive",
  "rx_core_scheduler_ticking",
  "rx_core_testing",
  "rx_core_traits",
- "stealcell",
  "thiserror 2.0.17",
 ]
 
@@ -4440,6 +4430,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_core_macro_executor_derive"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
 name = "rx_core_macro_observable_derive"
 version = "0.1.0"
 dependencies = [
@@ -4467,6 +4466,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_core_macro_scheduler_derive"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
 name = "rx_core_macro_subject_derive"
 version = "0.1.0"
 dependencies = [
@@ -4486,6 +4494,15 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_subscription_derive"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "rx_core_macro_common",
+ "syn",
+]
+
+[[package]]
+name = "rx_core_macro_task_derive"
 version = "0.1.0"
 dependencies = [
  "quote",
@@ -4554,6 +4571,7 @@ dependencies = [
 name = "rx_core_observable_iterator_on_tick"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
@@ -4987,6 +5005,9 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_macro_executor_derive",
+ "rx_core_macro_scheduler_derive",
+ "rx_core_macro_task_derive",
  "rx_core_testing",
  "rx_core_traits",
  "slab",
@@ -5089,6 +5110,7 @@ version = "0.1.0"
 dependencies = [
  "disqualified",
  "rx_core",
+ "rx_core_macro_executor_derive",
  "rx_core_macro_observer_derive",
  "rx_core_scheduler_ticking",
  "rx_core_traits",
@@ -5326,12 +5348,6 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
-name = "stealcell"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3b4e2f5d591fc6b5f4e4433e776e1c6a00b9356b74426d6c7f358510f29b108"
 
 [[package]]
 name = "strict-num"

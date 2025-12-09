@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observer, Scheduler, SchedulerScheduleTaskExtension, Subscriber, SubscriptionClosedFlag,
-	SubscriptionLike, TaskOwnerId,
+	SubscriptionLike, TaskCancellationId,
 };
 
 use crate::operator::DelayOperatorOptions;
@@ -21,7 +21,7 @@ where
 	destination: Arc<Mutex<Destination>>,
 	options: DelayOperatorOptions<S>,
 	closed: SubscriptionClosedFlag,
-	owner_id: TaskOwnerId,
+	owner_id: TaskCancellationId,
 }
 
 impl<Destination, S> DelaySubscriber<Destination, S>
@@ -30,7 +30,7 @@ where
 	S: Scheduler,
 {
 	pub fn new(destination: Destination, mut options: DelayOperatorOptions<S>) -> Self {
-		let owner_id = options.scheduler.get_scheduler().generate_owner_id();
+		let owner_id = options.scheduler.lock().generate_cancellation_id();
 
 		Self {
 			closed: SubscriptionClosedFlag::default(),
@@ -50,12 +50,11 @@ where
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
 			let mut destination = self.destination.clone();
-			let mut scheduler = self.options.scheduler.get_scheduler();
+			let mut scheduler = self.options.scheduler.lock();
 
 			scheduler.schedule_delayed_task(
 				move |_, _context| {
 					destination.next(next);
-					Ok(())
 				},
 				self.options.delay,
 				self.owner_id,
@@ -72,11 +71,10 @@ where
 	fn complete(&mut self) {
 		if !self.is_closed() {
 			let mut destination = self.destination.clone();
-			let mut scheduler = self.options.scheduler.get_scheduler();
+			let mut scheduler = self.options.scheduler.lock();
 			scheduler.schedule_delayed_task(
 				move |_, _context| {
 					destination.complete();
-					Ok(())
 				},
 				self.options.delay,
 				self.owner_id,
@@ -98,14 +96,13 @@ where
 	fn unsubscribe(&mut self) {
 		let mut destination = self.destination.clone();
 		let mut scheduler_clone = self.options.scheduler.clone();
-		let mut scheduler = self.options.scheduler.get_scheduler();
+		let mut scheduler = self.options.scheduler.lock();
 		let owner_id_copy = self.owner_id;
 
 		scheduler.schedule_delayed_task(
 			move |_, _context| {
 				destination.unsubscribe();
-				scheduler_clone.get_scheduler().cancel(owner_id_copy);
-				Ok(())
+				scheduler_clone.lock().cancel(owner_id_copy);
 			},
 			self.options.delay,
 			self.owner_id,

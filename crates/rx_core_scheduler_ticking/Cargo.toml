@@ -20,9 +20,12 @@ default = []
 debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
 
 [dependencies]
+derive-where = { workspace = true }
+rx_core_macro_executor_derive = { workspace = true }
+rx_core_macro_scheduler_derive = { workspace = true }
+rx_core_macro_task_derive = { workspace = true }
 rx_core_traits = { workspace = true }
 slab = { workspace = true }
-derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

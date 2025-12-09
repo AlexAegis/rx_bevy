@@ -8,7 +8,6 @@ use crate::{EitherOut2, EitherOutError2};
 #[derive(RxSubscriber)]
 #[rx_in(O1::Out)]
 #[rx_in_error(O1::OutError)]
-#[rx_delegate_tickable_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
 #[rx_delegate_subscription_like_to_destination]
 pub struct IntoVariant1of2Subscriber<O1, O2, Destination>
@@ -68,7 +67,6 @@ where
 #[derive(RxSubscriber)]
 #[rx_in(O2::Out)]
 #[rx_in_error(O2::OutError)]
-#[rx_delegate_tickable_to_destination]
 #[rx_delegate_teardown_collection_to_destination]
 #[rx_delegate_subscription_like_to_destination]
 pub struct IntoVariant2of2Subscriber<O1, O2, Destination>

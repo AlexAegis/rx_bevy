@@ -2,7 +2,7 @@ use std::ops::{Deref, DerefMut};
 
 use disqualified::ShortName;
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Subscriber, SubscriptionClosedFlag, SubscriptionLike, Tick};
+use rx_core_traits::{Observer, Subscriber, SubscriptionClosedFlag, SubscriptionLike};
 
 /// Internal to [RcSubscriber]
 #[doc(hidden)]
@@ -23,7 +23,6 @@ where
 	/// Starts from 0 if the destination is not already closed, otherwise 1
 	pub(crate) unsubscribe_count: usize,
 
-	last_observed_tick: Option<Tick>,
 	closed_flag: SubscriptionClosedFlag,
 	completed_flag: SubscriptionClosedFlag,
 }
@@ -41,7 +40,6 @@ where
 			unsubscribe_count: is_already_closed.into(),
 			closed_flag: is_already_closed.into(),
 			completed_flag: is_already_closed.into(),
-			last_observed_tick: None,
 		}
 	}
 

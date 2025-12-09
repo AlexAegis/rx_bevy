@@ -48,7 +48,7 @@ where
 	S: 'static + Scheduler + Send + Sync,
 {
 	type Subscription<Destination>
-		= OnTickIteratorSubscription<Iterator, S>
+		= OnTickIteratorSubscription<Destination, Iterator, S>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
@@ -172,21 +172,25 @@ mod test_iterator_on_tick_observable {
 		use std::time::Duration;
 
 		use rx_core::prelude::*;
-		use rx_core_testing::{IteratorTrackingDataAccess, TrackedIterator, prelude::*};
+		use rx_core_testing::{
+			IteratorTrackingDataAccess, MockExecutor, TrackedIterator, prelude::*,
+		};
 		use rx_core_traits::SubscriberNotification;
 
 		use crate::observable::{IntoIteratorOnTickObservableExtension, OnTickObservableOptions};
 
 		#[test]
 		fn should_immediately_emit_all_its_values_then_complete() {
-			let mut mock_clock = MockClock::default();
-			let mut context = MockContext::default();
+			let mut mock_executor = MockExecutor::default();
+			let scheduler = mock_executor.get_scheduler();
+
 			let mock_destination = MockObserver::<i32>::default();
 
 			let mut source = (1..=3).into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
 				OnTickObservableOptions {
 					emit_at_every_nth_tick: 0,
 					start_on_subscribe: false,
+					scheduler,
 				},
 			);
 			let mut subscription = source.subscribe(mock_destination, &mut context);
@@ -196,7 +200,7 @@ mod test_iterator_on_tick_observable {
 				context.nth_notification(3),
 				SubscriberNotification::Complete
 			));
-			subscription.tick(mock_clock.elapse(Duration::from_millis(1)), &mut context);
+			subscription.tick(mock_executor.elapse(Duration::from_millis(1)), &mut context);
 			assert!(matches!(
 				context.nth_notification(4),
 				SubscriberNotification::Tick(_)
@@ -226,6 +230,7 @@ mod test_iterator_on_tick_observable {
 					OnTickObservableOptions {
 						emit_at_every_nth_tick: 0,
 						start_on_subscribe: false,
+						scheduler,
 					},
 				)
 				.take(2);

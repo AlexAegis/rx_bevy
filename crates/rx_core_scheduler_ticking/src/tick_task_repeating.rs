@@ -1,34 +1,32 @@
 use std::{marker::PhantomData, time::Duration};
 
 use derive_where::derive_where;
+use rx_core_macro_task_derive::RxTask;
 use rx_core_traits::{
-	RepeatedTaskFactory, ScheduledRepeatedWork, Task, TaskContextProvider, Tick, TickResult,
-	WithTaskInputOutput,
+	ContextProvider, RepeatedTaskFactory, ScheduledRepeatedWork, Task, TickResult,
 };
 
-use crate::ExecuteTaskWorkMut;
+use crate::Tick;
 
-pub struct RepeatedTaskTickedFactory<TaskError, ContextProvider>
+pub struct RepeatedTaskTickedFactory<C>
 where
-	ContextProvider: TaskContextProvider,
+	C: ContextProvider,
 {
-	_phantom_data: PhantomData<(TaskError, ContextProvider)>,
+	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<TaskError, ContextProvider> RepeatedTaskFactory<Tick, TaskError, ContextProvider>
-	for RepeatedTaskTickedFactory<TaskError, ContextProvider>
+impl<C> RepeatedTaskFactory<Tick, C> for RepeatedTaskTickedFactory<C>
 where
-	ContextProvider: 'static + TaskContextProvider,
-	TaskError: 'static,
+	C: 'static + ContextProvider,
 {
 	type Item<Work>
-		= DelayedRepeatingTaskTicked<Work, TaskError, ContextProvider>
+		= DelayedRepeatingTaskTicked<Work, C>
 	where
-		Work: ScheduledRepeatedWork<Tick, TaskError, ContextProvider>;
+		Work: ScheduledRepeatedWork<Tick, C>;
 
 	fn new<Work>(work: Work, interval: Duration, start_immediately: bool) -> Self::Item<Work>
 	where
-		Work: ScheduledRepeatedWork<Tick, TaskError, ContextProvider>,
+		Work: ScheduledRepeatedWork<Tick, C>,
 	{
 		DelayedRepeatingTaskTicked {
 			start_immediately,
@@ -41,11 +39,14 @@ where
 	}
 }
 
+#[derive(RxTask)]
+#[rx_tick(Tick)]
+#[rx_context(C)]
 #[derive_where(Debug)]
-pub struct DelayedRepeatingTaskTicked<Work, TaskError, ContextProvider>
+pub struct DelayedRepeatingTaskTicked<Work, C>
 where
-	Work: ScheduledRepeatedWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
+	Work: ScheduledRepeatedWork<Tick, C>,
+	C: ContextProvider,
 {
 	/// The work will be executed on the first tick too, regardless if the timer
 	/// had elapsed or not.
@@ -55,47 +56,32 @@ where
 	interval: Duration,
 	#[derive_where(skip(Debug))]
 	work: Work,
-	_phantom_data: PhantomData<fn((TaskError, ContextProvider)) -> (TaskError, ContextProvider)>,
+	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<Work, TaskError, ContextProvider> WithTaskInputOutput
-	for DelayedRepeatingTaskTicked<Work, TaskError, ContextProvider>
+impl<Work, C> Task for DelayedRepeatingTaskTicked<Work, C>
 where
-	Work: ScheduledRepeatedWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
+	Work: ScheduledRepeatedWork<Tick, C>,
+	C: ContextProvider,
 {
-	type TickInput = Tick;
-	type ContextProvider = ContextProvider;
-	type TaskError = TaskError;
-}
-
-impl<Work, TaskError, ContextProvider> Task
-	for DelayedRepeatingTaskTicked<Work, TaskError, ContextProvider>
-where
-	Work: ScheduledRepeatedWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
-{
-	fn tick(
-		&mut self,
-		tick_input: Self::TickInput,
-		context: &mut ContextProvider::Item<'_>,
-	) -> TickResult<Self::TaskError> {
-		if self.start_immediately {
-			self.start_immediately = false;
-			return self.work.execute(tick_input, context);
-		}
+	fn tick(&mut self, tick_input: Self::Tick, context: &mut C::Item<'_>) -> TickResult {
 		self.current_tick.update(tick_input);
 
 		let mut tick_result = TickResult::Pending;
 		while self.consumed_until + self.interval <= self.current_tick {
 			self.consumed_until += self.interval;
-			tick_result += self.work.execute(tick_input, context);
+			tick_result += (self.work)(tick_input, context);
 		}
 		tick_result
 	}
 
-	fn on_scheduled_hook(&mut self, tick_input: Self::TickInput) {
-		self.consumed_until.update(tick_input);
+	fn on_scheduled_hook(&mut self, tick_input: Self::Tick) {
+		if self.start_immediately {
+			self.consumed_until.update(tick_input - self.interval);
+		} else {
+			self.consumed_until.update(tick_input);
+		}
+
 		self.current_tick.update(tick_input);
 	}
 }

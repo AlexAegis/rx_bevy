@@ -1,35 +1,31 @@
-use std::fmt::Debug;
 use std::{marker::PhantomData, time::Duration};
 
 use derive_where::derive_where;
-use rx_core_traits::{
-	DelayedTask, DelayedTaskFactory, ScheduledOnceWork, TaskContextProvider, TickResultError,
-};
+use rx_core_macro_task_derive::RxTask;
+use rx_core_traits::{ContextProvider, DelayedTask, DelayedTaskFactory, ScheduledOnceWork};
 
-use rx_core_traits::{Task, Tick, TickResult, WithTaskInputOutput};
+use rx_core_traits::{Task, TickResult};
 
-use crate::ExecuteTaskWorkOnce;
+use crate::Tick;
 
-pub struct DelayedOnceTaskTickedFactory<TaskError, ContextProvider>
+pub struct DelayedOnceTaskTickedFactory<C>
 where
-	ContextProvider: TaskContextProvider,
+	C: ContextProvider,
 {
-	_phantom_data: PhantomData<(TaskError, ContextProvider)>,
+	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<TaskError, ContextProvider> DelayedTaskFactory<Tick, TaskError, ContextProvider>
-	for DelayedOnceTaskTickedFactory<TaskError, ContextProvider>
+impl<C> DelayedTaskFactory<Tick, C> for DelayedOnceTaskTickedFactory<C>
 where
-	ContextProvider: 'static + TaskContextProvider + Send + Sync,
-	TaskError: 'static + Debug + Send + Sync,
+	C: 'static + ContextProvider + Send + Sync,
 {
 	type Item<Work>
-		= DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
+		= DelayedOnceTaskTicked<Work, C>
 	where
-		Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>;
+		Work: ScheduledOnceWork<Tick, C>;
 	fn new<Work>(work: Work, delay: Duration) -> Self::Item<Work>
 	where
-		Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
+		Work: ScheduledOnceWork<Tick, C>,
 	{
 		DelayedOnceTaskTicked {
 			work: Some(work),
@@ -41,11 +37,14 @@ where
 	}
 }
 
+#[derive(RxTask)]
+#[rx_tick(Tick)]
+#[rx_context(C)]
 #[derive_where(Debug)]
-pub struct DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
+pub struct DelayedOnceTaskTicked<Work, C>
 where
-	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
+	Work: ScheduledOnceWork<Tick, C>,
+	C: ContextProvider,
 {
 	scheduled_on: Tick,
 	current_tick: Tick,
@@ -54,54 +53,37 @@ where
 	#[derive_where(skip(Debug))]
 	work: Option<Work>,
 
-	_phantom_data: PhantomData<(TaskError, ContextProvider)>,
+	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<Work, TaskError, ContextProvider> WithTaskInputOutput
-	for DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
+impl<Work, C> DelayedTask<Work, Tick, C> for DelayedOnceTaskTicked<Work, C>
 where
-	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
-{
-	type TickInput = Tick;
-	type ContextProvider = ContextProvider;
-	type TaskError = TaskError;
-}
-
-impl<Work, TaskError, ContextProvider> DelayedTask<Work, Tick, TaskError, ContextProvider>
-	for DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
-where
-	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider + Send + Sync,
-	TaskError: Debug + Send + Sync,
+	Work: ScheduledOnceWork<Tick, C>,
+	C: ContextProvider + Send + Sync,
 {
 }
 
-impl<Work, TaskError, ContextProvider> Task
-	for DelayedOnceTaskTicked<Work, TaskError, ContextProvider>
+impl<Work, C> Task for DelayedOnceTaskTicked<Work, C>
 where
-	Work: ScheduledOnceWork<Tick, TaskError, ContextProvider>,
-	ContextProvider: TaskContextProvider,
-	TaskError: Debug,
+	Work: ScheduledOnceWork<Tick, C>,
+	C: ContextProvider,
 {
-	fn tick(
-		&mut self,
-		tick: Tick,
-		context: &mut ContextProvider::Item<'_>,
-	) -> TickResult<Self::TaskError> {
+	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> TickResult {
 		self.current_tick.update(tick);
 		if self.scheduled_on + self.delay <= self.current_tick {
 			let Some(work) = self.work.take() else {
-				return TickResult::Error(TickResultError::WorkAlreadyConsumed);
+				return TickResult::Done;
 			};
 
-			work.execute(tick, context)
+			(work)(tick, context);
+
+			TickResult::Done
 		} else {
 			TickResult::Pending
 		}
 	}
 
-	fn on_scheduled_hook(&mut self, tick_input: Self::TickInput) {
+	fn on_scheduled_hook(&mut self, tick_input: Self::Tick) {
 		self.scheduled_on.update(tick_input);
 		self.current_tick.update(tick_input);
 	}

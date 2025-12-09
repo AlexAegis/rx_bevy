@@ -1,21 +1,18 @@
 use bevy_ecs::{
 	entity::Entity,
-	schedule::ScheduleLabel,
 	system::{Commands, Query, SystemParam},
 };
 use disqualified::ShortName;
-use rx_bevy_common::Clock;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Never, Signal, UpgradeableObserver};
 
-use crate::{CommandSubscribeExtension, ObservableOutputs, RxBevyContext, SubscribeError};
+use crate::{CommandSubscribeExtension, ObservableOutputs, SubscribeError};
 
 /// An alternative interface to subscribe to observables, offering eager
 /// checks.
 #[derive(RxObservable, SystemParam)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-#[rx_context(RxBevyContext)]
 pub struct ObservableQuery<'w, 's, Out, OutError = Never>
 where
 	Out: Signal,
@@ -38,20 +35,13 @@ where
 	/// system will not be found. In that case, use `Commands::subscribe`
 	/// directly, as that will automatically be retried in the next frame
 	/// if the Observable wasn't available immediately.
-	pub fn try_subscribe_to<S, C>(
+	pub fn try_subscribe_to(
 		&mut self,
 		observable_entity: Entity,
-		destination: impl 'static
-		+ UpgradeableObserver<In = Out, InError = OutError, Context = RxBevyContext>,
-	) -> Result<Entity, SubscribeError>
-	where
-		S: ScheduleLabel,
-		C: Clock,
-	{
+		destination: impl 'static + UpgradeableObserver<In = Out, InError = OutError>,
+	) -> Result<Entity, SubscribeError> {
 		if self.observable.contains(observable_entity) {
-			Ok(self
-				.commands
-				.subscribe::<_, S, C>(observable_entity, destination))
+			Ok(self.commands.subscribe::<_>(observable_entity, destination))
 		} else {
 			Err(SubscribeError::NotAnObservable(
 				format!(

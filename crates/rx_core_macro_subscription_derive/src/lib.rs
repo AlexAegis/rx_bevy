@@ -30,9 +30,6 @@ fn primary_category_subscription() -> Type {
 ///
 /// > All attributes are prefixed with `rx_` for easy auto-complete access.
 ///
-/// - `#[rx_delegate_tickable_to_destination]` (optional): Opts into
-///   the trivial implementation of `Tickable` where the traits methods
-///   are just simply called on the field marked as `#[destination]`.
 /// - `#[rx_skip_unsubscribe_on_drop_impl]`: Skips the default
 ///   unsubscribe-on-drop implementation that will panic for
 ///   DropUnsafeSubscriptionContexts if they were not closed before dropped.
@@ -41,7 +38,6 @@ fn primary_category_subscription() -> Type {
 #[proc_macro_derive(
 	RxSubscription,
 	attributes(
-		rx_delegate_tickable_to_destination,
 		rx_delegate_teardown_collection_to_destination,
 		rx_skip_unsubscribe_on_drop_impl,
 		destination

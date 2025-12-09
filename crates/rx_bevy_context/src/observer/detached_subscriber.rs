@@ -1,31 +1,26 @@
-use bevy_log::error;
-use disqualified::ShortName;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, SubscriptionClosedFlag, SubscriptionContext, SubscriptionData, SubscriptionLike,
-	TeardownCollection, Tickable,
+	Observer, SubscriptionClosedFlag, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection,
 };
-
-use crate::RxBevyContext;
 
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
-#[rx_context(RxBevyContext)]
 #[rx_delegate_observer_to_destination]
 pub struct DetachedSubscriber<Destination>
 where
-	Destination: Observer<Context = RxBevyContext>,
+	Destination: Observer,
 {
 	#[destination]
 	destination: Destination,
 	closed_flag: SubscriptionClosedFlag,
-	teardown: Option<SubscriptionData<RxBevyContext>>,
+	teardown: Option<SubscriptionData>,
 }
 
 impl<Destination> DetachedSubscriber<Destination>
 where
-	Destination: Observer<Context = RxBevyContext>,
+	Destination: Observer,
 {
 	pub(crate) fn new(destination: Destination) -> Self {
 		Self {
@@ -36,38 +31,20 @@ where
 	}
 }
 
-impl<Destination> Tickable for DetachedSubscriber<Destination>
-where
-	Destination: Observer<Context = RxBevyContext>,
-{
-	#[inline]
-	fn tick(
-		&mut self,
-		_tick: rx_core_traits::Tick,
-		_context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-	) {
-		// Detached! This subscriber behind an EntityDestination marks the "end"
-		// of a subscription, the destination is a simple observer.
-	}
-}
-
 impl<Destination> SubscriptionLike for DetachedSubscriber<Destination>
 where
-	Destination: Observer<Context = RxBevyContext>,
+	Destination: Observer,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
 		*self.closed_flag
 	}
 
-	fn unsubscribe(
-		&mut self,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
 			self.closed_flag.close();
 			if let Some(mut teardown) = self.teardown.take() {
-				teardown.unsubscribe(context);
+				teardown.unsubscribe();
 			}
 		}
 	}
@@ -75,26 +52,20 @@ where
 
 impl<Destination> TeardownCollection for DetachedSubscriber<Destination>
 where
-	Destination: Observer<Context = RxBevyContext>,
+	Destination: Observer,
 {
-	fn add_teardown(
-		&mut self,
-		teardown: rx_core_traits::Teardown<Self::Context>,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
-	) {
+	fn add_teardown(&mut self, teardown: Teardown) {
 		if !self.is_closed() {
-			self.teardown
-				.get_or_insert_default()
-				.add_teardown(teardown, context);
+			self.teardown.get_or_insert_default().add_teardown(teardown);
 		} else {
-			teardown.execute(context);
+			teardown.execute();
 		}
 	}
 }
 
 impl<Destination> Drop for DetachedSubscriber<Destination>
 where
-	Destination: Observer<Context = RxBevyContext>,
+	Destination: Observer,
 {
 	/// When you make a subscription in rx_bevy, the Subscribe event stores
 	/// the destination you want to subscribe to, this way you're not limited
@@ -109,14 +80,7 @@ where
 		self.closed_flag.close();
 
 		if self.teardown.is_some() {
-			error!(
-				r"And there it is! A {} was dropped with some active teardowns
-in it that wasn't properly unsubscribed from!",
-				ShortName::of::<Self>()
-			);
-			// This will panic, intentionally.
-			let mut context = RxBevyContext::create_context_to_unsubscribe_on_drop();
-			self.unsubscribe(&mut context);
+			self.unsubscribe();
 		}
 	}
 }

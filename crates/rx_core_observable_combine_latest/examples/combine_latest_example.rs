@@ -5,11 +5,9 @@ use rx_core::prelude::*;
 /// the first observable emits all of its values immediately upon subscription,
 /// before the second one could even start listening.
 fn main() {
-	let observable_1 = (1..=3).into_observable::<()>();
-	let observable_2 = (4..=6).into_observable::<()>();
+	let observable_1 = (1..=3).into_observable();
+	let observable_2 = (4..=6).into_observable();
 	let _s = combine_latest(observable_1, observable_2).subscribe(
-		DynFnObserver::default()
-			.with_next(|next: (i32, i32), _context| println!("{}, {}", next.0, next.1)),
-		&mut (),
+		DynFnObserver::default().with_next(|next: (i32, i32)| println!("{}, {}", next.0, next.1)),
 	);
 }

@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use bevy_time::Stopwatch;
-use rx_core_traits::Tick;
 
 use crate::{
 	AdsrEnvelope, AdsrEnvelopePhase, AdsrEnvelopePhaseTransition, AdsrSignal,
@@ -37,18 +36,19 @@ impl AdsrEnvelopeState {
 		&mut self,
 		envelope: AdsrEnvelope,
 		is_getting_activated: bool,
-		tick: &Tick,
+		elapsed_since_start: Duration,
+		tick_delta: Duration,
 	) -> AdsrSignal {
 		if !self.last_frame_input_signal && is_getting_activated {
 			self.reset();
-			self.activation_time_absolute = Some(tick.elapsed_since_start);
+			self.activation_time_absolute = Some(elapsed_since_start);
 		} else if self.last_frame_input_signal && !is_getting_activated {
 			self.deactivation_value = Some(self.last_frame_output_signal.value);
 			self.deactivation_time_relative = Some(self.t_relative.elapsed());
 		}
 
 		if self.adsr_envelope_phase != AdsrEnvelopePhase::None {
-			self.t_relative.tick(tick.delta);
+			self.t_relative.tick(tick_delta);
 		}
 
 		let (value, adsr_envelope_phase) = envelope.evaluate(

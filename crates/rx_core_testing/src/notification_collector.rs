@@ -325,9 +325,7 @@ mod test_mock_context {
 	#[cfg(test)]
 	mod test_notification_counting {
 
-		use rx_core_traits::{DropSafeSubscriptionContext, SubscriberNotification};
-
-		use crate::MockContext;
+		use rx_core_traits::SubscriberNotification;
 
 		#[test]
 		fn counts_different_notifications() {

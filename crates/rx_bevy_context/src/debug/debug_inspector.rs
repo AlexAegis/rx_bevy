@@ -5,20 +5,16 @@ use bevy_ecs::{
 	entity::Entity,
 	query::With,
 	resource::Resource,
-	schedule::{IntoScheduleConfigs, ScheduleLabel},
+	schedule::IntoScheduleConfigs,
 	system::{Commands, Query, Res, SystemId},
 	world::DeferredWorld,
 };
 use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
 use bevy_log::debug;
 use disqualified::ShortName;
-use rx_bevy_common::Clock;
 use rx_core_traits::Observable;
 
-use crate::{
-	ObservableComponent, ObservableSubscriptions, RxBevyContext, SubscriptionOf,
-	SubscriptionSchedule,
-};
+use crate::{ObservableComponent, ObservableSubscriptions, SubscriptionOf};
 
 pub struct DebugInspectorPlugin;
 
@@ -46,19 +42,17 @@ pub(crate) fn run_debug_systems(
 	}
 }
 
-pub(crate) fn register_observable_debug_systems<O, S, C>(deferred_world: &mut DeferredWorld)
+pub(crate) fn register_observable_debug_systems<O>(deferred_world: &mut DeferredWorld)
 where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
-	S: ScheduleLabel,
-	C: Clock,
+	O: 'static + Observable + Send + Sync,
 {
 	let observable_debug_system_id = deferred_world
 		.commands()
-		.register_system(observable_entity_debug_print::<O, S, C>);
+		.register_system(observable_entity_debug_print::<O>);
 
 	let subscription_debug_system_id = deferred_world
 		.commands()
-		.register_system(subscription_entity_debug_print::<O, S, C>);
+		.register_system(subscription_entity_debug_print::<O>);
 
 	if let Some(mut debug_registry) = deferred_world.get_resource_mut::<DebugSystemRegistry>() {
 		debug_registry
@@ -70,24 +64,19 @@ where
 	};
 }
 
-pub(crate) fn observable_entity_debug_print<O, S, C>(
+pub(crate) fn observable_entity_debug_print<O>(
 	observable_query: Query<
 		(
 			Entity,
 			Option<&SubscriptionOf<O>>,
 			Option<&ObservableSubscriptions<O>>,
-			Option<&SubscriptionSchedule<S, C>>,
 		),
 		With<ObservableComponent<O>>,
 	>,
 ) where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
-	S: ScheduleLabel,
-	C: Clock,
+	O: 'static + Observable + Send + Sync,
 {
-	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
-		observable_query.iter()
-	{
+	for (entity, subscriber_instance_of, subscriber_instances) in observable_query.iter() {
 		debug!("Observable Entity {entity:?} {}", ShortName::of::<O>());
 
 		if let Some(d) = subscriber_instance_of {
@@ -96,15 +85,12 @@ pub(crate) fn observable_entity_debug_print<O, S, C>(
 		if let Some(d) = subscriber_instances {
 			debug!("{}", d);
 		}
-		if let Some(d) = subscription_schedule {
-			debug!("{}", d);
-		}
 	}
 }
 
 impl<O> Display for &SubscriptionOf<O>
 where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
+	O: 'static + Observable + Send + Sync,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "\tSubscription of: {}", self.get_observable_entity())
@@ -113,46 +99,28 @@ where
 
 impl<O> Display for &ObservableSubscriptions<O>
 where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
+	O: 'static + Observable + Send + Sync,
 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "\tSubscriptions: {:?}", self.get_subscription_entities())
 	}
 }
 
-impl<S, C> Display for &SubscriptionSchedule<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "\tSubscriptionSchedule<{}>", ShortName::of::<S>())
-	}
-}
-
-pub(crate) fn subscription_entity_debug_print<O, S, C>(
+pub(crate) fn subscription_entity_debug_print<O>(
 	subscription_query: Query<(
 		Entity,
 		&SubscriptionOf<O>,
 		Option<&ObservableSubscriptions<O>>,
-		Option<&SubscriptionSchedule<S, C>>,
 	)>,
 ) where
-	O: 'static + Observable<Context = RxBevyContext> + Send + Sync,
-	S: ScheduleLabel,
-	C: Clock,
+	O: 'static + Observable + Send + Sync,
 {
-	for (entity, subscriber_instance_of, subscriber_instances, subscription_schedule) in
-		subscription_query.iter()
-	{
+	for (entity, subscriber_instance_of, subscriber_instances) in subscription_query.iter() {
 		debug!("Subscription Entity {entity:?} {}", ShortName::of::<O>());
 
 		debug!("{}", subscriber_instance_of);
 
 		if let Some(d) = subscriber_instances {
-			debug!("{}", d);
-		}
-		if let Some(d) = subscription_schedule {
 			debug!("{}", d);
 		}
 	}

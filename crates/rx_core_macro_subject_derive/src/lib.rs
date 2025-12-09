@@ -26,8 +26,6 @@ fn primary_category_subject() -> Type {
 ///
 /// - `WithPrimaryCategory`: Sets the associated type to
 ///   `PrimaryCategorySubject`
-/// - `WithSubscriptionContext`: Sets the associated type to the values
-///   of the `#[rx_context(...)]` attribute
 /// - `ObserverInput`: Sets the associated type `In` to the value of the
 ///   `#[rx_in(...)]` attribute, or to `Never` (`Infallible`) if missing. Also
 ///   sets the associated `InError` type to the value of the
@@ -54,7 +52,6 @@ fn primary_category_subject() -> Type {
 ///   the subject, usually it's the same as the input type
 /// - `#[rx_out_error(...)]` (optional, default: `Never`): Defines the output
 ///   error type of the subject, usually it's the same as the input error type
-/// - `#[rx_context(...)]`: Defines the Context this subject is compatible with
 /// - `#[rx_does_not_upgrade_to_observer_subscriber]` (optional): Opts out the default
 ///   `UpgradeableObserver` implementation which just wraps the `Subject` in a
 ///   `ObserverSubscriber` when used as a destination for an `Observable` to

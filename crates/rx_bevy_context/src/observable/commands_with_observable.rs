@@ -1,69 +1,60 @@
-use std::marker::PhantomData;
-
-use bevy_ecs::{schedule::ScheduleLabel, system::Commands};
-use rx_bevy_common::Clock;
+use bevy_ecs::system::Commands;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, Subscriber, UpgradeableObserver};
+use rx_core_traits::{Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 
-use crate::{
-	EntitySubscription, RxBevyContext, ScheduledSubscriptionComponent, SubscriptionSchedule,
-};
+use crate::{EntitySubscription, RxBevyScheduler, SubscriptionComponent};
 
 pub trait CommandsWithObservableExtension {
-	fn with_observable<O, S, C>(
+	fn with_observable<O>(
 		&mut self,
 		observable: O,
-	) -> CommandsWithObservable<'_, '_, O, S, C>
+		despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> CommandsWithObservable<'_, '_, O>
 	where
-		O: Observable<Context = RxBevyContext>,
-		S: ScheduleLabel,
-		C: Clock;
+		O: Observable;
 }
 
 impl CommandsWithObservableExtension for Commands<'_, '_> {
-	fn with_observable<O, S, C>(&mut self, observable: O) -> CommandsWithObservable<'_, '_, O, S, C>
+	fn with_observable<O>(
+		&mut self,
+		observable: O,
+		despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> CommandsWithObservable<'_, '_, O>
 	where
-		O: Observable<Context = RxBevyContext>,
-		S: ScheduleLabel,
-		C: Clock,
+		O: Observable,
 	{
 		CommandsWithObservable {
 			commands: self.reborrow(),
 			observable,
-			_phantom_data: PhantomData,
+			despawn_scheduler,
 		}
 	}
 }
 
 pub trait ObservableWithCommandsExtension
 where
-	Self: Sized + Observable<Context = RxBevyContext>,
+	Self: Sized + Observable,
 {
-	fn with_commands<'w, 's, S, C>(
+	fn with_commands<'w, 's>(
 		self,
 		commands: Commands<'w, 's>,
-	) -> CommandsWithObservable<'w, 's, Self, S, C>
-	where
-		S: ScheduleLabel,
-		C: Clock;
+		despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> CommandsWithObservable<'w, 's, Self>;
 }
 
 impl<O> ObservableWithCommandsExtension for O
 where
-	O: Observable<Context = RxBevyContext>,
+	O: Observable,
 {
-	fn with_commands<'w, 's, S, C>(
+	fn with_commands<'w, 's>(
 		self,
 		commands: Commands<'w, 's>,
-	) -> CommandsWithObservable<'w, 's, O, S, C>
-	where
-		S: ScheduleLabel,
-		C: Clock,
-	{
+		despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> CommandsWithObservable<'w, 's, O> {
 		CommandsWithObservable {
 			commands,
 			observable: self,
-			_phantom_data: PhantomData,
+			despawn_scheduler,
 		}
 	}
 }
@@ -71,55 +62,42 @@ where
 #[derive(RxObservable)]
 #[rx_out(O::Out)]
 #[rx_out_error(O::OutError)]
-#[rx_context(RxBevyContext)]
-pub struct CommandsWithObservable<'w, 's, O, S, C>
+pub struct CommandsWithObservable<'w, 's, O>
 where
-	O: Observable<Context = RxBevyContext>,
-	S: ScheduleLabel,
-	C: Clock,
+	O: Observable,
 {
 	commands: Commands<'w, 's>,
+	despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
 	observable: O,
-	_phantom_data: PhantomData<(S, C)>,
 }
 
-impl<'w, 's, O, S, C> Observable for CommandsWithObservable<'w, 's, O, S, C>
+impl<'w, 's, O> Observable for CommandsWithObservable<'w, 's, O>
 where
-	O: Observable<Context = RxBevyContext>,
-	S: ScheduleLabel,
-	C: Clock,
+	O: Observable,
 {
 	type Subscription<Destination>
 		= EntitySubscription
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		context: &mut <Self::Context as rx_core_traits::SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		let subscription_entity = self
-			.commands
-			.spawn((SubscriptionSchedule::<S, C>::default(),))
-			.id();
+		let mut subscription_entity = self.commands.spawn_empty();
 
-		let subscription = self.observable.subscribe(destination, context);
+		let subscription = self.observable.subscribe(destination);
 
-		self.commands
-			.entity(subscription_entity)
-			.insert(ScheduledSubscriptionComponent::new(
-				subscription,
-				subscription_entity,
-			));
+		subscription_entity.insert(SubscriptionComponent::new(
+			subscription,
+			subscription_entity.id(),
+			self.despawn_scheduler.clone(),
+		));
 
-		EntitySubscription::new(subscription_entity)
+		EntitySubscription::new(subscription_entity.id(), self.despawn_scheduler.clone())
 	}
 }

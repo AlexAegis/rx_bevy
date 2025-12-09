@@ -1,47 +1,29 @@
-use std::marker::PhantomData;
-
-use bevy_ecs::schedule::ScheduleLabel;
-use rx_bevy_common::Clock;
+use rx_core_macro_scheduler_derive::RxScheduler;
 use rx_core_scheduler_ticking::{
-	DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory, RepeatedTaskTickedFactory,
-	TickingExecutorsScheduler, TickingScheduler,
+	ContinuousTaskTickedFactory, DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory,
+	InvokedTaskTickedFactory, RepeatedTaskTickedFactory, Tick, TickingExecutorsScheduler,
+	TickingScheduler,
 };
-use rx_core_traits::{Scheduler, Tick, WithTaskInputOutput};
+use rx_core_traits::{ScheduledTaskAction, Scheduler, Task, TaskCancellationId, TaskInvokeId};
 
 use crate::RxBevyContext;
 
-pub struct BevyRxScheduler<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
-	ticking_scheduler: TickingScheduler<(), RxBevyContext<C>>,
-	_phantom_data: PhantomData<(S, C)>,
+#[derive(Default, Debug, RxScheduler)]
+#[rx_tick(Tick)]
+#[rx_context(RxBevyContext)]
+pub struct RxBevyScheduler {
+	ticking_scheduler: TickingScheduler<RxBevyContext>,
 }
 
-impl<S, C> BevyRxScheduler<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
-	pub(crate) fn new() -> Self {
-		Self {
-			ticking_scheduler: TickingScheduler::default(),
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<S, C> TickingExecutorsScheduler for BevyRxScheduler<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
+impl TickingExecutorsScheduler for RxBevyScheduler {
 	#[inline]
-	fn drain_queue(
-		&mut self,
-	) -> std::vec::Drain<'_, rx_core_traits::ScheduledTaskAction<Tick, (), RxBevyContext<C>>> {
-		self.ticking_scheduler.drain_queue()
+	fn drain_tasks(&mut self) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, RxBevyContext>> {
+		self.ticking_scheduler.drain_tasks()
+	}
+
+	#[inline]
+	fn has_tasks(&self) -> bool {
+		self.ticking_scheduler.has_tasks()
 	}
 
 	#[inline]
@@ -50,47 +32,52 @@ where
 	}
 }
 
-impl<S, C> WithTaskInputOutput for BevyRxScheduler<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
-	type TickInput = Tick;
-	type TaskError = ();
-	type ContextProvider = RxBevyContext<C>;
-}
-
-impl<S, C> Scheduler for BevyRxScheduler<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
-	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<(), RxBevyContext<C>>;
-	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<(), RxBevyContext<C>>;
-	type RepeatedTaskFactory = RepeatedTaskTickedFactory<(), RxBevyContext<C>>;
+impl Scheduler for RxBevyScheduler {
+	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<RxBevyContext>;
+	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<RxBevyContext>;
+	type RepeatedTaskFactory = RepeatedTaskTickedFactory<RxBevyContext>;
+	type InvokedTaskFactory = InvokedTaskTickedFactory<RxBevyContext>;
+	type ContinuousTaskFactory = ContinuousTaskTickedFactory<RxBevyContext>;
 
 	#[inline]
-	fn schedule<T>(&mut self, task: T, owner_id: rx_core_traits::TaskOwnerId)
+	fn schedule_task<T>(&mut self, task: T, owner_id: TaskCancellationId)
 	where
-		T: 'static
-			+ rx_core_traits::Task<
-				TickInput = Self::TickInput,
-				TaskError = Self::TaskError,
-				ContextProvider = Self::ContextProvider,
-			>
-			+ Send
-			+ Sync,
+		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync,
 	{
-		self.ticking_scheduler.schedule(task, owner_id);
+		self.ticking_scheduler.schedule_task(task, owner_id);
 	}
 
 	#[inline]
-	fn cancel(&mut self, owner_id: rx_core_traits::TaskOwnerId) {
+	fn schedule_invoked_task<T>(&mut self, task: T, invoke_id: TaskInvokeId)
+	where
+		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync,
+	{
+		self.ticking_scheduler
+			.schedule_invoked_task(task, invoke_id);
+	}
+
+	#[inline]
+	fn invoke(&mut self, invoke_id: TaskInvokeId) {
+		self.ticking_scheduler.invoke(invoke_id);
+	}
+
+	#[inline]
+	fn cancel(&mut self, owner_id: TaskCancellationId) {
 		self.ticking_scheduler.cancel(owner_id);
 	}
 
 	#[inline]
-	fn generate_owner_id(&mut self) -> rx_core_traits::TaskOwnerId {
-		self.ticking_scheduler.generate_owner_id()
+	fn cancel_invoked(&mut self, invoke_id: TaskInvokeId) {
+		self.ticking_scheduler.cancel_invoked(invoke_id);
+	}
+
+	#[inline]
+	fn generate_cancellation_id(&mut self) -> TaskCancellationId {
+		self.ticking_scheduler.generate_cancellation_id()
+	}
+
+	#[inline]
+	fn generate_invoke_id(&mut self) -> TaskInvokeId {
+		self.ticking_scheduler.generate_invoke_id()
 	}
 }

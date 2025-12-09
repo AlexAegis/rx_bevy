@@ -166,8 +166,8 @@ mod test {
 	use std::{ops::RangeInclusive, time::Duration};
 
 	use rx_core::prelude::*;
-	use rx_core_testing::{MockClock, MockContext, MockObserver};
-	use rx_core_traits::{SubscriptionLike, Tickable};
+	use rx_core_testing::MockObserver;
+	use rx_core_traits::SubscriptionLike;
 
 	use crate::RcSubscriber;
 

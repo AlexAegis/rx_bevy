@@ -1,20 +1,39 @@
 use std::marker::PhantomData;
 
-use crate::{BevyRxScheduler, RxBevyContext, RxBevyContextItem};
-use bevy_ecs::{resource::Resource, schedule::ScheduleLabel, world::FromWorld};
+use crate::{RxBevyContext, RxBevyContextItem, RxBevyScheduler};
+use bevy_ecs::{resource::Resource, schedule::ScheduleLabel};
+use bevy_time::Virtual;
 use rx_bevy_common::Clock;
-use rx_core_scheduler_ticking::TickingSchedulerExecutor;
-use rx_core_traits::{TaskExecutor, Tick, WithTaskInputOutput};
+use rx_core_macro_executor_derive::RxExecutor;
+use rx_core_scheduler_ticking::{Tick, TickingSchedulerExecutor};
+use rx_core_traits::SchedulerHandle;
 
 // TODO: SystemParam that is the scheduler directly, maybe use the builder pattern of sysparams
-#[derive(Resource)]
-pub struct RxBevyExecutor<S, C>
+#[derive(Resource, RxExecutor)]
+#[rx_context(RxBevyContext)]
+#[rx_tick(Tick)]
+#[rx_scheduler(RxBevyScheduler)]
+pub struct RxBevyExecutor<S, C = Virtual>
 where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	ticking_executor: TickingSchedulerExecutor<BevyRxScheduler<S, C>, (), RxBevyContext<C>>,
+	#[scheduler_handle]
+	ticking_executor: TickingSchedulerExecutor<RxBevyScheduler, RxBevyContext>,
 	_phantom_data: PhantomData<(S, C)>,
+}
+
+impl<S, C> Default for RxBevyExecutor<S, C>
+where
+	S: ScheduleLabel,
+	C: Clock,
+{
+	fn default() -> Self {
+		Self {
+			ticking_executor: TickingSchedulerExecutor::new(RxBevyScheduler::default()),
+			_phantom_data: PhantomData,
+		}
+	}
 }
 
 impl<S, C> RxBevyExecutor<S, C>
@@ -22,41 +41,7 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	pub fn tick<'a>(&mut self, tick: Tick, context: &mut RxBevyContextItem<'a, 'a, C>) {
+	pub fn tick<'a>(&mut self, tick: Tick, context: &mut RxBevyContextItem<'a>) {
 		self.ticking_executor.tick(tick, context);
-	}
-}
-impl<S, C> FromWorld for RxBevyExecutor<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
-	fn from_world(_world: &mut bevy_ecs::world::World) -> Self {
-		Self {
-			ticking_executor: TickingSchedulerExecutor::new(BevyRxScheduler::new()),
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<S, C> WithTaskInputOutput for RxBevyExecutor<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
-	type TickInput = Tick;
-	type TaskError = ();
-	type ContextProvider = RxBevyContext<C>;
-}
-
-impl<S, C> TaskExecutor for RxBevyExecutor<S, C>
-where
-	S: ScheduleLabel,
-	C: Clock,
-{
-	type Scheduler = BevyRxScheduler<S, C>;
-
-	fn get_scheduler(&self) -> rx_core_traits::SchedulerHandle<Self::Scheduler> {
-		self.ticking_executor.get_scheduler()
 	}
 }

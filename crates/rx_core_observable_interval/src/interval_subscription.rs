@@ -4,7 +4,8 @@ use bevy_time::{Timer, TimerMode};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Never, Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, Subscriber,
-	SubscriptionData, SubscriptionLike, TaskContextItem, TaskOwnerId, Teardown, TeardownCollection,
+	SubscriptionData, SubscriptionLike, TaskCancellationId, TaskContext, Teardown,
+	TeardownCollection, TickResult,
 };
 
 use crate::observable::IntervalObservableOptions;
@@ -26,7 +27,7 @@ where
 	destination: Arc<Mutex<dyn Subscriber<In = usize, InError = Never> + Send + Sync>>,
 	teardown: SubscriptionData,
 	scheduler: SchedulerHandle<S>,
-	task_owner_id: TaskOwnerId,
+	task_owner_id: TaskCancellationId,
 }
 
 impl<S> IntervalSubscription<S>
@@ -49,8 +50,8 @@ where
 
 		let destination = Arc::new(Mutex::new(destination));
 		let task_owner_id = {
-			let mut scheduler = interval_subscription_options.scheduler.get_scheduler();
-			let owner_id = scheduler.generate_owner_id();
+			let mut scheduler = interval_subscription_options.scheduler.lock();
+			let owner_id = scheduler.generate_cancellation_id();
 			let mut destination_clone = destination.clone();
 			scheduler.schedule_repeated_task(
 				move |_tick_input, context| {
@@ -63,12 +64,22 @@ where
 						.times_finished_this_tick()
 						.min(task_state.max_emissions_per_tick);
 
+					let mut destination_closed = false;
 					for i in 0..ticks {
-						destination_clone.next(task_state.count + i as usize);
+						if !destination_clone.is_closed() {
+							destination_clone.next(task_state.count + i as usize);
+						} else {
+							destination_closed = true;
+							break;
+						}
 					}
 					task_state.count += ticks as usize;
 
-					Ok(())
+					if destination_closed {
+						TickResult::Done
+					} else {
+						TickResult::Pending
+					}
 				},
 				interval_subscription_options.duration,
 				false,
@@ -96,7 +107,7 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		self.scheduler.get_scheduler().cancel(self.task_owner_id);
+		self.scheduler.lock().cancel(self.task_owner_id);
 		if !self.destination.is_closed() {
 			self.destination.unsubscribe();
 		}
