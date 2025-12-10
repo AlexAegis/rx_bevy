@@ -1,104 +1,166 @@
 use core::marker::PhantomData;
-use std::time::Duration;
+use std::{
+	sync::{Arc, Mutex},
+	time::Duration,
+};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Signal, Subscriber};
+use rx_core_traits::{
+	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Signal,
+	Subscriber, SubscriptionLike, TaskCancellationId, TaskContext, TickResult,
+};
 
 use crate::{
 	AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, AdsrTrigger, operator::AdsrOperatorOptions,
 };
 
-// TODO: It'd be nice to control the envelope live, I guess that could be done by querying the subscriber itself, but it would be nicer to control the operator itself, in case there are many observers
-#[cfg_attr(feature = "debug", derive(Debug))]
-#[derive(RxSubscriber)]
+#[derive(Debug)]
+struct AdsrEnvelopeSharedState {
+	is_getting_activated: bool,
+	last_signal_was_none: bool,
+	options: AdsrOperatorOptions,
+}
+
+#[derive(RxSubscriber, Debug)]
 #[rx_in(AdsrTrigger)]
 #[rx_in_error(InError)]
 #[rx_delegate_teardown_collection_to_destination]
-#[rx_delegate_subscription_like_to_destination]
-pub struct AdsrSubscriber<InError, Destination>
+pub struct AdsrSubscriber<InError, Destination, S>
 where
 	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	S: Scheduler,
 {
 	#[destination]
-	destination: Destination,
-	is_getting_activated: bool,
-	last_signal_was_none: bool,
-	state: AdsrEnvelopeState,
-	pub options: AdsrOperatorOptions,
+	shared_destination: SharedSubscriber<Destination>,
+	shared_state: Arc<Mutex<AdsrEnvelopeSharedState>>,
+	scheduler: SchedulerHandle<S>,
+	cancellation_id: TaskCancellationId,
 	_phantom_data: PhantomData<InError>,
 }
 
-impl<InError, Destination> AdsrSubscriber<InError, Destination>
+impl<InError, Destination, S> AdsrSubscriber<InError, Destination, S>
 where
 	InError: Signal,
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	Destination: 'static + Subscriber<In = AdsrSignal, InError = InError>,
+	S: Scheduler,
 {
-	pub fn new(destination: Destination, options: AdsrOperatorOptions) -> Self {
-		Self {
-			destination,
-			options,
+	pub fn new(
+		destination: Destination,
+		options: AdsrOperatorOptions,
+		scheduler: SchedulerHandle<S>,
+	) -> Self {
+		let shared_destination = SharedSubscriber::new(destination);
+		let shared_state = Arc::new(Mutex::new(AdsrEnvelopeSharedState {
 			is_getting_activated: false,
 			last_signal_was_none: false,
-			state: AdsrEnvelopeState::default(),
+			options,
+		}));
+		let shared_state_clone = shared_state.clone();
+		let mut shared_destination_clone = shared_destination.clone();
+		let mut scheduler_clone = scheduler.clone();
+		let mut scheduler_lock = scheduler_clone.lock();
+		let cancellation_id = scheduler_lock.generate_cancellation_id();
+		let mut last_now = Duration::from_millis(0);
+		let mut envelope_state = AdsrEnvelopeState::default();
+		scheduler_lock.schedule_continuous_task(
+			move |_, context| {
+				if shared_destination_clone.is_closed() {
+					return TickResult::Done;
+				}
+
+				let next = {
+					let mut state = shared_state_clone.lock().unwrap_or_else(|p| p.into_inner());
+					let now = context.now();
+					let delta = now - last_now;
+					last_now = now;
+					let next = envelope_state.calculate_output(
+						state.options.envelope,
+						state.is_getting_activated,
+						now,
+						delta,
+					);
+					if state.options.reset_input_on_tick {
+						state.is_getting_activated = false;
+					}
+
+					let current_phase_is_none =
+						matches!(next.adsr_envelope_phase, AdsrEnvelopePhase::None);
+					let last_signal_was_none = state.last_signal_was_none;
+					state.last_signal_was_none = current_phase_is_none;
+					// If `always_emit_none`, it always emits.
+					// If the current phase isn't `None`, then it also should emit because it's a useful value.
+					// If the last signal was not `None`, then the current value should be emitted even if it's
+					// a `None` to have at least one `None` emitted at the end of an activation.
+					if state.options.always_emit_none
+						|| !current_phase_is_none
+						|| !last_signal_was_none
+					{
+						Some(next)
+					} else {
+						None
+					}
+				};
+
+				if let Some(next) = next {
+					shared_destination_clone.next(next);
+				}
+
+				TickResult::Pending
+			},
+			cancellation_id,
+		);
+
+		Self {
+			shared_destination,
+			scheduler,
+			shared_state,
+			cancellation_id,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<InError, Destination> Observer for AdsrSubscriber<InError, Destination>
+impl<InError, Destination, S> Observer for AdsrSubscriber<InError, Destination, S>
 where
 	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	S: Scheduler,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		self.is_getting_activated = next.activated;
+		let mut state = self.shared_state.lock().unwrap_or_else(|p| p.into_inner());
+		state.is_getting_activated = next.activated;
 
 		if let Some(envelope_change) = next.envelope_changes {
-			self.options.envelope.apply_change(envelope_change);
+			state.options.envelope.apply_change(envelope_change);
 		}
 	}
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
+		self.shared_destination.error(error);
 	}
 
 	#[inline]
 	fn complete(&mut self) {
-		self.destination.complete();
+		self.shared_destination.complete();
 	}
 }
 
-impl<InError, Destination> AdsrSubscriber<InError, Destination>
+impl<InError, Destination, S> SubscriptionLike for AdsrSubscriber<InError, Destination, S>
 where
 	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	S: Scheduler,
 {
-	/// TODO: MIGRATE IT INTO THE SCHEDULER
 	#[inline]
-	fn tick(&mut self, elapsed_since_start: Duration, tick_delta: Duration) {
-		let next = self.state.calculate_output(
-			self.options.envelope,
-			self.is_getting_activated,
-			elapsed_since_start,
-			tick_delta,
-		);
-		if self.options.reset_input_on_tick {
-			self.is_getting_activated = false;
-		}
+	fn is_closed(&self) -> bool {
+		self.shared_destination.is_closed()
+	}
 
-		let current_phase_is_none = matches!(next.adsr_envelope_phase, AdsrEnvelopePhase::None);
-
-		// If `always_emit_none`, it always emits.
-		// If the current phase isn't `None`, then it also should emit because it's a useful value.
-		// If the last signal was not `None`, then the current value should be emitted even if it's
-		// a `None` to have at least one `None` emitted at the end of an activation.
-		if self.options.always_emit_none || !current_phase_is_none || !self.last_signal_was_none {
-			self.destination.next(next);
-		}
-
-		self.last_signal_was_none = current_phase_is_none;
+	fn unsubscribe(&mut self) {
+		self.scheduler.lock().cancel(self.cancellation_id);
+		self.shared_destination.unsubscribe();
 	}
 }

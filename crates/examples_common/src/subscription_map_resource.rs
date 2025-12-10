@@ -10,8 +10,8 @@ use bevy::{
 };
 use bevy_mod_alternate_system_on_press::alternate_systems_on_press;
 use rx_bevy_common::Clock;
-use rx_bevy_context::{CommandSubscribeExtension, EntityDestination};
-use rx_core_traits::Signal;
+use rx_bevy_context::{CommandSubscribeExtension, EntityDestination, RxBevyExecutor};
+use rx_core_traits::prelude::*;
 
 pub trait SubscriptionMapResource: Resource {
 	fn insert(&mut self, observable_destination_key: (Entity, Entity), subscription_entity: Entity);
@@ -51,7 +51,7 @@ pub fn toggle_subscription_system<
 pub fn subscribe_entity<R, Out, OutError, S, C>(
 	observable_selector: impl Fn(&ResMut<R>) -> Entity,
 	destination_selector: impl Fn(&ResMut<R>) -> Entity,
-) -> impl FnMut(Commands, ResMut<R>)
+) -> impl FnMut(Commands, ResMut<R>, ResMut<RxBevyExecutor<S, C>>)
 where
 	R: SubscriptionMapResource,
 	Out: Signal,
@@ -59,13 +59,18 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	move |mut commands: Commands, mut subscription_tracking_resource: ResMut<R>| {
+	move |mut commands: Commands,
+	      mut subscription_tracking_resource: ResMut<R>,
+	      executor: ResMut<RxBevyExecutor<S, C>>| {
 		let observable_entity = observable_selector(&subscription_tracking_resource);
 		let destination_entity = destination_selector(&subscription_tracking_resource);
 
-		let subscription_entity = commands.subscribe::<_, S, C>(
+		let subscription_entity = commands.subscribe(
 			observable_entity,
-			EntityDestination::<Out, OutError>::new(destination_entity),
+			EntityDestination::<Out, OutError>::new(
+				destination_entity,
+				executor.get_scheduler_handle(),
+			),
 		);
 
 		subscription_tracking_resource

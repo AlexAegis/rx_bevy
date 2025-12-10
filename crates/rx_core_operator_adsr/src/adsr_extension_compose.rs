@@ -1,5 +1,5 @@
 use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::Operator;
+use rx_core_traits::{Operator, Scheduler, SchedulerHandle};
 
 use crate::{
 	AdsrTrigger,
@@ -7,11 +7,15 @@ use crate::{
 };
 
 pub trait OperatorComposeExtensionAdsr: Operator<Out = AdsrTrigger> + Sized {
-	fn adsr(
+	fn adsr<S>(
 		self,
 		options: AdsrOperatorOptions,
-	) -> CompositeOperator<Self, AdsrOperator<Self::OutError>> {
-		CompositeOperator::new(self, AdsrOperator::new(options))
+		scheduler: SchedulerHandle<S>,
+	) -> CompositeOperator<Self, AdsrOperator<Self::OutError, S>>
+	where
+		S: 'static + Scheduler,
+	{
+		CompositeOperator::new(self, AdsrOperator::new(options, scheduler))
 	}
 }
 

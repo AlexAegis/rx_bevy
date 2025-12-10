@@ -13,7 +13,7 @@ use rx_core::prelude::*;
 /// finally!
 /// ```
 fn main() {
-	let _s = of::<_, ()>(12)
-		.finalize(|_| println!("finally!"))
-		.subscribe(PrintObserver::new("finalize_operator"), &mut ());
+	let _s = of(12)
+		.finalize(|| println!("finally!"))
+		.subscribe(PrintObserver::new("finalize_operator"));
 }

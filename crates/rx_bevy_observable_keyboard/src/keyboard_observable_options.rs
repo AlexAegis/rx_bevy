@@ -1,4 +1,4 @@
-#[derive(Default, Clone)]
+#[derive(Clone, Default)]
 pub struct KeyboardObservableOptions {
 	pub emit: KeyboardObservableEmit,
 }

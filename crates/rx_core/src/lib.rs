@@ -220,7 +220,7 @@ pub mod subject {
 }
 
 pub mod prelude {
-	pub use rx_core_traits::*;
+	pub use rx_core_traits::prelude::*;
 
 	pub use super::observable::*;
 	pub use super::observer::*;

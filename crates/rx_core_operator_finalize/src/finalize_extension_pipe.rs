@@ -1,10 +1,10 @@
 use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Teardown};
+use rx_core_traits::Observable;
 
 use crate::operator::FinalizeOperator;
 
 pub trait ObservablePipeExtensionFinalize: Observable + Sized {
-	fn finalize<Callback: 'static + Clone + Into<Teardown> + Send + Sync>(
+	fn finalize<Callback: 'static + Clone + FnOnce() + Send + Sync>(
 		self,
 		callback: Callback,
 	) -> Pipe<Self, FinalizeOperator<Self::Out, Self::OutError, Callback>> {

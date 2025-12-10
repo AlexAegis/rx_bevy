@@ -35,7 +35,7 @@ where
 		F: Fn(&Destination),
 	{
 		if let Ok(destination) = self.lock() {
-			accessor(&*destination)
+			accessor(&destination)
 		}
 	}
 
@@ -44,7 +44,7 @@ where
 		F: FnMut(&mut Destination),
 	{
 		if let Ok(mut destination) = self.lock() {
-			accessor(&mut *destination)
+			accessor(&mut destination)
 		}
 	}
 }

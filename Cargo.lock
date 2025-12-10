@@ -5108,6 +5108,7 @@ dependencies = [
 name = "rx_core_testing"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "disqualified",
  "rx_core",
  "rx_core_macro_executor_derive",

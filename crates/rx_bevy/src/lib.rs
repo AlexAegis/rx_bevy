@@ -47,7 +47,7 @@ pub mod context {
 }
 
 pub mod prelude {
-	pub use rx_core_traits::*;
+	pub use rx_core_traits::prelude::*;
 
 	pub use super::context::*;
 	pub use super::observable::*;

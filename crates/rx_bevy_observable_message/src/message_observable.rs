@@ -2,9 +2,9 @@ use std::marker::PhantomData;
 
 use bevy_ecs::event::Event;
 use derive_where::derive_where;
-use rx_bevy_context::RxBevyContext;
+use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Never, Observable, Subscriber, SubscriptionContext, UpgradeableObserver};
+use rx_core_traits::{Never, Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 
 use crate::MessageSubscription;
 
@@ -12,12 +12,24 @@ use crate::MessageSubscription;
 #[derive(RxObservable)]
 #[rx_out(M)]
 #[rx_out_error(Never)]
-#[rx_context(RxBevyContext)]
 pub struct MessageObservable<M>
 where
 	M: Event + Clone, // TODO(bevy-0.17): use the message trait
 {
+	scheduler: SchedulerHandle<RxBevyScheduler>,
 	_phantom_data: PhantomData<M>,
+}
+
+impl<M> MessageObservable<M>
+where
+	M: Event + Clone,
+{
+	pub fn new(scheduler: SchedulerHandle<RxBevyScheduler>) -> Self {
+		Self {
+			scheduler,
+			_phantom_data: PhantomData,
+		}
+	}
 }
 
 impl<M> Observable for MessageObservable<M>
@@ -27,20 +39,16 @@ where
 	type Subscription<Destination>
 		= MessageSubscription<Destination>
 	where
-		Destination:
-			'static + Subscriber<In = Self::Out, InError = Self::OutError, Context = Self::Context>;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
-		_context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
-		Destination: 'static
-			+ UpgradeableObserver<In = Self::Out, InError = Self::OutError, Context = Self::Context>
-			+ Send
-			+ Sync,
+		Destination:
+			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		MessageSubscription::new(destination.upgrade())
+		MessageSubscription::new(destination.upgrade(), self.scheduler.clone())
 	}
 }

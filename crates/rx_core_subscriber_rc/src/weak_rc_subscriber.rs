@@ -1,8 +1,8 @@
-use std::sync::{Arc, Mutex};
-
 use derive_where::derive_where;
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Subscriber, SubscriptionLike, Teardown, TeardownCollection};
+use rx_core_traits::{
+	Observer, SharedSubscriber, Subscriber, SubscriptionLike, Teardown, TeardownCollection,
+};
 
 use crate::InnerRcSubscriber;
 
@@ -15,7 +15,7 @@ pub struct WeakRcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	pub(crate) shared_destination: Arc<Mutex<InnerRcSubscriber<Destination>>>,
+	pub(crate) shared_destination: SharedSubscriber<InnerRcSubscriber<Destination>>,
 }
 
 impl<Destination> Observer for WeakRcSubscriber<Destination>

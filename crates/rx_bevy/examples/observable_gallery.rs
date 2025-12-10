@@ -107,13 +107,11 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
-	// TODO: Move this back to an arg, once the context is no longer needed here.
-	let scheduler = context
-		.deferred_world
-		.get_resource::<RxBevyExecutor<Update, Virtual>>()
-		.unwrap()
-		.get_scheduler();
+fn setup(
+	mut commands: Commands,
+	mut rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
+) {
+	let scheduler = rx_executor_update_virtual.get_scheduler_handle();
 
 	commands.spawn((
 		Camera3d::default(),
@@ -137,11 +135,17 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 		.id();
 
 	let _virtual_time_setting_subscription = commands
-		.with_observable::<_, Update, Real>(KeyboardObservable::new(KeyboardObservableOptions {
-			emit: KeyboardObservableEmit::JustPressed,
-		}))
-		.subscribe(ResourceDestination::<_, _, Time<Virtual>, _>::new(
-			|mut virtual_time, signal| {
+		.with_observable(
+			KeyboardObservable::new(
+				KeyboardObservableOptions {
+					emit: KeyboardObservableEmit::JustPressed,
+				},
+				scheduler,
+			),
+			scheduler,
+		)
+		.subscribe(ResourceDestination::new(
+			|mut virtual_time: Mut<'_, Time<Virtual>>, signal| {
 				let speed = match signal {
 					ObserverNotification::Next(key_code) => match key_code {
 						KeyCode::KeyX => 0.5,
@@ -156,8 +160,8 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 
 				virtual_time.set_relative_speed(speed);
 			},
-		))
-		.into_entity();
+			scheduler,
+		));
 
 	let instant_subscription_entity = {
 		let mut interval_entity = commands.spawn((
@@ -172,26 +176,27 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 		));
 
 		let interval_entity_as_observable =
-			interval_entity.as_observable::<usize, Never, Update, Virtual>();
+			interval_entity.as_observable::<usize, Never>(scheduler);
 
 		let subscription = interval_entity_as_observable
 			.enumerate()
-			.finalize(|_| println!("Finalize from the instant subscription!"))
+			.finalize(|| println!("Finalize from the instant subscription!"))
 			.take(10)
-			.subscribe(
-				EntityDestination::new(destination_entity_real_clock),
-				&mut context,
-			);
-
-		subscription.into_entity()
+			.subscribe(EntityDestination::new(
+				destination_entity_real_clock,
+				scheduler,
+			));
 	};
 
 	let keyboard_observable = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::new(KeyboardObservableOptions {
-				emit: KeyboardObservableEmit::JustPressed,
-			})
+			KeyboardObservable::new(
+				KeyboardObservableOptions {
+					emit: KeyboardObservableEmit::JustPressed,
+				},
+				scheduler,
+			)
 			.delay(DelayOperatorOptions {
 				delay: Duration::from_millis(1000),
 				scheduler,
@@ -219,15 +224,14 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 				"ProxyObservable (IntervalObservable) {}",
 				interval_observable
 			)),
-			ProxyObservable::<usize, Never, Update, Virtual>::new(interval_observable)
-				.into_component(),
+			ProxyObservable::<usize, Never>::new(interval_observable, scheduler).into_component(),
 		))
 		.id();
 
 	let keyboard_switch_map_to_interval_observable = commands
 		.spawn((
 			Name::new("KeyboardSwitchMapToIntervalObservable"),
-			KeyboardObservable::default()
+			KeyboardObservable::new(default(), scheduler)
 				.filter(|key_code| {
 					matches!(
 						key_code,

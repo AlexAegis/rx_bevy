@@ -1,24 +1,27 @@
 use std::time::Duration;
 
 use rx_core::prelude::*;
-use rx_core_testing::MockClock;
+use rx_core_testing::MockExecutor;
 
 fn main() {
-	let mut mock_clock = MockClock::default();
-	let mut context = ();
+	let mut executor = MockExecutor::default();
+	let scheduler = executor.get_scheduler_handle();
+
 	let mut subject = Subject::<i32>::default();
 
 	let mut subscription = subject
 		.clone()
-		.fallback_when_silent(Default::default)
-		.subscribe(PrintObserver::<i32>::new("into_operator"), &mut context);
+		.fallback_when_silent(Default::default, scheduler)
+		.subscribe(PrintObserver::<i32>::new("into_operator"));
 
-	subject.next(1, &mut context);
-	subscription.tick(mock_clock.elapse(Duration::from_millis(200)), &mut context);
-	subject.next(2, &mut context);
-	subscription.tick(mock_clock.elapse(Duration::from_millis(200)), &mut context);
+	subject.next(1);
+	executor.tick_by_delta(Duration::from_millis(200));
+	subject.next(2);
+	executor.tick_by_delta(Duration::from_millis(200));
 	// Silence
-	subscription.tick(mock_clock.elapse(Duration::from_millis(200)), &mut context);
-	subject.next(3, &mut context);
-	subscription.tick(mock_clock.elapse(Duration::from_millis(200)), &mut context);
+	executor.tick_by_delta(Duration::from_millis(200));
+	subject.next(3);
+	executor.tick_by_delta(Duration::from_millis(200));
+
+	subscription.unsubscribe();
 }

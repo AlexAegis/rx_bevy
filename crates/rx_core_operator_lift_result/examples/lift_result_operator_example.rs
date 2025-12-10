@@ -5,7 +5,7 @@ use rx_core::prelude::*;
 /// as an error.
 fn main() {
 	let _s = (1..=5)
-		.into_observable::<()>()
+		.into_observable()
 		.map(|i| {
 			if i <= 3 {
 				Result::<i32, String>::Ok(i)
@@ -14,5 +14,5 @@ fn main() {
 			}
 		})
 		.lift_result(|_in_error: Never| unreachable!()) // We're lifting the result error from the "next" channel, but we still have to deal with the upstream errors if they exist, this `unreachable!` is just here to ignore them.
-		.subscribe(PrintObserver::new("lift_result_operator"), &mut ());
+		.subscribe(PrintObserver::new("lift_result_operator"));
 }

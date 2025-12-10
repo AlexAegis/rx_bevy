@@ -77,11 +77,11 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 		&mut self,
 		work: Work,
 		delay: Duration,
-		owner_id: TaskCancellationId,
+		cancellation_id: TaskCancellationId,
 	) where
 		Work: ScheduledOnceWork<Self::Tick, Self::ContextProvider>,
 	{
-		self.schedule_task(Self::DelayedTaskFactory::new(work, delay), owner_id)
+		self.schedule_task(Self::DelayedTaskFactory::new(work, delay), cancellation_id)
 	}
 
 	fn schedule_repeated_task<Work>(
@@ -89,28 +89,28 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
-		owner_id: TaskCancellationId,
+		cancellation_id: TaskCancellationId,
 	) where
 		Work: ScheduledRepeatedWork<Self::Tick, Self::ContextProvider>,
 	{
 		self.schedule_task(
 			Self::RepeatedTaskFactory::new(work, interval, start_immediately),
-			owner_id,
+			cancellation_id,
 		)
 	}
 
-	fn schedule_continuous_task<Work>(&mut self, work: Work, owner_id: TaskCancellationId)
+	fn schedule_continuous_task<Work>(&mut self, work: Work, cancellation_id: TaskCancellationId)
 	where
 		Work: ScheduledRepeatedWork<Self::Tick, Self::ContextProvider>,
 	{
-		self.schedule_task(Self::ContinuousTaskFactory::new(work), owner_id)
+		self.schedule_task(Self::ContinuousTaskFactory::new(work), cancellation_id)
 	}
 
-	fn schedule_immediate_task<Work>(&mut self, work: Work, owner_id: TaskCancellationId)
+	fn schedule_immediate_task<Work>(&mut self, work: Work, cancellation_id: TaskCancellationId)
 	where
 		Work: ScheduledOnceWork<Self::Tick, Self::ContextProvider>,
 	{
-		self.schedule_task(Self::ImmediateTaskFactory::new(work), owner_id)
+		self.schedule_task(Self::ImmediateTaskFactory::new(work), cancellation_id)
 	}
 }
 

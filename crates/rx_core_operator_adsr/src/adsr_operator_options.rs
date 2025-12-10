@@ -1,7 +1,6 @@
 use crate::AdsrEnvelope;
 
-#[derive(Clone, Default)]
-#[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Clone, Debug, Default)]
 pub struct AdsrOperatorOptions {
 	/// to avoid emitting None events all the time, only the first one is
 	/// emitted, in case you need one event every frame, not just when the

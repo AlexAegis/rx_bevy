@@ -94,7 +94,11 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(mut commands: Commands) {
+fn setup(
+	mut commands: Commands,
+	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
+) {
+	let scheduler = rx_executor_update_virtual.get_scheduler_handle();
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -108,7 +112,7 @@ fn setup(mut commands: Commands) {
 	let message_observable = commands
 		.spawn((
 			Name::new("MessageObservable"),
-			MessageObservable::<DummyMessage>::default().into_component(),
+			MessageObservable::<DummyMessage>::new(scheduler).into_component(),
 		))
 		.id();
 

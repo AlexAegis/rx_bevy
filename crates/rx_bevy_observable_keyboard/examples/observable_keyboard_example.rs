@@ -52,7 +52,10 @@ struct ExampleEntities {
 	subscription: Entity,
 }
 
-fn setup(mut commands: Commands) {
+fn setup(
+	mut commands: Commands,
+	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
+) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -61,7 +64,7 @@ fn setup(mut commands: Commands) {
 	let keyboard_observable_entity = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::default()
+			KeyboardObservable::new(default(), rx_executor_update_virtual.get_scheduler_handle())
 				.filter(|key_code| {
 					matches!(
 						key_code,
@@ -78,9 +81,12 @@ fn setup(mut commands: Commands) {
 		.observe(next_number_observer)
 		.id();
 
-	let subscription = commands.subscribe::<_, Update, Virtual>(
+	let subscription = commands.subscribe(
 		keyboard_observable_entity,
-		EntityDestination::<String, Never>::new(keyboard_event_observer),
+		EntityDestination::<String, Never>::new(
+			keyboard_event_observer,
+			rx_executor_update_virtual.get_scheduler_handle(),
+		),
 	);
 
 	commands.insert_resource(ExampleEntities {

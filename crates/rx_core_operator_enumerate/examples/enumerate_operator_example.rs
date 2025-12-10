@@ -4,7 +4,7 @@ use rx_core::prelude::*;
 /// counter in a tuple with the emitted value as (T, usize)
 fn main() {
 	let _s = (10..=15)
-		.into_observable::<()>()
+		.into_observable()
 		.enumerate()
-		.subscribe(PrintObserver::new("enumerate_operator"), &mut ());
+		.subscribe(PrintObserver::new("enumerate_operator"));
 }

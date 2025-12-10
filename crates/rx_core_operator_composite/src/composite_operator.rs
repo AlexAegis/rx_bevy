@@ -48,9 +48,7 @@ where
 	type Subscriber<Destination>
 		= CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<Destination>>, Destination>
 	where
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
-		Op::Subscriber<Destination>: Subscriber<In = Op::In, InError = Op::InError>,
-		PrevOp::Subscriber<Op::Subscriber<Destination>>: Subscriber;
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
 	#[inline]
 	fn operator_subscribe<Destination>(
@@ -58,7 +56,7 @@ where
 		destination: Destination,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		CompositeSubscriber::new(
 			self.prev_op

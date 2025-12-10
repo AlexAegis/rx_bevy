@@ -1,16 +1,17 @@
 use core::marker::PhantomData;
-use std::sync::{Arc, Mutex};
 
+use derive_where::derive_where;
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
 	Never, Observer, Signal, SubscriberNotification, SubscriptionClosedFlag, SubscriptionLike,
 	Teardown, TeardownCollection,
 };
 
-use crate::notification_collector::TestNotificationCollector;
+use crate::SharedNotificationCollector;
 
 /// While this is conceptually an Observer, used as an Observer, for testing
 /// purposes it behaves like a Subscriber by not being detached on upgrade.
+#[derive_where(Default)]
 #[derive(RxObserver, Debug)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
@@ -21,7 +22,7 @@ where
 	InError: Signal,
 {
 	pub closed_flag: SubscriptionClosedFlag,
-	notification_collector: Arc<Mutex<TestNotificationCollector<In, InError>>>,
+	notification_collector: SharedNotificationCollector<In, InError>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -30,7 +31,7 @@ where
 	In: Signal,
 	InError: Signal,
 {
-	pub fn new(notification_collector: Arc<Mutex<TestNotificationCollector<In, InError>>>) -> Self {
+	pub fn new(notification_collector: SharedNotificationCollector<In, InError>) -> Self {
 		Self {
 			notification_collector,
 			closed_flag: SubscriptionClosedFlag::default(),
@@ -38,12 +39,8 @@ where
 		}
 	}
 
-	fn lock_collector(
-		&mut self,
-	) -> std::sync::MutexGuard<'_, TestNotificationCollector<In, InError>> {
-		self.notification_collector
-			.lock()
-			.unwrap_or_else(|p| p.into_inner())
+	pub fn get_notification_collector(&self) -> SharedNotificationCollector<In, InError> {
+		self.notification_collector.clone()
 	}
 }
 
@@ -53,17 +50,21 @@ where
 	InError: Signal,
 {
 	fn next(&mut self, next: Self::In) {
-		self.lock_collector()
+		self.notification_collector
+			.lock()
 			.push(SubscriberNotification::Next(next));
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		self.lock_collector()
+		self.notification_collector
+			.lock()
 			.push(SubscriberNotification::Error(error));
 	}
 
 	fn complete(&mut self) {
-		self.lock_collector().push(SubscriberNotification::Complete);
+		self.notification_collector
+			.lock()
+			.push(SubscriberNotification::Complete);
 	}
 }
 
@@ -79,7 +80,8 @@ where
 
 	fn unsubscribe(&mut self) {
 		self.closed_flag.close();
-		self.lock_collector()
+		self.notification_collector
+			.lock()
 			.push(SubscriberNotification::Unsubscribe);
 	}
 }
@@ -94,21 +96,8 @@ where
 		if self.is_closed() {
 			teardown.execute();
 		}
-		self.lock_collector()
+		self.notification_collector
+			.lock()
 			.push(SubscriberNotification::Add(None));
-	}
-}
-
-impl<In, InError> Default for MockObserver<In, InError>
-where
-	In: Signal,
-	InError: Signal,
-{
-	fn default() -> Self {
-		Self {
-			closed_flag: false.into(),
-			notification_collector: Arc::new(Mutex::new(TestNotificationCollector::default())),
-			_phantom_data: PhantomData,
-		}
 	}
 }

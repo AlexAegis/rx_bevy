@@ -77,7 +77,7 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 	{
 		let observable_entity = self.id();
 		let commands = self.commands_mut();
-		commands.subscribe::<_>(observable_entity, destination)
+		commands.subscribe(observable_entity, destination)
 	}
 
 	fn subscribe<Out, OutError>(
@@ -92,7 +92,7 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 		let observable_entity = self.id();
 		let commands = self.commands_mut();
 
-		commands.subscribe::<_>(
+		commands.subscribe(
 			observable_entity,
 			EntityDestination::<Out, OutError>::new(destination_entity, scheduler),
 		)
@@ -109,7 +109,7 @@ impl<'a> EntityCommandSubscribeExtension for EntityCommands<'a> {
 	{
 		let destination_entity = self.id();
 		let commands = self.commands_mut();
-		commands.subscribe::<_>(
+		commands.subscribe(
 			observable_entity,
 			EntityDestination::<Out, OutError>::new(destination_entity, scheduler),
 		)

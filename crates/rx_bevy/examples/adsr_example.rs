@@ -41,6 +41,7 @@ fn setup(
 	mut commands: Commands,
 	mut meshes: ResMut<Assets<Mesh>>,
 	mut materials: ResMut<Assets<StandardMaterial>>,
+	rx_executor: ResMut<RxBevyExecutor<Update, Virtual>>,
 ) {
 	commands.spawn((
 		Camera3d::default(),
@@ -50,27 +51,33 @@ fn setup(
 	let adsr_observable = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::new(KeyboardObservableOptions {
-				emit: KeyboardObservableEmit::Pressed,
-			})
+			KeyboardObservable::new(
+				KeyboardObservableOptions {
+					emit: KeyboardObservableEmit::Pressed,
+				},
+				rx_executor.get_scheduler_handle(),
+			)
 			.map(Into::<Option<KeyCode>>::into)
-			.fallback_when_silent(Default::default) // When nothing pressed, emit the default of the input type
+			.fallback_when_silent(Default::default, rx_executor.get_scheduler_handle()) // When nothing pressed, emit the default of the input type
 			.map(|key| matches!(key, Some(KeyCode::Space)))
 			.map_into::<AdsrTrigger, Never>()
-			.adsr(AdsrOperatorOptions {
-				always_emit_none: false,
-				reset_input_on_tick: false,
-				envelope: AdsrEnvelope {
-					attack_time: Duration::from_millis(250),
-					attack_easing: Some(EaseFunction::SineIn),
-					decay_time: Duration::from_millis(500),
-					decay_easing: Some(EaseFunction::SmoothStep),
-					sustain_volume: 0.9,
-					release_time: Duration::from_millis(1500),
-					release_easing: Some(EaseFunction::CircularOut),
+			.adsr(
+				AdsrOperatorOptions {
+					always_emit_none: false,
+					reset_input_on_tick: false,
+					envelope: AdsrEnvelope {
+						attack_time: Duration::from_millis(250),
+						attack_easing: Some(EaseFunction::SineIn),
+						decay_time: Duration::from_millis(500),
+						decay_easing: Some(EaseFunction::SmoothStep),
+						sustain_volume: 0.9,
+						release_time: Duration::from_millis(1500),
+						release_easing: Some(EaseFunction::CircularOut),
+					},
 				},
-			})
-			.tap_next(|n, _| println!("{n:?}"))
+				rx_executor.get_scheduler_handle(),
+			)
+			.tap_next(|n| println!("{n:?}"))
 			.into_component(),
 		))
 		.id();

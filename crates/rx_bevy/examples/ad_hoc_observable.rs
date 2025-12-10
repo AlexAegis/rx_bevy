@@ -41,7 +41,11 @@ struct ExampleEntities {
 	ad_hoc_subscription_2_entity: Entity,
 }
 
-fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
+fn setup(
+	mut commands: Commands,
+	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
+	rx_executor_last: ResMut<RxBevyExecutorLast>,
+) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -53,26 +57,37 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 		.id();
 
 	let ad_hoc_subscription = commands
-		.with_observable::<_, Update, Virtual>(IntervalObservable::new(IntervalObservableOptions {
-			duration: Duration::from_millis(400),
-			start_on_subscribe: true,
-			max_emissions_per_tick: 2,
-		}))
+		.with_observable(
+			IntervalObservable::new(IntervalObservableOptions {
+				duration: Duration::from_millis(400),
+				start_on_subscribe: true,
+				max_emissions_per_tick: 2,
+				scheduler: rx_executor_update_virtual.get_scheduler_handle(),
+			}),
+			rx_executor_last.get_scheduler_handle(),
+		)
 		.filter(|next| next % 2 == 1)
-		.subscribe(EntityDestination::new(destination_entity), &mut context);
+		.subscribe(EntityDestination::new(
+			destination_entity,
+			rx_executor_update_virtual.get_scheduler_handle(),
+		));
 
 	let ad_hoc_subscription_2 = IntervalObservable::new(IntervalObservableOptions {
 		duration: Duration::from_millis(200),
 		start_on_subscribe: true,
 		max_emissions_per_tick: 2,
+		scheduler: rx_executor_update_virtual.get_scheduler_handle(),
 	})
-	.with_commands::<Update, Virtual>(commands.reborrow())
+	.with_commands(commands.reborrow(), rx_executor_last.get_scheduler_handle())
 	.filter(|next| next % 2 == 0)
-	.subscribe(EntityDestination::new(destination_entity), &mut context);
+	.subscribe(EntityDestination::new(
+		destination_entity,
+		rx_executor_update_virtual.get_scheduler_handle(),
+	));
 
 	commands.insert_resource(ExampleEntities {
 		destination_entity,
-		ad_hoc_subscription_entity: ad_hoc_subscription.into(),
-		ad_hoc_subscription_2_entity: ad_hoc_subscription_2.into(),
+		ad_hoc_subscription_entity: ad_hoc_subscription.entity(),
+		ad_hoc_subscription_2_entity: ad_hoc_subscription_2.entity(),
 	});
 }

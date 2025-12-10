@@ -26,7 +26,7 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, DummyEvent, Never, Update, Virtual>(
+				toggle_subscription_system::<ExampleEntities, DummyEvent, Never>(
 					KeyCode::Space,
 					|res| res.event_observable,
 					|res| res.destination_entity,

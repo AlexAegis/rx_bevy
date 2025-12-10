@@ -4,8 +4,8 @@ use rx_core::prelude::*;
 /// matching the predicate
 fn main() {
 	let _s = (1..=5)
-		.into_observable::<()>()
+		.into_observable()
 		.map(|next: i32| next + 1)
 		.filter(|i| i > &2)
-		.subscribe(PrintObserver::new("filter_operator"), &mut ());
+		.subscribe(PrintObserver::new("filter_operator"));
 }

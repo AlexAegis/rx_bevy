@@ -23,7 +23,7 @@ where
 		destination: Destination,
 	) -> Self::Subscriber<Destination>
 	where
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
+		Destination: Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		match self {
 			Some(operator) => OptionSubscriber::Some(operator.operator_subscribe(destination)),

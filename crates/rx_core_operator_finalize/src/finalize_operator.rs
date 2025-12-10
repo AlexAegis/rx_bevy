@@ -14,7 +14,7 @@ pub struct FinalizeOperator<In, InError, Callback>
 where
 	In: Signal,
 	InError: Signal,
-	Callback: 'static + Clone + Into<Teardown> + Send + Sync,
+	Callback: 'static + Clone + FnOnce() + Send + Sync,
 {
 	#[derive_where(skip(Debug))]
 	callback: Callback,
@@ -25,7 +25,7 @@ impl<In, InError, Callback> FinalizeOperator<In, InError, Callback>
 where
 	In: Signal,
 	InError: Signal,
-	Callback: 'static + Clone + Into<Teardown> + Send + Sync,
+	Callback: 'static + Clone + FnOnce() + Send + Sync,
 {
 	pub fn new(callback: Callback) -> Self {
 		Self {
@@ -39,7 +39,7 @@ impl<In, InError, Callback> Operator for FinalizeOperator<In, InError, Callback>
 where
 	In: Signal,
 	InError: Signal,
-	Callback: 'static + Clone + Into<Teardown> + Send + Sync,
+	Callback: 'static + Clone + FnOnce() + Send + Sync,
 {
 	type Subscriber<Destination>
 		= Destination
@@ -54,7 +54,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		destination.add_teardown(self.callback.clone().into());
+		destination.add_teardown(Teardown::new(self.callback.clone()));
 		destination
 	}
 }

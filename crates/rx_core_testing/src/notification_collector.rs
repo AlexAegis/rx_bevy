@@ -1,9 +1,42 @@
-use std::{iter::Chain, slice::Iter};
+use std::{
+	iter::Chain,
+	slice::Iter,
+	sync::{Arc, Mutex, MutexGuard},
+};
 
+use derive_where::derive_where;
 use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriptionClosedFlag};
 
+#[derive_where(Clone, Default)]
 #[derive(Debug)]
-pub struct TestNotificationCollector<In, InError = Never>
+pub struct SharedNotificationCollector<In, InError = Never>
+where
+	In: Signal,
+	InError: Signal,
+{
+	shared_notification_collector: Arc<Mutex<NotificationCollector<In, InError>>>,
+}
+
+impl<In, InError> SharedNotificationCollector<In, InError>
+where
+	In: Signal,
+	InError: Signal,
+{
+	pub fn new(notification_collector: NotificationCollector<In, InError>) -> Self {
+		Self {
+			shared_notification_collector: Arc::new(Mutex::new(notification_collector)),
+		}
+	}
+
+	pub fn lock(&self) -> MutexGuard<'_, NotificationCollector<In, InError>> {
+		self.shared_notification_collector
+			.lock()
+			.unwrap_or_else(|p| p.into_inner())
+	}
+}
+
+#[derive(Debug)]
+pub struct NotificationCollector<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
@@ -13,7 +46,7 @@ where
 	closed_flag: SubscriptionClosedFlag,
 }
 
-impl<In, InError> TestNotificationCollector<In, InError>
+impl<In, InError> NotificationCollector<In, InError>
 where
 	In: Signal,
 	InError: Signal,
@@ -262,7 +295,7 @@ where
 	}
 }
 
-impl<In, InError> Default for TestNotificationCollector<In, InError>
+impl<In, InError> Default for NotificationCollector<In, InError>
 where
 	In: Signal,
 	InError: Signal,
@@ -276,7 +309,7 @@ where
 	}
 }
 
-impl<In, InError> Drop for TestNotificationCollector<In, InError>
+impl<In, InError> Drop for NotificationCollector<In, InError>
 where
 	In: Signal,
 	InError: Signal,
@@ -287,36 +320,35 @@ where
 }
 
 #[cfg(test)]
-mod test_mock_context {
+mod test_notification_collector {
 
 	#[cfg(test)]
 	mod test_nothing_happened_after_closed {
 
-		use rx_core_traits::{DropSafeSubscriptionContext, SubscriberNotification};
+		use rx_core_traits::SubscriberNotification;
 
-		use crate::MockContext;
+		use crate::NotificationCollector;
 
 		#[test]
 		fn defaults_to_a_state_where_nothing_yet_happened() {
-			let mock_context = MockContext::<i32, String, DropSafeSubscriptionContext>::default();
+			let notification_collector = NotificationCollector::<i32, String>::default();
 			assert!(
-				mock_context.nothing_happened_after_closed(),
+				notification_collector.nothing_happened_after_closed(),
 				"a freshly created default mock context thinks something happend after closing without even passing in a single notification"
 			)
 		}
 
 		#[test]
 		fn counts_incoming_notifications() {
-			let mut mock_context =
-				MockContext::<i32, String, DropSafeSubscriptionContext>::default();
-			mock_context.push(SubscriberNotification::Unsubscribe);
+			let mut notification_collector = NotificationCollector::<i32, String>::default();
+			notification_collector.push(SubscriberNotification::Unsubscribe);
 			assert!(
-				mock_context.nothing_happened_after_closed(),
+				notification_collector.nothing_happened_after_closed(),
 				"mock context reports something happened after just one unsubscribe"
 			);
-			mock_context.push(SubscriberNotification::Next(1));
+			notification_collector.push(SubscriberNotification::Next(1));
 			assert!(
-				!mock_context.nothing_happened_after_closed(),
+				!notification_collector.nothing_happened_after_closed(),
 				"mock context reports nothing happened after an unsubscribe and a next notification"
 			);
 		}
@@ -327,103 +359,104 @@ mod test_mock_context {
 
 		use rx_core_traits::SubscriberNotification;
 
+		use crate::NotificationCollector;
+
 		#[test]
 		fn counts_different_notifications() {
-			let mut mock_context =
-				MockContext::<i32, String, DropSafeSubscriptionContext>::default();
+			let mut notification_collector = NotificationCollector::<i32, String>::default();
 			// This order of events is nonsensical, but that doesn't matter for this test.
-			mock_context.push(SubscriberNotification::Add(None));
-			mock_context.push(SubscriberNotification::Next(1));
-			mock_context.push(SubscriberNotification::Next(2));
-			mock_context.push(SubscriberNotification::Next(3));
-			mock_context.push(SubscriberNotification::Error("Error 1".to_string()));
-			mock_context.push(SubscriberNotification::Complete);
-			mock_context.push(SubscriberNotification::Add(None));
-			mock_context.push(SubscriberNotification::Next(4));
-			mock_context.push(SubscriberNotification::Complete);
-			mock_context.push(SubscriberNotification::Unsubscribe);
-			mock_context.push(SubscriberNotification::Complete);
-			mock_context.push(SubscriberNotification::Unsubscribe);
-			mock_context.push(SubscriberNotification::Unsubscribe);
-			mock_context.push(SubscriberNotification::Error("Error 2".to_string()));
-			mock_context.push(SubscriberNotification::Next(5));
+			notification_collector.push(SubscriberNotification::Add(None));
+			notification_collector.push(SubscriberNotification::Next(1));
+			notification_collector.push(SubscriberNotification::Next(2));
+			notification_collector.push(SubscriberNotification::Next(3));
+			notification_collector.push(SubscriberNotification::Error("Error 1".to_string()));
+			notification_collector.push(SubscriberNotification::Complete);
+			notification_collector.push(SubscriberNotification::Add(None));
+			notification_collector.push(SubscriberNotification::Next(4));
+			notification_collector.push(SubscriberNotification::Complete);
+			notification_collector.push(SubscriberNotification::Unsubscribe);
+			notification_collector.push(SubscriberNotification::Complete);
+			notification_collector.push(SubscriberNotification::Unsubscribe);
+			notification_collector.push(SubscriberNotification::Unsubscribe);
+			notification_collector.push(SubscriberNotification::Error("Error 2".to_string()));
+			notification_collector.push(SubscriberNotification::Next(5));
 
 			assert_eq!(
-				mock_context.count_observed_nexts(),
+				notification_collector.count_observed_nexts(),
 				4,
 				"mock context didn't report the correct amount of nexts observed before the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_observed_nexts_after_close(),
+				notification_collector.count_observed_nexts_after_close(),
 				1,
 				"mock context didn't report the correct amount of nexts observed after the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_all_observed_nexts(),
+				notification_collector.count_all_observed_nexts(),
 				5,
 				"mock context didn't report the correct total amount of nexts observed"
 			);
 
 			assert_eq!(
-				mock_context.count_observed_errors(),
+				notification_collector.count_observed_errors(),
 				1,
 				"mock context didn't report the correct amount of errors observed before the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_observed_errors_after_close(),
+				notification_collector.count_observed_errors_after_close(),
 				1,
 				"mock context didn't report the correct amount of errors observed after the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_all_observed_errors(),
+				notification_collector.count_all_observed_errors(),
 				2,
 				"mock context didn't report the correct total amount of errors observed"
 			);
 
 			assert_eq!(
-				mock_context.count_observed_completes(),
+				notification_collector.count_observed_completes(),
 				2,
 				"mock context didn't report the correct amount of completes observed before the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_observed_completes_after_close(),
+				notification_collector.count_observed_completes_after_close(),
 				1,
 				"mock context didn't report the correct amount of completes observed after the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_all_observed_completes(),
+				notification_collector.count_all_observed_completes(),
 				3,
 				"mock context didn't report the correct total amount of completes observed"
 			);
 
 			assert_eq!(
-				mock_context.count_observed_adds(),
+				notification_collector.count_observed_adds(),
 				2,
 				"mock context didn't report the correct amount of adds observed before the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_observed_adds_after_close(),
+				notification_collector.count_observed_adds_after_close(),
 				0,
 				"mock context didn't report the correct amount of adds observed after the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_all_observed_adds(),
+				notification_collector.count_all_observed_adds(),
 				2,
 				"mock context didn't report the correct total amount of adds observed"
 			);
 
 			assert_eq!(
-				mock_context.count_observed_unsubscribes(),
+				notification_collector.count_observed_unsubscribes(),
 				1,
 				"mock context didn't report the correct amount of unsubscribes observed until the first unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_observed_unsubscribes_after_close(),
+				notification_collector.count_observed_unsubscribes_after_close(),
 				2,
 				"mock context didn't report the correct amount of unsubscribes observed from the second unsubscribe"
 			);
 			assert_eq!(
-				mock_context.count_all_observed_unsubscribes(),
+				notification_collector.count_all_observed_unsubscribes(),
 				3,
 				"mock context didn't report the correct total amount of unsubscribes observed"
 			);
