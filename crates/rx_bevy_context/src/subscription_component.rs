@@ -31,14 +31,14 @@ impl SubscriptionComponent {
 	pub fn new<Subscription>(
 		subscription: Subscription,
 		this_entity: Entity,
-		self_despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
+		despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
 	) -> Self
 	where
 		Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 	{
 		Self {
 			subscription: Box::new(subscription),
-			self_despawn_scheduler,
+			self_despawn_scheduler: despawn_scheduler,
 			this_entity,
 		}
 	}

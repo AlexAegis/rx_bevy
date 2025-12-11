@@ -4248,7 +4248,6 @@ dependencies = [
  "bevy_ecs",
  "bevy_input",
  "bevy_log",
- "bevy_platform",
  "bevy_reflect",
  "bevy_time",
  "bevy_window",

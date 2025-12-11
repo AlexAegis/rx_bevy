@@ -12,7 +12,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
-			RxScheduler::<Update, Virtual>::default(),
+			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -52,10 +52,7 @@ struct ExampleEntities {
 	subscription: Entity,
 }
 
-fn setup(
-	mut commands: Commands,
-	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
-) {
+fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, Virtual>) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -64,7 +61,7 @@ fn setup(
 	let keyboard_observable_entity = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::new(default(), rx_executor_update_virtual.get_scheduler_handle())
+			KeyboardObservable::new(default(), rx_schedule_update_virtual.handle())
 				.filter(|key_code| {
 					matches!(
 						key_code,
@@ -85,7 +82,7 @@ fn setup(
 		keyboard_observable_entity,
 		EntityDestination::<String, Never>::new(
 			keyboard_event_observer,
-			rx_executor_update_virtual.get_scheduler_handle(),
+			rx_schedule_update_virtual.handle(),
 		),
 	);
 

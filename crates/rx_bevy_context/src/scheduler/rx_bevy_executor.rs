@@ -13,7 +13,7 @@ use rx_core_traits::SchedulerHandle;
 #[rx_context(RxBevyContext)]
 #[rx_tick(Tick)]
 #[rx_scheduler(RxBevyScheduler)]
-pub struct RxBevyExecutor<S, C = Virtual>
+pub(crate) struct RxBevyExecutor<S, C = Virtual>
 where
 	S: ScheduleLabel,
 	C: Clock,

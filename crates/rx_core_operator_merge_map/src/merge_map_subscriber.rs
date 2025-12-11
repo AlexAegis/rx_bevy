@@ -13,7 +13,7 @@ pub struct MergeMapSubscriber<In, InError, Switcher, InnerObservable, Destinatio
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: Fn(In) -> InnerObservable,
+	Switcher: FnMut(In) -> InnerObservable,
 	InnerObservable: Observable + Signal,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
@@ -29,7 +29,7 @@ impl<In, InError, Switcher, InnerObservable, Destination>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: Fn(In) -> InnerObservable,
+	Switcher: FnMut(In) -> InnerObservable,
 	InnerObservable: Observable + Signal,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
@@ -48,7 +48,7 @@ impl<In, InError, Switcher, InnerObservable, Destination> Observer
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: Fn(In) -> InnerObservable + Send + Sync,
+	Switcher: FnMut(In) -> InnerObservable + Send + Sync,
 	InnerObservable: Observable + Signal,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,

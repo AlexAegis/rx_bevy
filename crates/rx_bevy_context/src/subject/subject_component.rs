@@ -5,7 +5,7 @@ use bevy_ecs::{
 	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::{Commands, Query, ResMut},
+	system::{Commands, Query},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
@@ -13,11 +13,11 @@ use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
 	Observable, Observer as RxObserver, ObserverNotification,
 	ObserverPushObserverNotificationExtention, SubjectLike, Subscriber, SubscriptionLike,
-	TaskExecutor, UpgradeableObserver,
+	UpgradeableObserver,
 };
 
 use crate::{
-	ObservableSubscriptions, RxBevyExecutorLast, RxSignal, Subscribe, SubscribeError,
+	ObservableSubscriptions, RxScheduleDespawn, RxSignal, Subscribe, SubscribeError,
 	SubscribeObserverOf, SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionComponent,
 	SubscriptionOf, UnfinishedSubscription, default_on_subscribe_error_handler,
 };
@@ -156,7 +156,7 @@ fn subscribe_event_observer<Subject>(
 	mut on_subscribe: Trigger<Subscribe<Subject::Out, Subject::OutError>>,
 	mut subject_query: Query<&mut SubjectComponent<Subject>>,
 	mut commands: Commands,
-	last_executor: ResMut<RxBevyExecutorLast>,
+	rx_schedule_despawn: RxScheduleDespawn,
 ) -> Result<(), BevyError>
 where
 	Subject: 'static + SubjectLike + Send + Sync,
@@ -173,8 +173,6 @@ where
 		.into());
 	};
 
-	let scheduler = last_executor.get_scheduler_handle();
-
 	let subscription = {
 		let mut subject_component = subject_query.get_mut(event.observable_entity).unwrap();
 		subject_component.subscribe(destination)
@@ -187,7 +185,11 @@ where
 		// already has access to.
 		// It also already contains the [SubscriptionSchedule] component.
 		subscription_entity_commands.insert((
-			SubscriptionComponent::new(subscription, event.subscription_entity, scheduler),
+			SubscriptionComponent::new(
+				subscription,
+				event.subscription_entity,
+				rx_schedule_despawn.handle(),
+			),
 			SubscriptionOf::<Subject>::new(event.observable_entity),
 		));
 	} else {

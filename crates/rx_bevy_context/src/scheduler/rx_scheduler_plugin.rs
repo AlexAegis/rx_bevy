@@ -26,7 +26,7 @@ use crate::{DeferredWorldAsRxBevyContextExtension, RxBevyExecutor, SubscribeRetr
 /// An RxScheduler is tied to a regular bevy Schedule, and all it does is call
 /// `tick` on [SubscriptionComponent]s at the schedule they are implemented for.
 #[derive_where(Default)]
-pub struct RxScheduler<S, C>
+pub struct RxSchedulerPlugin<S, C>
 where
 	S: ScheduleLabel + Default + Clone,
 	C: Clock,
@@ -34,7 +34,7 @@ where
 	_phantom_data: PhantomData<(S, C)>,
 }
 
-impl<S, C> Plugin for RxScheduler<S, C>
+impl<S, C> Plugin for RxSchedulerPlugin<S, C>
 where
 	S: ScheduleLabel + Default + Clone,
 	C: Clock,

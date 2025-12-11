@@ -12,13 +12,8 @@ use bevy_window::exit_on_all_closed;
 use rx_core_traits::SubscriptionLike;
 
 use crate::{
-	RxBevyExecutor, RxScheduler, SubscriptionComponent, UnfinishedSubscription,
-	execute_pending_retries,
+	RxSchedulerPlugin, SubscriptionComponent, UnfinishedSubscription, execute_pending_retries,
 };
-
-/// Used for cleanup tasks like despawning entities
-pub type RxBevyExecutorLast = RxBevyExecutor<Last, Virtual>;
-pub type RxBevySubscriptionScheduler = RxScheduler<Last, Virtual>;
 
 pub struct RxPlugin;
 
@@ -26,7 +21,8 @@ impl Plugin for RxPlugin {
 	fn build(&self, app: &mut App) {
 		app.add_systems(Last, clean_unfinished_subscriptions);
 
-		app.add_plugins(RxBevySubscriptionScheduler::default());
+		// Used to despawn unsubscribed entities
+		app.add_plugins(RxSchedulerPlugin::<Last, Virtual>::default());
 
 		app.add_systems(
 			Last,

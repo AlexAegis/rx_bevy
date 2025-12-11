@@ -5,17 +5,17 @@ use bevy_ecs::{
 	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
-	system::{Commands, Query, ResMut},
+	system::{Commands, Query},
 	world::DeferredWorld,
 };
 use bevy_log::error;
 use disqualified::ShortName;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, SubscriptionLike, TaskExecutor};
+use rx_core_traits::{Observable, SubscriptionLike};
 use thiserror::Error;
 
 use crate::{
-	ObservableOutputs, ObservableSubscriptions, RxBevyExecutorLast, Subscribe, SubscribeObserverOf,
+	ObservableOutputs, ObservableSubscriptions, RxScheduleDespawn, Subscribe, SubscribeObserverOf,
 	SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionComponent, SubscriptionOf,
 	UnfinishedSubscription,
 };
@@ -95,7 +95,7 @@ fn subscribe_event_observer<O>(
 	mut on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut commands: Commands,
 	mut observable_query: Query<&mut ObservableComponent<O>>,
-	last_executor: ResMut<RxBevyExecutorLast>,
+	rx_schedule_despawn: RxScheduleDespawn,
 ) -> Result<(), BevyError>
 where
 	O: 'static + Observable + Send + Sync,
@@ -127,7 +127,7 @@ where
 			SubscriptionComponent::new(
 				subscription,
 				event.subscription_entity,
-				last_executor.get_scheduler_handle(),
+				rx_schedule_despawn.handle(),
 			),
 			SubscriptionOf::<O>::new(event.observable_entity),
 		));

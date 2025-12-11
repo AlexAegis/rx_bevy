@@ -21,7 +21,7 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 			RxPlugin,
-			RxScheduler::<Update, Virtual>::default(),
+			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
 		.add_systems(Startup, setup)
 		.add_systems(
@@ -42,7 +42,7 @@ fn setup(
 	mut commands: Commands,
 	mut meshes: ResMut<Assets<Mesh>>,
 	mut materials: ResMut<Assets<StandardMaterial>>,
-	rx_executor: ResMut<RxBevyExecutor<Update, Virtual>>,
+	rx_schedule_update_virtual: RxSchedule<Update, Virtual>,
 ) {
 	commands.spawn((
 		Camera3d::default(),
@@ -56,10 +56,10 @@ fn setup(
 				KeyboardObservableOptions {
 					emit: KeyboardObservableEmit::WhilePressed,
 				},
-				rx_executor.get_scheduler_handle(),
+				rx_schedule_update_virtual.handle(),
 			)
 			.map(Into::<Option<KeyCode>>::into)
-			.fallback_when_silent(Default::default, rx_executor.get_scheduler_handle()) // When nothing pressed, emit the default of the input type
+			.fallback_when_silent(Default::default, rx_schedule_update_virtual.handle()) // When nothing pressed, emit the default of the input type
 			.map(|key| matches!(key, Some(KeyCode::Space)))
 			.map_into::<AdsrTrigger, Never>()
 			.adsr(
@@ -76,7 +76,7 @@ fn setup(
 						release_easing: Some(EaseFunction::CircularOut),
 					},
 				},
-				rx_executor.get_scheduler_handle(),
+				rx_schedule_update_virtual.handle(),
 			)
 			.tap_next(|n| println!("tap: {n:?}"))
 			.into_component(),

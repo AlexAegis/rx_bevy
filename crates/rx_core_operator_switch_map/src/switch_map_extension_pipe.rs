@@ -6,7 +6,7 @@ use crate::operator::SwitchMapOperator;
 pub trait ObservablePipeExtensionSwitchMap: Observable + Sized {
 	fn switch_map<
 		NextInnerObservable: Observable + Signal,
-		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		Switcher: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
 		switcher: Switcher,

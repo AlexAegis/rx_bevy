@@ -19,7 +19,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
-			RxScheduler::<Update, Virtual>::default(),
+			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -109,7 +109,7 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(mut commands: Commands, rx_executor: ResMut<RxBevyExecutor<Update, Virtual>>) {
+fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, Virtual>) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -127,7 +127,7 @@ fn setup(mut commands: Commands, rx_executor: ResMut<RxBevyExecutor<Update, Virt
 			Name::new("EventObservable"),
 			EventObservable::<DummyEvent>::new(
 				dummy_event_sink,
-				rx_executor.get_scheduler_handle(),
+				rx_schedule_update_virtual.handle(),
 			)
 			.into_component(),
 		))

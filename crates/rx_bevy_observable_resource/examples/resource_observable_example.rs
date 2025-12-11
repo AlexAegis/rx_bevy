@@ -22,8 +22,8 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 			RxPlugin,
-			RxScheduler::<Update, Virtual>::default(),
-			RxScheduler::<PostUpdate, Virtual>::default(),
+			RxSchedulerPlugin::<Update, Virtual>::default(),
+			RxSchedulerPlugin::<PostUpdate, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -84,10 +84,7 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(
-	mut commands: Commands,
-	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
-) {
+fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, Virtual>) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -107,7 +104,7 @@ fn setup(
 					trigger_on_is_added: true, // If false, the first signal will be 1
 					trigger_on_is_changed: true,
 				},
-				rx_executor_update_virtual.get_scheduler_handle(),
+				rx_schedule_update_virtual.handle(),
 			)
 			.into_component(),
 		))

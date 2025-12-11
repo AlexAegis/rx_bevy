@@ -37,7 +37,6 @@ bevy_app = { workspace = true }
 bevy_log = { workspace = true }
 bevy_time = { workspace = true }
 bevy_derive = { workspace = true }
-bevy_platform = { workspace = true }
 bevy_input = { workspace = true, optional = true }
 bevy_reflect = { workspace = true, optional = true }
 bevy_window = { workspace = true }

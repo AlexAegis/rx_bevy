@@ -14,7 +14,7 @@ pub struct MergeMapOperator<In, InError, Switcher, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
+	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	switcher: Switcher,
@@ -26,7 +26,7 @@ impl<In, InError, Switcher, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
+	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	pub fn new(switcher: Switcher) -> Self {
@@ -42,7 +42,7 @@ impl<In, InError, Switcher, InnerObservable> Operator
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
+	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>
@@ -67,7 +67,7 @@ impl<In, InError, Switcher, InnerObservable> Clone
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + Fn(In) -> InnerObservable + Clone + Send + Sync,
+	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	fn clone(&self) -> Self {

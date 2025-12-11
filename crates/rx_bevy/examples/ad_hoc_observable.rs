@@ -17,7 +17,7 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 			RxPlugin,
-			RxScheduler::<Update, Virtual>::default(),
+			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -44,8 +44,8 @@ struct ExampleEntities {
 
 fn setup(
 	mut commands: Commands,
-	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
-	rx_executor_last: ResMut<RxBevyExecutorLast>,
+	rx_schedule_update_virtual: RxSchedule<Update, Virtual>,
+	rx_schedule_despawn: RxScheduleDespawn,
 ) {
 	commands.spawn((
 		Camera3d::default(),
@@ -65,14 +65,14 @@ fn setup(
 					start_on_subscribe: true,
 					max_emissions_per_tick: 2,
 				},
-				rx_executor_update_virtual.get_scheduler_handle(),
+				rx_schedule_update_virtual.handle(),
 			),
-			rx_executor_last.get_scheduler_handle(),
+			rx_schedule_despawn.handle(),
 		)
 		.filter(|next| next % 2 == 1)
 		.subscribe(EntityDestination::new(
 			destination_entity,
-			rx_executor_update_virtual.get_scheduler_handle(),
+			rx_schedule_update_virtual.handle(),
 		));
 
 	let ad_hoc_subscription_2 = IntervalObservable::new(
@@ -81,13 +81,13 @@ fn setup(
 			start_on_subscribe: true,
 			max_emissions_per_tick: 2,
 		},
-		rx_executor_update_virtual.get_scheduler_handle(),
+		rx_schedule_update_virtual.handle(),
 	)
-	.with_commands(commands.reborrow(), rx_executor_last.get_scheduler_handle())
+	.with_commands(commands.reborrow(), rx_schedule_despawn.handle())
 	.filter(|next| next % 2 == 0)
 	.subscribe(EntityDestination::new(
 		destination_entity,
-		rx_executor_update_virtual.get_scheduler_handle(),
+		rx_schedule_update_virtual.handle(),
 	));
 
 	commands.insert_resource(ExampleEntities {

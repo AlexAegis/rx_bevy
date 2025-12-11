@@ -21,9 +21,9 @@ fn main() -> AppExit {
 			},
 			WorldInspectorPlugin::new(),
 			RxPlugin,
-			RxScheduler::<FixedUpdate, Fixed>::default(),
-			RxScheduler::<Update, Virtual>::default(),
-			RxScheduler::<Update, Real>::default(),
+			RxSchedulerPlugin::<FixedUpdate, Fixed>::default(),
+			RxSchedulerPlugin::<Update, Virtual>::default(),
+			RxSchedulerPlugin::<Update, Real>::default(),
 		))
 		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
@@ -108,12 +108,7 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(
-	mut commands: Commands,
-	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
-) {
-	let scheduler = rx_executor_update_virtual.get_scheduler_handle();
-
+fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, Virtual>) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -141,9 +136,9 @@ fn setup(
 				KeyboardObservableOptions {
 					emit: KeyboardObservableEmit::JustPressed,
 				},
-				scheduler.clone(),
+				rx_schedule_update_virtual.handle(),
 			),
-			scheduler.clone(),
+			rx_schedule_update_virtual.handle(),
 		)
 		.subscribe(ResourceDestination::new(
 			|mut virtual_time: Mut<'_, Time<Virtual>>, signal| {
@@ -161,7 +156,7 @@ fn setup(
 
 				virtual_time.set_relative_speed(speed);
 			},
-			scheduler.clone(),
+			rx_schedule_update_virtual.handle(),
 		));
 
 	let instant_subscription_entity = {
@@ -173,13 +168,13 @@ fn setup(
 					start_on_subscribe: true,
 					max_emissions_per_tick: 2,
 				},
-				scheduler.clone(),
+				rx_schedule_update_virtual.handle(),
 			)
 			.into_component(),
 		));
 
 		let interval_entity_as_observable =
-			interval_entity.as_observable::<usize, Never>(scheduler.clone());
+			interval_entity.as_observable::<usize, Never>(rx_schedule_update_virtual.handle());
 
 		let subscription = interval_entity_as_observable
 			.enumerate()
@@ -187,7 +182,7 @@ fn setup(
 			.take(10)
 			.subscribe(EntityDestination::new(
 				destination_entity_real_clock,
-				scheduler.clone(),
+				rx_schedule_update_virtual.handle(),
 			));
 		subscription.entity()
 	};
@@ -199,9 +194,12 @@ fn setup(
 				KeyboardObservableOptions {
 					emit: KeyboardObservableEmit::JustPressed,
 				},
-				scheduler.clone(),
+				rx_schedule_update_virtual.handle(),
 			)
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.delay(
+				Duration::from_millis(1000),
+				rx_schedule_update_virtual.handle(),
+			)
 			.into_component(),
 		))
 		.id();
@@ -215,7 +213,7 @@ fn setup(
 					start_on_subscribe: true,
 					max_emissions_per_tick: 2,
 				},
-				scheduler.clone(),
+				rx_schedule_update_virtual.handle(),
 			)
 			.into_component(),
 		))
@@ -227,15 +225,19 @@ fn setup(
 				"ProxyObservable (IntervalObservable) {}",
 				interval_observable
 			)),
-			ProxyObservable::<usize, Never>::new(interval_observable, scheduler.clone())
-				.into_component(),
+			ProxyObservable::<usize, Never>::new(
+				interval_observable,
+				rx_schedule_update_virtual.handle(),
+			)
+			.into_component(),
 		))
 		.id();
 
+	let schedule_update_virtual = rx_schedule_update_virtual.handle();
 	let keyboard_switch_map_to_interval_observable = commands
 		.spawn((
 			Name::new("KeyboardSwitchMapToIntervalObservable"),
-			KeyboardObservable::new(default(), scheduler.clone())
+			KeyboardObservable::new(default(), rx_schedule_update_virtual.handle())
 				.filter(|key_code| {
 					matches!(
 						key_code,
@@ -257,7 +259,7 @@ fn setup(
 							start_on_subscribe: false,
 							max_emissions_per_tick: 4,
 						},
-						scheduler.clone(),
+						schedule_update_virtual.clone(),
 					)
 				})
 				.scan(|acc, _next| acc + 1, 0_usize)
