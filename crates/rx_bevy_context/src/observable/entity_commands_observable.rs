@@ -127,36 +127,3 @@ where
 		EntitySubscription::new(subscription_entity, self.scheduler.clone())
 	}
 }
-
-/*
-
-let scheduler_subscription_clone = self.scheduler.clone();
-let mut scheduler_schedule_clone = self.scheduler.clone();
-let mut scheduler = self.scheduler.lock();
-let cancellation_id = scheduler.generate_cancellation_id();
-let despawn_invoke_id = scheduler.generate_invoke_id();
-let observable_entity = self.observable_entity_commands.id();
-
-self.observable_entity_commands.commands().subscribe(observable_entity, destination)
-
-scheduler.schedule_immediate_task(
-	move |_, context| {
-		let subscription_entity = context
-			.deferred_world
-			.commands()
-			.entity(observable_entity)
-			.subscribe_destination::<_>(destination);
-
-		scheduler_schedule_clone
-			.lock()
-			.schedule_invoked_despawn_entity(subscription_entity, despawn_invoke_id);
-	},
-	cancellation_id,
-);
-
-AsyncSubscription::new(
-	scheduler_subscription_clone,
-	cancellation_id,
-	despawn_invoke_id,
-)
-*/

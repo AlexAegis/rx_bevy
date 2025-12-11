@@ -359,10 +359,7 @@ fn impl_delegate_observer_to_destination_inner(derive_input: &DeriveInput) -> To
 	}
 }
 
-/// Implements automatic unsubscribe on drop, which will work just fine for
-/// subscriptions made with DropSafeSubscriptionContexts, but will
-/// (intentionally) panic for subscriptions made with
-/// DropUnsafeSubscriptionContexts.
+/// Implements automatic unsubscribe on drop
 fn impl_unsubscribe_on_drop(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();

@@ -5,12 +5,6 @@ use rx_core_traits::{
 };
 
 /// Emits all values from an iterator then immediately completes.
-///
-/// ## Drop Safety
-/// This aspect of this observable that it always immediately completes makes it
-/// able to use the [InertSubscription], guaranteeing that regardless of context
-/// the subscriptions of this observable are always safe to drop, regardless of
-/// context.
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(Iterator::Item)]
 #[rx_out_error(Never)]

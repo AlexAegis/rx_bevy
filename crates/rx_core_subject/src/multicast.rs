@@ -9,16 +9,6 @@ use smallvec::SmallVec;
 
 use crate::MulticastSubscription;
 
-/// A multicast subject that fan-outs every incoming signal to all subscribed destinations.
-///
-/// Unlike the previous implementation this version DOES NOT require the Context to be drop-safe
-/// (ie. `DropSafety = DropSafeSubscriptionContext`). That means we never attempt to synthesize a
-/// context value during `Drop`, so contexts that borrow (eg. `&mut World`) can be used.
-///
-/// Because we cannot obtain a context during `Drop`, the per-subscriber subscription returned
-/// from `subscribe` will NOT automatically unsubscribe the inner subscriber when it's dropped.
-/// Users must explicitly call `unsubscribe` with a valid context if eager cleanup is desired.
-/// Closed subscribers are lazily cleaned up on the next `next` / `tick` emission.
 #[derive_where(Debug)]
 pub struct Multicast<In, InError>
 where

@@ -5,9 +5,6 @@ use rx_core_traits::{SubscriptionLike, Teardown, TeardownCollection};
 /// runs any [Teardown] you may add into it.
 /// It is used for [Observable]s that emit all their values, complete and
 /// unsubscribe immediately on subscribe.
-/// This aspect lets us safely ignore the drop-safety of the context used, as
-/// subscriptions made with drop-unsafe contexts can (obviously) be dropped once
-/// they are unsubscribed, and that is guaranteed here.
 #[derive(RxSubscription)]
 #[rx_skip_unsubscribe_on_drop_impl]
 pub struct InertSubscription;
