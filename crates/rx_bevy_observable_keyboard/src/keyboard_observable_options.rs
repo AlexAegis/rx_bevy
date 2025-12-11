@@ -7,6 +7,6 @@ pub struct KeyboardObservableOptions {
 pub enum KeyboardObservableEmit {
 	#[default]
 	JustPressed,
-	Pressed,
+	WhilePressed,
 	JustReleased,
 }

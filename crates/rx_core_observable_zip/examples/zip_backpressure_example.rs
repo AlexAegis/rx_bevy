@@ -6,8 +6,8 @@ use rx_core::prelude::*;
 /// emission of the second observable. And their second emissions will too appear
 /// together and so on.
 fn main() {
-	let observable_1 = (1..=3).into_observable::<()>();
-	let observable_2 = (4..=6).into_observable::<()>();
+	let observable_1 = (1..=3).into_observable();
+	let observable_2 = (4..=6).into_observable();
 	let _s = zip(observable_1, observable_2)
 		.with_options(ZipSubscriberOptions {
 			max_queue_length: 2, // Since the first observable immediately fires all 3 of its values, the first emission `1` will be dropped, and nothing will pair up with 6
@@ -15,9 +15,8 @@ fn main() {
 		})
 		.subscribe(
 			DynFnObserver::default()
-				.with_next(|next: (i32, i32), _context| println!("zip_next {}, {}", next.0, next.1))
-				.with_complete(|_context| println!("zip_complete"))
-				.with_unsubscribe(|_context| println!("zip_unsubscribe")),
-			&mut (),
+				.with_next(|next: (i32, i32)| println!("zip_next {}, {}", next.0, next.1))
+				.with_complete(|| println!("zip_complete"))
+				.with_unsubscribe(|| println!("zip_unsubscribe")),
 		);
 }

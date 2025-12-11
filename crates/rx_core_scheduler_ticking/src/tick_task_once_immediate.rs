@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_task_derive::RxTask;
-use rx_core_traits::{ContextProvider, ImmediateTaskFactory, ScheduledOnceWork, Task, TickResult};
+use rx_core_traits::{ContextProvider, ImmediateTaskFactory, ScheduledOnceWork, Task, TaskResult};
 
 use crate::Tick;
 
@@ -52,12 +52,12 @@ where
 	Work: ScheduledOnceWork<Tick, C>,
 	C: ContextProvider,
 {
-	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> TickResult {
+	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> TaskResult {
 		let Some(work) = self.work.take() else {
-			return TickResult::Done;
+			return TaskResult::Done;
 		};
 		(work)(tick, context);
-		TickResult::Done
+		TaskResult::Done
 	}
 
 	fn on_scheduled_hook(&mut self, _tick_input: Self::Tick) {}

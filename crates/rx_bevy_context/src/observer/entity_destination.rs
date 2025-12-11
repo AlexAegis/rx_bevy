@@ -60,7 +60,7 @@ where
 	type Upgraded = DetachedSubscriber<Self>;
 
 	fn upgrade(self) -> Self::Upgraded {
-		let owner_id = self.owner_id.clone();
+		let owner_id = self.owner_id;
 		let mut scheduler = self.scheduler.clone();
 		let mut upgraded = DetachedSubscriber::new(self);
 		upgraded.add_fn(move || {

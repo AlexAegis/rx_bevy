@@ -1,5 +1,7 @@
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Never, Observable, Observer, Scheduler, Subscriber, UpgradeableObserver};
+use rx_core_traits::{
+	Never, Observable, Observer, Scheduler, SchedulerHandle, Subscriber, UpgradeableObserver,
+};
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
 
@@ -10,15 +12,16 @@ pub struct IntervalObservable<S>
 where
 	S: Scheduler,
 {
-	options: IntervalObservableOptions<S>,
+	options: IntervalObservableOptions,
+	scheduler: SchedulerHandle<S>,
 }
 
 impl<S> IntervalObservable<S>
 where
 	S: Scheduler,
 {
-	pub fn new(options: IntervalObservableOptions<S>) -> Self {
-		Self { options }
+	pub fn new(options: IntervalObservableOptions, scheduler: SchedulerHandle<S>) -> Self {
+		Self { options, scheduler }
 	}
 }
 
@@ -27,7 +30,7 @@ where
 	S: 'static + Scheduler + Send + Sync,
 {
 	type Subscription<Destination>
-		= IntervalSubscription<S>
+		= IntervalSubscription<Destination, S>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
@@ -42,6 +45,6 @@ where
 		if self.options.start_on_subscribe {
 			destination.next(0);
 		}
-		IntervalSubscription::new(destination, self.options.clone())
+		IntervalSubscription::new(destination, self.options.clone(), self.scheduler.clone())
 	}
 }

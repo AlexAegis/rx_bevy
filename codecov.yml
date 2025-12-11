@@ -50,6 +50,9 @@ component_management:
     - component_id: rx_core_macro_common
       paths:
         - crates/rx_core_macro_common/**
+    - component_id: rx_core_macro_executor_derive
+      paths:
+        - crates/rx_core_macro_executor_derive/**
     - component_id: rx_core_macro_observable_derive
       paths:
         - crates/rx_core_macro_observable_derive/**
@@ -59,6 +62,9 @@ component_management:
     - component_id: rx_core_macro_operator_derive
       paths:
         - crates/rx_core_macro_operator_derive/**
+    - component_id: rx_core_macro_scheduler_derive
+      paths:
+        - crates/rx_core_macro_scheduler_derive/**
     - component_id: rx_core_macro_subject_derive
       paths:
         - crates/rx_core_macro_subject_derive/**
@@ -68,6 +74,9 @@ component_management:
     - component_id: rx_core_macro_subscription_derive
       paths:
         - crates/rx_core_macro_subscription_derive/**
+    - component_id: rx_core_macro_task_derive
+      paths:
+        - crates/rx_core_macro_task_derive/**
     - component_id: rx_core_observable_combine_latest
       paths:
         - crates/rx_core_observable_combine_latest/**

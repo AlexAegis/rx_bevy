@@ -7,7 +7,7 @@ use std::{
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike, TaskCancellationId, TaskContext, TickResult,
+	Subscriber, SubscriptionLike, TaskCancellationId, TaskContext, TaskResult,
 };
 
 use crate::{
@@ -57,7 +57,7 @@ where
 			options,
 		}));
 		let shared_state_clone = shared_state.clone();
-		let mut shared_destination_clone = shared_destination.clone();
+		let shared_destination_clone = shared_destination.clone();
 		let mut scheduler_clone = scheduler.clone();
 		let mut scheduler_lock = scheduler_clone.lock();
 		let cancellation_id = scheduler_lock.generate_cancellation_id();
@@ -65,8 +65,9 @@ where
 		let mut envelope_state = AdsrEnvelopeState::default();
 		scheduler_lock.schedule_continuous_task(
 			move |_, context| {
-				if shared_destination_clone.is_closed() {
-					return TickResult::Done;
+				let mut destination_lock = shared_destination_clone.lock();
+				if destination_lock.is_closed() {
+					return TaskResult::Done;
 				}
 
 				let next = {
@@ -74,12 +75,14 @@ where
 					let now = context.now();
 					let delta = now - last_now;
 					last_now = now;
+
 					let next = envelope_state.calculate_output(
 						state.options.envelope,
 						state.is_getting_activated,
 						now,
 						delta,
 					);
+
 					if state.options.reset_input_on_tick {
 						state.is_getting_activated = false;
 					}
@@ -103,10 +106,11 @@ where
 				};
 
 				if let Some(next) = next {
-					shared_destination_clone.next(next);
+					destination_lock.next(next);
+					destination_lock.complete();
 				}
 
-				TickResult::Pending
+				TaskResult::Pending
 			},
 			cancellation_id,
 		);

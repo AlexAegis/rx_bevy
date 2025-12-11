@@ -50,18 +50,22 @@ where
 mod tests {
 
 	use super::*;
-	use rx_core_testing::{MockContext, MockObserver};
-	use rx_core_traits::{DropSafeSubscriptionContext, SubscriptionLike};
+	use rx_core_testing::MockObserver;
+	use rx_core_traits::SubscriptionLike;
 
 	#[test]
 	fn should_emit_single_value() {
 		let value = 4;
 		let mut observable = OfObservable::new(value);
-		let mock_observer = MockObserver::<_, _, DropSafeSubscriptionContext>::default();
+		let mock_observer = MockObserver::default();
+		let notification_collector = mock_observer.get_notification_collector();
 
 		let mut subscription = observable.subscribe(mock_observer);
 		subscription.unsubscribe();
 
-		assert_eq!(mock_context.all_observed_values(), vec![value]);
+		assert_eq!(
+			notification_collector.lock().all_observed_values(),
+			vec![value]
+		);
 	}
 }

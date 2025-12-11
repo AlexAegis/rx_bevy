@@ -136,23 +136,23 @@ where
 	));
 }
 
-fn subject_notification_observer<'w, 's, Subject>(
+fn subject_notification_observer<Subject>(
 	on_notification: Trigger<RxSignal<Subject::In, Subject::InError>>,
-	mut deferred_world: DeferredWorld,
+	mut subject_query: Query<&mut SubjectComponent<Subject>>,
 ) where
 	Subject: 'static + SubjectLike + Send + Sync,
 	Subject::In: Clone,
 	Subject::InError: Clone,
 {
 	let subject_entity = on_notification.entity();
-	if let Some(mut subject) = deferred_world.get_mut::<SubjectComponent<Subject>>(subject_entity) {
+	if let Ok(mut subject) = subject_query.get_mut(subject_entity) {
 		let notification: ObserverNotification<Subject::In, Subject::InError> =
 			on_notification.event().clone().into();
 		subject.push(notification);
 	}
 }
 
-fn subscribe_event_observer<'w, 's, Subject>(
+fn subscribe_event_observer<Subject>(
 	mut on_subscribe: Trigger<Subscribe<Subject::Out, Subject::OutError>>,
 	mut subject_query: Query<&mut SubjectComponent<Subject>>,
 	mut commands: Commands,

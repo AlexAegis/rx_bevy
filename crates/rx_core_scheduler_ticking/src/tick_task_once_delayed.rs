@@ -4,7 +4,7 @@ use derive_where::derive_where;
 use rx_core_macro_task_derive::RxTask;
 use rx_core_traits::{ContextProvider, DelayedTask, DelayedTaskFactory, ScheduledOnceWork};
 
-use rx_core_traits::{Task, TickResult};
+use rx_core_traits::{Task, TaskResult};
 
 use crate::Tick;
 
@@ -68,18 +68,18 @@ where
 	Work: ScheduledOnceWork<Tick, C>,
 	C: ContextProvider,
 {
-	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> TickResult {
+	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> TaskResult {
 		self.current_tick.update(tick);
 		if self.scheduled_on + self.delay <= self.current_tick {
 			let Some(work) = self.work.take() else {
-				return TickResult::Done;
+				return TaskResult::Done;
 			};
 
 			(work)(tick, context);
 
-			TickResult::Done
+			TaskResult::Done
 		} else {
-			TickResult::Pending
+			TaskResult::Pending
 		}
 	}
 

@@ -48,16 +48,19 @@ mod tests {
 	use super::*;
 
 	use rx_core_testing::prelude::*;
-	use rx_core_traits::DropSafeSubscriptionContext;
 
 	#[test]
 	fn should_emit_single_value() {
 		let error = "error";
 		let mut observable = ThrowObservable::new(error);
-		let mock_observer = MockObserver::<_, _, DropSafeSubscriptionContext>::default();
+		let mock_observer = MockObserver::default();
+		let notification_collector = mock_observer.get_notification_collector();
 
 		let _s = observable.subscribe(mock_observer);
 
-		assert_eq!(mock_context.all_observed_errors(), vec![error]);
+		assert_eq!(
+			notification_collector.lock().all_observed_errors(),
+			vec![error]
+		);
 	}
 }

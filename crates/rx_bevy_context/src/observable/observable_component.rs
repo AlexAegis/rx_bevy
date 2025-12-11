@@ -91,7 +91,7 @@ where
 		.id();
 }
 
-fn subscribe_event_observer<'w, 's, O>(
+fn subscribe_event_observer<O>(
 	mut on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut commands: Commands,
 	mut observable_query: Query<&mut ObservableComponent<O>>,

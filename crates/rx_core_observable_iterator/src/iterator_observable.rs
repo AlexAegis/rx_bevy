@@ -70,16 +70,20 @@ mod test {
 
 	#[test]
 	fn iterator_observable_should_emit_its_values_then_complete() {
-		let mut context = MockContext::default();
-		let mock_destination = MockObserver::<i32, Never, DropSafeSubscriptionContext>::default();
+		let mock_destination = MockObserver::default();
+		let notification_collector = mock_destination.get_notification_collector();
 
-		let mut source = (1..=2).into_observable::<MockContext<_, _, _>>();
-		let _subscription = source.subscribe(mock_destination, &mut context);
-		println!("{context:?}");
+		let mut source = (1..=2).into_observable();
+		let _subscription = source.subscribe(mock_destination);
 		assert!(
-			context.nothing_happened_after_closed(),
+			notification_collector
+				.lock()
+				.nothing_happened_after_closed(),
 			"something happened after unsubscribe"
 		);
-		assert_eq!(context.all_observed_values(), vec![1, 2]);
+		assert_eq!(
+			notification_collector.lock().all_observed_values(),
+			vec![1, 2]
+		);
 	}
 }

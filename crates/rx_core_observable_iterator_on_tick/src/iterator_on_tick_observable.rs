@@ -1,6 +1,6 @@
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Never, Observable, Observer, Scheduler, Signal, Subscriber, SubscriptionLike,
+	Never, Observable, Observer, Scheduler, SchedulerHandle, Signal, Subscriber, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -26,7 +26,8 @@ where
 	S: Scheduler,
 {
 	iterator: Iterator,
-	options: OnTickObservableOptions<S>,
+	options: OnTickObservableOptions,
+	scheduler: SchedulerHandle<S>,
 }
 
 impl<Iterator, S> IteratorOnTickObservable<Iterator, S>
@@ -35,8 +36,16 @@ where
 	Iterator::Item: Signal,
 	S: Scheduler,
 {
-	pub fn new(iterator: Iterator, options: OnTickObservableOptions<S>) -> Self {
-		Self { iterator, options }
+	pub fn new(
+		iterator: Iterator,
+		options: OnTickObservableOptions,
+		scheduler: SchedulerHandle<S>,
+	) -> Self {
+		Self {
+			iterator,
+			options,
+			scheduler,
+		}
 	}
 }
 
@@ -74,7 +83,12 @@ where
 				destination.complete();
 			}
 		}
-		OnTickIteratorSubscription::new(destination, iter, self.options.clone())
+		OnTickIteratorSubscription::new(
+			destination,
+			iter,
+			self.options.clone(),
+			self.scheduler.clone(),
+		)
 	}
 }
 
@@ -87,81 +101,73 @@ mod test_iterator_on_tick_observable {
 
 		use rx_core::prelude::*;
 		use rx_core_testing::{MockExecutor, prelude::*};
-		use rx_core_traits::SubscriberNotification;
 
 		use crate::observable::{IntoIteratorOnTickObservableExtension, OnTickObservableOptions};
 
 		/// Verifies:
 		/// - RX_OB_IMMEDIATE_COMPLETION
 		/// - RX_OB_UNSUBSCRIBE_AFTER_COMPLETE
-		/// - RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE_EXCEPT_TICKS
-		/// - RX_ALWAYS_FORWARD_TICKS
+		/// - RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE
 		#[test]
 		fn should_emit_its_values_every_two_ticks_then_complete() {
-			let mock_executor = MockExecutor::default();
-			let scheduler = mock_executor.get_scheduler();
+			let mut mock_executor = MockExecutor::default();
+			let scheduler = mock_executor.get_scheduler_handle();
 
 			let mock_destination = MockObserver::<i32>::default();
+			let notification_collector = mock_destination.get_notification_collector();
 
-			let mut source = (1..=3).into_observable_on_every_nth_tick(OnTickObservableOptions {
-				emit_at_every_nth_tick: 2,
-				start_on_subscribe: true,
+			let mut source = (1..=3).into_observable_on_every_nth_tick(
+				OnTickObservableOptions {
+					emit_at_every_nth_tick: 2,
+					start_on_subscribe: true,
+				},
 				scheduler,
-			});
-			let mut subscription = source.subscribe(mock_destination, &mut context);
+			);
+			let mut subscription = source.subscribe(mock_destination);
 			assert!(matches!(
-				context.nth_notification(0),
+				notification_collector.lock().nth_notification(0),
 				SubscriberNotification::Next(1)
 			));
-			subscription.tick(mock_clock.elapse(Duration::from_millis(1)), &mut context);
-			assert!(matches!(
-				context.nth_notification(1),
-				SubscriberNotification::Tick(_)
-			));
+			mock_executor.tick_by_delta(Duration::from_millis(1));
+
 			assert!(
-				!context.nth_notification_exists(2),
+				!notification_collector.lock().nth_notification_exists(2),
 				"should not have emitted after only one tick"
 			);
-			subscription.tick(mock_clock.elapse(Duration::from_millis(3)), &mut context);
+			mock_executor.tick_by_delta(Duration::from_millis(3));
 			assert!(matches!(
-				context.nth_notification(2),
+				notification_collector.lock().nth_notification(1),
 				SubscriberNotification::Next(2)
 			));
-			assert!(matches!(
-				context.nth_notification(3),
-				SubscriberNotification::Tick(_)
-			));
 
-			subscription.tick(mock_clock.elapse(Duration::from_millis(2)), &mut context);
+			mock_executor.tick_by_delta(Duration::from_millis(2));
+
+			mock_executor.tick_by_delta(Duration::from_millis(1));
 			assert!(matches!(
-				context.nth_notification(4),
-				SubscriberNotification::Tick(_)
-			));
-			subscription.tick(mock_clock.elapse(Duration::from_millis(1)), &mut context);
-			assert!(matches!(
-				context.nth_notification(5),
+				notification_collector.lock().nth_notification(2),
 				SubscriberNotification::Next(3)
 			));
 			assert!(matches!(
-				context.nth_notification(6),
+				notification_collector.lock().nth_notification(3),
 				SubscriberNotification::Complete
 			));
 			assert!(matches!(
-				context.nth_notification(7),
+				notification_collector.lock().nth_notification(4),
 				SubscriberNotification::Unsubscribe
 			));
-			assert!(matches!(
-				context.nth_notification(8),
-				SubscriberNotification::Tick(_)
-			));
 
-			assert_eq!(context.all_observed_values(), vec![1, 2, 3]);
+			assert_eq!(
+				notification_collector.lock().all_observed_values(),
+				vec![1, 2, 3]
+			);
 
-			subscription.unsubscribe(&mut context);
-			println!("{:?}", context);
-			assert!(!context.nth_notification_exists(9));
+			subscription.unsubscribe();
+
+			assert!(!notification_collector.lock().nth_notification_exists(9));
 			assert!(
-				context.nothing_happened_after_closed(),
+				notification_collector
+					.lock()
+					.nothing_happened_after_closed(),
 				"something happened after unsubscribe"
 			);
 		}
@@ -181,37 +187,38 @@ mod test_iterator_on_tick_observable {
 
 		#[test]
 		fn should_immediately_emit_all_its_values_then_complete() {
-			let mut mock_executor = MockExecutor::default();
-			let scheduler = mock_executor.get_scheduler();
-
+			let mut executor = MockExecutor::default();
+			let scheduler = executor.get_scheduler_handle();
 			let mock_destination = MockObserver::<i32>::default();
+			let notification_collector = mock_destination.get_notification_collector();
 
-			let mut source = (1..=3).into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
+			let mut source = (1..=3).into_observable_on_every_nth_tick(
 				OnTickObservableOptions {
 					emit_at_every_nth_tick: 0,
 					start_on_subscribe: false,
-					scheduler,
 				},
+				scheduler,
 			);
-			let mut subscription = source.subscribe(mock_destination, &mut context);
-			println!("{:?}", context);
-			assert_eq!(context.all_observed_values(), vec![1, 2, 3]);
+			let mut subscription = source.subscribe(mock_destination);
+			assert_eq!(
+				notification_collector.lock().all_observed_values(),
+				vec![1, 2, 3]
+			);
 			assert!(matches!(
-				context.nth_notification(3),
+				notification_collector.lock().nth_notification(3),
 				SubscriberNotification::Complete
 			));
-			subscription.tick(mock_executor.elapse(Duration::from_millis(1)), &mut context);
-			assert!(matches!(
-				context.nth_notification(4),
-				SubscriberNotification::Tick(_)
-			));
+			executor.tick_by_delta(Duration::from_millis(1));
+
 			assert!(
-				!context.nth_notification_exists(5),
+				!notification_collector.lock().nth_notification_exists(5),
 				"Something happened after completion due to a tick!"
 			);
-			subscription.unsubscribe(&mut context);
+			subscription.unsubscribe();
 			assert!(
-				context.nothing_happened_after_closed(),
+				notification_collector
+					.lock()
+					.nothing_happened_after_closed(),
 				"something happened after unsubscribe"
 			);
 		}
@@ -220,45 +227,50 @@ mod test_iterator_on_tick_observable {
 		/// - RX_CHECK_CLOSED_ON_MULTI_EMISSIONS
 		#[test]
 		fn should_not_finish_the_iterator_when_closed_early() {
-			let mut context = MockContext::default();
+			let executor = MockExecutor::default();
+			let scheduler = executor.get_scheduler_handle();
 			let mock_destination = MockObserver::<i32>::default();
+			let notification_collector = mock_destination.get_notification_collector();
 
 			let tracked_iterator = TrackedIterator::new(1..=5);
 			let tracked_data = tracked_iterator.get_tracking_data_ref();
 			let mut source = tracked_iterator
-				.into_observable_on_every_nth_tick::<MockContext<_, _, _>>(
+				.into_observable_on_every_nth_tick(
 					OnTickObservableOptions {
 						emit_at_every_nth_tick: 0,
 						start_on_subscribe: false,
-						scheduler,
 					},
+					scheduler,
 				)
 				.take(2);
-			let mut subscription = source.subscribe(mock_destination, &mut context);
-			println!("{:?}", context);
+			let mut subscription = source.subscribe(mock_destination);
+
 			assert!(matches!(
-				context.nth_notification(0),
+				notification_collector.lock().nth_notification(0),
 				SubscriberNotification::Next(1)
 			));
 			assert!(matches!(
-				context.nth_notification(1),
+				notification_collector.lock().nth_notification(1),
 				SubscriberNotification::Next(2)
 			));
 			assert!(matches!(
-				context.nth_notification(2),
+				notification_collector.lock().nth_notification(2),
 				SubscriberNotification::Complete
 			));
 			assert!(matches!(
-				context.nth_notification(3),
+				notification_collector.lock().nth_notification(3),
 				SubscriberNotification::Unsubscribe
 			));
-			assert!(!context.nth_notification_exists(4));
-			assert_eq!(context.all_observed_values(), vec![1, 2]);
+			assert!(!notification_collector.lock().nth_notification_exists(4));
+			assert_eq!(
+				notification_collector.lock().all_observed_values(),
+				vec![1, 2]
+			);
 
 			assert_eq!(tracked_data.read_next_count(0), 3); // There's one extra due to a peek, but it's clearly less than 3
 			assert!(!tracked_data.is_finished(0));
 
-			subscription.unsubscribe(&mut context);
+			subscription.unsubscribe();
 		}
 	}
 }

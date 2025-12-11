@@ -4,7 +4,7 @@ use rx_core::prelude::*;
 /// letting everything else through after.
 fn main() {
 	let _s = (1..=5)
-		.into_observable::<()>()
+		.into_observable()
 		.skip(2)
-		.subscribe(PrintObserver::new("skip_operator"), &mut ());
+		.subscribe(PrintObserver::new("skip_operator"));
 }

@@ -73,77 +73,92 @@ mod test {
 
 	#[test]
 	fn subscribes_to_the_inner_observable_as_many_times_as_many_upstream_emissions_there_are() {
-		let mut context = MockContext::default();
 		let mock_destination = MockObserver::<i32>::default();
+		let notification_collector = mock_destination.get_notification_collector();
 
 		let mut source = (1..=2)
-			.into_observable::<MockContext<_, _, _>>()
-			.map(|_| (10..=12).into_observable::<MockContext<_, _, _>>())
+			.into_observable()
+			.map(|_| (10..=12).into_observable())
 			.switch_all();
-		let mut subscription = source.subscribe(mock_destination, &mut context);
+		let mut subscription = source.subscribe(mock_destination);
 		assert!(
-			context.nothing_happened_after_closed(),
+			notification_collector
+				.lock()
+				.nothing_happened_after_closed(),
 			"something happened after unsubscribe"
 		);
-		assert_eq!(context.all_observed_values(), vec![10, 11, 12, 10, 11, 12]);
-		subscription.unsubscribe(&mut context);
+		assert_eq!(
+			notification_collector.lock().all_observed_values(),
+			vec![10, 11, 12, 10, 11, 12]
+		);
+		subscription.unsubscribe();
 	}
 
 	#[test]
 	fn subscribes_to_the_inner_observable_on_every_emit_of_a_source_subject_and_completes() {
-		let mut context = MockContext::default();
 		let mock_destination = MockObserver::<i32>::default();
+		let notification_collector = mock_destination.get_notification_collector();
 
-		let mut subject = Subject::<i32, Never, MockContext<i32>>::default();
+		let mut subject = Subject::<i32, Never>::default();
 		let mut source = subject
 			.clone()
-			.map(|i| (0..=i).into_observable::<MockContext<_, _, _>>())
+			.map(|i| (0..=i).into_observable())
 			.switch_all();
-		let mut subscription = source.subscribe(mock_destination, &mut context);
+		let mut subscription = source.subscribe(mock_destination);
 
-		subject.next(1, &mut context);
+		subject.next(1);
 
-		assert_eq!(context.all_observed_values(), vec![0, 1]);
+		assert_eq!(
+			notification_collector.lock().all_observed_values(),
+			vec![0, 1]
+		);
 
-		subject.next(3, &mut context);
-		assert_eq!(context.all_observed_values(), vec![0, 1, 0, 1, 2, 3]);
+		subject.next(3);
+		assert_eq!(
+			notification_collector.lock().all_observed_values(),
+			vec![0, 1, 0, 1, 2, 3]
+		);
 
-		subject.complete(&mut context);
+		subject.complete();
 
 		assert!(matches!(
-			context.nth_notification(6),
+			notification_collector.lock().nth_notification(6),
 			&SubscriberNotification::Complete
 		));
 		assert!(matches!(
-			context.nth_notification(7),
+			notification_collector.lock().nth_notification(7),
 			&SubscriberNotification::Unsubscribe
 		));
 
-		subscription.unsubscribe(&mut context);
-		subject.unsubscribe(&mut context);
+		subscription.unsubscribe();
+		subject.unsubscribe();
 	}
 
 	#[test]
 	fn upstream_ticks_are_forwarded_to_the_inner_subscription() {
-		let mut context = MockContext::default();
 		let mock_destination = MockObserver::<i32>::default();
+		let notification_collector = mock_destination.get_notification_collector();
 
-		let mut subject = Subject::<i32, Never, MockContext<i32>>::default();
+		let mut subject = Subject::<i32, Never>::default();
 		let mut source = subject
 			.clone()
-			.map(|i| (0..=i).into_observable::<MockContext<_, _, _>>())
+			.map(|i| (0..=i).into_observable())
 			.switch_all();
-		let mut subscription = source.subscribe(mock_destination, &mut context);
+		let mut subscription = source.subscribe(mock_destination);
 
-		subject.next(1, &mut context);
-		println!("{:?}", context);
-		assert_eq!(context.all_observed_values(), vec![0, 1]);
+		subject.next(1);
+		assert_eq!(
+			notification_collector.lock().all_observed_values(),
+			vec![0, 1]
+		);
 
-		subject.next(3, &mut context);
-		println!("{:?}", context);
-		assert_eq!(context.all_observed_values(), vec![0, 1, 0, 1, 2, 3]);
+		subject.next(3);
+		assert_eq!(
+			notification_collector.lock().all_observed_values(),
+			vec![0, 1, 0, 1, 2, 3]
+		);
 
-		subject.unsubscribe(&mut context);
-		subscription.unsubscribe(&mut context);
+		subject.unsubscribe();
+		subscription.unsubscribe();
 	}
 }

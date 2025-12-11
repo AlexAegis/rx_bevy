@@ -18,16 +18,6 @@ pub trait TaskContext<'c> {
 	fn now(&self) -> Duration;
 }
 
-impl ContextProvider for () {
-	type Item<'c> = ();
-}
-
-impl<'c> TaskContext<'c> for () {
-	fn now(&self) -> Duration {
-		Duration::from_millis(0)
-	}
-}
-
 // pub struct TaskInput<'a, TickInput, ContextProvider>
 // where
 // 	ContextProvider: TaskContextProvider,
@@ -41,7 +31,7 @@ pub trait Task: WithTaskInputOutput + WithContextProvider {
 		&mut self,
 		task_input: Self::Tick,
 		context: &mut <Self::ContextProvider as ContextProvider>::Item<'_>,
-	) -> TickResult;
+	) -> TaskResult;
 
 	/// The scheduler should calls this immediately when you pass the task into
 	/// it, which happens before the first tick can.
@@ -55,14 +45,15 @@ pub trait Task: WithTaskInputOutput + WithContextProvider {
 
 // TODO: Scheduled tasks must be cancellable if their owner unsubscribes, or make sure they drop if their target is closed, and they must only hold weak refs
 
-// ? Maybe split TickResult to OnceTaskTickResult and RepeatingTaskTickResult
 #[derive(Debug)]
-pub enum TickResult {
+pub enum TaskResult {
+	/// Done tasks will be immediately removed from the scheduler
 	Done,
+	/// Pending tasks will be kept in the scheduler
 	Pending,
 }
 
-impl AddAssign for TickResult {
+impl AddAssign for TaskResult {
 	fn add_assign(&mut self, rhs: Self) {
 		let change = match self {
 			Self::Pending => Some(rhs),
@@ -93,7 +84,7 @@ where
 }
 
 pub trait ScheduledRepeatedWork<TickInput, Context>:
-	'static + FnMut(TickInput, &mut Context::Item<'_>) -> TickResult + Send + Sync
+	'static + FnMut(TickInput, &mut Context::Item<'_>) -> TaskResult + Send + Sync
 where
 	Context: ContextProvider,
 {
@@ -102,7 +93,7 @@ where
 impl<W, TickInput, Context> ScheduledRepeatedWork<TickInput, Context> for W
 where
 	Context: ContextProvider,
-	W: 'static + FnMut(TickInput, &mut Context::Item<'_>) -> TickResult + Send + Sync,
+	W: 'static + FnMut(TickInput, &mut Context::Item<'_>) -> TaskResult + Send + Sync,
 {
 }
 
@@ -134,7 +125,12 @@ where
 	where
 		Work: ScheduledRepeatedWork<TickInput, Context>;
 
-	fn new<Work>(work: Work, interval: Duration, start_immediately: bool) -> Self::Item<Work>
+	fn new<Work>(
+		work: Work,
+		interval: Duration,
+		start_immediately: bool,
+		max_work_per_tick: usize,
+	) -> Self::Item<Work>
 	where
 		Work: ScheduledRepeatedWork<TickInput, Context>;
 }

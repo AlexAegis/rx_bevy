@@ -1,9 +1,10 @@
 use core::marker::PhantomData;
+use std::time::Duration;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Scheduler, Signal, Subscriber};
+use rx_core_traits::{Operator, Scheduler, SchedulerHandle, Signal, Subscriber};
 
-use crate::{DelaySubscriber, operator::DelayOperatorOptions};
+use crate::DelaySubscriber;
 
 #[derive(RxOperator)]
 #[rx_in(In)]
@@ -16,7 +17,8 @@ where
 	InError: Signal,
 	S: Scheduler,
 {
-	options: DelayOperatorOptions<S>,
+	duration: Duration,
+	scheduler: SchedulerHandle<S>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -26,9 +28,10 @@ where
 	InError: Signal,
 	S: Scheduler,
 {
-	pub fn new(options: DelayOperatorOptions<S>) -> Self {
+	pub fn new(duration: Duration, scheduler: SchedulerHandle<S>) -> Self {
 		Self {
-			options,
+			duration,
+			scheduler,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -53,6 +56,6 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		DelaySubscriber::new(destination, self.options.clone())
+		DelaySubscriber::new(destination, self.duration, self.scheduler.clone())
 	}
 }

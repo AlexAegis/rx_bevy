@@ -26,7 +26,7 @@ fn main() -> AppExit {
 		.add_systems(
 			Update,
 			(
-				toggle_subscription_system::<ExampleEntities, DummyEvent, Never>(
+				toggle_subscription_system::<ExampleEntities, DummyEvent, Never, Update, Virtual>(
 					KeyCode::Space,
 					|res| res.event_observable,
 					|res| res.destination_entity,
@@ -109,7 +109,7 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, rx_executor: ResMut<RxBevyExecutor<Update, Virtual>>) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -125,7 +125,11 @@ fn setup(mut commands: Commands) {
 	let event_observable = commands
 		.spawn((
 			Name::new("EventObservable"),
-			EventObservable::<DummyEvent>::new(dummy_event_sink).into_component(),
+			EventObservable::<DummyEvent>::new(
+				dummy_event_sink,
+				rx_executor.get_scheduler_handle(),
+			)
+			.into_component(),
 		))
 		.id();
 

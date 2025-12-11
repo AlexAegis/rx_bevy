@@ -36,10 +36,10 @@ where
 	where
 		F: Fn(&Destination),
 	{
-		if let Some(upgraded) = self.upgrade() {
-			if let Ok(destination) = upgraded.lock() {
-				accessor(&destination)
-			}
+		if let Some(upgraded) = self.upgrade()
+			&& let Ok(destination) = upgraded.lock()
+		{
+			accessor(&destination)
 		}
 	}
 
@@ -47,10 +47,10 @@ where
 	where
 		F: FnMut(&mut Destination),
 	{
-		if let Some(upgraded) = self.upgrade() {
-			if let Ok(mut destination) = upgraded.lock() {
-				accessor(&mut destination)
-			}
+		if let Some(upgraded) = self.upgrade()
+			&& let Ok(mut destination) = upgraded.lock()
+		{
+			accessor(&mut destination)
 		}
 	}
 }

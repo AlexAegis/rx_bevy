@@ -4,7 +4,7 @@ use rx_core::prelude::*;
 /// a forced completion
 fn main() {
 	let _s = (1..=5)
-		.into_observable::<()>()
+		.into_observable()
 		.take(2)
-		.subscribe(PrintObserver::new("take_operator"), &mut ());
+		.subscribe(PrintObserver::new("take_operator"));
 }

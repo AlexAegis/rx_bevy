@@ -1,14 +1,7 @@
 use std::time::Duration;
 
-use derive_where::derive_where;
-use rx_core_traits::{Scheduler, SchedulerHandle};
-
-#[derive(Debug)]
-#[derive_where(Clone)]
-pub struct IntervalObservableOptions<S>
-where
-	S: Scheduler,
-{
+#[derive(Debug, Default, Clone)]
+pub struct IntervalObservableOptions {
 	/// How much time must elapse between emissions
 	pub duration: Duration,
 	/// Whether or not the first emission, `0` should happen on subscribe
@@ -22,7 +15,5 @@ where
 	///
 	/// It doesn't need to be a `usize` as the number it's compared against is
 	/// a `u32` coming from [bevy_time::Timer::times_finished_this_tick]
-	pub max_emissions_per_tick: u32,
-
-	pub scheduler: SchedulerHandle<S>,
+	pub max_emissions_per_tick: usize,
 }

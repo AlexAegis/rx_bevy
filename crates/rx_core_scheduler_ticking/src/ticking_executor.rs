@@ -1,9 +1,12 @@
-use std::{collections::HashMap, time::Duration};
+use std::{
+	collections::{HashMap, HashSet},
+	time::Duration,
+};
 
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_traits::{
 	ContextProvider, ScheduledTaskAction, Scheduler, SchedulerHandle, Task, TaskCancellationId,
-	TaskInvokeId, TickResult,
+	TaskInvokeId, TaskResult,
 };
 use slab::Slab;
 
@@ -24,7 +27,7 @@ pub trait TickingExecutorsScheduler: Scheduler {
 #[rx_context(C)]
 #[rx_tick(Tick)]
 #[rx_scheduler(S)]
-pub struct TickingSchedulerExecutor<S, C = ()>
+pub struct TickingSchedulerExecutor<S, C>
 where
 	S: Scheduler<Tick = Tick, ContextProvider = C>,
 	C: 'static + ContextProvider + Send + Sync,
@@ -42,6 +45,7 @@ where
 	invokable_tasks:
 		HashMap<TaskInvokeId, Box<dyn Task<Tick = Tick, ContextProvider = C> + Send + Sync>>,
 	invoked: Vec<TaskInvokeId>,
+	tasks_already_ticked: HashSet<usize>,
 }
 
 impl<S, C> TickingSchedulerExecutor<S, C>
@@ -56,7 +60,12 @@ where
 			invokable_tasks: HashMap::new(),
 			invoked: Vec::new(),
 			scheduler: SchedulerHandle::new(scheduler),
+			tasks_already_ticked: HashSet::new(),
 		}
+	}
+
+	pub fn now(&self) -> Duration {
+		self.current_tick.elapsed_since_start
 	}
 
 	pub fn get_current_tick(&mut self) -> Tick {
@@ -64,19 +73,17 @@ where
 	}
 
 	pub fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) {
+		self.current_tick.update(tick);
+		self.tasks_already_ticked.clear();
 		loop {
 			self.drain_scheduler_queue(tick);
 
-			let finished_tasks = self.tick_scheduled_tasks(tick, context);
+			let no_tasks_ticked = self.tick_scheduled_tasks(tick, context);
 
 			self.execute_invoked_tasks(tick, context);
 
-			if finished_tasks.is_empty() {
+			if no_tasks_ticked {
 				break;
-			}
-
-			for task_id in finished_tasks.into_iter() {
-				self.active_tasks.remove(task_id);
 			}
 		}
 	}
@@ -90,7 +97,7 @@ where
 		for invoked_task_id in self.invoked.drain(..) {
 			if let Some(invoked_task) = self.invokable_tasks.get_mut(&invoked_task_id) {
 				let invoke_result = invoked_task.tick(tick, context);
-				if matches!(invoke_result, TickResult::Done) {
+				if matches!(invoke_result, TaskResult::Done) {
 					self.invokable_tasks.remove(&invoked_task_id);
 				}
 			}
@@ -122,19 +129,33 @@ where
 		}
 	}
 
-	fn tick_scheduled_tasks(&mut self, tick: Tick, context: &mut C::Item<'_>) -> Vec<usize> {
-		self.current_tick.update(tick);
+	fn tick_scheduled_tasks(&mut self, tick: Tick, context: &mut C::Item<'_>) -> bool {
+		let mut tasks_done = Vec::<usize>::new();
+		let mut tasks_ticked = Vec::<usize>::new();
 
-		self.active_tasks
+		for (key, (_, task)) in self
+			.active_tasks
 			.iter_mut()
-			.filter_map(|(key, (_owner_id, task))| {
-				let task_result = task.tick(tick, context);
-				// TODO: Do something with errors, maybe collect them and return? or define a handler and just pass them into? the tick fn should not have a return type.
-				match task_result {
-					TickResult::Done => Some(key),
-					TickResult::Pending => None,
-				}
-			})
-			.collect::<Vec<_>>()
+			.filter(|(key, _)| !self.tasks_already_ticked.contains(key))
+		{
+			let task_result = task.tick(tick, context);
+			if matches!(task_result, TaskResult::Done) {
+				tasks_done.push(key);
+			}
+
+			tasks_ticked.push(key);
+		}
+
+		for task_key in tasks_done {
+			self.active_tasks.remove(task_key);
+		}
+
+		let no_tasks_ticked = tasks_ticked.is_empty();
+
+		for task_key in tasks_ticked {
+			self.tasks_already_ticked.insert(task_key);
+		}
+
+		no_tasks_ticked
 	}
 }

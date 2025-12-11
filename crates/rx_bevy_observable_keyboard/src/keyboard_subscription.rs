@@ -46,7 +46,7 @@ where
 								.get_just_released()
 								.cloned()
 								.collect::<Vec<_>>(),
-							KeyboardObservableEmit::Pressed => {
+							KeyboardObservableEmit::WhilePressed => {
 								button_input.get_pressed().cloned().collect::<Vec<_>>()
 							}
 						}
@@ -55,7 +55,7 @@ where
 						shared_destination_clone.next(key_code);
 					}
 				}
-				TickResult::Pending
+				TaskResult::Pending
 			},
 			cancellation_id,
 		);

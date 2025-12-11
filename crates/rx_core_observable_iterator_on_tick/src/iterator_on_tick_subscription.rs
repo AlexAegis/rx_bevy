@@ -1,14 +1,10 @@
-use std::{
-	iter::Peekable,
-	marker::PhantomData,
-	sync::{Arc, Mutex},
-	time::Duration,
-};
+use std::{iter::Peekable, marker::PhantomData};
 
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Never, Observer, Scheduler, SchedulerScheduleTaskExtension, Signal, Subscriber,
-	SubscriptionLike, TaskCancellationId, TaskContext, Teardown, TeardownCollection, TickResult,
+	Never, Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber,
+	Signal, Subscriber, SubscriptionLike, TaskCancellationId, TaskResult, Teardown,
+	TeardownCollection,
 };
 
 use crate::observable::OnTickObservableOptions;
@@ -19,10 +15,9 @@ where
 	Iterator: IntoIterator,
 	Iterator::Item: Signal,
 {
-	now: Duration,
 	observed_ticks: usize,
 	emit_at_every_nth_tick: usize,
-	destination: Arc<Mutex<Destination>>,
+	destination: SharedSubscriber<Destination>,
 	peekable_iterator: Peekable<Iterator::IntoIter>,
 }
 
@@ -34,8 +29,8 @@ where
 	Iterator::Item: Signal,
 	S: Scheduler,
 {
-	options: OnTickObservableOptions<S>,
-	destination: Arc<Mutex<Destination>>,
+	scheduler: SchedulerHandle<S>,
+	destination: SharedSubscriber<Destination>,
 	owner_id: Option<TaskCancellationId>,
 	_phantom_data: PhantomData<fn(Iterator) -> Iterator>,
 }
@@ -51,71 +46,66 @@ where
 	pub fn new(
 		destination: Destination,
 		iterator: Iterator::IntoIter,
-		mut options: OnTickObservableOptions<S>,
+		options: OnTickObservableOptions,
+		scheduler: SchedulerHandle<S>,
 	) -> Self {
-		let peekable_iterator = iterator.peekable();
-
-		let destination = Arc::new(Mutex::new(destination));
+		let mut scheduler_clone = scheduler.clone();
+		let mut peekable_iterator = iterator.peekable();
+		let mut destination = SharedSubscriber::new(destination);
 
 		if options.emit_at_every_nth_tick == 0 {
 			return OnTickIteratorSubscription {
-				options,
 				destination,
 				owner_id: None,
+				scheduler,
 				_phantom_data: PhantomData,
 			};
 		}
 
+		if options.start_on_subscribe
+			&& let Some(next) = peekable_iterator.next()
+		{
+			destination.next(next);
+		}
+
 		let owner_id = {
-			let mut scheduler = options.scheduler.lock();
+			let mut scheduler = scheduler_clone.lock();
 			let owner_id = scheduler.generate_cancellation_id();
 
 			let mut state = OnTickIteratorState::<Destination, Iterator> {
-				now: Duration::from_millis(0),
 				observed_ticks: 0,
 				emit_at_every_nth_tick: options.emit_at_every_nth_tick,
 				peekable_iterator,
 				destination: destination.clone(),
 			};
 
-			scheduler.schedule_repeated_task(
-				move |_, context| {
-					// TODO: Some guarantees are needed on re-runnability. maybe ensure every task is ticked at most once?
-					let is_new_tick = {
-						let now = context.now();
-						let diff = state.now == now;
-						state.now = now;
-						diff
-					};
-
-					if !is_new_tick {
-						return TickResult::Pending;
-					}
-
+			scheduler.schedule_continuous_task(
+				move |_, _context| {
 					state.observed_ticks += 1;
 
-					if state.emit_at_every_nth_tick != 0
-						&& !state.destination.is_closed()
-						&& state
-							.observed_ticks
-							.is_multiple_of(state.emit_at_every_nth_tick)
+					let mut destination = state.destination.lock();
+					if destination.is_closed() {
+						return TaskResult::Done;
+					}
+
+					if state
+						.observed_ticks
+						.is_multiple_of(state.emit_at_every_nth_tick)
 						&& let Some(value) = state.peekable_iterator.next()
 					{
 						state.observed_ticks = 0;
-						state.destination.next(value);
+						destination.next(value);
 						if state.peekable_iterator.peek().is_none() {
-							state.destination.complete();
-							state.destination.unsubscribe();
-							TickResult::Done
+							destination.complete();
+							destination.unsubscribe();
+							TaskResult::Done
 						} else {
-							TickResult::Pending
+							TaskResult::Pending
 						}
 					} else {
-						TickResult::Pending
+						TaskResult::Pending
 					}
 				},
-				Duration::from_nanos(0),
-				options.start_on_subscribe,
 				owner_id,
 			);
 
@@ -123,8 +113,8 @@ where
 		};
 
 		OnTickIteratorSubscription {
-			options,
 			destination,
+			scheduler,
 			owner_id: Some(owner_id),
 			_phantom_data: PhantomData,
 		}
@@ -145,7 +135,7 @@ where
 
 	fn unsubscribe(&mut self) {
 		if let Some(owner_id) = self.owner_id {
-			self.options.scheduler.lock().cancel(owner_id);
+			self.scheduler.lock().cancel(owner_id);
 		}
 		self.destination.unsubscribe();
 	}

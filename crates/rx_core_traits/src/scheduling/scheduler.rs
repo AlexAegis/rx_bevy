@@ -89,12 +89,13 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
+		max_work_per_tick: usize,
 		cancellation_id: TaskCancellationId,
 	) where
 		Work: ScheduledRepeatedWork<Self::Tick, Self::ContextProvider>,
 	{
 		self.schedule_task(
-			Self::RepeatedTaskFactory::new(work, interval, start_immediately),
+			Self::RepeatedTaskFactory::new(work, interval, start_immediately, max_work_per_tick),
 			cancellation_id,
 		)
 	}

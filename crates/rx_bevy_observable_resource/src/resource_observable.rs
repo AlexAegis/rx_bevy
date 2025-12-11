@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::resource::Resource;
+use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, Signal, Subscriber, UpgradeableObserver};
+use rx_core_traits::{Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
 
 use crate::{ResourceSubscription, observable::ResourceObservableOptions};
 
@@ -18,6 +19,7 @@ where
 {
 	reader: Reader,
 	options: ResourceObservableOptions,
+	scheduler: SchedulerHandle<RxBevyScheduler>,
 	_phantom_data: PhantomData<R>,
 }
 
@@ -28,10 +30,15 @@ where
 	Out: Signal,
 	OutError: Signal,
 {
-	pub fn new(reader: Reader, options: ResourceObservableOptions) -> Self {
+	pub fn new(
+		reader: Reader,
+		options: ResourceObservableOptions,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
+	) -> Self {
 		Self {
 			reader,
 			options,
+			scheduler,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -58,9 +65,10 @@ where
 			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		ResourceSubscription::new(
+			destination.upgrade(),
 			self.reader.clone(),
 			self.options.clone(),
-			destination.upgrade(),
+			self.scheduler.clone(),
 		)
 	}
 }

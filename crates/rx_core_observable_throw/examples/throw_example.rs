@@ -8,5 +8,5 @@ use rx_core::prelude::*;
 /// throw_example - error: "hello"
 /// ```
 fn main() {
-	let _s = throw::<_, ()>("hello").subscribe(PrintObserver::new("throw_example"), &mut ());
+	let _s = throw("hello").subscribe(PrintObserver::new("throw_example"));
 }

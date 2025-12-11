@@ -60,7 +60,10 @@ fn dummy_resource_mutator(dummy_resource: Option<ResMut<DummyResource>>) {
 	}
 }
 
-fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
+fn setup(
+	mut commands: Commands,
+	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
+) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -80,13 +83,17 @@ fn setup(mut commands: Commands, mut context: RxBevyContextItem) {
 				trigger_on_is_added: true, // If false, the first signal will be 1
 				trigger_on_is_changed: true,
 			},
+			rx_executor_update_virtual.get_scheduler_handle(),
 		)
-		.with_commands::<Update, Virtual>(commands.reborrow())
-		.subscribe(
-			EntityDestination::new(dummy_message_destination),
-			&mut context,
+		.with_commands(
+			commands.reborrow(),
+			rx_executor_update_virtual.get_scheduler_handle(),
 		)
-		.into();
+		.subscribe(EntityDestination::new(
+			dummy_message_destination,
+			rx_executor_update_virtual.get_scheduler_handle(),
+		))
+		.entity();
 
 	commands.insert_resource(ExampleEntities {
 		subscriptions: HashMap::new(),

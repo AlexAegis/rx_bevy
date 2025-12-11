@@ -8,8 +8,8 @@ use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, Subscriber,
-	SubscriptionData, SubscriptionLike, TaskCancellationId, Teardown, TeardownCollection,
-	TickResult,
+	SubscriptionData, SubscriptionLike, TaskCancellationId, TaskResult, Teardown,
+	TeardownCollection,
 };
 
 use crate::observable::ResourceObservableOptions;
@@ -35,15 +35,16 @@ where
 	Destination: 'static + Subscriber,
 {
 	pub fn new(
-		reader: Reader,
-		mut options: ResourceObservableOptions,
 		destination: Destination,
+		reader: Reader,
+		options: ResourceObservableOptions,
+		mut scheduler: SchedulerHandle<RxBevyScheduler>,
 	) -> Self {
 		let shared_destination = Arc::new(Mutex::new(destination));
-		let subscription_scheduler = options.scheduler.clone();
+		let subscription_scheduler = scheduler.clone();
 
 		let mut shared_destination_clone = shared_destination.clone();
-		let mut scheduler_lock = options.scheduler.lock();
+		let mut scheduler_lock = scheduler.lock();
 		let cancellation_id = scheduler_lock.generate_cancellation_id();
 		let mut resource_existed_in_the_previous_tick = false;
 
@@ -73,7 +74,7 @@ where
 					}
 				}
 
-				TickResult::Pending
+				TaskResult::Pending
 			},
 			cancellation_id,
 		);

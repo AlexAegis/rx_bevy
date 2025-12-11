@@ -1,16 +1,10 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{entity::Entity, system::EntityCommands};
+use bevy_ecs::system::EntityCommands;
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{
-	Observable, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, Signal, Subscriber,
-	UpgradeableObserver,
-};
+use rx_core_traits::{Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
 
-use crate::{
-	AsyncSubscription, EntityCommandSubscribeExtension, RxBevyScheduler,
-	RxBevySchedulerDespawnEntityExtension,
-};
+use crate::{CommandSubscribeExtension, EntitySubscription, RxBevyScheduler};
 
 pub trait EntityCommandsAsObservableExtension {
 	/// # `as_observable`
@@ -69,7 +63,7 @@ pub trait EntityCommandsAsObservableExtension {
 	fn as_observable<Out, OutError>(
 		&mut self,
 		scheduler: SchedulerHandle<RxBevyScheduler>,
-	) -> EntityCommandsObservable<Out, OutError>
+	) -> EntityCommandsObservable<'_, Out, OutError>
 	where
 		Out: Signal + Clone,
 		OutError: Signal + Clone;
@@ -79,30 +73,13 @@ impl EntityCommandsAsObservableExtension for EntityCommands<'_> {
 	fn as_observable<Out, OutError>(
 		&mut self,
 		scheduler: SchedulerHandle<RxBevyScheduler>,
-	) -> EntityCommandsObservable<Out, OutError>
+	) -> EntityCommandsObservable<'_, Out, OutError>
 	where
 		Out: Signal + Clone,
 		OutError: Signal + Clone,
 	{
 		EntityCommandsObservable {
-			observable_entity: self.id(),
-			scheduler,
-			phantom_data: PhantomData,
-		}
-	}
-}
-
-impl EntityCommandsAsObservableExtension for Entity {
-	fn as_observable<Out, OutError>(
-		&mut self,
-		scheduler: SchedulerHandle<RxBevyScheduler>,
-	) -> EntityCommandsObservable<Out, OutError>
-	where
-		Out: Signal + Clone,
-		OutError: Signal + Clone,
-	{
-		EntityCommandsObservable {
-			observable_entity: *self,
+			observable_entity_commands: self.reborrow(),
 			scheduler,
 			phantom_data: PhantomData,
 		}
@@ -112,23 +89,23 @@ impl EntityCommandsAsObservableExtension for Entity {
 #[derive(RxObservable)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-pub struct EntityCommandsObservable<Out, OutError>
+pub struct EntityCommandsObservable<'w, Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
 {
-	observable_entity: Entity,
+	observable_entity_commands: EntityCommands<'w>,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	phantom_data: PhantomData<(Out, OutError)>,
 }
 
-impl<Out, OutError> Observable for EntityCommandsObservable<Out, OutError>
+impl<'w, Out, OutError> Observable for EntityCommandsObservable<'w, Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
 {
 	type Subscription<Destination>
-		= AsyncSubscription
+		= EntitySubscription
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
@@ -140,32 +117,46 @@ where
 		Destination:
 			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		let scheduler_subscription_clone = self.scheduler.clone();
-		let mut scheduler_schedule_clone = self.scheduler.clone();
-		let mut scheduler = self.scheduler.lock();
-		let cancellation_id = scheduler.generate_cancellation_id();
-		let despawn_invoke_id = scheduler.generate_invoke_id();
-		let observable_entity = self.observable_entity;
+		let observable_entity = self.observable_entity_commands.id();
 
-		scheduler.schedule_immediate_task(
-			move |_, context| {
-				let subscription_entity = context
-					.deferred_world
-					.commands()
-					.entity(observable_entity)
-					.subscribe_destination::<_>(destination);
+		let subscription_entity = self
+			.observable_entity_commands
+			.commands()
+			.subscribe(observable_entity, destination);
 
-				scheduler_schedule_clone
-					.lock()
-					.schedule_invoked_despawn_entity(subscription_entity, despawn_invoke_id);
-			},
-			cancellation_id,
-		);
-
-		AsyncSubscription::new(
-			scheduler_subscription_clone,
-			cancellation_id,
-			despawn_invoke_id,
-		)
+		EntitySubscription::new(subscription_entity, self.scheduler.clone())
 	}
 }
+
+/*
+
+let scheduler_subscription_clone = self.scheduler.clone();
+let mut scheduler_schedule_clone = self.scheduler.clone();
+let mut scheduler = self.scheduler.lock();
+let cancellation_id = scheduler.generate_cancellation_id();
+let despawn_invoke_id = scheduler.generate_invoke_id();
+let observable_entity = self.observable_entity_commands.id();
+
+self.observable_entity_commands.commands().subscribe(observable_entity, destination)
+
+scheduler.schedule_immediate_task(
+	move |_, context| {
+		let subscription_entity = context
+			.deferred_world
+			.commands()
+			.entity(observable_entity)
+			.subscribe_destination::<_>(destination);
+
+		scheduler_schedule_clone
+			.lock()
+			.schedule_invoked_despawn_entity(subscription_entity, despawn_invoke_id);
+	},
+	cancellation_id,
+);
+
+AsyncSubscription::new(
+	scheduler_subscription_clone,
+	cancellation_id,
+	despawn_invoke_id,
+)
+*/

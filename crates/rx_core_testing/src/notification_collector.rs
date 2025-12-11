@@ -103,7 +103,7 @@ where
 	/// [SubscriberNotification::Unsubscribe] notification.
 	/// Tick notifications are allowed.
 	pub fn nothing_happened_after_closed(&self) -> bool {
-		self.observed_notifications_after_close.iter().count() == 0
+		self.observed_notifications_after_close.is_empty()
 	}
 
 	/// Returns an iterator over all observed [SubscriberNotification]

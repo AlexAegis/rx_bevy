@@ -13,10 +13,7 @@ fn main() {
 	let mut subscription = (1..=5)
 		.into_observable()
 		.map(|i| i * 2)
-		.delay(DelayOperatorOptions {
-			delay: Duration::from_millis(1000),
-			scheduler: scheduler.clone(),
-		})
+		.delay(Duration::from_millis(1000), scheduler.clone())
 		.subscribe(PrintObserver::new("delay_operator"));
 
 	let mut scheduler_clone = scheduler.clone();

@@ -135,12 +135,24 @@ where
 			self.destination.unsubscribe();
 		}
 
-		// TODO: Consider re-introducing on drop- ref subs, and debug asset everything reaching 0 like before.
-
 		debug_assert_eq!(
 			self.unsubscribe_count,
+			0,
+			"The unsubscribe_count did not reach 0 of {} on drop.",
+			ShortName::of::<Self>()
+		);
+
+		debug_assert_eq!(
 			self.ref_count,
-			"The unsubscribe_count did not reach the ref_count of {} on drop.",
+			0,
+			"The ref_count did not reach 0 of {} on drop.",
+			ShortName::of::<Self>()
+		);
+
+		debug_assert_eq!(
+			self.completion_count,
+			0,
+			"The completion_count did not reach 0 of {} on drop.",
 			ShortName::of::<Self>()
 		);
 	}

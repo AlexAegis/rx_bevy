@@ -1,7 +1,9 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Operator, Scheduler, Signal};
+use std::time::Duration;
 
-use crate::operator::{DelayOperator, DelayOperatorOptions};
+use rx_core_operator_composite::operator::CompositeOperator;
+use rx_core_traits::{Operator, Scheduler, SchedulerHandle, Signal};
+
+use crate::operator::DelayOperator;
 
 pub trait OperatorComposeExtensionDelay<T, S>: Operator<Out = T> + Sized
 where
@@ -10,9 +12,10 @@ where
 {
 	fn delay(
 		self,
-		options: DelayOperatorOptions<S>,
+		duration: Duration,
+		scheduler: SchedulerHandle<S>,
 	) -> CompositeOperator<Self, DelayOperator<T, Self::OutError, S>> {
-		CompositeOperator::new(self, DelayOperator::new(options))
+		CompositeOperator::new(self, DelayOperator::new(duration, scheduler))
 	}
 }
 

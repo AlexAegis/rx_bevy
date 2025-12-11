@@ -20,6 +20,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
+			RxPlugin,
 			RxScheduler::<FixedUpdate, Fixed>::default(),
 			RxScheduler::<Update, Virtual>::default(),
 			RxScheduler::<Update, Real>::default(),
@@ -109,7 +110,7 @@ impl SubscriptionMapResource for ExampleEntities {
 
 fn setup(
 	mut commands: Commands,
-	mut rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
+	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
 ) {
 	let scheduler = rx_executor_update_virtual.get_scheduler_handle();
 
@@ -140,9 +141,9 @@ fn setup(
 				KeyboardObservableOptions {
 					emit: KeyboardObservableEmit::JustPressed,
 				},
-				scheduler,
+				scheduler.clone(),
 			),
-			scheduler,
+			scheduler.clone(),
 		)
 		.subscribe(ResourceDestination::new(
 			|mut virtual_time: Mut<'_, Time<Virtual>>, signal| {
@@ -160,23 +161,25 @@ fn setup(
 
 				virtual_time.set_relative_speed(speed);
 			},
-			scheduler,
+			scheduler.clone(),
 		));
 
 	let instant_subscription_entity = {
 		let mut interval_entity = commands.spawn((
 			Name::new("IntervalObservable"),
-			IntervalObservable::new(IntervalObservableOptions {
-				duration: Duration::from_millis(200),
-				start_on_subscribe: true,
-				max_emissions_per_tick: 2,
-				scheduler,
-			})
+			IntervalObservable::new(
+				IntervalObservableOptions {
+					duration: Duration::from_millis(200),
+					start_on_subscribe: true,
+					max_emissions_per_tick: 2,
+				},
+				scheduler.clone(),
+			)
 			.into_component(),
 		));
 
 		let interval_entity_as_observable =
-			interval_entity.as_observable::<usize, Never>(scheduler);
+			interval_entity.as_observable::<usize, Never>(scheduler.clone());
 
 		let subscription = interval_entity_as_observable
 			.enumerate()
@@ -184,8 +187,9 @@ fn setup(
 			.take(10)
 			.subscribe(EntityDestination::new(
 				destination_entity_real_clock,
-				scheduler,
+				scheduler.clone(),
 			));
+		subscription.entity()
 	};
 
 	let keyboard_observable = commands
@@ -195,12 +199,9 @@ fn setup(
 				KeyboardObservableOptions {
 					emit: KeyboardObservableEmit::JustPressed,
 				},
-				scheduler,
+				scheduler.clone(),
 			)
-			.delay(DelayOperatorOptions {
-				delay: Duration::from_millis(1000),
-				scheduler,
-			})
+			.delay(Duration::from_millis(1000), scheduler.clone())
 			.into_component(),
 		))
 		.id();
@@ -208,12 +209,14 @@ fn setup(
 	let interval_observable = commands
 		.spawn((
 			Name::new("IntervalObservable"),
-			IntervalObservable::new(IntervalObservableOptions {
-				duration: Duration::from_millis(1000),
-				start_on_subscribe: true,
-				max_emissions_per_tick: 2,
-				scheduler,
-			})
+			IntervalObservable::new(
+				IntervalObservableOptions {
+					duration: Duration::from_millis(1000),
+					start_on_subscribe: true,
+					max_emissions_per_tick: 2,
+				},
+				scheduler.clone(),
+			)
 			.into_component(),
 		))
 		.id();
@@ -224,21 +227,22 @@ fn setup(
 				"ProxyObservable (IntervalObservable) {}",
 				interval_observable
 			)),
-			ProxyObservable::<usize, Never>::new(interval_observable, scheduler).into_component(),
+			ProxyObservable::<usize, Never>::new(interval_observable, scheduler.clone())
+				.into_component(),
 		))
 		.id();
 
 	let keyboard_switch_map_to_interval_observable = commands
 		.spawn((
 			Name::new("KeyboardSwitchMapToIntervalObservable"),
-			KeyboardObservable::new(default(), scheduler)
+			KeyboardObservable::new(default(), scheduler.clone())
 				.filter(|key_code| {
 					matches!(
 						key_code,
 						KeyCode::Digit1 | KeyCode::Digit2 | KeyCode::Digit3 | KeyCode::Digit4
 					)
 				})
-				.switch_map(|key_code| {
+				.switch_map(move |key_code| {
 					let duration = match key_code {
 						KeyCode::Digit1 => Duration::from_millis(5),
 						KeyCode::Digit2 => Duration::from_millis(100),
@@ -247,12 +251,14 @@ fn setup(
 						_ => unreachable!(),
 					};
 					println!("Switching to a new inner observable with duration: {duration:?}");
-					IntervalObservable::new(IntervalObservableOptions {
-						duration,
-						start_on_subscribe: false,
-						max_emissions_per_tick: 4,
-						scheduler,
-					})
+					IntervalObservable::new(
+						IntervalObservableOptions {
+							duration,
+							start_on_subscribe: false,
+							max_emissions_per_tick: 4,
+						},
+						scheduler.clone(),
+					)
 				})
 				.scan(|acc, _next| acc + 1, 0_usize)
 				.into_component(),

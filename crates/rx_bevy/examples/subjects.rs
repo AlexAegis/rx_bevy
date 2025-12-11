@@ -104,7 +104,12 @@ impl SubscriptionMapResource for ExampleEntities {
 	}
 }
 
-fn setup(mut commands: Commands) {
+fn setup(
+	mut commands: Commands,
+	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
+) {
+	let scheduler = rx_executor_update_virtual.get_scheduler_handle();
+
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -126,18 +131,21 @@ fn setup(mut commands: Commands) {
 	let keyboard_observable = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::default().into_component(),
+			KeyboardObservable::new(default(), scheduler.clone()).into_component(),
 		))
 		.id();
 
 	let interval_observable = commands
 		.spawn((
 			Name::new("IntervalObservable"),
-			IntervalObservable::new(IntervalObservableOptions {
-				duration: Duration::from_millis(500),
-				start_on_subscribe: true,
-				max_emissions_per_tick: 2,
-			})
+			IntervalObservable::new(
+				IntervalObservableOptions {
+					duration: Duration::from_millis(500),
+					start_on_subscribe: true,
+					max_emissions_per_tick: 2,
+				},
+				scheduler.clone(),
+			)
 			.into_component(),
 		))
 		.id();
@@ -145,21 +153,21 @@ fn setup(mut commands: Commands) {
 	let subject_usize = commands
 		.spawn((
 			Name::new("Subject<usize>"),
-			Subject::<usize, Never, RxBevyContext>::default().into_component(),
+			Subject::<usize, Never>::default().into_component(),
 		))
 		.id();
 
 	let replay_subject_usize = commands
 		.spawn((
 			Name::new("ReplaySubject<usize>"),
-			ReplaySubject::<3, usize, Never, RxBevyContext>::default().into_component(),
+			ReplaySubject::<3, usize, Never>::default().into_component(),
 		))
 		.id();
 
 	let behavior_subject_usize = commands
 		.spawn((
 			Name::new("BehaviorSubject<usize>"),
-			BehaviorSubject::<usize, Never, RxBevyContext>::new(0).into_component(),
+			BehaviorSubject::<usize, Never>::new(0).into_component(),
 		))
 		.id();
 

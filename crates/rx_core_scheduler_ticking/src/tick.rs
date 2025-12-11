@@ -21,6 +21,7 @@ impl Tick {
 
 	pub fn update(&mut self, tick: Tick) {
 		if self.elapsed_since_start < tick.elapsed_since_start {
+			self.delta = tick.elapsed_since_start - self.elapsed_since_start;
 			self.elapsed_since_start = tick.elapsed_since_start;
 		}
 	}

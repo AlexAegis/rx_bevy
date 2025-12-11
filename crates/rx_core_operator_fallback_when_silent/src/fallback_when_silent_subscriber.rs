@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike, TaskCancellationId, TickResult,
+	Subscriber, SubscriptionLike, TaskCancellationId, TaskResult,
 };
 
 struct FallbackWhenSilentSubscriberState<In> {
@@ -64,11 +64,11 @@ where
 					state.next_observed_this_tick.take()
 				};
 
-				let next = observed_next.unwrap_or_else(|| (fallback)());
+				let next = observed_next.unwrap_or_else(&(fallback));
 
 				shared_destination_clone.next(next);
 
-				TickResult::Pending
+				TaskResult::Pending
 			},
 			cancellation_id,
 		);

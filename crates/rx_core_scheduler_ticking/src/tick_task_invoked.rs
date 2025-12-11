@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use derive_where::derive_where;
 use rx_core_macro_task_derive::RxTask;
 use rx_core_traits::{
-	ContextProvider, InvokedTaskFactory, ScheduledRepeatedWork, Task, TickResult,
+	ContextProvider, InvokedTaskFactory, ScheduledRepeatedWork, Task, TaskResult,
 };
 
 use crate::Tick;
@@ -55,7 +55,7 @@ where
 	C: ContextProvider,
 {
 	#[inline]
-	fn tick(&mut self, tick_input: Self::Tick, context: &mut C::Item<'_>) -> TickResult {
+	fn tick(&mut self, tick_input: Self::Tick, context: &mut C::Item<'_>) -> TaskResult {
 		(self.work)(tick_input, context)
 	}
 

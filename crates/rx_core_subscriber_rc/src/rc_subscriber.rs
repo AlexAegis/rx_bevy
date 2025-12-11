@@ -322,8 +322,8 @@ mod test {
 		drop(rc_subscriber_clone);
 
 		rc_subscriber.access(|destination| {
-			assert_eq!(destination.ref_count, 2);
-			assert_eq!(destination.unsubscribe_count, 2);
+			assert_eq!(destination.ref_count, 1);
+			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
 		rc_subscriber.unsubscribe();
@@ -376,8 +376,8 @@ mod test {
 
 		// The iterator immediately completes and unsubscribes.
 		rc_subscriber.access(|destination| {
-			assert_eq!(destination.ref_count, 2);
-			assert_eq!(destination.unsubscribe_count, 1);
+			assert_eq!(destination.ref_count, 1);
+			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
 		// Additional unsubscribe calls and letting the clone drop does not
@@ -386,15 +386,15 @@ mod test {
 		drop(iterator_a_subscription);
 
 		rc_subscriber.access(|destination| {
-			assert_eq!(destination.ref_count, 2);
-			assert_eq!(destination.unsubscribe_count, 1);
+			assert_eq!(destination.ref_count, 1);
+			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
 		rc_subscriber.unsubscribe();
 
 		rc_subscriber.access(|destination| {
-			assert_eq!(destination.ref_count, 2);
-			assert_eq!(destination.unsubscribe_count, 2);
+			assert_eq!(destination.ref_count, 1);
+			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
 		drop(rc_subscriber);
@@ -438,22 +438,22 @@ mod test {
 		drop(rc_clone_1);
 
 		rc_subscriber.access(|destination| {
-			assert_eq!(destination.ref_count, 3);
-			assert_eq!(destination.unsubscribe_count, 2);
+			assert_eq!(destination.ref_count, 2);
+			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
 		drop(rc_clone_2);
 
 		rc_subscriber.access(|destination| {
-			assert_eq!(destination.ref_count, 3);
-			assert_eq!(destination.unsubscribe_count, 2);
+			assert_eq!(destination.ref_count, 1);
+			assert_eq!(destination.unsubscribe_count, 0);
 		});
 
 		rc_subscriber.unsubscribe();
 
 		rc_subscriber.access(|destination| {
-			assert_eq!(destination.ref_count, 3);
-			assert_eq!(destination.unsubscribe_count, 3);
+			assert_eq!(destination.ref_count, 1);
+			assert_eq!(destination.unsubscribe_count, 1);
 		});
 
 		drop(rc_subscriber);

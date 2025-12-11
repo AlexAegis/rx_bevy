@@ -37,7 +37,10 @@ struct ExampleEntities {
 	subscription: Entity,
 }
 
-fn setup(mut commands: Commands) {
+fn setup(
+	mut commands: Commands,
+	rx_executor_update_virtual: ResMut<RxBevyExecutor<Update, Virtual>>,
+) {
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -53,22 +56,29 @@ fn setup(mut commands: Commands) {
 	let keyboard_observable_entity = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
-			KeyboardObservable::default().into_component(),
+			KeyboardObservable::new(default(), rx_executor_update_virtual.get_scheduler_handle())
+				.into_component(),
 		))
 		.id();
 
 	let proxy_keyboard_observable_entity = commands
 		.spawn((
 			Name::new("Proxy"),
-			ProxyObservable::<KeyCode, Never, Update, Virtual>::new(keyboard_observable_entity)
-				.map(|key_code| format!("KEYCODE {:?}", key_code))
-				.into_component(),
+			ProxyObservable::<KeyCode, Never>::new(
+				keyboard_observable_entity,
+				rx_executor_update_virtual.get_scheduler_handle(),
+			)
+			.map(|key_code| format!("KEYCODE {:?}", key_code))
+			.into_component(),
 		))
 		.id();
 
-	let subscription = commands.subscribe::<_, Update, Virtual>(
+	let subscription = commands.subscribe(
 		proxy_keyboard_observable_entity,
-		EntityDestination::<String, Never>::new(destination_entity),
+		EntityDestination::<String, Never>::new(
+			destination_entity,
+			rx_executor_update_virtual.get_scheduler_handle(),
+		),
 	);
 
 	commands.insert_resource(ExampleEntities {

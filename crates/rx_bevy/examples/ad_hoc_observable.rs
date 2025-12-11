@@ -16,6 +16,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
+			RxPlugin,
 			RxScheduler::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
@@ -58,12 +59,14 @@ fn setup(
 
 	let ad_hoc_subscription = commands
 		.with_observable(
-			IntervalObservable::new(IntervalObservableOptions {
-				duration: Duration::from_millis(400),
-				start_on_subscribe: true,
-				max_emissions_per_tick: 2,
-				scheduler: rx_executor_update_virtual.get_scheduler_handle(),
-			}),
+			IntervalObservable::new(
+				IntervalObservableOptions {
+					duration: Duration::from_millis(400),
+					start_on_subscribe: true,
+					max_emissions_per_tick: 2,
+				},
+				rx_executor_update_virtual.get_scheduler_handle(),
+			),
 			rx_executor_last.get_scheduler_handle(),
 		)
 		.filter(|next| next % 2 == 1)
@@ -72,12 +75,14 @@ fn setup(
 			rx_executor_update_virtual.get_scheduler_handle(),
 		));
 
-	let ad_hoc_subscription_2 = IntervalObservable::new(IntervalObservableOptions {
-		duration: Duration::from_millis(200),
-		start_on_subscribe: true,
-		max_emissions_per_tick: 2,
-		scheduler: rx_executor_update_virtual.get_scheduler_handle(),
-	})
+	let ad_hoc_subscription_2 = IntervalObservable::new(
+		IntervalObservableOptions {
+			duration: Duration::from_millis(200),
+			start_on_subscribe: true,
+			max_emissions_per_tick: 2,
+		},
+		rx_executor_update_virtual.get_scheduler_handle(),
+	)
 	.with_commands(commands.reborrow(), rx_executor_last.get_scheduler_handle())
 	.filter(|next| next % 2 == 0)
 	.subscribe(EntityDestination::new(

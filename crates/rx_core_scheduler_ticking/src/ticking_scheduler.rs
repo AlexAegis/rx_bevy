@@ -14,7 +14,7 @@ use crate::{
 #[derive_where(Default, Debug)]
 #[rx_tick(Tick)]
 #[rx_context(C)]
-pub struct TickingScheduler<C = ()>
+pub struct TickingScheduler<C>
 where
 	C: ContextProvider,
 {
@@ -29,14 +29,17 @@ impl<C> TickingExecutorsScheduler for TickingScheduler<C>
 where
 	C: 'static + ContextProvider + Send + Sync,
 {
+	#[inline]
 	fn drain_tasks(&mut self) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, C>> {
 		self.task_action_queue.drain(..)
 	}
 
+	#[inline]
 	fn has_tasks(&self) -> bool {
-		self.task_action_queue.len() > 0
+		!self.task_action_queue.is_empty()
 	}
 
+	#[inline]
 	fn update_tick(&mut self, tick: Tick) {
 		self.current_tick.update(tick);
 	}

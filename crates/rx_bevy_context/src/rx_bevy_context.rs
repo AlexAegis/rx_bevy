@@ -33,7 +33,6 @@ impl ContextProvider for RxBevyContext {
 /// place internally spawned entities relative to another one. The subscriber
 /// component on these internally spawned entities are capable of despawning
 /// themselves so that's also not a reason to have this. It's purely cosmetic.
-
 pub struct RxBevyContextItem<'w> {
 	pub deferred_world: DeferredWorld<'w>,
 	now: Duration,
@@ -60,7 +59,7 @@ impl<'w> RxBevyContextItem<'w> {
 	pub fn reborrow(&mut self) -> RxBevyContextItem<'_> {
 		RxBevyContextItem {
 			deferred_world: self.deferred_world.reborrow(),
-			now: self.now.clone(),
+			now: self.now,
 		}
 	}
 
@@ -170,11 +169,11 @@ pub enum ContextAccessError {
 }
 
 pub trait DeferredWorldAsRxBevyContextExtension<'w> {
-	fn into_rx_context<'s, C: Clock>(self) -> RxBevyContextItem<'w>;
+	fn into_rx_context<C: Clock>(self) -> RxBevyContextItem<'w>;
 }
 
 impl<'w> DeferredWorldAsRxBevyContextExtension<'w> for DeferredWorld<'w> {
-	fn into_rx_context<'s, C: Clock>(self) -> RxBevyContextItem<'w> {
+	fn into_rx_context<C: Clock>(self) -> RxBevyContextItem<'w> {
 		let now = self.get_resource::<Time<C>>().unwrap().elapsed();
 		RxBevyContextItem {
 			deferred_world: self,

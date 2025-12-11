@@ -20,6 +20,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
+			RxPlugin,
 			RxScheduler::<Update, Virtual>::default(),
 		))
 		.add_systems(Startup, setup)
@@ -53,7 +54,7 @@ fn setup(
 			Name::new("KeyboardObservable"),
 			KeyboardObservable::new(
 				KeyboardObservableOptions {
-					emit: KeyboardObservableEmit::Pressed,
+					emit: KeyboardObservableEmit::WhilePressed,
 				},
 				rx_executor.get_scheduler_handle(),
 			)
@@ -77,7 +78,7 @@ fn setup(
 				},
 				rx_executor.get_scheduler_handle(),
 			)
-			.tap_next(|n| println!("{n:?}"))
+			.tap_next(|n| println!("tap: {n:?}"))
 			.into_component(),
 		))
 		.id();

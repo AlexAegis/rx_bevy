@@ -6,8 +6,7 @@ use rx_core::prelude::*;
 /// emission of the second observable. And their second emissions will too appear
 /// together and so on.
 fn main() {
-	let observable_1 = (1..=3).into_observable::<()>();
-	let observable_2 = (4..=6).into_observable::<()>();
-	let _s =
-		zip(observable_1, observable_2).subscribe(PrintObserver::new("zip_observable"), &mut ());
+	let observable_1 = (1..=3).into_observable();
+	let observable_2 = (4..=6).into_observable();
+	let _s = zip(observable_1, observable_2).subscribe(PrintObserver::new("zip_observable"));
 }

@@ -1,29 +1,16 @@
 use core::marker::PhantomData;
 
-use bevy_app::{App, AppExit, Last, Plugin};
+use bevy_app::{App, Plugin};
 use bevy_ecs::{
-	entity::Entity,
-	query::With,
-	schedule::{IntoScheduleConfigs, ScheduleLabel, common_conditions::on_event},
-	system::{Commands, Query},
+	schedule::ScheduleLabel,
 	world::{DeferredWorld, Mut, World},
 };
-use bevy_log::warn;
-use bevy_time::{Time, Virtual};
-use bevy_window::exit_on_all_closed;
+use bevy_time::Time;
 use derive_where::derive_where;
 use rx_bevy_common::Clock;
 use rx_core_scheduler_ticking::Tick;
-use rx_core_traits::SubscriptionLike;
 
-use crate::{
-	DeferredWorldAsRxBevyContextExtension, RxBevyExecutor, SubscribeRetryPlugin,
-	SubscriptionComponent, UnfinishedSubscription, execute_pending_retries,
-};
-
-/// Used for cleanup tasks like despawning entities
-pub type RxBevyExecutorLast = RxBevyExecutor<Last, Virtual>;
-pub type RxBevySubscriptionScheduler = RxScheduler<Last, Virtual>;
+use crate::{DeferredWorldAsRxBevyContextExtension, RxBevyExecutor, SubscribeRetryPlugin};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -55,51 +42,12 @@ where
 	fn build(&self, app: &mut App) {
 		app.init_resource::<RxBevyExecutor<S, C>>();
 
-		if !app.is_plugin_added::<RxBevySubscriptionScheduler>() {
-			app.add_plugins(RxBevySubscriptionScheduler::default());
-		}
-
-		// TODO: Maybe as part of a base plugin?
-		app.add_systems(Last, clean_unfinished_subscriptions);
-
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// TODO: This has to run at the very end of this schedule, or offer a label so users can make sure it's scheduled before the executor
 		app.add_systems(S::default(), tick_executor::<S, C>);
 
 		if !app.is_plugin_added::<SubscribeRetryPlugin>() {
 			app.add_plugins(SubscribeRetryPlugin);
 		}
-
-		app.add_systems(
-			Last,
-			unsubscribe_all_subscriptions
-				.after(exit_on_all_closed)
-				.run_if(on_event::<AppExit>), // TODO(bevy-0.17): on_message
-		);
-	}
-}
-
-fn clean_unfinished_subscriptions(
-	mut commands: Commands,
-	unfinished_subscription_query: Query<Entity, With<UnfinishedSubscription>>,
-) {
-	for unfinished_subscription_query in unfinished_subscription_query.iter() {
-		warn!(
-			"The subscription {} was not populated and does not contain a subscription! It is now being despawned! (This despawn is being issued in the Last schedule!)",
-			unfinished_subscription_query
-		);
-		commands.entity(unfinished_subscription_query).despawn();
-	}
-}
-
-fn unsubscribe_all_subscriptions(world: &mut World) {
-	// These could contain stuff that'd panic on drop, better let them execute!
-	execute_pending_retries(world);
-
-	let mut subscription_query = world.query::<&mut SubscriptionComponent>(); // TODO(bevy-0.17): Allow<Internal>
-
-	for mut subscription in subscription_query.iter_mut(world) {
-		subscription.unsubscribe();
 	}
 }
 

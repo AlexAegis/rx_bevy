@@ -52,45 +52,12 @@ impossible, must complete.
 After a `Complete` signal is sent, the destination must be unsubscribed
 and the observable!
 
-## `RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE_EXCEPT_TICKS`: Subscriptions and closable subscribers must not send events downstream after they close except for forwarding upstream ticks
+## `RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE`: Subscriptions and closable subscribers must not send events downstream after they close
 
 > Testable: No
 
 If a subscription has been closed - which usually happens because it
-unsubscribed - it must not send any events downstream except forwarding ticks
-coming from upstream. (See rule `RX_ALWAYS_FORWARD_TICKS`)
-
-## `RX_ALWAYS_FORWARD_TICKS`: Observable Subscriptions and Operators must always forward the tick signal itself to its destination
-
-> Testable: Yes
-
-Downstream operators depend on the tick signal, it must be forwarded as
-is. Unless altering it is the expected behavior.
-
-> For example: In the `IntervalObservable`s subscription, the `tick` signal
-> handler is mainly used to check if the clock has advanced enough to send a
-> `next` signal, since this handler already has a purpose, it's easy to forget
-> that beside the `next` signal, you must still forward the `tick` signal too
-> downstream!
-
-```rs
-fn tick(
-    &mut self,
-    tick: Tick,
-    context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
-) {
-    self.timer.tick(tick.delta);
-    let ticks = self
-        .timer
-        .times_finished_this_tick()
-        .min(self.max_emissions_per_tick);
-    for i in 0..ticks {
-        self.destination.next(self.count + i as usize, context);
-    }
-    self.count += ticks as usize;
-    self.destination.tick(tick, context); // Do not forget this too!
-}
-```
+unsubscribed - it must not send any events downstream.
 
 ## `RX_OP_ALWAYS_FORWARD_INLINE`: Operator Subscribers must always forward all upstream signal downstream unless altering it is their expected behavior
 

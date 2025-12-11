@@ -4,43 +4,43 @@ use rx_core::prelude::*;
 /// connection is unsubscribed
 fn main() {
 	let mut source = Subject::<i32>::default();
-	let src = source.clone().finalize(|_| println!("source finalize"));
+	let src = source.clone().finalize(|| println!("source finalize"));
 
 	let mut connectable = ConnectableObservable::new(
 		src,
-		ConnectableOptions::new(|_| {
+		ConnectableOptions::new(|| {
 			println!("create connector");
 			Subject::default()
 		})
 		.unsubscribe_connector_on_disconnect(true),
 	);
 
-	source.next(1, &mut ());
+	source.next(1);
 
 	let mut _subscription = connectable
 		.clone()
-		.finalize(|_| println!("connection finalize 0"))
-		.subscribe(PrintObserver::new("connectable_observable 0"), &mut ());
+		.finalize(|| println!("connection finalize 0"))
+		.subscribe(PrintObserver::new("connectable_observable 0"));
 
 	println!("connect 0");
-	let mut connection = connectable.connect(&mut ());
+	let mut connection = connectable.connect();
 
-	source.next(2, &mut ());
+	source.next(2);
 
 	println!("disconnect..");
-	connection.unsubscribe(&mut ());
+	connection.unsubscribe();
 
 	let _subscription_2 = connectable
 		.clone()
-		.finalize(|_| println!("connection finalize 1"))
-		.subscribe(PrintObserver::new("connectable_observable 1"), &mut ());
+		.finalize(|| println!("connection finalize 1"))
+		.subscribe(PrintObserver::new("connectable_observable 1"));
 
-	source.next(3, &mut ());
+	source.next(3);
 
 	println!("connect 1");
-	let mut _connection = connectable.connect(&mut ());
+	let mut _connection = connectable.connect();
 
-	source.next(4, &mut ());
+	source.next(4);
 
-	_subscription.unsubscribe(&mut ());
+	_subscription.unsubscribe();
 }

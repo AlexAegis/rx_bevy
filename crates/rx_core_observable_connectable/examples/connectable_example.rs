@@ -9,16 +9,13 @@ use rx_core::prelude::*;
 /// The connection returned from the connect call is the subscription between
 /// source and connector
 fn main() {
-	let mut context = ();
-	let source = of::<_, ()>(1);
+	let source = of(1);
 	let mut connectable =
-		ConnectableObservable::new(source, ConnectableOptions::new(|_| Subject::default()));
-	let _subscription_0 =
-		connectable.subscribe(PrintObserver::new("connectable_observable 0"), &mut context);
+		ConnectableObservable::new(source, ConnectableOptions::new(Subject::default));
+	let _subscription_0 = connectable.subscribe(PrintObserver::new("connectable_observable 0"));
 	println!("nothing yet!");
-	let _connection = connectable.connect(&mut context); // Source emits 1
+	let _connection = connectable.connect(); // Source emits 1
 
 	// Source already complete, this subscription will receive nothing
-	let _subscription_1 =
-		connectable.subscribe(PrintObserver::new("connectable_observable 1"), &mut context);
+	let _subscription_1 = connectable.subscribe(PrintObserver::new("connectable_observable 1"));
 }

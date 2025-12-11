@@ -38,14 +38,14 @@ where
 
 				let mut destination = shared_destination_clone.lock();
 				if destination.is_closed() {
-					return TickResult::Done;
+					return TaskResult::Done;
 				}
 
 				for event in read_events {
 					destination.next(event);
 				}
 
-				TickResult::Pending
+				TaskResult::Pending
 			},
 			cancellation_id,
 		);

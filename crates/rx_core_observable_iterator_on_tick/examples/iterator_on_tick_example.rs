@@ -16,8 +16,8 @@ fn main() {
 		OnTickObservableOptions {
 			start_on_subscribe: true,
 			emit_at_every_nth_tick: 2,
-			scheduler,
 		},
+		scheduler,
 	);
 	let _subscription = iterator_observable
 		.finalize(|| println!("fin"))

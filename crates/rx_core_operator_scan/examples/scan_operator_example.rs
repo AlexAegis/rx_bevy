@@ -8,7 +8,7 @@ use rx_core::prelude::*;
 /// [ReduceOperator].
 fn main() {
 	let _s = (0..=10)
-		.into_observable::<()>()
+		.into_observable()
 		.scan(|acc, next| acc + next, 0)
-		.subscribe(PrintObserver::new("scan_operator"), &mut ());
+		.subscribe(PrintObserver::new("scan_operator"));
 }

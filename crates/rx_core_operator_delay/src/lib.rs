@@ -1,12 +1,10 @@
 mod delay_operator;
-mod delay_options;
 mod delay_subscriber;
 
 pub use delay_subscriber::*;
 
 pub mod operator {
 	pub use super::delay_operator::*;
-	pub use super::delay_options::*;
 }
 
 #[cfg(feature = "compose")]

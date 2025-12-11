@@ -1,12 +1,10 @@
-use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Scheduler, SchedulerScheduleTaskExtension, Subscriber, SubscriptionClosedFlag,
-	SubscriptionLike, TaskCancellationId,
+	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber,
+	Subscriber, SubscriptionClosedFlag, SubscriptionLike, TaskCancellationId,
 };
-
-use crate::operator::DelayOperatorOptions;
 
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
@@ -18,10 +16,11 @@ where
 	S: Scheduler,
 {
 	#[destination]
-	destination: Arc<Mutex<Destination>>,
-	options: DelayOperatorOptions<S>,
+	destination: SharedSubscriber<Destination>,
+	duration: Duration,
+	scheduler: SchedulerHandle<S>,
 	closed: SubscriptionClosedFlag,
-	owner_id: TaskCancellationId,
+	cancellation_id: TaskCancellationId,
 }
 
 impl<Destination, S> DelaySubscriber<Destination, S>
@@ -29,14 +28,19 @@ where
 	Destination: 'static + Subscriber,
 	S: Scheduler,
 {
-	pub fn new(destination: Destination, mut options: DelayOperatorOptions<S>) -> Self {
-		let owner_id = options.scheduler.lock().generate_cancellation_id();
+	pub fn new(
+		destination: Destination,
+		duration: Duration,
+		mut scheduler: SchedulerHandle<S>,
+	) -> Self {
+		let cancellation_id = scheduler.lock().generate_cancellation_id();
 
 		Self {
 			closed: SubscriptionClosedFlag::default(),
-			destination: Arc::new(Mutex::new(destination)),
-			options,
-			owner_id,
+			destination: SharedSubscriber::new(destination),
+			duration,
+			scheduler,
+			cancellation_id,
 		}
 	}
 }
@@ -49,15 +53,18 @@ where
 	#[inline]
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
-			let mut destination = self.destination.clone();
-			let mut scheduler = self.options.scheduler.lock();
+			let destination = self.destination.clone();
+			let mut scheduler = self.scheduler.lock();
 
 			scheduler.schedule_delayed_task(
-				move |_, _context| {
-					destination.next(next);
+				move |_, _| {
+					let mut destination = destination.lock();
+					if !destination.is_closed() {
+						destination.next(next);
+					}
 				},
-				self.options.delay,
-				self.owner_id,
+				self.duration,
+				self.cancellation_id,
 			);
 		}
 	}
@@ -70,14 +77,17 @@ where
 	#[inline]
 	fn complete(&mut self) {
 		if !self.is_closed() {
-			let mut destination = self.destination.clone();
-			let mut scheduler = self.options.scheduler.lock();
+			let destination = self.destination.clone();
+			let mut scheduler = self.scheduler.lock();
 			scheduler.schedule_delayed_task(
 				move |_, _context| {
-					destination.complete();
+					let mut destination = destination.lock();
+					if !destination.is_closed() {
+						destination.complete();
+					}
 				},
-				self.options.delay,
-				self.owner_id,
+				self.duration,
+				self.cancellation_id,
 			);
 		}
 	}
@@ -95,17 +105,17 @@ where
 
 	fn unsubscribe(&mut self) {
 		let mut destination = self.destination.clone();
-		let mut scheduler_clone = self.options.scheduler.clone();
-		let mut scheduler = self.options.scheduler.lock();
-		let owner_id_copy = self.owner_id;
+		let mut scheduler_clone = self.scheduler.clone();
+		let mut scheduler = self.scheduler.lock();
+		let owner_id_copy = self.cancellation_id;
 
 		scheduler.schedule_delayed_task(
 			move |_, _context| {
 				destination.unsubscribe();
 				scheduler_clone.lock().cancel(owner_id_copy);
 			},
-			self.options.delay,
-			self.owner_id,
+			self.duration,
+			self.cancellation_id,
 		);
 
 		self.closed.close();

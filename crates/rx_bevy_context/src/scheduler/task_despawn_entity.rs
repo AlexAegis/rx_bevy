@@ -1,7 +1,7 @@
 use bevy_ecs::entity::Entity;
 use rx_core_macro_task_derive::RxTask;
 use rx_core_scheduler_ticking::Tick;
-use rx_core_traits::{Scheduler, Task, TaskCancellationId, TaskInvokeId, TickResult};
+use rx_core_traits::{Scheduler, Task, TaskCancellationId, TaskInvokeId, TaskResult};
 
 use crate::{RxBevyContext, RxBevyScheduler};
 
@@ -25,13 +25,13 @@ impl Task for SchedulerTaskDespawnEntity {
 		&mut self,
 		_task_input: Self::Tick,
 		context: &mut <Self::ContextProvider as rx_core_traits::ContextProvider>::Item<'_>,
-	) -> rx_core_traits::TickResult {
+	) -> rx_core_traits::TaskResult {
 		context
 			.deferred_world
 			.commands()
 			.entity(self.entity)
 			.try_despawn();
-		TickResult::Done
+		TaskResult::Done
 	}
 }
 
