@@ -9,6 +9,8 @@ pub mod observable {
 	pub use rx_core_observable_connectable::observable::*;
 	#[cfg(feature = "observable_deferred")]
 	pub use rx_core_observable_deferred::observable::*;
+	#[cfg(feature = "observable_empty")]
+	pub use rx_core_observable_empty::observable::*;
 	#[cfg(feature = "observable_interval")]
 	pub use rx_core_observable_interval::observable::*;
 	#[cfg(feature = "observable_iterator")]
@@ -33,6 +35,8 @@ pub mod observable_fn {
 	pub use rx_core_observable_combine_latest::observable_fn::*;
 	#[cfg(feature = "observable_deferred")]
 	pub use rx_core_observable_deferred::observable_fn::*;
+	#[cfg(feature = "observable_empty")]
+	pub use rx_core_observable_empty::observable_fn::*;
 	#[cfg(feature = "observable_merge")]
 	pub use rx_core_observable_merge::observable_fn::*;
 	#[cfg(feature = "observable_of")]

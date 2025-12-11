@@ -30,6 +30,7 @@ debug = [
     "rx_core_observable_combine_latest?/debug",
     "rx_core_observable_connectable?/debug",
     "rx_core_observable_deferred?/debug",
+    "rx_core_observable_empty?/debug",
     "rx_core_observable_interval?/debug",
     "rx_core_observable_iterator?/debug",
     "rx_core_observable_iterator_on_tick?/debug",
@@ -72,6 +73,7 @@ all_observables = [
     "observable_combine_latest",
     "observable_connectable",
     "observable_deferred",
+    "observable_empty",
     "observable_interval",
     "observable_iterator",
     "observable_iterator_on_tick",
@@ -84,6 +86,7 @@ all_observables = [
 observable_combine_latest = ["dep:rx_core_observable_combine_latest"]
 observable_connectable = ["dep:rx_core_observable_connectable"]
 observable_deferred = ["dep:rx_core_observable_deferred"]
+observable_empty = ["dep:rx_core_observable_empty"]
 observable_interval = ["dep:rx_core_observable_interval"]
 observable_iterator = ["dep:rx_core_observable_iterator"]
 observable_iterator_on_tick = ["dep:rx_core_observable_iterator_on_tick"]
@@ -95,6 +98,7 @@ observable_zip = ["dep:rx_core_observable_zip"]
 # Observable Creation Functions
 observable_fn = [
     "rx_core_observable_combine_latest?/observable_fn",
+    "rx_core_observable_empty?/observable_fn",
     "rx_core_observable_deferred?/observable_fn",
     "rx_core_observable_merge?/observable_fn",
     "rx_core_observable_of?/observable_fn",
@@ -227,6 +231,7 @@ rx_core_traits = { workspace = true }
 # Observables
 rx_core_observable_combine_latest = { workspace = true, optional = true }
 rx_core_observable_connectable = { workspace = true, optional = true }
+rx_core_observable_empty = { workspace = true, optional = true }
 rx_core_observable_deferred = { workspace = true, optional = true }
 rx_core_observable_interval = { workspace = true, optional = true }
 rx_core_observable_iterator = { workspace = true, optional = true }

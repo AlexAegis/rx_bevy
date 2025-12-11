@@ -9,6 +9,7 @@
   - [combine_latest](10_observables_core/combine_latest.md)
   - [connectable](10_observables_core/connectable.md)
   - [deferred](10_observables_core/deferred.md)
+  - [empty](10_observables_core/empty.md)
   - [interval](10_observables_core/interval.md)
   - [iterator](10_observables_core/iterator.md)
   - [iterator_on_tick](10_observables_core/iterator_on_tick.md)

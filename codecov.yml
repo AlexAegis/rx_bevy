@@ -86,6 +86,9 @@ component_management:
     - component_id: rx_core_observable_deferred
       paths:
         - crates/rx_core_observable_deferred/**
+    - component_id: rx_core_observable_empty
+      paths:
+        - crates/rx_core_observable_empty/**
     - component_id: rx_core_observable_interval
       paths:
         - crates/rx_core_observable_interval/**

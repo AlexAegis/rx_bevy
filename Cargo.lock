@@ -4363,6 +4363,7 @@ dependencies = [
  "rx_core_observable_combine_latest",
  "rx_core_observable_connectable",
  "rx_core_observable_deferred",
+ "rx_core_observable_empty",
  "rx_core_observable_interval",
  "rx_core_observable_iterator",
  "rx_core_observable_iterator_on_tick",
@@ -4537,6 +4538,17 @@ version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_macro_observable_derive",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_empty"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_observable_derive",
+ "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
 ]
