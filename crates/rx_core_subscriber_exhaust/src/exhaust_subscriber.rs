@@ -1,9 +1,35 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_subscriber_higher_order::{
+	HigherOrderSubscriberFactory, HigherOrderSubscriberProvider,
+};
 use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
 	Observable, Observer, Signal, Subscriber, SubscriptionClosedFlag, SubscriptionLike, Teardown,
 	TeardownCollection,
 };
+
+pub struct ExhaustSubscriberProvider;
+
+impl HigherOrderSubscriberProvider for ExhaustSubscriberProvider {
+	type HigherOrderSubscriber<InnerObservable, Destination>
+		= ExhaustSubscriber<InnerObservable, Destination>
+	where
+		InnerObservable: Observable + Signal,
+		Destination:
+			'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>;
+}
+
+impl<InnerObservable, Destination> HigherOrderSubscriberFactory<Destination>
+	for ExhaustSubscriber<InnerObservable, Destination>
+where
+	InnerObservable: Observable + Signal,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+{
+	fn new_from_destination(destination: Destination) -> Self {
+		Self::new(destination)
+	}
+}
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
 #[derive(RxSubscriber)]

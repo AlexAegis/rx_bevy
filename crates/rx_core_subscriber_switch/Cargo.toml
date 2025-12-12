@@ -23,6 +23,7 @@ debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_subscriber_rc = { workspace = true }
 rx_core_traits = { workspace = true }
+rx_core_subscriber_higher_order = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

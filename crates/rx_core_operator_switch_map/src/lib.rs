@@ -1,7 +1,4 @@
 mod switch_map_operator;
-mod switch_map_subscriber;
-
-pub use switch_map_subscriber::*;
 
 pub mod operator {
 	pub use super::switch_map_operator::*;

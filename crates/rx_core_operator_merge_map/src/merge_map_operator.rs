@@ -1,23 +1,23 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
+use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
+use rx_core_subscriber_merge::MergeSubscriberProvider;
 use rx_core_traits::{Observable, Operator, Signal, Subscriber};
-
-use crate::MergeMapSubscriber;
 
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(InnerObservable::Out)]
 #[rx_out_error(InnerObservable::OutError)]
-pub struct MergeMapOperator<In, InError, Switcher, InnerObservable>
+pub struct MergeMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	switcher: Switcher,
+	mapper: Mapper,
 	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
 
@@ -29,9 +29,9 @@ where
 	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	pub fn new(switcher: Switcher) -> Self {
+	pub fn new(mapper: Switcher) -> Self {
 		Self {
-			switcher,
+			mapper,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -46,7 +46,14 @@ where
 	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>
-		= MergeMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
+		= HigherOrderMapSubscriber<
+		In,
+		InError,
+		Switcher,
+		InnerObservable,
+		MergeSubscriberProvider,
+		Destination,
+	>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -58,7 +65,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		MergeMapSubscriber::new(destination, self.switcher.clone())
+		HigherOrderMapSubscriber::new(destination, self.mapper.clone())
 	}
 }
 
@@ -72,7 +79,7 @@ where
 {
 	fn clone(&self) -> Self {
 		Self {
-			switcher: self.switcher.clone(),
+			mapper: self.mapper.clone(),
 			_phantom_data: PhantomData,
 		}
 	}

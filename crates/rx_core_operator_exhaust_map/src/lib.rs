@@ -1,7 +1,4 @@
 mod exhaust_map_operator;
-mod exhaust_map_subscriber;
-
-pub use exhaust_map_subscriber::*;
 
 pub mod operator {
 	pub use super::exhaust_map_operator::*;

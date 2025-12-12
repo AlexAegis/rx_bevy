@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
+use rx_core_subscriber_exhaust::ExhaustSubscriberProvider;
+use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_traits::{Observable, Operator, Signal, Subscriber};
-
-use crate::ExhaustAllSubscriber;
 
 #[derive(RxOperator)]
 #[rx_in(In)]
@@ -36,7 +36,7 @@ where
 	InError: Signal + Into<In::OutError>,
 {
 	type Subscriber<Destination>
-		= ExhaustAllSubscriber<In, InError, Destination>
+		= HigherOrderAllSubscriber<In, InError, ExhaustSubscriberProvider, Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -48,7 +48,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		ExhaustAllSubscriber::new(destination)
+		HigherOrderAllSubscriber::new(destination)
 	}
 }
 

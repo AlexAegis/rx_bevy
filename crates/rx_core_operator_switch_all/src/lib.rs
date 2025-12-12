@@ -1,7 +1,4 @@
 mod switch_all_operator;
-mod switch_all_subscriber;
-
-pub use switch_all_subscriber::*;
 
 pub mod operator {
 	pub use super::switch_all_operator::*;

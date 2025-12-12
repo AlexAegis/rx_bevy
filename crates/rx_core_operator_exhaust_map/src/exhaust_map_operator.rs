@@ -1,52 +1,58 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
+use rx_core_subscriber_exhaust::ExhaustSubscriberProvider;
+use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
 use rx_core_traits::{Observable, Operator, Signal, Subscriber};
-
-use crate::ExhaustMapSubscriber;
 
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(InnerObservable::Out)]
 #[rx_out_error(InnerObservable::OutError)]
-pub struct ExhaustMapOperator<In, InError, Switcher, InnerObservable>
+pub struct ExhaustMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	exhauster: Switcher,
+	mapper: Mapper,
 	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
 
-impl<In, InError, Switcher, InnerObservable>
-	ExhaustMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> ExhaustMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	pub fn new(exhauster: Switcher) -> Self {
+	pub fn new(mapper: Mapper) -> Self {
 		Self {
-			exhauster,
+			mapper,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable> Operator
-	for ExhaustMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> Operator
+	for ExhaustMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>
-		= ExhaustMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
+		= HigherOrderMapSubscriber<
+		In,
+		InError,
+		Mapper,
+		InnerObservable,
+		ExhaustSubscriberProvider,
+		Destination,
+	>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -58,7 +64,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		ExhaustMapSubscriber::new(destination, self.exhauster.clone())
+		HigherOrderMapSubscriber::new(destination, self.mapper.clone())
 	}
 }
 
@@ -72,7 +78,7 @@ where
 {
 	fn clone(&self) -> Self {
 		Self {
-			exhauster: self.exhauster.clone(),
+			mapper: self.mapper.clone(),
 			_phantom_data: PhantomData,
 		}
 	}

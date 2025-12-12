@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
+use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
+use rx_core_subscriber_switch::SwitchSubscriberProvider;
 use rx_core_traits::{Observable, Operator, Signal, Subscriber};
-
-use crate::SwitchMapSubscriber;
 
 #[derive(RxOperator)]
 #[rx_in(In)]
@@ -46,7 +46,14 @@ where
 	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>
-		= SwitchMapSubscriber<In, InError, Switcher, InnerObservable, Destination>
+		= HigherOrderMapSubscriber<
+		In,
+		InError,
+		Switcher,
+		InnerObservable,
+		SwitchSubscriberProvider,
+		Destination,
+	>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -58,7 +65,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		SwitchMapSubscriber::new(destination, self.switcher.clone())
+		HigherOrderMapSubscriber::new(destination, self.switcher.clone())
 	}
 }
 

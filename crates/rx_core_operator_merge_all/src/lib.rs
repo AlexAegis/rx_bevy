@@ -1,7 +1,4 @@
 mod merge_all_operator;
-mod merge_all_subscriber;
-
-pub use merge_all_subscriber::*;
 
 pub mod operator {
 	pub use super::merge_all_operator::*;

@@ -2,9 +2,9 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
+use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
+use rx_core_subscriber_merge::MergeSubscriberProvider;
 use rx_core_traits::{Observable, Operator, Signal, Subscriber};
-
-use crate::MergeAllSubscriber;
 
 #[derive_where(Clone, Default)]
 #[derive(RxOperator)]
@@ -38,7 +38,7 @@ where
 	InError: Signal + Into<In::OutError>,
 {
 	type Subscriber<Destination>
-		= MergeAllSubscriber<In, InError, Destination>
+		= HigherOrderAllSubscriber<In, InError, MergeSubscriberProvider, Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -50,7 +50,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		MergeAllSubscriber::new(destination)
+		HigherOrderAllSubscriber::new(destination)
 	}
 }
 

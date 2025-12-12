@@ -1,7 +1,4 @@
 mod exhaust_all_operator;
-mod exhaust_all_subscriber;
-
-pub use exhaust_all_subscriber::*;
 
 pub mod operator {
 	pub use super::exhaust_all_operator::*;

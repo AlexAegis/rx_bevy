@@ -6,15 +6,15 @@ use crate::operator::ExhaustMapOperator;
 pub trait ObservablePipeExtensionExhaustMap: Observable + Sized {
 	fn exhaust_map<
 		NextInnerObservable: Observable + Signal,
-		Switcher: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		Mapper: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
-		exhauster: Switcher,
-	) -> Pipe<Self, ExhaustMapOperator<Self::Out, Self::OutError, Switcher, NextInnerObservable>>
+		mapper: Mapper,
+	) -> Pipe<Self, ExhaustMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		Pipe::new(self, ExhaustMapOperator::new(exhauster))
+		Pipe::new(self, ExhaustMapOperator::new(mapper))
 	}
 }
 

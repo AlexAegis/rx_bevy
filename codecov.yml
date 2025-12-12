@@ -233,6 +233,15 @@ component_management:
     - component_id: rx_core_subscriber_exhaust
       paths:
         - crates/rx_core_subscriber_exhaust/**
+    - component_id: rx_core_subscriber_higher_order
+      paths:
+        - crates/rx_core_subscriber_higher_order/**
+    - component_id: rx_core_subscriber_higher_order_all
+      paths:
+        - crates/rx_core_subscriber_higher_order_all/**
+    - component_id: rx_core_subscriber_higher_order_map
+      paths:
+        - crates/rx_core_subscriber_higher_order_map/**
     - component_id: rx_core_subscriber_merge
       paths:
         - crates/rx_core_subscriber_merge/**

@@ -1,7 +1,4 @@
 mod merge_map_operator;
-mod merge_map_subscriber;
-
-pub use merge_map_subscriber::*;
 
 pub mod operator {
 	pub use super::merge_map_operator::*;
