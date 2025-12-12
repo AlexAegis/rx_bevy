@@ -182,6 +182,9 @@ component_management:
     - component_id: rx_core_operator_skip
       paths:
         - crates/rx_core_operator_skip/**
+    - component_id: rx_core_operator_start_with
+      paths:
+        - crates/rx_core_operator_start_with/**
     - component_id: rx_core_operator_switch_all
       paths:
         - crates/rx_core_operator_switch_all/**

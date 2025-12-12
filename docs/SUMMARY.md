@@ -45,6 +45,7 @@
   - [reduce](12_operators_core/reduce.md)
   - [scan](12_operators_core/scan.md)
   - [skip](12_operators_core/skip.md)
+  - [start_with](12_operators_core/start_with.md)
   - [switch_all](12_operators_core/switch_all.md)
   - [switch_map](12_operators_core/switch_map.md)
   - [take](12_operators_core/take.md)
