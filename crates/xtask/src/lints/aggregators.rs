@@ -21,6 +21,7 @@ lazy_static! {
 		hash_map.insert(RxCrateCategory::Scheduler, vec![]);
 		hash_map.insert(RxCrateCategory::Subject, vec![]);
 		hash_map.insert(RxCrateCategory::Observer, vec![]);
+		hash_map.insert(RxCrateCategory::Macro, vec![]);
 		hash_map
 	};
 }
@@ -68,7 +69,7 @@ fn lint_rx_package_is_a_dependency_in_aggregator(
 	// These crates are not part of the public api
 	if matches!(
 		package.category,
-		RxCrateCategory::Subscriber | RxCrateCategory::Subscription
+		RxCrateCategory::Subscriber | RxCrateCategory::Subscription | RxCrateCategory::Macro
 	) {
 		return Ok(());
 	}
@@ -96,7 +97,7 @@ fn lint_rx_package_has_feature_in_aggregator(
 	// These crates are not part of the public api
 	if matches!(
 		package.category,
-		RxCrateCategory::Subscriber | RxCrateCategory::Subscription
+		RxCrateCategory::Subscriber | RxCrateCategory::Subscription | RxCrateCategory::Macro
 	) {
 		return Ok(());
 	}
@@ -129,7 +130,7 @@ fn lint_rx_package_feature_is_part_of_the_feature_group(
 	// These crates are not part of the public api
 	if matches!(
 		package.category,
-		RxCrateCategory::Subscriber | RxCrateCategory::Subscription
+		RxCrateCategory::Subscriber | RxCrateCategory::Subscription | RxCrateCategory::Macro
 	) {
 		return Ok(());
 	}
@@ -212,7 +213,7 @@ fn lint_rx_package_has_lib_rs_entries(
 	// These crates are not part of the public api
 	if matches!(
 		package.category,
-		RxCrateCategory::Subscriber | RxCrateCategory::Subscription
+		RxCrateCategory::Subscriber | RxCrateCategory::Subscription | RxCrateCategory::Macro
 	) {
 		return Ok(());
 	}

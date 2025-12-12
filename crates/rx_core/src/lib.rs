@@ -66,6 +66,8 @@ pub mod operator {
 	pub use rx_core_operator_enumerate::operator::*;
 	#[cfg(feature = "operator_error_boundary")]
 	pub use rx_core_operator_error_boundary::operator::*;
+	#[cfg(feature = "operator_exhaust_all")]
+	pub use rx_core_operator_exhaust_all::operator::*;
 	#[cfg(feature = "operator_exhaust_map")]
 	pub use rx_core_operator_exhaust_map::operator::*;
 	#[cfg(feature = "operator_fallback_when_silent")]
@@ -128,6 +130,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_enumerate::extension_compose::*;
 	#[cfg(feature = "operator_error_boundary")]
 	pub use rx_core_operator_error_boundary::extension_compose::*;
+	#[cfg(feature = "operator_exhaust_all")]
+	pub use rx_core_operator_exhaust_all::extension_compose::*;
 	#[cfg(feature = "operator_exhaust_map")]
 	pub use rx_core_operator_exhaust_map::extension_compose::*;
 	#[cfg(feature = "operator_fallback_when_silent")]
@@ -188,6 +192,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_enumerate::extension_pipe::*;
 	#[cfg(feature = "operator_error_boundary")]
 	pub use rx_core_operator_error_boundary::extension_pipe::*;
+	#[cfg(feature = "operator_exhaust_all")]
+	pub use rx_core_operator_exhaust_all::extension_pipe::*;
 	#[cfg(feature = "operator_exhaust_map")]
 	pub use rx_core_operator_exhaust_map::extension_pipe::*;
 	#[cfg(feature = "operator_fallback_when_silent")]

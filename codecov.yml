@@ -143,6 +143,9 @@ component_management:
     - component_id: rx_core_operator_error_boundary
       paths:
         - crates/rx_core_operator_error_boundary/**
+    - component_id: rx_core_operator_exhaust_all
+      paths:
+        - crates/rx_core_operator_exhaust_all/**
     - component_id: rx_core_operator_exhaust_map
       paths:
         - crates/rx_core_operator_exhaust_map/**

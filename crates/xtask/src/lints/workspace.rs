@@ -300,6 +300,7 @@ pub enum RxCrateCategory {
 	Subject,
 	Observer,
 	Scheduler,
+	Macro,
 }
 
 impl Display for RxCrateCategory {
@@ -312,6 +313,7 @@ impl Display for RxCrateCategory {
 			RxCrateCategory::Subscriber => "subscriber",
 			RxCrateCategory::Subject => "subject",
 			RxCrateCategory::Scheduler => "scheduler",
+			RxCrateCategory::Macro => "macro",
 		};
 
 		f.write_str(display_str)
@@ -336,6 +338,8 @@ impl TryFrom<String> for RxCrateCategory {
 			Ok(RxCrateCategory::Scheduler)
 		} else if value == "subject" {
 			Ok(RxCrateCategory::Subject)
+		} else if value == "macro" {
+			Ok(RxCrateCategory::Macro)
 		} else {
 			Err(RxWorkspaceError::CategoryInvalid(value))
 		}

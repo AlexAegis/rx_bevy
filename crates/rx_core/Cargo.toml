@@ -47,6 +47,7 @@ debug = [
     "rx_core_operator_composite?/debug",
     "rx_core_operator_enumerate?/debug",
     "rx_core_operator_error_boundary?/debug",
+    "rx_core_operator_exhaust_all?/debug",
     "rx_core_operator_exhaust_map?/debug",
     "rx_core_operator_fallback_when_silent?/debug",
     "rx_core_operator_filter?/debug",
@@ -127,6 +128,7 @@ all_operators = [
     "operator_end_with",
     "operator_enumerate",
     "operator_error_boundary",
+    "operator_exhaust_all",
     "operator_exhaust_map",
     "operator_fallback_when_silent",
     "operator_filter",
@@ -157,6 +159,7 @@ operator_delay = ["dep:rx_core_operator_delay"]
 operator_end_with = ["dep:rx_core_operator_end_with"]
 operator_enumerate = ["dep:rx_core_operator_enumerate"]
 operator_error_boundary = ["dep:rx_core_operator_error_boundary"]
+operator_exhaust_all = ["dep:rx_core_operator_exhaust_all"]
 operator_exhaust_map = ["dep:rx_core_operator_exhaust_map"]
 operator_fallback_when_silent = ["dep:rx_core_operator_fallback_when_silent"]
 operator_filter = ["dep:rx_core_operator_filter"]
@@ -187,6 +190,7 @@ pipe = [
     "rx_core_operator_end_with?/pipe",
     "rx_core_operator_enumerate?/pipe",
     "rx_core_operator_error_boundary?/pipe",
+    "rx_core_operator_exhaust_all?/pipe",
     "rx_core_operator_exhaust_map?/pipe",
     "rx_core_operator_fallback_when_silent?/pipe",
     "rx_core_operator_filter?/pipe",
@@ -217,6 +221,7 @@ compose = [
     "rx_core_operator_end_with?/compose",
     "rx_core_operator_enumerate?/compose",
     "rx_core_operator_error_boundary?/compose",
+    "rx_core_operator_exhaust_all?/compose",
     "rx_core_operator_exhaust_map?/compose",
     "rx_core_operator_fallback_when_silent?/compose",
     "rx_core_operator_filter?/compose",
@@ -283,6 +288,7 @@ rx_core_operator_delay = { workspace = true, optional = true }
 rx_core_operator_end_with = { workspace = true, optional = true }
 rx_core_operator_enumerate = { workspace = true, optional = true }
 rx_core_operator_error_boundary = { workspace = true, optional = true }
+rx_core_operator_exhaust_all = { workspace = true, optional = true }
 rx_core_operator_exhaust_map = { workspace = true, optional = true }
 rx_core_operator_fallback_when_silent = { workspace = true, optional = true }
 rx_core_operator_filter = { workspace = true, optional = true }

@@ -32,6 +32,7 @@
   - [end_with](12_operators_core/end_with.md)
   - [enumerate](12_operators_core/enumerate.md)
   - [error_boundary](12_operators_core/error_boundary.md)
+  - [exhaust_all](12_operators_core/exhaust_all.md)
   - [exhaust_map](12_operators_core/exhaust_map.md)
   - [fallback_when_silent](12_operators_core/fallback_when_silent.md)
   - [filter](12_operators_core/filter.md)
