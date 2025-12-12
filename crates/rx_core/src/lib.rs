@@ -68,6 +68,8 @@ pub mod operator {
 	pub use rx_core_operator_filter_map::operator::*;
 	#[cfg(feature = "operator_finalize")]
 	pub use rx_core_operator_finalize::operator::*;
+	#[cfg(feature = "operator_find")]
+	pub use rx_core_operator_find::operator::*;
 	#[cfg(feature = "operator_first")]
 	pub use rx_core_operator_first::operator::*;
 	#[cfg(feature = "operator_identity")]
@@ -126,6 +128,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_filter_map::extension_compose::*;
 	#[cfg(feature = "operator_finalize")]
 	pub use rx_core_operator_finalize::extension_compose::*;
+	#[cfg(feature = "operator_find")]
+	pub use rx_core_operator_find::extension_compose::*;
 	#[cfg(feature = "operator_first")]
 	pub use rx_core_operator_first::extension_compose::*;
 	#[cfg(feature = "operator_into_result")]
@@ -182,6 +186,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_filter_map::extension_pipe::*;
 	#[cfg(feature = "operator_finalize")]
 	pub use rx_core_operator_finalize::extension_pipe::*;
+	#[cfg(feature = "operator_find")]
+	pub use rx_core_operator_find::extension_pipe::*;
 	#[cfg(feature = "operator_first")]
 	pub use rx_core_operator_first::extension_pipe::*;
 	#[cfg(feature = "operator_into_result")]

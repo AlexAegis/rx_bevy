@@ -152,6 +152,9 @@ component_management:
     - component_id: rx_core_operator_finalize
       paths:
         - crates/rx_core_operator_finalize/**
+    - component_id: rx_core_operator_find
+      paths:
+        - crates/rx_core_operator_find/**
     - component_id: rx_core_operator_first
       paths:
         - crates/rx_core_operator_first/**

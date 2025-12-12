@@ -35,6 +35,7 @@
   - [filter](12_operators_core/filter.md)
   - [filter_map](12_operators_core/filter_map.md)
   - [finalize](12_operators_core/finalize.md)
+  - [find](12_operators_core/find.md)
   - [first](12_operators_core/first.md)
   - [identity](12_operators_core/identity.md)
   - [into_result](12_operators_core/into_result.md)

@@ -10,7 +10,7 @@ where
 	InError: Signal,
 {
 	#[error("FirstOperatorError::NoNextObservedBeforeComplete")]
-	NoNextObserved,
+	NoNextObservedBeforeComplete,
 	#[error(transparent)]
 	Upstream(InError),
 }
@@ -68,7 +68,8 @@ where
 	#[inline]
 	fn complete(&mut self) {
 		if !self.first_observed {
-			self.destination.error(FirstOperatorError::NoNextObserved);
+			self.destination
+				.error(FirstOperatorError::NoNextObservedBeforeComplete);
 		}
 	}
 }
