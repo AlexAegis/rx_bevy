@@ -54,6 +54,8 @@ pub mod operator {
 	pub use rx_core_operator_composite::operator::*;
 	#[cfg(feature = "operator_delay")]
 	pub use rx_core_operator_delay::operator::*;
+	#[cfg(feature = "operator_end_with")]
+	pub use rx_core_operator_end_with::operator::*;
 	#[cfg(feature = "operator_enumerate")]
 	pub use rx_core_operator_enumerate::operator::*;
 	#[cfg(feature = "operator_error_boundary")]
@@ -108,6 +110,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_composite::extension_compose::*;
 	#[cfg(feature = "operator_delay")]
 	pub use rx_core_operator_delay::extension_compose::*;
+	#[cfg(feature = "operator_end_with")]
+	pub use rx_core_operator_end_with::extension_compose::*;
 	#[cfg(feature = "operator_enumerate")]
 	pub use rx_core_operator_enumerate::extension_compose::*;
 	#[cfg(feature = "operator_error_boundary")]
@@ -160,6 +164,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_adsr::extension_pipe::*;
 	#[cfg(feature = "operator_delay")]
 	pub use rx_core_operator_delay::extension_pipe::*;
+	#[cfg(feature = "operator_end_with")]
+	pub use rx_core_operator_end_with::extension_pipe::*;
 	#[cfg(feature = "operator_enumerate")]
 	pub use rx_core_operator_enumerate::extension_pipe::*;
 	#[cfg(feature = "operator_error_boundary")]

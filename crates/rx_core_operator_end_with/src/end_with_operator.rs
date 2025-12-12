@@ -1,0 +1,58 @@
+use core::marker::PhantomData;
+
+use derive_where::derive_where;
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_traits::{Operator, Signal, Subscriber};
+
+use crate::EndWithSubscriber;
+
+#[derive_where(Debug, Clone)]
+#[derive_where(skip_inner(Debug))]
+#[derive(RxOperator)]
+#[rx_in(In)]
+#[rx_in_error(InError)]
+#[rx_out(In)]
+#[rx_out_error(InError)]
+pub struct EndWithOperator<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal,
+{
+	end_with: In,
+	_phantom_data: PhantomData<InError>,
+}
+
+impl<In, InError> EndWithOperator<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal,
+{
+	pub fn new(end_with: In) -> Self {
+		Self {
+			end_with,
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
+impl<In, InError> Operator for EndWithOperator<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal,
+{
+	type Subscriber<Destination>
+		= EndWithSubscriber<Destination>
+	where
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
+
+	#[inline]
+	fn operator_subscribe<Destination>(
+		&mut self,
+		destination: Destination,
+	) -> Self::Subscriber<Destination>
+	where
+		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
+	{
+		EndWithSubscriber::new(destination, self.end_with.clone())
+	}
+}

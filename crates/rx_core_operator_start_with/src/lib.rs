@@ -1,7 +1,4 @@
 mod start_with_operator;
-//mod start_with_subscriber;
-
-//pub use start_with_subscriber::*;
 
 pub mod operator {
 	pub use super::start_with_operator::*;

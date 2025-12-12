@@ -128,6 +128,9 @@ component_management:
     - component_id: rx_core_operator_composite
       paths:
         - crates/rx_core_operator_composite/**
+    - component_id: rx_core_operator_end_with
+      paths:
+        - crates/rx_core_operator_end_with/**
     - component_id: rx_core_operator_delay
       paths:
         - crates/rx_core_operator_delay/**
