@@ -1,3 +1,5 @@
+use std::sync::MutexGuard;
+
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observer, SharedDestination, SharedSubscriber, Subscriber, SubscriptionData, SubscriptionLike,
@@ -58,6 +60,14 @@ where
 			completed: false,
 			unsubscribed: false,
 		}
+	}
+
+	/// Locks the shared destination.
+	/// In case it encounters a poison error, the destination is immediately
+	/// unsubscribed!
+	#[inline]
+	pub fn lock(&self) -> MutexGuard<'_, InnerRcSubscriber<Destination>> {
+		self.shared_destination.lock()
 	}
 
 	#[inline]

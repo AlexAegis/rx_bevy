@@ -41,7 +41,7 @@ where
 			None
 		} else {
 			let subscribers = self.subscribers.drain(..).collect::<Vec<_>>();
-
+			self.closed_flag.close();
 			Some(subscribers)
 		}
 	}
@@ -80,23 +80,29 @@ where
 	InError: Signal + Clone,
 {
 	fn next(&mut self, next: Self::In) {
-		for destination in self.subscribers.iter_mut() {
-			destination.next(next.clone());
+		if !self.is_closed() {
+			for destination in self.subscribers.iter_mut() {
+				destination.next(next.clone());
+			}
+			self.clean();
 		}
-		self.clean();
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		for mut destination in self.subscribers.drain(..) {
-			destination.error(error.clone());
-			destination.unsubscribe();
+		if !self.is_closed() {
+			for mut destination in self.subscribers.drain(..) {
+				destination.error(error.clone());
+				destination.unsubscribe();
+			}
 		}
 	}
 
 	fn complete(&mut self) {
-		for mut destination in self.subscribers.drain(..) {
-			destination.complete();
-			destination.unsubscribe();
+		if !self.is_closed() {
+			for mut destination in self.subscribers.drain(..) {
+				destination.complete();
+				destination.unsubscribe();
+			}
 		}
 	}
 }

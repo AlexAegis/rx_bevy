@@ -14,6 +14,9 @@ subject.pipe(finalize(() => console.log("unsubscribe"))).subscribe({
 });
 
 subject.error("error");
+subject.unsubscribe();
+subject.subscribe((a) => console.log(a));
+// subject.next(13232);
 
 // > Output:
 // error

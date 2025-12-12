@@ -43,6 +43,37 @@ where
 		}
 	}
 
+	#[inline]
+	pub fn has_exactly_one_instance_open(&self) -> bool {
+		let ref_minus_one = self.ref_count - 1;
+		ref_minus_one == self.completion_count || ref_minus_one == self.unsubscribe_count
+	}
+
+	#[inline]
+	pub fn ref_count(&self) -> usize {
+		self.ref_count
+	}
+
+	#[inline]
+	pub fn completion_count(&self) -> usize {
+		self.completion_count
+	}
+
+	#[inline]
+	pub fn unsubscribe_count(&self) -> usize {
+		self.unsubscribe_count
+	}
+
+	#[inline]
+	pub fn is_inner_unsubscribed(&self) -> bool {
+		*self.closed_flag
+	}
+
+	#[inline]
+	pub fn is_inner_completed(&self) -> bool {
+		*self.completed_flag
+	}
+
 	pub fn unsubscribe_if_can(&mut self) {
 		if self.unsubscribe_count == self.ref_count && !self.closed_flag.is_closed() {
 			self.closed_flag.close();

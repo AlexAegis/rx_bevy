@@ -143,6 +143,9 @@ component_management:
     - component_id: rx_core_operator_error_boundary
       paths:
         - crates/rx_core_operator_error_boundary/**
+    - component_id: rx_core_operator_exhaust_map
+      paths:
+        - crates/rx_core_operator_exhaust_map/**
     - component_id: rx_core_operator_fallback_when_silent
       paths:
         - crates/rx_core_operator_fallback_when_silent/**
@@ -224,12 +227,15 @@ component_management:
     - component_id: rx_core_subject_replay
       paths:
         - crates/rx_core_subject_replay/**
-    - component_id: rx_core_subscriber_rc
+    - component_id: rx_core_subscriber_exhaust
       paths:
-        - crates/rx_core_subscriber_rc/**
+        - crates/rx_core_subscriber_exhaust/**
     - component_id: rx_core_subscriber_merge
       paths:
         - crates/rx_core_subscriber_merge/**
+    - component_id: rx_core_subscriber_rc
+      paths:
+        - crates/rx_core_subscriber_rc/**
     - component_id: rx_core_subscriber_switch
       paths:
         - crates/rx_core_subscriber_switch/**

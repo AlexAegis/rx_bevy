@@ -122,6 +122,7 @@ all_core_operators = [
     "operator_end_with",
     "operator_enumerate",
     "operator_error_boundary",
+    "operator_exhaust_map",
     "operator_fallback_when_silent",
     "operator_filter",
     "operator_filter_map",
@@ -151,6 +152,7 @@ operator_delay = ["rx_core/operator_delay"]
 operator_end_with = ["rx_core/operator_end_with"]
 operator_enumerate = ["rx_core/operator_enumerate"]
 operator_error_boundary = ["rx_core/operator_error_boundary"]
+operator_exhaust_map = ["rx_core/operator_exhaust_map"]
 operator_fallback_when_silent = ["rx_core/operator_fallback_when_silent"]
 operator_filter = ["rx_core/operator_filter"]
 operator_filter_map = ["rx_core/operator_filter_map"]

@@ -29,22 +29,22 @@ impl Observable for NeverObservable {
 mod tests {
 
 	use super::*;
-	use rx_core::SubscriberNotification;
 	use rx_core_testing::MockObserver;
-	use rx_core_traits::SubscriptionLike;
+	use rx_core_traits::{SubscriberNotification, SubscriptionLike};
 
 	#[test]
-	fn should_immediately_emit_complete() {
+	fn should_not_emit_anything() {
 		let mut observable = NeverObservable;
 		let mock_observer = MockObserver::default();
 		let notification_collector = mock_observer.get_notification_collector();
 
 		let mut subscription = observable.subscribe(mock_observer);
+		assert!(notification_collector.lock().is_empty());
 		subscription.unsubscribe();
-
 		assert!(matches!(
 			notification_collector.lock().nth_notification(0),
-			SubscriberNotification::Complete
+			SubscriberNotification::Unsubscribe
 		));
+		assert_eq!(notification_collector.lock().len(), 1);
 	}
 }

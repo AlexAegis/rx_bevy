@@ -103,3 +103,13 @@ where
 		self.teardown.add_teardown(teardown);
 	}
 }
+
+impl<In, InError> Drop for PrintObserver<In, InError>
+where
+	In: Signal + Debug,
+	InError: Signal + Debug,
+{
+	fn drop(&mut self) {
+		self.unsubscribe();
+	}
+}

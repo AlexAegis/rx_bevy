@@ -75,6 +75,14 @@ where
 		}
 	}
 
+	pub fn is_empty(&self) -> bool {
+		self.observed_notifications.is_empty() && self.observed_notifications_after_close.is_empty()
+	}
+
+	pub fn len(&self) -> usize {
+		self.observed_notifications.len() + self.observed_notifications_after_close.len()
+	}
+
 	/// Returns the `n`th observed notification. Including from the notifications
 	/// observed after the first [SubscriberNotification::Unsubscribe] notification.
 	pub fn nth_notification(&self, n: usize) -> &SubscriberNotification<In, InError> {
