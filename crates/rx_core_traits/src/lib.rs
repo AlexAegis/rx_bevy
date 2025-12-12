@@ -8,7 +8,7 @@ mod signals;
 mod subject;
 mod subscriber;
 mod subscribers;
-mod subscription;
+mod subscriptions;
 mod upgradeable_observer;
 
 pub use observable::*;
@@ -21,7 +21,7 @@ pub use signals::*;
 pub use subject::*;
 pub use subscriber::*;
 pub use subscribers::*;
-pub use subscription::*;
+pub use subscriptions::*;
 pub use upgradeable_observer::*;
 
 pub mod prelude {
@@ -35,6 +35,6 @@ pub mod prelude {
 	pub use super::subject::*;
 	pub use super::subscriber::*;
 	pub use super::subscribers::*;
-	pub use super::subscription::*;
+	pub use super::subscriptions::*;
 	pub use super::upgradeable_observer::*;
 }

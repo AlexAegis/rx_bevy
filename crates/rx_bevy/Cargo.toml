@@ -92,6 +92,7 @@ all_core_observables = [
     "observable_iterator",
     "observable_iterator_on_tick",
     "observable_merge",
+    "observable_never",
     "observable_of",
     "observable_throw",
     "observable_zip",
@@ -104,6 +105,7 @@ observable_interval = ["rx_core/observable_interval"]
 observable_iterator = ["rx_core/observable_iterator"]
 observable_iterator_on_tick = ["rx_core/observable_iterator_on_tick"]
 observable_merge = ["rx_core/observable_merge"]
+observable_never = ["rx_core/observable_never"]
 observable_of = ["rx_core/observable_of"]
 observable_throw = ["rx_core/observable_throw"]
 observable_zip = ["rx_core/observable_zip"]

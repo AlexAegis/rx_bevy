@@ -35,6 +35,7 @@ debug = [
     "rx_core_observable_iterator?/debug",
     "rx_core_observable_iterator_on_tick?/debug",
     "rx_core_observable_merge?/debug",
+    "rx_core_observable_never?/debug",
     "rx_core_observable_of?/debug",
     "rx_core_observable_pipe?/debug",
     "rx_core_observable_throw?/debug",
@@ -81,6 +82,7 @@ all_observables = [
     "observable_iterator",
     "observable_iterator_on_tick",
     "observable_merge",
+    "observable_never",
     "observable_of",
     "observable_pipe",
     "observable_throw",
@@ -94,6 +96,7 @@ observable_interval = ["dep:rx_core_observable_interval"]
 observable_iterator = ["dep:rx_core_observable_iterator"]
 observable_iterator_on_tick = ["dep:rx_core_observable_iterator_on_tick"]
 observable_merge = ["dep:rx_core_observable_merge"]
+observable_never = ["dep:rx_core_observable_never"]
 observable_of = ["dep:rx_core_observable_of"]
 observable_pipe = ["dep:rx_core_observable_pipe"]
 observable_throw = ["dep:rx_core_observable_throw"]
@@ -104,6 +107,7 @@ observable_fn = [
     "rx_core_observable_empty?/observable_fn",
     "rx_core_observable_deferred?/observable_fn",
     "rx_core_observable_merge?/observable_fn",
+    "rx_core_observable_never?/observable_fn",
     "rx_core_observable_of?/observable_fn",
     "rx_core_observable_throw?/observable_fn",
     "rx_core_observable_zip?/observable_fn",
@@ -256,6 +260,7 @@ rx_core_observable_interval = { workspace = true, optional = true }
 rx_core_observable_iterator = { workspace = true, optional = true }
 rx_core_observable_iterator_on_tick = { workspace = true, optional = true }
 rx_core_observable_merge = { workspace = true, optional = true }
+rx_core_observable_never = { workspace = true, optional = true }
 rx_core_observable_of = { workspace = true, optional = true }
 rx_core_observable_throw = { workspace = true, optional = true }
 rx_core_observable_zip = { workspace = true, optional = true }

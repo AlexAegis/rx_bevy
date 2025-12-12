@@ -101,6 +101,9 @@ component_management:
     - component_id: rx_core_observable_merge
       paths:
         - crates/rx_core_observable_merge/**
+    - component_id: rx_core_observable_never
+      paths:
+        - crates/rx_core_observable_never/**
     - component_id: rx_core_observable_of
       paths:
         - crates/rx_core_observable_of/**

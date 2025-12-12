@@ -61,6 +61,7 @@ rx_core_observable_interval = { path = "crates/rx_core_observable_interval" }
 rx_core_observable_iterator = { path = "crates/rx_core_observable_iterator" }
 rx_core_observable_iterator_on_tick = { path = "crates/rx_core_observable_iterator_on_tick" }
 rx_core_observable_merge = { path = "crates/rx_core_observable_merge" }
+rx_core_observable_never = { path = "crates/rx_core_observable_never" }
 rx_core_observable_of = { path = "crates/rx_core_observable_of" }
 rx_core_observable_pipe = { path = "crates/rx_core_observable_pipe" }
 rx_core_observable_throw = { path = "crates/rx_core_observable_throw" }

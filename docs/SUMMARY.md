@@ -14,6 +14,7 @@
   - [iterator](10_observables_core/iterator.md)
   - [iterator_on_tick](10_observables_core/iterator_on_tick.md)
   - [merge](10_observables_core/merge.md)
+  - [never](10_observables_core/never.md)
   - [of](10_observables_core/of.md)
   - [pipe](10_observables_core/pipe.md)
   - [throw](10_observables_core/throw.md)
