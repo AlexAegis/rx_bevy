@@ -84,6 +84,7 @@ rx_core_operator_fallback_when_silent = { path = "crates/rx_core_operator_fallba
 rx_core_operator_filter = { path = "crates/rx_core_operator_filter" }
 rx_core_operator_filter_map = { path = "crates/rx_core_operator_filter_map" }
 rx_core_operator_finalize = { path = "crates/rx_core_operator_finalize" }
+rx_core_operator_first = { path = "crates/rx_core_operator_first" }
 rx_core_operator_identity = { path = "crates/rx_core_operator_identity" }
 rx_core_operator_lift_option = { path = "crates/rx_core_operator_lift_option" }
 rx_core_operator_lift_result = { path = "crates/rx_core_operator_lift_result" }

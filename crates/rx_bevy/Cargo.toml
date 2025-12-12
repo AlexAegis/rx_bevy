@@ -124,6 +124,7 @@ all_core_operators = [
     "operator_filter",
     "operator_filter_map",
     "operator_finalize",
+    "operator_first",
     "operator_identity",
     "operator_into_result",
     "operator_lift_option",
@@ -151,6 +152,7 @@ operator_fallback_when_silent = ["rx_core/operator_fallback_when_silent"]
 operator_filter = ["rx_core/operator_filter"]
 operator_filter_map = ["rx_core/operator_filter_map"]
 operator_finalize = ["rx_core/operator_finalize"]
+operator_first = ["rx_core/operator_first"]
 operator_identity = ["rx_core/operator_identity"]
 operator_into_result = ["rx_core/operator_into_result"]
 operator_lift_option = ["rx_core/operator_lift_option"]

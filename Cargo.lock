@@ -4385,6 +4385,7 @@ dependencies = [
  "rx_core_operator_filter",
  "rx_core_operator_filter_map",
  "rx_core_operator_finalize",
+ "rx_core_operator_first",
  "rx_core_operator_identity",
  "rx_core_operator_into_result",
  "rx_core_operator_lift_option",
@@ -4813,6 +4814,21 @@ dependencies = [
  "rx_core_operator_composite",
  "rx_core_testing",
  "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_first"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
