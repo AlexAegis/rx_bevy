@@ -94,6 +94,7 @@ rx_core_operator_filter = { path = "crates/rx_core_operator_filter" }
 rx_core_operator_filter_map = { path = "crates/rx_core_operator_filter_map" }
 rx_core_operator_finalize = { path = "crates/rx_core_operator_finalize" }
 rx_core_operator_find = { path = "crates/rx_core_operator_find" }
+rx_core_operator_find_index = { path = "crates/rx_core_operator_find_index" }
 rx_core_operator_first = { path = "crates/rx_core_operator_first" }
 rx_core_operator_identity = { path = "crates/rx_core_operator_identity" }
 rx_core_operator_lift_option = { path = "crates/rx_core_operator_lift_option" }

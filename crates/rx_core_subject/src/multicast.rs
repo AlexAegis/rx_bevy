@@ -96,19 +96,19 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_finished() {
+			self.finished_flag.close();
 			for mut destination in self.subscribers.drain(..) {
 				destination.error(error.clone());
 			}
-			self.finished_flag.close();
 		}
 	}
 
 	fn complete(&mut self) {
 		if !self.is_finished() {
+			self.finished_flag.close();
 			for mut destination in self.subscribers.drain(..) {
 				destination.complete();
 			}
-			self.finished_flag.close();
 		}
 	}
 }

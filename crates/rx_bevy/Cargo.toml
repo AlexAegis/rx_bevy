@@ -131,6 +131,7 @@ all_core_operators = [
     "operator_filter_map",
     "operator_finalize",
     "operator_find",
+    "operator_find_index",
     "operator_first",
     "operator_identity",
     "operator_into_result",
@@ -164,6 +165,7 @@ operator_filter = ["rx_core/operator_filter"]
 operator_filter_map = ["rx_core/operator_filter_map"]
 operator_finalize = ["rx_core/operator_finalize"]
 operator_find = ["rx_core/operator_find"]
+operator_find_index = ["rx_core/operator_find_index"]
 operator_first = ["rx_core/operator_first"]
 operator_identity = ["rx_core/operator_identity"]
 operator_into_result = ["rx_core/operator_into_result"]

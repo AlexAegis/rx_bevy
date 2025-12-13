@@ -170,6 +170,9 @@ component_management:
     - component_id: rx_core_operator_find
       paths:
         - crates/rx_core_operator_find/**
+    - component_id: rx_core_operator_find_index
+      paths:
+        - crates/rx_core_operator_find_index/**
     - component_id: rx_core_operator_first
       paths:
         - crates/rx_core_operator_first/**
