@@ -48,7 +48,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderAllSubscriber::new(destination)
+		HigherOrderAllSubscriber::new(destination, 1)
 	}
 }
 

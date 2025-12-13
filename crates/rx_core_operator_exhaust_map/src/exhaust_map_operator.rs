@@ -64,7 +64,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderMapSubscriber::new(destination, self.mapper.clone())
+		HigherOrderMapSubscriber::new(destination, self.mapper.clone(), 1)
 	}
 }
 

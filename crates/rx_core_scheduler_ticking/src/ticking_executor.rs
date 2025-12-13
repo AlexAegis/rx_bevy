@@ -139,6 +139,7 @@ where
 			.filter(|(key, _)| !self.tasks_already_ticked.contains(key))
 		{
 			let task_result = task.tick(tick, context);
+
 			if matches!(task_result, TaskResult::Done) {
 				tasks_done.push(key);
 			}

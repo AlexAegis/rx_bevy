@@ -236,9 +236,9 @@ component_management:
     - component_id: rx_core_subject_replay
       paths:
         - crates/rx_core_subject_replay/**
-    - component_id: rx_core_subscriber_concat
+    - component_id: rx_core_subscriber_concurrent
       paths:
-        - crates/rx_core_subscriber_concat/**
+        - crates/rx_core_subscriber_concurrent/**
     - component_id: rx_core_subscriber_exhaust
       paths:
         - crates/rx_core_subscriber_exhaust/**
@@ -251,9 +251,6 @@ component_management:
     - component_id: rx_core_subscriber_higher_order_map
       paths:
         - crates/rx_core_subscriber_higher_order_map/**
-    - component_id: rx_core_subscriber_merge
-      paths:
-        - crates/rx_core_subscriber_merge/**
     - component_id: rx_core_subscriber_rc
       paths:
         - crates/rx_core_subscriber_rc/**

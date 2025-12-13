@@ -20,7 +20,7 @@ default = []
 debug = [
     "rx_core_observable_pipe?/debug",
     "rx_core_operator_composite?/debug",
-    "rx_core_subscriber_merge/debug",
+    "rx_core_subscriber_concurrent/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
 ]
@@ -32,7 +32,7 @@ rx_core_traits = { workspace = true }
 rx_core_macro_operator_derive = { workspace = true }
 rx_core_observable_pipe = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
-rx_core_subscriber_merge = { workspace = true }
+rx_core_subscriber_concurrent = { workspace = true }
 rx_core_subscriber_higher_order_map = { workspace = true }
 
 [dev-dependencies]

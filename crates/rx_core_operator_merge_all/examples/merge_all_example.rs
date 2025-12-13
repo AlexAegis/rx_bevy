@@ -21,7 +21,7 @@ fn main() {
 			Either::Left => l.clone(),
 			Either::Right => r.clone(),
 		})
-		.merge_all()
+		.merge_all(usize::MAX)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("merge_map"));
 

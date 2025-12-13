@@ -1,7 +1,7 @@
 use rx_core_traits::{Observable, Signal, Subscriber};
 
 pub trait HigherOrderSubscriberFactory<Destination> {
-	fn new_from_destination(destination: Destination) -> Self;
+	fn new_from_destination(destination: Destination, concurrency_limit: usize) -> Self;
 }
 
 pub trait HigherOrderSubscriberProvider {

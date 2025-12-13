@@ -71,12 +71,11 @@ rx_core_observer_fn = { path = "crates/rx_core_observer_fn" }
 rx_core_observer_noop = { path = "crates/rx_core_observer_noop" }
 rx_core_observer_print = { path = "crates/rx_core_observer_print" }
 # Subscribers
-rx_core_subscriber_concat = { path = "crates/rx_core_subscriber_concat" }
+rx_core_subscriber_concurrent = { path = "crates/rx_core_subscriber_concurrent" }
 rx_core_subscriber_exhaust = { path = "crates/rx_core_subscriber_exhaust" }
 rx_core_subscriber_higher_order = { path = "crates/rx_core_subscriber_higher_order" }
 rx_core_subscriber_higher_order_all = { path = "crates/rx_core_subscriber_higher_order_all" }
 rx_core_subscriber_higher_order_map = { path = "crates/rx_core_subscriber_higher_order_map" }
-rx_core_subscriber_merge = { path = "crates/rx_core_subscriber_merge" }
 rx_core_subscriber_rc = { path = "crates/rx_core_subscriber_rc" }
 rx_core_subscriber_switch = { path = "crates/rx_core_subscriber_switch" }
 # Operators

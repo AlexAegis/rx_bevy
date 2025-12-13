@@ -32,11 +32,12 @@ where
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
 	Destination: 'static + Subscriber<In = In::Out, InError = In::OutError>,
 {
-	pub fn new(destination: Destination) -> Self {
+	pub fn new(destination: Destination, concurrency_limit: usize) -> Self {
 		Self {
 			destination:
 				HigherOrderSubscriber::HigherOrderSubscriber::<In, Destination>::new_from_destination(
 					destination,
+					concurrency_limit.max(1)
 				),
 			_phantom_data: PhantomData,
 		}

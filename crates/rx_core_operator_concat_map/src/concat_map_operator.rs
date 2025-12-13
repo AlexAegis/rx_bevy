@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_subscriber_concat::ConcatSubscriberProvider;
+use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
 use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
 use rx_core_traits::{Observable, Operator, Signal, Subscriber};
 
@@ -50,7 +50,7 @@ where
 		InError,
 		Mapper,
 		InnerObservable,
-		ConcatSubscriberProvider,
+		ConcurrentSubscriberProvider,
 		Destination,
 	>
 	where
@@ -64,7 +64,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderMapSubscriber::new(destination, self.mapper.clone())
+		HigherOrderMapSubscriber::new(destination, self.mapper.clone(), 1)
 	}
 }
 
@@ -141,12 +141,14 @@ mod test {
 			notification_collector.lock().nth_notification(6),
 			&SubscriberNotification::Complete
 		));
+
+		subscription.unsubscribe();
+
 		assert!(matches!(
 			notification_collector.lock().nth_notification(7),
 			&SubscriberNotification::Unsubscribe
 		));
 
-		subscription.unsubscribe();
 		subject.unsubscribe();
 	}
 

@@ -126,6 +126,7 @@ where
 	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
 			self.closed_flag.close();
+			self.finished_flag.close();
 
 			if let Some(subscribers) = self.close() {
 				for mut destination in subscribers {
@@ -188,5 +189,6 @@ where
 
 		// Close the flag regardless to avoid the safety check on drop.
 		self.closed_flag.close();
+		self.finished_flag.close();
 	}
 }

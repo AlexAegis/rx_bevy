@@ -10,11 +10,12 @@ pub trait ObservablePipeExtensionMergeMap: Observable + Sized {
 	>(
 		self,
 		mapper: Mapper,
+		concurrency_limit: usize,
 	) -> Pipe<Self, MergeMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		Pipe::new(self, MergeMapOperator::new(mapper))
+		Pipe::new(self, MergeMapOperator::new(mapper, concurrency_limit))
 	}
 }
 

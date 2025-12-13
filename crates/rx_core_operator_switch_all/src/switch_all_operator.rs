@@ -48,7 +48,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderAllSubscriber::new(destination)
+		HigherOrderAllSubscriber::new(destination, 1)
 	}
 }
 
@@ -125,12 +125,14 @@ mod test {
 			notification_collector.lock().nth_notification(6),
 			&SubscriberNotification::Complete
 		));
+
+		subscription.unsubscribe();
+
 		assert!(matches!(
 			notification_collector.lock().nth_notification(7),
 			&SubscriberNotification::Unsubscribe
 		));
 
-		subscription.unsubscribe();
 		subject.unsubscribe();
 	}
 

@@ -26,7 +26,7 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	fn new_from_destination(destination: Destination) -> Self {
+	fn new_from_destination(destination: Destination, _concurrency_limit: usize) -> Self {
 		Self::new(destination)
 	}
 }

@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
+use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
 use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
-use rx_core_subscriber_merge::MergeSubscriberProvider;
 use rx_core_traits::{Observable, Operator, Signal, Subscriber};
 
 #[derive(RxOperator)]
@@ -18,6 +18,7 @@ where
 	InnerObservable: Observable + Signal,
 {
 	mapper: Mapper,
+	concurrency_limit: usize,
 	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
 
@@ -28,9 +29,10 @@ where
 	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	pub fn new(mapper: Mapper) -> Self {
+	pub fn new(mapper: Mapper, concurrency_limit: usize) -> Self {
 		Self {
 			mapper,
+			concurrency_limit,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -50,7 +52,7 @@ where
 		InError,
 		Mapper,
 		InnerObservable,
-		MergeSubscriberProvider,
+		ConcurrentSubscriberProvider,
 		Destination,
 	>
 	where
@@ -64,7 +66,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderMapSubscriber::new(destination, self.mapper.clone())
+		HigherOrderMapSubscriber::new(destination, self.mapper.clone(), self.concurrency_limit)
 	}
 }
 
@@ -79,6 +81,7 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			mapper: self.mapper.clone(),
+			concurrency_limit: self.concurrency_limit,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -141,12 +144,13 @@ mod test {
 			notification_collector.lock().nth_notification(6),
 			&SubscriberNotification::Complete
 		));
+
+		subscription.unsubscribe();
+
 		assert!(matches!(
 			notification_collector.lock().nth_notification(7),
 			&SubscriberNotification::Unsubscribe
 		));
-
-		subscription.unsubscribe();
 		subject.unsubscribe();
 	}
 

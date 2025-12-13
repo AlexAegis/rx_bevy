@@ -4,12 +4,13 @@ use rx_core_traits::{Observable, Operator, Signal};
 use crate::operator::MergeMapOperator;
 
 pub trait OperatorComposeExtensionMergeMap: Operator + Sized {
-	fn switch_map<
+	fn merge_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
+		concurrency_limit: usize,
 	) -> CompositeOperator<
 		Self,
 		MergeMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>,
@@ -17,7 +18,7 @@ pub trait OperatorComposeExtensionMergeMap: Operator + Sized {
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		CompositeOperator::new(self, MergeMapOperator::new(mapper))
+		CompositeOperator::new(self, MergeMapOperator::new(mapper, concurrency_limit))
 	}
 }
 

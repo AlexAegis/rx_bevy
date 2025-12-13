@@ -44,12 +44,12 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	pub fn new(destination: Destination, mapper: Mapper) -> Self {
+	pub fn new(destination: Destination, mapper: Mapper, concurrency_limit: usize) -> Self {
 		Self {
 			destination: HigherOrderSubscriber::HigherOrderSubscriber::<
 				InnerObservable,
 				Destination,
-			>::new_from_destination(destination),
+			>::new_from_destination(destination, concurrency_limit.max(1)),
 			mapper,
 			_phantom_data: PhantomData,
 		}

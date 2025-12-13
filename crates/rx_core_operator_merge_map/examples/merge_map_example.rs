@@ -17,10 +17,13 @@ fn main() {
 		.clone()
 		.finalize(|| println!("finalize: upstream"))
 		.tap_next(|n| println!("emit (source): {n:?}"))
-		.merge_map(move |next| match next {
-			Either::Left => l.clone(),
-			Either::Right => r.clone(),
-		})
+		.merge_map(
+			move |next| match next {
+				Either::Left => l.clone(),
+				Either::Right => r.clone(),
+			},
+			usize::MAX,
+		)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("merge_map"));
 

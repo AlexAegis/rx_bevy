@@ -6,7 +6,7 @@ use bevy_ecs::{
 	hierarchy::Children,
 	system::{Command, Commands},
 };
-use bevy_log::{debug, error};
+use bevy_log::debug;
 use derive_where::derive_where;
 use disqualified::ShortName;
 use rx_core_traits::{Signal, UpgradeableObserver};

@@ -2,11 +2,11 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
+use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
-use rx_core_subscriber_merge::MergeSubscriberProvider;
 use rx_core_traits::{Observable, Operator, Signal, Subscriber};
 
-#[derive_where(Clone, Default)]
+#[derive_where(Clone)]
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
@@ -17,6 +17,7 @@ where
 	In: Observable + Signal,
 	InError: Signal + Into<In::OutError>,
 {
+	concurrency_limit: usize,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -25,8 +26,9 @@ where
 	In: Observable + Signal,
 	InError: Signal + Into<In::OutError>,
 {
-	pub fn new() -> Self {
+	pub fn new(concurrency_limit: usize) -> Self {
 		Self {
+			concurrency_limit,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -38,7 +40,7 @@ where
 	InError: Signal + Into<In::OutError>,
 {
 	type Subscriber<Destination>
-		= HigherOrderAllSubscriber<In, InError, MergeSubscriberProvider, Destination>
+		= HigherOrderAllSubscriber<In, InError, ConcurrentSubscriberProvider, Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -50,7 +52,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderAllSubscriber::new(destination)
+		HigherOrderAllSubscriber::new(destination, self.concurrency_limit)
 	}
 }
 
@@ -111,12 +113,14 @@ mod test {
 			notification_collector.lock().nth_notification(6),
 			&SubscriberNotification::Complete
 		));
+
+		subscription.unsubscribe();
+
 		assert!(matches!(
 			notification_collector.lock().nth_notification(7),
 			&SubscriberNotification::Unsubscribe
 		));
 
-		subscription.unsubscribe();
 		subject.unsubscribe();
 	}
 
