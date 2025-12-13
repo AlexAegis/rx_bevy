@@ -6,15 +6,15 @@ use crate::operator::MergeMapOperator;
 pub trait ObservablePipeExtensionMergeMap: Observable + Sized {
 	fn merge_map<
 		NextInnerObservable: Observable + Signal,
-		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
-		switcher: Switcher,
-	) -> Pipe<Self, MergeMapOperator<Self::Out, Self::OutError, Switcher, NextInnerObservable>>
+		mapper: Mapper,
+	) -> Pipe<Self, MergeMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		Pipe::new(self, MergeMapOperator::new(switcher))
+		Pipe::new(self, MergeMapOperator::new(mapper))
 	}
 }
 

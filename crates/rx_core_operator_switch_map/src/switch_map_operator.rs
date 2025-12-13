@@ -10,46 +10,45 @@ use rx_core_traits::{Observable, Operator, Signal, Subscriber};
 #[rx_in_error(InError)]
 #[rx_out(InnerObservable::Out)]
 #[rx_out_error(InnerObservable::OutError)]
-pub struct SwitchMapOperator<In, InError, Switcher, InnerObservable>
+pub struct SwitchMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	switcher: Switcher,
+	mapper: Mapper,
 	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
 
-impl<In, InError, Switcher, InnerObservable>
-	SwitchMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> SwitchMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	pub fn new(switcher: Switcher) -> Self {
+	pub fn new(mapper: Mapper) -> Self {
 		Self {
-			switcher,
+			mapper,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable> Operator
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> Operator
+	for SwitchMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>
 		= HigherOrderMapSubscriber<
 		In,
 		InError,
-		Switcher,
+		Mapper,
 		InnerObservable,
 		SwitchSubscriberProvider,
 		Destination,
@@ -65,21 +64,21 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderMapSubscriber::new(destination, self.switcher.clone())
+		HigherOrderMapSubscriber::new(destination, self.mapper.clone())
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable> Clone
-	for SwitchMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> Clone
+	for SwitchMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	fn clone(&self) -> Self {
 		Self {
-			switcher: self.switcher.clone(),
+			mapper: self.mapper.clone(),
 			_phantom_data: PhantomData,
 		}
 	}

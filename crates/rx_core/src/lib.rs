@@ -58,6 +58,10 @@ pub mod operator {
 	pub use rx_core_operator_adsr::operator::*;
 	#[cfg(feature = "operator_composite")]
 	pub use rx_core_operator_composite::operator::*;
+	#[cfg(feature = "operator_concat_all")]
+	pub use rx_core_operator_concat_all::operator::*;
+	#[cfg(feature = "operator_concat_map")]
+	pub use rx_core_operator_concat_map::operator::*;
 	#[cfg(feature = "operator_delay")]
 	pub use rx_core_operator_delay::operator::*;
 	#[cfg(feature = "operator_end_with")]
@@ -122,6 +126,10 @@ pub mod extension_compose {
 	pub use rx_core_operator_adsr::extension_compose::*;
 	#[cfg(feature = "operator_composite")]
 	pub use rx_core_operator_composite::extension_compose::*;
+	#[cfg(feature = "operator_concat_all")]
+	pub use rx_core_operator_concat_all::extension_compose::*;
+	#[cfg(feature = "operator_concat_map")]
+	pub use rx_core_operator_concat_map::extension_compose::*;
 	#[cfg(feature = "operator_delay")]
 	pub use rx_core_operator_delay::extension_compose::*;
 	#[cfg(feature = "operator_end_with")]
@@ -184,6 +192,10 @@ pub mod extension_pipe {
 	pub use rx_core_observable_pipe::extension_pipe::*;
 	#[cfg(feature = "operator_adsr")]
 	pub use rx_core_operator_adsr::extension_pipe::*;
+	#[cfg(feature = "operator_concat_all")]
+	pub use rx_core_operator_concat_all::extension_pipe::*;
+	#[cfg(feature = "operator_concat_map")]
+	pub use rx_core_operator_concat_map::extension_pipe::*;
 	#[cfg(feature = "operator_delay")]
 	pub use rx_core_operator_delay::extension_pipe::*;
 	#[cfg(feature = "operator_end_with")]

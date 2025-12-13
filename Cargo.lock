@@ -1594,11 +1594,12 @@ dependencies = [
 
 [[package]]
 name = "cargo-platform"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "122ec45a44b270afd1402f351b782c676b173e3c3fb28d86ff7ebfb4d86a4ee4"
+checksum = "87a0c0e6148f11f01f32650a2ea02d532b2ad4e81d8bd41e6e565b5adc5e6082"
 dependencies = [
  "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -4378,6 +4379,8 @@ dependencies = [
  "rx_core_observer_print",
  "rx_core_operator_adsr",
  "rx_core_operator_composite",
+ "rx_core_operator_concat_all",
+ "rx_core_operator_concat_map",
  "rx_core_operator_delay",
  "rx_core_operator_end_with",
  "rx_core_operator_enumerate",
@@ -4715,6 +4718,35 @@ dependencies = [
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_concat_all"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_subscriber_concat",
+ "rx_core_subscriber_higher_order_all",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_concat_map"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_observable_pipe",
+ "rx_core_operator_composite",
+ "rx_core_subscriber_concat",
+ "rx_core_subscriber_higher_order_map",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -5163,6 +5195,18 @@ dependencies = [
  "rx_core",
  "rx_core_macro_subject_derive",
  "rx_core_subject",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_subscriber_concat"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_subscriber_higher_order",
+ "rx_core_subscriber_rc",
  "rx_core_testing",
  "rx_core_traits",
 ]

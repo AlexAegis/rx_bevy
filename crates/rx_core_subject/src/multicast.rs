@@ -18,6 +18,7 @@ where
 	#[derive_where(skip(Debug))]
 	subscribers: SmallVec<[Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>; 1]>,
 	closed_flag: SubscriptionClosedFlag,
+	finished_flag: SubscriptionClosedFlag,
 }
 
 impl<In, InError> Multicast<In, InError>
@@ -29,6 +30,11 @@ where
 	fn clean(&mut self) {
 		self.subscribers
 			.retain(|subscriber| !subscriber.is_closed());
+	}
+
+	#[inline]
+	pub fn is_finished(&self) -> bool {
+		*self.finished_flag
 	}
 
 	/// Closes the multicast and drains all its resources so the caller
@@ -80,7 +86,7 @@ where
 	InError: Signal + Clone,
 {
 	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() {
+		if !self.is_finished() {
 			for destination in self.subscribers.iter_mut() {
 				destination.next(next.clone());
 			}
@@ -89,20 +95,20 @@ where
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
+		if !self.is_finished() {
 			for mut destination in self.subscribers.drain(..) {
 				destination.error(error.clone());
-				destination.unsubscribe();
 			}
+			self.finished_flag.close();
 		}
 	}
 
 	fn complete(&mut self) {
-		if !self.is_closed() {
+		if !self.is_finished() {
 			for mut destination in self.subscribers.drain(..) {
 				destination.complete();
-				destination.unsubscribe();
 			}
+			self.finished_flag.close();
 		}
 	}
 }
@@ -165,6 +171,7 @@ where
 		Self {
 			subscribers: SmallVec::new(),
 			closed_flag: false.into(),
+			finished_flag: false.into(),
 		}
 	}
 }

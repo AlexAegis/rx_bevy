@@ -21,15 +21,14 @@ where
 	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
 
-impl<In, InError, Switcher, InnerObservable>
-	MergeMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> MergeMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	pub fn new(mapper: Switcher) -> Self {
+	pub fn new(mapper: Mapper) -> Self {
 		Self {
 			mapper,
 			_phantom_data: PhantomData,
@@ -37,19 +36,19 @@ where
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable> Operator
-	for MergeMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> Operator
+	for MergeMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>
 		= HigherOrderMapSubscriber<
 		In,
 		InError,
-		Switcher,
+		Mapper,
 		InnerObservable,
 		MergeSubscriberProvider,
 		Destination,
@@ -69,12 +68,12 @@ where
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable> Clone
-	for MergeMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> Clone
+	for MergeMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	fn clone(&self) -> Self {

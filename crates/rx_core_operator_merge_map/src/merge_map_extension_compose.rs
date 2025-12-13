@@ -6,18 +6,18 @@ use crate::operator::MergeMapOperator;
 pub trait OperatorComposeExtensionMergeMap: Operator + Sized {
 	fn switch_map<
 		NextInnerObservable: Observable + Signal,
-		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
-		switcher: Switcher,
+		mapper: Mapper,
 	) -> CompositeOperator<
 		Self,
-		MergeMapOperator<Self::Out, Self::OutError, Switcher, NextInnerObservable>,
+		MergeMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>,
 	>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		CompositeOperator::new(self, MergeMapOperator::new(switcher))
+		CompositeOperator::new(self, MergeMapOperator::new(mapper))
 	}
 }
 

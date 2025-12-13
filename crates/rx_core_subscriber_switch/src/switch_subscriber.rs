@@ -41,10 +41,10 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	pub(crate) destination: RcSubscriber<Destination>,
-	pub(crate) inner_subscription:
+	destination: RcSubscriber<Destination>,
+	inner_subscription:
 		Option<<InnerObservable as Observable>::Subscription<RcSubscriber<Destination>>>,
-	pub(crate) closed_flag: SubscriptionClosedFlag,
+	closed_flag: SubscriptionClosedFlag,
 }
 
 impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>

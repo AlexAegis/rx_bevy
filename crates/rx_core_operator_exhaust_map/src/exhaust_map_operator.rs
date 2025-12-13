@@ -68,12 +68,12 @@ where
 	}
 }
 
-impl<In, InError, Switcher, InnerObservable> Clone
-	for ExhaustMapOperator<In, InError, Switcher, InnerObservable>
+impl<In, InError, Mapper, InnerObservable> Clone
+	for ExhaustMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,
 	InError: Signal + Into<InnerObservable::OutError>,
-	Switcher: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	fn clone(&self) -> Self {

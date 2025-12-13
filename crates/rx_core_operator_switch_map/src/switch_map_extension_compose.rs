@@ -6,18 +6,18 @@ use crate::operator::SwitchMapOperator;
 pub trait OperatorComposeExtensionSwitchMap: Operator + Sized {
 	fn switch_map<
 		NextInnerObservable: Observable + Signal,
-		Switcher: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
-		switcher: Switcher,
+		mapper: Mapper,
 	) -> CompositeOperator<
 		Self,
-		SwitchMapOperator<Self::Out, Self::OutError, Switcher, NextInnerObservable>,
+		SwitchMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>,
 	>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		CompositeOperator::new(self, SwitchMapOperator::new(switcher))
+		CompositeOperator::new(self, SwitchMapOperator::new(mapper))
 	}
 }
 

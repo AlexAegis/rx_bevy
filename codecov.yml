@@ -131,12 +131,18 @@ component_management:
     - component_id: rx_core_operator_composite
       paths:
         - crates/rx_core_operator_composite/**
-    - component_id: rx_core_operator_end_with
+    - component_id: rx_core_operator_concat_all
       paths:
-        - crates/rx_core_operator_end_with/**
+        - crates/rx_core_operator_concat_all/**
+    - component_id: rx_core_operator_concat_map
+      paths:
+        - crates/rx_core_operator_concat_map/**
     - component_id: rx_core_operator_delay
       paths:
         - crates/rx_core_operator_delay/**
+    - component_id: rx_core_operator_end_with
+      paths:
+        - crates/rx_core_operator_end_with/**
     - component_id: rx_core_operator_enumerate
       paths:
         - crates/rx_core_operator_enumerate/**
@@ -230,6 +236,9 @@ component_management:
     - component_id: rx_core_subject_replay
       paths:
         - crates/rx_core_subject_replay/**
+    - component_id: rx_core_subscriber_concat
+      paths:
+        - crates/rx_core_subscriber_concat/**
     - component_id: rx_core_subscriber_exhaust
       paths:
         - crates/rx_core_subscriber_exhaust/**

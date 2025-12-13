@@ -28,6 +28,8 @@
 - [Operators (Core)](12_operators_core.md)
   - [adsr](12_operators_core/adsr.md)
   - [composite](12_operators_core/composite.md)
+  - [concat_all](12_operators_core/concat_all.md)
+  - [concat_map](12_operators_core/concat_map.md)
   - [delay](12_operators_core/delay.md)
   - [end_with](12_operators_core/end_with.md)
   - [enumerate](12_operators_core/enumerate.md)

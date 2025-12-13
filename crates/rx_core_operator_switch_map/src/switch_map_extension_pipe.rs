@@ -6,15 +6,15 @@ use crate::operator::SwitchMapOperator;
 pub trait ObservablePipeExtensionSwitchMap: Observable + Sized {
 	fn switch_map<
 		NextInnerObservable: Observable + Signal,
-		Switcher: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		Mapper: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
-		switcher: Switcher,
-	) -> Pipe<Self, SwitchMapOperator<Self::Out, Self::OutError, Switcher, NextInnerObservable>>
+		mapper: Mapper,
+	) -> Pipe<Self, SwitchMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		Pipe::new(self, SwitchMapOperator::new(switcher))
+		Pipe::new(self, SwitchMapOperator::new(mapper))
 	}
 }
 

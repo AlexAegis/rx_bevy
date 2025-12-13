@@ -124,6 +124,8 @@ observer_print = ["dep:rx_core_observer_print"]
 all_operators = [
     "operator_adsr",
     "operator_composite",
+    "operator_concat_all",
+    "operator_concat_map",
     "operator_delay",
     "operator_end_with",
     "operator_enumerate",
@@ -155,6 +157,8 @@ all_operators = [
 ]
 operator_adsr = ["dep:rx_core_operator_adsr"]
 operator_composite = ["dep:rx_core_operator_composite"]
+operator_concat_all = ["dep:rx_core_operator_concat_all"]
+operator_concat_map = ["dep:rx_core_operator_concat_map"]
 operator_delay = ["dep:rx_core_operator_delay"]
 operator_end_with = ["dep:rx_core_operator_end_with"]
 operator_enumerate = ["dep:rx_core_operator_enumerate"]
@@ -186,6 +190,8 @@ operator_tap_next = ["dep:rx_core_operator_tap_next"]
 pipe = [
     "observable_pipe",
     "rx_core_operator_adsr?/pipe",
+    "rx_core_operator_concat_all?/pipe",
+    "rx_core_operator_concat_map?/pipe",
     "rx_core_operator_delay?/pipe",
     "rx_core_operator_end_with?/pipe",
     "rx_core_operator_enumerate?/pipe",
@@ -217,6 +223,8 @@ pipe = [
 compose = [
     "operator_composite",
     "rx_core_operator_adsr?/compose",
+    "rx_core_operator_concat_all?/compose",
+    "rx_core_operator_concat_map?/compose",
     "rx_core_operator_delay?/compose",
     "rx_core_operator_end_with?/compose",
     "rx_core_operator_enumerate?/compose",
@@ -284,6 +292,8 @@ rx_core_observer_print = { workspace = true, optional = true }
 # Operators
 rx_core_operator_adsr = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
+rx_core_operator_concat_all = { workspace = true, optional = true }
+rx_core_operator_concat_map = { workspace = true, optional = true }
 rx_core_operator_delay = { workspace = true, optional = true }
 rx_core_operator_end_with = { workspace = true, optional = true }
 rx_core_operator_enumerate = { workspace = true, optional = true }
