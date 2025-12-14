@@ -63,6 +63,7 @@ where
 		for next_observable in self.observables.iter().cloned() {
 			concat_subscriber.next(next_observable);
 		}
+		concat_subscriber.complete();
 
 		let mut subscription = SubscriptionData::default();
 		subscription.add_teardown(concat_subscriber.into());
