@@ -7,7 +7,7 @@ fn main() {
 	let mut executor = MockExecutor::default();
 	let scheduler = executor.get_scheduler_handle();
 
-	let mut subject = Subject::<i32>::default();
+	let mut subject = PublishSubject::<i32>::default();
 
 	let mut subscription = subject
 		.clone()

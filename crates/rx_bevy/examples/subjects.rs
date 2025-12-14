@@ -149,7 +149,7 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 	let subject_usize = commands
 		.spawn((
 			Name::new("Subject<usize>"),
-			Subject::<usize, Never>::default().into_component(),
+			PublishSubject::<usize, Never>::default().into_component(),
 		))
 		.id();
 

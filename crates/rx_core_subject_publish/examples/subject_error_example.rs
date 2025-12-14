@@ -1,7 +1,7 @@
 use rx_core::prelude::*;
 
 fn main() {
-	let mut subject = Subject::<i32>::default();
+	let mut subject = PublishSubject::<i32>::default();
 
 	let mut subscription_1 = subject
 		.clone()

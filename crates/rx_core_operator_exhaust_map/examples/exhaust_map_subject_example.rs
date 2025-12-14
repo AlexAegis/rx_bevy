@@ -8,10 +8,10 @@ enum Either {
 }
 
 fn main() {
-	let mut source = Subject::<Either>::default();
-	let mut left = Subject::<i32>::default();
-	let mut right = Subject::<i32>::default();
-	let mut top = Subject::<i32>::default();
+	let mut source = PublishSubject::<Either>::default();
+	let mut left = PublishSubject::<i32>::default();
+	let mut right = PublishSubject::<i32>::default();
+	let mut top = PublishSubject::<i32>::default();
 	let left_clone = left.clone();
 	let right_clone = right.clone();
 	let top_clone = top.clone();

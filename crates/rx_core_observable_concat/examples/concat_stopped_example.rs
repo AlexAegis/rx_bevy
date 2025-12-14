@@ -3,9 +3,9 @@ use rx_core::prelude::*;
 use rx_core_observable_concat::observable_fn::concat;
 
 fn main() {
-	let mut subject_1 = Subject::<usize>::default();
-	let subject_2 = Subject::<usize>::default();
-	let mut subject_3 = Subject::<usize>::default();
+	let mut subject_1 = PublishSubject::<usize>::default();
+	let subject_2 = PublishSubject::<usize>::default();
+	let mut subject_3 = PublishSubject::<usize>::default();
 
 	let _s = concat((subject_1.clone(), subject_2.clone(), subject_3.clone()))
 		.subscribe(PrintObserver::new("concat_operator"));

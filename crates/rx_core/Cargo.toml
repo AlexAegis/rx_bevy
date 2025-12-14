@@ -70,8 +70,9 @@ debug = [
     "rx_core_operator_take?/debug",
     "rx_core_operator_tap?/debug",
     "rx_core_operator_tap_next?/debug",
-    "rx_core_subject?/debug",
+    "rx_core_subject_async?/debug",
     "rx_core_subject_behavior?/debug",
+    "rx_core_subject_publish?/debug",
     "rx_core_subject_replay?/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
@@ -273,14 +274,14 @@ all_schedulers = ["scheduler_ticking"]
 scheduler_ticking = ["dep:rx_core_scheduler_ticking"]
 # Subjects
 all_subjects = [
-    "subject",
     "subject_async",
     "subject_behavior",
+    "subject_publish",
     "subject_replay",
 ]
-subject = ["dep:rx_core_subject"]
 subject_async = ["dep:rx_core_subject_async"]
 subject_behavior = ["dep:rx_core_subject_behavior"]
+subject_publish = ["dep:rx_core_subject_publish"]
 subject_replay = ["dep:rx_core_subject_replay"]
 
 [dependencies]
@@ -344,9 +345,9 @@ rx_core_operator_into_result = { workspace = true, optional = true }
 # Schedulers
 rx_core_scheduler_ticking = { workspace = true, optional = true }
 # Subjects
-rx_core_subject = { workspace = true, optional = true }
 rx_core_subject_async = { workspace = true, optional = true }
 rx_core_subject_behavior = { workspace = true, optional = true }
+rx_core_subject_publish = { workspace = true, optional = true }
 rx_core_subject_replay = { workspace = true, optional = true }
 
 [dev-dependencies]

@@ -99,7 +99,7 @@ mod test {
 		let mock_destination = MockObserver::<i32>::default();
 		let notification_collector = mock_destination.get_notification_collector();
 
-		let mut subject = Subject::<i32, Never>::default();
+		let mut subject = PublishSubject::<i32, Never>::default();
 		let mut source = subject
 			.clone()
 			.map(|i| (0..=i).into_observable())
@@ -141,7 +141,7 @@ mod test {
 		let mock_destination = MockObserver::<i32>::default();
 		let notification_collector = mock_destination.get_notification_collector();
 
-		let mut subject = Subject::<i32, Never>::default();
+		let mut subject = PublishSubject::<i32, Never>::default();
 		let mut source = subject
 			.clone()
 			.map(|i| (0..=i).into_observable())

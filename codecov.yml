@@ -236,15 +236,15 @@ component_management:
     - component_id: rx_core_scheduler_ticking
       paths:
         - crates/rx_core_scheduler_ticking/**
-    - component_id: rx_core_subject
-      paths:
-        - crates/rx_core_subject/**
     - component_id: rx_core_subject_async
       paths:
         - crates/rx_core_subject_async/**
     - component_id: rx_core_subject_behavior
       paths:
         - crates/rx_core_subject_behavior/**
+    - component_id: rx_core_subject_publish
+      paths:
+        - crates/rx_core_subject_publish/**
     - component_id: rx_core_subject_replay
       paths:
         - crates/rx_core_subject_replay/**

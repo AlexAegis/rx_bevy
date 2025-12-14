@@ -407,10 +407,10 @@ This makes subjects capable to input data into subscriptions from "outside" of
 it!
 
 > Run this example:
-> `cargo run --package rx_core_subject --example subject_example`
+> `cargo run --package rx_core_subject_publish --example subject_example`
 
 ```rs
-let mut subject = Subject::<i32>::default();
+let mut subject = PublishSubject::<i32>::default();
 subject.next(1); // Meteora - Track 11
 
 let mut subscription = subject
@@ -448,10 +448,10 @@ attempted on the subject will be immediately unsubscribed.
 Example:
 
 > Run this example:
-> `cargo run --package rx_core_subject --example subject_multicasting_example`
+> `cargo run --package rx_core_subject_publish --example subject_multicasting_example`
 
 ```rs
-let mut subject = Subject::<i32>::default();
+let mut subject = PublishSubject::<i32>::default();
 
 subject.next(1);
 
@@ -493,27 +493,35 @@ unique and can have as many or little operators on it as you want!
 
 ### PublishSubject
 
-> [PublishSubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject/src/subject.rs)
+> [PublishSubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_publish/src/publish_subject.rs)
 
 The vanilla subject, it multicasts incoming values to currently active
 subscribers.
+
+Only completion and error signals are replayed to new subscribers if the
+subject was finished. If the subject was also unsubscribed, the new subscription
+too will be immediately unsubscribed.
+
+> As all other subjects are just wrappers around PublishSubject, this behavior
+> is shared across all of them.
 
 ### BehaviorSubject
 
 > [BehaviorSubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_behavior/src/behavior_subject.rs)
 
-A BehaviorSubject is a subject that always has exactly 1 value of it's input
-type stored, therefore to create it, you must set this value to some initial
-value.
+A BehaviorSubject is a subject that always has exactly **1** value of it's input
+type stored, therefore to create a new BehaviorSubject, you must provide an
+initial value.
 
-Immediately when subscribed to, this initial value is emitted!
+Immediately when subscribed to, this initial value will be emitted!
 
-This makes the BehaviorSubject ideal to cache something that can change over
-time! Subscribers of it will always, and immediately receive the most recent
-value, and keep getting updates as long as they are subscribed!
+This makes the BehaviorSubject ideal to be used as a reactive storage.
+A value that can change over time where subscribers are always reacting to the
+latest value without having to wait for it!
 
 BehaviorSubjects continue to replay even after unsubscribed, but they can't
 receive new values and the new subscription will be immediately unsubscribed.
+They do not replay however when they errored!
 
 > Not every type of value can have a sensible default, or even if they do,
 > sometimes it doesn't make sense to use it in the context! In that case, use a

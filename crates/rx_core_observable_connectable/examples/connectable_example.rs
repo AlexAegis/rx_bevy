@@ -11,7 +11,7 @@ use rx_core::prelude::*;
 fn main() {
 	let source = of(1);
 	let mut connectable =
-		ConnectableObservable::new(source, ConnectableOptions::new(Subject::default));
+		ConnectableObservable::new(source, ConnectableOptions::new(PublishSubject::default));
 	let _subscription_0 = connectable.subscribe(PrintObserver::new("connectable_observable 0"));
 	println!("nothing yet!");
 	let _connection = connectable.connect(); // Source emits 1

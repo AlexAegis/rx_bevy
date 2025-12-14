@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_subject"
-description = "subject for rx_core. An observable and an observer combined, a one way street to push events from outside of an observable."
+name = "rx_core_subject_publish"
+description = "publish subject for rx_core"
 version = "0.1.0"
 readme = "readme.md"
 publish = false

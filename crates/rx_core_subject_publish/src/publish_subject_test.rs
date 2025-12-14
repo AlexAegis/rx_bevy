@@ -11,7 +11,7 @@ fn should_forward_values_to_multiple_active_listeners() {
 	let destination_2 = MockObserver::default();
 	let notification_collector_2 = destination_2.get_notification_collector();
 
-	let mut subject = Subject::<usize>::default();
+	let mut subject = PublishSubject::<usize>::default();
 
 	subject.next(0); // There are no listeners so nobody should receive it
 
@@ -89,7 +89,7 @@ fn should_immediately_complete_new_subscribers_if_complete() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
-	let mut subject = Subject::<usize>::default();
+	let mut subject = PublishSubject::<usize>::default();
 
 	subject.next(0);
 	subject.complete();
@@ -128,7 +128,7 @@ fn should_immediately_error_new_subscribers_if_errored() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 
 	let error = "error";
 	subject.error(error);
@@ -168,7 +168,7 @@ fn should_immediately_unsubscribe_new_subscribers_if_unsubscribed() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 
 	subject.unsubscribe();
 
@@ -198,7 +198,7 @@ fn should_immediately_complete_and_unsubscribe_new_subscribers_if_completed_and_
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.complete();
 	subject.unsubscribe();
 
@@ -234,7 +234,7 @@ fn should_immediately_error_and_unsubscribe_new_subscribers_if_errored_and_unsub
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 	let error = "error";
 	subject.error(error);
 	subject.unsubscribe();
@@ -271,8 +271,8 @@ fn should_be_able_to_chain_subjects_as_destinations() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
-	let mut source_subject = Subject::<usize, &'static str>::default();
-	let mut relay_subject = Subject::<String, &'static str>::default();
+	let mut source_subject = PublishSubject::<usize, &'static str>::default();
+	let mut relay_subject = PublishSubject::<String, &'static str>::default();
 
 	let mut upstream_subscription = source_subject
 		.clone()
@@ -350,7 +350,7 @@ fn should_error_active_subscribers() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 
 	let _subscription = subject.clone().subscribe(destination);
 
@@ -374,35 +374,35 @@ fn should_error_active_subscribers() {
 
 #[test]
 fn should_not_be_closed_after_completion() {
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.complete();
 	assert!(!subject.is_closed());
 }
 
 #[test]
 fn should_be_finished_after_completion() {
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.complete();
 	assert!(subject.is_finished());
 }
 
 #[test]
 fn should_not_be_closed_after_error() {
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.error("error");
 	assert!(!subject.is_closed());
 }
 
 #[test]
 fn should_be_finished_after_error() {
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.error("error");
 	assert!(subject.is_finished());
 }
 
 #[test]
 fn should_be_closed_and_finished_after_unsubscribe() {
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.unsubscribe();
 	assert!(subject.is_closed());
 	assert!(subject.is_finished());
@@ -412,7 +412,7 @@ fn should_be_closed_and_finished_after_unsubscribe() {
 fn teardowns_added_subscriptions_from_a_subject_should_belong_to_the_subscription() {
 	let destination = MockObserver::default();
 
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 
 	let mut subscription = subject.subscribe(destination);
 	let shared_flag = Arc::new(Mutex::new(false));
@@ -435,7 +435,7 @@ fn teardowns_added_subscriptions_from_a_subject_should_belong_to_the_subscriptio
 fn additional_teardowns_should_immediately_execute_if_the_subscription_is_already_closed() {
 	let destination = MockObserver::default();
 
-	let mut subject = Subject::<usize, &'static str>::default();
+	let mut subject = PublishSubject::<usize, &'static str>::default();
 
 	let mut subscription = subject.subscribe(destination);
 	subscription.unsubscribe();

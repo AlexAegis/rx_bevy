@@ -285,12 +285,12 @@ pub mod scheduler {
 }
 
 pub mod subject {
-	#[cfg(feature = "subject")]
-	pub use rx_core_subject::subject::*;
 	#[cfg(feature = "subject_async")]
 	pub use rx_core_subject_async::subject::*;
 	#[cfg(feature = "subject_behavior")]
 	pub use rx_core_subject_behavior::subject::*;
+	#[cfg(feature = "subject_publish")]
+	pub use rx_core_subject_publish::subject::*;
 	#[cfg(feature = "subject_replay")]
 	pub use rx_core_subject_replay::subject::*;
 }

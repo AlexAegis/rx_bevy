@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_macro_subject_derive::RxSubject;
-use rx_core_subject::{MulticastSubscription, subject::Subject};
+use rx_core_subject_publish::{MulticastSubscription, subject::PublishSubject};
 use rx_core_traits::{
 	Finishable, LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber,
 	UpgradeableObserver,
@@ -22,7 +22,7 @@ where
 	InError: Signal + Clone,
 {
 	#[destination]
-	subject: Subject<In, InError>,
+	subject: PublishSubject<In, InError>,
 	/// Shared data across clones
 	values: Arc<Mutex<ConstGenericRingBuffer<In, CAPACITY>>>,
 }
@@ -62,7 +62,7 @@ where
 {
 	fn default() -> Self {
 		Self {
-			subject: Subject::default(),
+			subject: PublishSubject::default(),
 			values: Arc::new(Mutex::new(ConstGenericRingBuffer::default())),
 		}
 	}

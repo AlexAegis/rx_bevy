@@ -6,7 +6,7 @@ use rx_core_testing::MockExecutor;
 fn main() {
 	let mut mock_executor = MockExecutor::new_with_logging();
 	let scheduler = mock_executor.get_scheduler_handle();
-	let mut enqueue_timer_of_length = Subject::<usize>::default();
+	let mut enqueue_timer_of_length = PublishSubject::<usize>::default();
 
 	let mut subscription = enqueue_timer_of_length
 		.clone()

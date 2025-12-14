@@ -85,9 +85,9 @@ mod test {
 		let destination = MockObserver::default();
 		let notification_collector = destination.get_notification_collector();
 
-		let mut subject_1 = Subject::<usize>::default();
-		let mut subject_2 = Subject::<usize>::default();
-		let mut subject_3 = Subject::<usize>::default();
+		let mut subject_1 = PublishSubject::<usize>::default();
+		let mut subject_2 = PublishSubject::<usize>::default();
+		let mut subject_3 = PublishSubject::<usize>::default();
 
 		let mut subscription =
 			ConcatObservable::new((subject_1.clone(), subject_2.clone(), subject_3.clone()))
@@ -145,9 +145,9 @@ mod test {
 		let destination = MockObserver::default();
 		let notification_collector = destination.get_notification_collector();
 
-		let mut subject_1 = Subject::<usize>::default();
+		let mut subject_1 = PublishSubject::<usize>::default();
 		subject_1.complete();
-		let mut subject_2 = Subject::<usize>::default();
+		let mut subject_2 = PublishSubject::<usize>::default();
 		subject_2.complete();
 
 		let mut subscription =

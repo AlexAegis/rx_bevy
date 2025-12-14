@@ -3,14 +3,14 @@ use rx_core::prelude::*;
 /// By default, a connectable observable unsubscribes from its source when the
 /// connection is unsubscribed
 fn main() {
-	let mut source = Subject::<i32>::default();
+	let mut source = PublishSubject::<i32>::default();
 	let src = source.clone().finalize(|| println!("source finalize"));
 
 	let mut connectable = ConnectableObservable::new(
 		src,
 		ConnectableOptions::new(|| {
 			println!("create connector");
-			Subject::default()
+			PublishSubject::default()
 		})
 		.unsubscribe_connector_on_disconnect(true),
 	);

@@ -7,9 +7,9 @@ enum Either {
 }
 
 fn main() {
-	let mut upstream_subject = Subject::<Either>::default();
-	let mut inner_left_subject = Subject::<i32>::default();
-	let mut inner_right_subject = Subject::<i32>::default();
+	let mut upstream_subject = PublishSubject::<Either>::default();
+	let mut inner_left_subject = PublishSubject::<i32>::default();
+	let mut inner_right_subject = PublishSubject::<i32>::default();
 
 	let l = inner_left_subject.clone();
 	let r = inner_right_subject.clone();

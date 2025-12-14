@@ -15,7 +15,7 @@ use crate::{Multicast, MulticastSubscription};
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-pub struct Subject<In, InError = Never>
+pub struct PublishSubject<In, InError = Never>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -23,7 +23,7 @@ where
 	multicast: Arc<RwLock<Multicast<In, InError>>>,
 }
 
-impl<In, InError> Subject<In, InError>
+impl<In, InError> PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -37,7 +37,7 @@ where
 	}
 }
 
-impl<In, InError> Finishable for Subject<In, InError>
+impl<In, InError> Finishable for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -51,7 +51,7 @@ where
 	}
 }
 
-impl<In, InError> Clone for Subject<In, InError>
+impl<In, InError> Clone for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -64,7 +64,7 @@ where
 	}
 }
 
-impl<In, InError> Default for Subject<In, InError>
+impl<In, InError> Default for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -76,7 +76,7 @@ where
 	}
 }
 
-impl<In, InError> Observable for Subject<In, InError>
+impl<In, InError> Observable for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -101,7 +101,7 @@ where
 	}
 }
 
-impl<In, InError> Observer for Subject<In, InError>
+impl<In, InError> Observer for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -119,7 +119,7 @@ where
 	}
 }
 
-impl<In, InError> SubscriptionLike for Subject<In, InError>
+impl<In, InError> SubscriptionLike for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -145,7 +145,7 @@ where
 	}
 }
 
-impl<In, InError> Drop for Subject<In, InError>
+impl<In, InError> Drop for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,

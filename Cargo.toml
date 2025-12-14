@@ -118,7 +118,7 @@ rx_core_operator_into_result = { path = "crates/rx_core_operator_into_result" }
 # Subscriptions
 rx_core_subscription_inert = { path = "crates/rx_core_subscription_inert" }
 # Subjects
-rx_core_subject = { path = "crates/rx_core_subject" }
+rx_core_subject_publish = { path = "crates/rx_core_subject_publish" }
 rx_core_subject_async = { path = "crates/rx_core_subject_async" }
 rx_core_subject_behavior = { path = "crates/rx_core_subject_behavior" }
 rx_core_subject_replay = { path = "crates/rx_core_subject_replay" }

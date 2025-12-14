@@ -1,8 +1,8 @@
 use rx_core::prelude::*;
 
 fn main() {
-	let mut first_subject = Subject::<i32>::default();
-	let second_subject = Subject::<i32>::default();
+	let mut first_subject = PublishSubject::<i32>::default();
+	let second_subject = PublishSubject::<i32>::default();
 
 	let _second_subject_subscription = second_subject
 		.clone()

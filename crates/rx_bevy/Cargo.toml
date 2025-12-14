@@ -191,14 +191,14 @@ operator_tap = ["rx_core/operator_tap"]
 operator_tap_next = ["rx_core/operator_tap_next"]
 # Core Subjects
 all_core_subjects = [
-    "subject",
     "subject_async",
     "subject_behavior",
+    "subject_publish",
     "subject_replay",
 ]
-subject = ["rx_core/subject"]
 subject_async = ["rx_core/subject_async"]
 subject_behavior = ["rx_core/subject_behavior"]
+subject_publish = ["rx_core/subject_publish"]
 subject_replay = ["rx_core/subject_replay"]
 
 [dependencies]

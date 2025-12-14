@@ -187,20 +187,14 @@ pub struct RxPackage {
 }
 
 impl RxPackage {
+	#[inline]
 	pub fn get_short_name(&self) -> String {
-		if matches!(self.category, RxCrateCategory::Subject) && self.name_only.is_empty() {
-			self.category.to_string()
-		} else {
-			self.name_only.to_string()
-		}
+		self.name_only.to_string()
 	}
 
+	#[inline]
 	pub fn as_feature_name(&self) -> String {
-		if matches!(self.category, RxCrateCategory::Subject) && self.name_only.is_empty() {
-			format!("{}", self.category)
-		} else {
-			format!("{}_{}", self.category, self.name_only)
-		}
+		format!("{}_{}", self.category, self.name_only)
 	}
 
 	pub fn as_feature_group(&self, aggregators: &HashMap<PackageId, AggregatorPackage>) -> String {

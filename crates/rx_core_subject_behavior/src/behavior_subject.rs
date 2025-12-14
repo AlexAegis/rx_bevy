@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subject_derive::RxSubject;
-use rx_core_subject::{MulticastSubscription, subject::Subject};
+use rx_core_subject_publish::{MulticastSubscription, subject::PublishSubject};
 use rx_core_traits::{
 	Finishable, LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber,
 	UpgradeableObserver,
@@ -21,7 +21,7 @@ where
 	InError: Signal + Clone,
 {
 	#[destination]
-	subject: Subject<In, InError>,
+	subject: PublishSubject<In, InError>,
 	/// So cloned subjects retain the same current value across clones
 	value: Arc<Mutex<In>>,
 }
@@ -33,7 +33,7 @@ where
 {
 	pub fn new(value: In) -> Self {
 		Self {
-			subject: Subject::default(),
+			subject: PublishSubject::default(),
 			value: Arc::new(Mutex::new(value)),
 		}
 	}
