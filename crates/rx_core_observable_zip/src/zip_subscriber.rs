@@ -60,7 +60,7 @@ where
 		// else, don't do anything, the incoming value is ignored as the queue is full
 	}
 
-	fn check_if_can_complete(&mut self) {
+	fn try_complete(&mut self) {
 		if !self.destination.is_closed()
 			&& (self.o1_queue.is_completed() || self.o2_queue.is_completed())
 		{
@@ -101,7 +101,7 @@ where
 			self.destination.next((o1_val.clone(), o2_val.clone()));
 		}
 
-		self.check_if_can_complete();
+		self.try_complete();
 	}
 
 	fn error(&mut self, error: Self::InError) {
@@ -113,6 +113,6 @@ where
 
 	#[inline]
 	fn complete(&mut self) {
-		self.check_if_can_complete();
+		self.try_complete();
 	}
 }

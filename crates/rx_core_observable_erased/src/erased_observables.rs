@@ -52,10 +52,10 @@ where
 
 macro_rules! tuple_len {
 	() => { 0usize };
+	(@one $name:ident) => { 1usize };
 	($($name:ident),+) => {
 		0usize $(+ tuple_len!(@one $name))*
 	};
-	(@one $name:ident) => { 1usize };
 }
 
 macro_rules! impl_tuple_erased_observable {
@@ -67,7 +67,6 @@ macro_rules! impl_tuple_erased_observable {
 			$($name: 'static + Observable<Out = Out, OutError = OutError> + Send + Sync),*
 		> From<($($name,)*)> for ErasedObservables<Out, OutError, { tuple_len!($($name),*) }>
 		{
-			#[allow(non_snake_case)]
 			fn from(value: ($($name,)*)) -> Self {
 				#[allow(non_snake_case)]
 				let ($($name,)*) = value;

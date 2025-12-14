@@ -1,6 +1,5 @@
 #![no_std]
 
-mod either_observable;
 mod either_out;
 mod either_out_error;
 mod into_variant_subscriber;
@@ -8,7 +7,3 @@ mod into_variant_subscriber;
 pub use either_out::*;
 pub use either_out_error::*;
 pub use into_variant_subscriber::*;
-
-pub mod observable {
-	pub use super::either_observable::*;
-}

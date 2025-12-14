@@ -33,7 +33,13 @@ impl From<bool> for SubscriptionClosedFlag {
 impl Drop for SubscriptionClosedFlag {
 	fn drop(&mut self) {
 		if !self.is_closed() {
-			panic!("SubscriptionClosedFlag was dropped without closing it!")
+			// This debug assertion helps to ensure that where it is used, it is
+			// explicitly unsubscribed from, instead of relying on drop
+			// unsubscribing them, which is not guaranteed to happen in all cases.
+			debug_assert!(
+				false,
+				"SubscriptionClosedFlag was dropped without closing it!"
+			)
 		}
 	}
 }

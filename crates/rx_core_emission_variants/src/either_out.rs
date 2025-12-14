@@ -8,7 +8,6 @@ where
 	O2: Observable,
 {
 	O1(O1::Out),
-	/// The completion signal is also forwarded through the output channel
 	CompleteO1,
 	O2(O2::Out),
 	CompleteO2,
