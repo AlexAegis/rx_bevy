@@ -5,12 +5,16 @@ pub use rx_core_traits::*;
 pub mod observable {
 	#[cfg(feature = "observable_combine_latest")]
 	pub use rx_core_observable_combine_latest::observable::*;
+	#[cfg(feature = "observable_concat")]
+	pub use rx_core_observable_concat::observable::*;
 	#[cfg(feature = "observable_connectable")]
 	pub use rx_core_observable_connectable::observable::*;
 	#[cfg(feature = "observable_deferred")]
 	pub use rx_core_observable_deferred::observable::*;
 	#[cfg(feature = "observable_empty")]
 	pub use rx_core_observable_empty::observable::*;
+	#[cfg(feature = "observable_erased")]
+	pub use rx_core_observable_erased::observable::*;
 	#[cfg(feature = "observable_interval")]
 	pub use rx_core_observable_interval::observable::*;
 	#[cfg(feature = "observable_iterator")]
@@ -35,6 +39,8 @@ pub mod observable {
 pub mod observable_fn {
 	#[cfg(feature = "observable_combine_latest")]
 	pub use rx_core_observable_combine_latest::observable_fn::*;
+	#[cfg(feature = "observable_concat")]
+	pub use rx_core_observable_concat::observable_fn::*;
 	#[cfg(feature = "observable_deferred")]
 	pub use rx_core_observable_deferred::observable_fn::*;
 	#[cfg(feature = "observable_empty")]

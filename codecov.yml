@@ -80,6 +80,9 @@ component_management:
     - component_id: rx_core_observable_combine_latest
       paths:
         - crates/rx_core_observable_combine_latest/**
+    - component_id: rx_core_observable_concat
+      paths:
+        - crates/rx_core_observable_concat/**
     - component_id: rx_core_observable_connectable
       paths:
         - crates/rx_core_observable_connectable/**
@@ -89,6 +92,9 @@ component_management:
     - component_id: rx_core_observable_empty
       paths:
         - crates/rx_core_observable_empty/**
+    - component_id: rx_core_observable_erased
+      paths:
+        - crates/rx_core_observable_erased/**
     - component_id: rx_core_observable_interval
       paths:
         - crates/rx_core_observable_interval/**

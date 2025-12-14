@@ -54,9 +54,11 @@ rx_core_macro_subscription_derive = { path = "crates/rx_core_macro_subscription_
 rx_core_macro_task_derive = { path = "crates/rx_core_macro_task_derive" }
 # Observables
 rx_core_observable_connectable = { path = "crates/rx_core_observable_connectable" }
+rx_core_observable_concat = { path = "crates/rx_core_observable_concat" }
 rx_core_observable_combine_latest = { path = "crates/rx_core_observable_combine_latest" }
 rx_core_observable_deferred = { path = "crates/rx_core_observable_deferred" }
 rx_core_observable_empty = { path = "crates/rx_core_observable_empty" }
+rx_core_observable_erased = { path = "crates/rx_core_observable_erased" }
 rx_core_observable_interval = { path = "crates/rx_core_observable_interval" }
 rx_core_observable_iterator = { path = "crates/rx_core_observable_iterator" }
 rx_core_observable_iterator_on_tick = { path = "crates/rx_core_observable_iterator_on_tick" }
@@ -205,6 +207,7 @@ syn = { version = "2.0", default-features = false, features = [
     "printing",
     "proc-macro",
 ] }
+variadics_please = { version = "1.1.0", default-features = false }
 # Cargo Tools
 cargo_metadata = { version = "0.23.0", default-features = false }
 # CLI

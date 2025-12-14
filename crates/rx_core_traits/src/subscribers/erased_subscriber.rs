@@ -1,8 +1,8 @@
 use derive_where::derive_where;
 
 use crate::{
-	Observer, ObserverInput, PrimaryCategorySubscriber, Signal, Subscriber, SubscriptionLike,
-	Teardown, TeardownCollection, WithPrimaryCategory,
+	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Signal, Subscriber,
+	SubscriptionLike, Teardown, TeardownCollection, WithPrimaryCategory,
 };
 
 // Boxed erased subscriber so it can be owned inside containers like RwLock.
@@ -39,6 +39,13 @@ where
 	InError: Signal,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
+}
+
+impl<In, InError> ObserverUpgradesToSelf for ErasedSubscriber<In, InError>
+where
+	In: Signal,
+	InError: Signal,
+{
 }
 
 impl<In, InError> ObserverInput for ErasedSubscriber<In, InError>
