@@ -22,7 +22,6 @@ fn main() {
 
 	first_subject_subscription_1.unsubscribe();
 
-	// TODO: Bug, this should not be logged by the tap of the first, just unsubscribed subscription!
 	first_subject.next(4);
 
 	let mut _first_subject_subscription_2 = first_subject

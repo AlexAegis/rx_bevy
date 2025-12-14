@@ -1,9 +1,10 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	Finishable, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
+	Finishable, LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber,
+	UpgradeableObserver,
 };
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -22,7 +23,7 @@ where
 	#[destination]
 	subject: Subject<In, InError>,
 	/// So cloned subjects retain the same current value across clones
-	value: Arc<RwLock<In>>,
+	value: Arc<Mutex<In>>,
 }
 
 impl<In, InError> BehaviorSubject<In, InError>
@@ -33,7 +34,7 @@ where
 	pub fn new(value: In) -> Self {
 		Self {
 			subject: Subject::default(),
-			value: Arc::new(RwLock::new(value)),
+			value: Arc::new(Mutex::new(value)),
 		}
 	}
 
@@ -42,13 +43,7 @@ where
 	/// subscription though to keep your code reactive, only use this when it's
 	/// absolutely necessary.
 	pub fn value(&self) -> In {
-		self.value
-			.read()
-			.unwrap_or_else(|poison_error| {
-				self.value.clear_poison();
-				poison_error.into_inner()
-			})
-			.clone()
+		self.value.lock_ignore_poison().clone()
 	}
 }
 
@@ -69,12 +64,7 @@ where
 	InError: Signal + Clone,
 {
 	fn next(&mut self, next: In) {
-		let mut buffer = self.value.write().unwrap_or_else(|poison_error| {
-			self.value.clear_poison();
-			poison_error.into_inner()
-		});
-
-		*buffer = next.clone();
+		*self.value.lock_ignore_poison() = next.clone();
 		self.subject.next(next);
 	}
 
@@ -106,17 +96,13 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		let mut downstream_subscriber = destination.upgrade();
-		let next = self
-			.value
-			.read()
-			.unwrap_or_else(|poison_error| {
-				self.value.clear_poison();
-				poison_error.into_inner()
-			})
-			.clone();
+		let mut destination = destination.upgrade();
 
-		downstream_subscriber.next(next);
-		self.subject.subscribe(downstream_subscriber)
+		if !self.subject.is_errored() {
+			let next = self.value.lock_ignore_poison().clone();
+			destination.next(next);
+		}
+
+		self.subject.subscribe(destination)
 	}
 }

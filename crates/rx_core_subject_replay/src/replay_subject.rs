@@ -1,10 +1,11 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
 use rx_core_traits::{
-	Finishable, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
+	Finishable, LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber,
+	UpgradeableObserver,
 };
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
@@ -23,7 +24,7 @@ where
 	#[destination]
 	subject: Subject<In, InError>,
 	/// Shared data across clones
-	values: Arc<RwLock<ConstGenericRingBuffer<In, CAPACITY>>>,
+	values: Arc<Mutex<ConstGenericRingBuffer<In, CAPACITY>>>,
 }
 
 impl<const CAPACITY: usize, In, InError> ReplaySubject<CAPACITY, In, InError>
@@ -39,15 +40,7 @@ where
 	/// This has a max length of `CAPACITY` but can be empty too, right when
 	/// the subject is created and no values have been observed.
 	pub fn values(&self) -> Vec<In> {
-		self.values
-			.read()
-			.unwrap_or_else(|poison_error| {
-				self.values.clear_poison();
-				poison_error.into_inner()
-			})
-			.iter()
-			.cloned()
-			.collect()
+		self.values.lock_ignore_poison().iter().cloned().collect()
 	}
 }
 
@@ -70,7 +63,7 @@ where
 	fn default() -> Self {
 		Self {
 			subject: Subject::default(),
-			values: Arc::new(RwLock::new(ConstGenericRingBuffer::default())),
+			values: Arc::new(Mutex::new(ConstGenericRingBuffer::default())),
 		}
 	}
 }
@@ -81,13 +74,7 @@ where
 	InError: Signal + Clone,
 {
 	fn next(&mut self, next: In) {
-		self.values
-			.write()
-			.unwrap_or_else(|poison_error| {
-				self.values.clear_poison();
-				poison_error.into_inner()
-			})
-			.enqueue(next.clone());
+		self.values.lock_ignore_poison().enqueue(next.clone());
 
 		self.subject.next(next);
 	}
@@ -120,21 +107,16 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		let mut downstream_subscriber = destination.upgrade();
-		let buffer_iter = self
-			.values
-			.read()
-			.unwrap_or_else(|poison_error| {
-				self.values.clear_poison();
-				poison_error.into_inner()
-			})
-			.clone()
-			.into_iter();
+		let mut destination = destination.upgrade();
 
-		for value in buffer_iter {
-			downstream_subscriber.next(value);
+		if !self.subject.is_errored() {
+			let buffer_iter = self.values.lock_ignore_poison().clone().into_iter();
+
+			for value in buffer_iter {
+				destination.next(value);
+			}
 		}
 
-		self.subject.subscribe(downstream_subscriber)
+		self.subject.subscribe(destination)
 	}
 }

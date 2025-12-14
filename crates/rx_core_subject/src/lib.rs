@@ -9,3 +9,9 @@ pub mod subject;
 pub mod prelude {
 	pub use super::subject::*;
 }
+
+#[cfg(test)]
+mod subject_test;
+
+#[cfg(test)]
+mod multicast_test;

@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuar
 
 pub trait LockWithPoisonBehavior<T>
 where
-	T: 'static,
+	T: 'static + ?Sized,
 {
 	type Guard<'g>
 	where
@@ -14,11 +14,13 @@ where
 	) -> Self::Guard<'_>;
 
 	fn lock_ignore_poison(&self) -> Self::Guard<'_>;
+
+	fn lock_clear_poison(&self) -> Self::Guard<'_>;
 }
 
 impl<T> LockWithPoisonBehavior<T> for Arc<Mutex<T>>
 where
-	T: 'static,
+	T: 'static + ?Sized,
 {
 	type Guard<'g>
 		= MutexGuard<'g, T>
@@ -42,11 +44,19 @@ where
 		self.lock()
 			.unwrap_or_else(|poison_error| poison_error.into_inner())
 	}
+
+	#[inline]
+	fn lock_clear_poison(&self) -> Self::Guard<'_> {
+		self.lock().unwrap_or_else(|poison_error| {
+			self.clear_poison();
+			poison_error.into_inner()
+		})
+	}
 }
 
 pub trait WriteLockWithPoisonBehavior<T>
 where
-	T: 'static,
+	T: 'static + ?Sized,
 {
 	type Guard<'g>
 	where
@@ -58,11 +68,13 @@ where
 	) -> Self::Guard<'_>;
 
 	fn write_lock_ignore_poison(&self) -> Self::Guard<'_>;
+
+	fn write_lock_clear_poison(&self) -> Self::Guard<'_>;
 }
 
 impl<T> WriteLockWithPoisonBehavior<T> for Arc<RwLock<T>>
 where
-	T: 'static,
+	T: 'static + ?Sized,
 {
 	type Guard<'g>
 		= RwLockWriteGuard<'g, T>
@@ -86,11 +98,19 @@ where
 		self.write()
 			.unwrap_or_else(|poison_error| poison_error.into_inner())
 	}
+
+	#[inline]
+	fn write_lock_clear_poison(&self) -> Self::Guard<'_> {
+		self.write().unwrap_or_else(|poison_error| {
+			self.clear_poison();
+			poison_error.into_inner()
+		})
+	}
 }
 
 pub trait ReadLockWithPoisonBehavior<T>
 where
-	T: 'static,
+	T: 'static + ?Sized,
 {
 	type Guard<'g>
 	where
@@ -102,11 +122,13 @@ where
 	) -> Self::Guard<'_>;
 
 	fn read_lock_ignore_poison(&self) -> Self::Guard<'_>;
+
+	fn read_lock_clear_poison(&self) -> Self::Guard<'_>;
 }
 
 impl<T> ReadLockWithPoisonBehavior<T> for Arc<RwLock<T>>
 where
-	T: 'static,
+	T: 'static + ?Sized,
 {
 	type Guard<'g>
 		= RwLockReadGuard<'g, T>
@@ -129,5 +151,13 @@ where
 	fn read_lock_ignore_poison(&self) -> Self::Guard<'_> {
 		self.read()
 			.unwrap_or_else(|poison_error| poison_error.into_inner())
+	}
+
+	#[inline]
+	fn read_lock_clear_poison(&self) -> Self::Guard<'_> {
+		self.read().unwrap_or_else(|poison_error| {
+			self.clear_poison();
+			poison_error.into_inner()
+		})
 	}
 }

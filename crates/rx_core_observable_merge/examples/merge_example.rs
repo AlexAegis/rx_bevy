@@ -1,6 +1,5 @@
 use rx_core::prelude::*;
 
-/// The tap operator is used to peek inside a stream without changing its behavior
 fn main() {
 	let observable_1 = (1..=3).into_observable().skip(2);
 	let observable_2 = (4..=6).into_observable().take(1);

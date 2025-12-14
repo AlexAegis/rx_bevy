@@ -53,16 +53,11 @@ where
 	/// Closes the multicast and drains all its resources so the caller
 	/// can perform an unsubscribe
 	#[inline]
-	pub(crate) fn close(
+	pub(crate) fn close_and_drain(
 		&mut self,
-	) -> Option<Vec<Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>>> {
-		if self.is_closed() {
-			None
-		} else {
-			let subscribers = self.subscribers.drain(..).collect::<Vec<_>>();
-			self.closed_flag.close();
-			Some(subscribers)
-		}
+	) -> Vec<Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>> {
+		self.closed_flag.close();
+		self.subscribers.drain(..).collect::<Vec<_>>()
 	}
 }
 
@@ -84,13 +79,16 @@ where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let mut destination = destination.upgrade();
+
 		if self.is_finished() {
 			if let Some(error) = self.last_observed_error.clone() {
 				destination.error(error);
 			} else if self.is_completed {
 				destination.complete();
 			}
+		}
 
+		if self.is_closed() {
 			destination.unsubscribe();
 			MulticastSubscription::new_closed()
 		} else {
@@ -146,12 +144,8 @@ where
 
 	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
-			self.closed_flag.close();
-
-			if let Some(subscribers) = self.close() {
-				for mut destination in subscribers {
-					destination.unsubscribe();
-				}
+			for mut destination in self.close_and_drain() {
+				destination.unsubscribe();
 			}
 		}
 	}

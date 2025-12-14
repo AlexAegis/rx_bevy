@@ -7,3 +7,6 @@ pub mod subject {
 pub mod prelude {
 	pub use super::subject::*;
 }
+
+#[cfg(test)]
+mod behavior_subject_test;

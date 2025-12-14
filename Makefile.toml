@@ -142,6 +142,32 @@ args = [
     "https://codecov.io/validate",
 ]
 
+[tasks.test-coverage-crate]
+description = "Tests a crate with tarpaulin for coverage"
+workspace = false
+dependencies = ["setup"]
+command = "cargo"
+args = [
+    "tarpaulin",
+    "--engine",
+    "llvm",
+    "--timeout",
+    "120",
+    "--out",
+    "xml",
+    "lcov",
+    "html",
+    "--skip-clean",
+    "--target-dir",
+    "target/tarpaulin",
+    "--output-dir",
+    "target/coverage",
+    "--no-default-features",
+    "--features",
+    "test",
+    "--package",
+]
+
 [tasks.test-coverage]
 description = "Tests the entire workspace with tarpaulin for coverage"
 workspace = false

@@ -1,6 +1,5 @@
 use rx_core::prelude::*;
 
-/// The tap operator is used to peek inside a stream without changing its behavior
 fn main() {
 	let mut subject_1 = Subject::<i32>::default();
 	let mut subject_2 = Subject::<i32>::default();

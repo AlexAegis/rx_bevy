@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use derive_where::derive_where;
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	Never, Observer, Signal, SubscriberNotification, SubscriptionClosedFlag, SubscriptionLike,
-	Teardown, TeardownCollection,
+	Never, Observer, Signal, SubscriberNotification, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection,
 };
 
 use crate::SharedNotificationCollector;
@@ -21,7 +21,7 @@ where
 	In: Signal,
 	InError: Signal,
 {
-	pub closed_flag: SubscriptionClosedFlag,
+	teardown: SubscriptionData,
 	notification_collector: SharedNotificationCollector<In, InError>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
@@ -34,7 +34,7 @@ where
 	pub fn new(notification_collector: SharedNotificationCollector<In, InError>) -> Self {
 		Self {
 			notification_collector,
-			closed_flag: SubscriptionClosedFlag::default(),
+			teardown: SubscriptionData::default(),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -75,11 +75,11 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		*self.closed_flag
+		self.teardown.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
-		self.closed_flag.close();
+		self.teardown.unsubscribe();
 		self.notification_collector
 			.lock()
 			.push(SubscriberNotification::Unsubscribe);
@@ -93,7 +93,9 @@ where
 {
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown) {
-		if self.is_closed() {
+		if !self.is_closed() {
+			self.teardown.add_teardown(teardown);
+		} else {
 			teardown.execute();
 		}
 		self.notification_collector
