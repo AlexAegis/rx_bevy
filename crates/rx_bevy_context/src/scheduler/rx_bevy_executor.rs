@@ -41,7 +41,7 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	pub fn tick<'a>(&mut self, tick: Tick, context: &mut RxBevyContextItem<'a>) {
-		self.ticking_executor.tick(tick, context);
+	pub fn tick_to<'a>(&mut self, tick: Tick, context: &mut RxBevyContextItem<'a>) {
+		self.ticking_executor.tick_to(tick, context);
 	}
 }

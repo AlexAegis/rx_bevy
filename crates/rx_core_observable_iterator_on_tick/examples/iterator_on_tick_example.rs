@@ -24,9 +24,9 @@ fn main() {
 		.subscribe(PrintObserver::new("iterator_on_tick"));
 	println!("subscribed!");
 
-	executor.tick_by_delta(Duration::from_millis(500));
-	executor.tick_by_delta(Duration::from_millis(16));
-	executor.tick_by_delta(Duration::from_millis(9001));
-	executor.tick_by_delta(Duration::from_millis(0));
-	executor.tick_by_delta(Duration::from_millis(10));
+	executor.tick(Duration::from_millis(500));
+	executor.tick(Duration::from_millis(16));
+	executor.tick(Duration::from_millis(9001));
+	executor.tick(Duration::from_millis(0));
+	executor.tick(Duration::from_millis(10));
 }

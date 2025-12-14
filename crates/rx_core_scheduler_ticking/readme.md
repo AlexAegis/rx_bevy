@@ -1,4 +1,4 @@
-# [rx_core_scheduler_ticking](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_scheduler_ticking)
+# [scheduler_ticking](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_scheduler_ticking)
 
 [![crates.io](https://img.shields.io/crates/v/rx_core_scheduler_ticking.svg)](https://crates.io/crates/rx_core_scheduler_ticking)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

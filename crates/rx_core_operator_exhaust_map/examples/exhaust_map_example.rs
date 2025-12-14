@@ -26,16 +26,16 @@ fn main() {
 		.subscribe(PrintObserver::new("exhaust_map"));
 
 	source.next(1);
-	executor.tick_by_delta(Duration::from_millis(1000));
-	executor.tick_by_delta(Duration::from_millis(1000));
+	executor.tick(Duration::from_millis(1000));
+	executor.tick(Duration::from_millis(1000));
 	source.next(2); // Nothing because the inner one hasn't completed yet!
-	executor.tick_by_delta(Duration::from_millis(1000));
+	executor.tick(Duration::from_millis(1000));
 	source.next(3); // Switches because `take(3)` completed the inner observable
 	source.next(4); // Doesn't switch because the previous one just started!
-	executor.tick_by_delta(Duration::from_millis(1000));
-	executor.tick_by_delta(Duration::from_millis(1000));
+	executor.tick(Duration::from_millis(1000));
+	executor.tick(Duration::from_millis(1000));
 	source.complete();
-	executor.tick_by_delta(Duration::from_millis(1000));
+	executor.tick(Duration::from_millis(1000));
 
 	source.unsubscribe();
 

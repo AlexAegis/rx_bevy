@@ -1,4 +1,4 @@
-# [rx_core_subscriber_exhaust](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subscriber_exhaust)
+# [subscriber_exhaust](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subscriber_exhaust)
 
 [![crates.io](https://img.shields.io/crates/v/rx_core_subscriber_exhaust.svg)](https://crates.io/crates/rx_core_subscriber_exhaust)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

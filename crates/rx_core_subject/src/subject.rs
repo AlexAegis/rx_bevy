@@ -2,7 +2,8 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	Never, Observable, Observer, Signal, Subscriber, SubscriptionLike, UpgradeableObserver,
+	Finishable, Never, Observable, Observer, Signal, Subscriber, SubscriptionLike,
+	UpgradeableObserver,
 };
 
 use crate::{Multicast, MulticastSubscription};
@@ -20,6 +21,20 @@ where
 	InError: Signal + Clone,
 {
 	pub multicast: Arc<RwLock<Multicast<In, InError>>>,
+}
+
+impl<In, InError> Finishable for Subject<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	#[inline]
+	fn is_finished(&self) -> bool {
+		self.multicast
+			.read()
+			.unwrap_or_else(|poison_error| poison_error.into_inner())
+			.is_finished()
+	}
 }
 
 impl<In, InError> Clone for Subject<In, InError>
@@ -64,7 +79,10 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		let mut multicast = self.multicast.write().unwrap_or_else(|a| a.into_inner());
+		let mut multicast = self
+			.multicast
+			.write()
+			.unwrap_or_else(|poison_error| poison_error.into_inner());
 		multicast.subscribe(destination)
 	}
 }

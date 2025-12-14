@@ -1,4 +1,4 @@
-# [rx_core_operator_delay](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay)
+# [operator_delay](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay)
 
 [![crates.io](https://img.shields.io/crates/v/rx_core_operator_delay.svg)](https://crates.io/crates/rx_core_operator_delay)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

@@ -15,13 +15,13 @@ fn main() {
 		.subscribe(PrintObserver::<i32>::new("into_operator"));
 
 	subject.next(1);
-	executor.tick_by_delta(Duration::from_millis(200));
+	executor.tick(Duration::from_millis(200));
 	subject.next(2);
-	executor.tick_by_delta(Duration::from_millis(200));
+	executor.tick(Duration::from_millis(200));
 	// Silence
-	executor.tick_by_delta(Duration::from_millis(200));
+	executor.tick(Duration::from_millis(200));
 	subject.next(3);
-	executor.tick_by_delta(Duration::from_millis(200));
+	executor.tick(Duration::from_millis(200));
 
 	subscription.unsubscribe();
 }

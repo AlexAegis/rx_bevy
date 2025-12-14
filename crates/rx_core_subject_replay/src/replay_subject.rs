@@ -3,7 +3,9 @@ use std::sync::{Arc, RwLock};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
-use rx_core_traits::{Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver};
+use rx_core_traits::{
+	Finishable, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
+};
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.
@@ -46,6 +48,17 @@ where
 			.iter()
 			.cloned()
 			.collect()
+	}
+}
+
+impl<const CAPACITY: usize, In, InError> Finishable for ReplaySubject<CAPACITY, In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	#[inline]
+	fn is_finished(&self) -> bool {
+		self.subject.is_finished()
 	}
 }
 

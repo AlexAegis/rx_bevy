@@ -2,8 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use derive_where::derive_where;
 use rx_core_traits::{
-	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, Signal,
-	Subscriber, SubscriptionClosedFlag, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory,
+	Finishable, Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject,
+	Signal, Subscriber, SubscriptionClosedFlag, SubscriptionLike, UpgradeableObserver,
+	WithPrimaryCategory,
 };
 use smallvec::SmallVec;
 
@@ -21,6 +22,17 @@ where
 	finished_flag: SubscriptionClosedFlag,
 }
 
+impl<In, InError> Finishable for Multicast<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	#[inline]
+	fn is_finished(&self) -> bool {
+		*self.finished_flag
+	}
+}
+
 impl<In, InError> Multicast<In, InError>
 where
 	In: Signal + Clone,
@@ -30,11 +42,6 @@ where
 	fn clean(&mut self) {
 		self.subscribers
 			.retain(|subscriber| !subscriber.is_closed());
-	}
-
-	#[inline]
-	pub fn is_finished(&self) -> bool {
-		*self.finished_flag
 	}
 
 	/// Closes the multicast and drains all its resources so the caller
@@ -70,11 +77,13 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
+		let mut destination = destination.upgrade();
 		if !self.is_closed() {
-			let shared = Arc::new(Mutex::new(destination.upgrade()));
+			let shared = Arc::new(Mutex::new(destination));
 			self.subscribers.push(shared.clone());
 			MulticastSubscription::new(shared)
 		} else {
+			destination.unsubscribe();
 			MulticastSubscription::new_closed()
 		}
 	}

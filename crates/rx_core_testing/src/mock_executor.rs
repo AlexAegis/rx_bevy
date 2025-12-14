@@ -56,23 +56,23 @@ impl Default for MockExecutor {
 }
 
 impl MockExecutor {
-	pub fn tick(&mut self, tick: Tick) {
+	pub fn tick_to(&mut self, tick: Tick) {
 		if self.logging_enabled {
 			println!("Ticking... ({:?})", tick);
 		}
 		let mut context = TickingContext::new(self.ticking_executor.now());
-		self.ticking_executor.tick(tick, &mut context);
+		self.ticking_executor.tick_to(tick, &mut context);
 	}
 
 	pub fn get_current_tick(&mut self) -> Tick {
 		self.ticking_executor.get_current_tick()
 	}
 
-	pub fn tick_by_delta(&mut self, delta: Duration) {
+	pub fn tick(&mut self, delta: Duration) {
 		if self.logging_enabled {
 			println!("Ticking... ({:?})", delta);
 		}
 		let mut context = TickingContext::new(self.ticking_executor.now());
-		self.ticking_executor.tick_by_delta(delta, &mut context);
+		self.ticking_executor.tick(delta, &mut context);
 	}
 }

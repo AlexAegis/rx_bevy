@@ -1,4 +1,4 @@
-# [rx_core_operator_reduce](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_reduce)
+# [operator_reduce](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_reduce)
 
 [![crates.io](https://img.shields.io/crates/v/rx_core_operator_reduce.svg)](https://crates.io/crates/rx_core_operator_reduce)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

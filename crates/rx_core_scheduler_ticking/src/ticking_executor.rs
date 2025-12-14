@@ -72,7 +72,7 @@ where
 		self.current_tick
 	}
 
-	pub fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) {
+	pub fn tick_to(&mut self, tick: Tick, context: &mut C::Item<'_>) {
 		self.current_tick.update(tick);
 		self.tasks_already_ticked.clear();
 		loop {
@@ -88,9 +88,9 @@ where
 		}
 	}
 
-	pub fn tick_by_delta(&mut self, delta: Duration, context: &mut C::Item<'_>) {
+	pub fn tick(&mut self, delta: Duration, context: &mut C::Item<'_>) {
 		let next_tick = self.get_current_tick() + delta;
-		self.tick(next_tick, context);
+		self.tick_to(next_tick, context);
 	}
 
 	fn execute_invoked_tasks(&mut self, tick: Tick, context: &mut C::Item<'_>) {

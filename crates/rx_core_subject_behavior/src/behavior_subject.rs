@@ -2,7 +2,9 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
-use rx_core_traits::{Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver};
+use rx_core_traits::{
+	Finishable, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
+};
 
 /// A BehaviorSubject always contains a value, and immediately emits it
 /// on subscription.
@@ -47,6 +49,17 @@ where
 				poison_error.into_inner()
 			})
 			.clone()
+	}
+}
+
+impl<In, InError> Finishable for BehaviorSubject<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	#[inline]
+	fn is_finished(&self) -> bool {
+		self.subject.is_finished()
 	}
 }
 

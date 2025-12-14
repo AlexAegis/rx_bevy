@@ -128,21 +128,21 @@ mod test_iterator_on_tick_observable {
 				notification_collector.lock().nth_notification(0),
 				SubscriberNotification::Next(1)
 			));
-			mock_executor.tick_by_delta(Duration::from_millis(1));
+			mock_executor.tick(Duration::from_millis(1));
 
 			assert!(
 				!notification_collector.lock().nth_notification_exists(2),
 				"should not have emitted after only one tick"
 			);
-			mock_executor.tick_by_delta(Duration::from_millis(3));
+			mock_executor.tick(Duration::from_millis(3));
 			assert!(matches!(
 				notification_collector.lock().nth_notification(1),
 				SubscriberNotification::Next(2)
 			));
 
-			mock_executor.tick_by_delta(Duration::from_millis(2));
+			mock_executor.tick(Duration::from_millis(2));
 
-			mock_executor.tick_by_delta(Duration::from_millis(1));
+			mock_executor.tick(Duration::from_millis(1));
 			assert!(matches!(
 				notification_collector.lock().nth_notification(2),
 				SubscriberNotification::Next(3)
@@ -208,7 +208,7 @@ mod test_iterator_on_tick_observable {
 				notification_collector.lock().nth_notification(3),
 				SubscriberNotification::Complete
 			));
-			executor.tick_by_delta(Duration::from_millis(1));
+			executor.tick(Duration::from_millis(1));
 
 			assert!(
 				!notification_collector.lock().nth_notification_exists(5),

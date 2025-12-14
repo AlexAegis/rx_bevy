@@ -1,4 +1,4 @@
-# [rx_core_subscriber_higher_order](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subscriber_higher_order)
+# [subscriber_higher_order](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subscriber_higher_order)
 
 [![crates.io](https://img.shields.io/crates/v/rx_core_subscriber_higher_order.svg)](https://crates.io/crates/rx_core_subscriber_higher_order)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

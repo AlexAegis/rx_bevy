@@ -2,7 +2,18 @@ use std::sync::{Arc, RwLock};
 
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject::{MulticastSubscription, subject::Subject};
-use rx_core_traits::{Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver};
+use rx_core_traits::{
+	Finishable, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
+};
+
+struct AsyncSubjectState<In, InError>
+where
+	In: Signal,
+	InError: Signal,
+{
+	last_observed_value: Option<In>,
+	last_observed_error: Option<InError>,
+}
 
 /// The AsyncSubject will only emit the last observed value, when it completes.
 #[derive(RxSubject, Clone)]
@@ -18,8 +29,18 @@ where
 {
 	#[destination]
 	subject: Subject<In, InError>,
-	/// So cloned subjects retain the same current value across clones
-	value: Arc<RwLock<Option<In>>>,
+	shared_state: Arc<RwLock<AsyncSubjectState<In, InError>>>,
+}
+
+impl<In, InError> Finishable for AsyncSubject<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	#[inline]
+	fn is_finished(&self) -> bool {
+		self.subject.is_finished()
+	}
 }
 
 impl<In, InError> Default for AsyncSubject<In, InError>
@@ -30,7 +51,10 @@ where
 	fn default() -> Self {
 		Self {
 			subject: Subject::default(),
-			value: Arc::new(RwLock::new(None)),
+			shared_state: Arc::new(RwLock::new(AsyncSubjectState::<In, InError> {
+				last_observed_error: None,
+				last_observed_value: None,
+			})),
 		}
 	}
 }
@@ -41,12 +65,13 @@ where
 	InError: Signal + Clone,
 {
 	pub fn value(&self) -> Option<In> {
-		self.value
+		self.shared_state
 			.read()
 			.unwrap_or_else(|poison_error| {
-				self.value.clear_poison();
+				self.shared_state.clear_poison();
 				poison_error.into_inner()
 			})
+			.last_observed_value
 			.clone()
 	}
 }
@@ -57,27 +82,34 @@ where
 	InError: Signal + Clone,
 {
 	fn next(&mut self, next: In) {
-		let mut buffer = self.value.write().unwrap_or_else(|poison_error| {
-			self.value.clear_poison();
+		let mut buffer = self.shared_state.write().unwrap_or_else(|poison_error| {
+			self.shared_state.clear_poison();
 			poison_error.into_inner()
 		});
 
-		*buffer = Some(next.clone());
+		buffer.last_observed_value = Some(next.clone());
 	}
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
+		let mut buffer = self.shared_state.write().unwrap_or_else(|poison_error| {
+			self.shared_state.clear_poison();
+			poison_error.into_inner()
+		});
+
+		buffer.last_observed_error = Some(error.clone());
+
 		self.subject.error(error);
 	}
 
 	#[inline]
 	fn complete(&mut self) {
-		let mut buffer = self.value.write().unwrap_or_else(|poison_error| {
-			self.value.clear_poison();
+		let buffer = self.shared_state.read().unwrap_or_else(|poison_error| {
+			self.shared_state.clear_poison();
 			poison_error.into_inner()
 		});
 
-		if let Some(value) = buffer.take() {
+		if let Some(value) = buffer.last_observed_value.clone() {
 			self.subject.next(value);
 		}
 
@@ -102,6 +134,25 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		self.subject.subscribe(destination.upgrade())
+		let mut destination = destination.upgrade();
+
+		if self.subject.is_finished() {
+			let buffer = self.shared_state.write().unwrap_or_else(|poison_error| {
+				self.shared_state.clear_poison();
+				poison_error.into_inner()
+			});
+
+			if let Some(error) = buffer.last_observed_error.clone() {
+				destination.error(error);
+			} else if let Some(next) = buffer.last_observed_value.clone() {
+				destination.next(next);
+				destination.complete();
+			}
+			// The multicast returns pre-closed subscriptions, and unsubscribes
+			// the destination on subscribe, if it's already closed (not just
+			// finished).
+		}
+
+		self.subject.subscribe(destination)
 	}
 }

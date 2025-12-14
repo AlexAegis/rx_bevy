@@ -33,9 +33,9 @@ fn main() {
 	enqueue_timer_of_length.next(1);
 	enqueue_timer_of_length.next(3);
 	enqueue_timer_of_length.complete();
-	mock_executor.tick_by_delta(Duration::from_secs(4));
-	mock_executor.tick_by_delta(Duration::from_secs(1));
-	mock_executor.tick_by_delta(Duration::from_secs(3));
+	mock_executor.tick(Duration::from_secs(4));
+	mock_executor.tick(Duration::from_secs(1));
+	mock_executor.tick(Duration::from_secs(3));
 
 	println!("ticks finished");
 	subscription.unsubscribe();

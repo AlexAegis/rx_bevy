@@ -1,4 +1,4 @@
-# [rx_bevy_observable_resource](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_bevy_observable_resource)
+# [observable_resource](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_bevy_observable_resource)
 
 [![crates.io](https://img.shields.io/crates/v/rx_bevy_observable_resource.svg)](https://crates.io/crates/rx_bevy_observable_resource)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

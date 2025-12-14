@@ -1,4 +1,4 @@
-# [rx_core_operator_lift_result](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_lift_result)
+# [operator_lift_result](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_lift_result)
 
 [![crates.io](https://img.shields.io/crates/v/rx_core_operator_lift_result.svg)](https://crates.io/crates/rx_core_operator_lift_result)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

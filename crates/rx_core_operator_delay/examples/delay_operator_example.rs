@@ -42,6 +42,6 @@ fn main() {
 	subscription.unsubscribe();
 	println!("unsubscribed");
 
-	executor.tick_by_delta(Duration::from_millis(200));
-	executor.tick_by_delta(Duration::from_millis(1200));
+	executor.tick(Duration::from_millis(200));
+	executor.tick(Duration::from_millis(1200));
 }

@@ -19,9 +19,9 @@ fn main() {
 	);
 	let _subscription = interval_observable.subscribe(PrintObserver::new("interval_observable"));
 
-	mock_executor.tick_by_delta(Duration::from_millis(600));
-	mock_executor.tick_by_delta(Duration::from_millis(401));
-	mock_executor.tick_by_delta(Duration::from_millis(16200)); // lag spike! would result in 16 emissions, but the limit is 2!
-	mock_executor.tick_by_delta(Duration::from_millis(1200));
-	mock_executor.tick_by_delta(Duration::from_millis(2200));
+	mock_executor.tick(Duration::from_millis(600));
+	mock_executor.tick(Duration::from_millis(401));
+	mock_executor.tick(Duration::from_millis(16200)); // lag spike! would result in 16 emissions, but the limit is 2!
+	mock_executor.tick(Duration::from_millis(1200));
+	mock_executor.tick(Duration::from_millis(2200));
 }

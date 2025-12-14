@@ -8,15 +8,13 @@ all the concepts and nomenclature you might encounter, and their definitions.
 
 ## Concept Hierarchy
 
-- Front facing
-  - [Observer](#observer-destination)
-  - [Observable](#observable)
-    - [Subscription](#subscription)
-  - [Operator](#operators)
-    - [Subscriber](#subscribers)
-  - [Subject](#subjects)
-- Backside
-  - [Context](#context)
+- [Observer](#observer-destination)
+- [Observable](#observable)
+  - [Subscription](#subscription)
+- [Operator](#operators)
+  - [Subscriber](#subscribers)
+- [Subject](#subjects)
+- [Executor](#executor)
   - [Scheduler](#scheduling)
 
 ## Observer (Destination)
@@ -48,7 +46,7 @@ signals, each with a different purpose and behavior:
 
   > If you're curious about why errors are on a separate channel instead of
   > just using `Result`s, see the
-  > "[Why errors have their own channel?](#why-errors-have-their-own-channel)"
+  > "[Why errors have their own channel?](#why-do-errors-have-their-own-channel)"
   > section.
 
 - The `complete` channel carries the completion signal. It signals that no more
@@ -147,17 +145,14 @@ pub trait ObservableOutput {
 
 ### Example: Subscribing to an Observable
 
-> Let's ignore the `()` context now, more on it later in the
-> [contexts](#context) section.
-
 This example demonstrates a subscription of an observable using the
 `PrintObserver` as the destination. Each value will be emitted immediately, but
 one by one, and then complete.
 
 ```rs
-let iterator_observable = IteratorObservable::<_, ()>::new(1..=4);
+let iterator_observable = IteratorObservable::new(1..=4);
 let subscription = iterator_observable
-    .subscribe(PrintObserver::new("iterator_observable"), &mut ());
+    .subscribe(PrintObserver::new("iterator_observable"));
 ```
 
 Output:
@@ -240,10 +235,10 @@ create an observable that emits a formatter string from made from the upstream
 numbers:
 
 ```rs
-let iterator_observable = IteratorObservable::<_, ()>::new(1..=4);
+let iterator_observable = IteratorObservable::new(1..=4);
 let subscription = iterator_observable
     .map(|i| format!("(number: {i})"))
-    .subscribe(PrintObserver::new("mapped_iterator_observable"), &mut ());
+    .subscribe(PrintObserver::new("mapped_iterator_observable"));
 ```
 
 Output:
@@ -326,11 +321,35 @@ If we zoom out where this operator is used:
 
 ```rs
 let _s = (1..=5)
-    .into_observable::<()>() // Relative to the `map` operator, this `IteratorObservable` is upstream
+    .into_observable() // Relative to the `map` operator, this `IteratorObservable` is upstream
     .map(|i| i * 2)
     .skip(1) // And this `skip` operator is downstream
-    .subscribe(PrintObserver::new("map_operator"), &mut ()); // The `PrintObserver` is also downstream relative to `map`.
+    .subscribe(PrintObserver::new("map_operator")); // The `PrintObserver` is also downstream relative to `map`.
 ```
+
+### UpgradeableObserver
+
+> [UpgradeableObserver Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_traits/src/upgradeable_observer.rs)
+
+When subscribing to an Observable, sometimes we want to observable to
+be able to send an unsubscribe call do this destination, and sometimes it should
+be **detached**.
+
+> Remember: A subscriber is both an observer and a subscription
+
+Regular Subscribers implement it by returning themselves as
+there is nothing to upgrade to become a subscriber. Observers do not have a
+`SubscriptionLike` impl therefore they need to pick another subscriber to wrap
+themselves in, when used as a destination in a `subscribe` call. Which is
+usually the `detached` implementation for observers.
+
+#### Detached Subscriber
+
+A subscriber is detached if it completely avoids sending `unsubscribe`, or in
+some cases even `complete` signals.
+
+Detached subscribers can't unsubscribe downstream, serving as a hard boundary
+for unsubscription.
 
 ### Backpressure
 
@@ -392,17 +411,16 @@ it!
 
 ```rs
 let mut subject = Subject::<i32>::default();
-let mut context = ();
-subject.next(1, &mut context); // Meteora - Track 11
+subject.next(1); // Meteora - Track 11
 
 let mut subscription = subject
       .clone()
-      .subscribe(PrintObserver::<i32>::new("subject_example"), &mut context);
+      .subscribe(PrintObserver::<i32>::new("subject_example"));
 
-subject.next(2, &mut context);
-subject.next(3, &mut context);
-subscription.unsubscribe(&mut context);
-subject.next(4, &mut context);
+subject.next(2);
+subject.next(3);
+subscription.unsubscribe();
+subject.next(4);
 ```
 
 Output:
@@ -422,7 +440,10 @@ when the subscription was active!
 As with any observable, a subject can be subscribed to multiple times! This
 means subjects are fundamentally **multicasting**!
 
-Whenever you put a value inside it, all of their subscribers will receive it:
+Whenever you put a value inside it, all of their subscribers will receive it.
+
+Once unsubscribed, no new values can be emitted by the subject. New subscriptions
+attempted on the subject will be immediately unsubscribed.
 
 Example:
 
@@ -431,33 +452,26 @@ Example:
 
 ```rs
 let mut subject = Subject::<i32>::default();
-let mut context = ();
 
-subject.next(1, &mut context);
+subject.next(1);
 
 let mut subscription_1 = subject
     .clone()
-    .finalize(|_| println!("finalize subscription 1"))
-    .subscribe(
-        PrintObserver::<i32>::new("subject_subscription_1"),
-        &mut context,
-    );
+    .finalize(|| println!("finalize subscription 1"))
+    .subscribe(PrintObserver::<i32>::new("subject_subscription_1"));
 
-subject.next(2, &mut context);
+subject.next(2);
 
 let _subscription_2 = subject
     .clone()
-    .finalize(|_| println!("finalize subscription 2"))
-    .subscribe(
-        PrintObserver::<i32>::new("subject_subscription_2"),
-        &mut context,
-    );
+    .finalize(|| println!("finalize subscription 2"))
+    .subscribe(PrintObserver::<i32>::new("subject_subscription_2"));
 
-subject.next(3, &mut context);
+subject.next(3);
 
-subscription_1.unsubscribe(&mut context);
+subscription_1.unsubscribe();
 
-subject.next(4, &mut context);
+subject.next(4);
 ```
 
 Output:
@@ -477,14 +491,16 @@ You can see that the signal `3` was heard by both subscriptions! And each
 subscription had it's own finalize callback! Each individual subscription is
 unique and can have as many or little operators on it as you want!
 
-### Different types of Subjects
+### PublishSubject
 
-Besides the vanilla [Subject](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject/src/subject.rs),
-there are two more subjects to talk about, both only differ from the base
-subject in what happens at the moment of subscription, everything else is the
-same.
+> [PublishSubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject/src/subject.rs)
 
-#### [BehaviorSubject](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_behavior/src/behavior_subject.rs)
+The vanilla subject, it multicasts incoming values to currently active
+subscribers.
+
+### BehaviorSubject
+
+> [BehaviorSubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_behavior/src/behavior_subject.rs)
 
 A BehaviorSubject is a subject that always has exactly 1 value of it's input
 type stored, therefore to create it, you must set this value to some initial
@@ -496,8 +512,11 @@ This makes the BehaviorSubject ideal to cache something that can change over
 time! Subscribers of it will always, and immediately receive the most recent
 value, and keep getting updates as long as they are subscribed!
 
-> Not all values can have a sensible default, or even if they do, sometimes it
-> doesn't make sense to use it! In that case, use a
+BehaviorSubjects continue to replay even after unsubscribed, but they can't
+receive new values and the new subscription will be immediately unsubscribed.
+
+> Not every type of value can have a sensible default, or even if they do,
+> sometimes it doesn't make sense to use it in the context! In that case, use a
 > [ReplaySubject<1, _>](#replaysubject)!
 
 Example:
@@ -507,23 +526,22 @@ Example:
 
 ```rs
 let mut subject = BehaviorSubject::<i32>::new(10);
-let mut context = ();
 
 // Immediately prints "hello 10"
 let mut hello_subscription = subject
     .clone()
-    .subscribe(PrintObserver::<i32>::new("hello"), &mut context);
+    .subscribe(PrintObserver::<i32>::new("hello"));
 
-subject.next(11, &mut context);
+subject.next(11);
 
 let _s1 = subject
     .clone()
     .map(|next| next * 2)
-    .subscribe(PrintObserver::<i32>::new("hi double"), &mut context);
+    .subscribe(PrintObserver::<i32>::new("hi double"));
 
-subject.next(12, &mut context);
-hello_subscription.unsubscribe(&mut context);
-subject.next(13, &mut context);
+subject.next(12);
+hello_subscription.unsubscribe();
+subject.next(13);
 ```
 
 Output:
@@ -539,13 +557,19 @@ hi double - next: 26
 hi double - unsubscribed
 ```
 
-#### [ReplaySubject](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_replay/src/replay_subject.rs)
+#### ReplaySubject
+
+> [ReplaySubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_replay/src/replay_subject.rs)
 
 A ReplaySubject is a subject that buffers the last `N` emissions, and when
 subscribed to immediately replays all of them!
 
 Unlike BehaviorSubject, it does not guarantee that a value is always present,
 because it does not require you to define some values to create it.
+
+But like BehaviorSubjects, ReplaySubjects continue to replay even after
+unsubscribed, but they can't receive new values and the new subscription will
+be immediately unsubscribed.
 
 > You can still next some values immediately into it if you want!
 
@@ -572,19 +596,19 @@ let mut subject = ReplaySubject::<2, i32>::default();
 // Doesn't print out anything on subscribe
 let _s = subject
     .clone()
-    .subscribe(PrintObserver::<i32>::new("hello"), &mut ());
+    .subscribe(PrintObserver::<i32>::new("hello"));
 
-subject.next(1, &mut ());
-subject.next(2, &mut ());
-subject.next(3, &mut ());
+subject.next(1);
+subject.next(2);
+subject.next(3);
 
 // Only the last two value is printed out, since our capacity is just 2
 let _s2 = subject
     .clone()
-    .subscribe(PrintObserver::<i32>::new("hi"), &mut ());
+    .subscribe(PrintObserver::<i32>::new("hi"));
 
-subject.next(4, &mut ());
-subject.next(5, &mut ());
+subject.next(4);
+subject.next(5);
 ```
 
 Output:
@@ -608,7 +632,16 @@ immediately received by the new subscription!
 
 #### AsyncSubject
 
-The AsyncSubject will emit only the last observed value, when it completes.
+> [AsyncSubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_async/src/async_subject.rs)
+
+The AsyncSubject will emit only the last observed value when it completes, or
+the first observed error, to all active subscribers. Subscriptions after
+completion or error, will immediately receive a `next` and a `complete`, or an
+`error` if there was one.
+If the subject was not only finished, but closed, then it also immediately
+unsubscribes the destination, just like all other subjects.
+
+Or, to new subscribers after it had already completed.
 
 Example:
 
@@ -617,23 +650,24 @@ Example:
 
 ```rs
 let mut subject = AsyncSubject::<i32>::default();
-let mut context = ();
 
-let mut _subscription_1 = subject.clone().subscribe(
-    PrintObserver::<i32>::new("async_subject sub_1"),
-    &mut context,
-);
+let mut _subscription_1 = subject
+  .clone()
+  .subscribe(PrintObserver::<i32>::new("async_subject sub_1"));
 
-subject.next(1, &mut context);
-subject.next(2, &mut context);
+subject.next(1);
+subject.next(2);
 
-let mut _subscription_2 = subject.clone().subscribe(
-    PrintObserver::<i32>::new("async_subject sub_2"),
-    &mut context,
-);
+let mut _subscription_2 = subject
+  .clone()
+  .subscribe(PrintObserver::<i32>::new("async_subject sub_2"));
 
-subject.next(3, &mut context);
-subject.complete(&mut context);
+subject.next(3);
+subject.complete();
+
+let mut _subscription_3 = subject
+  .clone()
+  .subscribe(PrintObserver::<i32>::new("async_subject sub_3"));
 ```
 
 Output:
@@ -642,9 +676,12 @@ Output:
 async_subject sub_1 - next: 3
 async_subject sub_2 - next: 3
 async_subject sub_1 - completed
-async_subject sub_1 - unsubscribed
 async_subject sub_2 - completed
+async_subject sub_3 - next: 3
+async_subject sub_3 - completed
+async_subject sub_3 - unsubscribed
 async_subject sub_2 - unsubscribed
+async_subject sub_1 - unsubscribed
 ```
 
 <!-- 
@@ -657,29 +694,138 @@ the multicasting primitive internally too in some operators for example in
 `share` and `shareReplay`.
 -->
 
-## Context
-
-You must be really curious about what all those context values were in all the
-examples are.
-
-> TODO: The context really is only needed when stuff is created and ticked, it
-> should be possible to do this differently!
-
 ## Scheduling
 
 Every example so far was "immediate", they either emitted all their values
 immediately, or - in the case of subjects - when we pushed values into them.
 
 But what really makes observables useful is when they can **react** to things
-and emit a signal when they do!
+and emit a signal when they do! And for that, a subscription or
+a subscriber needs to be able to emit signals even without upstream
+signals triggering it's own logic.
 
-This is the point where this Rx implementation starts to differ from other ones.
-Normally the original source of an observed event just calls a callback within
-a subscriber and pushes a value inside it, **notifying** the subscribers.
+This requires something that runs in the "background" to drive tasks issued
+by subscribers or subscriptions.
 
-But `rx_core` and `rx_bevy` was designed to work with ECS.
+> For example: "Do a `next` call on this, 2 seconds from now!" or "Call `next`
+> on this every 200ms from now, until I say stop!"
 
-> TODO: Finish once it's actually proven that Scheduling can't be achieved in
-> a better way without the tick channel.
+### Scheduler
 
-Push based scheduling
+The scheduler is a shared queue that subscribers have access to
+(always passed in by the user) to issue tasks to be executed.
+
+### Executor
+
+The executor is the thing responsible to drive tasks, collected by the
+scheduler queue. It owns the scheduler, and handles to the scheduler queue can
+be acquired from the executor.
+
+### Tasks
+
+There are multiple types of tasks, depending on how they are handled with
+respect to time. So that reimplementing basic time based logic - like a delay -
+is not required by the issuer of the task.
+
+Tasks can be issued, cancelled, or invoked from the scheduler queue.
+
+#### Immediate Tasks
+
+The simplest type of tasks, they execute as soon as the executor can
+see the task and then drop it.
+
+#### Delayed Tasks
+
+Delayed tasks will be executed only after their specified delay has passed.
+
+#### Repeated Tasks
+
+Repeated tasks re-execute their work each time they repeat, after a specified
+time interval.
+
+#### Continuous Tasks
+
+Continouos tasks are like repeated tasks but without a time interval, they
+simply execute as many times as often as they can.
+
+> With the tickable executor, this means, on every tick. In bevy, this means
+> once every frame.
+
+#### Invoked Tasks
+
+Invoked tasks are not executed automatically, but based on their `invoke_id`
+can be "invoked" which means executing it as soon as the executor can.
+
+### Scheduler Context
+
+Executors define a context, passed in as a mutable reference to the tasks
+whenever they are executed. The main job of the context is to provide the
+current time (as a `Duration`, denoting the time passed since startup).
+
+> For example: Interacting with the Bevy ECS world.
+
+The context is defined by the executor, but subscribers can be written for
+specific contexts too. Resulting in context specific subscribers with extra
+capabilities relevant only in that context, compatible only with that
+executor.
+
+### Scheduler Task Input
+
+Most generic scheduled subscribers do not need to know about anything
+besides the time coming from the context. Still, some executor
+can provide extra data relevant to the execution of the task at that
+moment.
+
+> For example: In the TickingExecutor, the `Tick` object is passed into every
+> executed task.
+
+### TickingExecutor
+
+> [TickingExecutor Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_scheduler_ticking/src/ticking_executor.rs)
+
+The base scheduler used both for tests, and for Bevy.
+It can be manually advanced by calling `tick`.
+
+> Time can only move forwards in the executor!
+
+### Interval Example
+
+```rs
+let mut mock_executor = MockExecutor::new_with_logging();
+let scheduler = mock_executor.get_scheduler_handle();
+
+let mut interval_observable = IntervalObservable::new(
+  IntervalObservableOptions {
+    duration: Duration::from_secs(1),
+    max_emissions_per_tick: 3,
+    start_on_subscribe: true,
+  },
+  scheduler,
+);
+let _subscription = interval_observable.subscribe(PrintObserver::new("interval_observable"));
+
+mock_executor.tick(Duration::from_millis(600));
+mock_executor.tick(Duration::from_millis(401));
+mock_executor.tick(Duration::from_millis(16200)); // lag spike! would result in 16 emissions, but the limit is 2!
+mock_executor.tick(Duration::from_millis(1200));
+mock_executor.tick(Duration::from_millis(2200));
+```
+
+Output:
+
+```sh
+interval_observable - next: 0
+Ticking... (600ms)
+Ticking... (401ms)
+interval_observable - next: 1
+Ticking... (16.2s)
+interval_observable - next: 2
+interval_observable - next: 3
+interval_observable - next: 4
+Ticking... (1.2s)
+interval_observable - next: 5
+Ticking... (2.2s)
+interval_observable - next: 6
+interval_observable - next: 7
+interval_observable - unsubscribed
+```

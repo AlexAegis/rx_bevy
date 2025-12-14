@@ -1,4 +1,4 @@
-# [rx_core_observable_empty](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_empty)
+# [observable_empty](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_empty)
 
 [![crates.io](https://img.shields.io/crates/v/rx_core_observable_empty.svg)](https://crates.io/crates/rx_core_observable_empty)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

@@ -16,4 +16,8 @@ fn main() {
 
 	subject.next(3);
 	subject.complete();
+
+	let mut _subscription_3 = subject
+		.clone()
+		.subscribe(PrintObserver::<i32>::new("async_subject sub_3"));
 }

@@ -352,7 +352,7 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 10. If you haven't already, update the crates `readme.md` header.
 
     ```md
-    # [rx_bevy_observable_foo](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_bevy_observable_foo)
+    # [observable_foo](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_bevy_observable_foo)
     
     [![crates.io](https://img.shields.io/crates/v/rx_bevy_observable_foo.svg)](https://crates.io/crates/rx_bevy_observable_foo)
     [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
@@ -544,7 +544,7 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
 10. If you haven't already, update the crates `readme.md` header.
 
     ```md
-    # [rx_core_operator_foo](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_foo)
+    # [operator_foo](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_foo)
     
     [![crates.io](https://img.shields.io/crates/v/rx_core_operator_foo.svg)](https://crates.io/crates/rx_core_operator_foo)
     [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)

@@ -67,6 +67,6 @@ where
 	world.resource_scope(|world, mut executor: Mut<RxBevyExecutor<S, C>>| {
 		let deferred_world = DeferredWorld::from(world);
 		let mut context = deferred_world.into_rx_context::<C>();
-		executor.tick(tick, &mut context);
+		executor.tick_to(tick, &mut context);
 	});
 }
