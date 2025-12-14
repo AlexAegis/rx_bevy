@@ -25,6 +25,12 @@ pub struct Teardown {
 	teardown_fn: Option<Box<dyn FnOnce() + Send + Sync>>,
 }
 
+impl PartialEq for Teardown {
+	fn eq(&self, other: &Self) -> bool {
+		self.is_closed() == other.is_closed()
+	}
+}
+
 impl Debug for Teardown {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.write_fmt(format_args!(

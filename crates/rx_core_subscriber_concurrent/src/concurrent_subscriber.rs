@@ -18,6 +18,7 @@ where
 	destination: SharedSubscriber<Destination>,
 	observable_queue: VecDeque<InnerObservable>,
 	upstream_completed: bool,
+	downstream_completed: bool,
 	active_subscriptions: usize,
 	concurrency_limit: usize,
 	waits_for_completion: usize,
@@ -41,6 +42,7 @@ where
 			concurrency_limit,
 			observable_queue: VecDeque::new(),
 			upstream_completed: false,
+			downstream_completed: false,
 			shared_outer_teardown,
 		}
 	}
@@ -50,7 +52,9 @@ where
 			&& self.waits_for_completion == 0
 			&& self.observable_queue.is_empty()
 			&& self.upstream_completed
+			&& !self.downstream_completed
 		{
+			self.downstream_completed = true;
 			self.destination.complete();
 		}
 	}
@@ -70,6 +74,7 @@ where
 	Destination: 'static + Subscriber,
 {
 	is_finished: bool,
+	shared_upstream_unsubscribed_flag: Arc<Mutex<bool>>,
 	data: Arc<Mutex<ConcurrentSubscriberData<InnerObservable, Destination>>>,
 }
 
@@ -78,9 +83,13 @@ where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
 	Destination: 'static + Subscriber,
 {
-	pub fn new(data: Arc<Mutex<ConcurrentSubscriberData<InnerObservable, Destination>>>) -> Self {
+	pub fn new(
+		data: Arc<Mutex<ConcurrentSubscriberData<InnerObservable, Destination>>>,
+		shared_upstream_unsubscribed_flag: Arc<Mutex<bool>>,
+	) -> Self {
 		Self {
 			data,
+			shared_upstream_unsubscribed_flag,
 			is_finished: false,
 		}
 	}
@@ -157,17 +166,28 @@ where
 	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
 			self.is_finished = true;
+
+			// When upstream unsubscribes, it holds a lock to `data` which would
+			// deadlock this unsubscribe call. Luckily when upstream
+			// unsubscribes, there's no need for locking `data` here, as
+			// no new subscriptions should be made anyway.
+			if *self.shared_upstream_unsubscribed_flag.lock_ignore_poison() {
+				return;
+			}
+
 			let next_observable = {
 				let mut lock = self
 					.data
 					.lock_with_poison_behavior(|inner| inner.unsubscribe());
-
+				lock.waits_for_completion += 1; // Assume the next observable can complete immediately
 				lock.observable_queue.pop_front()
 			};
 
 			let next_subscription = if let Some(mut next_observable) = next_observable {
-				let subscription =
-					next_observable.subscribe(ConcurrentInnerSubscriber::new(self.data.clone()));
+				let subscription = next_observable.subscribe(ConcurrentInnerSubscriber::new(
+					self.data.clone(),
+					self.shared_upstream_unsubscribed_flag.clone(),
+				));
 
 				Some(subscription)
 			} else {
@@ -180,8 +200,8 @@ where
 
 			if let Some(subscription) = next_subscription {
 				lock.shared_outer_teardown.add(subscription);
-				lock.waits_for_completion += 1;
 			} else {
+				lock.waits_for_completion -= 1;
 				lock.active_subscriptions -= 1;
 			}
 			lock.try_complete();
@@ -200,6 +220,7 @@ where
 {
 	shared_teardown: Arc<Mutex<SubscriptionData>>,
 	data: Arc<Mutex<ConcurrentSubscriberData<InnerObservable, Destination>>>,
+	shared_upstream_unsubscribe_flag: Arc<Mutex<bool>>,
 	closed_flag: SubscriptionClosedFlag,
 }
 
@@ -211,6 +232,7 @@ where
 	pub fn new(destination: Destination, concurrency_limit: usize) -> Self {
 		let destination = SharedSubscriber::new(destination);
 		let shared_teardown = Arc::new(Mutex::new(SubscriptionData::default()));
+		let shared_upstream_unsubscribe_flag = Arc::new(Mutex::new(false));
 
 		Self {
 			data: Arc::new(Mutex::new(ConcurrentSubscriberData::new(
@@ -218,6 +240,7 @@ where
 				concurrency_limit,
 				shared_teardown.clone(),
 			))),
+			shared_upstream_unsubscribe_flag,
 			shared_teardown,
 			closed_flag: false.into(),
 		}
@@ -238,8 +261,10 @@ where
 				lock.active_subscriptions += 1;
 				lock.waits_for_completion += 1;
 				drop(lock);
-				let subscription =
-					next.subscribe(ConcurrentInnerSubscriber::new(self.data.clone()));
+				let subscription = next.subscribe(ConcurrentInnerSubscriber::new(
+					self.data.clone(),
+					self.shared_upstream_unsubscribe_flag.clone(),
+				));
 				self.shared_teardown.add_teardown(subscription.into());
 			} else {
 				lock.observable_queue.push_back(next);
@@ -282,8 +307,12 @@ where
 		// An upstream unsubscribe stops everything!
 		if !self.is_closed() {
 			self.closed_flag.close();
+
+			*self.shared_upstream_unsubscribe_flag.lock_ignore_poison() = true;
+
 			self.shared_teardown.unsubscribe();
 			let mut lock = self.data.lock_ignore_poison();
+			lock.try_complete();
 			lock.unsubscribe();
 		}
 	}

@@ -1,7 +1,7 @@
 use crate::{ObserverNotification, Signal, Subscriber, SubscriptionNotification, Teardown};
 
 /// Represents all signal events a subscriber can observe in a materialized form
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum SubscriberNotification<In, InError>
 where
 	In: Signal,
