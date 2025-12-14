@@ -18,4 +18,9 @@ fn main() {
 	subject.next(12);
 	hello_subscription.unsubscribe();
 	subject.next(13);
+	subject.complete();
+
+	let mut _compelted_subscription = subject
+		.clone()
+		.subscribe(PrintObserver::<i32>::new("hello_completed"));
 }

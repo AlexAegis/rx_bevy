@@ -19,7 +19,9 @@ where
 	#[derive_where(skip(Debug))]
 	subscribers: SmallVec<[Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>; 1]>,
 	closed_flag: SubscriptionClosedFlag,
-	finished_flag: SubscriptionClosedFlag,
+	is_completed: bool,
+	#[derive_where(skip(Debug))]
+	last_observed_error: Option<InError>,
 }
 
 impl<In, InError> Finishable for Multicast<In, InError>
@@ -29,7 +31,7 @@ where
 {
 	#[inline]
 	fn is_finished(&self) -> bool {
-		*self.finished_flag
+		self.is_completed || self.last_observed_error.is_some() || *self.closed_flag
 	}
 }
 
@@ -42,6 +44,10 @@ where
 	fn clean(&mut self) {
 		self.subscribers
 			.retain(|subscriber| !subscriber.is_closed());
+	}
+
+	pub fn get_error(&self) -> Option<&InError> {
+		self.last_observed_error.as_ref()
 	}
 
 	/// Closes the multicast and drains all its resources so the caller
@@ -78,13 +84,19 @@ where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let mut destination = destination.upgrade();
-		if !self.is_closed() {
+		if self.is_finished() {
+			if let Some(error) = self.last_observed_error.clone() {
+				destination.error(error);
+			} else if self.is_completed {
+				destination.complete();
+			}
+
+			destination.unsubscribe();
+			MulticastSubscription::new_closed()
+		} else {
 			let shared = Arc::new(Mutex::new(destination));
 			self.subscribers.push(shared.clone());
 			MulticastSubscription::new(shared)
-		} else {
-			destination.unsubscribe();
-			MulticastSubscription::new_closed()
 		}
 	}
 }
@@ -105,7 +117,7 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_finished() {
-			self.finished_flag.close();
+			self.last_observed_error = Some(error.clone());
 			for mut destination in self.subscribers.drain(..) {
 				destination.error(error.clone());
 			}
@@ -114,7 +126,7 @@ where
 
 	fn complete(&mut self) {
 		if !self.is_finished() {
-			self.finished_flag.close();
+			self.is_completed = true;
 			for mut destination in self.subscribers.drain(..) {
 				destination.complete();
 			}
@@ -135,7 +147,6 @@ where
 	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
 			self.closed_flag.close();
-			self.finished_flag.close();
 
 			if let Some(subscribers) = self.close() {
 				for mut destination in subscribers {
@@ -181,7 +192,8 @@ where
 		Self {
 			subscribers: SmallVec::new(),
 			closed_flag: false.into(),
-			finished_flag: false.into(),
+			is_completed: false,
+			last_observed_error: None,
 		}
 	}
 }
@@ -198,6 +210,5 @@ where
 
 		// Close the flag regardless to avoid the safety check on drop.
 		self.closed_flag.close();
-		self.finished_flag.close();
 	}
 }

@@ -12,4 +12,10 @@ fn main() {
 	subject.next(3);
 	subscription.unsubscribe();
 	subject.next(4);
+	subject.complete();
+
+	// Instantly completes
+	let _subscription_2 = subject
+		.clone()
+		.subscribe(PrintObserver::<i32>::new("subject_example_2"));
 }

@@ -142,15 +142,22 @@ where
 				poison_error.into_inner()
 			});
 
-			if let Some(error) = buffer.last_observed_error.clone() {
-				destination.error(error);
-			} else if let Some(next) = buffer.last_observed_value.clone() {
+			let errored = self
+				.subject
+				.multicast
+				.read()
+				.unwrap_or_else(|p| p.into_inner())
+				.get_error()
+				.is_some();
+
+			if !errored && let Some(next) = buffer.last_observed_value.clone() {
 				destination.next(next);
-				destination.complete();
 			}
 			// The multicast returns pre-closed subscriptions, and unsubscribes
 			// the destination on subscribe, if it's already closed (not just
 			// finished).
+			// If it's finished it also sends a completion signal, or the error
+			// if there was one.
 		}
 
 		self.subject.subscribe(destination)
