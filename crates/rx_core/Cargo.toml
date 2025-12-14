@@ -68,6 +68,7 @@ debug = [
     "rx_core_operator_switch_all?/debug",
     "rx_core_operator_switch_map?/debug",
     "rx_core_operator_take?/debug",
+    "rx_core_operator_tap?/debug",
     "rx_core_operator_tap_next?/debug",
     "rx_core_subject?/debug",
     "rx_core_subject_behavior?/debug",
@@ -155,6 +156,7 @@ all_operators = [
     "operator_switch_all",
     "operator_switch_map",
     "operator_take",
+    "operator_tap",
     "operator_tap_next",
 ]
 operator_adsr = ["dep:rx_core_operator_adsr"]
@@ -189,6 +191,7 @@ operator_start_with = ["dep:rx_core_operator_start_with"]
 operator_switch_all = ["dep:rx_core_operator_switch_all"]
 operator_switch_map = ["dep:rx_core_operator_switch_map"]
 operator_take = ["dep:rx_core_operator_take"]
+operator_tap = ["dep:rx_core_operator_tap"]
 operator_tap_next = ["dep:rx_core_operator_tap_next"]
 pipe = [
     "observable_pipe",
@@ -222,6 +225,7 @@ pipe = [
     "rx_core_operator_switch_all?/pipe",
     "rx_core_operator_switch_map?/pipe",
     "rx_core_operator_take?/pipe",
+    "rx_core_operator_tap?/pipe",
     "rx_core_operator_tap_next?/pipe",
 ]
 compose = [
@@ -256,6 +260,7 @@ compose = [
     "rx_core_operator_switch_all?/compose",
     "rx_core_operator_switch_map?/compose",
     "rx_core_operator_take?/compose",
+    "rx_core_operator_tap?/compose",
     "rx_core_operator_tap_next?/compose",
 ]
 # Schedulers
@@ -326,6 +331,7 @@ rx_core_operator_start_with = { workspace = true, optional = true }
 rx_core_operator_switch_all = { workspace = true, optional = true }
 rx_core_operator_switch_map = { workspace = true, optional = true }
 rx_core_operator_take = { workspace = true, optional = true }
+rx_core_operator_tap = { workspace = true, optional = true }
 rx_core_operator_tap_next = { workspace = true, optional = true }
 rx_core_operator_into_result = { workspace = true, optional = true }
 # Schedulers

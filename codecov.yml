@@ -221,6 +221,9 @@ component_management:
     - component_id: rx_core_operator_take
       paths:
         - crates/rx_core_operator_take/**
+    - component_id: rx_core_operator_tap
+      paths:
+        - crates/rx_core_operator_tap/**
     - component_id: rx_core_operator_tap_next
       paths:
         - crates/rx_core_operator_tap_next/**

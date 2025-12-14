@@ -6,7 +6,7 @@ use rx_core_traits::{Operator, Signal, Subscriber};
 
 use crate::TapNextSubscriber;
 
-#[derive_where(Debug)]
+#[derive_where(Debug, Clone)]
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
@@ -57,19 +57,5 @@ where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		TapNextSubscriber::new(destination, self.on_next.clone())
-	}
-}
-
-impl<In, InError, OnNext> Clone for TapNextOperator<In, InError, OnNext>
-where
-	In: Signal,
-	InError: Signal,
-	OnNext: 'static + Fn(&In) + Clone + Send + Sync,
-{
-	fn clone(&self) -> Self {
-		Self {
-			on_next: self.on_next.clone(),
-			_phantom_data: PhantomData,
-		}
 	}
 }

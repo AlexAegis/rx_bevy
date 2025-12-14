@@ -118,6 +118,8 @@ pub mod operator {
 	pub use rx_core_operator_switch_map::operator::*;
 	#[cfg(feature = "operator_take")]
 	pub use rx_core_operator_take::operator::*;
+	#[cfg(feature = "operator_tap")]
+	pub use rx_core_operator_tap::operator::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::operator::*;
 }
@@ -186,6 +188,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_switch_map::extension_compose::*;
 	#[cfg(feature = "operator_take")]
 	pub use rx_core_operator_take::extension_compose::*;
+	#[cfg(feature = "operator_tap")]
+	pub use rx_core_operator_tap::extension_compose::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::extension_compose::*;
 }
@@ -254,6 +258,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_switch_map::extension_pipe::*;
 	#[cfg(feature = "operator_take")]
 	pub use rx_core_operator_take::extension_pipe::*;
+	#[cfg(feature = "operator_tap")]
+	pub use rx_core_operator_tap::extension_pipe::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::extension_pipe::*;
 }

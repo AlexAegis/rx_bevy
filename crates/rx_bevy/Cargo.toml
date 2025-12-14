@@ -148,6 +148,7 @@ all_core_operators = [
     "operator_switch_all",
     "operator_switch_map",
     "operator_take",
+    "operator_tap",
     "operator_tap_next",
 ]
 operator_adsr = ["rx_core/operator_adsr"]
@@ -182,6 +183,7 @@ operator_start_with = ["rx_core/operator_start_with"]
 operator_switch_all = ["rx_core/operator_switch_all"]
 operator_switch_map = ["rx_core/operator_switch_map"]
 operator_take = ["rx_core/operator_take"]
+operator_tap = ["rx_core/operator_tap"]
 operator_tap_next = ["rx_core/operator_tap_next"]
 # Core Subjects
 all_core_subjects = [

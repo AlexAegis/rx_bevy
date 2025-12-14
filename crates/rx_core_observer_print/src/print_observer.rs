@@ -20,6 +20,20 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
+impl<In, InError> Clone for PrintObserver<In, InError>
+where
+	In: Signal + Debug,
+	InError: Signal + Debug,
+{
+	fn clone(&self) -> Self {
+		Self {
+			prefix: self.prefix,
+			teardown: SubscriptionData::default(),
+			_phantom_data: PhantomData,
+		}
+	}
+}
+
 impl<In, InError> PrintObserver<In, InError>
 where
 	In: Signal + Debug,
@@ -86,7 +100,7 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if !self.teardown.is_closed() {
+		if !self.is_closed() {
 			self.teardown.unsubscribe();
 			println!("{}unsubscribed", self.get_prefix());
 		}
@@ -110,6 +124,7 @@ where
 	InError: Signal + Debug,
 {
 	fn drop(&mut self) {
-		self.unsubscribe();
+		// Perform the teardown, but do not print.
+		self.teardown.unsubscribe();
 	}
 }

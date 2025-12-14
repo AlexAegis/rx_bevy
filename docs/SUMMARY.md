@@ -58,6 +58,7 @@
   - [switch_all](12_operators_core/switch_all.md)
   - [switch_map](12_operators_core/switch_map.md)
   - [take](12_operators_core/take.md)
+  - [tap](12_operators_core/tap.md)
   - [tap_next](12_operators_core/tap_next.md)
 - [Operators (Bevy Specific)](13_operators_bevy.md)
 - [Schedulers (Core)](14_schedulers_core.md)
