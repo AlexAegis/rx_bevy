@@ -7,7 +7,6 @@ fn main() {
 	let mut subscription = subject
 		.clone()
 		.subscribe(PrintObserver::<i32>::new("subject_example"));
-
 	subject.next(2);
 	subject.next(3);
 	subscription.unsubscribe();

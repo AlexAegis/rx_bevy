@@ -118,7 +118,7 @@ where
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_finished() {
 			self.last_observed_error = Some(error.clone());
-			for mut destination in self.subscribers.drain(..) {
+			for destination in self.subscribers.iter_mut() {
 				destination.error(error.clone());
 			}
 		}
@@ -127,7 +127,7 @@ where
 	fn complete(&mut self) {
 		if !self.is_finished() {
 			self.is_completed = true;
-			for mut destination in self.subscribers.drain(..) {
+			for destination in self.subscribers.iter_mut() {
 				destination.complete();
 			}
 		}
