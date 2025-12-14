@@ -4631,8 +4631,9 @@ version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_macro_observable_derive",
- "rx_core_operator_map_into",
- "rx_core_subscriber_rc",
+ "rx_core_observable_erased",
+ "rx_core_subscriber_concurrent",
+ "rx_core_subscriber_higher_order_all",
  "rx_core_testing",
  "rx_core_traits",
 ]

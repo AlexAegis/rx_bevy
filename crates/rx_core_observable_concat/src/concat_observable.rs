@@ -9,7 +9,7 @@ use rx_core_traits::{
 	UpgradeableObserver,
 };
 
-#[derive(RxObservable)]
+#[derive(RxObservable, Clone)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
 pub struct ConcatObservable<Out, OutError, const SIZE: usize>

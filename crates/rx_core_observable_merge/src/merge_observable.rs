@@ -1,61 +1,48 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_operator_map_into::MapIntoSubscriber;
-use rx_core_subscriber_rc::RcSubscriber;
+use rx_core_observable_erased::{ErasedObservables, observable::ErasedObservable};
+use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
+use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_traits::{
-	Observable, Signal, Subscriber, SubscriptionData, TeardownCollection, UpgradeableObserver,
+	Observable, Observer, Signal, Subscriber, SubscriptionData, TeardownCollection,
+	UpgradeableObserver,
 };
 
-#[derive(RxObservable, Clone, Debug)]
+#[derive(RxObservable, Clone)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-pub struct MergeObservable<Out, OutError, O1, O2>
+pub struct MergeObservable<Out, OutError, const SIZE: usize>
 where
 	Out: Signal,
 	OutError: Signal,
-	O1: 'static + Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: 'static + Observable,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
 {
-	observable_1: O1,
-	observable_2: O2,
+	observables: ErasedObservables<Out, OutError, SIZE>,
+	concurrency_limit: usize,
 	_phantom_data: PhantomData<(Out, OutError)>,
 }
 
-impl<Out, OutError, O1, O2> MergeObservable<Out, OutError, O1, O2>
+impl<Out, OutError, const SIZE: usize> MergeObservable<Out, OutError, SIZE>
 where
 	Out: Signal,
 	OutError: Signal,
-	O1: 'static + Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: 'static + Observable,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
 {
-	pub fn new(observable_1: O1, observable_2: O2) -> Self {
+	pub fn new(
+		observables: impl Into<ErasedObservables<Out, OutError, SIZE>>,
+		concurrency_limit: usize,
+	) -> Self {
 		Self {
-			observable_1,
-			observable_2,
+			observables: observables.into(),
+			concurrency_limit,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<Out, OutError, O1, O2> Observable for MergeObservable<Out, OutError, O1, O2>
+impl<Out, OutError, const SIZE: usize> Observable for MergeObservable<Out, OutError, SIZE>
 where
 	Out: Signal,
 	OutError: Signal,
-	O1: 'static + Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: 'static + Observable,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
 {
 	type Subscription<Destination>
 		= SubscriptionData
@@ -70,19 +57,20 @@ where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let destination = observer.upgrade();
-		let rc_subscriber = RcSubscriber::new(destination);
 
-		let s1 = self
-			.observable_1
-			.subscribe(MapIntoSubscriber::new(rc_subscriber.clone()));
+		let mut concat_subscriber = HigherOrderAllSubscriber::<
+			ErasedObservable<Out, OutError>,
+			OutError,
+			ConcurrentSubscriberProvider,
+			<Destination as UpgradeableObserver>::Upgraded,
+		>::new(destination, self.concurrency_limit);
 
-		let s2 = self
-			.observable_2
-			.subscribe(MapIntoSubscriber::new(rc_subscriber));
+		for next_observable in self.observables.iter().cloned() {
+			concat_subscriber.next(next_observable);
+		}
 
 		let mut subscription = SubscriptionData::default();
-		subscription.add_teardown(s1.into());
-		subscription.add_teardown(s2.into());
+		subscription.add_teardown(concat_subscriber.into());
 		subscription
 	}
 }

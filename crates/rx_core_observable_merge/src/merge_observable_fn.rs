@@ -1,20 +1,15 @@
-use rx_core_traits::{Observable, Signal};
+use rx_core_observable_erased::ErasedObservables;
+use rx_core_traits::Signal;
 
 use crate::observable::MergeObservable;
 
-pub fn merge<Out, OutError, O1, O2>(
-	observable_1: O1,
-	observable_2: O2,
-) -> MergeObservable<Out, OutError, O1, O2>
+pub fn merge<Out, OutError, const SIZE: usize>(
+	observables: impl Into<ErasedObservables<Out, OutError, SIZE>>,
+	concurrency_limit: usize,
+) -> MergeObservable<Out, OutError, SIZE>
 where
 	Out: Signal,
 	OutError: Signal,
-	O1: Observable,
-	O1::Out: Into<Out>,
-	O1::OutError: Into<OutError>,
-	O2: Observable,
-	O2::Out: Into<Out>,
-	O2::OutError: Into<OutError>,
 {
-	MergeObservable::new(observable_1, observable_2)
+	MergeObservable::new(observables, concurrency_limit)
 }
