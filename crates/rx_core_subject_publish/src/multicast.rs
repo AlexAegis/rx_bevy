@@ -2,9 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use derive_where::derive_where;
 use rx_core_traits::{
-	Finishable, Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject,
-	Signal, Subscriber, SubscriptionClosedFlag, SubscriptionLike, UpgradeableObserver,
-	WithPrimaryCategory,
+	Observable, ObservableOutput, Observer, ObserverInput, PrimaryCategorySubject, Signal,
+	Subscriber, SubscriptionClosedFlag, SubscriptionLike, UpgradeableObserver, WithPrimaryCategory,
 };
 use smallvec::SmallVec;
 
@@ -22,17 +21,6 @@ where
 	is_completed: bool,
 	#[derive_where(skip(Debug))]
 	last_observed_error: Option<InError>,
-}
-
-impl<In, InError> Finishable for Multicast<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	#[inline]
-	fn is_finished(&self) -> bool {
-		self.is_completed || self.last_observed_error.is_some() || *self.closed_flag
-	}
 }
 
 impl<In, InError> Multicast<In, InError>
@@ -80,12 +68,10 @@ where
 	{
 		let mut destination = destination.upgrade();
 
-		if self.is_finished() {
-			if let Some(error) = self.last_observed_error.clone() {
-				destination.error(error);
-			} else if self.is_completed {
-				destination.complete();
-			}
+		if let Some(error) = self.last_observed_error.clone() {
+			destination.error(error);
+		} else if self.is_completed {
+			destination.complete();
 		}
 
 		if self.is_closed() {
@@ -105,7 +91,7 @@ where
 	InError: Signal + Clone,
 {
 	fn next(&mut self, next: Self::In) {
-		if !self.is_finished() {
+		if !self.is_closed() {
 			for destination in self.subscribers.iter_mut() {
 				destination.next(next.clone());
 			}
@@ -114,20 +100,22 @@ where
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		if !self.is_finished() {
+		if !self.is_closed() {
 			self.last_observed_error = Some(error.clone());
 			for destination in self.subscribers.iter_mut() {
 				destination.error(error.clone());
 			}
+			self.unsubscribe();
 		}
 	}
 
 	fn complete(&mut self) {
-		if !self.is_finished() {
+		if !self.is_closed() {
 			self.is_completed = true;
 			for destination in self.subscribers.iter_mut() {
 				destination.complete();
 			}
+			self.unsubscribe();
 		}
 	}
 }

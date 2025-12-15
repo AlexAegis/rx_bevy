@@ -1,8 +1,8 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	Finishable, Never, Observable, Observer, Signal, Subscriber, SubscriptionLike,
+	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -20,7 +20,7 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	multicast: Arc<RwLock<Multicast<In, InError>>>,
+	multicast: Arc<Mutex<Multicast<In, InError>>>,
 }
 
 impl<In, InError> PublishSubject<In, InError>
@@ -28,26 +28,9 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	pub fn is_errored(&self) -> bool {
-		self.multicast
-			.read()
-			.unwrap_or_else(|poison_error| poison_error.into_inner())
-			.get_error()
-			.is_some()
-	}
-}
-
-impl<In, InError> Finishable for PublishSubject<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
 	#[inline]
-	fn is_finished(&self) -> bool {
-		self.multicast
-			.read()
-			.unwrap_or_else(|poison_error| poison_error.into_inner())
-			.is_finished()
+	pub fn is_errored(&self) -> bool {
+		self.multicast.lock_ignore_poison().get_error().is_some()
 	}
 }
 
@@ -69,9 +52,10 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
+	#[inline]
 	fn default() -> Self {
 		Self {
-			multicast: Arc::new(RwLock::new(Multicast::default())),
+			multicast: Arc::new(Mutex::new(Multicast::default())),
 		}
 	}
 }
@@ -86,6 +70,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
+	#[inline]
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
@@ -93,11 +78,7 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		let mut multicast = self
-			.multicast
-			.write()
-			.unwrap_or_else(|poison_error| poison_error.into_inner());
-		multicast.subscribe(destination)
+		self.multicast.lock_ignore_poison().subscribe(destination)
 	}
 }
 
@@ -106,14 +87,17 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
+	#[inline]
 	fn next(&mut self, next: Self::In) {
 		self.multicast.next(next);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.multicast.error(error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.multicast.complete();
 	}
@@ -124,22 +108,13 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.multicast.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
-		// It's an unsubscribe, we can ignore the poison
-		let subscribers = {
-			let mut lock = self
-				.multicast
-				.write()
-				.unwrap_or_else(|poison_error| poison_error.into_inner());
-
-			lock.close_and_drain()
-		};
-
-		for mut destination in subscribers {
+		for mut destination in self.multicast.lock_ignore_poison().close_and_drain() {
 			destination.unsubscribe();
 		}
 	}

@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject_publish::{MulticastSubscription, subject::PublishSubject};
 use rx_core_traits::{
-	Finishable, LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber,
+	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -40,18 +40,6 @@ where
 	subject: PublishSubject<In, InError>,
 	reducer: Reducer,
 	value: Arc<Mutex<Option<In>>>,
-}
-
-impl<In, InError, Reducer> Finishable for AsyncSubject<In, InError, Reducer>
-where
-	Reducer: 'static + FnMut(In, In) -> In + Send + Sync,
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	#[inline]
-	fn is_finished(&self) -> bool {
-		self.subject.is_finished()
-	}
 }
 
 impl<In, InError> Default for AsyncSubject<In, InError, DefaultReducer<In>>
@@ -145,7 +133,7 @@ where
 	{
 		let mut destination = destination.upgrade();
 
-		if self.subject.is_finished() {
+		if self.subject.is_closed() {
 			let value = self.value.lock_ignore_poison().clone();
 
 			if !self.subject.is_errored()

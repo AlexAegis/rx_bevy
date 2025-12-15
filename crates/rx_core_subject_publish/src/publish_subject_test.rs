@@ -54,27 +54,15 @@ fn should_forward_values_to_multiple_active_listeners() {
 	);
 
 	assert_eq!(
-		notification_collector_2.lock().nth_notification(1),
-		&SubscriberNotification::Complete,
-		"destination_2 did not receive the completion signal"
-	);
-
-	assert!(
-		!notification_collector_1.lock().nth_notification_exists(3),
-		"something else was emitted to destination_1 after the completion signal when it should not have"
-	);
-
-	assert!(
-		!notification_collector_2.lock().nth_notification_exists(2),
-		"something else was emitted to destination_2 after the completion signal when it should not have"
-	);
-
-	subject.unsubscribe();
-
-	assert_eq!(
 		notification_collector_1.lock().nth_notification(3),
 		&SubscriberNotification::Unsubscribe,
 		"destination_1 did not receive the unsubscribe signal"
+	);
+
+	assert_eq!(
+		notification_collector_2.lock().nth_notification(1),
+		&SubscriberNotification::Complete,
+		"destination_2 did not receive the completion signal"
 	);
 
 	assert_eq!(
@@ -101,13 +89,6 @@ fn should_immediately_complete_new_subscribers_if_complete() {
 		&SubscriberNotification::Complete,
 		"destination did not receive the completion signal"
 	);
-
-	assert!(
-		!notification_collector.lock().nth_notification_exists(1),
-		"destination should not have unsubscribed yet as the subject isn't either!"
-	);
-
-	subject.unsubscribe();
 
 	assert_eq!(
 		notification_collector.lock().nth_notification(1),
@@ -373,39 +354,23 @@ fn should_error_active_subscribers() {
 }
 
 #[test]
-fn should_not_be_closed_after_completion() {
+fn should_be_closed_after_completion() {
 	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.complete();
-	assert!(!subject.is_closed());
+	assert!(subject.is_closed());
 }
 
 #[test]
-fn should_be_finished_after_completion() {
-	let mut subject = PublishSubject::<usize, &'static str>::default();
-	subject.complete();
-	assert!(subject.is_finished());
-}
-
-#[test]
-fn should_not_be_closed_after_error() {
+fn should_be_closed_after_error() {
 	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.error("error");
-	assert!(!subject.is_closed());
+	assert!(subject.is_closed());
 }
-
 #[test]
-fn should_be_finished_after_error() {
-	let mut subject = PublishSubject::<usize, &'static str>::default();
-	subject.error("error");
-	assert!(subject.is_finished());
-}
-
-#[test]
-fn should_be_closed_and_finished_after_unsubscribe() {
+fn should_be_closed_after_unsubscribe() {
 	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.unsubscribe();
 	assert!(subject.is_closed());
-	assert!(subject.is_finished());
 }
 
 #[test]

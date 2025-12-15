@@ -537,19 +537,24 @@ let mut subject = BehaviorSubject::<i32>::new(10);
 
 // Immediately prints "hello 10"
 let mut hello_subscription = subject
-    .clone()
-    .subscribe(PrintObserver::<i32>::new("hello"));
+  .clone()
+  .subscribe(PrintObserver::<i32>::new("hello"));
 
 subject.next(11);
 
 let _s1 = subject
-    .clone()
-    .map(|next| next * 2)
-    .subscribe(PrintObserver::<i32>::new("hi double"));
+  .clone()
+  .map(|next| next * 2)
+  .subscribe(PrintObserver::<i32>::new("hi double"));
 
 subject.next(12);
 hello_subscription.unsubscribe();
 subject.next(13);
+subject.complete();
+
+let mut _compelted_subscription = subject
+  .clone()
+  .subscribe(PrintObserver::<i32>::new("hello_completed"));
 ```
 
 Output:
@@ -562,10 +567,14 @@ hello - next: 12
 hi double - next: 24
 hello - unsubscribed
 hi double - next: 26
+hi double - completed
 hi double - unsubscribed
+hello_completed - next: 13
+hello_completed - completed
+hello_completed - unsubscribed
 ```
 
-#### ReplaySubject
+### ReplaySubject
 
 > [ReplaySubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_replay/src/replay_subject.rs)
 
@@ -638,18 +647,20 @@ hello - unsubscribed
 When the second subscription subscribed, the buffer contained `[2, 3]` and was
 immediately received by the new subscription!
 
-#### AsyncSubject
+### AsyncSubject
 
 > [AsyncSubject Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_subject_async/src/async_subject.rs)
 
-The AsyncSubject will emit only the last observed value when it completes, or
-the first observed error, to all active subscribers. Subscriptions after
-completion or error, will immediately receive a `next` and a `complete`, or an
-`error` if there was one.
-If the subject was not only finished, but closed, then it also immediately
-unsubscribes the destination, just like all other subjects.
+The AsyncSubject will only emit once it completes.
 
-Or, to new subscribers after it had already completed.
+Late subscribers who subscribe after it had already completed will also
+receive the last result, followed immediately with a completion signal.
+
+What it will emit on completion depends on the reducer function used.
+By default, it just replaces the result with the most recent observed
+value `next`-ed into the subject.
+But you can also specify your own reducer to accumulate all observed
+values to be the result on completion.
 
 Example:
 
@@ -685,11 +696,11 @@ async_subject sub_1 - next: 3
 async_subject sub_2 - next: 3
 async_subject sub_1 - completed
 async_subject sub_2 - completed
+async_subject sub_1 - unsubscribed
+async_subject sub_2 - unsubscribed
 async_subject sub_3 - next: 3
 async_subject sub_3 - completed
 async_subject sub_3 - unsubscribed
-async_subject sub_2 - unsubscribed
-async_subject sub_1 - unsubscribed
 ```
 
 <!-- 
@@ -756,8 +767,11 @@ time interval.
 Continouos tasks are like repeated tasks but without a time interval, they
 simply execute as many times as often as they can.
 
-> With the tickable executor, this means, on every tick. In bevy, this means
-> once every frame.
+> It depends on the executor to define the actual frequency these tasks are
+> running at.
+>
+> - With the tickable executor, this means on every `tick` call.
+> - In Bevy, this means once every frame.
 
 #### Invoked Tasks
 

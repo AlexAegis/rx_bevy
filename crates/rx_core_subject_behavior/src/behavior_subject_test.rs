@@ -112,13 +112,6 @@ fn should_not_emit_the_last_value_after_errored() {
 		"destination did not receive the error"
 	);
 
-	assert!(
-		!notification_collector_1.lock().nth_notification_exists(1),
-		"destination received an additional signal when it shouldn't have"
-	);
-
-	behavior_subject.unsubscribe();
-
 	assert_eq!(
 		notification_collector_1.lock().nth_notification(1),
 		&SubscriberNotification::Unsubscribe,
@@ -138,37 +131,22 @@ fn should_let_the_last_value_to_be_read_without_subscribing() {
 }
 
 #[test]
-fn should_not_be_closed_after_completion() {
+fn should_be_closed_after_completion() {
 	let mut subject = BehaviorSubject::<usize, &'static str>::new(1);
 	subject.complete();
-	assert!(!subject.is_closed());
+	assert!(subject.is_closed());
 }
 
 #[test]
-fn should_be_finished_after_completion() {
-	let mut subject = BehaviorSubject::<usize, &'static str>::new(1);
-	subject.complete();
-	assert!(subject.is_finished());
-}
-
-#[test]
-fn should_not_be_closed_after_error() {
+fn should_be_closed_after_error() {
 	let mut subject = BehaviorSubject::<usize, &'static str>::new(1);
 	subject.error("error");
-	assert!(!subject.is_closed());
+	assert!(subject.is_closed());
 }
 
 #[test]
-fn should_be_finished_after_error() {
-	let mut subject = BehaviorSubject::<usize, &'static str>::new(1);
-	subject.error("error");
-	assert!(subject.is_finished());
-}
-
-#[test]
-fn should_be_closed_and_finished_after_unsubscribe() {
+fn should_be_closed_after_unsubscribe() {
 	let mut subject = BehaviorSubject::<usize, &'static str>::new(1);
 	subject.unsubscribe();
 	assert!(subject.is_closed());
-	assert!(subject.is_finished());
 }

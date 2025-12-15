@@ -2,7 +2,7 @@ use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
 #[test]
-fn should_emit_the_last_value_after_completed() {
+fn should_emit_the_last_value_after_completed_and_unsubscribe() {
 	let destination_1 = MockObserver::default();
 	let notification_collector_1 = destination_1.get_notification_collector();
 
@@ -39,17 +39,17 @@ fn should_emit_the_last_value_after_completed() {
 		"destination did not receive the completion signal"
 	);
 
-	assert!(
-		!notification_collector_1.lock().nth_notification_exists(2),
-		"destination should not have recieved another notification yet"
-	);
-
-	async_subject.unsubscribe();
-
 	assert_eq!(
 		notification_collector_1.lock().nth_notification(2),
 		&SubscriberNotification::Unsubscribe,
 		"destination_1 did not receive the unsubscribe signal"
+	);
+
+	async_subject.unsubscribe();
+
+	assert!(
+		!notification_collector_1.lock().nth_notification_exists(3),
+		"destination should not have recieved another notification"
 	);
 }
 
@@ -79,8 +79,6 @@ fn should_emit_the_last_value_after_completed_for_late_subscribers() {
 		"destination did not receive the completion signal"
 	);
 
-	async_subject.unsubscribe();
-
 	assert_eq!(
 		notification_collector_1.lock().nth_notification(2),
 		&SubscriberNotification::Unsubscribe,
@@ -89,39 +87,24 @@ fn should_emit_the_last_value_after_completed_for_late_subscribers() {
 }
 
 #[test]
-fn should_not_be_closed_after_completion() {
+fn should_be_closed_after_completion() {
 	let mut subject = AsyncSubject::<usize>::default();
 	subject.complete();
-	assert!(!subject.is_closed());
+	assert!(subject.is_closed());
 }
 
 #[test]
-fn should_be_finished_after_completion() {
-	let mut subject = AsyncSubject::<usize>::default();
-	subject.complete();
-	assert!(subject.is_finished());
-}
-
-#[test]
-fn should_not_be_closed_after_error() {
+fn should_be_closed_after_error() {
 	let mut subject = AsyncSubject::<usize, &'static str>::default();
 	subject.error("error");
-	assert!(!subject.is_closed());
+	assert!(subject.is_closed());
 }
 
 #[test]
-fn should_be_finished_after_error() {
-	let mut subject = AsyncSubject::<usize, &'static str>::default();
-	subject.error("error");
-	assert!(subject.is_finished());
-}
-
-#[test]
-fn should_be_closed_and_finished_after_unsubscribe() {
+fn should_be_closed_after_unsubscribe() {
 	let mut subject = AsyncSubject::<usize>::default();
 	subject.unsubscribe();
 	assert!(subject.is_closed());
-	assert!(subject.is_finished());
 }
 
 #[test]

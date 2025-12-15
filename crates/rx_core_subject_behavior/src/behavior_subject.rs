@@ -3,8 +3,7 @@ use std::sync::{Arc, Mutex};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject_publish::{MulticastSubscription, subject::PublishSubject};
 use rx_core_traits::{
-	Finishable, LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber,
-	UpgradeableObserver,
+	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
 };
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -44,17 +43,6 @@ where
 	/// absolutely necessary.
 	pub fn value(&self) -> In {
 		self.value.lock_ignore_poison().clone()
-	}
-}
-
-impl<In, InError> Finishable for BehaviorSubject<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	#[inline]
-	fn is_finished(&self) -> bool {
-		self.subject.is_finished()
 	}
 }
 

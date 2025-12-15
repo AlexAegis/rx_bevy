@@ -4,8 +4,7 @@ use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject_publish::{MulticastSubscription, subject::PublishSubject};
 use rx_core_traits::{
-	Finishable, LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber,
-	UpgradeableObserver,
+	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
 };
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
@@ -41,17 +40,6 @@ where
 	/// the subject is created and no values have been observed.
 	pub fn values(&self) -> Vec<In> {
 		self.values.lock_ignore_poison().iter().cloned().collect()
-	}
-}
-
-impl<const CAPACITY: usize, In, InError> Finishable for ReplaySubject<CAPACITY, In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	#[inline]
-	fn is_finished(&self) -> bool {
-		self.subject.is_finished()
 	}
 }
 
