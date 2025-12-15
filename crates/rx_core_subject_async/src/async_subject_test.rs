@@ -131,3 +131,30 @@ fn should_be_able_to_read_its_latest_value() {
 	async_subject.next(1);
 	assert!(matches!(async_subject.value(), Some(1)));
 }
+
+#[test]
+fn should_be_able_to_use_a_custom_reducer_to_accumulate_the_result() {
+	let destination = MockObserver::default();
+	let notifications = destination.get_notification_collector();
+
+	let mut async_subject = AsyncSubject::<usize>::new(|acc, next| acc + next);
+
+	async_subject.next(1);
+	async_subject.next(2);
+	async_subject.next(3);
+
+	let _subscription = async_subject.clone().subscribe(destination);
+	async_subject.complete();
+
+	assert_eq!(
+		notifications.lock().nth_notification(0),
+		&SubscriberNotification::Next(6),
+		"destination did not receive the reduced emission",
+	);
+
+	assert_eq!(
+		notifications.lock().nth_notification(1),
+		&SubscriberNotification::Complete,
+		"destination did not receive the completion signal",
+	);
+}

@@ -7,25 +7,44 @@ use rx_core_traits::{
 	UpgradeableObserver,
 };
 
-/// The AsyncSubject will only emit the last observed value, when it completes.
+type DefaultReducer<In> = fn(In, In) -> In;
+
+#[inline]
+fn default_reducer<In>(_acc: In, next: In) -> In {
+	next
+}
+
+/// The AsyncSubject will only emit once it completes.
+///
+/// Late subscribers who subscribe after it had already completed will also
+/// receive the last result, followed immediately with a completion signal.
+///
+/// What it will emit on completion depends on the reducer function used.
+/// By default, it just replaces the result with the most recent observed
+/// value `next`-ed into the subject.
+/// But you can also specify your own reducer to accumulate all observed
+/// values to be the result on completion.
 #[derive(RxSubject, Clone)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
 #[rx_delegate_subscription_like_to_destination]
-pub struct AsyncSubject<In, InError = Never>
+pub struct AsyncSubject<In, InError = Never, Reducer = DefaultReducer<In>>
 where
+	Reducer: 'static + FnMut(In, In) -> In + Send + Sync,
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
 	#[destination]
 	subject: PublishSubject<In, InError>,
+	reducer: Reducer,
 	value: Arc<Mutex<Option<In>>>,
 }
 
-impl<In, InError> Finishable for AsyncSubject<In, InError>
+impl<In, InError, Reducer> Finishable for AsyncSubject<In, InError, Reducer>
 where
+	Reducer: 'static + FnMut(In, In) -> In + Send + Sync,
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
@@ -35,37 +54,58 @@ where
 	}
 }
 
-impl<In, InError> Default for AsyncSubject<In, InError>
+impl<In, InError> Default for AsyncSubject<In, InError, DefaultReducer<In>>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
+	#[inline]
 	fn default() -> Self {
 		Self {
+			reducer: default_reducer::<In>,
 			subject: PublishSubject::default(),
 			value: Arc::new(Mutex::new(None)),
 		}
 	}
 }
 
-impl<In, InError> AsyncSubject<In, InError>
+impl<In, InError, Reducer> AsyncSubject<In, InError, Reducer>
 where
+	Reducer: 'static + FnMut(In, In) -> In + Send + Sync,
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
+	#[inline]
+	pub fn new(reducer: Reducer) -> Self {
+		Self {
+			reducer,
+			subject: PublishSubject::default(),
+			value: Arc::new(Mutex::new(None)),
+		}
+	}
+
 	#[inline]
 	pub fn value(&self) -> Option<In> {
 		self.value.lock_ignore_poison().clone()
 	}
 }
 
-impl<In, InError> Observer for AsyncSubject<In, InError>
+impl<In, InError, Reducer> Observer for AsyncSubject<In, InError, Reducer>
 where
+	Reducer: 'static + FnMut(In, In) -> In + Send + Sync,
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
 	fn next(&mut self, next: In) {
-		*self.value.lock_ignore_poison() = Some(next);
+		let mut value = self.value.lock_ignore_poison();
+
+		let next_value = if let Some(current) = value.take() {
+			(self.reducer)(current, next)
+		} else {
+			next
+		};
+
+		*value = Some(next_value);
 	}
 
 	#[inline]
@@ -85,8 +125,9 @@ where
 	}
 }
 
-impl<In, InError> Observable for AsyncSubject<In, InError>
+impl<In, InError, Reducer> Observable for AsyncSubject<In, InError, Reducer>
 where
+	Reducer: 'static + FnMut(In, In) -> In + Send + Sync,
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
