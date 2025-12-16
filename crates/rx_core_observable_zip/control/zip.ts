@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { finalize, of, Subject, zip } from "rxjs";
+import { finalize, Subject, zip } from "rxjs";
 
 /**
  * The combineLatest observer combines the latest values from multiple observables
@@ -32,18 +32,7 @@ subject1.next(3);
 // Even though the other subject does not complete, this one does, and since
 // nothing is left in the queue of this observable, no matter what the other
 // observable emits, the zip can no longer emit anything, so it completes.
-subject1.complete();
+subject1.unsubscribe();
 
 // Even if the last emission of subject 1 was consumed after it was completed!
 subject2.next(30);
-
-of(1)
-  .pipe(
-    finalize(() => {
-      console.log("of finalize");
-    })
-  )
-  .subscribe({
-    next: (next) => console.log("of", next),
-    complete: () => console.log("of complete"),
-  });

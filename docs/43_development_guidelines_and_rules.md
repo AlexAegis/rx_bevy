@@ -1,27 +1,30 @@
 # Development Guidelines & Rules
 
-These rules are intended for developers of `rx_bevy` / `rx_core` itself and
-people who want to write their own observables or operators to ensure correct
-operation.
+These rules are intended for developers of `rx_bevy` / `rx_core` and people who
+want to write their own observables or operators to ensure correct operation.
 
 This isn't a guide on how to create your own observables and operators, but
-additional rules to check after you've made one. To learn the basics of how to
-write your own observables and operators, see
-[Writing Observables](./02_writing_observables.md) and
-[Writing Operators](./03_writing_operators.md).
+additional rules to check, **after** you had made one.
 
-> These rules exist because they - at best - can only be implemented in a best
-> effort fashion, or impose limitations that'd severly limit possible
-> implementations.
+> To learn the basics of how to write your own observables and operators, see
+> [Writing Observables](./41_writing_observables.md) and
+> [Writing Operators](./42_writing_operators.md).
+>
+> To learn how to write them in the same fashion as `rx_core` and `rx_bevy`
+> does, with separate crates for every observable/operator and an aggregator
+> crate, see [`contributing.md`](https://github.com/AlexAegis/rx_bevy/?tab=contributing-ov-file).
+
+## Rules
 
 Every observable and operator must uphold these invariants to ensure the
 expected runtime behavior. If they aren't met, it should be treated as a bug!
+
 It is highly advised to have at least one unit test for each rule defined here
 wherever applicable!
 
 > If you're not writing custom observables and operators, it could still be
 > useful to know what's their expected behavior to notice potential bugs, or to
-> assure yourself that an odd behavior is intented or not.
+> assure yourself that a certain behavior is intented or not.
 
 Rules are fitted with rule codes to identify them in tests, to easily verify
 that a test for a rule exists for any given implementation.
@@ -29,7 +32,7 @@ that a test for a rule exists for any given implementation.
 > Note that observables and their subscriptions, and operators and their
 > subscribers are used interchangeably as one concept.
 
-## `RX_OB_IMMEDIATE_COMPLETION`: Observables must immediately complete when they can no longer emit anything
+### `RX_OB_IMMEDIATE_COMPLETION`: Observables must immediately complete when they can no longer emit anything
 
 > Testable: Yes
 
@@ -42,24 +45,27 @@ impossible, must complete.
 > But combination observables have to deduce their own completion based on the
 > Observables they combine:
 >
-> - `CombineLatestObservable` completes only when **all** of it's inner Observables complete
-> - `ZipObservable` completes when **any** of it's inner Observables complete
+> - `CombineLatestObservable` when already [primed](./02_concepts.md#primed),
+>   completes only when **all** of its inner observables complete! Before it's
+>   primed, it completes when *any* of its inner observables complete, as
+>   priming then becomes impossible.
+> - `ZipObservable` completes when **any** of its inner observables complete!
 
-## `RX_OB_UNSUBSCRIBE_AFTER_COMPLETE`: Observables must immediately unsubscribe after completion
+### `RX_OB_UNSUBSCRIBE_AFTER_COMPLETE`: Observables must immediately unsubscribe after completion
 
 > Testable: Yes
 
 After a `Complete` signal is sent, the destination must be unsubscribed
 and the observable!
 
-## `RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE`: Subscriptions and closable subscribers must not send events downstream after they close
+### `RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE`: Subscriptions and closable subscribers must not send events downstream after they close
 
 > Testable: No
 
 If a subscription has been closed - which usually happens because it
 unsubscribed - it must not send any events downstream.
 
-## `RX_OP_ALWAYS_FORWARD_INLINE`: Operator Subscribers must always forward all upstream signal downstream unless altering it is their expected behavior
+### `RX_OP_ALWAYS_FORWARD_INLINE`: Operator Subscribers must always forward all upstream signal downstream unless altering it is their expected behavior
 
 > Testable: No
 
@@ -81,7 +87,7 @@ fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Ite
 }
 ```
 
-## `RX_OP_NO_UNNECESSARY_CLOSED_CHECK_ON_SINGLE_EMISSIONS`: Operator Subscribers should not do unnecessary checks and maintain their own is_closed state unless they can close themselves
+### `RX_OP_NO_UNNECESSARY_CLOSED_CHECK_ON_SINGLE_EMISSIONS`: Operator Subscribers should not do unnecessary checks and maintain their own is_closed state unless they can close themselves
 
 > Testable: Yes
 
@@ -128,7 +134,7 @@ fn next(
 }
 ```
 
-## `RX_CHECK_CLOSED_ON_MULTI_EMISSIONS`: Operators & Observables that can emit multiple downstream signals for a single upstream signal should check if downstream is closed between emissions to stop early
+### `RX_CHECK_CLOSED_ON_MULTI_EMISSIONS`: Operators & Observables that can emit multiple downstream signals for a single upstream signal should check if downstream is closed between emissions to stop early
 
 > Testable: Depends on the source
 
@@ -146,18 +152,30 @@ for item in self.iterator.clone().into_iter() {
 }
 ```
 
-## `RX_OP_UNSUBSCRIBE_AFTER_COMPLETION`: Operators must immediately unsubscribe if and only when they themselves trigged a completion
+### `RX_UNSUBSCRIBE_AFTER_COMPLETION`: What completes must immediately unsubscribe if and only when they themselves trigged the completion
 
 > Testable: Yes
 
-If the operator just received a completion signal from upstream it does
-not need to also call unsubscribe, but if the completion was triggered by the
-operator, it does.
+An observable must unsubscribe after it had completed.
+
+But an operator that just received a completion signal from upstream, does
+not need to also call unsubscribe, only when the completion was triggered by the
+operator itself.
 
 > For example, the `take` operator can complete early, when that happens it must
 > also call `unsubscribe` on itself and close.
 
-## `RX_OP_WHAT_CAN_CLOSE_SHALL_TRACK_CLOSE`: If an operator can close itself, it should track that closed state and not trust downstream
+### `RX_UNSUBSCRIBE_AFTER_ERROR`: What errors must immediately unsubscribe if and only when they themselves trigged the error
+
+> Testable: Yes
+
+An observable must unsubscribe after it had errored.
+
+But an operator that just received a error signal from upstream, does
+not need to also call unsubscribe, only when the error was triggered by the
+operator itself.
+
+### `RX_OP_WHAT_CAN_CLOSE_SHALL_TRACK_CLOSE`: If an operator can close itself, it should track that closed state and not trust downstream
 
 > Testable: No
 
@@ -190,7 +208,7 @@ fn is_closed(&self) -> bool {
 > `RX_WHATS_CLOSED_STAYS_CLOSED` rule - I recommend using the
 > `SubscriptionClosedFlag` type, which can't be re-opened.
 
-## `RX_EMPTY_IS_NOT_CLOSED`: Closedness must be explicit
+### `RX_EMPTY_IS_NOT_CLOSED`: Closedness must be explicit
 
 > Testable: Yes
 
@@ -202,7 +220,7 @@ or internal teardown that isn't being closed by the time it drops in a
 If you just don't deal with it because in some cases it's empty, then you'll
 just delay the problem until it's not empty in another usecase.
 
-## `RX_WHATS_CLOSED_STAYS_CLOSED`: Closed subscriptions can never re-open
+### `RX_WHATS_CLOSED_STAYS_CLOSED`: Closed subscriptions can never re-open
 
 > Testable: No, but given with `SubscriptionClosedFlag`
 
@@ -213,7 +231,7 @@ A subscription that was unsubscribed and thus closed, must never be re-opened.
 > into a `true`. Types that use this struct for their `is_closed()`
 > implementation automatically complies with this rule.
 
-## `RX_UNUSED_SIGNALS_MUST_BE_NEVER`: Using `Never` as your signal type means it won't ever be sent, as it can't be sent
+### `RX_UNUSED_SIGNALS_MUST_BE_NEVER`: Using `Never` as your signal type means it won't ever be sent, as it can't be sent
 
 > Testable: No
 

@@ -196,7 +196,7 @@ just copy a similar one and rename the stuff inside.
 
 ### Creating New Observables
 
-Observables usually have 3-4 files besides `lib.rs`:
+Observables usually have at least 3-4 files besides `lib.rs`:
 
 - `foo_observable.rs` The Observable implementation, which is responsible for
   creating a subscription.
@@ -361,7 +361,7 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 
 ### Creating New Operators
 
-Operators usually have 4-5 files besides `lib.rs`:
+Operators usually have at least 4-5 files besides `lib.rs`:
 
 - `foo_operator.rs` The Operator implementation, which is responsible of
   creating a subscriber.

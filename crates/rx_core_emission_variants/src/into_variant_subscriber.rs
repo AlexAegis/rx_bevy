@@ -1,35 +1,38 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observable, Observer, Subscriber};
+use rx_core_traits::{Observable, Observer, Subscriber, SubscriptionLike};
 
-use crate::{EitherOut2, EitherOutError2};
+use crate::EitherOut2;
 
 #[derive(RxSubscriber)]
 #[rx_in(O1::Out)]
 #[rx_in_error(O1::OutError)]
 #[rx_delegate_teardown_collection_to_destination]
-#[rx_delegate_subscription_like_to_destination]
-pub struct IntoVariant1of2Subscriber<O1, O2, Destination>
+pub struct IntoVariant1of2Subscriber<Destination, O1, O2>
 where
+	Destination: Subscriber<In = EitherOut2<O1, O2>>,
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
-	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
+	O2::OutError: Into<Destination::InError>,
 {
 	#[destination]
 	destination: Destination,
 	_phantom_data: PhantomData<(O1, O2)>,
 }
 
-impl<O1, O2, Destination> IntoVariant1of2Subscriber<O1, O2, Destination>
+impl<Destination, O1, O2> IntoVariant1of2Subscriber<Destination, O1, O2>
 where
+	Destination: Subscriber<In = EitherOut2<O1, O2>>,
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
-	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
+	O2::OutError: Into<Destination::InError>,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -39,13 +42,15 @@ where
 	}
 }
 
-impl<O1, O2, Destination> Observer for IntoVariant1of2Subscriber<O1, O2, Destination>
+impl<Destination, O1, O2> Observer for IntoVariant1of2Subscriber<Destination, O1, O2>
 where
+	Destination: Subscriber<In = EitherOut2<O1, O2>>,
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
-	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
+	O2::OutError: Into<Destination::InError>,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -54,7 +59,7 @@ where
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error(EitherOutError2::O1Error(error));
+		self.destination.error(error.into());
 	}
 
 	#[inline]
@@ -64,31 +69,56 @@ where
 	}
 }
 
+impl<Destination, O1, O2> SubscriptionLike for IntoVariant1of2Subscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = EitherOut2<O1, O2>>,
+	O1: 'static + Send + Sync + Observable,
+	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Send + Sync + Observable,
+	O2::Out: Clone,
+	O2::OutError: Into<Destination::InError>,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		self.destination.is_closed()
+	}
+
+	#[inline]
+	fn unsubscribe(&mut self) {
+		self.destination.next(EitherOut2::UnsubscribeO1);
+		self.destination.unsubscribe();
+	}
+}
+
 #[derive(RxSubscriber)]
 #[rx_in(O2::Out)]
 #[rx_in_error(O2::OutError)]
 #[rx_delegate_teardown_collection_to_destination]
-#[rx_delegate_subscription_like_to_destination]
-pub struct IntoVariant2of2Subscriber<O1, O2, Destination>
+pub struct IntoVariant2of2Subscriber<Destination, O1, O2>
 where
+	Destination: Subscriber<In = EitherOut2<O1, O2>>,
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
-	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
+	O2::OutError: Into<Destination::InError>,
 {
 	#[destination]
 	destination: Destination,
 	_phantom_data: PhantomData<(O1, O2)>,
 }
 
-impl<O1, O2, Destination> IntoVariant2of2Subscriber<O1, O2, Destination>
+impl<Destination, O1, O2> IntoVariant2of2Subscriber<Destination, O1, O2>
 where
+	Destination: Subscriber<In = EitherOut2<O1, O2>>,
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
-	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
+	O2::OutError: Into<Destination::InError>,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -98,13 +128,15 @@ where
 	}
 }
 
-impl<O1, O2, Destination> Observer for IntoVariant2of2Subscriber<O1, O2, Destination>
+impl<Destination, O1, O2> Observer for IntoVariant2of2Subscriber<Destination, O1, O2>
 where
+	Destination: Subscriber<In = EitherOut2<O1, O2>>,
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
-	Destination: Subscriber<In = EitherOut2<O1, O2>, InError = EitherOutError2<O1, O2>>,
+	O2::OutError: Into<Destination::InError>,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -113,12 +145,34 @@ where
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error(EitherOutError2::O2Error(error));
+		self.destination.error(error.into());
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		self.destination.next(EitherOut2::CompleteO2);
 		self.destination.complete();
+	}
+}
+
+impl<Destination, O1, O2> SubscriptionLike for IntoVariant2of2Subscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = EitherOut2<O1, O2>>,
+	O1: 'static + Send + Sync + Observable,
+	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Send + Sync + Observable,
+	O2::Out: Clone,
+	O2::OutError: Into<Destination::InError>,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		self.destination.is_closed()
+	}
+
+	#[inline]
+	fn unsubscribe(&mut self) {
+		self.destination.next(EitherOut2::UnsubscribeO2);
+		self.destination.unsubscribe();
 	}
 }

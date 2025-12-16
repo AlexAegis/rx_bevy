@@ -116,6 +116,7 @@ where
 				destination.complete_if_can();
 			});
 			self.shared_destination.complete();
+			self.unsubscribe();
 		}
 	}
 }

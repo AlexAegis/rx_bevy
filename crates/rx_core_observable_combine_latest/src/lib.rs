@@ -1,9 +1,11 @@
-#![cfg_attr(not(test), no_std)]
+// #![cfg_attr(not(test), no_std)]
 
 mod combine_latest_observable;
 mod combine_latest_subscriber;
+mod observable_emission_state;
 
 pub use combine_latest_subscriber::*;
+pub use observable_emission_state::*;
 
 pub mod observable {
 	pub use super::combine_latest_observable::*;
@@ -16,3 +18,6 @@ mod combine_latest_fn;
 pub mod observable_fn {
 	pub use super::combine_latest_fn::*;
 }
+
+#[cfg(test)]
+mod combine_latest_observable_test;

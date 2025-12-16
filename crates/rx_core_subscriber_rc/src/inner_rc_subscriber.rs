@@ -161,6 +161,7 @@ where
 	/// This should only happen when all counters reach 0.
 	fn drop(&mut self) {
 		self.completed_flag.close();
+		self.closed_flag.close();
 
 		if !self.is_closed() {
 			self.destination.unsubscribe();

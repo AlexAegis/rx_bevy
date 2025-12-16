@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-import { delay, finalize, Subject, tap } from "rxjs";
+import { AsyncSubject, delay, finalize, tap } from "rxjs";
 
-const subject = new Subject<number>();
+const subject = new AsyncSubject<number>();
 
 subject
   .pipe(
@@ -21,7 +21,6 @@ subject
 
 subject.subscribe((a) => console.log(a));
 
-subject.next(1);
 subject.complete();
 subject.unsubscribe();
 // subject.next(13232);

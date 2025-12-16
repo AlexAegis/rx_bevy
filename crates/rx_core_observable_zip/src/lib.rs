@@ -1,9 +1,9 @@
-mod observable_emission_queue;
+mod subscriber_notification_queue;
 mod zip_observable;
 mod zip_subscriber;
 mod zip_subscriber_options;
 
-pub use observable_emission_queue::*;
+pub use subscriber_notification_queue::*;
 pub use zip_subscriber::*;
 
 pub mod observable {
@@ -18,3 +18,6 @@ mod zip_observable_fn;
 pub mod observable_fn {
 	pub use super::zip_observable_fn::*;
 }
+
+#[cfg(test)]
+mod zip_observable_test;

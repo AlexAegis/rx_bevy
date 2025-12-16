@@ -4426,6 +4426,7 @@ dependencies = [
 name = "rx_core_emission_variants"
 version = "0.1.0"
 dependencies = [
+ "bitflags 2.10.0",
  "derive-where",
  "rx_core",
  "rx_core_macro_subscriber_derive",
@@ -4527,11 +4528,11 @@ dependencies = [
 name = "rx_core_observable_combine_latest"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_emission_variants",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
- "rx_core_subscriber_rc",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4684,11 +4685,11 @@ dependencies = [
 name = "rx_core_observable_zip"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_emission_variants",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
- "rx_core_subscriber_rc",
  "rx_core_testing",
  "rx_core_traits",
 ]

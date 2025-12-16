@@ -13,10 +13,5 @@ fn main() {
 			max_queue_length: 2, // Since the first observable immediately fires all 3 of its values, the first emission `1` will be dropped, and nothing will pair up with 6
 			overflow_behavior: QueueOverflowBehavior::DropOldest,
 		})
-		.subscribe(
-			DynFnObserver::default()
-				.with_next(|next: (i32, i32)| println!("zip_next {}, {}", next.0, next.1))
-				.with_complete(|| println!("zip_complete"))
-				.with_unsubscribe(|| println!("zip_unsubscribe")),
-		);
+		.subscribe(PrintObserver::new("zip_backpressure"));
 }

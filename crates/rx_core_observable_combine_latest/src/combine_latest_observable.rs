@@ -1,23 +1,22 @@
-use rx_core_emission_variants::{
-	EitherOutError2, IntoVariant1of2Subscriber, IntoVariant2of2Subscriber,
-};
+use rx_core_emission_variants::{IntoVariant1of2Subscriber, IntoVariant2of2Subscriber};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_subscriber_rc::RcSubscriber;
 use rx_core_traits::{
-	Observable, Subscriber, SubscriptionData, TeardownCollection, UpgradeableObserver,
+	Observable, SharedSubscriber, Subscriber, SubscriptionData, TeardownCollection,
+	UpgradeableObserver,
 };
 
 use crate::CombineLatestSubscriber;
 
 #[derive(RxObservable)]
 #[rx_out((O1::Out, O2::Out))]
-#[rx_out_error( EitherOutError2<O1, O2>)]
+#[rx_out_error(O1::OutError)]
 pub struct CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
+	O2::OutError: Into<O1::OutError>,
 {
 	observable_1: O1,
 	observable_2: O2,
@@ -26,14 +25,15 @@ where
 impl<O1, O2> CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
+	O2::OutError: Into<O1::OutError>,
 {
-	pub fn new(observable_1: O1, observable_2: O2) -> Self {
+	pub fn new(o1: O1, o2: O2) -> Self {
 		Self {
-			observable_1,
-			observable_2,
+			observable_1: o1,
+			observable_2: o2,
 		}
 	}
 }
@@ -41,9 +41,10 @@ where
 impl<O1, O2> Observable for CombineLatestObservable<O1, O2>
 where
 	O1: 'static + Send + Sync + Observable,
-	O2: 'static + Send + Sync + Observable,
 	O1::Out: Clone,
+	O2: 'static + Send + Sync + Observable,
 	O2::Out: Clone,
+	O2::OutError: Into<O1::OutError>,
 {
 	type Subscription<Destination>
 		= SubscriptionData
@@ -58,16 +59,16 @@ where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let destination = observer.upgrade();
-		let rc_subscriber =
-			RcSubscriber::new(CombineLatestSubscriber::<_, O1, O2>::new(destination));
+		let shared_subscriber =
+			SharedSubscriber::new(CombineLatestSubscriber::<_, O1, O2>::new(destination));
 
 		let s1 = self
 			.observable_1
-			.subscribe(IntoVariant1of2Subscriber::new(rc_subscriber.clone()));
+			.subscribe(IntoVariant1of2Subscriber::new(shared_subscriber.clone()));
 
 		let s2 = self
 			.observable_2
-			.subscribe(IntoVariant2of2Subscriber::new(rc_subscriber.clone()));
+			.subscribe(IntoVariant2of2Subscriber::new(shared_subscriber));
 
 		let mut subscription = SubscriptionData::default();
 		subscription.add_teardown(s1.into());

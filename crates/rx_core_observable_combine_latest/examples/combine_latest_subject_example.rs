@@ -21,5 +21,7 @@ fn main() {
 	subject_1.complete(); // The first completion won't complete the entire thing
 	println!("subject 1 was completed!");
 	subject_2.complete();
+	println!("subject 2 was completed!");
+
 	subscription.unsubscribe();
 }

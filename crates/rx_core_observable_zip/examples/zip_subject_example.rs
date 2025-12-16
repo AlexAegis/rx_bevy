@@ -9,12 +9,8 @@ fn main() {
 	let mut subject_1 = PublishSubject::<i32>::default();
 	let mut subject_2 = PublishSubject::<i32>::default();
 
-	let mut _s = zip(subject_1.clone(), subject_2.clone()).subscribe(
-		DynFnObserver::default()
-			.with_next(|next: (i32, i32)| println!("zip_next {}, {}", next.0, next.1))
-			.with_complete(|| println!("zip_complete"))
-			.with_unsubscribe(|| println!("zip_unsubscribe")),
-	);
+	let mut _s =
+		zip(subject_1.clone(), subject_2.clone()).subscribe(PrintObserver::new("zip_observable"));
 
 	subject_1.next(1);
 	subject_2.next(10);

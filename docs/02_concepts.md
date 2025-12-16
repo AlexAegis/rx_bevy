@@ -198,12 +198,16 @@ maybe even never, there are many ways to combine two observables.
 
 Some examples are:
 
-- MergeObservable: Two observables that can `into` into a common type, emit
-  their values simultaneously into a common stream of events.
-- CombineLatestObservable: Two observables emit into a tuple of each observables
-  output type (`(O1::Out, O2::Out)`) when any of them emit, but only after each
-  had at least one emission.
-- ZipObservable: Two observables emit into a tuple of each observables
+- `MergeObservable`: A tuple of observables of common output types, that
+  emit their values concurrently into a common stream of events.
+- `ConcatObservable`: A tuple of observables of common output types, that
+  subscribes to one observable at a time, waits until it completes and then
+  subscribes to the next one, in order. (Has the exact same behavior as a
+  MergeObservable with a `concurrency_limit` of `1`!)
+- `CombineLatestObservable`: Two observables emit into a tuple of each
+  observable output type (`(O1::Out, O2::Out)`) when any of them emit, but only
+  after each had at least one emission, aka [primed](#primed).
+- `ZipObservable`: Two observables emit into a tuple of each observables
   output type (`(O1::Out, O2::Out)`) when, for each emission, there is one from
   the other observable. The first emission of `O1` will always be paired with
   the first emission of `O2`, the second emissions will be emitted together and
@@ -216,6 +220,21 @@ Some examples are:
 
 > Currently only 2 observables can be combined by each combinator. If you want
 > more, just nest more of them together. (Or help implement varargs.)
+
+### Primed
+
+Some observables do not emit anything until they are primed. For every
+subscription, this can happen at most once, and remains true for the remainder
+of it's duration.
+
+For example, some combination observables like `combine_latest` and `zip`
+emit values taken from **all** of their input observables, so it's impossible
+for them to emit anything until this condition is met. Once it is met, the
+subscription to them can be considered *primed*, and expected to emit values.
+
+Where priming matters is completion. If an upstream completion prevents
+priming, downstream should immediately complete too. Once primed, the condition
+to complete will depend on the observable.
 
 ## Pipes & Operators
 
