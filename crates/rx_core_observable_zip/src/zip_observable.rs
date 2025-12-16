@@ -1,11 +1,14 @@
-use rx_core_emission_variants::{IntoVariant1of2Subscriber, IntoVariant2of2Subscriber};
 use rx_core_macro_observable_derive::RxObservable;
+use rx_core_notification_store::QueueOverflowOptions;
+use rx_core_notification_variadics::{
+	EitherNotificationSelector1Of2, EitherNotificationSelector2Of2, EitherSubscriber2,
+};
 use rx_core_traits::{
 	Observable, SharedSubscriber, Subscriber, SubscriptionData, TeardownCollection,
 	UpgradeableObserver,
 };
 
-use crate::{ZipSubscriber, observable::ZipSubscriberOptions};
+use crate::ZipSubscriber;
 
 // TODO: Consider renaming this to Zip2Observable, impl From<(O1, O2)> for it, and impl a new ZipObservable that has an enum inside it across Zip2..Zip3 and impl From<(O1, O2)>
 #[derive(RxObservable, Clone, Debug)]
@@ -19,7 +22,7 @@ where
 	O2::Out: Clone,
 	O2::OutError: Into<O1::OutError>,
 {
-	options: ZipSubscriberOptions,
+	options: QueueOverflowOptions,
 	observable_1: O1,
 	observable_2: O2,
 }
@@ -34,13 +37,13 @@ where
 {
 	pub fn new(o1: O1, o2: O2) -> Self {
 		Self {
-			options: ZipSubscriberOptions::default(),
+			options: QueueOverflowOptions::default(),
 			observable_1: o1,
 			observable_2: o2,
 		}
 	}
 
-	pub fn with_options(mut self, options: ZipSubscriberOptions) -> Self {
+	pub fn with_options(mut self, options: QueueOverflowOptions) -> Self {
 		self.options = options;
 		self
 	}
@@ -74,13 +77,19 @@ where
 			self.options.clone(),
 		));
 
-		let s1 = self
-			.observable_1
-			.subscribe(IntoVariant1of2Subscriber::new(shared_subscriber.clone()));
+		let s1 = self.observable_1.subscribe(EitherSubscriber2::<
+			EitherNotificationSelector1Of2<O1, O2>,
+			_,
+			O1,
+			O2,
+		>::new(shared_subscriber.clone()));
 
-		let s2 = self
-			.observable_2
-			.subscribe(IntoVariant2of2Subscriber::new(shared_subscriber));
+		let s2 = self.observable_2.subscribe(EitherSubscriber2::<
+			EitherNotificationSelector2Of2<O1, O2>,
+			_,
+			O1,
+			O2,
+		>::new(shared_subscriber.clone()));
 
 		let mut subscription = SubscriptionData::default();
 		subscription.add_teardown(s1.into());

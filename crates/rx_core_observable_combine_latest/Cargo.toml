@@ -18,7 +18,7 @@ workspace = true
 [features]
 default = []
 debug = [
-    "rx_core_emission_variants/debug",
+    "rx_core_notification_variadics/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
 ]
@@ -28,8 +28,8 @@ observable_fn = []
 rx_core_traits = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
-rx_core_emission_variants = { workspace = true }
-derive-where = { workspace = true }
+rx_core_notification_variadics = { workspace = true }
+rx_core_notification_store = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

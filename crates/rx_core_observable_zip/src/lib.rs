@@ -1,14 +1,11 @@
-mod subscriber_notification_queue;
 mod zip_observable;
 mod zip_subscriber;
-mod zip_subscriber_options;
 
-pub use subscriber_notification_queue::*;
 pub use zip_subscriber::*;
 
 pub mod observable {
 	pub use super::zip_observable::*;
-	pub use super::zip_subscriber_options::*;
+	pub use rx_core_notification_store::{QueueOverflowBehavior, QueueOverflowOptions};
 }
 
 #[cfg(feature = "observable_fn")]

@@ -4423,18 +4423,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_core_emission_variants"
-version = "0.1.0"
-dependencies = [
- "bitflags 2.10.0",
- "derive-where",
- "rx_core",
- "rx_core_macro_subscriber_derive",
- "rx_core_testing",
- "rx_core_traits",
-]
-
-[[package]]
 name = "rx_core_macro_common"
 version = "0.1.0"
 dependencies = [
@@ -4525,14 +4513,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_core_notification_store"
+version = "0.1.0"
+dependencies = [
+ "bitflags 2.10.0",
+ "derive-where",
+ "rx_core",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_notification_variadics"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
 name = "rx_core_observable_combine_latest"
 version = "0.1.0"
 dependencies = [
- "derive-where",
  "rx_core",
- "rx_core_emission_variants",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
+ "rx_core_notification_store",
+ "rx_core_notification_variadics",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4685,11 +4694,11 @@ dependencies = [
 name = "rx_core_observable_zip"
 version = "0.1.0"
 dependencies = [
- "derive-where",
  "rx_core",
- "rx_core_emission_variants",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
+ "rx_core_notification_store",
+ "rx_core_notification_variadics",
  "rx_core_testing",
  "rx_core_traits",
 ]

@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { finalize, Subject, zip } from "rxjs";
+import { catchError, finalize, of, Subject, zip } from "rxjs";
 
 /**
  * The combineLatest observer combines the latest values from multiple observables
@@ -13,6 +13,7 @@ const subject2 = new Subject<number>();
 
 zip([subject1, subject2])
   .pipe(
+    catchError((e) => of()),
     finalize(() => {
       console.log("finalize");
     })
@@ -23,6 +24,7 @@ zip([subject1, subject2])
   });
 
 subject1.next(1);
+subject1.error("asd");
 subject2.next(10);
 subject2.next(20);
 

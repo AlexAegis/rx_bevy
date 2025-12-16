@@ -19,19 +19,21 @@ impl Default for SubscriberStateBits {
 	}
 }
 
-/// Stores the possible states a subscriber can be in.
+/// Stores the possible states a subscriber can be in. Useful to track the
+/// state of an unknown upstream source of signals based only on those signals.
+///
 /// Debug asserts ensure that no invalid state changes happen, like
 /// changing a completed state into an errored one, or trying to call
 /// unsubscribe twice.
 ///
-/// By default it is in the "waiting" state and nothing else.
+/// By default it's in the "waiting" state.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct SubscriberState {
 	state: SubscriberStateBits,
 }
 
 impl SubscriberState {
-	/// Is considered "waiting" before anything else could happen to it.
+	/// Is considered "waiting" when nothing had happened yet.
 	///
 	/// This flag starts as `true` and cannot be set. Once `false`, stays
 	/// `false`.
@@ -40,7 +42,7 @@ impl SubscriberState {
 		self.state.contains(SubscriberStateBits::WAITING)
 	}
 
-	/// Is considered "primed" when it had seen at least one `next` calls.
+	/// Is considered "primed" when it had seen at least one `next` call.
 	///
 	/// This flag cannot be unset, once `true`, stays `true`.
 	#[inline]
@@ -58,6 +60,7 @@ impl SubscriberState {
 		self.state.contains(SubscriberStateBits::COMPLETED)
 	}
 
+	/// True when the state was completed without ever seeing a single `next`!
 	#[inline]
 	pub fn is_completed_but_not_primed(&self) -> bool {
 		self.is_completed() && !self.is_primed()
@@ -179,6 +182,9 @@ impl SubscriberState {
 		self.state.insert(SubscriberStateBits::UNSUBSCRIBED);
 	}
 
+	/// Applies this notification to the state.
+	///
+	/// It will panic in debug builds when an invalid state change is attempted.
 	pub fn update_with_notification<In, InError>(
 		&mut self,
 		notification: &SubscriberNotification<In, InError>,
@@ -194,6 +200,51 @@ impl SubscriberState {
 		}
 	}
 
+	/// Try to avoid using this function! It's an escape hatch, and a tool to
+	/// help narrow down problems.
+	///
+	/// If using this check before updating the state is what makes your logic
+	/// work, it means you're double updating with the same notification.
+	/// Or upstream is incorrect by sending the same signal multiple times, in
+	/// which case the problem is not you.
+	///
+	/// Rest assured these invalid update panics only happen in debug builds!
+	pub fn notification_matches_state<In, InError>(
+		&mut self,
+		notification: &SubscriberNotification<In, InError>,
+	) -> bool
+	where
+		In: Signal,
+		InError: Signal,
+	{
+		match notification {
+			SubscriberNotification::Unsubscribe => self.is_unsubscribed(),
+			SubscriberNotification::Complete => self.is_completed(),
+			SubscriberNotification::Error(_) => self.is_errored(),
+			SubscriberNotification::Next(_) => self.is_primed(),
+		}
+	}
+
+	/// Try to avoid using this function! It's an escape hatch, and a tool to
+	/// help narrow down problems.
+	///
+	/// If you haven't yet, try using `notification_matches_state` as your
+	/// safety check before reaching for this function, that one can reveal a
+	/// narrower problem.
+	///
+	/// If using this check before updating the state is what makes your logic
+	/// work, it means you're either double updating with the same notification,
+	/// or you apply a notification that is not a correct state change.
+	///
+	/// > True for all sources of signals:
+	/// > Zero or more Next notifications come first, after which up to 1
+	/// > Error or Complete signal, and then finally an Unsubscribe signal, and
+	/// > then nothing else.
+	///
+	/// Or upstream is incorrect by sending the same signal multiple times, in
+	/// which case the problem is not you.
+	///
+	/// Rest assured these invalid update panics only happen in debug builds!
 	pub fn update_with_notification_would_be_invalid<In, InError>(
 		&mut self,
 		notification: &SubscriberNotification<In, InError>,

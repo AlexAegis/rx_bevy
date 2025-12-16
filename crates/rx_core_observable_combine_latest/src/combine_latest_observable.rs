@@ -1,5 +1,7 @@
-use rx_core_emission_variants::{IntoVariant1of2Subscriber, IntoVariant2of2Subscriber};
 use rx_core_macro_observable_derive::RxObservable;
+use rx_core_notification_variadics::{
+	EitherNotificationSelector1Of2, EitherNotificationSelector2Of2, EitherSubscriber2,
+};
 use rx_core_traits::{
 	Observable, SharedSubscriber, Subscriber, SubscriptionData, TeardownCollection,
 	UpgradeableObserver,
@@ -62,13 +64,19 @@ where
 		let shared_subscriber =
 			SharedSubscriber::new(CombineLatestSubscriber::<_, O1, O2>::new(destination));
 
-		let s1 = self
-			.observable_1
-			.subscribe(IntoVariant1of2Subscriber::new(shared_subscriber.clone()));
+		let s1 = self.observable_1.subscribe(EitherSubscriber2::<
+			EitherNotificationSelector1Of2<O1, O2>,
+			_,
+			O1,
+			O2,
+		>::new(shared_subscriber.clone()));
 
-		let s2 = self
-			.observable_2
-			.subscribe(IntoVariant2of2Subscriber::new(shared_subscriber));
+		let s2 = self.observable_2.subscribe(EitherSubscriber2::<
+			EitherNotificationSelector2Of2<O1, O2>,
+			_,
+			O1,
+			O2,
+		>::new(shared_subscriber.clone()));
 
 		let mut subscription = SubscriptionData::default();
 		subscription.add_teardown(s1.into());

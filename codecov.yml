@@ -44,9 +44,12 @@ component_management:
     - component_id: rx_core
       paths:
         - crates/rx_core/**
-    - component_id: rx_core_emission_variants
+    - component_id: rx_core_notification_store
       paths:
-        - crates/rx_core_emission_variants/**
+        - crates/rx_core_notification_store/**
+    - component_id: rx_core_notification_variadics
+      paths:
+        - crates/rx_core_notification_variadics/**
     - component_id: rx_core_macro_common
       paths:
         - crates/rx_core_macro_common/**

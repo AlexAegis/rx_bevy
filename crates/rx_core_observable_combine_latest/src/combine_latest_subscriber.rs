@@ -1,11 +1,10 @@
-use rx_core_emission_variants::EitherOut2;
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observable, Observer, Subscriber, SubscriptionLike};
-
-use crate::ObservableEmissionLastState;
+use rx_core_notification_store::NotificationState;
+use rx_core_notification_variadics::EitherObservableNotification2;
+use rx_core_traits::{Observable, Observer, Subscriber, SubscriberNotification, SubscriptionLike};
 
 #[derive(RxSubscriber)]
-#[rx_in(EitherOut2<O1, O2>)]
+#[rx_in(EitherObservableNotification2<O1, O2>)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection_to_destination]
 pub struct CombineLatestSubscriber<Destination, O1, O2>
@@ -18,8 +17,8 @@ where
 	O2::Out: Clone,
 	O2::OutError: Into<Destination::InError>,
 {
-	o1_state: ObservableEmissionLastState<O1::Out>,
-	o2_state: ObservableEmissionLastState<O2::Out>,
+	o1_state: NotificationState<O1::Out, O1::OutError>,
+	o2_state: NotificationState<O2::Out, O2::OutError>,
 	#[destination]
 	destination: Destination,
 }
@@ -36,8 +35,8 @@ where
 {
 	pub fn new(destination: Destination) -> Self {
 		CombineLatestSubscriber {
-			o1_state: ObservableEmissionLastState::default(),
-			o2_state: ObservableEmissionLastState::default(),
+			o1_state: NotificationState::default(),
+			o2_state: NotificationState::default(),
 			destination,
 		}
 	}
@@ -75,45 +74,46 @@ where
 	O2::OutError: Into<Destination::InError>,
 {
 	fn next(&mut self, next: Self::In) {
-		match next {
-			EitherOut2::O1(o1_next) => {
-				self.o1_state.next(o1_next);
+		let either_was_next = match next {
+			EitherObservableNotification2::O1(notification) => {
+				let is_next = matches!(notification, SubscriberNotification::Next(_));
+				self.o1_state.push(notification);
+				is_next
 			}
-			EitherOut2::O2(o2_next) => {
-				self.o2_state.next(o2_next);
+			EitherObservableNotification2::O2(notification) => {
+				let is_next = matches!(notification, SubscriberNotification::Next(_));
+				self.o2_state.push(notification);
+				is_next
 			}
-			EitherOut2::CompleteO1 => {
-				self.o1_state.complete();
-				self.try_complete();
-				return; // Early return to avoid emitting the same output again
-			}
-			EitherOut2::CompleteO2 => {
-				self.o2_state.complete();
-				self.try_complete();
-				return; // Early return to avoid emitting the same output again
-			}
-			EitherOut2::UnsubscribeO1 => {
-				self.o1_state.unsubscribe();
-				self.try_complete();
-				self.try_unsubscribe();
-				return; // Early return to avoid emitting the same output again
-			}
-			EitherOut2::UnsubscribeO2 => {
-				self.o2_state.unsubscribe();
-				self.try_complete();
-				self.try_unsubscribe();
-				return; // Early return to avoid emitting the same output again
-			}
+		};
+
+		if let Some(error) = self
+			.o1_state
+			.take_error()
+			.map(|error| error.into())
+			.or_else(|| self.o2_state.take_error().map(|error| error.into()))
+		{
+			self.destination.error(error);
+			self.destination.unsubscribe();
+			return;
 		}
 
-		if let Some((o1_val, o2_val)) = self.o1_state.get().zip(self.o2_state.get()) {
+		self.try_complete();
+		self.try_unsubscribe();
+
+		if either_was_next
+			&& !self.is_closed()
+			&& let Some((o1_val, o2_val)) = self.o1_state.get_value().zip(self.o2_state.get_value())
+		{
 			self.destination.next((o1_val.clone(), o2_val.clone()));
 		}
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error);
-		self.destination.unsubscribe();
+		if !self.is_closed() {
+			self.destination.error(error);
+			self.unsubscribe()
+		}
 	}
 
 	fn complete(&mut self) {

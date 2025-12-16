@@ -1,14 +1,10 @@
-use rx_core_emission_variants::EitherOut2;
 use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_notification_store::{NotificationQueue, QueueOverflowOptions};
+use rx_core_notification_variadics::EitherObservableNotification2;
 use rx_core_traits::{Observable, Observer, Subscriber, SubscriberNotification, SubscriptionLike};
 
-use crate::{
-	SubscriberNotificationQueue,
-	observable::{QueueOverflowBehavior, ZipSubscriberOptions},
-};
-
 #[derive(RxSubscriber)]
-#[rx_in(EitherOut2<O1, O2>)]
+#[rx_in(EitherObservableNotification2<O1, O2>)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection_to_destination]
 pub struct ZipSubscriber<Destination, O1, O2>
@@ -23,9 +19,8 @@ where
 {
 	#[destination]
 	destination: Destination,
-	options: ZipSubscriberOptions,
-	o1_queue: SubscriberNotificationQueue<O1::Out, O1::OutError>,
-	o2_queue: SubscriberNotificationQueue<O2::Out, O2::OutError>,
+	o1_queue: NotificationQueue<O1::Out, O1::OutError>,
+	o2_queue: NotificationQueue<O2::Out, O2::OutError>,
 }
 
 impl<Destination, O1, O2> ZipSubscriber<Destination, O1, O2>
@@ -38,37 +33,19 @@ where
 	O2::Out: Clone,
 	O2::OutError: Into<Destination::InError>,
 {
-	pub fn new(destination: Destination, options: ZipSubscriberOptions) -> Self {
+	pub fn new(destination: Destination, options: QueueOverflowOptions) -> Self {
 		ZipSubscriber {
-			options,
-			o1_queue: SubscriberNotificationQueue::default(),
-			o2_queue: SubscriberNotificationQueue::default(),
+			o1_queue: NotificationQueue::new(options.clone()),
+			o2_queue: NotificationQueue::new(options),
 			destination,
 		}
 	}
 
-	fn push_notification<O>(
-		queue: &mut SubscriberNotificationQueue<O::Out, O::OutError>,
-		value: SubscriberNotification<O::Out, O::OutError>,
-		options: &ZipSubscriberOptions,
-	) where
-		O: Observable,
-	{
-		if queue.count_nexts() < options.max_queue_length {
-			queue.push(value);
-		} else if matches!(options.overflow_behavior, QueueOverflowBehavior::DropOldest) {
-			if matches!(value, SubscriberNotification::Next(_)) {
-				queue.pop_until_next();
-			}
-			queue.push(value);
-		}
-		// else, don't do anything, the incoming value is ignored as the queue is full
-	}
-
 	fn try_complete(&mut self) {
-		if (self.o1_queue.is_completed() && self.o2_queue.is_completed())
-			|| (self.o1_queue.is_completed() && self.o2_queue.is_empty())
-			|| (self.o1_queue.is_empty() && self.o2_queue.is_completed())
+		if !self.destination.is_closed()
+			&& ((self.o1_queue.is_completed() && self.o2_queue.is_completed())
+				|| (self.o1_queue.is_completed() && self.o2_queue.is_empty())
+				|| (self.o1_queue.is_empty() && self.o2_queue.is_completed()))
 		{
 			self.destination.complete();
 			self.destination.unsubscribe();
@@ -76,9 +53,10 @@ where
 	}
 
 	fn try_unsubscribe(&mut self) {
-		if (self.o1_queue.is_closed() && self.o2_queue.is_closed())
-			|| (self.o1_queue.is_empty() && self.o2_queue.is_closed())
-			|| (self.o1_queue.is_closed() && self.o2_queue.is_empty())
+		if !self.destination.is_closed()
+			&& ((self.o1_queue.is_closed() && self.o2_queue.is_closed())
+				|| (self.o1_queue.is_empty() && self.o2_queue.is_closed())
+				|| (self.o1_queue.is_closed() && self.o2_queue.is_empty()))
 		{
 			self.destination.unsubscribe();
 		}
@@ -96,73 +74,44 @@ where
 	O2::OutError: Into<Destination::InError>,
 {
 	fn next(&mut self, next: Self::In) {
-		match next {
-			EitherOut2::O1(o1_next) => {
-				Self::push_notification::<O1>(
-					&mut self.o1_queue,
-					SubscriberNotification::Next(o1_next),
-					&self.options,
-				);
-				self.try_complete();
+		let either_was_next = match next {
+			EitherObservableNotification2::O1(notification) => {
+				let is_next = matches!(notification, SubscriberNotification::Next(_));
+				self.o1_queue.push(notification);
+				is_next
 			}
-			EitherOut2::O2(o2_next) => {
-				Self::push_notification::<O2>(
-					&mut self.o2_queue,
-					SubscriberNotification::Next(o2_next),
-					&self.options,
-				);
-				self.try_complete();
+			EitherObservableNotification2::O2(notification) => {
+				let is_next = matches!(notification, SubscriberNotification::Next(_));
+				self.o2_queue.push(notification);
+				is_next
 			}
-			EitherOut2::CompleteO1 => {
-				Self::push_notification::<O1>(
-					&mut self.o1_queue,
-					SubscriberNotification::Complete,
-					&self.options,
-				);
-				self.try_complete();
-				return;
-			}
-			EitherOut2::CompleteO2 => {
-				Self::push_notification::<O2>(
-					&mut self.o2_queue,
-					SubscriberNotification::Complete,
-					&self.options,
-				);
-				self.try_complete();
-				return;
-			}
-			EitherOut2::UnsubscribeO1 => {
-				Self::push_notification::<O1>(
-					&mut self.o1_queue,
-					SubscriberNotification::Unsubscribe,
-					&self.options,
-				);
-				self.try_complete();
-				self.try_unsubscribe();
-				return;
-			}
-			EitherOut2::UnsubscribeO2 => {
-				Self::push_notification::<O2>(
-					&mut self.o2_queue,
-					SubscriberNotification::Unsubscribe,
-					&self.options,
-				);
-				self.try_complete();
-				self.try_unsubscribe();
-				return;
-			}
+		};
+
+		if let Some(error) = self
+			.o1_queue
+			.take_error()
+			.map(|error| error.into())
+			.or_else(|| self.o2_queue.take_error().map(|error| error.into()))
+		{
+			self.destination.error(error);
+			self.destination.unsubscribe();
+			return;
 		}
 
-		if !self.o1_queue.is_empty()
-			&& !self.o2_queue.is_empty()
+		if either_was_next
+			&& self.o1_queue.has_next()
+			&& self.o2_queue.has_next()
+			&& !self.is_closed()
 			&& let Some((o1_val, o2_val)) = self
 				.o1_queue
-				.pop_until_next()
-				.zip(self.o2_queue.pop_until_next())
+				.pop_next_if_in_front()
+				.zip(self.o2_queue.pop_next_if_in_front())
 		{
 			self.destination.next((o1_val.clone(), o2_val.clone()));
 		}
+
 		self.try_complete();
+		self.try_unsubscribe();
 	}
 
 	fn error(&mut self, error: Self::InError) {
