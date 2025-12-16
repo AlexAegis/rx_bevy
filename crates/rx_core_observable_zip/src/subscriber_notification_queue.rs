@@ -58,9 +58,7 @@ where
 	/// Teardown "Add" notifications and invalid updates are all ignored.
 	#[inline]
 	pub fn push(&mut self, value: SubscriberNotification<In, InError>) {
-		if self.state.update_with_notification_would_be_invalid(&value)
-			|| matches!(value, SubscriberNotification::Add(_))
-		{
+		if self.state.update_with_notification_would_be_invalid(&value) {
 			return;
 		}
 
@@ -165,13 +163,6 @@ mod test {
 	}
 
 	#[test]
-	fn should_still_be_waiting_after_an_add_notification_is_received() {
-		let mut queue = SubscriberNotificationQueue::<usize, &'static str>::default();
-		queue.push(SubscriberNotification::Add(None));
-		assert!(queue.is_waiting());
-	}
-
-	#[test]
 	fn should_take_up_the_state_of_the_front_after_popping_a_next() {
 		let mut queue = SubscriberNotificationQueue::<usize, &'static str>::default();
 		assert!(queue.is_waiting());
@@ -191,7 +182,6 @@ mod test {
 
 		queue.push(SubscriberNotification::Next(1));
 		queue.push(SubscriberNotification::Next(2));
-		queue.push(SubscriberNotification::Add(None));
 		queue.push(SubscriberNotification::Next(3));
 		queue.push(SubscriberNotification::Unsubscribe);
 

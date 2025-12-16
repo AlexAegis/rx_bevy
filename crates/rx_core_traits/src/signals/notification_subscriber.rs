@@ -1,4 +1,4 @@
-use crate::{ObserverNotification, Signal, Subscriber, SubscriptionNotification, Teardown};
+use crate::{ObserverNotification, Signal, Subscriber, SubscriptionNotification};
 
 /// Represents all signal events a subscriber can observe in a materialized form
 #[derive(Debug, PartialEq)]
@@ -11,7 +11,6 @@ where
 	Error(InError),
 	Complete,
 	Unsubscribe,
-	Add(Option<Teardown>),
 }
 
 impl<In, InError> Clone for SubscriberNotification<In, InError>
@@ -25,7 +24,6 @@ where
 			Self::Error(error) => Self::Error(error.clone()),
 			Self::Complete => Self::Complete,
 			Self::Unsubscribe => Self::Unsubscribe,
-			Self::Add(_) => Self::Add(None),
 		}
 	}
 }
@@ -52,7 +50,6 @@ where
 	fn from(value: SubscriptionNotification) -> Self {
 		match value {
 			SubscriptionNotification::Unsubscribe => SubscriberNotification::Unsubscribe,
-			SubscriptionNotification::Add(teardown) => SubscriberNotification::Add(teardown),
 		}
 	}
 }
@@ -70,8 +67,6 @@ where
 			SubscriberNotification::Next(next) => self.next(next),
 			SubscriberNotification::Error(error) => self.error(error),
 			SubscriberNotification::Complete => self.complete(),
-			SubscriberNotification::Add(Some(teardown)) => self.add_teardown(teardown),
-			SubscriberNotification::Add(None) => {}
 			SubscriberNotification::Unsubscribe => self.unsubscribe(),
 		}
 	}

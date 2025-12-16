@@ -247,33 +247,6 @@ where
 		self.count_observed_completes() + self.count_observed_completes_after_close()
 	}
 
-	/// Returns the number of observed [SubscriberNotification::Add]
-	/// notifications before the first [SubscriberNotification::Unsubscribe]
-	/// notification.
-	pub fn count_observed_adds(&self) -> usize {
-		self.observed_notifications
-			.iter()
-			.filter(|notification| matches!(notification, SubscriberNotification::Add(_)))
-			.count()
-	}
-
-	/// Returns the number of observed [SubscriberNotification::Add]
-	/// notifications after the first [SubscriberNotification::Unsubscribe]
-	/// notification.
-	pub fn count_observed_adds_after_close(&self) -> usize {
-		self.observed_notifications_after_close
-			.iter()
-			.filter(|notification| matches!(notification, SubscriberNotification::Add(_)))
-			.count()
-	}
-
-	/// Returns the total observed [SubscriberNotification::Add] notifications,
-	/// regardless of whether or not it was observed before or after the first
-	/// [SubscriberNotification::Unsubscribe] notification.
-	pub fn count_all_observed_adds(&self) -> usize {
-		self.count_observed_adds() + self.count_observed_adds_after_close()
-	}
-
 	/// Returns the number of observed [SubscriberNotification::Unsubscribe]
 	/// notifications until the first [SubscriberNotification::Unsubscribe]
 	/// notification.
@@ -373,13 +346,11 @@ mod test_notification_collector {
 		fn counts_different_notifications() {
 			let mut notification_collector = NotificationCollector::<i32, String>::default();
 			// This order of events is nonsensical, but that doesn't matter for this test.
-			notification_collector.push(SubscriberNotification::Add(None));
 			notification_collector.push(SubscriberNotification::Next(1));
 			notification_collector.push(SubscriberNotification::Next(2));
 			notification_collector.push(SubscriberNotification::Next(3));
 			notification_collector.push(SubscriberNotification::Error("Error 1".to_string()));
 			notification_collector.push(SubscriberNotification::Complete);
-			notification_collector.push(SubscriberNotification::Add(None));
 			notification_collector.push(SubscriberNotification::Next(4));
 			notification_collector.push(SubscriberNotification::Complete);
 			notification_collector.push(SubscriberNotification::Unsubscribe);
@@ -435,22 +406,6 @@ mod test_notification_collector {
 				notification_collector.count_all_observed_completes(),
 				3,
 				"mock context didn't report the correct total amount of completes observed"
-			);
-
-			assert_eq!(
-				notification_collector.count_observed_adds(),
-				2,
-				"mock context didn't report the correct amount of adds observed before the first unsubscribe"
-			);
-			assert_eq!(
-				notification_collector.count_observed_adds_after_close(),
-				0,
-				"mock context didn't report the correct amount of adds observed after the first unsubscribe"
-			);
-			assert_eq!(
-				notification_collector.count_all_observed_adds(),
-				2,
-				"mock context didn't report the correct total amount of adds observed"
 			);
 
 			assert_eq!(

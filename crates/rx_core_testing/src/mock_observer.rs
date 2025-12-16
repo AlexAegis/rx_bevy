@@ -98,8 +98,5 @@ where
 		} else {
 			teardown.execute();
 		}
-		self.notification_collector
-			.lock()
-			.push(SubscriberNotification::Add(None));
 	}
 }

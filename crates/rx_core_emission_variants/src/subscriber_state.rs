@@ -191,7 +191,6 @@ impl SubscriberState {
 			SubscriberNotification::Complete => self.complete(),
 			SubscriberNotification::Error(_) => self.error(),
 			SubscriberNotification::Next(_) => self.next(),
-			SubscriberNotification::Add(_) => {}
 		}
 	}
 
@@ -208,7 +207,6 @@ impl SubscriberState {
 			SubscriberNotification::Complete
 			| SubscriberNotification::Error(_)
 			| SubscriberNotification::Next(_) => self.is_closed(),
-			SubscriberNotification::Add(_) => false,
 		}
 	}
 }
