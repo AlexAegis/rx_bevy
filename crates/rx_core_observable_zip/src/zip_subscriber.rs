@@ -41,6 +41,24 @@ where
 		}
 	}
 
+	fn get_next(&mut self) -> Option<Destination::In> {
+		if !self.o1_queue.has_next() || !self.o2_queue.has_next() {
+			None
+		} else {
+			self.o1_queue
+				.pop_next_if_in_front()
+				.zip(self.o2_queue.pop_next_if_in_front())
+				.map(|(o1, o2)| (o1.clone(), o2.clone()))
+		}
+	}
+
+	fn take_either_error(&mut self) -> Option<Destination::InError> {
+		self.o1_queue
+			.take_error()
+			.map(|error| error.into())
+			.or_else(|| self.o2_queue.take_error().map(|error| error.into()))
+	}
+
 	fn try_complete(&mut self) {
 		if !self.destination.is_closed()
 			&& ((self.o1_queue.is_completed() && self.o2_queue.is_completed())
@@ -87,29 +105,21 @@ where
 			}
 		};
 
-		if let Some(error) = self
-			.o1_queue
-			.take_error()
-			.map(|error| error.into())
-			.or_else(|| self.o2_queue.take_error().map(|error| error.into()))
-		{
+		if let Some(error) = self.take_either_error() {
 			self.destination.error(error);
 			self.destination.unsubscribe();
 			return;
 		}
 
 		if either_was_next
-			&& self.o1_queue.has_next()
-			&& self.o2_queue.has_next()
 			&& !self.is_closed()
-			&& let Some((o1_val, o2_val)) = self
-				.o1_queue
-				.pop_next_if_in_front()
-				.zip(self.o2_queue.pop_next_if_in_front())
+			&& let Some(next) = self.get_next()
 		{
-			self.destination.next((o1_val.clone(), o2_val.clone()));
+			self.destination.next(next);
 		}
 
+		// These must happen after `next` because by popping off a set of
+		// values from the queues, a complete/unsubscribe can be exposed.
 		self.try_complete();
 		self.try_unsubscribe();
 	}

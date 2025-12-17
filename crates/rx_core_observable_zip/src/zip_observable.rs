@@ -10,7 +10,7 @@ use rx_core_traits::{
 
 use crate::ZipSubscriber;
 
-// TODO: Consider renaming this to Zip2Observable, impl From<(O1, O2)> for it, and impl a new ZipObservable that has an enum inside it across Zip2..Zip3 and impl From<(O1, O2)>
+// TODO: Consider renaming this to Zip2Observable, impl From<(O1, O2)> for it, and impl a new ZipObservable that has an enum inside it across Zip2..Zip3 and impl From<(O1, O2), then tie all zip (2), zip3, zip4 functions into a single zip! macro, that expands to the correct fn depending on the number of arguments. Should only accept tuples/arrays of observables, one parameter!>
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out((O1::Out, O2::Out))]
 #[rx_out_error(O1::OutError)]

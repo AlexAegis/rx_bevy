@@ -41,6 +41,20 @@ where
 		}
 	}
 
+	fn get_next(&self) -> Option<Destination::In> {
+		self.o1_state
+			.get_value()
+			.zip(self.o2_state.get_value())
+			.map(|(o1, o2)| (o1.clone(), o2.clone()))
+	}
+
+	fn take_either_error(&mut self) -> Option<Destination::InError> {
+		self.o1_state
+			.take_error()
+			.map(|error| error.into())
+			.or_else(|| self.o2_state.take_error().map(|error| error.into()))
+	}
+
 	fn try_complete(&mut self) {
 		if (self.o1_state.is_completed() && self.o2_state.is_completed())
 			|| (self.o1_state.is_waiting() && self.o2_state.is_completed_but_not_primed())
@@ -87,12 +101,7 @@ where
 			}
 		};
 
-		if let Some(error) = self
-			.o1_state
-			.take_error()
-			.map(|error| error.into())
-			.or_else(|| self.o2_state.take_error().map(|error| error.into()))
-		{
+		if let Some(error) = self.take_either_error() {
 			self.destination.error(error);
 			self.destination.unsubscribe();
 			return;
@@ -103,21 +112,18 @@ where
 
 		if either_was_next
 			&& !self.is_closed()
-			&& let Some((o1_val, o2_val)) = self.o1_state.get_value().zip(self.o2_state.get_value())
+			&& let Some(next) = self.get_next()
 		{
-			self.destination.next((o1_val.clone(), o2_val.clone()));
+			self.destination.next(next);
 		}
 	}
 
-	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			self.destination.error(error);
-			self.unsubscribe()
-		}
+	fn error(&mut self, _error: Self::InError) {
+		unreachable!()
 	}
 
 	fn complete(&mut self) {
-		self.try_complete();
+		unreachable!()
 	}
 }
 
@@ -138,6 +144,6 @@ where
 
 	#[inline]
 	fn unsubscribe(&mut self) {
-		self.try_unsubscribe();
+		unreachable!()
 	}
 }
