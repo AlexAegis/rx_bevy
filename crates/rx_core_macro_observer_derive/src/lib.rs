@@ -1,7 +1,10 @@
 use quote::quote;
 use rx_core_macro_common::{
-	impl_does_not_upgrade_to_observer_subscriber, impl_observer_input, impl_observer_upgrades_to,
-	impl_primary_category,
+	derive_observer::{
+		impl_does_not_upgrade_to_observer_subscriber, impl_observer_input,
+		impl_observer_upgrades_to,
+	},
+	derive_primary_category::impl_primary_category,
 };
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 

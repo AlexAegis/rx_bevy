@@ -1,5 +1,8 @@
 use quote::quote;
-use rx_core_macro_common::{impl_observable_output, impl_observer_input, impl_primary_category};
+use rx_core_macro_common::{
+	derive_observable::impl_observable_output, derive_observer::impl_observer_input,
+	derive_primary_category::impl_primary_category,
+};
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
 fn primary_category_operator() -> Type {

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_scheduler_ticking::{Tick, TickingScheduler, TickingSchedulerExecutor};
-use rx_core_traits::{ContextProvider, SchedulerHandle, TaskContext};
+use rx_core_traits::{ContextProvider, TaskContext};
 
 pub struct TickingContextProvider;
 

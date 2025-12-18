@@ -1,9 +1,14 @@
 use quote::quote;
 use rx_core_macro_common::{
-	impl_delegate_observer_to_destination, impl_delegate_subscription_like_to_destination,
-	impl_delegate_teardown_collection, impl_observer_input, impl_observer_upgrades_to,
-	impl_primary_category, impl_skip_unsubscribe_on_drop_impl,
-	impl_subscriber_does_not_upgrade_to_self,
+	derive_observer::{
+		impl_delegate_observer_to_destination, impl_observer_input, impl_observer_upgrades_to,
+		impl_subscriber_does_not_upgrade_to_self,
+	},
+	derive_primary_category::impl_primary_category,
+	derive_subscription::{
+		impl_delegate_subscription_like_to_destination, impl_skip_unsubscribe_on_drop_impl,
+	},
+	derive_teardown_collection::impl_delegate_teardown_collection,
 };
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 

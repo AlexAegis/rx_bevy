@@ -1,7 +1,12 @@
 use quote::quote;
 use rx_core_macro_common::{
-	impl_delegate_subscription_like_to_destination, impl_does_not_upgrade_to_observer_subscriber,
-	impl_observable_output, impl_observer_input, impl_observer_upgrades_to, impl_primary_category,
+	derive_observable::impl_observable_output,
+	derive_observer::{
+		impl_does_not_upgrade_to_observer_subscriber, impl_observer_input,
+		impl_observer_upgrades_to,
+	},
+	derive_primary_category::impl_primary_category,
+	derive_subscription::impl_delegate_subscription_like_to_destination,
 };
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 

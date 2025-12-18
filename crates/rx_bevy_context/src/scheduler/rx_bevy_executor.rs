@@ -6,7 +6,6 @@ use bevy_time::Virtual;
 use rx_bevy_common::Clock;
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_scheduler_ticking::{Tick, TickingSchedulerExecutor};
-use rx_core_traits::SchedulerHandle;
 
 // TODO: SystemParam that is the scheduler directly, maybe use the builder pattern of sysparams
 #[derive(Resource, RxExecutor)]
