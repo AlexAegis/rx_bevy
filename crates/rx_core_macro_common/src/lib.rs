@@ -37,9 +37,11 @@ pub fn read_attribute_value(attrs: &[Attribute], attribute_name: &str) -> Option
 	}
 }
 
-pub fn never_type() -> Type {
+pub fn never_type(derive_input: &DeriveInput) -> Type {
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	parse_quote! {
-		rx_core_traits::Never
+		#_rx_core_traits_crate::Never
 	}
 }
 
@@ -53,9 +55,11 @@ pub fn impl_primary_category(derive_input: &DeriveInput, primary_category: Type)
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
-		impl #impl_generics rx_core_traits::WithPrimaryCategory for #ident #ty_generics #where_clause {
-			type PrimaryCategory = #primary_category;
+		impl #impl_generics #_rx_core_traits_crate::WithPrimaryCategory for #ident #ty_generics #where_clause {
+			type PrimaryCategory = #_rx_core_traits_crate::#primary_category;
 		}
 	}
 }
@@ -66,13 +70,15 @@ pub fn impl_observable_output(derive_input: &DeriveInput) -> TokenStream {
 
 	let out_type = find_attribute(&derive_input.attrs, "rx_out")
 		.map(read_attribute_type)
-		.unwrap_or(never_type());
+		.unwrap_or(never_type(derive_input));
 	let out_error_type = find_attribute(&derive_input.attrs, "rx_out_error")
 		.map(read_attribute_type)
-		.unwrap_or(never_type());
+		.unwrap_or(never_type(derive_input));
+
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
 
 	quote! {
-		impl #impl_generics rx_core_traits::ObservableOutput for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::ObservableOutput for #ident #ty_generics #where_clause {
 			type Out = #out_type;
 			type OutError = #out_error_type;
 		}
@@ -85,13 +91,15 @@ pub fn impl_observer_input(derive_input: &DeriveInput) -> TokenStream {
 
 	let in_type = find_attribute(&derive_input.attrs, "rx_in")
 		.map(read_attribute_type)
-		.unwrap_or(never_type());
+		.unwrap_or(never_type(derive_input));
 	let in_error_type = find_attribute(&derive_input.attrs, "rx_in_error")
 		.map(read_attribute_type)
-		.unwrap_or(never_type());
+		.unwrap_or(never_type(derive_input));
+
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
 
 	quote! {
-		impl #impl_generics rx_core_traits::ObserverInput for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::ObserverInput for #ident #ty_generics #where_clause {
 			type In = #in_type;
 			type InError = #in_error_type;
 		}
@@ -102,8 +110,10 @@ fn impl_upgrades_to_self(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
-		impl #impl_generics rx_core_traits::ObserverUpgradesToSelf for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::ObserverUpgradesToSelf for #ident #ty_generics #where_clause {
 		}
 	}
 }
@@ -182,12 +192,14 @@ fn impl_upgrades_to_detached(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
-		impl #impl_generics rx_core_traits::UpgradeableObserver for #ident #ty_generics #where_clause {
-			type Upgraded = rx_core_traits::ObserverSubscriber<Self>;
+		impl #impl_generics #_rx_core_traits_crate::UpgradeableObserver for #ident #ty_generics #where_clause {
+			type Upgraded = #_rx_core_traits_crate::ObserverSubscriber<Self>;
 
 			fn upgrade(self) -> Self::Upgraded {
-				rx_core_traits::ObserverSubscriber::new(self)
+				#_rx_core_traits_crate::ObserverSubscriber::new(self)
 			}
 		}
 	}
@@ -254,12 +266,14 @@ fn impl_delegate_teardown_collection_to_destination_inner(
 		"TeardownCollection",
 	);
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
-		impl #impl_generics rx_core_traits::TeardownCollection for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::TeardownCollection for #ident #ty_generics #where_clause {
 			#[inline]
 			fn add_teardown(
 				&mut self,
-				teardown: rx_core_traits::Teardown
+				teardown: #_rx_core_traits_crate::Teardown
 			) {
 				self.#destination_field.add_teardown(teardown);
 			}
@@ -296,8 +310,10 @@ fn impl_delegate_subscription_like_to_destination_inner(derive_input: &DeriveInp
 		"SubscriptionLike",
 	);
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
-		impl #impl_generics rx_core_traits::SubscriptionLike for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::SubscriptionLike for #ident #ty_generics #where_clause {
 			#[inline]
 			fn is_closed(&self) -> bool {
 				self.#destination_field.is_closed()
@@ -333,8 +349,10 @@ fn impl_delegate_observer_to_destination_inner(derive_input: &DeriveInput) -> To
 		"Observer",
 	);
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
-		impl #impl_generics rx_core_traits::Observer for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::Observer for #ident #ty_generics #where_clause {
 			#[inline]
 			fn next(
 				&mut self,
@@ -364,12 +382,14 @@ fn impl_unsubscribe_on_drop(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
 		impl #impl_generics Drop for #ident #ty_generics #where_clause {
 			#[track_caller]
 			fn drop(&mut self) {
-				if !rx_core_traits::SubscriptionLike::is_closed(self) {
-					rx_core_traits::SubscriptionLike::unsubscribe(self);
+				if !#_rx_core_traits_crate::SubscriptionLike::is_closed(self) {
+					#_rx_core_traits_crate::SubscriptionLike::unsubscribe(self);
 				}
 			}
 		}
@@ -395,8 +415,10 @@ pub fn impl_with_context_provider(derive_input: &DeriveInput) -> TokenStream {
 		.map(read_attribute_type)
 		.unwrap_or(unit_type());
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
-		impl #impl_generics rx_core_traits::WithContextProvider for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::WithContextProvider for #ident #ty_generics #where_clause {
 			type ContextProvider = #context_type;
 		}
 	}
@@ -408,10 +430,12 @@ pub fn impl_with_task_input_output(derive_input: &DeriveInput) -> TokenStream {
 
 	let tick_input_type = find_attribute(&derive_input.attrs, "rx_tick")
 		.map(read_attribute_type)
-		.unwrap_or(never_type());
+		.unwrap_or(never_type(derive_input));
+
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
 
 	quote! {
-		impl #impl_generics rx_core_traits::WithTaskInputOutput for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::WithTaskInputOutput for #ident #ty_generics #where_clause {
 			type Tick = #tick_input_type;
 		}
 	}
@@ -432,8 +456,10 @@ pub fn impl_executor(derive_input: &DeriveInput) -> TokenStream {
 		"Scheduler",
 	);
 
+	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+
 	quote! {
-		impl #impl_generics rx_core_traits::TaskExecutor for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::TaskExecutor for #ident #ty_generics #where_clause {
 			type Scheduler = #scheduler_type;
 
 			#[inline]
@@ -442,4 +468,9 @@ pub fn impl_executor(derive_input: &DeriveInput) -> TokenStream {
 			}
 		}
 	}
+}
+
+fn get_rx_core_traits_crate(derive_input: &DeriveInput) -> TokenStream {
+	read_attribute_value(&derive_input.attrs, "_rx_core_traits_crate")
+		.unwrap_or(quote! { rx_core_traits })
 }

@@ -8,7 +8,7 @@ use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
 fn primary_category_subscriber() -> Type {
 	parse_quote! {
-		rx_core_traits::PrimaryCategorySubscriber
+		PrimaryCategorySubscriber
 	}
 }
 
@@ -77,7 +77,8 @@ fn primary_category_subscriber() -> Type {
 		rx_delegate_teardown_collection_to_destination,
 		rx_delegate_subscription_like_to_destination,
 		rx_delegate_observer_to_destination,
-		destination
+		destination,
+		_rx_core_traits_crate
 	)
 )]
 pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

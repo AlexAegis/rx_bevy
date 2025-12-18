@@ -18,19 +18,18 @@ workspace = true
 [features]
 default = []
 debug = [
-    "rx_core_observable_pipe?/debug",
+
     "rx_core_operator_composite?/debug",
     "rx_core_subscriber_switch/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
 ]
-pipe = ["dep:rx_core_observable_pipe"]
+pipe = ["rx_core_traits/pipe"]
 compose = ["dep:rx_core_operator_composite"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
 rx_core_macro_operator_derive = { workspace = true }
-rx_core_observable_pipe = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 rx_core_subscriber_switch = { workspace = true }
 rx_core_subscriber_higher_order_all = { workspace = true }

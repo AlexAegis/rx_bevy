@@ -1,20 +1,20 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::ConcatMapOperator;
 
 pub trait ObservablePipeExtensionConcatMap: Observable + Sized {
+	#[inline]
 	fn concat_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, ConcatMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>>
+	) -> <ConcatMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable> as Operator>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		Pipe::new(self, ConcatMapOperator::new(mapper))
+		ConcatMapOperator::new(mapper).operate(self)
 	}
 }
 

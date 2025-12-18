@@ -1,14 +1,15 @@
-use crate::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SubscriptionLike,
-	Teardown, TeardownCollection, WithPrimaryCategory,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+
+use crate::{Observer, SubscriptionLike, Teardown, TeardownCollection};
 
 use crate::SubscriptionData;
 
 /// This subscriber acts as the subscriptions boundary by not forwarding
 /// `unsubscribe` calls downstream.
-#[derive(Debug)]
-
+#[derive(RxSubscriber, Debug)]
+#[_rx_core_traits_crate(crate)]
+#[rx_in(Destination::In)]
+#[rx_in_error(Destination::InError)]
 pub struct ObserverSubscriber<Destination>
 where
 	Destination: Observer,
@@ -27,18 +28,6 @@ where
 			teardown: SubscriptionData::default(),
 		}
 	}
-}
-
-impl<Destination> WithPrimaryCategory for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Destination> ObserverUpgradesToSelf for ObserverSubscriber<Destination> where
-	Destination: Observer
-{
 }
 
 impl<Destination> Observer for ObserverSubscriber<Destination>
@@ -90,14 +79,6 @@ where
 	fn add_teardown(&mut self, teardown: Teardown) {
 		self.teardown.add_teardown(teardown);
 	}
-}
-
-impl<Destination> ObserverInput for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
 }
 
 impl<Destination> Drop for ObserverSubscriber<Destination>

@@ -1,5 +1,4 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Scheduler, SchedulerHandle};
+use rx_core_traits::{Observable, Operator, Scheduler, SchedulerHandle};
 
 use crate::{
 	AdsrTrigger,
@@ -7,15 +6,16 @@ use crate::{
 };
 
 pub trait ObservablePipeExtensionAdsr: Observable<Out = AdsrTrigger> + Sized {
+	#[inline]
 	fn adsr<S>(
 		self,
 		options: AdsrOperatorOptions,
 		scheduler: SchedulerHandle<S>,
-	) -> Pipe<Self, AdsrOperator<Self::OutError, S>>
+	) -> <AdsrOperator<Self::OutError, S> as Operator>::OutObservable<Self>
 	where
 		S: Scheduler,
 	{
-		Pipe::new(self, AdsrOperator::new(options, scheduler))
+		AdsrOperator::new(options, scheduler).operate(self)
 	}
 }
 

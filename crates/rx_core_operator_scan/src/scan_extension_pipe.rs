@@ -1,9 +1,9 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::ScanOperator;
 
 pub trait ObservablePipeExtensionScan: Observable + Sized {
+	#[inline]
 	fn scan<
 		NextOut: Signal + Clone,
 		Reducer: 'static + Fn(&NextOut, Self::Out) -> NextOut + Clone + Send + Sync,
@@ -11,8 +11,9 @@ pub trait ObservablePipeExtensionScan: Observable + Sized {
 		self,
 		reducer: Reducer,
 		seed: NextOut,
-	) -> Pipe<Self, ScanOperator<Self::Out, Self::OutError, Reducer, NextOut>> {
-		Pipe::new(self, ScanOperator::new(reducer, seed))
+	) -> <ScanOperator<Self::Out, Self::OutError, Reducer, NextOut> as Operator>::OutObservable<Self>
+	{
+		ScanOperator::new(reducer, seed).operate(self)
 	}
 }
 

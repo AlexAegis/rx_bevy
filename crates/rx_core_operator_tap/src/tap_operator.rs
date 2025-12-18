@@ -1,6 +1,6 @@
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Observer, Operator, Subscriber};
+use rx_core_traits::{ComposableOperator, Observer, Subscriber};
 
 use crate::TapSubscriber;
 
@@ -31,7 +31,7 @@ where
 	}
 }
 
-impl<TapDestination> Operator for TapOperator<TapDestination>
+impl<TapDestination> ComposableOperator for TapOperator<TapDestination>
 where
 	TapDestination: 'static + Clone + Observer + Send + Sync,
 	TapDestination::In: Clone,

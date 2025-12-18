@@ -1,11 +1,13 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::EnumerateOperator;
 
 pub trait ObservablePipeExtensionEnumerate: Observable + Sized {
-	fn enumerate(self) -> Pipe<Self, EnumerateOperator<Self::Out, Self::OutError>> {
-		Pipe::new(self, EnumerateOperator::default())
+	#[inline]
+	fn enumerate(
+		self,
+	) -> <EnumerateOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self> {
+		EnumerateOperator::default().operate(self)
 	}
 }
 

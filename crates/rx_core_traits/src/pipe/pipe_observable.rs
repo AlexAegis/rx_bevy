@@ -1,13 +1,14 @@
+use crate::{ComposableOperator, Observable, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, ObservableOutput, Operator, Subscriber, UpgradeableObserver};
 
 #[derive(RxObservable, Clone, Debug)]
+#[_rx_core_traits_crate(crate)]
 #[rx_out(Op::Out)]
 #[rx_out_error(Op::OutError)]
 pub struct Pipe<Source, Op>
 where
 	Source: Observable,
-	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Op: 'static + ComposableOperator<In = Source::Out, InError = Source::OutError>,
 {
 	source_observable: Source,
 	operator: Op,
@@ -16,7 +17,7 @@ where
 impl<Source, Op> Pipe<Source, Op>
 where
 	Source: Observable,
-	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Op: 'static + ComposableOperator<In = Source::Out, InError = Source::OutError>,
 {
 	pub fn new(source_observable: Source, operator: Op) -> Self {
 		Self {
@@ -26,32 +27,14 @@ where
 	}
 }
 
-impl<Source, Op> Pipe<Source, Op>
-where
-	Source: Observable,
-	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
-{
-	#[inline]
-	pub fn pipe<NextOp>(self, operator: NextOp) -> Pipe<Self, NextOp>
-	where
-		NextOp: 'static
-			+ Operator<
-				In = <Self as ObservableOutput>::Out,
-				InError = <Self as ObservableOutput>::OutError,
-			>,
-	{
-		Pipe::<Self, NextOp>::new(self, operator)
-	}
-}
-
 impl<Source, Op> Observable for Pipe<Source, Op>
 where
 	Source: Observable,
-	Op: 'static + Operator<In = Source::Out, InError = Source::OutError>,
+	Op: 'static + ComposableOperator<In = Source::Out, InError = Source::OutError>,
 {
 	type Subscription<Destination>
 		= Source::Subscription<
-		<Op as Operator>::Subscriber<<Destination as UpgradeableObserver>::Upgraded>,
+		<Op as ComposableOperator>::Subscriber<<Destination as UpgradeableObserver>::Upgraded>,
 	>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;

@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber, Teardown};
+use rx_core_traits::{ComposableOperator, Signal, Subscriber, Teardown};
 
 #[derive_where(Clone, Debug)]
 #[derive(RxOperator)]
@@ -35,7 +35,7 @@ where
 	}
 }
 
-impl<In, InError, Callback> Operator for FinalizeOperator<In, InError, Callback>
+impl<In, InError, Callback> ComposableOperator for FinalizeOperator<In, InError, Callback>
 where
 	In: Signal,
 	InError: Signal,

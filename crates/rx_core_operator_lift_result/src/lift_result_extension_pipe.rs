@@ -1,5 +1,4 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::LiftResultOperator;
 
@@ -9,17 +8,17 @@ where
 	ResultOut: Signal,
 	ResultOutError: Signal,
 {
+	#[inline]
 	fn lift_result<InErrorToResultError>(
 		self,
-		in_error_to_result_error: InErrorToResultError, // TODO: Remove this, use Into. Users should use the map_error operator when needed
-	) -> Pipe<
-		Self,
-		LiftResultOperator<ResultOut, ResultOutError, Self::OutError, InErrorToResultError>,
-	>
+	in_error_to_result_error: InErrorToResultError, // TODO: Remove this, use Into. Users should use the map_error operator when needed, require upstream to have a Never error type
+	) -> <
+		LiftResultOperator<ResultOut, ResultOutError, Self::OutError, InErrorToResultError> as Operator
+	>::OutObservable<Self>
 	where
 		InErrorToResultError: Fn(Self::OutError) -> ResultOutError + Clone + Send + Sync,
 	{
-		Pipe::new(self, LiftResultOperator::new(in_error_to_result_error))
+		LiftResultOperator::new(in_error_to_result_error).operate(self)
 	}
 }
 

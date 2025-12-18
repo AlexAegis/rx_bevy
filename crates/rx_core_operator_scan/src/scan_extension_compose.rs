@@ -1,9 +1,10 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Operator, Signal};
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::{ComposableOperator, Signal};
 
 use crate::operator::ScanOperator;
 
-pub trait OperatorComposeExtensionScan: Operator + Sized {
+pub trait OperatorComposeExtensionScan: ComposableOperator + Sized {
+	#[inline]
 	fn scan<
 		NextOut: Signal + Clone,
 		Reducer: 'static + Fn(&NextOut, Self::Out) -> NextOut + Clone + Send + Sync,
@@ -12,8 +13,8 @@ pub trait OperatorComposeExtensionScan: Operator + Sized {
 		reducer: Reducer,
 		seed: NextOut,
 	) -> CompositeOperator<Self, ScanOperator<Self::Out, Self::OutError, Reducer, NextOut>> {
-		CompositeOperator::new(self, ScanOperator::new(reducer, seed))
+		self.compose_with(ScanOperator::new(reducer, seed))
 	}
 }
 
-impl<Op> OperatorComposeExtensionScan for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionScan for Op where Op: ComposableOperator {}

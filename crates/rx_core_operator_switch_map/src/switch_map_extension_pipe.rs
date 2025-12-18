@@ -1,20 +1,20 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::SwitchMapOperator;
 
 pub trait ObservablePipeExtensionSwitchMap: Observable + Sized {
+	#[inline]
 	fn switch_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, SwitchMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>>
+	) -> <SwitchMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable> as Operator>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		Pipe::new(self, SwitchMapOperator::new(mapper))
+		SwitchMapOperator::new(mapper).operate(self)
 	}
 }
 

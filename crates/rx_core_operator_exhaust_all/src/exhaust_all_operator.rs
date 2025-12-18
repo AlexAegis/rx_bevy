@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_exhaust::ExhaustSubscriberProvider;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
-use rx_core_traits::{Observable, Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
 #[derive(RxOperator)]
 #[rx_in(In)]
@@ -30,7 +30,7 @@ where
 	}
 }
 
-impl<In, InError> Operator for ExhaustAllOperator<In, InError>
+impl<In, InError> ComposableOperator for ExhaustAllOperator<In, InError>
 where
 	In: Observable + Signal,
 	InError: Signal + Into<In::OutError>,

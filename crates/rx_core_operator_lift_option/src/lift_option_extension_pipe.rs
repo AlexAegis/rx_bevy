@@ -1,5 +1,4 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::LiftOptionOperator;
 
@@ -7,8 +6,11 @@ pub trait ObservablePipeExtensionLiftOption<T>: Observable<Out = Option<T>> + Si
 where
 	T: Signal,
 {
-	fn lift_option(self) -> Pipe<Self, LiftOptionOperator<T, Self::OutError>> {
-		Pipe::new(self, LiftOptionOperator::default())
+	#[inline]
+	fn lift_option(
+		self,
+	) -> <LiftOptionOperator<T, Self::OutError> as Operator>::OutObservable<Self> {
+		LiftOptionOperator::default().operate(self)
 	}
 }
 

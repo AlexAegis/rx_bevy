@@ -1,15 +1,17 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, ObservableOutput};
+use rx_core_traits::{Observable, ObservableOutput, Operator};
 
 use crate::operator::SwitchAllOperator;
 
 pub trait ObservablePipeExtensionSwitchAll: Observable + Sized {
-	fn switch_all(self) -> Pipe<Self, SwitchAllOperator<Self::Out, Self::OutError>>
+	#[inline]
+	fn switch_all(
+		self,
+	) -> <SwitchAllOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self>
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
 	{
-		Pipe::new(self, SwitchAllOperator::default())
+		SwitchAllOperator::default().operate(self)
 	}
 }
 

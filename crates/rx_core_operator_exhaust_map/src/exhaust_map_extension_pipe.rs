@@ -1,20 +1,20 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::ExhaustMapOperator;
 
 pub trait ObservablePipeExtensionExhaustMap: Observable + Sized {
+	#[inline]
 	fn exhaust_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, ExhaustMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>>
+	) -> <ExhaustMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable> as Operator>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		Pipe::new(self, ExhaustMapOperator::new(mapper))
+		ExhaustMapOperator::new(mapper).operate(self)
 	}
 }
 

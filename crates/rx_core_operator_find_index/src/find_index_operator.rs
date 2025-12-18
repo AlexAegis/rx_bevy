@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
 use crate::{FindIndexOperatorError, FindIndexSubscriber};
 
@@ -37,7 +37,7 @@ where
 	}
 }
 
-impl<In, InError, P> Operator for FindIndexOperator<In, InError, P>
+impl<In, InError, P> ComposableOperator for FindIndexOperator<In, InError, P>
 where
 	P: 'static + Fn(&In) -> bool + Clone + Send + Sync,
 	In: Signal,

@@ -21,9 +21,12 @@ pub trait ObserverInput {
 /// ## Example
 ///
 /// ```rust
+/// # use rx_core_macro_observer_derive::RxObserver;
+/// # use rx_core_traits::Observer;
+///
 /// #[derive(RxObserver)]
-/// #[rx_in(In)]
-/// #[rx_in_error(InError)]
+/// #[rx_in(i32)]
+/// #[rx_in_error(String)]
 /// struct Print;
 ///
 /// // Impletemented by the derive

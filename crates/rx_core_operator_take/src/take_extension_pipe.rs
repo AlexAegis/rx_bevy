@@ -1,11 +1,14 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::TakeOperator;
 
 pub trait ObservablePipeExtensionTake: Observable + Sized {
-	fn take(self, count: usize) -> Pipe<Self, TakeOperator<Self::Out, Self::OutError>> {
-		Pipe::new(self, TakeOperator::new(count))
+	#[inline]
+	fn take(
+		self,
+		count: usize,
+	) -> <TakeOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self> {
+		TakeOperator::new(count).operate(self)
 	}
 }
 

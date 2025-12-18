@@ -1,14 +1,14 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::FirstOperator;
 
 pub trait ObservablePipeExtensionFirst: Observable + Sized {
-	fn first(self) -> Pipe<Self, FirstOperator<Self::Out, Self::OutError>>
+	#[inline]
+	fn first(self) -> <FirstOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self>
 	where
 		Self::Out: Clone,
 	{
-		Pipe::new(self, FirstOperator::default())
+		FirstOperator::default().operate(self)
 	}
 }
 

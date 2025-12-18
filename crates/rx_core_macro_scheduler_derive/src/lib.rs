@@ -21,7 +21,7 @@ use syn::{DeriveInput, parse_macro_input};
 ///
 /// - `#[rx_context]`: The context type that is passed into tasks when polled.
 /// - `#[rx_tick]`: The tick type of tasks this scheduler can accept
-#[proc_macro_derive(RxScheduler, attributes(rx_context, rx_tick))]
+#[proc_macro_derive(RxScheduler, attributes(rx_context, rx_tick, _rx_core_traits_crate))]
 pub fn scheduler_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	let derive_input = parse_macro_input!(input as DeriveInput);
 

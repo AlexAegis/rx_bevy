@@ -1,14 +1,17 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::FindOperator;
 
 pub trait ObservablePipeExtensionFind: Observable + Sized {
-	fn find<P>(self, predicate: P) -> Pipe<Self, FindOperator<Self::Out, Self::OutError, P>>
+	#[inline]
+	fn find<Predicate>(
+		self,
+		predicate: Predicate,
+	) -> <FindOperator<Self::Out, Self::OutError, Predicate> as Operator>::OutObservable<Self>
 	where
-		P: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync,
+		Predicate: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync,
 	{
-		Pipe::new(self, FindOperator::new(predicate))
+		FindOperator::new(predicate).operate(self)
 	}
 }
 

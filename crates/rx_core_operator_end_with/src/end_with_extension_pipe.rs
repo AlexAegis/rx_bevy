@@ -1,14 +1,17 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::EndWithOperator;
 
 pub trait ObservablePipeExtensionEndWith: Observable + Sized {
-	fn end_with(self, end_with: Self::Out) -> Pipe<Self, EndWithOperator<Self::Out, Self::OutError>>
+	#[inline]
+	fn end_with(
+		self,
+		end_with: Self::Out,
+	) -> <EndWithOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self>
 	where
 		Self::Out: Clone,
 	{
-		Pipe::new(self, EndWithOperator::new(end_with))
+		EndWithOperator::new(end_with).operate(self)
 	}
 }
 

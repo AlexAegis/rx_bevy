@@ -1,17 +1,17 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::MapIntoOperator;
 
 pub trait ObservablePipeExtensionMapInto: Observable + Sized {
+	#[inline]
 	fn map_into<NextOut: Signal, NextOutError: Signal>(
 		self,
-	) -> Pipe<Self, MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError>>
+	) -> <MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError> as Operator>::OutObservable<Self>
 	where
 		Self::Out: Into<NextOut>,
 		Self::OutError: Into<NextOutError>,
 	{
-		Pipe::new(self, MapIntoOperator::default())
+		MapIntoOperator::default().operate(self)
 	}
 }
 

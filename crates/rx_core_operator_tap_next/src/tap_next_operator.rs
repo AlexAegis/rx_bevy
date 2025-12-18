@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
 use crate::TapNextSubscriber;
 
@@ -37,7 +37,7 @@ where
 	}
 }
 
-impl<In, InError, OnNext> Operator for TapNextOperator<In, InError, OnNext>
+impl<In, InError, OnNext> ComposableOperator for TapNextOperator<In, InError, OnNext>
 where
 	In: Signal,
 	InError: Signal,

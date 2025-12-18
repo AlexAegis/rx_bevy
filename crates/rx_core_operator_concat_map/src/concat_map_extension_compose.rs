@@ -1,10 +1,11 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Observable, Operator, Signal};
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::{ComposableOperator, Observable, Signal};
 
 use crate::operator::ConcatMapOperator;
 
-pub trait OperatorComposeExtensionConcatMap: Operator + Sized {
-	fn switch_map<
+pub trait OperatorComposeExtensionConcatMap: ComposableOperator + Sized {
+	#[inline]
+	fn concat_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
 	>(
@@ -17,8 +18,8 @@ pub trait OperatorComposeExtensionConcatMap: Operator + Sized {
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		CompositeOperator::new(self, ConcatMapOperator::new(mapper))
+		self.compose_with(ConcatMapOperator::new(mapper))
 	}
 }
 
-impl<Op> OperatorComposeExtensionConcatMap for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionConcatMap for Op where Op: ComposableOperator {}

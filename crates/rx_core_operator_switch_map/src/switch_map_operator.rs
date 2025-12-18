@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
 use rx_core_subscriber_switch::SwitchSubscriberProvider;
-use rx_core_traits::{Observable, Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
 #[derive(RxOperator)]
 #[rx_in(In)]
@@ -36,7 +36,7 @@ where
 	}
 }
 
-impl<In, InError, Mapper, InnerObservable> Operator
+impl<In, InError, Mapper, InnerObservable> ComposableOperator
 	for SwitchMapOperator<In, InError, Mapper, InnerObservable>
 where
 	In: Signal,

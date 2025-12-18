@@ -1,9 +1,10 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Observable, Operator, Signal};
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::{ComposableOperator, Observable, Signal};
 
 use crate::operator::ExhaustMapOperator;
 
-pub trait OperatorComposeExtensionExhaustMap: Operator + Sized {
+pub trait OperatorComposeExtensionExhaustMap: ComposableOperator + Sized {
+	#[inline]
 	fn exhaust_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
@@ -17,8 +18,8 @@ pub trait OperatorComposeExtensionExhaustMap: Operator + Sized {
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		CompositeOperator::new(self, ExhaustMapOperator::new(mapper))
+		self.compose_with(ExhaustMapOperator::new(mapper))
 	}
 }
 
-impl<Op> OperatorComposeExtensionExhaustMap for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionExhaustMap for Op where Op: ComposableOperator {}

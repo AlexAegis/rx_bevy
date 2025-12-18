@@ -1,14 +1,14 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::TapNextOperator;
 
 pub trait ObservablePipeExtensionTapNext: Observable + Sized {
+	#[inline]
 	fn tap_next<OnNext: 'static + Fn(&Self::Out) + Clone + Send + Sync>(
 		self,
 		callback: OnNext,
-	) -> Pipe<Self, TapNextOperator<Self::Out, Self::OutError, OnNext>> {
-		Pipe::new(self, TapNextOperator::new(callback))
+	) -> <TapNextOperator<Self::Out, Self::OutError, OnNext> as Operator>::OutObservable<Self> {
+		TapNextOperator::new(callback).operate(self)
 	}
 }
 

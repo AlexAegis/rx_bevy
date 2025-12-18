@@ -4,7 +4,7 @@ use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
-use rx_core_traits::{Observable, Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
 #[derive_where(Clone)]
 #[derive(RxOperator)]
@@ -34,7 +34,7 @@ where
 	}
 }
 
-impl<In, InError> Operator for MergeAllOperator<In, InError>
+impl<In, InError> ComposableOperator for MergeAllOperator<In, InError>
 where
 	In: Observable + Signal,
 	InError: Signal + Into<In::OutError>,

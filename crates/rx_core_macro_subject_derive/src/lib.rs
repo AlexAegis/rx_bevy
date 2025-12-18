@@ -7,7 +7,7 @@ use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
 fn primary_category_subject() -> Type {
 	parse_quote! {
-		rx_core_traits::PrimaryCategorySubject
+		PrimaryCategorySubject
 	}
 }
 
@@ -77,7 +77,8 @@ fn primary_category_subject() -> Type {
 		rx_does_not_upgrade_to_observer_subscriber,
 		rx_upgrades_to,
 		rx_delegate_subscription_like_to_destination,
-		destination
+		destination,
+		_rx_core_traits_crate
 	)
 )]
 pub fn subject_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

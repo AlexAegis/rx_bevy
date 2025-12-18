@@ -1,17 +1,19 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::FilterMapOperator;
 
 pub trait ObservablePipeExtensionFilterMap: Observable + Sized {
+	#[inline]
 	fn filter_map<
 		NextOut: Signal,
 		Mapper: 'static + Fn(Self::Out) -> Option<NextOut> + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
-	) -> Pipe<Self, FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
-		Pipe::new(self, FilterMapOperator::new(mapper))
+	) -> <FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut> as Operator>::OutObservable<
+		Self,
+	> {
+		FilterMapOperator::new(mapper).operate(self)
 	}
 }
 

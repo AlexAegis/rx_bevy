@@ -1,18 +1,19 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::Operator;
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::ComposableOperator;
 
 use crate::operator::FindOperator;
 
-pub trait OperatorComposeExtensionFind: Operator + Sized {
-	fn find<P>(
+pub trait OperatorComposeExtensionFind: ComposableOperator + Sized {
+	#[inline]
+	fn find<Predicate>(
 		self,
-		predicate: P,
-	) -> CompositeOperator<Self, FindOperator<Self::Out, Self::OutError, P>>
+		predicate: Predicate,
+	) -> CompositeOperator<Self, FindOperator<Self::Out, Self::OutError, Predicate>>
 	where
-		P: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync,
+		Predicate: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync,
 	{
-		CompositeOperator::new(self, FindOperator::new(predicate))
+		self.compose_with(FindOperator::new(predicate))
 	}
 }
 
-impl<Op> OperatorComposeExtensionFind for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionFind for Op where Op: ComposableOperator {}

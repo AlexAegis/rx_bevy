@@ -1,11 +1,11 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Never, Observable};
+use rx_core_traits::{Never, Observable, Operator};
 
 use crate::operator::ErrorBoundaryOperator;
 
 pub trait ObservablePipeExtensionErrorBoundary: Observable<OutError = Never> + Sized {
-	fn error_boundary(self) -> Pipe<Self, ErrorBoundaryOperator<Self::Out>> {
-		Pipe::new(self, ErrorBoundaryOperator::default())
+	#[inline]
+	fn error_boundary(self) -> <ErrorBoundaryOperator<Self::Out> as Operator>::OutObservable<Self> {
+		ErrorBoundaryOperator::default().operate(self)
 	}
 }
 

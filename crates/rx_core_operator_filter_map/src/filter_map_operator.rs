@@ -5,7 +5,7 @@ use rx_core_macro_operator_derive::RxOperator;
 use rx_core_operator_composite::CompositeSubscriber;
 use rx_core_operator_lift_option::LiftOptionSubscriber;
 use rx_core_operator_map::MapSubscriber;
-use rx_core_traits::{Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
 pub type FilterMapSubscriber<In, InError, Mapper, Out, Destination> = CompositeSubscriber<
 	MapSubscriber<In, InError, Mapper, Option<Out>, LiftOptionSubscriber<Destination>>,
@@ -44,7 +44,7 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out> Operator for FilterMapOperator<In, InError, Mapper, Out>
+impl<In, InError, Mapper, Out> ComposableOperator for FilterMapOperator<In, InError, Mapper, Out>
 where
 	In: Signal,
 	InError: Signal,

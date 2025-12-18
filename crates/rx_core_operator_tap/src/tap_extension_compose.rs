@@ -1,9 +1,10 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Observer, Operator};
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::{ComposableOperator, Observer};
 
 use crate::operator::TapOperator;
 
-pub trait OperatorComposeExtensionTap: Operator + Sized {
+pub trait OperatorComposeExtensionTap: ComposableOperator + Sized {
+	#[inline]
 	fn tap<TapDestination>(
 		self,
 		tap_destination: TapDestination,
@@ -14,8 +15,8 @@ pub trait OperatorComposeExtensionTap: Operator + Sized {
 		Self::Out: Clone,
 		Self::OutError: Clone,
 	{
-		CompositeOperator::new(self, TapOperator::new(tap_destination))
+		self.compose_with(TapOperator::new(tap_destination))
 	}
 }
 
-impl<Op> OperatorComposeExtensionTap for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionTap for Op where Op: ComposableOperator {}

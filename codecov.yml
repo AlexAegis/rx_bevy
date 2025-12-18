@@ -116,9 +116,6 @@ component_management:
     - component_id: rx_core_observable_of
       paths:
         - crates/rx_core_observable_of/**
-    - component_id: rx_core_observable_pipe
-      paths:
-        - crates/rx_core_observable_pipe/**
     - component_id: rx_core_observable_throw
       paths:
         - crates/rx_core_observable_throw/**

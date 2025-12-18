@@ -235,9 +235,60 @@ Where priming matters is completion. If an upstream completion prevents
 priming, downstream should immediately complete too. Once primed, the condition
 to complete will depend on the observable.
 
+## Operators
+
+Operators themselves are similar to observables in the sense that they are
+*configurations* based on which new **observables** can be created. So they
+too always come in pairs, an Operator, storing the configuration, which takes
+in a source Observable through their `operate` fn and wrap them in a new
+observable!
+
+### Composable Operators
+
+Composable Operators are a subset of regular Operators. Unlike - for
+example - the `retry` operator, that (as the name suggests) retries
+subscription to the source, many other operators do not interact with their
+source observable beyond just subscribing to them once.
+
+They simply subscribe to the source once, and all they do is:
+
+- Wrap the destination into a subscriber on subscribe
+- And/Or Interact with the destination on subscribe
+  
+  > The `start_with` and `finalize` operators don't create anything new on
+  > subscribe, they only interact with the destination subscriber.
+
+But they don't know anything about who the source observable is.
+
+#### Why though?
+
+This enables 2 things:
+
+1. Simpler implementation for a lot of operators!
+
+   By skipping implementing the
+   actual operator that stores the source observable it wraps. This
+   layer is auto implemented using the `Pipe` operator/observable whose sole
+   job is to combine a source observable and a composable operator.
+
+2. Enables composite operators (behind the `compose` feature)!
+
+   Composite operators are (composable) operators made from other composable operators!
+
+   > ```rs
+   > let my_operator = compose_operator::<i32, Never>()
+   >     .map(|i| i * 2)
+   >     .filter(|i| i < &4);
+   > ```
+
+   Composite Operators are a convenient way of creating new operator without
+   actually having to implement one from scratch. The obvious limitation here is
+   that it can only use the composable subset of operators. So no `retry`, no
+   `share`.
+
 ## Pipes & Operators
 
-[Pipe](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_observable_pipe/src/pipe.rs)
+[Pipe](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_traits/src/pipe.rs)
 is an observable that takes another observable, and an [operator](#operators)
 to change its behavior and produce a new observable.
 
@@ -278,26 +329,13 @@ pub trait ObservablePipeExtensionMap: Observable + Sized {
     fn map<NextOut: Signal, Mapper: 'static + Fn(Self::Out) -> NextOut + Clone + Send + Sync>(
         self,
         mapper: Mapper,
-    ) -> Pipe<Self, MapOperator<Self::Out, Self::OutError, Mapper, NextOut, Self::Context>> {
-        Pipe::new(self, MapOperator::new(mapper))
+    ) -> ComposeOperator<MapOperator<Self::Out, Self::OutError, Mapper, NextOut, Self::Context>> {
+        MapOperator::new(mapper)
     }
 }
 
 impl<O> ObservablePipeExtensionMap for O where O: Observable {}
 ```
-
-But what is an operator anyway?
-
-## Operators
-
-An Operator is something that can take a **destination** (either an observer or
-a [subscriber](#subscribers)), and wraps it in it's own subscriber, creating a
-new destination with a new behavior.
-
-Operators themselves are similar to observables in the sense that they are
-*configurations* based on which **subscribers** can be created. The actual work,
-the piece that is going to be part of a **subscription**, is done by the
-subscribers!
 
 ### Subscribers
 

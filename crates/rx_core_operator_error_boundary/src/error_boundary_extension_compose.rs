@@ -1,12 +1,15 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Never, Operator};
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::{ComposableOperator, Never};
 
 use crate::operator::ErrorBoundaryOperator;
 
-pub trait OperatorComposeExtensionErrorBoundary: Operator<OutError = Never> + Sized {
+pub trait OperatorComposeExtensionErrorBoundary:
+	ComposableOperator<OutError = Never> + Sized
+{
+	#[inline]
 	fn error_boundary(self) -> CompositeOperator<Self, ErrorBoundaryOperator<Self::Out>> {
-		CompositeOperator::new(self, ErrorBoundaryOperator::default())
+		self.compose_with(ErrorBoundaryOperator::default())
 	}
 }
 
-impl<Op> OperatorComposeExtensionErrorBoundary for Op where Op: Operator<OutError = Never> {}
+impl<Op> OperatorComposeExtensionErrorBoundary for Op where Op: ComposableOperator<OutError = Never> {}

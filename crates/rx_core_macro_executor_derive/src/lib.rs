@@ -27,7 +27,13 @@ use syn::{DeriveInput, parse_macro_input};
 ///   context and task input/output types as this executor does
 #[proc_macro_derive(
 	RxExecutor,
-	attributes(rx_context, rx_tick, rx_scheduler, scheduler_handle)
+	attributes(
+		rx_context,
+		rx_tick,
+		rx_scheduler,
+		scheduler_handle,
+		_rx_core_traits_crate
+	)
 )]
 pub fn scheduler_executor_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	let derive_input = parse_macro_input!(input as DeriveInput);

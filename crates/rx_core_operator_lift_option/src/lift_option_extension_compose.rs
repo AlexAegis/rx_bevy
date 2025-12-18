@@ -1,20 +1,22 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Operator, Signal};
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::{ComposableOperator, Signal};
 
 use crate::operator::LiftOptionOperator;
 
-pub trait OperatorComposeExtensionLiftOption<T>: Operator<Out = Option<T>> + Sized
+pub trait OperatorComposeExtensionLiftOption<T>:
+	ComposableOperator<Out = Option<T>> + Sized
 where
 	T: Signal,
 {
+	#[inline]
 	fn lift_option(self) -> CompositeOperator<Self, LiftOptionOperator<T, Self::OutError>> {
-		CompositeOperator::new(self, LiftOptionOperator::default())
+		self.compose_with(LiftOptionOperator::default())
 	}
 }
 
 impl<Op, T> OperatorComposeExtensionLiftOption<T> for Op
 where
-	Op: Operator<Out = Option<T>>,
+	Op: ComposableOperator<Out = Option<T>>,
 	T: Signal,
 {
 }

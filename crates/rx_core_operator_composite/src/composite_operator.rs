@@ -1,5 +1,5 @@
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Subscriber};
+use rx_core_traits::{ComposableOperator, Subscriber};
 
 use crate::CompositeSubscriber;
 
@@ -10,8 +10,8 @@ use crate::CompositeSubscriber;
 #[rx_out_error(Op::OutError)]
 pub struct CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
-	Op: Operator,
+	PrevOp: ComposableOperator<Out = Op::In, OutError = Op::InError>,
+	Op: ComposableOperator,
 {
 	prev_op: PrevOp,
 	op: Op,
@@ -19,8 +19,8 @@ where
 
 impl<PrevOp, Op> CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
-	Op: Operator,
+	PrevOp: ComposableOperator<Out = Op::In, OutError = Op::InError>,
+	Op: ComposableOperator,
 {
 	pub fn new(first_operator: PrevOp, second_operator: Op) -> Self {
 		Self {
@@ -31,7 +31,7 @@ where
 
 	pub fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
 	where
-		NextOp: Operator<In = Op::Out, InError = Op::OutError>,
+		NextOp: ComposableOperator<In = Op::Out, InError = Op::OutError>,
 	{
 		CompositeOperator {
 			prev_op: self,
@@ -40,10 +40,10 @@ where
 	}
 }
 
-impl<PrevOp, Op> Operator for CompositeOperator<PrevOp, Op>
+impl<PrevOp, Op> ComposableOperator for CompositeOperator<PrevOp, Op>
 where
-	PrevOp: Operator<Out = Op::In, OutError = Op::InError>,
-	Op: Operator,
+	PrevOp: ComposableOperator<Out = Op::In, OutError = Op::InError>,
+	Op: ComposableOperator,
 {
 	type Subscriber<Destination>
 		= CompositeSubscriber<PrevOp::Subscriber<Op::Subscriber<Destination>>, Destination>

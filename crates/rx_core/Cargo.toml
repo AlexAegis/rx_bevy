@@ -37,7 +37,6 @@ debug = [
     "rx_core_observable_merge?/debug",
     "rx_core_observable_never?/debug",
     "rx_core_observable_of?/debug",
-    "rx_core_observable_pipe?/debug",
     "rx_core_observable_throw?/debug",
     "rx_core_observable_timer?/debug",
     "rx_core_observable_zip?/debug",
@@ -92,7 +91,6 @@ all_observables = [
     "observable_merge",
     "observable_never",
     "observable_of",
-    "observable_pipe",
     "observable_throw",
     "observable_timer",
     "observable_zip",
@@ -109,7 +107,6 @@ observable_iterator_on_tick = ["dep:rx_core_observable_iterator_on_tick"]
 observable_merge = ["dep:rx_core_observable_merge"]
 observable_never = ["dep:rx_core_observable_never"]
 observable_of = ["dep:rx_core_observable_of"]
-observable_pipe = ["dep:rx_core_observable_pipe"]
 observable_throw = ["dep:rx_core_observable_throw"]
 observable_timer = ["dep:rx_core_observable_timer"]
 observable_zip = ["dep:rx_core_observable_zip"]
@@ -204,7 +201,6 @@ operator_take = ["dep:rx_core_operator_take"]
 operator_tap = ["dep:rx_core_operator_tap"]
 operator_tap_next = ["dep:rx_core_operator_tap_next"]
 pipe = [
-    "observable_pipe",
     "rx_core_operator_adsr?/pipe",
     "rx_core_operator_concat_all?/pipe",
     "rx_core_operator_concat_map?/pipe",
@@ -306,8 +302,6 @@ rx_core_observable_of = { workspace = true, optional = true }
 rx_core_observable_throw = { workspace = true, optional = true }
 rx_core_observable_timer = { workspace = true, optional = true }
 rx_core_observable_zip = { workspace = true, optional = true }
-# Pipe
-rx_core_observable_pipe = { workspace = true, optional = true }
 # Observers
 rx_core_observer_fn = { workspace = true, optional = true }
 rx_core_observer_noop = { workspace = true, optional = true }

@@ -1,14 +1,14 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::FilterOperator;
 
 pub trait ObservablePipeExtensionFilter: Observable + Sized {
+	#[inline]
 	fn filter<Filter: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync>(
 		self,
 		filter: Filter,
-	) -> Pipe<Self, FilterOperator<Self::Out, Self::OutError, Filter>> {
-		Pipe::new(self, FilterOperator::new(filter))
+	) -> <FilterOperator<Self::Out, Self::OutError, Filter> as Operator>::OutObservable<Self> {
+		FilterOperator::new(filter).operate(self)
 	}
 }
 

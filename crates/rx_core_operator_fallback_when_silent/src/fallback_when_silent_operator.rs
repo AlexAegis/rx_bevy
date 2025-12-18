@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Scheduler, SchedulerHandle, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber};
 
 use crate::FallbackWhenSilentSubscriber;
 
@@ -42,7 +42,8 @@ where
 	}
 }
 
-impl<In, InError, Fallback, S> Operator for FallbackWhenSilentOperator<In, InError, Fallback, S>
+impl<In, InError, Fallback, S> ComposableOperator
+	for FallbackWhenSilentOperator<In, InError, Fallback, S>
 where
 	In: Signal,
 	InError: Signal,

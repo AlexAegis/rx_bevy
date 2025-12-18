@@ -1,9 +1,10 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Operator, Signal};
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::{ComposableOperator, Signal};
 
 use crate::operator::MapIntoOperator;
 
-pub trait OperatorComposeExtensionInto: Operator + Sized {
+pub trait OperatorComposeExtensionInto: ComposableOperator + Sized {
+	#[inline]
 	fn map_into<NextOut: Signal, NextOutError: Signal>(
 		self,
 	) -> CompositeOperator<Self, MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError>>
@@ -11,8 +12,8 @@ pub trait OperatorComposeExtensionInto: Operator + Sized {
 		Self::Out: Into<NextOut>,
 		Self::OutError: Into<NextOutError>,
 	{
-		CompositeOperator::new(self, MapIntoOperator::default())
+		self.compose_with(MapIntoOperator::default())
 	}
 }
 
-impl<Op> OperatorComposeExtensionInto for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionInto for Op where Op: ComposableOperator {}

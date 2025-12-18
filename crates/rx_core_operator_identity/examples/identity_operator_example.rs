@@ -5,7 +5,7 @@ use rx_core::prelude::*;
 /// of other [Operator]s without having to use a [Pipe] which would require a
 /// source [Observable]
 fn main() {
-	let composite_operator = IdentityOperator::<i32, Never>::default()
+	let composite_operator = compose_operator::<i32, Never>()
 		.map(|i| i + 1)
 		.filter(|i| i < &4);
 

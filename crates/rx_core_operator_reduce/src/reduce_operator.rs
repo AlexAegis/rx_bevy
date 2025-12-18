@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
 use crate::ReduceSubscriber;
 
@@ -41,7 +41,7 @@ where
 	}
 }
 
-impl<In, InError, Reducer, Out> Operator for ReduceOperator<In, InError, Reducer, Out>
+impl<In, InError, Reducer, Out> ComposableOperator for ReduceOperator<In, InError, Reducer, Out>
 where
 	In: Signal,
 	InError: Signal,

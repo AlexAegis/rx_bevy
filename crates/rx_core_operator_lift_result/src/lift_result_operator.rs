@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
 use crate::LiftResultSubscriber;
 
@@ -44,7 +44,7 @@ where
 	}
 }
 
-impl<ResultIn, ResultInError, InError, InErrorToResultError> Operator
+impl<ResultIn, ResultInError, InError, InErrorToResultError> ComposableOperator
 	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError>
 where
 	ResultIn: Signal,

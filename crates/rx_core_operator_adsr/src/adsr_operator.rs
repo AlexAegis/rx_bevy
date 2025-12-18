@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Scheduler, SchedulerHandle, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber};
 
 use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptions};
 
@@ -36,7 +36,7 @@ where
 	}
 }
 
-impl<InError, S> Operator for AdsrOperator<InError, S>
+impl<InError, S> ComposableOperator for AdsrOperator<InError, S>
 where
 	InError: Signal,
 	S: 'static + Scheduler,

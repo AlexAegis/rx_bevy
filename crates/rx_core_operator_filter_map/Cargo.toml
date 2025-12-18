@@ -18,7 +18,7 @@ workspace = true
 [features]
 default = []
 debug = [
-    "rx_core_observable_pipe?/debug",
+
     "rx_core_operator_composite/debug",
     "rx_core_operator_lift_option/debug",
     "rx_core_operator_map/debug",
@@ -26,7 +26,7 @@ debug = [
     "rx_core_traits/debug",
 ]
 compose = []
-pipe = ["dep:rx_core_observable_pipe"]
+pipe = ["rx_core_traits/pipe"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
@@ -34,7 +34,6 @@ rx_core_macro_operator_derive = { workspace = true }
 rx_core_operator_composite = { workspace = true }
 rx_core_operator_map = { workspace = true }
 rx_core_operator_lift_option = { workspace = true }
-rx_core_observable_pipe = { workspace = true, optional = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]

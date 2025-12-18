@@ -7,7 +7,7 @@ use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
 fn primary_category_observer() -> Type {
 	parse_quote! {
-		rx_core_traits::PrimaryCategoryObserver
+		PrimaryCategoryObserver
 	}
 }
 
@@ -59,7 +59,8 @@ fn primary_category_observer() -> Type {
 		rx_in,
 		rx_in_error,
 		rx_does_not_upgrade_to_observer_subscriber,
-		rx_upgrades_to
+		rx_upgrades_to,
+		_rx_core_traits_crate
 	)
 )]
 pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

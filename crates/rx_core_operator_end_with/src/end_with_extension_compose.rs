@@ -1,9 +1,10 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::Operator;
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::ComposableOperator;
 
 use crate::operator::EndWithOperator;
 
-pub trait OperatorComposeExtensionEndWith: Operator + Sized {
+pub trait OperatorComposeExtensionEndWith: ComposableOperator + Sized {
+	#[inline]
 	fn end_with(
 		self,
 		end_with: Self::Out,
@@ -11,8 +12,8 @@ pub trait OperatorComposeExtensionEndWith: Operator + Sized {
 	where
 		Self::Out: Clone,
 	{
-		CompositeOperator::new(self, EndWithOperator::new(end_with))
+		self.compose_with(EndWithOperator::new(end_with))
 	}
 }
 
-impl<Op> OperatorComposeExtensionEndWith for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionEndWith for Op where Op: ComposableOperator {}

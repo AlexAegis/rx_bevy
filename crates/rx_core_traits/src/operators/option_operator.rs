@@ -1,4 +1,4 @@
-use crate::{ObservableOutput, ObserverInput, Operator, Signal, Subscriber};
+use crate::{ComposableOperator, ObservableOutput, ObserverInput, Signal, Subscriber};
 
 use super::OptionSubscriber;
 
@@ -6,9 +6,9 @@ use super::OptionSubscriber;
 ///
 /// If upon subscription, the operator was [Some] the subscription will be
 /// created with the operator, if it's [None], values will just pass through.
-impl<In, InError, Op> Operator for Option<Op>
+impl<In, InError, Op> ComposableOperator for Option<Op>
 where
-	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
+	Op: ComposableOperator<In = In, InError = InError, Out = In, OutError = InError>,
 	In: Signal,
 	InError: Signal,
 {
@@ -34,7 +34,7 @@ where
 
 impl<In, InError, Op> ObserverInput for Option<Op>
 where
-	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
+	Op: ComposableOperator<In = In, InError = InError, Out = In, OutError = InError>,
 	In: Signal,
 	InError: Signal,
 {
@@ -44,7 +44,7 @@ where
 
 impl<In, InError, Op> ObservableOutput for Option<Op>
 where
-	Op: Operator<In = In, InError = InError, Out = In, OutError = InError>,
+	Op: ComposableOperator<In = In, InError = InError, Out = In, OutError = InError>,
 	In: Signal,
 	InError: Signal,
 {

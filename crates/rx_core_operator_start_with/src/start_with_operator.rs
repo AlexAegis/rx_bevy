@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Never, Signal, Subscriber};
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
@@ -35,7 +35,7 @@ where
 	}
 }
 
-impl<OnSubscribe, In, InError> Operator for StartWithOperator<OnSubscribe, In, InError>
+impl<OnSubscribe, In, InError> ComposableOperator for StartWithOperator<OnSubscribe, In, InError>
 where
 	OnSubscribe: 'static + FnMut() -> In + Send + Sync,
 	In: Signal,

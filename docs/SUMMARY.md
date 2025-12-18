@@ -18,7 +18,6 @@
   - [merge](10_observables_core/merge.md)
   - [never](10_observables_core/never.md)
   - [of](10_observables_core/of.md)
-  - [pipe](10_observables_core/pipe.md)
   - [throw](10_observables_core/throw.md)
   - [timer](10_observables_core/timer.md)
   - [zip](10_observables_core/zip.md)

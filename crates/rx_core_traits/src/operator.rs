@@ -1,50 +1,22 @@
-use crate::{ObservableOutput, ObserverInput, Subscriber};
+use crate::{Observable, ObservableOutput, ObserverInput, Subscriber};
 
-/// # [Operator]
+/// # [ComposableOperator]
 ///
-/// An [Operator] is a mix between an [Observable] and an [Observer].
-/// It defines its own inputs and outputs, and a
-/// [Subscriber][Operator::Subscriber] that defines how those input signals
-/// will produce output signals.
+/// Composable Operators are a subset of regular Operators. Unlike - for
+/// example - the `retry` operator, that (as the name suggests) retries
+/// subscription to the source, many other operators do not interact with their
+/// source observable beyond just subscribing to them once.
 ///
-/// > What it does in essence, is wrapping a destination (a subscriber/observer)
-/// > into another, defined by the operator, resulting in a new subscriber that
-/// > can be used as a destination for something else.
-/// >
-/// > This lets you nest observers/subscribers into eachother, creating
-/// > increasingly more complex [Observable][crate::Observable]s, by letting you
-/// > define complex behavior, abstracted away in a
-/// > [Subscriber][Operator::Subscriber].
+/// They simply subscribe to the source once, and all they do is:
 ///
-/// Operators choose a single Context type for the whole subscriber chain
-/// they participate in. Downstream and upstream must agree on this Context.
+/// - Wrap the destination into a subscriber on subscribe
+/// - And/Or Interact with the destination on subscribe
+///   
+///   > The `start_with` and `finalize` operators don't create anything new on
+///   > subscribe, they only interact with the destination subscriber.
 ///
-/// ## Pipes
-///
-/// To efficiently nest operators, the `Pipe` observable from
-/// `rx_core_observable_pipe` can be used. It provides a convenient set of
-/// functions for observables to chain operators after observables, resulting
-/// in a new observable! A chaining api is much more comfortable to use than
-/// nesting function calls, but under the hood it's the same nested structure.
-/// Using 3 operators means you have an Observable in a Pipe in a Pipe in a
-/// Pipe.
-///
-/// > This is provided in the `rx_core` crate through the `pipe` feature.
-///
-/// ## Composite Operator
-///
-/// Pipes only make sense when you wrap an observable to create a new, more
-/// complex observable. But in sometimes you just want to define a new
-/// operator, without having to write a new one. To achieve this, you can use
-/// the `rx_core_operator_composite` crate.
-///
-/// > This is provided in the `rx_core` crate through the `compose` feature.
-///
-/// Keep in mind that while creating new operators this way is very comfortable
-/// and quick, when it comes to performance it may be better to write a new
-/// operator.
-///
-pub trait Operator: ObserverInput + ObservableOutput {
+/// But they don't know anything about who the source observable is.
+pub trait ComposableOperator: ObserverInput + ObservableOutput {
 	type Subscriber<Destination>: 'static
 		+ Subscriber<In = Self::In, InError = Self::InError>
 		+ Send
@@ -58,4 +30,14 @@ pub trait Operator: ObserverInput + ObservableOutput {
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
+}
+
+pub trait Operator: ObserverInput + ObservableOutput {
+	type OutObservable<InObservable>: Observable<Out = Self::Out, OutError = Self::OutError>
+	where
+		InObservable: Observable<Out = Self::In, OutError = Self::InError>;
+
+	fn operate<InObservable>(self, source: InObservable) -> Self::OutObservable<InObservable>
+	where
+		InObservable: Observable<Out = Self::In, OutError = Self::InError>;
 }

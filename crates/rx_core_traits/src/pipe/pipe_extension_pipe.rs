@@ -1,14 +1,12 @@
-use rx_core_traits::{Observable, Operator};
-
-use crate::observable::Pipe;
+use crate::{Observable, Operator};
 
 pub trait ObservablePipeExtensionPipe: Observable + Sized {
-	fn pipe<Op>(self, operator: Op) -> Pipe<Self, Op>
+	fn pipe<Op>(self, operator: Op) -> Op::OutObservable<Self>
 	where
 		Self: Sized,
 		Op: Operator<In = Self::Out, InError = Self::OutError>,
 	{
-		Pipe::new(self, operator)
+		operator.operate(self)
 	}
 }
 

@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
 use crate::MapIntoSubscriber;
 
@@ -26,7 +26,7 @@ where
 	_phantom_data: PhantomData<(In, InError, Out, OutError)>,
 }
 
-impl<In, InError, Out, OutError> Operator for MapIntoOperator<In, InError, Out, OutError>
+impl<In, InError, Out, OutError> ComposableOperator for MapIntoOperator<In, InError, Out, OutError>
 where
 	In: Signal + Into<Out>,
 	InError: Signal + Into<OutError>,

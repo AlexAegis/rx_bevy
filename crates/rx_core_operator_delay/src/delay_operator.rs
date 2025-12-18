@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 use std::time::Duration;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Scheduler, SchedulerHandle, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber};
 
 use crate::DelaySubscriber;
 
@@ -37,7 +37,7 @@ where
 	}
 }
 
-impl<In, InError, S> Operator for DelayOperator<In, InError, S>
+impl<In, InError, S> ComposableOperator for DelayOperator<In, InError, S>
 where
 	In: Signal,
 	InError: Signal,

@@ -18,11 +18,15 @@ workspace = true
 [features]
 default = []
 debug = []
+pipe = []
 
 [dependencies]
-disqualified = { workspace = true }
-thiserror = { workspace = true }
 derive-where = { workspace = true }
+disqualified = { workspace = true }
+rx_core_macro_observable_derive = { workspace = true }
+rx_core_macro_operator_derive = { workspace = true }
+rx_core_macro_subscriber_derive = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

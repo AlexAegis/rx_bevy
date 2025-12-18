@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Never, Signal, Subscriber};
 
 use crate::SkipSubscriber;
 
@@ -36,7 +36,7 @@ where
 	}
 }
 
-impl<In, InError> Operator for SkipOperator<In, InError>
+impl<In, InError> ComposableOperator for SkipOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,

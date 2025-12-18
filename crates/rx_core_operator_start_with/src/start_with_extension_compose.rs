@@ -1,9 +1,10 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::Operator;
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::ComposableOperator;
 
 use crate::operator::StartWithOperator;
 
-pub trait OperatorComposeExtensionStartWith: Operator + Sized {
+pub trait OperatorComposeExtensionStartWith: ComposableOperator + Sized {
+	#[inline]
 	fn start_with<OnSubscribe>(
 		self,
 		on_subscribe: OnSubscribe,
@@ -11,8 +12,8 @@ pub trait OperatorComposeExtensionStartWith: Operator + Sized {
 	where
 		OnSubscribe: 'static + FnMut() -> Self::Out + Send + Sync,
 	{
-		CompositeOperator::new(self, StartWithOperator::new(on_subscribe))
+		self.compose_with(StartWithOperator::new(on_subscribe))
 	}
 }
 
-impl<Op> OperatorComposeExtensionStartWith for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionStartWith for Op where Op: ComposableOperator {}

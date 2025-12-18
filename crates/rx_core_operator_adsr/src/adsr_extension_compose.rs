@@ -1,12 +1,13 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::{Operator, Scheduler, SchedulerHandle};
+use rx_core_operator_composite::operator::*;
+use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle};
 
 use crate::{
 	AdsrTrigger,
 	operator::{AdsrOperator, AdsrOperatorOptions},
 };
 
-pub trait OperatorComposeExtensionAdsr: Operator<Out = AdsrTrigger> + Sized {
+pub trait OperatorComposeExtensionAdsr: ComposableOperator<Out = AdsrTrigger> + Sized {
+	#[inline]
 	fn adsr<S>(
 		self,
 		options: AdsrOperatorOptions,
@@ -15,8 +16,8 @@ pub trait OperatorComposeExtensionAdsr: Operator<Out = AdsrTrigger> + Sized {
 	where
 		S: 'static + Scheduler,
 	{
-		CompositeOperator::new(self, AdsrOperator::new(options, scheduler))
+		self.compose_with(AdsrOperator::new(options, scheduler))
 	}
 }
 
-impl<Op> OperatorComposeExtensionAdsr for Op where Op: Operator<Out = AdsrTrigger> {}
+impl<Op> OperatorComposeExtensionAdsr for Op where Op: ComposableOperator<Out = AdsrTrigger> {}

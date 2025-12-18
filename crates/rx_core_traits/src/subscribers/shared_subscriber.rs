@@ -1,20 +1,25 @@
 use core::marker::PhantomData;
 use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
-use crate::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, SharedDestination,
-	Subscriber, SubscriptionLike, Teardown, TeardownCollection, UpgradeableObserver,
-	WithPrimaryCategory,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
+
+use crate::{SharedDestination, Subscriber, UpgradeableObserver};
 
 /// A SharedSubscriber is a subscriber that guarantees that if you clone it,
 /// the signals sent to the clone will reach the same recipient as the original
 /// subscriber did.
-#[derive(Debug)]
+#[derive(Debug, RxSubscriber)]
+#[_rx_core_traits_crate(crate)]
+#[rx_in(Destination::In)]
+#[rx_in_error(Destination::InError)]
+#[rx_delegate_observer_to_destination]
+#[rx_delegate_subscription_like_to_destination]
+#[rx_delegate_teardown_collection_to_destination]
 pub struct SharedSubscriber<Destination>
 where
 	Destination: Subscriber + UpgradeableObserver + Send + Sync,
 {
+	#[destination]
 	shared_destination: Arc<Mutex<Destination>>,
 	_phantom_data: PhantomData<Destination>,
 }
@@ -48,26 +53,6 @@ where
 	}
 }
 
-impl<Destination> ObserverInput for SharedSubscriber<Destination>
-where
-	Destination: Subscriber + Send + Sync,
-{
-	type In = Destination::In;
-	type InError = Destination::InError;
-}
-
-impl<Destination> WithPrimaryCategory for SharedSubscriber<Destination>
-where
-	Destination: Subscriber + Send + Sync,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<Destination> ObserverUpgradesToSelf for SharedSubscriber<Destination> where
-	Destination: Subscriber + Send + Sync
-{
-}
-
 impl<Destination> Clone for SharedSubscriber<Destination>
 where
 	Destination: Subscriber + Send + Sync,
@@ -77,51 +62,6 @@ where
 			shared_destination: self.shared_destination.clone(),
 			_phantom_data: PhantomData,
 		}
-	}
-}
-
-impl<Destination> Observer for SharedSubscriber<Destination>
-where
-	Destination: Subscriber + Send + Sync,
-{
-	#[inline]
-	fn next(&mut self, next: Self::In) {
-		self.shared_destination.next(next);
-	}
-
-	#[inline]
-	fn error(&mut self, error: Self::InError) {
-		self.shared_destination.error(error);
-	}
-
-	#[inline]
-	fn complete(&mut self) {
-		self.shared_destination.complete();
-	}
-}
-
-impl<Destination> SubscriptionLike for SharedSubscriber<Destination>
-where
-	Destination: Subscriber + Send + Sync,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.shared_destination.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self) {
-		self.shared_destination.unsubscribe();
-	}
-}
-
-impl<Destination> TeardownCollection for SharedSubscriber<Destination>
-where
-	Destination: Subscriber + Send + Sync,
-{
-	#[inline]
-	fn add_teardown(&mut self, teardown: Teardown) {
-		self.shared_destination.add_teardown(teardown);
 	}
 }
 

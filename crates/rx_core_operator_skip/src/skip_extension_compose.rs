@@ -1,15 +1,16 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::Operator;
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::ComposableOperator;
 
 use crate::operator::SkipOperator;
 
-pub trait OperatorComposeExtensionSkip: Operator + Sized {
+pub trait OperatorComposeExtensionSkip: ComposableOperator + Sized {
+	#[inline]
 	fn skip(
 		self,
 		count: usize,
 	) -> CompositeOperator<Self, SkipOperator<Self::Out, Self::OutError>> {
-		CompositeOperator::new(self, SkipOperator::new(count))
+		self.compose_with(SkipOperator::new(count))
 	}
 }
 
-impl<Op> OperatorComposeExtensionSkip for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionSkip for Op where Op: ComposableOperator {}

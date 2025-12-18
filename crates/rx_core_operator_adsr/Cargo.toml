@@ -18,19 +18,17 @@ workspace = true
 [features]
 default = []
 debug = [
-    "rx_core_observable_pipe?/debug",
     "rx_core_operator_composite?/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
 ]
 compose = ["dep:rx_core_operator_composite"]
-pipe = ["dep:rx_core_observable_pipe"]
+pipe = ["rx_core_traits/pipe"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
 rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
-rx_core_observable_pipe = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 bitflags = { workspace = true }
 bevy_math = { workspace = true, features = ["std", "curve"] }

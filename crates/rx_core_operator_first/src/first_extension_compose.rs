@@ -1,15 +1,16 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::Operator;
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::ComposableOperator;
 
 use crate::operator::FirstOperator;
 
-pub trait OperatorComposeExtensionFirst: Operator + Sized {
+pub trait OperatorComposeExtensionFirst: ComposableOperator + Sized {
+	#[inline]
 	fn first(self) -> CompositeOperator<Self, FirstOperator<Self::Out, Self::OutError>>
 	where
 		Self::Out: Clone,
 	{
-		CompositeOperator::new(self, FirstOperator::default())
+		self.compose_with(FirstOperator::default())
 	}
 }
 
-impl<Op> OperatorComposeExtensionFirst for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionFirst for Op where Op: ComposableOperator {}

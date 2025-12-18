@@ -1,11 +1,14 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::SkipOperator;
 
 pub trait ObservablePipeExtensionSkip: Observable + Sized {
-	fn skip(self, count: usize) -> Pipe<Self, SkipOperator<Self::Out, Self::OutError>> {
-		Pipe::new(self, SkipOperator::new(count))
+	#[inline]
+	fn skip(
+		self,
+		count: usize,
+	) -> <SkipOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self> {
+		SkipOperator::new(count).operate(self)
 	}
 }
 

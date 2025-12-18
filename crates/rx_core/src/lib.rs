@@ -27,8 +27,6 @@ pub mod observable {
 	pub use rx_core_observable_never::observable::*;
 	#[cfg(feature = "observable_of")]
 	pub use rx_core_observable_of::observable::*;
-	#[cfg(feature = "observable_pipe")]
-	pub use rx_core_observable_pipe::observable::*;
 	#[cfg(feature = "observable_throw")]
 	pub use rx_core_observable_throw::observable::*;
 	#[cfg(feature = "observable_timer")]
@@ -206,8 +204,6 @@ pub mod extension_compose {
 
 #[cfg(feature = "pipe")]
 pub mod extension_pipe {
-	#[cfg(feature = "observable_pipe")]
-	pub use rx_core_observable_pipe::extension_pipe::*;
 	#[cfg(feature = "operator_adsr")]
 	pub use rx_core_operator_adsr::extension_pipe::*;
 	#[cfg(feature = "operator_concat_all")]

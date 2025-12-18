@@ -1,12 +1,13 @@
-use rx_core_operator_composite::operator::CompositeOperator;
-use rx_core_traits::Operator;
+use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
+use rx_core_traits::ComposableOperator;
 
 use crate::operator::IntoResultOperator;
 
-pub trait OperatorComposeExtensionIntoResult: Operator + Sized {
+pub trait OperatorComposeExtensionIntoResult: ComposableOperator + Sized {
+	#[inline]
 	fn lift_result(self) -> CompositeOperator<Self, IntoResultOperator<Self::Out, Self::OutError>> {
-		CompositeOperator::new(self, IntoResultOperator::default())
+		self.compose_with(IntoResultOperator::default())
 	}
 }
 
-impl<Op> OperatorComposeExtensionIntoResult for Op where Op: Operator {}
+impl<Op> OperatorComposeExtensionIntoResult for Op where Op: ComposableOperator {}

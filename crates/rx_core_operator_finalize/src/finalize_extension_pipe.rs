@@ -1,14 +1,14 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::Observable;
+use rx_core_traits::{Observable, Operator};
 
 use crate::operator::FinalizeOperator;
 
 pub trait ObservablePipeExtensionFinalize: Observable + Sized {
+	#[inline]
 	fn finalize<Callback: 'static + Clone + FnOnce() + Send + Sync>(
 		self,
 		callback: Callback,
-	) -> Pipe<Self, FinalizeOperator<Self::Out, Self::OutError, Callback>> {
-		Pipe::new(self, FinalizeOperator::new(callback))
+	) -> <FinalizeOperator<Self::Out, Self::OutError, Callback> as Operator>::OutObservable<Self> {
+		FinalizeOperator::new(callback).operate(self)
 	}
 }
 

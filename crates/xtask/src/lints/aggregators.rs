@@ -12,10 +12,7 @@ lazy_static! {
 	static ref RX_CRATE_CATEGORY_TRANSITIVE_FEATURES: HashMap<RxCrateCategory, Vec<String>> = {
 		let mut hash_map = HashMap::<RxCrateCategory, Vec<String>>::new();
 		hash_map.insert(RxCrateCategory::Observable, vec![]);
-		hash_map.insert(
-			RxCrateCategory::Operator,
-			vec!["compose".to_string(), "pipe".to_string()],
-		);
+		hash_map.insert(RxCrateCategory::Operator, vec!["pipe".to_string()]);
 		hash_map.insert(RxCrateCategory::Subscription, vec![]);
 		hash_map.insert(RxCrateCategory::Subscriber, vec![]);
 		hash_map.insert(RxCrateCategory::Scheduler, vec![]);
@@ -45,7 +42,7 @@ pub fn lint_aggregator_package_features() -> Result<(), RxWorkspaceError> {
 			"rx_core_operator_composite".to_string(),
 			"rx_core_operator_identity".to_string(),
 		],
-		does_not_have_an_aggregator_feature: vec!["rx_core_observable_pipe".to_string()],
+		does_not_have_an_aggregator_feature: vec![],
 	};
 
 	let mut workspace_problems = WorkspaceProblems::default();

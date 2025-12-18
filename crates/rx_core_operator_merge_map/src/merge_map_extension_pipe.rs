@@ -1,9 +1,9 @@
-use rx_core_observable_pipe::observable::Pipe;
-use rx_core_traits::{Observable, Signal};
+use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::MergeMapOperator;
 
 pub trait ObservablePipeExtensionMergeMap: Observable + Sized {
+	#[inline]
 	fn merge_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
@@ -11,11 +11,11 @@ pub trait ObservablePipeExtensionMergeMap: Observable + Sized {
 		self,
 		mapper: Mapper,
 		concurrency_limit: usize,
-	) -> Pipe<Self, MergeMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>>
+	) -> <MergeMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable> as Operator>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		Pipe::new(self, MergeMapOperator::new(mapper, concurrency_limit))
+		MergeMapOperator::new(mapper, concurrency_limit).operate(self)
 	}
 }
 

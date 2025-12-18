@@ -7,11 +7,13 @@ use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
 fn primary_category_subscription() -> Type {
 	parse_quote! {
-		rx_core_traits::PrimaryCategorySubscription
+		PrimaryCategorySubscription
 	}
 }
 
 /// # RxSubscription
+///
+/// TODO: rename rx_delegate_teardown_collection_to_destination to rx_delegate_teardown and use a new attribute teardown as target
 ///
 /// Helper macro to implement a few traits required for a subscription.
 ///
@@ -40,7 +42,8 @@ fn primary_category_subscription() -> Type {
 	attributes(
 		rx_delegate_teardown_collection_to_destination,
 		rx_skip_unsubscribe_on_drop_impl,
-		destination
+		destination,
+		_rx_core_traits_crate
 	)
 )]
 pub fn subscription_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

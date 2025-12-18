@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Never, Operator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Never, Signal, Subscriber};
 
 use crate::IntoResultSubscriber;
 
@@ -32,7 +32,7 @@ where
 	}
 }
 
-impl<In, InError> Operator for IntoResultOperator<In, InError>
+impl<In, InError> ComposableOperator for IntoResultOperator<In, InError>
 where
 	In: Signal,
 	InError: Signal,
