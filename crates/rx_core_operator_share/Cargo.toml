@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_observable_connectable"
-description = "connectable observable for rx_core"
+name = "rx_core_operator_share"
+description = "share operator for rx_core"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -18,11 +18,16 @@ workspace = true
 [features]
 default = []
 debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
+pipe = ["rx_core_traits/pipe"]
 
 [dependencies]
 rx_core_traits = { workspace = true }
+rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
-rx_core_macro_subscription_derive = { workspace = true }
+rx_core_macro_subscriber_derive = { workspace = true }
+rx_core_observable_connectable = { workspace = true }
+rx_core_subject_publish = { workspace = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

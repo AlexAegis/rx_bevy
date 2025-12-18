@@ -215,6 +215,9 @@ component_management:
     - component_id: rx_core_operator_scan
       paths:
         - crates/rx_core_operator_scan/**
+    - component_id: rx_core_operator_share
+      paths:
+        - crates/rx_core_operator_share/**
     - component_id: rx_core_operator_skip
       paths:
         - crates/rx_core_operator_skip/**

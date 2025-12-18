@@ -6,7 +6,7 @@ use rx_core_traits::{
 };
 
 use crate::{
-	InnerConnectableObservable,
+	internal::InnerConnectableObservable,
 	observable::{Connectable, ConnectableOptions, ConnectionHandle},
 };
 

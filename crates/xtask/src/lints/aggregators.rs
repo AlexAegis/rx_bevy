@@ -8,11 +8,28 @@ use crate::{
 	WorkspaceProblemPackageScope, WorkspaceProblems,
 };
 
+pub struct TransitiveFeature {
+	pub name: String,
+	pub optional: bool,
+}
+
 lazy_static! {
-	static ref RX_CRATE_CATEGORY_TRANSITIVE_FEATURES: HashMap<RxCrateCategory, Vec<String>> = {
-		let mut hash_map = HashMap::<RxCrateCategory, Vec<String>>::new();
+	static ref RX_CRATE_CATEGORY_TRANSITIVE_FEATURES: HashMap<RxCrateCategory, Vec<TransitiveFeature>> = {
+		let mut hash_map = HashMap::<RxCrateCategory, Vec<TransitiveFeature>>::new();
 		hash_map.insert(RxCrateCategory::Observable, vec![]);
-		hash_map.insert(RxCrateCategory::Operator, vec!["pipe".to_string()]);
+		hash_map.insert(
+			RxCrateCategory::Operator,
+			vec![
+				TransitiveFeature {
+					name: "pipe".to_string(),
+					optional: false,
+				},
+				TransitiveFeature {
+					name: "compose".to_string(),
+					optional: true,
+				},
+			],
+		);
 		hash_map.insert(RxCrateCategory::Subscription, vec![]);
 		hash_map.insert(RxCrateCategory::Subscriber, vec![]);
 		hash_map.insert(RxCrateCategory::Scheduler, vec![]);
@@ -24,7 +41,7 @@ lazy_static! {
 }
 
 impl RxCrateCategory {
-	pub fn transitive_features(&self) -> &Vec<String> {
+	pub fn transitive_features(&self) -> &Vec<TransitiveFeature> {
 		RX_CRATE_CATEGORY_TRANSITIVE_FEATURES.get(self).unwrap()
 	}
 }
@@ -166,7 +183,7 @@ fn lint_rx_package_feature_is_part_of_the_feature_group(
 fn lint_rx_package_operator_has_transitive_feature_in_group(
 	package: &RxPackage,
 	ignored: &[String],
-	transitive_feature: &String,
+	transitive_feature: &TransitiveFeature,
 ) -> Result<(), RxAggregatorLintProblem> {
 	if ignored.contains(&package.package.name) {
 		return Ok(());
@@ -176,31 +193,38 @@ fn lint_rx_package_operator_has_transitive_feature_in_group(
 		.aggregator
 		.package
 		.features
-		.get(transitive_feature)
+		.get(&transitive_feature.name)
 		.ok_or(RxAggregatorLintProblem::TransitiveFeatureGroupMissing(
-			transitive_feature.clone(),
+			transitive_feature.name.clone(),
 			package.aggregator.package.name.to_string(),
 		))?;
 
-	if !package.package.features.contains_key(transitive_feature) {
-		return Err(RxAggregatorLintProblem::DoesNotContainTransitiveFeature {
-			feature_name: transitive_feature.clone(),
-		});
+	let crate_has_feature = package
+		.package
+		.features
+		.contains_key(&transitive_feature.name);
+
+	if transitive_feature.optional && !crate_has_feature {
+		return Ok(());
 	};
 
-	let feature = format!("{}?/{}", package.package.name, transitive_feature);
-
-	let valid = transitive_feature_group.contains(&feature);
-
-	if valid {
-		Ok(())
-	} else {
-		Err(RxAggregatorLintProblem::TransitiveFeatureMissingFromGroup(
-			feature,
-			transitive_feature.clone(),
-			package.aggregator.package.name.to_string(),
-		))
+	if !crate_has_feature {
+		return Err(RxAggregatorLintProblem::DoesNotContainTransitiveFeature {
+			feature_name: transitive_feature.name.clone(),
+		});
 	}
+
+	let feature = format!("{}?/{}", package.package.name, &transitive_feature.name);
+
+	if !transitive_feature_group.contains(&feature) {
+		return Err(RxAggregatorLintProblem::TransitiveFeatureMissingFromGroup(
+			feature,
+			transitive_feature.name.clone(),
+			package.aggregator.package.name.to_string(),
+		));
+	}
+
+	Ok(())
 }
 
 fn lint_rx_package_has_lib_rs_entries(
@@ -233,11 +257,20 @@ fn lint_rx_package_has_lib_rs_entries(
 
 	if !ignored_transitive.contains(&package.package.name) {
 		for transitive_feature in package.category.transitive_features() {
+			let crate_has_feature = package
+				.package
+				.features
+				.contains_key(&transitive_feature.name);
+
+			if transitive_feature.optional && !crate_has_feature {
+				return Ok(());
+			};
+
 			let transitive_feature_entry = format!(
 				"#[cfg(feature = \"{}\")]\n\tpub use {}::extension_{}::*;",
 				package.as_feature_name(),
 				package.package.name,
-				transitive_feature
+				transitive_feature.name
 			);
 
 			if !package

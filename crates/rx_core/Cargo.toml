@@ -63,6 +63,7 @@ debug = [
     "rx_core_operator_map?/debug",
     "rx_core_operator_map_into?/debug",
     "rx_core_operator_scan?/debug",
+    "rx_core_operator_share?/debug",
     "rx_core_operator_skip?/debug",
     "rx_core_operator_start_with?/debug",
     "rx_core_operator_switch_all?/debug",
@@ -158,6 +159,7 @@ all_operators = [
     "operator_merge_map",
     "operator_reduce",
     "operator_scan",
+    "operator_share",
     "operator_skip",
     "operator_start_with",
     "operator_switch_all",
@@ -193,6 +195,7 @@ operator_merge_all = ["dep:rx_core_operator_merge_all"]
 operator_merge_map = ["dep:rx_core_operator_merge_map"]
 operator_reduce = ["dep:rx_core_operator_reduce"]
 operator_scan = ["dep:rx_core_operator_scan"]
+operator_share = ["dep:rx_core_operator_share"]
 operator_skip = ["dep:rx_core_operator_skip"]
 operator_start_with = ["dep:rx_core_operator_start_with"]
 operator_switch_all = ["dep:rx_core_operator_switch_all"]
@@ -226,6 +229,7 @@ pipe = [
     "rx_core_operator_merge_map?/pipe",
     "rx_core_operator_reduce?/pipe",
     "rx_core_operator_scan?/pipe",
+    "rx_core_operator_share?/pipe",
     "rx_core_operator_skip?/pipe",
     "rx_core_operator_start_with?/pipe",
     "rx_core_operator_switch_all?/pipe",
@@ -333,6 +337,7 @@ rx_core_operator_merge_all = { workspace = true, optional = true }
 rx_core_operator_merge_map = { workspace = true, optional = true }
 rx_core_operator_reduce = { workspace = true, optional = true }
 rx_core_operator_scan = { workspace = true, optional = true }
+rx_core_operator_share = { workspace = true, optional = true }
 rx_core_operator_skip = { workspace = true, optional = true }
 rx_core_operator_start_with = { workspace = true, optional = true }
 rx_core_operator_switch_all = { workspace = true, optional = true }

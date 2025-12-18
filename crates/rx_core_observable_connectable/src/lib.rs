@@ -4,7 +4,9 @@ mod connectable_observable_options;
 mod connection_handle;
 mod inner_connectable_observable;
 
-pub use inner_connectable_observable::*;
+pub mod internal {
+	pub use super::inner_connectable_observable::*;
+}
 
 pub mod observable {
 	pub use super::connectable::*;

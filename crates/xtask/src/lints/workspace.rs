@@ -84,7 +84,7 @@ impl RxWorkspace {
 			"rx_bevy_common",
 			"rx_core_traits",
 			"rx_core_testing",
-			"rx_core_notification_state",
+			"rx_core_notification_store",
 			"rx_core_notification_variadics",
 			"rx_core_macro_common",
 			"rx_core_macro_subscription_derive",

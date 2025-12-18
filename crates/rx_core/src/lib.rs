@@ -116,6 +116,8 @@ pub mod operator {
 	pub use rx_core_operator_reduce::operator::*;
 	#[cfg(feature = "operator_scan")]
 	pub use rx_core_operator_scan::operator::*;
+	#[cfg(feature = "operator_share")]
+	pub use rx_core_operator_share::operator::*;
 	#[cfg(feature = "operator_skip")]
 	pub use rx_core_operator_skip::operator::*;
 	#[cfg(feature = "operator_start_with")]
@@ -254,6 +256,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_reduce::extension_pipe::*;
 	#[cfg(feature = "operator_scan")]
 	pub use rx_core_operator_scan::extension_pipe::*;
+	#[cfg(feature = "operator_share")]
+	pub use rx_core_operator_share::extension_pipe::*;
 	#[cfg(feature = "operator_skip")]
 	pub use rx_core_operator_skip::extension_pipe::*;
 	#[cfg(feature = "operator_start_with")]
