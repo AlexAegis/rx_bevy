@@ -12,7 +12,7 @@ use rx_core_traits::{
 	Observable, SubscriberNotification, SubscriptionLike, TeardownCollectionExtension,
 };
 
-use crate::observable::TimerObservable;
+use crate::{observable::TimerObservable, observable_fn::timer};
 
 #[test]
 pub fn should_send_a_unit_value_after_the_specified_amount_of_time() {
@@ -22,7 +22,7 @@ pub fn should_send_a_unit_value_after_the_specified_amount_of_time() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
-	let mut timer = TimerObservable::new(Duration::from_millis(200), scheduler);
+	let mut timer = timer(Duration::from_millis(200), scheduler);
 
 	let _subscription = timer.subscribe(destination);
 	executor.tick(Duration::from_millis(199));

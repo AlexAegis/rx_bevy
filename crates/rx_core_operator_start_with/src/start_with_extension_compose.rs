@@ -4,14 +4,14 @@ use rx_core_traits::Operator;
 use crate::operator::StartWithOperator;
 
 pub trait OperatorComposeExtensionStartWith: Operator + Sized {
-	fn start_with(
+	fn start_with<OnSubscribe>(
 		self,
-		start_with: Self::Out,
-	) -> CompositeOperator<Self, StartWithOperator<Self::Out, Self::OutError>>
+		on_subscribe: OnSubscribe,
+	) -> CompositeOperator<Self, StartWithOperator<OnSubscribe, Self::Out, Self::OutError>>
 	where
-		Self::Out: Clone,
+		OnSubscribe: 'static + FnMut() -> Self::Out + Send + Sync,
 	{
-		CompositeOperator::new(self, StartWithOperator::new(start_with))
+		CompositeOperator::new(self, StartWithOperator::new(on_subscribe))
 	}
 }
 

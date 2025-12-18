@@ -4,14 +4,14 @@ use rx_core_traits::Observable;
 use crate::operator::StartWithOperator;
 
 pub trait ObservablePipeExtensionStartWith: Observable + Sized {
-	fn start_with(
+	fn start_with<OnSubscribe>(
 		self,
-		start_with: Self::Out,
-	) -> Pipe<Self, StartWithOperator<Self::Out, Self::OutError>>
+		on_subscribe: OnSubscribe,
+	) -> Pipe<Self, StartWithOperator<OnSubscribe, Self::Out, Self::OutError>>
 	where
-		Self::Out: Clone,
+		OnSubscribe: 'static + FnMut() -> Self::Out + Send + Sync,
 	{
-		Pipe::new(self, StartWithOperator::new(start_with))
+		Pipe::new(self, StartWithOperator::new(on_subscribe))
 	}
 }
 

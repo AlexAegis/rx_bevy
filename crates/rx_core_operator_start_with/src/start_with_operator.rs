@@ -2,40 +2,43 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Operator, Signal, Subscriber};
+use rx_core_traits::{Never, Operator, Signal, Subscriber};
 
-#[derive_where(Debug, Clone)]
+#[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]
-#[derive(RxOperator)]
+#[derive(RxOperator, Clone)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-pub struct StartWithOperator<In, InError>
+pub struct StartWithOperator<OnSubscribe, In, InError = Never>
 where
-	In: Signal + Clone,
+	OnSubscribe: 'static + FnMut() -> In + Send + Sync,
+	In: Signal,
 	InError: Signal,
 {
-	start_with: In,
+	on_subscribe: OnSubscribe,
 	_phantom_data: PhantomData<InError>,
 }
 
-impl<In, InError> StartWithOperator<In, InError>
+impl<OnSubscribe, In, InError> StartWithOperator<OnSubscribe, In, InError>
 where
-	In: Signal + Clone,
+	OnSubscribe: 'static + FnMut() -> In + Send + Sync,
+	In: Signal,
 	InError: Signal,
 {
-	pub fn new(start_with: In) -> Self {
+	pub fn new(on_subscribe: OnSubscribe) -> Self {
 		Self {
-			start_with,
+			on_subscribe,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError> Operator for StartWithOperator<In, InError>
+impl<OnSubscribe, In, InError> Operator for StartWithOperator<OnSubscribe, In, InError>
 where
-	In: Signal + Clone,
+	OnSubscribe: 'static + FnMut() -> In + Send + Sync,
+	In: Signal,
 	InError: Signal,
 {
 	type Subscriber<Destination>
@@ -51,7 +54,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		destination.next(self.start_with.clone());
+		destination.next((self.on_subscribe)());
 		destination
 	}
 }
