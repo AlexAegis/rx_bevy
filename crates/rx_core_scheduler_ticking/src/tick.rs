@@ -3,11 +3,14 @@ use std::{
 	time::Duration,
 };
 
+use derive_where::derive_where;
+
 /// Used for scheduling, subscriptions are ticked with this event
-// TODO: Move this to the ticking scheduler once the tick channel is removed
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive_where(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Tick {
 	pub elapsed_since_start: Duration,
+	#[derive_where(skip)]
 	pub delta: Duration,
 }
 

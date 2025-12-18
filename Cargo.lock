@@ -4384,6 +4384,7 @@ dependencies = [
  "rx_core_observable_of",
  "rx_core_observable_pipe",
  "rx_core_observable_throw",
+ "rx_core_observable_timer",
  "rx_core_observable_zip",
  "rx_core_observer_fn",
  "rx_core_observer_noop",
@@ -4695,6 +4696,17 @@ dependencies = [
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_timer"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
 ]

@@ -20,6 +20,7 @@
   - [of](10_observables_core/of.md)
   - [pipe](10_observables_core/pipe.md)
   - [throw](10_observables_core/throw.md)
+  - [timer](10_observables_core/timer.md)
   - [zip](10_observables_core/zip.md)
 - [Observables (Bevy)](11_observables_bevy.md)
   - [event](11_observables_bevy/event.md)

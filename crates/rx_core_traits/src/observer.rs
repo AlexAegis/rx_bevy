@@ -45,7 +45,14 @@ pub trait ObserverInput {
 /// }
 /// ```
 pub trait Observer: ObserverInput {
+	/// Signals the next value.
 	fn next(&mut self, next: Self::In);
+
+	/// Signals an error of upstream, no more `next` or `complete` calls
+	/// are expected after this!
 	fn error(&mut self, error: Self::InError);
+
+	/// Signals the completion of upstream, no more `next` or `error` calls
+	/// are expected after this!
 	fn complete(&mut self);
 }

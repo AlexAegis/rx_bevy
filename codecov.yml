@@ -122,6 +122,9 @@ component_management:
     - component_id: rx_core_observable_throw
       paths:
         - crates/rx_core_observable_throw/**
+    - component_id: rx_core_observable_timer
+      paths:
+        - crates/rx_core_observable_timer/**
     - component_id: rx_core_observable_zip
       paths:
         - crates/rx_core_observable_zip/**

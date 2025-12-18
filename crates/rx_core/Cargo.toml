@@ -39,6 +39,7 @@ debug = [
     "rx_core_observable_of?/debug",
     "rx_core_observable_pipe?/debug",
     "rx_core_observable_throw?/debug",
+    "rx_core_observable_timer?/debug",
     "rx_core_observable_zip?/debug",
     "rx_core_observer_fn?/debug",
     "rx_core_observer_noop?/debug",
@@ -93,6 +94,7 @@ all_observables = [
     "observable_of",
     "observable_pipe",
     "observable_throw",
+    "observable_timer",
     "observable_zip",
 ]
 observable_combine_latest = ["dep:rx_core_observable_combine_latest"]
@@ -109,6 +111,7 @@ observable_never = ["dep:rx_core_observable_never"]
 observable_of = ["dep:rx_core_observable_of"]
 observable_pipe = ["dep:rx_core_observable_pipe"]
 observable_throw = ["dep:rx_core_observable_throw"]
+observable_timer = ["dep:rx_core_observable_timer"]
 observable_zip = ["dep:rx_core_observable_zip"]
 # Observable Creation Functions
 observable_fn = [
@@ -121,6 +124,7 @@ observable_fn = [
     "rx_core_observable_never?/observable_fn",
     "rx_core_observable_of?/observable_fn",
     "rx_core_observable_throw?/observable_fn",
+    "rx_core_observable_timer?/observable_fn",
     "rx_core_observable_zip?/observable_fn",
 ]
 # Observers
@@ -300,6 +304,7 @@ rx_core_observable_merge = { workspace = true, optional = true }
 rx_core_observable_never = { workspace = true, optional = true }
 rx_core_observable_of = { workspace = true, optional = true }
 rx_core_observable_throw = { workspace = true, optional = true }
+rx_core_observable_timer = { workspace = true, optional = true }
 rx_core_observable_zip = { workspace = true, optional = true }
 # Pipe
 rx_core_observable_pipe = { workspace = true, optional = true }

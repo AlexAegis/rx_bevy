@@ -97,6 +97,7 @@ all_core_observables = [
     "observable_never",
     "observable_of",
     "observable_throw",
+    "observable_timer",
     "observable_zip",
 ]
 observable_combine_latest = ["rx_core/observable_combine_latest"]
@@ -112,6 +113,7 @@ observable_merge = ["rx_core/observable_merge"]
 observable_never = ["rx_core/observable_never"]
 observable_of = ["rx_core/observable_of"]
 observable_throw = ["rx_core/observable_throw"]
+observable_timer = ["rx_core/observable_timer"]
 observable_zip = ["rx_core/observable_zip"]
 # Core Observers
 all_core_observers = ["observer_noop", "observer_print", "observer_fn"]

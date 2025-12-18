@@ -31,6 +31,8 @@ pub mod observable {
 	pub use rx_core_observable_pipe::observable::*;
 	#[cfg(feature = "observable_throw")]
 	pub use rx_core_observable_throw::observable::*;
+	#[cfg(feature = "observable_timer")]
+	pub use rx_core_observable_timer::observable::*;
 	#[cfg(feature = "observable_zip")]
 	pub use rx_core_observable_zip::observable::*;
 }
@@ -55,6 +57,8 @@ pub mod observable_fn {
 	pub use rx_core_observable_of::observable_fn::*;
 	#[cfg(feature = "observable_throw")]
 	pub use rx_core_observable_throw::observable_fn::*;
+	#[cfg(feature = "observable_timer")]
+	pub use rx_core_observable_timer::observable_fn::*;
 	#[cfg(feature = "observable_zip")]
 	pub use rx_core_observable_zip::observable_fn::*;
 }
