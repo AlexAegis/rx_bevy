@@ -39,7 +39,7 @@ mod before_primed {
 	use super::*;
 
 	#[test]
-	fn should_complete_even_when_only_one_of_the_observables_complete() {
+	fn should_not_complete_when_only_one_of_the_observables_complete() {
 		let destination_1 = MockObserver::default();
 		let notification_collector_1 = destination_1.get_notification_collector();
 
@@ -52,8 +52,8 @@ mod before_primed {
 
 		assert_eq!(
 			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Complete,
-			"did not complete"
+			&SubscriberNotification::Unsubscribe,
+			"did not unsubscribe"
 		);
 	}
 
@@ -209,6 +209,46 @@ mod after_primed {
 		assert_eq!(
 			notification_collector_1.lock().nth_notification(1),
 			&SubscriberNotification::Complete,
+			"Did not complete"
+		);
+
+		assert_eq!(
+			notification_collector_1.lock().nth_notification(2),
+			&SubscriberNotification::Unsubscribe,
+			"Did not unsubscribe"
+		);
+	}
+
+	#[test]
+	fn should_not_complete_when_only_one_observable_completed_and_the_other_just_unsubscribed() {
+		let destination_1 = MockObserver::default();
+		let notification_collector_1 = destination_1.get_notification_collector();
+
+		let mut subject_1 = PublishSubject::<usize>::default();
+		let mut subject_2 = PublishSubject::<&'static str>::default();
+
+		let _s = combine_latest(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+
+		subject_1.next(1);
+		subject_2.next("hello");
+		subject_1.complete();
+
+		assert_eq!(
+			notification_collector_1.lock().nth_notification(0),
+			&SubscriberNotification::Next((1, "hello")),
+			"Did not receive the first emission"
+		);
+
+		assert!(
+			!notification_collector_1.lock().nth_notification_exists(1),
+			"An event was observed when none should have"
+		);
+
+		subject_2.unsubscribe();
+
+		assert_eq!(
+			notification_collector_1.lock().nth_notification(1),
+			&SubscriberNotification::Unsubscribe,
 			"Did not unsubscribe"
 		);
 	}

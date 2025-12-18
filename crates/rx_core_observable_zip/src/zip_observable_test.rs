@@ -192,7 +192,7 @@ mod after_primed {
 	}
 }
 
-mod backpressure {
+mod overflow {
 	use rx_core_notification_store::{QueueOverflowBehavior, QueueOverflowOptions};
 
 	use super::*;

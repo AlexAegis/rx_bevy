@@ -3,6 +3,18 @@ use rx_core_notification_store::{NotificationQueue, QueueOverflowOptions};
 use rx_core_notification_variadics::EitherObservableNotification2;
 use rx_core_traits::{Observable, Observer, Subscriber, SubscriberNotification, SubscriptionLike};
 
+const UNREACHABLE_ERROR: &str = "The ZipSubscriber expects only materialized notifications through its `next` fn, from an EitherSubscriber.";
+
+/// # ZipSubscriber
+///
+/// From an upstream multiplexer over two source observables, this
+/// subscriber maintains a queue for each source separately, and consumes them
+/// when both have values.
+///
+/// It will however immediately react to errors received, ignoring the queue.
+/// Completion signals are part of the queue and will only complete downstream
+/// when both are completed, or when at least one did and it's impossible to
+/// emit more
 #[derive(RxSubscriber)]
 #[rx_in(EitherObservableNotification2<O1, O2>)]
 #[rx_in_error(Destination::InError)]
@@ -124,16 +136,13 @@ where
 		self.try_unsubscribe();
 	}
 
-	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			self.destination.error(error);
-			self.unsubscribe()
-		}
+	fn error(&mut self, _error: Self::InError) {
+		unreachable!("{}", UNREACHABLE_ERROR)
 	}
 
 	#[inline]
 	fn complete(&mut self) {
-		self.try_complete();
+		unreachable!("{}", UNREACHABLE_ERROR)
 	}
 }
 
@@ -154,6 +163,6 @@ where
 
 	#[inline]
 	fn unsubscribe(&mut self) {
-		self.try_unsubscribe();
+		unreachable!("{}", UNREACHABLE_ERROR)
 	}
 }

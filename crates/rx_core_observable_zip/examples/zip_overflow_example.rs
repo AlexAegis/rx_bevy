@@ -13,5 +13,5 @@ fn main() {
 			max_queue_length: 2, // Since the first observable immediately fires all 3 of its values, the first emission `1` will be dropped, and nothing will pair up with 6
 			overflow_behavior: QueueOverflowBehavior::DropOldest,
 		})
-		.subscribe(PrintObserver::new("zip_backpressure"));
+		.subscribe(PrintObserver::new("zip_overflow"));
 }

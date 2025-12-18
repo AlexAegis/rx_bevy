@@ -215,8 +215,7 @@ Some examples are:
 
   > This can lead to the excessive build up of events when one is emitting fast
   > and the other one is slow. The buffering behavior can be controlled by its
-  > options value. This is an example of dealing with
-  > [backpressure](#backpressure).
+  > options value.
 
 > Currently only 2 observables can be combined by each combinator. If you want
 > more, just nest more of them together. (Or help implement varargs.)
@@ -369,19 +368,6 @@ some cases even `complete` signals.
 
 Detached subscribers can't unsubscribe downstream, serving as a hard boundary
 for unsubscription.
-
-### Backpressure
-
-Backpressure happens when upstream produces values faster than downstream
-consumes it. To not lose upstream events, they must be buffered somewhere,
-taking up memory. This can be thought of as "pressure".
-
-Dealing with backpressure usually involves setting an upper limit to the size
-of this buffer, and when it's exceeded, what values should be dropped first, if
-at all, when another upstream value is received.
-
-Only some operators and observables have to deal with backpressure, and where it
-is present, its behavior is always configurable.
 
 ### Why do errors have their own channel?
 

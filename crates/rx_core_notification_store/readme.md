@@ -10,7 +10,7 @@ solely from the events received from it.
 
 The `NotificationQueue` allows queuing up notifications for uses where they
 might be consumed slower than they are received. The queue also deals with
-backpressure by dropping either the oldest value, or ignoring the next once a
+overflow by dropping either the oldest value, or ignoring the next once a
 limit is reached.
 
 The queue only reflects the state of the front notification, and updates as they

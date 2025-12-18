@@ -3,6 +3,16 @@ use rx_core_notification_store::NotificationState;
 use rx_core_notification_variadics::EitherObservableNotification2;
 use rx_core_traits::{Observable, Observer, Subscriber, SubscriberNotification, SubscriptionLike};
 
+const UNREACHABLE_ERROR: &str = "The CombineLatestSubscriber expects only materialized notifications through its `next` fn, from an EitherSubscriber.";
+
+/// # CombineLatestSubscriber
+///
+/// From an upstream multiplexer over two source observables, this
+/// subscriber maintains a state for each sources last emission separately,
+/// and emits a tuple of them when either of them receive a new value.
+///
+/// The first emission can only happen when both sources have emitted at
+/// least once.
 #[derive(RxSubscriber)]
 #[rx_in(EitherObservableNotification2<O1, O2>)]
 #[rx_in_error(Destination::InError)]
@@ -56,9 +66,10 @@ where
 	}
 
 	fn try_complete(&mut self) {
-		if (self.o1_state.is_completed() && self.o2_state.is_completed())
-			|| (self.o1_state.is_waiting() && self.o2_state.is_completed_but_not_primed())
-			|| (self.o1_state.is_completed_but_not_primed() && self.o2_state.is_waiting())
+		if !self.destination.is_closed()
+			&& ((self.o1_state.is_completed() && self.o2_state.is_completed())
+				|| (self.o1_state.is_primed() && self.o2_state.is_completed_but_not_primed())
+				|| (self.o1_state.is_completed_but_not_primed() && self.o2_state.is_primed()))
 		{
 			self.destination.complete();
 			self.destination.unsubscribe();
@@ -66,11 +77,10 @@ where
 	}
 
 	fn try_unsubscribe(&mut self) {
-		if (self.o1_state.is_closed() && self.o2_state.is_closed())
-			|| (self.o1_state.is_waiting()
-				&& self.o2_state.is_closed_but_not_primed_and_not_completed())
-			|| (self.o1_state.is_closed_but_not_primed_and_not_completed()
-				&& self.o2_state.is_waiting())
+		if !self.destination.is_closed()
+			&& ((self.o1_state.is_closed() && self.o2_state.is_closed())
+				|| (self.o1_state.is_waiting() && self.o2_state.is_closed_but_not_primed())
+				|| (self.o1_state.is_closed_but_not_primed() && self.o2_state.is_waiting()))
 		{
 			self.destination.unsubscribe();
 		}
@@ -119,11 +129,11 @@ where
 	}
 
 	fn error(&mut self, _error: Self::InError) {
-		unreachable!()
+		unreachable!("{}", UNREACHABLE_ERROR)
 	}
 
 	fn complete(&mut self) {
-		unreachable!()
+		unreachable!("{}", UNREACHABLE_ERROR)
 	}
 }
 
@@ -144,6 +154,6 @@ where
 
 	#[inline]
 	fn unsubscribe(&mut self) {
-		unreachable!()
+		unreachable!("{}", UNREACHABLE_ERROR)
 	}
 }

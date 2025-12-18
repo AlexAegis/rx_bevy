@@ -86,13 +86,21 @@ impl SubscriberState {
 		self.state.contains(SubscriberStateBits::UNSUBSCRIBED)
 	}
 
-	/// It's considered "closed" once it's either completed, errored or
-	/// unsubscribed.
+	/// It's considered "closed" once it's either unsubscribed, or it's
+	/// finished, meaning it either completed or errored.
 	///
 	/// This flag cannot be unset, once `true`, stays `true`.
 	#[inline]
 	pub fn is_closed(&self) -> bool {
-		self.is_unsubscribed() || self.is_completed() || self.is_errored()
+		self.is_unsubscribed() || self.is_finished()
+	}
+
+	/// It's considered "finished" once it's either completed or errored.
+	///
+	/// This flag cannot be unset, once `true`, stays `true`.
+	#[inline]
+	pub fn is_finished(&self) -> bool {
+		self.is_completed() || self.is_errored()
 	}
 
 	/// True when closed, but also primed! Useful to see if something has
@@ -103,7 +111,7 @@ impl SubscriberState {
 	}
 
 	/// True if it's closed but hadn't received a next call.
-	/// Usefule to see if something does not have a useful value, and will
+	/// Usefule to see if something never had a useful value, and will
 	/// definitely not have one.
 	#[inline]
 	pub fn is_closed_but_not_primed(&self) -> bool {

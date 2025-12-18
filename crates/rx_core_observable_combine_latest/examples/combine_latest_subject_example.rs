@@ -3,25 +3,25 @@ use rx_core::prelude::*;
 /// The [CombineLatestObserver] combines the latest values from multiple other
 /// observables.
 fn main() {
-	let mut subject_1 = PublishSubject::<i32>::default();
-	let mut subject_2 = PublishSubject::<i32>::default();
+	let mut greetings_subject = PublishSubject::<&'static str>::default();
+	let mut count_subject = PublishSubject::<usize>::default();
 
-	let mut subscription = combine_latest(subject_1.clone(), subject_2.clone())
-		.subscribe(PrintObserver::new("combine_latest"));
+	let mut subscription = combine_latest(
+		greetings_subject
+			.clone()
+			.tap(PrintObserver::new("greetings_subject")),
+		count_subject
+			.clone()
+			.tap(PrintObserver::new("count_subject")),
+	)
+	.subscribe(PrintObserver::new("combine_latest"));
 
-	subject_1.next(1);
-	subject_2.next(10);
-	subject_2.next(20);
-
-	subject_1.next(2);
-	subject_1.next(3);
-
-	subject_2.next(30);
-
-	subject_1.complete(); // The first completion won't complete the entire thing
-	println!("subject 1 was completed!");
-	subject_2.complete();
-	println!("subject 2 was completed!");
-
+	greetings_subject.next("Hello!");
+	count_subject.next(10);
+	count_subject.next(20);
+	greetings_subject.next("Szia!");
+	greetings_subject.complete();
+	count_subject.next(30);
+	count_subject.complete();
 	subscription.unsubscribe();
 }

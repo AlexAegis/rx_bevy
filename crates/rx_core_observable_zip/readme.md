@@ -15,5 +15,5 @@ cargo run -p rx_core_observable_zip --features example --example zip_subject_exa
 ```
 
 ```sh
-cargo run -p rx_core_observable_zip --features example --example zip_backpressure_example
+cargo run -p rx_core_observable_zip --features example --example zip_overflow_example
 ```

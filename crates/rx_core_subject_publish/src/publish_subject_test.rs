@@ -59,6 +59,11 @@ fn should_forward_values_to_multiple_active_listeners() {
 		"destination_1 did not receive the unsubscribe signal"
 	);
 
+	assert!(
+		!notification_collector_1.lock().nth_notification_exists(4),
+		"destination_1 received an extra notification"
+	);
+
 	assert_eq!(
 		notification_collector_2.lock().nth_notification(1),
 		&SubscriberNotification::Complete,
@@ -69,6 +74,11 @@ fn should_forward_values_to_multiple_active_listeners() {
 		notification_collector_2.lock().nth_notification(2),
 		&SubscriberNotification::Unsubscribe,
 		"destination_2 did not receive the unsubscribe signal"
+	);
+
+	assert!(
+		!notification_collector_2.lock().nth_notification_exists(3),
+		"destination_2 received an extra notification"
 	);
 }
 
@@ -175,13 +185,12 @@ fn should_immediately_unsubscribe_new_subscribers_if_unsubscribed() {
 }
 
 #[test]
-fn should_immediately_complete_and_unsubscribe_new_subscribers_if_completed_and_unsubscribed() {
+fn should_immediately_complete_and_unsubscribe_new_subscribers_if_completed() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
 	let mut subject = PublishSubject::<usize, &'static str>::default();
 	subject.complete();
-	subject.unsubscribe();
 
 	let mut subscription = subject.clone().subscribe(destination);
 
@@ -218,7 +227,6 @@ fn should_immediately_error_and_unsubscribe_new_subscribers_if_errored_and_unsub
 	let mut subject = PublishSubject::<usize, &'static str>::default();
 	let error = "error";
 	subject.error(error);
-	subject.unsubscribe();
 
 	let mut subscription = subject.clone().subscribe(destination);
 
