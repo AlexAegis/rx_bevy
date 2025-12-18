@@ -6,7 +6,7 @@ use rx_core_traits::{Observer, Signal, Subscriber};
 #[derive(RxSubscriber)]
 #[rx_in(Result<ResultIn, ResultInError>)]
 #[rx_in_error(InError)]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 #[rx_delegate_subscription_like_to_destination]
 pub struct LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
 where

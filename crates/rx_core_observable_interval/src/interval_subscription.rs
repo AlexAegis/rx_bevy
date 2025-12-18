@@ -1,13 +1,13 @@
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Subscriber,
-	SubscriptionData, SubscriptionLike, TaskCancellationId, TaskResult, Teardown,
-	TeardownCollection,
+	SubscriptionData, SubscriptionLike, TaskCancellationId, TaskResult,
 };
 
 use crate::observable::IntervalObservableOptions;
 
 #[derive(RxSubscription)]
+#[rx_delegate_teardown_collection]
 pub struct IntervalSubscription<Destination, S>
 where
 	Destination: Subscriber<In = usize>,
@@ -15,6 +15,7 @@ where
 {
 	#[destination]
 	destination: SharedSubscriber<Destination>,
+	#[teardown]
 	teardown: SubscriptionData,
 	scheduler: SchedulerHandle<S>,
 	task_owner_id: TaskCancellationId,
@@ -89,15 +90,5 @@ where
 			self.destination.unsubscribe();
 		}
 		self.teardown.unsubscribe();
-	}
-}
-
-impl<Destination, S> TeardownCollection for IntervalSubscription<Destination, S>
-where
-	Destination: Subscriber<In = usize>,
-	S: Scheduler,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		self.teardown.add_teardown(teardown);
 	}
 }

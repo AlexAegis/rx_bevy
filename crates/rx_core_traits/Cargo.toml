@@ -26,7 +26,12 @@ disqualified = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
+rx_core_macro_subscription_derive = { workspace = true }
+rx_core_macro_observer_derive = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }
+
+[package.metadata.cargo-machete]
+ignored = ["rx_core_macro_observer_derive"] # Used in a doctest

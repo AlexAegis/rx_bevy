@@ -10,7 +10,7 @@ use rx_core_traits::{Observer, Subscriber};
 #[rx_in_error(Inner::InError)]
 #[rx_delegate_observer_to_destination]
 #[rx_delegate_subscription_like_to_destination]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct CompositeSubscriber<Inner, Destination>
 where
 	Inner: Subscriber,

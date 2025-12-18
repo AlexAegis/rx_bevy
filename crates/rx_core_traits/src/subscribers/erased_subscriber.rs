@@ -10,7 +10,7 @@ use crate::{Signal, Subscriber};
 #[rx_in_error(InError)]
 #[rx_delegate_observer_to_destination]
 #[rx_delegate_subscription_like_to_destination]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct ErasedSubscriber<In, InError>
 where
 	In: Signal,

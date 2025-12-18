@@ -4438,6 +4438,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
@@ -5229,6 +5230,7 @@ dependencies = [
  "derive-where",
  "rx_core",
  "rx_core_macro_subject_derive",
+ "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
  "smallvec",
@@ -5355,8 +5357,10 @@ dependencies = [
  "disqualified",
  "rx_core",
  "rx_core_macro_observable_derive",
+ "rx_core_macro_observer_derive",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
+ "rx_core_macro_subscription_derive",
  "thiserror 2.0.17",
 ]
 

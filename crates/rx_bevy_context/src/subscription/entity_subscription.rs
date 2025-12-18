@@ -1,16 +1,15 @@
 use bevy_ecs::entity::{ContainsEntity, Entity};
 use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
-	SchedulerHandle, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
-};
+use rx_core_traits::{SchedulerHandle, SubscriptionData, SubscriptionLike};
 
 use crate::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
 
 #[derive(RxSubscription)]
-#[rx_skip_unsubscribe_on_drop_impl]
+#[rx_delegate_teardown_collection]
 pub struct EntitySubscription {
 	entity: Entity,
 	despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
+	#[teardown]
 	teardown: SubscriptionData,
 }
 
@@ -43,21 +42,5 @@ impl SubscriptionLike for EntitySubscription {
 			let mut scheduler = self.despawn_scheduler.lock();
 			scheduler.schedule_despawn_entity(self.entity, None);
 		}
-	}
-}
-
-impl TeardownCollection for EntitySubscription {
-	fn add_teardown(&mut self, teardown: Teardown) {
-		if !self.is_closed() {
-			self.teardown.add_teardown(teardown);
-		} else {
-			teardown.execute();
-		}
-	}
-}
-
-impl Drop for EntitySubscription {
-	fn drop(&mut self) {
-		self.unsubscribe();
 	}
 }

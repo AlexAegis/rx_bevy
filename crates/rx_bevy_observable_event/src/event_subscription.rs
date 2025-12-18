@@ -4,20 +4,22 @@ use rx_bevy_context::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Subscriber,
-	SubscriptionClosedFlag, SubscriptionLike, TaskInvokeId, Teardown, TeardownCollection,
+	SubscriptionClosedFlag, SubscriptionLike, TaskInvokeId,
 };
 
 use crate::create_event_forwarder_observer_for_destination;
 
 #[derive(RxSubscription)]
+#[rx_delegate_teardown_collection]
 pub struct EntityEventSubscription<Destination>
 where
 	Destination: 'static + Subscriber,
 	Destination::In: Event + Clone,
 {
-	despawn_invoke_id: TaskInvokeId,
+	#[destination]
 	destination: SharedSubscriber<Destination>,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
+	despawn_invoke_id: TaskInvokeId,
 	closed_flag: SubscriptionClosedFlag,
 }
 
@@ -87,20 +89,6 @@ where
 			self.destination.unsubscribe();
 			let mut scheduler = self.scheduler.lock();
 			scheduler.invoke(self.despawn_invoke_id);
-		}
-	}
-}
-
-impl<Destination> TeardownCollection for EntityEventSubscription<Destination>
-where
-	Destination: 'static + Subscriber,
-	Destination::In: Event + Clone,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		if !self.is_closed() {
-			self.destination.add_teardown(teardown);
-		} else {
-			teardown.execute();
 		}
 	}
 }

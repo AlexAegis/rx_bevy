@@ -1,10 +1,18 @@
-use crate::{Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection};
+use rx_core_macro_subscription_derive::RxSubscription;
 
+use crate::{Subscriber, SubscriptionData};
+
+#[derive(RxSubscription)]
+#[_rx_core_traits_crate(crate)]
+#[rx_delegate_teardown_collection]
+#[rx_delegate_subscription_like_to_destination]
 pub struct Subscription<Destination>
 where
 	Destination: Subscriber,
 {
+	#[teardown]
 	teardown: SubscriptionData,
+	#[destination]
 	destination: Destination,
 }
 
@@ -16,49 +24,6 @@ where
 		Self {
 			destination,
 			teardown: SubscriptionData::default(),
-		}
-	}
-}
-
-impl<Destination> SubscriptionLike for Subscription<Destination>
-where
-	Destination: Subscriber,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.teardown.is_closed()
-	}
-
-	fn unsubscribe(&mut self) {
-		if !self.is_closed() {
-			self.teardown.unsubscribe();
-			self.destination.unsubscribe();
-		}
-	}
-}
-
-impl<Destination> TeardownCollection for Subscription<Destination>
-where
-	Destination: Subscriber,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		if self.is_closed() {
-			// If this subscription is already closed, the newly added teardown
-			// is immediately executed.
-			teardown.execute();
-		} else {
-			self.teardown.add_teardown(teardown);
-		}
-	}
-}
-
-impl<Destination> Drop for Subscription<Destination>
-where
-	Destination: Subscriber,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			self.unsubscribe();
 		}
 	}
 }

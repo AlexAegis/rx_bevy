@@ -3,8 +3,7 @@ use std::{iter::Peekable, marker::PhantomData};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Never, Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber,
-	Signal, Subscriber, SubscriptionLike, TaskCancellationId, TaskResult, Teardown,
-	TeardownCollection,
+	Signal, Subscriber, SubscriptionLike, TaskCancellationId, TaskResult,
 };
 
 use crate::observable::OnTickObservableOptions;
@@ -22,6 +21,7 @@ where
 }
 
 #[derive(RxSubscription)]
+#[rx_delegate_teardown_collection]
 pub struct OnTickIteratorSubscription<Destination, Iterator, S>
 where
 	Destination: Subscriber<In = Iterator::Item, InError = Never>,
@@ -30,6 +30,7 @@ where
 	S: Scheduler,
 {
 	scheduler: SchedulerHandle<S>,
+	#[destination]
 	destination: SharedSubscriber<Destination>,
 	owner_id: Option<TaskCancellationId>,
 	_phantom_data: PhantomData<fn(Iterator) -> Iterator>,
@@ -138,18 +139,5 @@ where
 			self.scheduler.lock().cancel(owner_id);
 		}
 		self.destination.unsubscribe();
-	}
-}
-
-impl<Destination, Iterator, S> TeardownCollection
-	for OnTickIteratorSubscription<Destination, Iterator, S>
-where
-	Destination: Subscriber<In = Iterator::Item, InError = Never>,
-	Iterator: IntoIterator,
-	Iterator::Item: Signal,
-	S: Scheduler,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		self.destination.add_teardown(teardown);
 	}
 }

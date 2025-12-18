@@ -11,6 +11,7 @@ use crate::{InnerRcSubscriber, WeakRcSubscriber};
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
+#[rx_skip_unsubscribe_on_drop_impl] // Has custom impl
 pub struct RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,

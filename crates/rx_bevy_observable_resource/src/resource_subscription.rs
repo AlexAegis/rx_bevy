@@ -8,20 +8,22 @@ use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, Subscriber,
-	SubscriptionData, SubscriptionLike, TaskCancellationId, TaskResult, Teardown,
-	TeardownCollection,
+	SubscriptionData, SubscriptionLike, TaskCancellationId, TaskResult,
 };
 
 use crate::observable::ResourceObservableOptions;
 
 #[derive(RxSubscription)]
+#[rx_delegate_teardown_collection]
 pub struct ResourceSubscription<R, Reader, Destination>
 where
 	R: Resource,
 	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
 	Destination: 'static + Subscriber,
 {
+	#[destination]
 	shared_destination: Arc<Mutex<Destination>>,
+	#[teardown]
 	teardown: SubscriptionData,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	cancellation_id: TaskCancellationId,
@@ -106,21 +108,6 @@ where
 			self.teardown.unsubscribe();
 
 			self.scheduler.lock().cancel(self.cancellation_id);
-		}
-	}
-}
-
-impl<R, Reader, Destination> TeardownCollection for ResourceSubscription<R, Reader, Destination>
-where
-	R: Resource,
-	Reader: 'static + Fn(&R) -> Result<Destination::In, Destination::InError> + Clone + Send + Sync,
-	Destination: 'static + Subscriber,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		if !self.is_closed() {
-			self.teardown.add_teardown(teardown);
-		} else {
-			teardown.execute();
 		}
 	}
 }

@@ -6,10 +6,12 @@ use rx_core_traits::prelude::*;
 use crate::{KeyboardObservableEmit, KeyboardObservableOptions};
 
 #[derive(RxSubscription)]
+#[rx_delegate_teardown_collection]
 pub struct KeyboardSubscription<Destination>
 where
 	Destination: Subscriber<In = KeyCode>,
 {
+	#[destination]
 	shared_destination: SharedSubscriber<Destination>,
 	cancellation_id: TaskCancellationId,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
@@ -83,19 +85,6 @@ where
 			self.closed_flag.close();
 			self.scheduler.lock().cancel(self.cancellation_id);
 			self.shared_destination.unsubscribe();
-		}
-	}
-}
-
-impl<Destination> TeardownCollection for KeyboardSubscription<Destination>
-where
-	Destination: Subscriber<In = KeyCode>,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		if !self.is_closed() {
-			self.shared_destination.add_teardown(teardown);
-		} else {
-			teardown.execute();
 		}
 	}
 }

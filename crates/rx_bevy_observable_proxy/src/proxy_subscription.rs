@@ -7,13 +7,14 @@ use rx_bevy_context::{
 };
 
 #[derive(RxSubscription)]
+#[rx_delegate_teardown_collection]
 pub struct ProxySubscription<Destination>
 where
 	Destination: 'static + Subscriber,
 {
-	scheduler: SchedulerHandle<RxBevyScheduler>,
 	#[destination]
 	destination: SharedSubscriber<Destination>,
+	scheduler: SchedulerHandle<RxBevyScheduler>,
 	closed_flag: SubscriptionClosedFlag,
 	despawn_invoke_id: TaskInvokeId,
 	cancellation_id: TaskCancellationId,
@@ -81,19 +82,6 @@ where
 			let mut scheduler = self.scheduler.lock();
 			scheduler.invoke(self.despawn_invoke_id);
 			scheduler.cancel(self.cancellation_id);
-		}
-	}
-}
-
-impl<Destination> TeardownCollection for ProxySubscription<Destination>
-where
-	Destination: 'static + Subscriber,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		if !self.is_closed() {
-			self.destination.add_teardown(teardown);
-		} else {
-			teardown.execute();
 		}
 	}
 }

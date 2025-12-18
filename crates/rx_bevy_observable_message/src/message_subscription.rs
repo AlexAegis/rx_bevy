@@ -4,15 +4,18 @@ use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::prelude::*;
 
 #[derive(RxSubscription)]
+#[rx_delegate_teardown_collection]
 pub struct MessageSubscription<Destination>
 where
 	Destination: 'static + Subscriber,
 	Destination::In: Event + Clone, // TODO(bevy-0.17): use the message trait
 {
+	#[teardown]
+	teardown: SubscriptionData,
+	#[destination]
+	shared_destination: SharedSubscriber<Destination>,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	cancellation_id: TaskCancellationId,
-	shared_destination: SharedSubscriber<Destination>,
-	teardown: SubscriptionData,
 }
 
 impl<Destination> MessageSubscription<Destination>
@@ -73,20 +76,6 @@ where
 			self.scheduler.lock().cancel(self.cancellation_id);
 			self.shared_destination.unsubscribe();
 			self.teardown.unsubscribe();
-		}
-	}
-}
-
-impl<Destination> TeardownCollection for MessageSubscription<Destination>
-where
-	Destination: 'static + Subscriber,
-	Destination::In: Event + Clone,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		if !self.is_closed() {
-			self.teardown.add_teardown(teardown);
-		} else {
-			teardown.execute();
 		}
 	}
 }

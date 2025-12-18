@@ -14,7 +14,8 @@ use crate::{SharedDestination, Subscriber, UpgradeableObserver};
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_observer_to_destination]
 #[rx_delegate_subscription_like_to_destination]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
+#[rx_skip_unsubscribe_on_drop_impl]
 pub struct SharedSubscriber<Destination>
 where
 	Destination: Subscriber + UpgradeableObserver + Send + Sync,

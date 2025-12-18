@@ -16,7 +16,7 @@ const UNREACHABLE_ERROR: &str = "The CombineLatestSubscriber expects only materi
 #[derive(RxSubscriber)]
 #[rx_in(EitherObservableNotification2<O1, O2>)]
 #[rx_in_error(Destination::InError)]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out)>,

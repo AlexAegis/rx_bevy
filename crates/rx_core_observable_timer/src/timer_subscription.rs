@@ -3,10 +3,11 @@ use std::time::Duration;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Subscriber,
-	SubscriptionLike, TaskCancellationId, Teardown, TeardownCollection,
+	SubscriptionLike, TaskCancellationId,
 };
 
 #[derive(RxSubscription)]
+#[rx_delegate_teardown_collection]
 pub struct TimerSubscription<Destination, S>
 where
 	Destination: 'static + Subscriber<In = ()>,
@@ -15,7 +16,7 @@ where
 	#[destination]
 	destination: SharedSubscriber<Destination>,
 	scheduler: SchedulerHandle<S>,
-	task_owner_id: TaskCancellationId,
+	task_owner_id: Option<TaskCancellationId>,
 }
 
 impl<Destination, S> TimerSubscription<Destination, S>
@@ -52,7 +53,7 @@ where
 		TimerSubscription {
 			destination,
 			scheduler,
-			task_owner_id,
+			task_owner_id: Some(task_owner_id),
 		}
 	}
 }
@@ -67,19 +68,12 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		self.scheduler.lock().cancel(self.task_owner_id);
+		if let Some(task_owner_id) = self.task_owner_id.take() {
+			self.scheduler.lock().cancel(task_owner_id);
+		}
+
 		if !self.destination.is_closed() {
 			self.destination.unsubscribe();
 		}
-	}
-}
-
-impl<Destination, S> TeardownCollection for TimerSubscription<Destination, S>
-where
-	Destination: Subscriber<In = ()>,
-	S: Scheduler,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		self.destination.add_teardown(teardown);
 	}
 }

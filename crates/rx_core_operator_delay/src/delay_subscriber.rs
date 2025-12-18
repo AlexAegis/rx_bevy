@@ -9,11 +9,11 @@ use rx_core_traits::{
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct DelaySubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
-	S: Scheduler,
+	S: 'static + Scheduler,
 {
 	#[destination]
 	destination: SharedSubscriber<Destination>,
@@ -118,16 +118,6 @@ where
 			self.cancellation_id,
 		);
 
-		self.closed.close();
-	}
-}
-
-impl<Destination, S> Drop for DelaySubscriber<Destination, S>
-where
-	Destination: 'static + Subscriber,
-	S: Scheduler,
-{
-	fn drop(&mut self) {
 		self.closed.close();
 	}
 }

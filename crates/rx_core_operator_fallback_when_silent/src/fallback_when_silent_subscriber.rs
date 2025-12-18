@@ -14,7 +14,7 @@ struct FallbackWhenSilentSubscriberState<In> {
 #[derive(RxSubscriber)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct FallbackWhenSilentSubscriber<In, InError, Fallback, Destination, S>
 where
 	In: Signal,

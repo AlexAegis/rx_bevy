@@ -1,8 +1,9 @@
 use quote::quote;
 use rx_core_macro_common::{
 	impl_delegate_observer_to_destination, impl_delegate_subscription_like_to_destination,
-	impl_delegate_teardown_collection_to_destination, impl_observer_input,
-	impl_observer_upgrades_to, impl_primary_category, impl_subscriber_does_not_upgrade_to_self,
+	impl_delegate_teardown_collection, impl_observer_input, impl_observer_upgrades_to,
+	impl_primary_category, impl_skip_unsubscribe_on_drop_impl,
+	impl_subscriber_does_not_upgrade_to_self,
 };
 use syn::{DeriveInput, Type, parse_macro_input, parse_quote};
 
@@ -21,8 +22,7 @@ fn primary_category_subscriber() -> Type {
 /// - `Observer` (unless using `#[rx_delegate_observer_to_destination]`)
 /// - `SubscriptionLike` (unless using
 ///   `#[rx_delegate_subscription_like_to_destination]`)
-/// - `TeardownCollection` (unless using
-///   `#[rx_delegate_teardown_collection_to_destination]`)
+/// - `TeardownCollection` (unless using `#[rx_delegate_teardown_collection]`)
 ///
 /// ## Traits Implemented
 ///
@@ -58,7 +58,7 @@ fn primary_category_subscriber() -> Type {
 ///   - `observer_subscriber`: Upgraded version is itself wrapped in
 ///     `ObserverSubscriber`, causing it to **not** be unsubscribed when
 ///     upstream is unsubscribed when used as an observables destination.
-/// - `#[rx_delegate_teardown_collection_to_destination]` (optional): Opts into
+/// - `#[rx_delegate_teardown_collection]` (optional): Opts into
 ///   the trivial implementation of `TeardownCollection` where the traits
 ///   methods are just simply called on the field marked as `#[destination]`.
 /// - `#[rx_delegate_subscription_like_to_destination]` (optional): Opts into
@@ -67,6 +67,20 @@ fn primary_category_subscriber() -> Type {
 /// - `#[rx_delegate_observer_to_destination]` (optional): Opts into
 ///   the trivial implementation of `Observer` where the traits methods
 ///   are just simply called on the field marked as `#[destination]`.
+/// - `#[rx_skip_unsubscribe_on_drop_impl]`: Skips the default
+///   unsubscribe-on-drop implementation. Only use when the subscription
+///   explicitly does NOT have to unsubscribe on drop, or you want to provide
+///   your own implementation.
+///
+///   The default implementation:
+///
+///   ```text
+///   fn drop(&mut self) {
+///       if !self.is_closed() {
+///           self.unsubscribe();
+///       }
+///   }
+///   ```
 #[proc_macro_derive(
 	RxSubscriber,
 	attributes(
@@ -74,10 +88,12 @@ fn primary_category_subscriber() -> Type {
 		rx_in_error,
 		rx_does_not_upgrade_to_self,
 		rx_upgrades_to,
-		rx_delegate_teardown_collection_to_destination,
+		rx_delegate_teardown_collection,
 		rx_delegate_subscription_like_to_destination,
 		rx_delegate_observer_to_destination,
+		rx_skip_unsubscribe_on_drop_impl,
 		destination,
+		teardown,
 		_rx_core_traits_crate
 	)
 )]
@@ -90,11 +106,12 @@ pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStr
 		impl_subscriber_does_not_upgrade_to_self(&derive_input);
 	let observer_upgrades_to_impl = impl_observer_upgrades_to(&derive_input);
 	let delegate_teardown_collection_to_destination_impl =
-		impl_delegate_teardown_collection_to_destination(&derive_input);
+		impl_delegate_teardown_collection(&derive_input);
 	let delegate_subscription_like_to_destination_impl =
 		impl_delegate_subscription_like_to_destination(&derive_input);
 	let delegate_observer_to_destination_impl =
 		impl_delegate_observer_to_destination(&derive_input);
+	let skip_unsubscribe_on_drop_impl = impl_skip_unsubscribe_on_drop_impl(&derive_input);
 
 	(quote! {
 		#primary_category_impl
@@ -110,6 +127,8 @@ pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStr
 		#delegate_subscription_like_to_destination_impl
 
 		#delegate_observer_to_destination_impl
+
+		#skip_unsubscribe_on_drop_impl
 	})
 	.into()
 }

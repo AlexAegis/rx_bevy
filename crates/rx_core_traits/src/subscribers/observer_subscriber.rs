@@ -14,8 +14,10 @@ pub struct ObserverSubscriber<Destination>
 where
 	Destination: Observer,
 {
-	destination: Destination,
+	#[teardown]
 	teardown: SubscriptionData,
+	#[destination]
+	destination: Destination,
 }
 
 impl<Destination> ObserverSubscriber<Destination>
@@ -78,16 +80,5 @@ where
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown) {
 		self.teardown.add_teardown(teardown);
-	}
-}
-
-impl<Destination> Drop for ObserverSubscriber<Destination>
-where
-	Destination: Observer,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			self.unsubscribe();
-		}
 	}
 }

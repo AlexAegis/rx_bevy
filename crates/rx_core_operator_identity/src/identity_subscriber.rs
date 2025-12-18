@@ -6,7 +6,7 @@ use rx_core_traits::Subscriber;
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_observer_to_destination]
 #[rx_delegate_subscription_like_to_destination]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct IdentitySubscriber<Destination>
 where
 	Destination: Subscriber,

@@ -10,7 +10,7 @@ use crate::{EitherNotificationSelector2, EitherObservableNotification2};
 #[derive(RxSubscriber)]
 #[rx_in(<VariantSelector::Variant as ObservableOutput>::Out)]
 #[rx_in_error(<VariantSelector::Variant as ObservableOutput>::OutError)]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct EitherSubscriber2<VariantSelector, Destination, O1, O2>
 where
 	VariantSelector: EitherNotificationSelector2<O1, O2>,

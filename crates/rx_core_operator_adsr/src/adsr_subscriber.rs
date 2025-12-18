@@ -24,7 +24,7 @@ struct AdsrEnvelopeSharedState {
 #[derive(RxSubscriber, Debug)]
 #[rx_in(AdsrTrigger)]
 #[rx_in_error(InError)]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct AdsrSubscriber<InError, Destination, S>
 where
 	InError: Signal,

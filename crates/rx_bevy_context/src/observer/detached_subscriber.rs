@@ -8,6 +8,7 @@ use rx_core_traits::{
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_observer_to_destination]
+#[rx_skip_unsubscribe_on_drop_impl]
 pub struct DetachedSubscriber<Destination>
 where
 	Destination: Observer,

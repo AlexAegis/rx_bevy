@@ -1,8 +1,11 @@
-use crate::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Subscriber,
-	SubscriptionLike, Teardown, TeardownCollection, WithPrimaryCategory,
-};
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
+use crate::{Observer, Subscriber, SubscriptionLike, Teardown, TeardownCollection};
+
+#[derive(RxSubscriber)]
+#[_rx_core_traits_crate(crate)]
+#[rx_in(InnerSubscriber::In)]
+#[rx_in_error(InnerSubscriber::InError)]
 pub enum OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
@@ -10,36 +13,6 @@ where
 {
 	Some(InnerSubscriber),
 	None(Destination),
-}
-
-impl<InnerSubscriber, Destination> ObserverInput for OptionSubscriber<InnerSubscriber, Destination>
-where
-	InnerSubscriber: Subscriber,
-	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
-{
-	type In = InnerSubscriber::In;
-	type InError = InnerSubscriber::InError;
-}
-
-impl<InnerSubscriber, Destination> WithPrimaryCategory
-	for OptionSubscriber<InnerSubscriber, Destination>
-where
-	InnerSubscriber: Subscriber,
-	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
-	InnerSubscriber::In: 'static,
-	InnerSubscriber::InError: 'static,
-{
-	type PrimaryCategory = PrimaryCategorySubscriber;
-}
-
-impl<InnerSubscriber, Destination> ObserverUpgradesToSelf
-	for OptionSubscriber<InnerSubscriber, Destination>
-where
-	InnerSubscriber: Subscriber,
-	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,
-	InnerSubscriber::In: 'static,
-	InnerSubscriber::InError: 'static,
-{
 }
 
 impl<InnerSubscriber, Destination> Observer for OptionSubscriber<InnerSubscriber, Destination>

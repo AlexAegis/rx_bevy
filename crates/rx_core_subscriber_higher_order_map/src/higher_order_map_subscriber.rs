@@ -10,7 +10,7 @@ use rx_core_traits::{Observable, Observer, Signal, Subscriber};
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_delegate_subscription_like_to_destination]
-#[rx_delegate_teardown_collection_to_destination]
+#[rx_delegate_teardown_collection]
 pub struct HigherOrderMapSubscriber<
 	In,
 	InError,

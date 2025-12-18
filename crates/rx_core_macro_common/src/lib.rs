@@ -5,6 +5,7 @@ use syn::{
 	parse::{Parse, ParseStream},
 	parse_quote, parse2,
 };
+use thiserror::Error;
 
 pub fn find_attribute<'a>(attrs: &'a [Attribute], attribute_name: &str) -> Option<&'a Attribute> {
 	attrs
@@ -205,66 +206,100 @@ fn impl_upgrades_to_detached(derive_input: &DeriveInput) -> TokenStream {
 	}
 }
 
+#[derive(Error, Debug)]
+enum FindFieldError {
+	#[error("Only named fields are supported when using #[{trigger_attribute_name}]!")]
+	UnsupportedField {
+		trigger_attribute_name: &'static str,
+	},
+	#[error("Only structs are supported when using #[{trigger_attribute_name}]!")]
+	UnsupportedData {
+		trigger_attribute_name: &'static str,
+	},
+	#[error(
+		"A field implementing `{required_trait_on_field}` must be marked with `#[{field_attribute_name}]`{fallback_field_name_error} when using #[{trigger_attribute_name}]!"
+	)]
+	FieldNotFound {
+		required_trait_on_field: &'static str,
+		field_attribute_name: &'static str,
+		fallback_field_name_error: String,
+		trigger_attribute_name: &'static str,
+	},
+}
+
 fn find_field_ident_with_attribute(
 	derive_input: &DeriveInput,
-	field_attribute_name: &str,
-	trigger_attribute_name: &str,
-	required_trait_on_field: &str,
-) -> Ident {
+	field_attribute_name: &'static str,
+	fallback_field_attribute_name: Option<&'static str>,
+	trigger_attribute_name: &'static str,
+	required_trait_on_field: &'static str,
+) -> Result<Ident, FindFieldError> {
 	let fields = match derive_input.data {
 		syn::Data::Struct(ref data) => match &data.fields {
-			syn::Fields::Named(fields) => &fields.named,
-			_ => panic!("Only named fields are supported when using #[{trigger_attribute_name}]!"),
+			syn::Fields::Named(fields) => Ok(&fields.named),
+			_ => Err(FindFieldError::UnsupportedField {
+				trigger_attribute_name,
+			}),
 		},
-		_ => {
-			panic!("Only structs are supported when using #[{trigger_attribute_name}]!")
-		}
-	};
+		_ => Err(FindFieldError::UnsupportedData {
+			trigger_attribute_name,
+		}),
+	}?;
+
+	let fallback_field_name_error = fallback_field_attribute_name
+		.map(|fallback| format!(" or with `#[{fallback}]`"))
+		.unwrap_or_default();
 
 	fields
 		.iter()
 		.find(|field| {
-			field
-				.attrs
-				.iter()
-				.any(|attr| attr.path().is_ident(field_attribute_name))
+			field.attrs.iter().any(|attr| {
+				attr.path().is_ident(field_attribute_name)
+					|| fallback_field_attribute_name
+						.is_some_and(|fallback| attr.path().is_ident(fallback))
+			})
 		})
 		.and_then(|field| field.ident.clone())
-		.unwrap_or_else(||
-			panic!("A field implementing `{required_trait_on_field}` must be marked with `#[{field_attribute_name}]` when using #[{trigger_attribute_name}]!"),
-		)
+		.ok_or(FindFieldError::FieldNotFound {
+			required_trait_on_field,
+			field_attribute_name,
+			fallback_field_name_error,
+			trigger_attribute_name,
+		})
 }
 
-pub fn impl_delegate_teardown_collection_to_destination(
-	derive_input: &DeriveInput,
-) -> Option<TokenStream> {
-	let rx_delegate_teardown_collection_to_destination = find_attribute(
-		&derive_input.attrs,
-		"rx_delegate_teardown_collection_to_destination",
-	)
-	.is_some();
+pub fn impl_delegate_teardown_collection(derive_input: &DeriveInput) -> Option<TokenStream> {
+	let rx_delegate_teardown_collection =
+		find_attribute(&derive_input.attrs, "rx_delegate_teardown_collection").is_some();
 
-	if rx_delegate_teardown_collection_to_destination {
-		Some(impl_delegate_teardown_collection_to_destination_inner(
-			derive_input,
-		))
+	if rx_delegate_teardown_collection {
+		Some(impl_delegate_teardown_collection_inner(derive_input))
 	} else {
 		None
 	}
 }
 
-fn impl_delegate_teardown_collection_to_destination_inner(
-	derive_input: &DeriveInput,
-) -> TokenStream {
+fn impl_delegate_teardown_collection_inner(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
-	let destination_field = find_field_ident_with_attribute(
+	let teardown_field = find_field_ident_with_attribute(
 		derive_input,
-		"destination",
-		"rx_delegate_teardown_collection_to_destination",
+		"teardown",
+		Some("destination"),
+		"rx_delegate_teardown_collection",
 		"TeardownCollection",
-	);
+	)
+	.or_else(|_| {
+		find_field_ident_with_attribute(
+			derive_input,
+			"destination",
+			None,
+			"rx_delegate_teardown_collection",
+			"TeardownCollection",
+		)
+	})
+	.unwrap_or_else(|e| panic!("{}", e));
 
 	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
 
@@ -275,7 +310,7 @@ fn impl_delegate_teardown_collection_to_destination_inner(
 				&mut self,
 				teardown: #_rx_core_traits_crate::Teardown
 			) {
-				self.#destination_field.add_teardown(teardown);
+				#_rx_core_traits_crate::TeardownCollection::add_teardown(&mut self.#teardown_field, teardown);
 			}
 		}
 	}
@@ -303,12 +338,34 @@ fn impl_delegate_subscription_like_to_destination_inner(derive_input: &DeriveInp
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
+	let teardown_field = find_field_ident_with_attribute(
+		derive_input,
+		"teardown",
+		Some("destination"),
+		"rx_delegate_subscription_like_to_destination",
+		"SubscriptionLike",
+	)
+	.unwrap_or_else(|e| panic!("{}", e));
+
 	let destination_field = find_field_ident_with_attribute(
 		derive_input,
 		"destination",
+		None,
 		"rx_delegate_subscription_like_to_destination",
 		"SubscriptionLike",
-	);
+	)
+	.unwrap_or_else(|e| panic!("{}", e));
+
+	let unsubscribe_impl = if teardown_field != destination_field {
+		quote! {
+			self.#teardown_field.unsubscribe();
+			self.#destination_field.unsubscribe();
+		}
+	} else {
+		quote! {
+			self.#destination_field.unsubscribe();
+		}
+	};
 
 	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
 
@@ -321,7 +378,7 @@ fn impl_delegate_subscription_like_to_destination_inner(derive_input: &DeriveInp
 
 			#[inline]
 			fn unsubscribe(&mut self) {
-				self.#destination_field.unsubscribe();
+				#unsubscribe_impl
 			}
 		}
 	}
@@ -345,9 +402,11 @@ fn impl_delegate_observer_to_destination_inner(derive_input: &DeriveInput) -> To
 	let destination_field = find_field_ident_with_attribute(
 		derive_input,
 		"destination",
+		None,
 		"rx_delegate_observer_to_destination",
 		"Observer",
-	);
+	)
+	.unwrap_or_else(|e| panic!("{}", e));
 
 	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
 
@@ -452,9 +511,11 @@ pub fn impl_executor(derive_input: &DeriveInput) -> TokenStream {
 	let scheduler_field = find_field_ident_with_attribute(
 		derive_input,
 		"scheduler_handle",
+		None,
 		"rx_scheduler",
 		"Scheduler",
-	);
+	)
+	.unwrap_or_else(|e| panic!("{}", e));
 
 	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
 
