@@ -1,353 +1,374 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use derive_where::derive_where;
-use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observable, ObservableOutput, Observer, ObserverInput,
-	PrimaryCategorySubject, Signal, Subscriber, SubscriptionClosedFlag, SubscriptionLike,
-	UpgradeableObserver, WithPrimaryCategory,
+	LockWithPoisonBehavior, Observer, Signal, Subscriber, SubscriptionClosedFlag, SubscriptionLike,
 };
-use slab::Slab;
-use stealcell::StealCell;
+use smallvec::SmallVec;
 
-use crate::MulticastSubscription;
+use crate::internal::{
+	MulticastAddLockError, MulticastCompleteLockError, MulticastErrorLockError,
+	MulticastNextLockError, MulticastNotification, MulticastUnsubscribeLockError,
+};
 
-#[derive_where(Default)]
-struct Subscribers<In, InError>
+pub const MULTICAST_MAX_RECURSION_DEPTH: usize = 10;
+
+#[derive_where(Default, Debug)]
+pub(crate) struct Subscribers<In, InError>
 where
 	In: Signal,
 	InError: Signal,
 {
-	subscribers: StealCell<Slab<Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>>>,
+	#[derive_where(skip)]
+	pub(crate) subscribers: SmallVec<[Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>; 1]>,
 }
 
+// TODO: This could be real subscriber impls
 impl<In, InError> Subscribers<In, InError>
 where
-	In: Signal,
-	InError: Signal,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 {
+	// TODO: Reintroduce this in a safe place where individual subscribers are safe to lock, it should be okay just at the end of next/error etc fns
 	#[inline]
-	fn clean(&mut self) {
+	pub(crate) fn clean(&mut self) {
 		self.subscribers
-			.as_mut()
-			.retain(|_, subscriber| !subscriber.is_closed());
+			.retain(|subscriber| !subscriber.is_closed());
 	}
 
-	#[inline]
-	pub(crate) fn drain(&mut self) -> Vec<Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>> {
-		self.subscribers.drain().collect::<Vec<_>>()
+	pub(crate) fn add_subscriber(
+		&mut self,
+		subscriber: Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>,
+	) {
+		self.subscribers.push(subscriber);
 	}
-}
 
-#[derive_where(Clone, Default)]
-#[derive(RxSubscriber)]
-#[rx_in(In)]
-#[rx_in_error(InError)]
-struct SharedSubscribers<In, InError>
-where
-	In: Signal,
-	InError: Signal,
-{
-	subscribers: Arc<Mutex<Subscribers<In, InError>>>,
-}
-
-impl<In, InError> SharedSubscribers<In, InError>
-where
-	In: Signal,
-	InError: Signal,
-{
-}
-
-impl<In, InError> Observer for SharedSubscribers<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	fn next(&mut self, next: Self::In) {
-		// TODO: Maybe do it one by one, making sure it's unlocked when an action is performed into it
-		// and if it closes in the meanwhile, don't put it back!
-		let mut stolen_subscribers = {
-			println!("shared sub, arc lock");
-			let mut subscribers = self.subscribers.lock_ignore_poison();
-			subscribers.subscribers.steal()
-		};
-		println!("shared sub, arc lock release");
-		for (_key, destination) in stolen_subscribers.iter_mut() {
-			destination.next(next.clone());
+	pub(crate) fn apply(&mut self, notification: MulticastNotification<In, InError>) {
+		match notification {
+			MulticastNotification::Next(next) => self.next(next),
+			MulticastNotification::Error(error) => self.error(error),
+			MulticastNotification::Complete => self.complete(),
+			MulticastNotification::Unsubscribe => self.unsubscribe(),
+			MulticastNotification::Add(subscriber) => self.add_subscriber(subscriber),
 		}
-		// Still locks up
-
-		println!("shared sub, arc lock2");
-		let mut subscribers = self.subscribers.lock_ignore_poison();
-		subscribers.subscribers.return_stolen(stolen_subscribers);
-		subscribers.clean();
-		println!("shared sub, arc lock2 release");
 	}
 
-	fn error(&mut self, error: Self::InError) {
-		{
-			let mut subscribers = self.subscribers.lock_ignore_poison();
+	pub(crate) fn next(&mut self, next: In) {
+		for destination in self.subscribers.iter_mut() {
+			if !destination.is_closed() {
+				destination.next(next.clone());
+			}
+		}
+	}
 
-			for (key, destination) in subscribers.subscribers.iter_mut() {
+	pub(crate) fn error(&mut self, error: InError) {
+		for destination in self.subscribers.iter_mut() {
+			if !destination.is_closed() {
 				destination.error(error.clone());
+				destination.unsubscribe();
 			}
 		}
-		self.unsubscribe();
 	}
 
-	fn complete(&mut self) {
-		{
-			let mut subscribers = self.subscribers.lock_ignore_poison();
-
-			for (key, destination) in subscribers.subscribers.iter_mut() {
+	pub(crate) fn complete(&mut self) {
+		for destination in self.subscribers.iter_mut() {
+			if !destination.is_closed() {
 				destination.complete();
+				destination.unsubscribe();
 			}
 		}
-		self.unsubscribe();
-	}
-}
-
-impl<In, InError> SubscriptionLike for SharedSubscribers<In, InError>
-where
-	In: Signal,
-	InError: Signal,
-{
-	fn is_closed(&self) -> bool {
-		true
 	}
 
-	fn unsubscribe(&mut self) {}
-}
-
-#[derive(RxSubscriber)]
-#[rx_in(Destination::In)]
-#[rx_in_error(Destination::InError)]
-#[rx_delegate_observer_to_destination]
-#[rx_delegate_teardown_collection]
-pub struct PluckSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	id: usize,
-	#[destination]
-	destination: Destination,
-	subscribers: SharedSubscribers<Destination::In, Destination::InError>,
-}
-impl<Destination> PluckSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	fn new(
-		destination: Destination,
-		id: usize,
-		subscribers: SharedSubscribers<Destination::In, Destination::InError>,
-	) -> Self {
-		Self {
-			destination,
-			id,
-			subscribers,
-		}
-	}
-}
-
-impl<Destination> SubscriptionLike for PluckSubscriber<Destination>
-where
-	Destination: Subscriber,
-{
-	fn is_closed(&self) -> bool {
-		self.destination.is_closed()
-	}
-
-	fn unsubscribe(&mut self) {
-		{
-			println!("about to remove itself from subslab {}", self.id);
-			let mut subscribers = self.subscribers.subscribers.lock_ignore_poison();
-			subscribers.subscribers.remove(self.id);
-		}
-		self.destination.unsubscribe();
-	}
-}
-
-#[derive_where(Debug)]
-pub struct Multicast<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	#[derive_where(skip(Debug))]
-	subscribers: SharedSubscribers<In, InError>,
-	closed_flag: SubscriptionClosedFlag,
-	is_completed: bool,
-	#[derive_where(skip(Debug))]
-	last_observed_error: Option<InError>,
-}
-
-impl<In, InError> Multicast<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	/// Drops all closed subscribers
-	fn clean(&mut self) {
-		self.subscribers.subscribers.lock_ignore_poison().clean();
-	}
-
-	pub fn get_error(&self) -> Option<&InError> {
-		self.last_observed_error.as_ref()
-	}
-
-	/// Closes the multicast and drains all its resources so the caller
-	/// can perform an unsubscribe
-	#[inline]
-	pub(crate) fn close_and_drain(
-		&mut self,
-	) -> Vec<Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>> {
-		self.closed_flag.close();
-		self.subscribers.subscribers.lock_ignore_poison().drain()
-	}
-}
-
-impl<In, InError> Observable for Multicast<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	type Subscription<Destination>
-		= MulticastSubscription<In, InError>
-	where
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
-
-	fn subscribe<Destination>(
-		&mut self,
-		destination: Destination,
-	) -> Self::Subscription<Destination::Upgraded>
-	where
-		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
-	{
-		let mut destination = destination.upgrade();
-
-		if let Some(error) = self.last_observed_error.clone() {
-			destination.error(error);
-		} else if self.is_completed {
-			destination.complete();
-		}
-
-		if self.is_closed() {
-			destination.unsubscribe();
-			MulticastSubscription::new_closed()
-		} else {
-			let mut subscribers = self.subscribers.subscribers.lock_ignore_poison();
-			let entry = subscribers.subscribers.vacant_entry();
-			let shared = Arc::new(Mutex::new(PluckSubscriber::new(
-				destination,
-				entry.key(),
-				self.subscribers.clone(),
-			)));
-			entry.insert(shared.clone());
-
-			MulticastSubscription::new(shared)
-		}
-	}
-}
-
-impl<In, InError> Observer for Multicast<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() {
-			self.subscribers.next(next);
-		}
-	}
-
-	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			self.last_observed_error = Some(error.clone());
-			self.subscribers.error(error);
-		}
-	}
-
-	fn complete(&mut self) {
-		if !self.is_closed() {
-			self.is_completed = true;
-			self.subscribers.complete();
-		}
-	}
-}
-
-impl<In, InError> SubscriptionLike for Multicast<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.closed_flag.is_closed()
-	}
-
-	fn unsubscribe(&mut self) {
-		if !self.is_closed() {
-			self.closed_flag.close();
-			for mut destination in self.close_and_drain() {
+	pub(crate) fn unsubscribe(&mut self) {
+		for mut destination in self.subscribers.drain(..) {
+			if !destination.is_closed() {
 				destination.unsubscribe();
 			}
 		}
 	}
 }
 
-impl<In, InError> ObserverInput for Multicast<In, InError>
+#[derive_where(Clone)]
+#[derive(Debug)]
+pub(crate) struct SharedSubscribers<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	type In = In;
-	type InError = InError;
+	pub(crate) shared_multicast_state: Arc<Mutex<MulticastState<In, InError>>>,
+	pub(crate) subscribers: Arc<Mutex<Subscribers<In, InError>>>,
 }
 
-impl<In, InError> ObservableOutput for Multicast<In, InError>
+impl<In, InError> SharedSubscribers<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	type Out = In;
-	type OutError = InError;
+	pub(crate) fn new(shared_multicast_state: Arc<Mutex<MulticastState<In, InError>>>) -> Self {
+		Self {
+			shared_multicast_state,
+			subscribers: Arc::new(Mutex::new(Subscribers::default())),
+		}
+	}
+
+	pub(crate) fn apply_notification_queue(
+		state: Arc<Mutex<MulticastState<In, InError>>>,
+		subscribers: &mut MutexGuard<'_, Subscribers<In, InError>>,
+	) {
+		let mut queue_depth = 0;
+		loop {
+			let notifications = {
+				let mut locked_state = state.lock_ignore_poison();
+
+				// Infinite loop protection
+				if queue_depth > MULTICAST_MAX_RECURSION_DEPTH {
+					panic!(
+						"Notification queue depth have exceeded {MULTICAST_MAX_RECURSION_DEPTH}!"
+					)
+				}
+
+				if locked_state.deferred_notifications_queue.is_empty() {
+					break;
+				}
+
+				// Don't drain until the above checks have happened to not drop
+				// un-applied notifications.
+				// In case that panic above is no longer a panic.
+				locked_state.drain_notification_queue()
+			};
+
+			// Each closedness check acquires a fresh lock for up-to-date
+			// information and immediately releases it to allow applied
+			// notifications to acquire it again
+			for mut notification in notifications.into_iter() {
+				if let MulticastNotification::Add(subscriber) = &mut notification {
+					if subscriber.is_closed() {
+						// Don't add an already closed subscriber, just drop it
+						continue;
+					} else if state.lock_ignore_poison().is_closed_ignoring_deferred() {
+						// If the subscriber isn't closed, but the state is
+						// the subscriber should be unsubscribed too
+						subscriber.unsubscribe();
+						continue;
+					}
+				}
+
+				let is_terminal_signal = matches!(
+					&notification,
+					MulticastNotification::Complete | MulticastNotification::Error(_)
+				);
+
+				let is_unsubscribe = matches!(&notification, MulticastNotification::Unsubscribe);
+
+				// Other notifications can be safely dropped when already closed
+				if !state.lock_clear_poison().is_closed_ignoring_deferred() {
+					subscribers.apply(notification);
+				}
+
+				if is_terminal_signal {
+					subscribers.apply(MulticastNotification::Unsubscribe);
+				}
+
+				if is_unsubscribe || is_terminal_signal {
+					state.lock_ignore_poison().closed_flag.close();
+				}
+			}
+
+			subscribers.clean();
+			queue_depth += 1;
+		}
+	}
+
+	pub(crate) fn try_add_subscriber(
+		&mut self,
+		subscriber: Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>,
+	) -> Result<(), MulticastAddLockError<In, InError>> {
+		match self.subscribers.try_lock() {
+			Ok(mut subscribers) => {
+				Self::apply_notification_queue(
+					self.shared_multicast_state.clone(),
+					&mut subscribers,
+				); // First, the notification queue!
+
+				subscribers.add_subscriber(subscriber);
+
+				Ok(())
+			}
+			Err(_) => Err(MulticastAddLockError { subscriber }),
+		}
+	}
+
+	pub(crate) fn try_next(&mut self, next: In) -> Result<(), MulticastNextLockError<In>> {
+		match self.subscribers.try_lock() {
+			Ok(mut subscribers) => {
+				Self::apply_notification_queue(
+					self.shared_multicast_state.clone(),
+					&mut subscribers,
+				); // First, the notification queue!
+
+				subscribers.next(next);
+
+				Ok(())
+			}
+			Err(_) => Err(MulticastNextLockError { next }),
+		}
+	}
+
+	pub(crate) fn try_error(
+		&mut self,
+		error: InError,
+	) -> Result<(), MulticastErrorLockError<InError>> {
+		match self.subscribers.try_lock() {
+			Ok(mut subscribers) => {
+				Self::apply_notification_queue(
+					self.shared_multicast_state.clone(),
+					&mut subscribers,
+				); // First, the notification queue!
+
+				subscribers.error(error);
+
+				Ok(())
+			}
+			Err(_) => Err(MulticastErrorLockError { error }),
+		}
+	}
+
+	pub(crate) fn try_complete(&mut self) -> Result<(), MulticastCompleteLockError> {
+		match self.subscribers.try_lock() {
+			Ok(mut subscribers) => {
+				Self::apply_notification_queue(
+					self.shared_multicast_state.clone(),
+					&mut subscribers,
+				); // First, the notification queue!
+
+				subscribers.complete();
+				Ok(())
+			}
+			Err(_) => Err(MulticastCompleteLockError),
+		}
+	}
+
+	pub(crate) fn try_unsubscribe(&mut self) -> Result<(), MulticastUnsubscribeLockError> {
+		match self.subscribers.try_lock() {
+			Ok(mut subscribers) => {
+				println!("try unsub what");
+				Self::apply_notification_queue(
+					self.shared_multicast_state.clone(),
+					&mut subscribers,
+				); // First, the notification queue!
+
+				println!("try unsub what 2");
+
+				self.shared_multicast_state
+					.lock_ignore_poison()
+					.closed_flag
+					.close();
+
+				subscribers.unsubscribe();
+
+				println!("try unsub what 3");
+
+				Ok(())
+			}
+			Err(_) => Err(MulticastUnsubscribeLockError),
+		}
+	}
 }
 
-impl<In, InError> WithPrimaryCategory for Multicast<In, InError>
+#[derive(Debug)]
+pub(crate) struct MulticastState<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	type PrimaryCategory = PrimaryCategorySubject;
+	pub(crate) deferred_notifications_queue: Vec<MulticastNotification<In, InError>>,
+
+	/// Separate close flag for the real, applied closedness, as non-deferred
+	/// signals only have to respect this.
+	pub(crate) closed_flag: SubscriptionClosedFlag,
+	/// This flag is only meant to block incoming notifications, if an unsubscribe
+	/// had already observed, to not accept more.
+	pub(crate) observed_unsubscribe: bool,
+	/// Signals if Completion has been observed or not
+	pub(crate) observed_completion: bool,
+	/// Signals if an error was observed or not
+	pub(crate) observed_error: Option<InError>,
 }
 
-impl<In, InError> Default for Multicast<In, InError>
+impl<In, InError> MulticastState<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	/// TODO: Needs tests to see how self feeding subscriptions react with this
+	pub(crate) fn defer_notification(&mut self, notification: MulticastNotification<In, InError>) {
+		// The first unsubscribe notification must be let through
+		let is_first_unsubscribe = matches!(notification, MulticastNotification::Unsubscribe)
+			&& !self.observed_unsubscribe;
+
+		if *self.closed_flag && !is_first_unsubscribe {
+			if let MulticastNotification::Add(mut subscriber) = notification
+				&& !subscriber.is_closed()
+			{
+				subscriber.unsubscribe();
+			}
+
+			return;
+		}
+
+		self.deferred_notifications_queue.push(notification);
+	}
+
+	pub(crate) fn drain_notification_queue(&mut self) -> Vec<MulticastNotification<In, InError>> {
+		self.deferred_notifications_queue
+			.drain(..)
+			.collect::<Vec<_>>()
+	}
+
+	/// The state is considered dirty when there are unprocessed notifications
+	/// in the queue.
+	pub(crate) fn is_dirty(&self) -> bool {
+		!self.deferred_notifications_queue.is_empty()
+	}
+
+	pub(crate) fn is_closed(&self) -> bool {
+		self.is_closed_ignoring_deferred()
+			|| self.observed_completion
+			|| self.observed_unsubscribe
+			|| self.observed_error.is_some()
+	}
+
+	/// Is actually closed, ignoring currently deferred notifications
+	pub(crate) fn is_closed_ignoring_deferred(&self) -> bool {
+		*self.closed_flag
+	}
+}
+
+impl<In, InError> Drop for MulticastState<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	fn drop(&mut self) {
+		// The flag might not be closed on drop
+		self.closed_flag.close();
+
+		debug_assert!(!self.is_dirty(), "MulticastState was dropped dirty!");
+	}
+}
+
+impl<In, InError> Default for MulticastState<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
 	fn default() -> Self {
 		Self {
-			subscribers: SharedSubscribers::default(),
 			closed_flag: false.into(),
-			is_completed: false,
-			last_observed_error: None,
+			observed_completion: false,
+			observed_unsubscribe: false,
+			observed_error: None,
+			deferred_notifications_queue: Vec::default(),
 		}
-	}
-}
-
-impl<In, InError> Drop for Multicast<In, InError>
-where
-	In: Signal + Clone,
-	InError: Signal + Clone,
-{
-	fn drop(&mut self) {
-		// Does not need to unsubscribe on drop as it's just a collection of
-		// shared subscribers, the subscription given to the user is what must
-		// be unsubscribed, not the multicast.
-
-		// Close the flag regardless to avoid the safety check on drop.
-		self.closed_flag.close();
 	}
 }

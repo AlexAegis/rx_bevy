@@ -4,7 +4,7 @@ use crate::operator::TapNextOperator;
 
 pub trait ObservablePipeExtensionTapNext: Observable + Sized {
 	#[inline]
-	fn tap_next<OnNext: 'static + Fn(&Self::Out) + Clone + Send + Sync>(
+	fn tap_next<OnNext: 'static + FnMut(&Self::Out) + Clone + Send + Sync>(
 		self,
 		callback: OnNext,
 	) -> <TapNextOperator<Self::Out, Self::OutError, OnNext> as Operator>::OutObservable<Self> {

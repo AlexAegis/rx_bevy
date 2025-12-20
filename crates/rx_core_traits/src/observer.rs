@@ -47,6 +47,7 @@ pub trait ObserverInput {
 ///     }
 /// }
 /// ```
+/// TODO: Consider making all these fallible, NextError::Closed, NextError::Full, NextError::Blocked, CompleteError::Closed etc, including unsubscribe on SubscriptionLike
 pub trait Observer: ObserverInput {
 	/// Signals the next value.
 	fn next(&mut self, next: Self::In);

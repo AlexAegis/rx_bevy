@@ -16,7 +16,7 @@ pub struct TapNextOperator<In, InError, OnNext>
 where
 	In: Signal,
 	InError: Signal,
-	OnNext: 'static + Fn(&In) + Clone + Send + Sync,
+	OnNext: 'static + FnMut(&In) + Clone + Send + Sync,
 {
 	#[derive_where(skip(Debug))]
 	on_next: OnNext,
@@ -27,7 +27,7 @@ impl<In, InError, OnNext> TapNextOperator<In, InError, OnNext>
 where
 	In: Signal,
 	InError: Signal,
-	OnNext: 'static + Fn(&In) + Clone + Send + Sync,
+	OnNext: 'static + FnMut(&In) + Clone + Send + Sync,
 {
 	pub fn new(on_next: OnNext) -> Self {
 		Self {
@@ -41,7 +41,7 @@ impl<In, InError, OnNext> ComposableOperator for TapNextOperator<In, InError, On
 where
 	In: Signal,
 	InError: Signal,
-	OnNext: 'static + Fn(&In) + Clone + Send + Sync,
+	OnNext: 'static + FnMut(&In) + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
 		= TapNextSubscriber<In, InError, OnNext, Destination>

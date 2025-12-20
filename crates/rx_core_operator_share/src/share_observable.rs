@@ -66,10 +66,10 @@ where
 			PublishSubject<Source::Out, Source::OutError>,
 		> as Connectable>::ConnectionSubscription,
 	> {
-		if let Some(connection) = self.connection.as_ref() {
-			if !connection.is_closed() {
-				return connection.clone();
-			}
+		if let Some(connection) = self.connection.as_ref()
+			&& !connection.is_closed()
+		{
+			return connection.clone();
 		}
 
 		let connection = self.connectable.connect();
@@ -78,11 +78,11 @@ where
 	}
 
 	pub fn disconnect(&mut self) -> bool {
-		if let Some(mut connection) = self.connection.take() {
-			if !connection.is_closed() {
-				connection.unsubscribe();
-				return true;
-			}
+		if let Some(mut connection) = self.connection.take()
+			&& !connection.is_closed()
+		{
+			connection.unsubscribe();
+			return true;
 		}
 
 		false

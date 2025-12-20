@@ -5246,15 +5246,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
- "rx_core_macro_observable_derive",
  "rx_core_macro_subject_derive",
- "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
- "slab",
  "smallvec",
- "stealcell",
 ]
 
 [[package]]
@@ -5607,12 +5603,6 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
-name = "stealcell"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "618544c598eabf82833d7aca79aaf6bdfc35cbe3c598da0e11e14be54002563f"
 
 [[package]]
 name = "strict-num"

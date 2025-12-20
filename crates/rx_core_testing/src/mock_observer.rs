@@ -7,7 +7,7 @@ use rx_core_traits::{
 	TeardownCollection,
 };
 
-use crate::SharedNotificationCollector;
+use crate::NotificationCollector;
 
 /// While this is conceptually an Observer, used as an Observer, for testing
 /// purposes it behaves like a Subscriber by not being detached on upgrade.
@@ -22,7 +22,7 @@ where
 	InError: Signal,
 {
 	teardown: SubscriptionData,
-	notification_collector: SharedNotificationCollector<In, InError>,
+	notification_collector: NotificationCollector<In, InError>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -31,7 +31,7 @@ where
 	In: Signal,
 	InError: Signal,
 {
-	pub fn new(notification_collector: SharedNotificationCollector<In, InError>) -> Self {
+	pub fn new(notification_collector: NotificationCollector<In, InError>) -> Self {
 		Self {
 			notification_collector,
 			teardown: SubscriptionData::default(),
@@ -39,7 +39,7 @@ where
 		}
 	}
 
-	pub fn get_notification_collector(&self) -> SharedNotificationCollector<In, InError> {
+	pub fn get_notification_collector(&self) -> NotificationCollector<In, InError> {
 		self.notification_collector.clone()
 	}
 }

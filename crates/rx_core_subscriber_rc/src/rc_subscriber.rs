@@ -201,15 +201,12 @@ where
 #[cfg(test)]
 mod test {
 	use rx_core::prelude::*;
-	use rx_core_testing::{MockObserver, SharedNotificationCollector};
+	use rx_core_testing::{MockObserver, NotificationCollector};
 	use rx_core_traits::{SharedDestination, SubscriptionLike};
 
 	use crate::RcSubscriber;
 
-	fn setup() -> (
-		RcSubscriber<MockObserver<i32>>,
-		SharedNotificationCollector<i32>,
-	) {
+	fn setup() -> (RcSubscriber<MockObserver<i32>>, NotificationCollector<i32>) {
 		let mock_destination = MockObserver::<i32>::default();
 		let notification_collector = mock_destination.get_notification_collector();
 		let rc_subscriber = RcSubscriber::new(mock_destination);

@@ -1,4 +1,3 @@
-use core::marker::PhantomData;
 use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
@@ -22,7 +21,6 @@ where
 {
 	#[destination]
 	shared_destination: Arc<Mutex<Destination>>,
-	_phantom_data: PhantomData<Destination>,
 }
 
 impl<Destination> SharedSubscriber<Destination>
@@ -32,7 +30,6 @@ where
 	pub fn new(destination: Destination) -> Self {
 		Self {
 			shared_destination: Arc::new(Mutex::new(destination)),
-			_phantom_data: PhantomData,
 		}
 	}
 
@@ -61,7 +58,6 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			shared_destination: self.shared_destination.clone(),
-			_phantom_data: PhantomData,
 		}
 	}
 }

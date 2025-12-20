@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subject_derive::RxSubject;
-use rx_core_subject_publish::{MulticastSubscription, subject::PublishSubject};
+use rx_core_subject_publish::{internal::MulticastSubscription, subject::PublishSubject};
 use rx_core_traits::{
 	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, SubscriptionLike,
 	UpgradeableObserver,

@@ -10,7 +10,7 @@ use rx_core_traits::{Observer, Signal, Subscriber};
 #[rx_delegate_subscription_like_to_destination]
 pub struct TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In),
+	OnNext: 'static + FnMut(&In),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: Signal,
 	InError: Signal,
@@ -23,7 +23,7 @@ where
 
 impl<In, InError, OnNext, Destination> TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In),
+	OnNext: 'static + FnMut(&In),
 	Destination: Subscriber<In = In, InError = InError>,
 	In: Signal,
 	InError: Signal,
@@ -40,7 +40,7 @@ where
 impl<In, InError, OnNext, Destination> Observer
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
-	OnNext: 'static + Fn(&In) + Send + Sync,
+	OnNext: 'static + FnMut(&In) + Send + Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 	In: Signal,
 	InError: Signal,

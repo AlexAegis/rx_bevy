@@ -3,7 +3,7 @@ use disqualified::ShortName;
 use crate::{SubscriptionClosedFlag, SubscriptionLike, Teardown, TeardownCollection};
 use std::{fmt::Debug, vec};
 
-/// The base subscription implementation commonly used by other subscription
+/// The internal subscription implementation commonly used by other subscription
 /// implementations.
 ///
 /// This struct is just a collection of teardown closures, stored as the

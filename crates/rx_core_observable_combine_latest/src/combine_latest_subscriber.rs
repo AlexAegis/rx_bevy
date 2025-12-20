@@ -17,6 +17,7 @@ const UNREACHABLE_ERROR: &str = "The CombineLatestSubscriber expects only materi
 #[rx_in(EitherObservableNotification2<O1, O2>)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection]
+#[rx_skip_unsubscribe_on_drop_impl] // This subscribers unsubscribe method should be unreachable!
 pub struct CombineLatestSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out)>,
@@ -129,11 +130,11 @@ where
 	}
 
 	fn error(&mut self, _error: Self::InError) {
-		unreachable!("{}", UNREACHABLE_ERROR)
+		unreachable!("{} - Error", UNREACHABLE_ERROR)
 	}
 
 	fn complete(&mut self) {
-		unreachable!("{}", UNREACHABLE_ERROR)
+		unreachable!("{} - Complete", UNREACHABLE_ERROR)
 	}
 }
 
@@ -154,6 +155,23 @@ where
 
 	#[inline]
 	fn unsubscribe(&mut self) {
-		unreachable!("{}", UNREACHABLE_ERROR)
+		unreachable!("{} - Unsubscribe", UNREACHABLE_ERROR)
+	}
+}
+
+impl<Destination, O1, O2> Drop for CombineLatestSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out)>,
+	O1: 'static + Observable,
+	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Observable,
+	O2::Out: Clone,
+	O2::OutError: Into<Destination::InError>,
+{
+	fn drop(&mut self) {
+		if !self.is_closed() {
+			self.destination.unsubscribe();
+		}
 	}
 }

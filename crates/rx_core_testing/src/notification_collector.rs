@@ -1,4 +1,5 @@
 use std::{
+	fmt::Debug,
 	iter::Chain,
 	slice::Iter,
 	sync::{Arc, Mutex, MutexGuard},
@@ -9,26 +10,26 @@ use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriptionClosedFl
 
 #[derive_where(Clone, Default)]
 #[derive(Debug)]
-pub struct SharedNotificationCollector<In, InError = Never>
+pub struct NotificationCollector<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
 {
-	shared_notification_collector: Arc<Mutex<NotificationCollector<In, InError>>>,
+	shared_notification_collector: Arc<Mutex<NotificationCollectorState<In, InError>>>,
 }
 
-impl<In, InError> SharedNotificationCollector<In, InError>
+impl<In, InError> NotificationCollector<In, InError>
 where
 	In: Signal,
 	InError: Signal,
 {
-	pub fn new(notification_collector: NotificationCollector<In, InError>) -> Self {
+	pub fn new(notification_collector: NotificationCollectorState<In, InError>) -> Self {
 		Self {
 			shared_notification_collector: Arc::new(Mutex::new(notification_collector)),
 		}
 	}
 
-	pub fn lock(&self) -> MutexGuard<'_, NotificationCollector<In, InError>> {
+	pub fn lock(&self) -> MutexGuard<'_, NotificationCollectorState<In, InError>> {
 		self.shared_notification_collector
 			.lock()
 			.unwrap_or_else(|p| p.into_inner())
@@ -36,7 +37,7 @@ where
 }
 
 #[derive(Debug)]
-pub struct NotificationCollector<In, InError = Never>
+pub struct NotificationCollectorState<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
@@ -46,7 +47,7 @@ where
 	closed_flag: SubscriptionClosedFlag,
 }
 
-impl<In, InError> NotificationCollector<In, InError>
+impl<In, InError> NotificationCollectorState<In, InError>
 where
 	In: Signal,
 	InError: Signal,
@@ -85,15 +86,18 @@ where
 
 	/// Returns the `n`th observed notification. Including from the notifications
 	/// observed after the first [SubscriberNotification::Unsubscribe] notification.
+	#[inline]
 	pub fn nth_notification(&self, n: usize) -> &SubscriberNotification<In, InError> {
+		self.try_nth_notification(n)
+			.unwrap_or_else(|| panic!("Notification not found at index {}!", n))
+	}
+
+	pub fn try_nth_notification(&self, n: usize) -> Option<&SubscriberNotification<In, InError>> {
 		if n < self.observed_notifications.len() {
-			self.observed_notifications
-				.get(n)
-				.unwrap_or_else(|| panic!("Notification not found at index {}!", n))
+			self.observed_notifications.get(n)
 		} else {
 			self.observed_notifications_after_close
 				.get(n - self.observed_notifications.len())
-				.unwrap_or_else(|| panic!("Notification not found at index {}!", n))
 		}
 	}
 
@@ -110,6 +114,7 @@ where
 	/// Checks whether or not something was observed after the first
 	/// [SubscriberNotification::Unsubscribe] notification.
 	/// Tick notifications are allowed.
+	#[inline]
 	pub fn nothing_happened_after_closed(&self) -> bool {
 		self.observed_notifications_after_close.is_empty()
 	}
@@ -274,9 +279,39 @@ where
 	pub fn count_all_observed_unsubscribes(&self) -> usize {
 		self.count_observed_unsubscribes() + self.count_observed_unsubscribes_after_close()
 	}
+
+	pub fn assert_notifications<const N: usize>(
+		&self,
+		assert_message_prefix: &'static str,
+		offset: usize,
+		expected_notifications: [SubscriberNotification<In, InError>; N],
+		assert_that_there_is_no_more: bool,
+	) where
+		In: PartialEq + Debug,
+		InError: PartialEq + Debug,
+	{
+		let mut index = offset;
+		for expected_notification in expected_notifications {
+			assert_eq!(
+				self.try_nth_notification(index),
+				Some(&expected_notification),
+				"{assert_message_prefix} - Notification is not correct at index {index} (left is actual, right is the expected)"
+			);
+			index += 1;
+		}
+
+		if assert_that_there_is_no_more {
+			let extra_notification = self.try_nth_notification(index);
+
+			assert!(
+				extra_notification.is_none(),
+				"{assert_message_prefix} - Notification at index {index} should not exist: {extra_notification:?}"
+			);
+		}
+	}
 }
 
-impl<In, InError> Default for NotificationCollector<In, InError>
+impl<In, InError> Default for NotificationCollectorState<In, InError>
 where
 	In: Signal,
 	InError: Signal,
@@ -290,7 +325,7 @@ where
 	}
 }
 
-impl<In, InError> Drop for NotificationCollector<In, InError>
+impl<In, InError> Drop for NotificationCollectorState<In, InError>
 where
 	In: Signal,
 	InError: Signal,
@@ -308,11 +343,11 @@ mod test_notification_collector {
 
 		use rx_core_traits::SubscriberNotification;
 
-		use crate::NotificationCollector;
+		use crate::NotificationCollectorState;
 
 		#[test]
 		fn defaults_to_a_state_where_nothing_yet_happened() {
-			let notification_collector = NotificationCollector::<i32, String>::default();
+			let notification_collector = NotificationCollectorState::<i32, String>::default();
 			assert!(
 				notification_collector.nothing_happened_after_closed(),
 				"a freshly created default mock context thinks something happend after closing without even passing in a single notification"
@@ -321,7 +356,7 @@ mod test_notification_collector {
 
 		#[test]
 		fn counts_incoming_notifications() {
-			let mut notification_collector = NotificationCollector::<i32, String>::default();
+			let mut notification_collector = NotificationCollectorState::<i32, String>::default();
 			notification_collector.push(SubscriberNotification::Unsubscribe);
 			assert!(
 				notification_collector.nothing_happened_after_closed(),
@@ -340,11 +375,11 @@ mod test_notification_collector {
 
 		use rx_core_traits::SubscriberNotification;
 
-		use crate::NotificationCollector;
+		use crate::NotificationCollectorState;
 
 		#[test]
 		fn counts_different_notifications() {
-			let mut notification_collector = NotificationCollector::<i32, String>::default();
+			let mut notification_collector = NotificationCollectorState::<i32, String>::default();
 			// This order of events is nonsensical, but that doesn't matter for this test.
 			notification_collector.push(SubscriberNotification::Next(1));
 			notification_collector.push(SubscriberNotification::Next(2));

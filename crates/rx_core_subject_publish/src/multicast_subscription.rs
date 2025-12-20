@@ -2,12 +2,13 @@ use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Signal, Subscriber, SubscriptionLike, Teardown, TeardownCollection,
+	LockWithPoisonBehavior, Never, Signal, Subscriber, SubscriptionLike, Teardown,
+	TeardownCollection,
 };
 
 #[derive(RxSubscription)]
 #[rx_skip_unsubscribe_on_drop_impl]
-pub struct MulticastSubscription<In, InError>
+pub struct MulticastSubscription<In, InError = Never>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
