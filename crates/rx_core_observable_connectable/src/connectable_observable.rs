@@ -1,22 +1,22 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Observable, SubjectLike, Subscriber, SubscriptionLike, TeardownCollection, UpgradeableObserver,
+	LockWithPoisonBehavior, Observable, SubjectLike, Subscriber, SubscriptionLike,
+	TeardownCollection, TeardownCollectionExtension, UpgradeableObserver,
 };
 
 use crate::{
-	internal::InnerConnectableObservable,
+	internal::{ConnectionOptions, ConnectionState, ConnectorState},
 	observable::{Connectable, ConnectableOptions, ConnectionHandle},
 };
 
 #[derive(RxObservable)]
 #[rx_out(Connector::Out)]
 #[rx_out_error(Connector::OutError)]
-pub struct ConnectableObservable<Source, ConnectorCreator, Connector>
+pub struct ConnectableObservable<Source, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
 	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
 		'static + TeardownCollection,
@@ -26,22 +26,31 @@ where
 	/// ? It could very well be the case that piped operators are not even needed
 	/// ? for this ConnectableObservable as it is a low level component of other operators. (share)
 	/// ? if that's the case, revisit this and remove the arc
-	connector: Arc<RwLock<InnerConnectableObservable<Source, ConnectorCreator, Connector>>>,
+	connector: Arc<Mutex<ConnectorState<Source, Connector>>>,
+
+	connection: Arc<
+		Mutex<ConnectionState<Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>>>,
+	>,
 }
 
-impl<Source, ConnectorCreator, Connector> ConnectableObservable<Source, ConnectorCreator, Connector>
+impl<Source, Connector> ConnectableObservable<Source, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
 	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
 		'static + TeardownCollection,
 {
-	pub fn new(source: Source, options: ConnectableOptions<ConnectorCreator, Connector>) -> Self {
+	pub fn new(source: Source, options: ConnectableOptions<Connector>) -> Self {
+		let connection = Arc::new(Mutex::new(ConnectionState::new(
+			ConnectionOptions::from_connectable_options(&options),
+		)));
 		Self {
-			connector: Arc::new(RwLock::new(InnerConnectableObservable::new(
-				source, options,
+			connector: Arc::new(Mutex::new(ConnectorState::new(
+				source,
+				connection.clone(),
+				options,
 			))),
+			connection,
 		}
 	}
 
@@ -54,11 +63,9 @@ where
 	}
 }
 
-impl<Source, ConnectorCreator, Connector> Clone
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
+impl<Source, Connector> Clone for ConnectableObservable<Source, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
 	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
 		'static + TeardownCollection,
@@ -66,15 +73,14 @@ where
 	fn clone(&self) -> Self {
 		Self {
 			connector: self.connector.clone(),
+			connection: self.connection.clone(),
 		}
 	}
 }
 
-impl<Source, ConnectorCreator, Connector> Observable
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
+impl<Source, Connector> Observable for ConnectableObservable<Source, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
 	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
 		'static + TeardownCollection,
@@ -91,26 +97,41 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		let mut destination = observer.upgrade();
+		let mut subscription = {
+			let mut connector = self.connector.lock_ignore_poison();
 
-		match self.connector.write() {
-			Ok(mut connector) => connector.subscribe(destination),
-			Err(poison_error) => {
-				let error_message =
-					format!("Poisoned lock encountered, unable to subscribe! {poison_error:?}");
-				poison_error.into_inner().unsubscribe();
-				destination.unsubscribe();
-				panic!("{}", error_message)
-			}
+			connector.subscribe(observer.upgrade())
+		};
+
+		if !subscription.is_closed() {
+			self.connection
+				.lock_ignore_poison()
+				.increment_subscriber_count();
+
+			let connection_state_clone = self.connection.clone();
+			subscription.add_fn(move || {
+				let connection_to_disconnect = {
+					let mut connection_state = connection_state_clone.lock_ignore_poison();
+					if connection_state.decrement_subscriber_count() {
+						connection_state.get_connection()
+					} else {
+						None
+					}
+				};
+
+				if let Some(mut connection) = connection_to_disconnect {
+					connection.unsubscribe();
+				};
+			});
 		}
+
+		subscription
 	}
 }
 
-impl<Source, ConnectorCreator, Connector> Connectable
-	for ConnectableObservable<Source, ConnectorCreator, Connector>
+impl<Source, Connector> Connectable for ConnectableObservable<Source, Connector>
 where
 	Source: Observable,
-	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
 	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
 		'static + TeardownCollection,
@@ -119,7 +140,7 @@ where
 		<Source as Observable>::Subscription<<Connector as UpgradeableObserver>::Upgraded>;
 
 	fn connect(&mut self) -> ConnectionHandle<Self::ConnectionSubscription> {
-		match self.connector.write() {
+		match self.connector.lock() {
 			Ok(mut connector) => connector.connect(),
 			Err(poison_error) => {
 				let error_message =
@@ -128,5 +149,18 @@ where
 				panic!("{}", error_message)
 			}
 		}
+	}
+
+	fn disconnect(&mut self) -> bool {
+		let mut s = self.connector.lock_ignore_poison();
+		s.disconnect()
+	}
+
+	fn is_connected(&self) -> bool {
+		self.connector.lock_ignore_poison().is_connected()
+	}
+
+	fn reset(&mut self) {
+		self.connector.lock_ignore_poison().reset();
 	}
 }

@@ -81,8 +81,12 @@ where
 
 	pub(crate) fn unsubscribe(&mut self) {
 		for mut destination in self.subscribers.drain(..) {
+			println!("MULTICAST UNSUB is closed?!!!");
+
 			if !destination.is_closed() {
+				println!("MULTICAST UNSUB NTO CLOSED!!!");
 				destination.unsubscribe();
+				println!("MULTICAST UNSUB SUCC!!!");
 			}
 		}
 	}
@@ -263,10 +267,10 @@ where
 					.lock_ignore_poison()
 					.closed_flag
 					.close();
+				println!("try unsub what 3");
 
 				subscribers.unsubscribe();
-
-				println!("try unsub what 3");
+				println!("try unsub what 4");
 
 				Ok(())
 			}
@@ -352,6 +356,7 @@ where
 	fn drop(&mut self) {
 		// The flag might not be closed on drop
 		self.closed_flag.close();
+		println!("!!!!! MULTICASTSTATE DROPPED");
 
 		debug_assert!(!self.is_dirty(), "MulticastState was dropped dirty!");
 	}

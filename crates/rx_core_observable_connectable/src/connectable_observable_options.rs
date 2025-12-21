@@ -1,28 +1,38 @@
-use core::marker::PhantomData;
+use rx_core_subject_publish::subject::PublishSubject;
+use rx_core_traits::{Signal, SubjectLike};
 
-use rx_core_traits::SubjectLike;
+pub type ConnectorCreatorFn<Connector> = fn() -> Connector;
 
-#[derive(Clone)]
-pub struct ConnectableOptions<ConnectorCreator, Connector>
+pub fn create_default_connector<In, InError>() -> PublishSubject<In, InError>
 where
-	ConnectorCreator: Fn() -> Connector,
-	Connector: 'static + SubjectLike,
+	In: Signal + Clone,
+	InError: Signal + Clone,
 {
-	pub(crate) connector_creator: ConnectorCreator,
-	pub(crate) unsubscribe_connector_on_disconnect: bool,
-	_phantom_data: PhantomData<Connector>,
+	PublishSubject::default()
 }
 
-impl<ConnectorCreator, Connector> ConnectableOptions<ConnectorCreator, Connector>
+#[derive(Clone)]
+pub struct ConnectableOptions<Connector>
 where
-	ConnectorCreator: Fn() -> Connector,
 	Connector: 'static + SubjectLike,
 {
-	pub fn new(connector_creator: ConnectorCreator) -> Self {
+	pub connector_creator: ConnectorCreatorFn<Connector>,
+	/// When true, the connector subject will be dropped when it disconnects.
+	/// Reconnects will create a new Subject.
+	/// When false, the connector subject will be kept
+	pub reset_connector_on_disconnect: bool,
+	pub disconnect_when_ref_count_zero: bool,
+}
+
+impl<Connector> ConnectableOptions<Connector>
+where
+	Connector: 'static + SubjectLike,
+{
+	pub fn new(connector_creator: ConnectorCreatorFn<Connector>) -> Self {
 		Self {
 			connector_creator,
-			unsubscribe_connector_on_disconnect: true,
-			_phantom_data: PhantomData,
+			reset_connector_on_disconnect: true,
+			disconnect_when_ref_count_zero: true,
 		}
 	}
 
@@ -34,7 +44,21 @@ where
 		mut self,
 		unsubscribe_connector_on_disconnect: bool,
 	) -> Self {
-		self.unsubscribe_connector_on_disconnect = unsubscribe_connector_on_disconnect;
+		self.reset_connector_on_disconnect = unsubscribe_connector_on_disconnect;
 		self
+	}
+}
+
+impl<In, InError> Default for ConnectableOptions<PublishSubject<In, InError>>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	fn default() -> Self {
+		Self {
+			connector_creator: create_default_connector::<In, InError>,
+			disconnect_when_ref_count_zero: true,
+			reset_connector_on_disconnect: true,
+		}
 	}
 }

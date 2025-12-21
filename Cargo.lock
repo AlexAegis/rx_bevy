@@ -4577,6 +4577,7 @@ dependencies = [
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
+ "rx_core_subject_publish",
  "rx_core_testing",
  "rx_core_traits",
 ]

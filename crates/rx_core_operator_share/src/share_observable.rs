@@ -6,7 +6,7 @@ use rx_core_observable_connectable::observable::{
 use rx_core_subject_publish::subject::PublishSubject;
 use rx_core_traits::prelude::*;
 
-use crate::operator::{ConnectorCreator, ShareOptions};
+use crate::operator::ShareOptions;
 
 #[derive_where(Clone)]
 #[derive(RxObservable)]
@@ -20,14 +20,12 @@ where
 {
 	connectable: ConnectableObservable<
 		Source,
-		ConnectorCreator<Source::Out, Source::OutError>,
 		PublishSubject<Source::Out, Source::OutError>,
 	>,
 	connection: Option<
 		ConnectionHandle<
 			<ConnectableObservable<
 				Source,
-				ConnectorCreator<Source::Out, Source::OutError>,
 				PublishSubject<Source::Out, Source::OutError>,
 			> as Connectable>::ConnectionSubscription,
 		>,
@@ -62,10 +60,9 @@ where
 	) -> ConnectionHandle<
 		<ConnectableObservable<
 			Source,
-			ConnectorCreator<Source::Out, Source::OutError>,
 			PublishSubject<Source::Out, Source::OutError>,
 		> as Connectable>::ConnectionSubscription,
-	> {
+	>{
 		if let Some(connection) = self.connection.as_ref()
 			&& !connection.is_closed()
 		{
@@ -98,7 +95,6 @@ where
 	type Subscription<Destination>
 		= <ConnectableObservable<
 		Source,
-		ConnectorCreator<Source::Out, Source::OutError>,
 		PublishSubject<Source::Out, Source::OutError>,
 	> as Observable>::Subscription<Destination>
 	where
@@ -120,6 +116,3 @@ where
 		subscription
 	}
 }
-
-// TODO: For disconnections
-pub struct ShareDisconnectSubscriber {}

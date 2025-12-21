@@ -51,7 +51,6 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	/// Drops all closed subscribers
 	fn try_clean(&mut self) {
 		if self.state.lock_ignore_poison().is_dirty()
 			&& let Ok(mut subscribers) = self.subscribers.subscribers.try_lock()

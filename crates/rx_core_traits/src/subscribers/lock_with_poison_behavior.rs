@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard, RwLockWriteGuar
 
 pub trait LockWithPoisonBehavior<T>
 where
-	T: 'static + ?Sized,
+	T: ?Sized,
 {
 	type Guard<'g>
 	where
@@ -11,7 +11,9 @@ where
 	fn lock_with_poison_behavior<F: FnOnce(&mut Self::Guard<'_>)>(
 		&self,
 		if_poisoned: F,
-	) -> Self::Guard<'_>;
+	) -> Self::Guard<'_>
+	where
+		T: 'static;
 
 	fn lock_ignore_poison(&self) -> Self::Guard<'_>;
 
@@ -20,7 +22,7 @@ where
 
 impl<T> LockWithPoisonBehavior<T> for Arc<Mutex<T>>
 where
-	T: 'static + ?Sized,
+	T: ?Sized,
 {
 	type Guard<'g>
 		= MutexGuard<'g, T>
@@ -31,7 +33,10 @@ where
 	fn lock_with_poison_behavior<F: FnOnce(&mut Self::Guard<'_>)>(
 		&self,
 		if_poisoned: F,
-	) -> Self::Guard<'_> {
+	) -> Self::Guard<'_>
+	where
+		T: 'static,
+	{
 		self.lock().unwrap_or_else(|poison_error| {
 			let mut inner = poison_error.into_inner();
 			(if_poisoned)(&mut inner);
@@ -56,7 +61,7 @@ where
 
 pub trait WriteLockWithPoisonBehavior<T>
 where
-	T: 'static + ?Sized,
+	T: ?Sized,
 {
 	type Guard<'g>
 	where
@@ -65,7 +70,9 @@ where
 	fn write_lock_with_poison_behavior<F: FnOnce(&mut Self::Guard<'_>)>(
 		&self,
 		if_poisoned: F,
-	) -> Self::Guard<'_>;
+	) -> Self::Guard<'_>
+	where
+		T: 'static;
 
 	fn write_lock_ignore_poison(&self) -> Self::Guard<'_>;
 
@@ -74,7 +81,7 @@ where
 
 impl<T> WriteLockWithPoisonBehavior<T> for Arc<RwLock<T>>
 where
-	T: 'static + ?Sized,
+	T: ?Sized,
 {
 	type Guard<'g>
 		= RwLockWriteGuard<'g, T>
@@ -85,7 +92,10 @@ where
 	fn write_lock_with_poison_behavior<F: FnOnce(&mut Self::Guard<'_>)>(
 		&self,
 		if_poisoned: F,
-	) -> Self::Guard<'_> {
+	) -> Self::Guard<'_>
+	where
+		T: 'static,
+	{
 		self.write().unwrap_or_else(|poison_error| {
 			let mut inner = poison_error.into_inner();
 			(if_poisoned)(&mut inner);
@@ -110,7 +120,7 @@ where
 
 pub trait ReadLockWithPoisonBehavior<T>
 where
-	T: 'static + ?Sized,
+	T: ?Sized,
 {
 	type Guard<'g>
 	where
@@ -119,7 +129,9 @@ where
 	fn read_lock_with_poison_behavior<F: FnOnce(&mut Self::Guard<'_>)>(
 		&self,
 		if_poisoned: F,
-	) -> Self::Guard<'_>;
+	) -> Self::Guard<'_>
+	where
+		T: 'static;
 
 	fn read_lock_ignore_poison(&self) -> Self::Guard<'_>;
 
@@ -128,7 +140,7 @@ where
 
 impl<T> ReadLockWithPoisonBehavior<T> for Arc<RwLock<T>>
 where
-	T: 'static + ?Sized,
+	T: ?Sized,
 {
 	type Guard<'g>
 		= RwLockReadGuard<'g, T>
@@ -139,7 +151,10 @@ where
 	fn read_lock_with_poison_behavior<F: FnOnce(&mut Self::Guard<'_>)>(
 		&self,
 		if_poisoned: F,
-	) -> Self::Guard<'_> {
+	) -> Self::Guard<'_>
+	where
+		T: 'static,
+	{
 		self.read().unwrap_or_else(|poison_error| {
 			let mut inner = poison_error.into_inner();
 			(if_poisoned)(&mut inner);
