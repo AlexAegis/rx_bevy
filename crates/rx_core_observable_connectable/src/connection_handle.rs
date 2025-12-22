@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::SubscriptionWithTeardown;
@@ -11,26 +11,26 @@ use rx_core_traits::SubscriptionWithTeardown;
 #[rx_skip_unsubscribe_on_drop_impl]
 pub struct ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
+	Subscription: SubscriptionWithTeardown,
 {
 	#[destination]
-	handle: Arc<RwLock<Subscription>>,
+	handle: Arc<Mutex<Subscription>>,
 }
 
 impl<Subscription> ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
+	Subscription: SubscriptionWithTeardown,
 {
 	pub fn new(subscription: Subscription) -> Self {
 		Self {
-			handle: Arc::new(RwLock::new(subscription)),
+			handle: Arc::new(Mutex::new(subscription)),
 		}
 	}
 }
 
 impl<Subscription> Clone for ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
+	Subscription: SubscriptionWithTeardown,
 {
 	fn clone(&self) -> Self {
 		Self {
@@ -41,7 +41,7 @@ where
 
 impl<Subscription> Drop for ConnectionHandle<Subscription>
 where
-	Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
+	Subscription: SubscriptionWithTeardown,
 {
 	fn drop(&mut self) {
 		// Must not unsubscribe on drop, it's shared

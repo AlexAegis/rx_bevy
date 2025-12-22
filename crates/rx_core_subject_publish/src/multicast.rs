@@ -356,7 +356,6 @@ where
 	fn drop(&mut self) {
 		// The flag might not be closed on drop
 		self.closed_flag.close();
-		println!("!!!!! MULTICASTSTATE DROPPED");
 
 		debug_assert!(!self.is_dirty(), "MulticastState was dropped dirty!");
 	}

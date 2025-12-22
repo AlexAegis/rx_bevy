@@ -4574,8 +4574,10 @@ dependencies = [
 name = "rx_core_observable_connectable"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_observable_derive",
+ "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_subject_publish",
  "rx_core_testing",

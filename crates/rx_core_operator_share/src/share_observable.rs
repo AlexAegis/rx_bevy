@@ -42,7 +42,10 @@ where
 		Self {
 			connectable: ConnectableObservable::new(
 				source,
-				ConnectableOptions::new(options.connector_creator),
+				ConnectableOptions {
+					connector_creator: options.connector_creator,
+					..Default::default()
+				},
 			),
 			connection: None,
 		}
@@ -99,6 +102,7 @@ where
 	> as Observable>::Subscription<Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
+
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
