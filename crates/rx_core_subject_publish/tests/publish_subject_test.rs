@@ -94,16 +94,14 @@ fn should_immediately_complete_new_subscribers_if_complete() {
 
 	let mut subscription = subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(0),
-		&SubscriberNotification::Complete,
-		"destination did not receive the completion signal"
-	);
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(1),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
+	notification_collector.lock().assert_notifications(
+		"publish_subject destination",
+		0,
+		[
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 
 	subscription.unsubscribe();
@@ -127,23 +125,14 @@ fn should_immediately_error_new_subscribers_if_errored() {
 
 	let mut subscription = subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(0),
-		&SubscriberNotification::Error(error),
-		"destination did not receive the error signal"
-	);
-
-	subject.unsubscribe();
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(1),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
-	);
-
-	assert!(
-		!notification_collector.lock().nth_notification_exists(2),
-		"destination received an additional signal after already unsubscribed!"
+	notification_collector.lock().assert_notifications(
+		"publish_subject",
+		0,
+		[
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 
 	subscription.unsubscribe();
@@ -155,7 +144,62 @@ fn should_immediately_error_new_subscribers_if_errored() {
 }
 
 #[test]
-fn should_immediately_unsubscribe_new_subscribers_if_unsubscribed() {
+fn should_not_unsubscribe_existing_subscribers_if_not_manually_unsubscribed() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let subject = PublishSubject::<usize>::default();
+
+	let _subscription = subject.clone().subscribe(destination);
+
+	let mut source = PublishSubject::<usize>::default();
+	let mut source_subscription = source.subscribe(subject.clone());
+	source.next(0);
+	source_subscription.unsubscribe();
+	assert!(source_subscription.is_closed());
+	assert!(!source.is_closed());
+
+	assert!(
+		!subject.is_closed(),
+		"the subject should not have unsubscribed because a subscription it was a destination for unsubscribed"
+	);
+
+	notification_collector.lock().assert_notifications(
+		"subject_as_destination",
+		0,
+		[SubscriberNotification::Next(0)],
+		true,
+	);
+}
+
+#[test]
+fn should_unsubscribe_existing_subscribers_if_manually_unsubscribed() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut subject = PublishSubject::<usize, &'static str>::default();
+
+	let mut subscription = subject.clone().subscribe(destination);
+
+	subject.unsubscribe();
+
+	notification_collector.lock().assert_notifications(
+		"publish_subject destination",
+		0,
+		[SubscriberNotification::Unsubscribe],
+		true,
+	);
+
+	subscription.unsubscribe();
+
+	assert!(
+		!notification_collector.lock().nth_notification_exists(1),
+		"destination received an additional signal after already unsubscribed!"
+	);
+}
+
+#[test]
+fn should_immediately_unsubscribe_new_subscribers_if_already_closed() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
@@ -165,17 +209,12 @@ fn should_immediately_unsubscribe_new_subscribers_if_unsubscribed() {
 
 	let mut subscription = subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(0),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
+	notification_collector.lock().assert_notifications(
+		"publish_subject destination",
+		0,
+		[SubscriberNotification::Unsubscribe],
+		true,
 	);
-
-	assert!(
-		!notification_collector.lock().nth_notification_exists(1),
-		"destination received an additional signal after already unsubscribed!"
-	);
-
 	subscription.unsubscribe();
 
 	assert!(
@@ -185,7 +224,7 @@ fn should_immediately_unsubscribe_new_subscribers_if_unsubscribed() {
 }
 
 #[test]
-fn should_immediately_complete_and_unsubscribe_new_subscribers_if_completed() {
+fn should_immediately_complete_and_unsubscribe_new_subscribers_if_already_completed() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
@@ -194,16 +233,14 @@ fn should_immediately_complete_and_unsubscribe_new_subscribers_if_completed() {
 
 	let mut subscription = subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(0),
-		&SubscriberNotification::Complete,
-		"destination did not receive the completion signal"
-	);
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(1),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
+	notification_collector.lock().assert_notifications(
+		"publish_subject destination",
+		0,
+		[
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 
 	assert!(
@@ -230,21 +267,14 @@ fn should_immediately_error_and_unsubscribe_new_subscribers_if_errored_and_unsub
 
 	let mut subscription = subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(0),
-		&SubscriberNotification::Error(error),
-		"destination did not receive the error signal"
-	);
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(1),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
-	);
-
-	assert!(
-		!notification_collector.lock().nth_notification_exists(2),
-		"destination received an additional signal after already unsubscribed!"
+	notification_collector.lock().assert_notifications(
+		"publish_subject destination",
+		0,
+		[
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 
 	subscription.unsubscribe();
@@ -346,18 +376,14 @@ fn should_error_active_subscribers() {
 	let error = "error";
 	subject.error(error);
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(0),
-		&SubscriberNotification::Error(error),
-		"destination did not receive the error signal"
-	);
-
-	subject.unsubscribe();
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(1),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
+	notification_collector.lock().assert_notifications(
+		"publish_subject destination",
+		0,
+		[
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 }
 

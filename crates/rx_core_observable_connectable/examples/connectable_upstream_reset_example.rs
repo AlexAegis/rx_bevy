@@ -19,10 +19,7 @@ fn main() {
 	let _connection = connectable.connect();
 	source.next(1); // First subscription emits!
 
-	// TODO: write TESTS (works correctly now): RXJS DOES NOT UNSUBSCRIBE DOWNSTREAM when just unsubscribing, but it DOES WHEN COMPLETE/ERROR. connectable behaves like this too
-	//	source.error("error");
-	//source.complete();
-	source.unsubscribe();
+	source.complete();
 
 	// Even though it's disconnected, the connector is replaying!
 	let mut _subscription_1 = connectable.subscribe(PrintObserver::new("connectable_observable 1"));

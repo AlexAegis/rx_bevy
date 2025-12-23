@@ -193,29 +193,23 @@ mod after_primed {
 		subject_2.next("hello");
 		subject_1.complete();
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Next((1, "hello")),
-			"Did not receive the first emission"
-		);
-
-		assert!(
-			!notification_collector_1.lock().nth_notification_exists(1),
-			"An event was observed when none should have"
+		notification_collector_1.lock().assert_notifications(
+			"publish_subject destination",
+			0,
+			[SubscriberNotification::Next((1, "hello"))],
+			true,
 		);
 
 		subject_2.complete();
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(1),
-			&SubscriberNotification::Complete,
-			"Did not complete"
-		);
-
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(2),
-			&SubscriberNotification::Unsubscribe,
-			"Did not unsubscribe"
+		notification_collector_1.lock().assert_notifications(
+			"publish_subject destination",
+			1,
+			[
+				SubscriberNotification::Complete,
+				SubscriberNotification::Unsubscribe,
+			],
+			true,
 		);
 	}
 

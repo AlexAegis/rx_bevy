@@ -97,9 +97,7 @@ where
 	{
 		let mut subscription = {
 			let mut connector = self.connector.lock_ignore_poison();
-			connector
-				.get_active_connector()
-				.subscribe(observer.upgrade())
+			connector.get_connector().subscribe(observer.upgrade())
 		};
 
 		if !subscription.is_closed() {
@@ -156,7 +154,7 @@ where
 
 	#[inline]
 	fn is_connected(&self) -> bool {
-		self.connector.lock_ignore_poison().is_connected()
+		self.connection.lock_ignore_poison().is_connected()
 	}
 
 	#[inline]

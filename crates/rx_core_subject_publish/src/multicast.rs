@@ -81,12 +81,8 @@ where
 
 	pub(crate) fn unsubscribe(&mut self) {
 		for mut destination in self.subscribers.drain(..) {
-			println!("MULTICAST UNSUB is closed?!!!");
-
 			if !destination.is_closed() {
-				println!("MULTICAST UNSUB NTO CLOSED!!!");
 				destination.unsubscribe();
-				println!("MULTICAST UNSUB SUCC!!!");
 			}
 		}
 	}
@@ -255,22 +251,17 @@ where
 	pub(crate) fn try_unsubscribe(&mut self) -> Result<(), MulticastUnsubscribeLockError> {
 		match self.subscribers.try_lock() {
 			Ok(mut subscribers) => {
-				println!("try unsub what");
 				Self::apply_notification_queue(
 					self.shared_multicast_state.clone(),
 					&mut subscribers,
 				); // First, the notification queue!
 
-				println!("try unsub what 2");
-
 				self.shared_multicast_state
 					.lock_ignore_poison()
 					.closed_flag
 					.close();
-				println!("try unsub what 3");
 
 				subscribers.unsubscribe();
-				println!("try unsub what 4");
 
 				Ok(())
 			}

@@ -104,6 +104,7 @@ where
 		}
 
 		if self.is_closed() {
+			// Subscribing to a closed subject could also cause a panic, but I prefer this
 			subscriber.unsubscribe();
 			MulticastSubscription::new_closed()
 		} else {
@@ -158,8 +159,6 @@ where
 					.lock_ignore_poison()
 					.defer_notification(MulticastNotification::Error(error_error.error));
 			}
-
-			self.unsubscribe();
 		}
 
 		self.try_clean();
@@ -176,14 +175,40 @@ where
 					.lock_ignore_poison()
 					.defer_notification(MulticastNotification::Complete);
 			}
-
-			self.unsubscribe();
 		}
 
 		self.try_clean();
 	}
 }
 
+/// A subject is both an observable and an observer, but they are **NOT**
+/// subscriptions! And traditionally they do not allow to forcibly unsubscribe
+/// all subscribers, besides just marking the subject as closed once completed
+/// or errored.
+///
+/// The reason is, that when a subject is used as a destination of a
+/// subscription, it should only forward signals, but should definitely **NOT**
+/// unsubscribe the subscribers. That subject could be used as a destination
+/// for multiple subscriptions, one should not close it from others, unless it
+/// completes or errors it.
+///
+/// But here that does not happen, because Observables here in `rx_core` expect
+/// not an observer, but an `UpgradeableObserver`. And it's up to the
+/// destination to decide if it wants to be unsubscribed together with upstream
+/// or not. (This exists to be able to use subscribers directly as destinations)
+///
+/// This trait is autoimplemented by the `RxSubject` macro and makes subjects
+/// always be wrapped in a `DetatchedSubscriber` which only forwards signals
+/// but not `unsubscribe` calls.
+///
+/// > Publish, Behavior, Replay and Async subjects all upgrade to a detached
+/// > subscriber, but other subjects implement it at their own discretion. The
+/// > RxSubject macro intentionally makes this the default behavior, so if a
+/// > custom subject does not detach on subscribe, it's most likely intentional.
+///
+/// So you get to pass subjects as destinations without worrying that it
+/// unsubscribes when it shouldn't, but you can still do it by hand and drop
+/// all subscribers.
 impl<In, InError> SubscriptionLike for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
@@ -197,19 +222,17 @@ where
 	fn unsubscribe(&mut self) {
 		self.try_clean();
 
-		// TODO: Optimize locks once tested and working
-		if !self.is_closed() {
-			self.state.lock_ignore_poison().observed_unsubscribe = true;
+		let was_closed = {
+			let mut state = self.state.lock_ignore_poison();
+			let was_closed = state.is_closed();
+			state.observed_unsubscribe = true;
+			was_closed
+		};
 
-			println!("UNSUB??");
-
-			if let Err(_unsubscribe_error) = self.subscribers.try_unsubscribe() {
-				println!("DEFERRED UNSUBV??");
-
-				self.state
-					.lock_ignore_poison()
-					.defer_notification(MulticastNotification::Unsubscribe);
-			}
+		if !was_closed && let Err(_unsubscribe_error) = self.subscribers.try_unsubscribe() {
+			self.state
+				.lock_ignore_poison()
+				.defer_notification(MulticastNotification::Unsubscribe);
 		}
 
 		self.try_clean();

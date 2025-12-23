@@ -280,6 +280,21 @@ where
 		self.count_observed_unsubscribes() + self.count_observed_unsubscribes_after_close()
 	}
 
+	pub fn assert_is_empty(&self, assert_message_prefix: &'static str)
+	where
+		In: Debug,
+		InError: Debug,
+	{
+		if !self.is_empty() {
+			println!("Should be empty: {:?}", self);
+		}
+
+		assert!(
+			self.is_empty(),
+			"{assert_message_prefix} - should not've observed anything at this point!"
+		)
+	}
+
 	pub fn assert_notifications<const N: usize>(
 		&self,
 		assert_message_prefix: &'static str,

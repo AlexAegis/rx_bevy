@@ -53,32 +53,15 @@ where
 		}
 	}
 
-	fn get_connector(&mut self) -> Connector {
+	pub(crate) fn get_connector(&mut self) -> Connector {
 		let mut connector = self.connector.lock_ignore_poison();
 		connector
 			.get_or_insert_with(|| (self.options.connector_creator)())
 			.clone()
 	}
 
-	pub(crate) fn get_active_connector(&mut self) -> Connector {
-		{
-			let mut connector = self.connector.lock_ignore_poison();
-
-			// Remove the connector if it's closed, and only when it's closed
-			if connector
-				.as_ref()
-				.map(|connector| connector.is_closed())
-				.unwrap_or(false)
-			{
-				connector.take();
-			}
-		}
-
-		self.get_connector()
-	}
-
 	pub(crate) fn create_connection(&mut self) -> ConnectionSubscription<Source, Connector> {
-		let connector = self.get_active_connector().clone();
+		let connector = self.get_connector().clone();
 
 		let reset_connector_on_disconnect = self.options.reset_connector_on_disconnect;
 		let connection_on_complete = self.connection_state.clone();
@@ -151,13 +134,8 @@ where
 		self.connection.lock_ignore_poison().disconnect()
 	}
 
-	#[inline]
-	pub(crate) fn is_connected(&self) -> bool {
-		self.connection.lock_ignore_poison().is_connected()
-	}
-
 	pub(crate) fn reset(&mut self) {
-		self.connector.lock_ignore_poison().take();
 		self.disconnect();
+		self.connector.lock_ignore_poison().take();
 	}
 }

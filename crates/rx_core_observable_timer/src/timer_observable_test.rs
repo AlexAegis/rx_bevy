@@ -34,27 +34,15 @@ pub fn should_send_a_unit_value_after_the_specified_amount_of_time() {
 
 	executor.tick(Duration::from_millis(1));
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(0),
-		&SubscriberNotification::Next(()),
-		"next notification not received"
-	);
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(1),
-		&SubscriberNotification::Complete,
-		"complete notification not received"
-	);
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(2),
-		&SubscriberNotification::Unsubscribe,
-		"unsubscribe notification not received"
-	);
-
-	assert!(
-		!notification_collector.lock().nth_notification_exists(3),
-		"an extra notification was observed"
+	notification_collector.lock().assert_notifications(
+		"timer",
+		0,
+		[
+			SubscriberNotification::Next(()),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 }
 

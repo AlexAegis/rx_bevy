@@ -8,11 +8,9 @@ pub(crate) struct ConnectionOptions {
 
 pub(crate) struct ConnectionState {
 	downstream_subscriber_count: usize,
-	// TODO: Unused
 	has_errored: bool,
 	has_completed: bool,
 	needs_reset_on_unsubscribe: bool,
-
 	connection_options: ConnectionOptions,
 }
 
@@ -62,10 +60,6 @@ impl ConnectionState {
 	/// Returns true when disconnect_when_ref_count_zero is enabled and the
 	/// ref count has just dropped to zero.
 	pub(crate) fn decrement_subscriber_count(&mut self) -> bool {
-		println!(
-			"decrement_subscriber_count has_errored {}, has_completed {}",
-			self.has_errored, self.has_completed
-		);
 		self.downstream_subscriber_count = self.downstream_subscriber_count.saturating_sub(1);
 		self.connection_options.disconnect_when_ref_count_zero
 			&& self.downstream_subscriber_count == 0
