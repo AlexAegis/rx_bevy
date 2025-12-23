@@ -66,7 +66,6 @@ where
 		let reset_connector_on_disconnect = self.options.reset_connector_on_disconnect;
 		let connection_on_complete = self.connection_state.clone();
 		let connection_on_error = self.connection_state.clone();
-		let connection_on_unsubscribe = self.connection_state.clone();
 		let connector_on_complete = self.connector.clone();
 		let connector_on_error = self.connector.clone();
 		let connector_on_unsubscribe = self.connector.clone();
@@ -93,12 +92,6 @@ where
 				connection_state.errored();
 			}),
 			Box::new(move || {
-				{
-					let mut connection_state = connection_on_unsubscribe.lock_ignore_poison();
-					if connection_state.needs_reset_on_unsubscribe() {
-						connection_state.reset();
-					}
-				}
 				if reset_connector_on_disconnect {
 					// Simply drop the connector from behind the mutex, so that
 					// new connections will be forced to create a new connector.

@@ -10,7 +10,6 @@ pub(crate) struct ConnectionState {
 	downstream_subscriber_count: usize,
 	has_errored: bool,
 	has_completed: bool,
-	needs_reset_on_unsubscribe: bool,
 	connection_options: ConnectionOptions,
 }
 
@@ -32,25 +31,17 @@ impl ConnectionState {
 			downstream_subscriber_count: 0,
 			has_completed: false,
 			has_errored: false,
-			needs_reset_on_unsubscribe: false,
 		}
 	}
 
 	#[inline]
 	pub(crate) fn errored(&mut self) {
 		self.has_errored = true;
-		self.needs_reset_on_unsubscribe = true;
 	}
 
 	#[inline]
 	pub(crate) fn completed(&mut self) {
 		self.has_completed = true;
-		self.needs_reset_on_unsubscribe = true;
-	}
-
-	#[inline]
-	pub(crate) fn needs_reset_on_unsubscribe(&self) -> bool {
-		self.needs_reset_on_unsubscribe
 	}
 
 	pub(crate) fn increment_subscriber_count(&mut self) {
@@ -70,6 +61,5 @@ impl ConnectionState {
 	pub(crate) fn reset(&mut self) {
 		self.has_completed = false;
 		self.has_errored = false;
-		self.needs_reset_on_unsubscribe = false;
 	}
 }
