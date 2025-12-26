@@ -85,7 +85,7 @@ where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
 	Destination: 'static + Subscriber,
 {
-	pub fn new(
+	fn new(
 		data: Arc<Mutex<ConcurrentSubscriberData<InnerObservable, Destination>>>,
 		shared_upstream_unsubscribed_flag: Arc<Mutex<bool>>,
 	) -> Self {
