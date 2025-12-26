@@ -107,6 +107,9 @@ component_management:
     - component_id: rx_core_observable_iterator_on_tick
       paths:
         - crates/rx_core_observable_iterator_on_tick/**
+    - component_id: rx_core_observable_join
+      paths:
+        - crates/rx_core_observable_join/**
     - component_id: rx_core_observable_merge
       paths:
         - crates/rx_core_observable_merge/**

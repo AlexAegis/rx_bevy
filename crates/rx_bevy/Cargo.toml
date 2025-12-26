@@ -93,6 +93,7 @@ all_core_observables = [
     "observable_interval",
     "observable_iterator",
     "observable_iterator_on_tick",
+    "observable_join",
     "observable_merge",
     "observable_never",
     "observable_of",
@@ -109,6 +110,7 @@ observable_erased = ["rx_core/observable_erased"]
 observable_interval = ["rx_core/observable_interval"]
 observable_iterator = ["rx_core/observable_iterator"]
 observable_iterator_on_tick = ["rx_core/observable_iterator_on_tick"]
+observable_join = ["rx_core/observable_join"]
 observable_merge = ["rx_core/observable_merge"]
 observable_never = ["rx_core/observable_never"]
 observable_of = ["rx_core/observable_of"]

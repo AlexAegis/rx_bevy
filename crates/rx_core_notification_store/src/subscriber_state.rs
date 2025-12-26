@@ -254,7 +254,7 @@ impl SubscriberState {
 	///
 	/// Rest assured these invalid update panics only happen in debug builds!
 	pub fn update_with_notification_would_be_invalid<In, InError>(
-		&mut self,
+		&self,
 		notification: &SubscriberNotification<In, InError>,
 	) -> bool
 	where

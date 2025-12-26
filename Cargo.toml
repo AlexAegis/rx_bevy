@@ -63,6 +63,7 @@ rx_core_observable_erased = { path = "crates/rx_core_observable_erased" }
 rx_core_observable_interval = { path = "crates/rx_core_observable_interval" }
 rx_core_observable_iterator = { path = "crates/rx_core_observable_iterator" }
 rx_core_observable_iterator_on_tick = { path = "crates/rx_core_observable_iterator_on_tick" }
+rx_core_observable_join = { path = "crates/rx_core_observable_join" }
 rx_core_observable_merge = { path = "crates/rx_core_observable_merge" }
 rx_core_observable_never = { path = "crates/rx_core_observable_never" }
 rx_core_observable_of = { path = "crates/rx_core_observable_of" }

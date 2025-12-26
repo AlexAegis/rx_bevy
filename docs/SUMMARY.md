@@ -15,6 +15,7 @@
   - [interval](observable/interval.md)
   - [iterator](observable/iterator.md)
   - [iterator_on_tick](observable/iterator_on_tick.md)
+  - [join](observable/join.md)
   - [merge](observable/merge.md)
   - [never](observable/never.md)
   - [of](observable/of.md)

@@ -34,6 +34,7 @@ debug = [
     "rx_core_observable_interval?/debug",
     "rx_core_observable_iterator?/debug",
     "rx_core_observable_iterator_on_tick?/debug",
+    "rx_core_observable_join?/debug",
     "rx_core_observable_merge?/debug",
     "rx_core_observable_never?/debug",
     "rx_core_observable_of?/debug",
@@ -89,6 +90,7 @@ all_observables = [
     "observable_interval",
     "observable_iterator",
     "observable_iterator_on_tick",
+    "observable_join",
     "observable_merge",
     "observable_never",
     "observable_of",
@@ -105,6 +107,7 @@ observable_erased = ["dep:rx_core_observable_erased"]
 observable_interval = ["dep:rx_core_observable_interval"]
 observable_iterator = ["dep:rx_core_observable_iterator"]
 observable_iterator_on_tick = ["dep:rx_core_observable_iterator_on_tick"]
+observable_join = ["dep:rx_core_observable_join"]
 observable_merge = ["dep:rx_core_observable_merge"]
 observable_never = ["dep:rx_core_observable_never"]
 observable_of = ["dep:rx_core_observable_of"]
@@ -118,6 +121,7 @@ observable_fn = [
     "rx_core_observable_empty?/observable_fn",
     "rx_core_observable_interval?/observable_fn",
     "rx_core_observable_deferred?/observable_fn",
+    "rx_core_observable_join?/observable_fn",
     "rx_core_observable_merge?/observable_fn",
     "rx_core_observable_never?/observable_fn",
     "rx_core_observable_of?/observable_fn",
@@ -300,6 +304,7 @@ rx_core_observable_deferred = { workspace = true, optional = true }
 rx_core_observable_interval = { workspace = true, optional = true }
 rx_core_observable_iterator = { workspace = true, optional = true }
 rx_core_observable_iterator_on_tick = { workspace = true, optional = true }
+rx_core_observable_join = { workspace = true, optional = true }
 rx_core_observable_merge = { workspace = true, optional = true }
 rx_core_observable_never = { workspace = true, optional = true }
 rx_core_observable_of = { workspace = true, optional = true }

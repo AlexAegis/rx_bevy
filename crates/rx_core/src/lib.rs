@@ -21,6 +21,8 @@ pub mod observable {
 	pub use rx_core_observable_iterator::observable::*;
 	#[cfg(feature = "observable_iterator_on_tick")]
 	pub use rx_core_observable_iterator_on_tick::observable::*;
+	#[cfg(feature = "observable_join")]
+	pub use rx_core_observable_join::observable::*;
 	#[cfg(feature = "observable_merge")]
 	pub use rx_core_observable_merge::observable::*;
 	#[cfg(feature = "observable_never")]
@@ -47,6 +49,8 @@ pub mod observable_fn {
 	pub use rx_core_observable_empty::observable_fn::*;
 	#[cfg(feature = "observable_interval")]
 	pub use rx_core_observable_interval::observable_fn::*;
+	#[cfg(feature = "observable_join")]
+	pub use rx_core_observable_join::observable_fn::*;
 	#[cfg(feature = "observable_merge")]
 	pub use rx_core_observable_merge::observable_fn::*;
 	#[cfg(feature = "observable_never")]
