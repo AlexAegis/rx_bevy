@@ -125,8 +125,8 @@ jobs:
         run: cargo run -p xtask -- lint docs
       - name: xtask lint aggregators
         run: cargo run -p xtask -- lint aggregators
-      - name: xtask lint readmes
-        run: cargo run -p xtask -- lint readmes
+      - name: xtask lint readme
+        run: cargo run -p xtask -- lint readme
   conventional-commits:
     runs-on: ubuntu-latest
     steps:
