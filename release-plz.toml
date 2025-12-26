@@ -8,7 +8,7 @@ changelog_path = "./CHANGELOG.md"
 name = "rx_bevy"
 git_tag_name = "v{{ version }}"
 git_tag_enable = true
-git_release_enable = true
+git_release_enable = false
 
 [changelog]
 commit_parsers = [
