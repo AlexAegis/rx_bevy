@@ -324,7 +324,7 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
       ```
 
 7. Add a documentation file that just includes the readme file of the crate at
-   `docs/11_observables_bevy/foo.md`
+   `docs/observable_bevy/foo.md`
 
    ```md
    <!-- markdownlint-disable -->
@@ -334,8 +334,8 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 8. Include the new page in [`SUMMARY.md`](./docs/SUMMARY.md)
   
    ```md
-   - [Operators (Bevy)](11_observables_bevy.md)
-     - [foo](11_observables_bevy/foo.md)
+   - [Operators (Bevy)](observable_bevy.md)
+     - [foo](observable_bevy/foo.md)
    ```
 
 9. Create a new Codecov component in [`codecov.yml`](./codecov.yml) to track

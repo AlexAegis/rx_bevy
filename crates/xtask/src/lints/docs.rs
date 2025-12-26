@@ -11,35 +11,35 @@ lazy_static! {
 		let mut hash_map = HashMap::<(String, RxCrateCategory), Utf8PathBuf>::new();
 		hash_map.insert(
 			("rx_core".to_string(), RxCrateCategory::Observable),
-			"10_observables_core".into(),
+			"observable".into(),
 		);
 		hash_map.insert(
 			("rx_bevy".to_string(), RxCrateCategory::Observable),
-			"11_observables_bevy".into(),
+			"observable_bevy".into(),
 		);
 		hash_map.insert(
 			("rx_core".to_string(), RxCrateCategory::Operator),
-			"12_operators_core".into(),
+			"operator".into(),
 		);
 		hash_map.insert(
 			("rx_bevy".to_string(), RxCrateCategory::Operator),
-			"13_operators_bevy".into(),
+			"operator_bevy".into(),
 		);
 		hash_map.insert(
 			("rx_core".to_string(), RxCrateCategory::Scheduler),
-			"14_schedulers_core".into(),
+			"scheduler".into(),
 		);
 		hash_map.insert(
 			("rx_bevy".to_string(), RxCrateCategory::Scheduler),
-			"15_schedulers_bevy".into(),
+			"scheduler_bevy".into(),
 		);
 		hash_map.insert(
 			("rx_core".to_string(), RxCrateCategory::Subject),
-			"16_subjects_core".into(),
+			"subject".into(),
 		);
 		hash_map.insert(
 			("rx_bevy".to_string(), RxCrateCategory::Subject),
-			"17_subjects_bevy".into(),
+			"subject_bevy".into(),
 		);
 		hash_map
 	};
