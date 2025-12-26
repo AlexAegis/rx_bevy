@@ -18,8 +18,6 @@ workspace = true
 [features]
 default = []
 debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
-dev = ["panic_on_error"]
-panic_on_error = []
 
 [dependencies]
 rx_core_traits = { workspace = true }

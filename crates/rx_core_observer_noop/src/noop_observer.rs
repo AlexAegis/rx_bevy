@@ -4,6 +4,9 @@ use derive_where::derive_where;
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{Observer, Signal};
 
+/// # NoopObserver
+///
+/// Does nothing except panics in dev mode when an error is observed.
 #[derive_where(Default, Debug)]
 #[derive(RxObserver)]
 #[rx_in(In)]
@@ -21,14 +24,14 @@ where
 	In: Signal,
 	InError: Signal,
 {
+	#[inline]
 	fn next(&mut self, _next: Self::In) {}
 
+	#[inline]
 	fn error(&mut self, _error: Self::InError) {
-		#[cfg(feature = "panic_on_error")]
-		{
-			panic!("noop observer observed an error!")
-		}
+		debug_assert!(false, "noop observer observed an uncaught error!")
 	}
 
+	#[inline]
 	fn complete(&mut self) {}
 }
