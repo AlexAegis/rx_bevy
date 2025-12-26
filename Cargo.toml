@@ -105,6 +105,7 @@ rx_core_operator_lift_option = { path = "crates/rx_core_operator_lift_option" }
 rx_core_operator_lift_result = { path = "crates/rx_core_operator_lift_result" }
 rx_core_operator_map = { path = "crates/rx_core_operator_map" }
 rx_core_operator_map_into = { path = "crates/rx_core_operator_map_into" }
+rx_core_operator_materialize = { path = "crates/rx_core_operator_materialize" }
 rx_core_operator_merge_all = { path = "crates/rx_core_operator_merge_all" }
 rx_core_operator_merge_map = { path = "crates/rx_core_operator_merge_map" }
 rx_core_operator_reduce = { path = "crates/rx_core_operator_reduce" }

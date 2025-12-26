@@ -3,7 +3,7 @@ use thiserror::Error;
 use crate::{Never, Observer, Signal, SubscriberNotification};
 
 /// Represents all signal events an observer can observe in a materialized form
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ObserverNotification<In, InError = Never>
 where
 	In: Signal,

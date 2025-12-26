@@ -206,6 +206,9 @@ component_management:
     - component_id: rx_core_operator_map_into
       paths:
         - crates/rx_core_operator_map_into/**
+    - component_id: rx_core_operator_materialize
+      paths:
+        - crates/rx_core_operator_materialize/**
     - component_id: rx_core_operator_merge_all
       paths:
         - crates/rx_core_operator_merge_all/**
