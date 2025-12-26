@@ -11,7 +11,7 @@ use crate::internal::{
 	MulticastNextLockError, MulticastNotification, MulticastUnsubscribeLockError,
 };
 
-pub const MULTICAST_MAX_RECURSION_DEPTH: usize = 10;
+pub(crate) const MULTICAST_MAX_RECURSION_DEPTH: usize = 10;
 
 #[derive_where(Default, Debug)]
 pub(crate) struct Subscribers<In, InError>
