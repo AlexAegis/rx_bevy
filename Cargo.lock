@@ -5110,7 +5110,6 @@ dependencies = [
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_macro_operator_derive",
- "rx_core_macro_subscriber_derive",
  "rx_core_observable_connectable",
  "rx_core_subject_publish",
  "rx_core_testing",

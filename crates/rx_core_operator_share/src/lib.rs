@@ -1,9 +1,6 @@
 mod share_observable;
 mod share_operator;
 mod share_options;
-mod share_subscriber;
-
-pub use share_subscriber::*;
 
 pub mod observable {
 	pub use super::share_observable::*;

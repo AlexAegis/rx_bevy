@@ -24,7 +24,6 @@ pipe = ["rx_core_traits/pipe"]
 rx_core_traits = { workspace = true }
 rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
-rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_observable_connectable = { workspace = true }
 rx_core_subject_publish = { workspace = true }
 derive-where = { workspace = true }
