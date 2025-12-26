@@ -22,3 +22,8 @@ proc-macro = true
 quote = { workspace = true }
 syn = { workspace = true }
 rx_core_macro_common = { workspace = true }
+
+[dev-dependencies]
+rx_core_macro_scheduler_derive = { workspace = true }
+rx_core_traits = { workspace = true }
+rx_core_scheduler_ticking = { workspace = true }

@@ -11,7 +11,7 @@ use crate::{
 #[derive(RxObservable)]
 #[rx_out(Connector::Out)]
 #[rx_out_error(Connector::OutError)]
-pub struct ConnectorState<Source, Connector>
+pub(crate) struct ConnectorState<Source, Connector>
 where
 	Source: Observable,
 	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,

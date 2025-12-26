@@ -1,0 +1,16 @@
+[config]
+name = "tarpaulin"
+
+line-coverage = true
+branch-coverage = false
+
+test-timeout = "5m"
+skip-clean = true
+engine = "Llvm"
+out = ["Html", "Xml", "Lcov"]
+target-dir = "target/tarpaulin"
+output-dir = "target/coverage"
+no-default-features = true
+exclude-files = ["crates/rx_core_macro_*_derive/*"]
+count = true
+include-files = ["crates/**/*"]

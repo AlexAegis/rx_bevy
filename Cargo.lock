@@ -4448,6 +4448,9 @@ version = "0.1.0"
 dependencies = [
  "quote",
  "rx_core_macro_common",
+ "rx_core_macro_scheduler_derive",
+ "rx_core_scheduler_ticking",
+ "rx_core_traits",
  "syn",
 ]
 
