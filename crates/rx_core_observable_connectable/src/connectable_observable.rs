@@ -162,3 +162,47 @@ where
 		self.connector.lock_ignore_poison().reset();
 	}
 }
+
+#[cfg(test)]
+mod test {
+	use std::sync::{
+		Arc,
+		atomic::{AtomicBool, Ordering},
+	};
+
+	use rx_core_subject_publish::subject::PublishSubject;
+	use rx_core_traits::{LockWithPoisonBehavior, TeardownCollectionExtension};
+
+	use crate::observable::{Connectable, ConnectableObservable, ConnectableOptions};
+
+	#[test]
+	pub fn the_connection_subscription_should_be_unsubscribed_on_disconnect() {
+		let source = PublishSubject::<usize, &'static str>::default();
+		let mut connectable_observable = ConnectableObservable::new(
+			source.clone(),
+			ConnectableOptions {
+				connector_creator: PublishSubject::default,
+				disconnect_when_ref_count_zero: false,
+				reset_connector_on_disconnect: false,
+				reset_connector_on_complete: false,
+				reset_connector_on_error: false,
+			},
+		);
+
+		connectable_observable.connect();
+
+		let mut connection = connectable_observable
+			.connection
+			.lock_ignore_poison()
+			.get_active_connection()
+			.unwrap();
+
+		let teardown_called = Arc::new(AtomicBool::new(false));
+		let teardown_called_clone = teardown_called.clone();
+		connection.add_fn(move || teardown_called_clone.store(true, Ordering::Relaxed));
+
+		connectable_observable.disconnect();
+
+		assert!(teardown_called.load(Ordering::Relaxed))
+	}
+}

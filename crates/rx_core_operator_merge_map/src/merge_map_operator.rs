@@ -1,4 +1,4 @@
-use core::marker::PhantomData;
+use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
@@ -18,7 +18,7 @@ where
 	InnerObservable: Observable + Signal,
 {
 	mapper: Mapper,
-	concurrency_limit: usize,
+	concurrency_limit: NonZero<usize>,
 	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
 
@@ -32,7 +32,7 @@ where
 	pub fn new(mapper: Mapper, concurrency_limit: usize) -> Self {
 		Self {
 			mapper,
-			concurrency_limit,
+			concurrency_limit: NonZero::new(concurrency_limit).unwrap_or(NonZero::<usize>::MIN),
 			_phantom_data: PhantomData,
 		}
 	}

@@ -1,4 +1,4 @@
-use core::marker::PhantomData;
+use core::{marker::PhantomData, num::NonZero};
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
@@ -50,7 +50,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderAllSubscriber::new(destination, 1)
+		HigherOrderAllSubscriber::new(destination, NonZero::<usize>::MIN)
 	}
 }
 

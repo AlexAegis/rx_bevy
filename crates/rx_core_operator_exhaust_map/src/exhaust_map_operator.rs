@@ -1,4 +1,4 @@
-use core::marker::PhantomData;
+use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_exhaust::ExhaustSubscriberProvider;
@@ -64,7 +64,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderMapSubscriber::new(destination, self.mapper.clone(), 1)
+		HigherOrderMapSubscriber::new(destination, self.mapper.clone(), NonZero::<usize>::MIN)
 	}
 }
 

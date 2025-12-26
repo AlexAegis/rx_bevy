@@ -1,4 +1,4 @@
-use core::marker::PhantomData;
+use core::{marker::PhantomData, num::NonZero};
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
@@ -17,7 +17,7 @@ where
 	In: Observable + Signal,
 	InError: Signal + Into<In::OutError>,
 {
-	concurrency_limit: usize,
+	concurrency_limit: NonZero<usize>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -28,7 +28,7 @@ where
 {
 	pub fn new(concurrency_limit: usize) -> Self {
 		Self {
-			concurrency_limit,
+			concurrency_limit: NonZero::new(concurrency_limit).unwrap_or(NonZero::<usize>::MIN),
 			_phantom_data: PhantomData,
 		}
 	}

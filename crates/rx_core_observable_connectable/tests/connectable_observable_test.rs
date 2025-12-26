@@ -238,3 +238,14 @@ mod connector_behavior_subject {
 		);
 	}
 }
+
+mod connectable_options {
+	use rx_core::prelude::*;
+
+	#[test]
+	fn should_default_to_using_the_publish_subject() {
+		let default_options = ConnectableOptions::default();
+		let subject: PublishSubject<usize, &'static str> = (default_options.connector_creator)();
+		assert!(!subject.is_closed());
+	}
+}

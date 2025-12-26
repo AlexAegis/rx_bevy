@@ -1,3 +1,5 @@
+use core::num::NonZero;
+
 use rx_core_subscriber_higher_order::{
 	HigherOrderSubscriberFactory, HigherOrderSubscriberProvider,
 };
@@ -22,7 +24,7 @@ where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
 	Destination: 'static + Subscriber,
 {
-	fn new_from_destination(destination: Destination, concurrency_limit: usize) -> Self {
+	fn new_from_destination(destination: Destination, concurrency_limit: NonZero<usize>) -> Self {
 		Self::new(destination, concurrency_limit)
 	}
 }

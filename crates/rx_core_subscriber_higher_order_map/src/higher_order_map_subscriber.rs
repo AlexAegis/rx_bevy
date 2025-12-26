@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_higher_order::{
@@ -44,12 +44,16 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	pub fn new(destination: Destination, mapper: Mapper, concurrency_limit: usize) -> Self {
+	pub fn new(
+		destination: Destination,
+		mapper: Mapper,
+		concurrency_limit: NonZero<usize>,
+	) -> Self {
 		Self {
 			destination: HigherOrderSubscriber::HigherOrderSubscriber::<
 				InnerObservable,
 				Destination,
-			>::new_from_destination(destination, concurrency_limit.max(1)),
+			>::new_from_destination(destination, concurrency_limit),
 			mapper,
 			_phantom_data: PhantomData,
 		}
@@ -79,6 +83,7 @@ where
 		self.destination.next((self.mapper)(next));
 	}
 
+	/// For upstream errors
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error.into());

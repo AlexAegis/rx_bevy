@@ -1,4 +1,4 @@
-use core::marker::PhantomData;
+use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_observable_erased::{ErasedObservables, observable::ErasedObservable};
@@ -18,7 +18,7 @@ where
 	OutError: Signal,
 {
 	observables: ErasedObservables<Out, OutError, SIZE>,
-	concurrency_limit: usize,
+	concurrency_limit: NonZero<usize>,
 	_phantom_data: PhantomData<(Out, OutError)>,
 }
 
@@ -33,7 +33,7 @@ where
 	) -> Self {
 		Self {
 			observables: observables.into(),
-			concurrency_limit,
+			concurrency_limit: NonZero::new(concurrency_limit).unwrap_or(NonZero::<usize>::MIN),
 			_phantom_data: PhantomData,
 		}
 	}

@@ -1,4 +1,4 @@
-use core::marker::PhantomData;
+use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_observable_erased::{ErasedObservables, observable::ErasedObservable};
@@ -58,7 +58,7 @@ where
 			OutError,
 			ConcurrentSubscriberProvider,
 			<Destination as UpgradeableObserver>::Upgraded,
-		>::new(destination, 1);
+		>::new(destination, NonZero::<usize>::MIN);
 
 		for next_observable in self.observables.iter().cloned() {
 			concat_subscriber.next(next_observable);

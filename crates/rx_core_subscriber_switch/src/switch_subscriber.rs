@@ -1,3 +1,5 @@
+use core::num::NonZero;
+
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_higher_order::{
 	HigherOrderSubscriberFactory, HigherOrderSubscriberProvider,
@@ -26,7 +28,7 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	fn new_from_destination(destination: Destination, _concurrency_limit: usize) -> Self {
+	fn new_from_destination(destination: Destination, _concurrency_limit: NonZero<usize>) -> Self {
 		Self::new(destination)
 	}
 }

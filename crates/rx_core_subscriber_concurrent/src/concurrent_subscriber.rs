@@ -1,3 +1,4 @@
+use core::num::NonZero;
 use std::{
 	collections::VecDeque,
 	sync::{Arc, Mutex},
@@ -20,7 +21,7 @@ where
 	upstream_completed: bool,
 	downstream_completed: bool,
 	active_subscriptions: usize,
-	concurrency_limit: usize,
+	concurrency_limit: NonZero<usize>,
 	waits_for_completion: usize,
 	shared_outer_teardown: Arc<Mutex<SubscriptionData>>,
 }
@@ -32,7 +33,7 @@ where
 {
 	pub(crate) fn new(
 		destination: SharedSubscriber<Destination>,
-		concurrency_limit: usize,
+		concurrency_limit: NonZero<usize>,
 		shared_outer_teardown: Arc<Mutex<SubscriptionData>>,
 	) -> Self {
 		Self {
@@ -56,6 +57,7 @@ where
 		{
 			self.downstream_completed = true;
 			self.destination.complete();
+			self.unsubscribe();
 		}
 	}
 
@@ -117,17 +119,19 @@ where
 				.data
 				.lock_with_poison_behavior(|inner| inner.destination.unsubscribe());
 			lock.destination.error(error);
+			lock.destination.unsubscribe();
 		}
 	}
 
 	fn complete(&mut self) {
-		{
-			let mut lock = self
-				.data
-				.lock_with_poison_behavior(|inner| inner.destination.unsubscribe());
-			lock.waits_for_completion -= 1;
+		if !self.is_closed() {
+			{
+				let mut lock = self
+					.data
+					.lock_with_poison_behavior(|inner| inner.destination.unsubscribe());
+				lock.waits_for_completion -= 1;
+			}
 		}
-		self.unsubscribe();
 	}
 }
 
@@ -229,7 +233,7 @@ where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
 	Destination: 'static + Subscriber,
 {
-	pub fn new(destination: Destination, concurrency_limit: usize) -> Self {
+	pub fn new(destination: Destination, concurrency_limit: NonZero<usize>) -> Self {
 		let destination = SharedSubscriber::new(destination);
 		let shared_teardown = Arc::new(Mutex::new(SubscriptionData::default()));
 		let shared_upstream_unsubscribe_flag = Arc::new(Mutex::new(false));
@@ -257,7 +261,7 @@ where
 			let mut lock = self
 				.data
 				.lock_with_poison_behavior(|inner| inner.unsubscribe());
-			if lock.active_subscriptions < lock.concurrency_limit {
+			if lock.active_subscriptions < lock.concurrency_limit.into() {
 				lock.active_subscriptions += 1;
 				lock.waits_for_completion += 1;
 				drop(lock);
