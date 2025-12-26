@@ -158,20 +158,3 @@ where
 		unreachable!("{} - Unsubscribe", UNREACHABLE_ERROR)
 	}
 }
-
-impl<Destination, O1, O2> Drop for CombineLatestSubscriber<Destination, O1, O2>
-where
-	Destination: Subscriber<In = (O1::Out, O2::Out)>,
-	O1: 'static + Observable,
-	O1::Out: Clone,
-	O1::OutError: Into<Destination::InError>,
-	O2: 'static + Observable,
-	O2::Out: Clone,
-	O2::OutError: Into<Destination::InError>,
-{
-	fn drop(&mut self) {
-		if !self.is_closed() {
-			self.destination.unsubscribe();
-		}
-	}
-}

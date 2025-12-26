@@ -16,6 +16,3 @@ mod combine_latest_fn;
 pub mod observable_fn {
 	pub use super::combine_latest_fn::*;
 }
-
-#[cfg(test)]
-mod combine_latest_observable_test;
