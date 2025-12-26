@@ -129,6 +129,7 @@ all_core_operators = [
     "operator_concat_all",
     "operator_concat_map",
     "operator_delay",
+    "operator_dematerialize",
     "operator_end_with",
     "operator_enumerate",
     "operator_error_boundary",
@@ -166,6 +167,7 @@ operator_composite = ["rx_core/operator_composite"]
 operator_concat_all = ["rx_core/operator_concat_all"]
 operator_concat_map = ["rx_core/operator_concat_map"]
 operator_delay = ["rx_core/operator_delay"]
+operator_dematerialize = ["rx_core/operator_dematerialize"]
 operator_end_with = ["rx_core/operator_end_with"]
 operator_enumerate = ["rx_core/operator_enumerate"]
 operator_error_boundary = ["rx_core/operator_error_boundary"]
