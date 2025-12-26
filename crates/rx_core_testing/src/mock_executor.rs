@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{ops::Deref, time::Duration};
 
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_scheduler_ticking::{Tick, TickingScheduler, TickingSchedulerExecutor};
@@ -37,6 +37,15 @@ pub struct MockExecutor {
 	logging_enabled: bool,
 }
 
+impl Deref for MockExecutor {
+	type Target =
+		TickingSchedulerExecutor<TickingScheduler<TickingContextProvider>, TickingContextProvider>;
+
+	fn deref(&self) -> &Self::Target {
+		&self.ticking_executor
+	}
+}
+
 impl MockExecutor {
 	pub fn new_with_logging() -> Self {
 		Self {
@@ -62,10 +71,6 @@ impl MockExecutor {
 		}
 		let mut context = TickingContext::new(self.ticking_executor.now());
 		self.ticking_executor.tick_to(tick, &mut context);
-	}
-
-	pub fn get_current_tick(&mut self) -> Tick {
-		self.ticking_executor.get_current_tick()
 	}
 
 	pub fn tick(&mut self, delta: Duration) {

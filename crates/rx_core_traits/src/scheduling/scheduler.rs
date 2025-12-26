@@ -1,4 +1,4 @@
-use std::time::Duration;
+use core::{num::NonZero, time::Duration};
 
 use derive_where::derive_where;
 
@@ -89,7 +89,7 @@ pub trait SchedulerScheduleTaskExtension: Scheduler {
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
-		max_work_per_tick: usize,
+		max_work_per_tick: NonZero<usize>,
 		cancellation_id: TaskCancellationId,
 	) where
 		Work: ScheduledRepeatedWork<Self::Tick, Self::ContextProvider>,

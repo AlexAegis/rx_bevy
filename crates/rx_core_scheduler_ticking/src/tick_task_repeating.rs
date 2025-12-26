@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, time::Duration};
+use core::{marker::PhantomData, num::NonZero, time::Duration};
 
 use derive_where::derive_where;
 use rx_core_macro_task_derive::RxTask;
@@ -28,7 +28,7 @@ where
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
-		max_work_per_tick: usize,
+		max_work_per_tick: NonZero<usize>,
 	) -> Self::Item<Work>
 	where
 		Work: ScheduledRepeatedWork<Tick, C>,
@@ -60,7 +60,7 @@ where
 	consumed_until: Tick,
 	current_tick: Tick,
 	interval: Duration,
-	max_work_per_tick: usize,
+	max_work_per_tick: NonZero<usize>,
 	#[derive_where(skip(Debug))]
 	work: Work,
 	_phantom_data: PhantomData<fn(C) -> C>,
@@ -75,11 +75,11 @@ where
 		self.current_tick.update(tick_input);
 
 		let mut task_result = TaskResult::Pending;
-		let mut executions = 0;
+		let mut executions: usize = 0;
 		while self.consumed_until + self.interval <= self.current_tick
 			&& !matches!(task_result, TaskResult::Done)
 		{
-			if executions < self.max_work_per_tick {
+			if executions < self.max_work_per_tick.into() {
 				task_result += (self.work)(tick_input, context);
 			}
 			// The consumed until marker has to advance all the way,

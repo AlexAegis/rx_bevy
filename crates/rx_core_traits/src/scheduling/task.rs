@@ -1,4 +1,4 @@
-use std::{fmt::Debug, ops::AddAssign, time::Duration};
+use core::{fmt::Debug, num::NonZero, ops::AddAssign, time::Duration};
 
 pub trait WithTaskInputOutput {
 	/// Some schedulers pass inputs - such as the time passed - into the task
@@ -129,7 +129,7 @@ where
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
-		max_work_per_tick: usize,
+		max_work_per_tick: NonZero<usize>,
 	) -> Self::Item<Work>
 	where
 		Work: ScheduledRepeatedWork<TickInput, Context>;

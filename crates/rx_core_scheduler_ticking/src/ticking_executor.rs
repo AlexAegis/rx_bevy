@@ -68,7 +68,12 @@ where
 		self.current_tick.elapsed_since_start
 	}
 
-	pub fn get_current_tick(&mut self) -> Tick {
+	/// Returns `true` when there are no active tasks in the executor.
+	pub fn is_empty(&self) -> bool {
+		self.active_tasks.is_empty()
+	}
+
+	pub fn get_current_tick(&self) -> Tick {
 		self.current_tick
 	}
 

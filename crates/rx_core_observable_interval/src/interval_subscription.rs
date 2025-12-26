@@ -1,7 +1,9 @@
+use std::num::NonZero;
+
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Subscriber,
-	SubscriptionData, SubscriptionLike, TaskCancellationId, TaskResult,
+	SubscriptionLike, TaskCancellationId, TaskResult,
 };
 
 use crate::observable::IntervalObservableOptions;
@@ -15,8 +17,6 @@ where
 {
 	#[destination]
 	destination: SharedSubscriber<Destination>,
-	#[teardown]
-	teardown: SubscriptionData,
 	scheduler: SchedulerHandle<S>,
 	task_owner_id: TaskCancellationId,
 }
@@ -59,7 +59,8 @@ where
 				},
 				interval_subscription_options.duration,
 				false,
-				interval_subscription_options.max_emissions_per_tick,
+				NonZero::new(interval_subscription_options.max_emissions_per_tick)
+					.unwrap_or(NonZero::<usize>::MIN),
 				cancellation_id,
 			);
 
@@ -68,7 +69,6 @@ where
 
 		IntervalSubscription {
 			destination,
-			teardown: SubscriptionData::default(),
 			scheduler,
 			task_owner_id,
 		}
@@ -81,7 +81,7 @@ where
 	S: Scheduler,
 {
 	fn is_closed(&self) -> bool {
-		self.teardown.is_closed()
+		self.destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
@@ -89,6 +89,5 @@ where
 		if !self.destination.is_closed() {
 			self.destination.unsubscribe();
 		}
-		self.teardown.unsubscribe();
 	}
 }
