@@ -15,6 +15,3 @@ mod zip_observable_fn;
 pub mod observable_fn {
 	pub use super::zip_observable_fn::*;
 }
-
-#[cfg(test)]
-mod zip_observable_test;

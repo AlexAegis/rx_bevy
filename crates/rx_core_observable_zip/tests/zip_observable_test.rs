@@ -1,8 +1,5 @@
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
-use rx_core_traits::{Observable, SubscriberNotification};
-
-use crate::observable_fn::zip;
 
 #[test]
 fn should_only_emit_after_both_observables_emitted_even_if_its_not_in_order() {

@@ -12,12 +12,12 @@ where
 	In: Signal,
 	InError: Signal,
 	OnNext: 'static + FnMut(In) + Send + Sync,
-	OnError: 'static + FnMut(InError) + Send + Sync,
-	OnComplete: 'static + FnMut() + Send + Sync,
+	OnError: 'static + FnOnce(InError) + Send + Sync,
+	OnComplete: 'static + FnOnce() + Send + Sync,
 {
 	on_next: OnNext,
-	on_error: OnError,
-	on_complete: OnComplete,
+	on_error: Option<OnError>,
+	on_complete: Option<OnComplete>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -26,14 +26,14 @@ where
 	In: Signal,
 	InError: Signal,
 	OnNext: 'static + FnMut(In) + Send + Sync,
-	OnError: 'static + FnMut(InError) + Send + Sync,
-	OnComplete: 'static + FnMut() + Send + Sync,
+	OnError: 'static + FnOnce(InError) + Send + Sync,
+	OnComplete: 'static + FnOnce() + Send + Sync,
 {
 	pub fn new(on_next: OnNext, on_error: OnError, on_complete: OnComplete) -> Self {
 		Self {
 			on_next,
-			on_error,
-			on_complete,
+			on_error: Some(on_error),
+			on_complete: Some(on_complete),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -45,18 +45,22 @@ where
 	In: Signal,
 	InError: Signal,
 	OnNext: 'static + FnMut(In) + Send + Sync,
-	OnError: 'static + FnMut(InError) + Send + Sync,
-	OnComplete: 'static + FnMut() + Send + Sync,
+	OnError: 'static + FnOnce(InError) + Send + Sync,
+	OnComplete: 'static + FnOnce() + Send + Sync,
 {
 	fn next(&mut self, next: In) {
 		(self.on_next)(next);
 	}
 
 	fn error(&mut self, error: InError) {
-		(self.on_error)(error);
+		if let Some(on_error) = self.on_error.take() {
+			(on_error)(error);
+		}
 	}
 
 	fn complete(&mut self) {
-		(self.on_complete)();
+		if let Some(on_complete) = self.on_complete.take() {
+			(on_complete)();
+		}
 	}
 }
