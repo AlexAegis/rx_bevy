@@ -5,7 +5,7 @@ use crate::operator::IntoResultOperator;
 
 pub trait OperatorComposeExtensionIntoResult: ComposableOperator + Sized {
 	#[inline]
-	fn lift_result(self) -> CompositeOperator<Self, IntoResultOperator<Self::Out, Self::OutError>> {
+	fn into_result(self) -> CompositeOperator<Self, IntoResultOperator<Self::Out, Self::OutError>> {
 		self.compose_with(IntoResultOperator::default())
 	}
 }
