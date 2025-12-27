@@ -31,6 +31,7 @@ rx_core_traits = { workspace = true }
 rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_operator_composite = { workspace = true, optional = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

@@ -51,7 +51,7 @@ fn should_turn_error_emissions_into_results_and_not_error() {
 }
 
 #[test]
-fn should_turn_complete_normally() {
+fn should_complete_normally() {
 	let destination = MockObserver::<Result<usize, &'static str>>::default();
 	let notification_collector = destination.get_notification_collector();
 

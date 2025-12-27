@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
+use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{ComposableOperator, Signal, Subscriber};
+use rx_core_traits::{ComposableOperator, Never, Signal, Subscriber};
 
 use crate::LiftResultSubscriber;
 
@@ -12,48 +13,30 @@ use crate::LiftResultSubscriber;
 ///
 /// The reason it's not called an "UnwrapResultOperator" because that would imply
 /// that it can panic, however that's only true if the error isn't caught downstream.
+#[derive_where(Default)]
 #[derive(RxOperator)]
 #[rx_in(Result<ResultIn, ResultInError>)]
-#[rx_in_error(InError)]
+#[rx_in_error(Never)]
 #[rx_out(ResultIn)]
 #[rx_out_error(ResultInError)]
-pub struct LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError>
+pub struct LiftResultOperator<ResultIn, ResultInError, InError>
 where
 	ResultIn: Signal,
 	ResultInError: Signal,
 	InError: Signal,
-	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
 {
-	in_error_to_result_error: InErrorToResultError,
-	_phantom_data: PhantomData<(ResultIn, ResultInError, InError, InErrorToResultError)>,
+	_phantom_data: PhantomData<(ResultIn, ResultInError, InError)>,
 }
 
-impl<ResultIn, ResultInError, InError, InErrorToResultError>
-	LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError>
+impl<ResultIn, ResultInError, InError> ComposableOperator
+	for LiftResultOperator<ResultIn, ResultInError, InError>
 where
 	ResultIn: Signal,
 	ResultInError: Signal,
 	InError: Signal,
-	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
-{
-	pub fn new(in_error_to_result_error: InErrorToResultError) -> Self {
-		Self {
-			in_error_to_result_error,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError> ComposableOperator
-	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError>
-where
-	ResultIn: Signal,
-	ResultInError: Signal,
-	InError: Signal,
-	InErrorToResultError: 'static + Fn(InError) -> ResultInError + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
-		= LiftResultSubscriber<ResultIn, ResultInError, InError, InErrorToResultError, Destination>
+		= LiftResultSubscriber<ResultIn, ResultInError, InError, Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -65,22 +48,6 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		LiftResultSubscriber::new(destination, self.in_error_to_result_error.clone())
-	}
-}
-
-impl<ResultIn, ResultInError, InError, InErrorToResultError> Clone
-	for LiftResultOperator<ResultIn, ResultInError, InError, InErrorToResultError>
-where
-	ResultIn: Signal,
-	ResultInError: Signal,
-	InError: Signal,
-	InErrorToResultError: Clone + Fn(InError) -> ResultInError,
-{
-	fn clone(&self) -> Self {
-		Self {
-			in_error_to_result_error: self.in_error_to_result_error.clone(),
-			_phantom_data: PhantomData,
-		}
+		LiftResultSubscriber::new(destination)
 	}
 }
