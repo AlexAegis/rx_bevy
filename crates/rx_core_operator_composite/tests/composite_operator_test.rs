@@ -1,0 +1,117 @@
+use rx_core::prelude::*;
+use rx_core_testing::prelude::*;
+use rx_core_traits::{Observable, SubscriberNotification};
+
+#[test]
+fn should_create_a_new_operator_from_two() {
+	let destination = MockObserver::<String, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<usize, &'static str>::default();
+
+	let composite = CompositeOperator::new(
+		MapOperator::new(|i| i * 2),
+		MapOperator::new(|i| format!("{i}")),
+	);
+
+	let subscription = source.clone().pipe(composite).subscribe(destination);
+
+	source.next(0);
+	source.next(1);
+	assert!(!subscription.is_closed());
+
+	notification_collector.lock().assert_notifications(
+		"composite",
+		0,
+		[
+			SubscriberNotification::Next("0".to_string()),
+			SubscriberNotification::Next("2".to_string()),
+		],
+		true,
+	);
+}
+
+#[test]
+fn should_create_a_new_operator_from_two_using_compose_with() {
+	let destination = MockObserver::<String, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<usize, &'static str>::default();
+
+	let composite = MapOperator::new(|i| i * 2).compose_with(MapOperator::new(|i| format!("{i}")));
+
+	let subscription = source.clone().pipe(composite).subscribe(destination);
+
+	source.next(0);
+	source.next(1);
+	assert!(!subscription.is_closed());
+	source.complete();
+	assert!(subscription.is_closed());
+
+	notification_collector.lock().assert_notifications(
+		"composite",
+		0,
+		[
+			SubscriberNotification::Next("0".to_string()),
+			SubscriberNotification::Next("2".to_string()),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+}
+
+#[test]
+fn should_create_a_new_operator_from_two_and_error() {
+	let destination = MockObserver::<String, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<usize, &'static str>::default();
+
+	let composite = CompositeOperator::new(
+		MapOperator::new(|i| i * 2),
+		MapOperator::new(|i| format!("{i}")),
+	);
+
+	let subscription = source.clone().pipe(composite).subscribe(destination);
+	let error = "error";
+	source.error(error);
+	assert!(subscription.is_closed());
+
+	notification_collector.lock().assert_notifications(
+		"composite",
+		0,
+		[
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+}
+
+#[test]
+fn should_create_a_new_operator_from_two_and_complete() {
+	let destination = MockObserver::<String, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<usize, &'static str>::default();
+
+	let composite = CompositeOperator::new(
+		MapOperator::new(|i| i * 2),
+		MapOperator::new(|i| format!("{i}")),
+	);
+
+	let subscription = source.clone().pipe(composite).subscribe(destination);
+	source.complete();
+	assert!(subscription.is_closed());
+
+	notification_collector.lock().assert_notifications(
+		"composite",
+		0,
+		[
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+}

@@ -28,16 +28,6 @@ where
 			op: second_operator,
 		}
 	}
-
-	pub fn pipe<NextOp>(self, next_operator: NextOp) -> CompositeOperator<Self, NextOp>
-	where
-		NextOp: ComposableOperator<In = Op::Out, InError = Op::OutError>,
-	{
-		CompositeOperator {
-			prev_op: self,
-			op: next_operator,
-		}
-	}
 }
 
 impl<PrevOp, Op> ComposableOperator for CompositeOperator<PrevOp, Op>
