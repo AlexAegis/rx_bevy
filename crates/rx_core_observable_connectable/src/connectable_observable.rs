@@ -176,7 +176,7 @@ mod test {
 	use crate::observable::{Connectable, ConnectableObservable, ConnectableOptions};
 
 	#[test]
-	pub fn the_connection_subscription_should_be_unsubscribed_on_disconnect() {
+	fn the_connection_subscription_should_be_unsubscribed_on_disconnect() {
 		let source = PublishSubject::<usize, &'static str>::default();
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
