@@ -1,26 +1,26 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_macro_task_derive::RxTask;
+use rx_core_macro_work_derive::RxWork;
 use rx_core_traits::{
-	ContextProvider, InvokedTaskFactory, ScheduledRepeatedWork, Task, TaskResult,
+	InvokedTaskFactory, ScheduledRepeatedWork, ScheduledWork, WorkContextProvider, WorkResult,
 };
 
 use crate::Tick;
 
-pub struct InvokedTaskTickedFactory<C>
+pub struct TickedInvokedWorkFactory<C>
 where
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<C> InvokedTaskFactory<Tick, C> for InvokedTaskTickedFactory<C>
+impl<C> InvokedTaskFactory<Tick, C> for TickedInvokedWorkFactory<C>
 where
-	C: 'static + ContextProvider,
+	C: 'static + WorkContextProvider,
 {
 	type Item<Work>
-		= InvokedTaskTicked<Work, C>
+		= TickedInvokedWork<Work, C>
 	where
 		Work: ScheduledRepeatedWork<Tick, C>;
 
@@ -28,34 +28,34 @@ where
 	where
 		Work: ScheduledRepeatedWork<Tick, C>,
 	{
-		InvokedTaskTicked {
+		TickedInvokedWork {
 			work,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-#[derive(RxTask)]
+#[derive(RxWork)]
 #[rx_tick(Tick)]
 #[rx_context(C)]
 #[derive_where(Debug)]
-pub struct InvokedTaskTicked<Work, C>
+pub struct TickedInvokedWork<Work, C>
 where
 	Work: ScheduledRepeatedWork<Tick, C>,
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	#[derive_where(skip(Debug))]
 	work: Work,
 	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<Work, C> Task for InvokedTaskTicked<Work, C>
+impl<Work, C> ScheduledWork for TickedInvokedWork<Work, C>
 where
 	Work: ScheduledRepeatedWork<Tick, C>,
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	#[inline]
-	fn tick(&mut self, tick_input: Self::Tick, context: &mut C::Item<'_>) -> TaskResult {
+	fn tick(&mut self, tick_input: Self::Tick, context: &mut C::Item<'_>) -> WorkResult {
 		(self.work)(tick_input, context)
 	}
 

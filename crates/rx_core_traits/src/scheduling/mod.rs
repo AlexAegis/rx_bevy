@@ -1,11 +1,17 @@
+mod executor;
+mod scheduled_work;
 mod scheduler;
 mod scheduler_handle;
-mod task;
-mod task_cancellation_id;
-mod task_invoke_id;
+mod work;
+mod work_cancellation_id;
+mod work_context;
+mod work_invoke_id;
 
+pub use executor::*;
+pub use scheduled_work::*;
 pub use scheduler::*;
 pub use scheduler_handle::*;
-pub use task::*;
-pub use task_cancellation_id::*;
-pub use task_invoke_id::*;
+pub use work::*;
+pub use work_cancellation_id::*;
+pub use work_context::*;
+pub use work_invoke_id::*;

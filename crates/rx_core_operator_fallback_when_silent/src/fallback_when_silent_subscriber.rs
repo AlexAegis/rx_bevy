@@ -3,8 +3,8 @@ use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike, TaskCancellationId, TaskResult,
+	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Signal,
+	Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
 };
 
 struct FallbackWhenSilentSubscriberState<In> {
@@ -27,7 +27,7 @@ where
 	shared_destination: SharedSubscriber<Destination>,
 	state: Arc<Mutex<FallbackWhenSilentSubscriberState<In>>>,
 	scheduler_handle: SchedulerHandle<S>,
-	cancellation_id: TaskCancellationId,
+	cancellation_id: WorkCancellationId,
 	_phantom_data: PhantomData<(In, InError, Fallback)>,
 }
 
@@ -57,7 +57,7 @@ where
 
 		let shared_state_clone = state.clone();
 		let mut shared_destination_clone = shared_destination.clone();
-		scheduler.schedule_continuous_task(
+		scheduler.schedule_continuous_work(
 			move |_tick, _context| {
 				let observed_next = {
 					let mut state = shared_state_clone.lock().unwrap_or_else(|a| a.into_inner());
@@ -68,7 +68,7 @@ where
 
 				shared_destination_clone.next(next);
 
-				TaskResult::Pending
+				WorkResult::Pending
 			},
 			cancellation_id,
 		);

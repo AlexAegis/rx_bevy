@@ -10,8 +10,8 @@ use bevy_time::Time;
 use disqualified::ShortName;
 use rx_bevy_common::Clock;
 use rx_core_traits::{
-	ContextProvider, ObserverNotification, Signal, SubscriberNotification,
-	SubscriptionNotification, TaskContext,
+	ObserverNotification, Signal, SubscriberNotification, SubscriptionNotification, WorkContext,
+	WorkContextProvider,
 };
 use thiserror::Error;
 
@@ -20,7 +20,7 @@ use crate::{RxSignal, SubscriberNotificationEvent, SubscriptionNotificationEvent
 #[derive(Debug)]
 pub struct RxBevyContext;
 
-impl ContextProvider for RxBevyContext {
+impl WorkContextProvider for RxBevyContext {
 	type Item<'w> = RxBevyContextItem<'w>;
 }
 
@@ -38,7 +38,7 @@ pub struct RxBevyContextItem<'w> {
 	now: Duration,
 }
 
-impl<'w> TaskContext<'w> for RxBevyContextItem<'w> {
+impl<'w> WorkContext<'w> for RxBevyContextItem<'w> {
 	fn now(&self) -> Duration {
 		self.now
 	}

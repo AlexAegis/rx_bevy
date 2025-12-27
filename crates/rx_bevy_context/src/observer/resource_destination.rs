@@ -4,8 +4,8 @@ use std::sync::{Arc, Mutex};
 use bevy_ecs::{resource::Resource, world::Mut};
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	Observer, ObserverNotification, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension,
-	Signal, TaskCancellationId, UpgradeableObserver,
+	Observer, ObserverNotification, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
+	Signal, UpgradeableObserver, WorkCancellationId,
 };
 
 use crate::{DetachedSubscriber, RxBevyContext};
@@ -20,10 +20,10 @@ where
 	InError: Signal,
 	R: Resource,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
-	S: Scheduler<ContextProvider = RxBevyContext>,
+	S: Scheduler<WorkContextProvider = RxBevyContext>,
 {
 	writer: Arc<Mutex<ResourceWriter>>,
-	owner_id: TaskCancellationId,
+	owner_id: WorkCancellationId,
 	scheduler: SchedulerHandle<S>,
 	_phantom_data: PhantomData<(In, InError, R)>,
 }
@@ -34,7 +34,7 @@ where
 	InError: Signal,
 	R: Resource,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
-	S: Scheduler<ContextProvider = RxBevyContext>,
+	S: Scheduler<WorkContextProvider = RxBevyContext>,
 {
 	pub fn new(writer: ResourceWriter, mut scheduler: SchedulerHandle<S>) -> Self {
 		let owner_id = scheduler.lock().generate_cancellation_id();
@@ -54,7 +54,7 @@ where
 	InError: Signal,
 	R: Resource,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
-	S: Scheduler<ContextProvider = RxBevyContext>,
+	S: Scheduler<WorkContextProvider = RxBevyContext>,
 {
 	type Upgraded = DetachedSubscriber<Self>;
 
@@ -70,11 +70,11 @@ where
 	InError: Signal,
 	R: Resource,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
-	S: Scheduler<ContextProvider = RxBevyContext>,
+	S: Scheduler<WorkContextProvider = RxBevyContext>,
 {
 	fn next(&mut self, next: Self::In) {
 		let writer = self.writer.clone();
-		self.scheduler.lock().schedule_immediate_task(
+		self.scheduler.lock().schedule_immediate_work(
 			move |_, context| {
 				if let Ok(mut writer) = writer.lock() {
 					let resource = context.deferred_world.resource_mut::<R>();
@@ -88,7 +88,7 @@ where
 	fn error(&mut self, error: Self::InError) {
 		let writer = self.writer.clone();
 
-		self.scheduler.lock().schedule_immediate_task(
+		self.scheduler.lock().schedule_immediate_work(
 			move |_, context| {
 				if let Ok(mut writer) = writer.lock() {
 					let resource = context.deferred_world.resource_mut::<R>();
@@ -101,7 +101,7 @@ where
 
 	fn complete(&mut self) {
 		let writer = self.writer.clone();
-		self.scheduler.lock().schedule_immediate_task(
+		self.scheduler.lock().schedule_immediate_work(
 			move |_, context| {
 				if let Ok(mut writer) = writer.lock() {
 					let resource = context.deferred_world.resource_mut::<R>();

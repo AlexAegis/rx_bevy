@@ -4,8 +4,8 @@ use bevy_ecs::entity::Entity;
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
 	Never, Observer, ObserverNotification, Scheduler, SchedulerHandle,
-	SchedulerScheduleTaskExtension, Signal, TaskCancellationId, TeardownCollectionExtension,
-	UpgradeableObserver,
+	SchedulerScheduleWorkExtension, Signal, TeardownCollectionExtension, UpgradeableObserver,
+	WorkCancellationId,
 };
 
 use crate::{DetachedSubscriber, RxBevyScheduler};
@@ -32,7 +32,7 @@ where
 {
 	destination: Entity,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
-	owner_id: TaskCancellationId,
+	owner_id: WorkCancellationId,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -77,7 +77,7 @@ where
 {
 	fn next(&mut self, next: Self::In) {
 		let destination = self.destination;
-		self.scheduler.lock().schedule_immediate_task(
+		self.scheduler.lock().schedule_immediate_work(
 			move |_, context| {
 				context.send_observer_notification(
 					destination,
@@ -90,7 +90,7 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		let destination = self.destination;
-		self.scheduler.lock().schedule_immediate_task(
+		self.scheduler.lock().schedule_immediate_work(
 			move |_, context| {
 				context.send_observer_notification(
 					destination,
@@ -103,7 +103,7 @@ where
 
 	fn complete(&mut self) {
 		let destination = self.destination;
-		self.scheduler.lock().schedule_immediate_task(
+		self.scheduler.lock().schedule_immediate_work(
 			move |_, context| {
 				context.send_observer_notification(
 					destination,

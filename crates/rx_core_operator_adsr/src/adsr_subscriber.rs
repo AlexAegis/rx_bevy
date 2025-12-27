@@ -6,8 +6,8 @@ use std::{
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike, TaskCancellationId, TaskContext, TaskResult,
+	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Signal,
+	Subscriber, SubscriptionLike, WorkCancellationId, WorkContext, WorkResult,
 };
 
 use crate::{
@@ -35,7 +35,7 @@ where
 	shared_destination: SharedSubscriber<Destination>,
 	shared_state: Arc<Mutex<AdsrEnvelopeSharedState>>,
 	scheduler: SchedulerHandle<S>,
-	cancellation_id: TaskCancellationId,
+	cancellation_id: WorkCancellationId,
 	_phantom_data: PhantomData<InError>,
 }
 
@@ -63,11 +63,11 @@ where
 		let cancellation_id = scheduler_lock.generate_cancellation_id();
 		let mut last_now = Duration::from_millis(0);
 		let mut envelope_state = AdsrEnvelopeState::default();
-		scheduler_lock.schedule_continuous_task(
+		scheduler_lock.schedule_continuous_work(
 			move |_, context| {
 				let mut destination_lock = shared_destination_clone.lock();
 				if destination_lock.is_closed() {
-					return TaskResult::Done;
+					return WorkResult::Done;
 				}
 
 				let next = {
@@ -110,7 +110,7 @@ where
 					destination_lock.complete();
 				}
 
-				TaskResult::Pending
+				WorkResult::Pending
 			},
 			cancellation_id,
 		);

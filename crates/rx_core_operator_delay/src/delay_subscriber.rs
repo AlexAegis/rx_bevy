@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber,
-	Subscriber, SubscriptionClosedFlag, SubscriptionLike, TaskCancellationId,
+	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
+	Subscriber, SubscriptionClosedFlag, SubscriptionLike, WorkCancellationId,
 };
 
 #[derive(RxSubscriber)]
@@ -20,7 +20,7 @@ where
 	duration: Duration,
 	scheduler: SchedulerHandle<S>,
 	closed: SubscriptionClosedFlag,
-	cancellation_id: TaskCancellationId,
+	cancellation_id: WorkCancellationId,
 }
 
 impl<Destination, S> DelaySubscriber<Destination, S>
@@ -56,7 +56,7 @@ where
 			let destination = self.destination.clone();
 			let mut scheduler = self.scheduler.lock();
 
-			scheduler.schedule_delayed_task(
+			scheduler.schedule_delayed_work(
 				move |_, _| {
 					let mut destination = destination.lock();
 					if !destination.is_closed() {
@@ -79,7 +79,7 @@ where
 		if !self.is_closed() {
 			let destination = self.destination.clone();
 			let mut scheduler = self.scheduler.lock();
-			scheduler.schedule_delayed_task(
+			scheduler.schedule_delayed_work(
 				move |_, _context| {
 					let mut destination = destination.lock();
 					if !destination.is_closed() {
@@ -109,7 +109,7 @@ where
 		let mut scheduler = self.scheduler.lock();
 		let owner_id_copy = self.cancellation_id;
 
-		scheduler.schedule_delayed_task(
+		scheduler.schedule_delayed_work(
 			move |_, _context| {
 				destination.unsubscribe();
 				scheduler_clone.lock().cancel(owner_id_copy);

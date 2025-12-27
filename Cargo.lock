@@ -4272,7 +4272,7 @@ dependencies = [
  "rx_core_macro_subject_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
- "rx_core_macro_task_derive",
+ "rx_core_macro_work_derive",
  "rx_core_scheduler_ticking",
  "rx_core_testing",
  "rx_core_traits",
@@ -4521,7 +4521,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_core_macro_task_derive"
+name = "rx_core_macro_work_derive"
 version = "0.1.0"
 dependencies = [
  "quote",
@@ -5262,8 +5262,7 @@ dependencies = [
  "rx_core",
  "rx_core_macro_executor_derive",
  "rx_core_macro_scheduler_derive",
- "rx_core_macro_task_derive",
- "rx_core_testing",
+ "rx_core_macro_work_derive",
  "rx_core_traits",
  "slab",
 ]

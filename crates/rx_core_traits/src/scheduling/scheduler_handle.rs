@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use disqualified::ShortName;
 
-use crate::{Scheduler, WithContextProvider, WithTaskInputOutput};
+use crate::{Scheduler, WithWorkContextProvider, WithWorkInputOutput};
 
 #[derive(Debug, Default)]
 pub struct SchedulerHandle<S>
@@ -56,18 +56,18 @@ where
 	}
 }
 
-impl<S> WithTaskInputOutput for SchedulerHandle<S>
+impl<S> WithWorkInputOutput for SchedulerHandle<S>
 where
 	S: Scheduler,
 {
 	type Tick = S::Tick;
 }
 
-impl<S> WithContextProvider for SchedulerHandle<S>
+impl<S> WithWorkContextProvider for SchedulerHandle<S>
 where
 	S: Scheduler,
 {
-	type ContextProvider = S::ContextProvider;
+	type WorkContextProvider = S::WorkContextProvider;
 }
 
 pub trait IntoSchedulerHandle<S>

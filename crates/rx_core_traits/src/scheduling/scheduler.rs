@@ -3,116 +3,111 @@ use core::{num::NonZero, time::Duration};
 use derive_where::derive_where;
 
 use crate::{
-	ContextProvider, ContinuousTaskFactory, DelayedTaskFactory, ImmediateTaskFactory,
-	InvokedTaskFactory, RepeatedTaskFactory, ScheduledOnceWork, ScheduledRepeatedWork,
-	SchedulerHandle, Task, TaskCancellationId, TaskInvokeId, WithContextProvider,
-	WithTaskInputOutput,
+	ContinuousTaskFactory, DelayedWorkFactory, ImmediateTaskFactory, InvokedTaskFactory,
+	RepeatedTaskFactory, ScheduledOnceWork, ScheduledRepeatedWork, ScheduledWork,
+	WithWorkContextProvider, WithWorkInputOutput, WorkCancellationId, WorkContextProvider,
+	WorkInvokeId,
 };
 
-/// Schedulers define a set of tasks that can be offloaded to the scheduler to
-/// be executed, and cancelled when no longer needed.
-///
-/// Store schedulers by a [SchedulerHandle]!
-pub trait Scheduler: WithTaskInputOutput + WithContextProvider + Send + Sync {
-	// Different types of tasks defined on the scheduler, so different  environments can create different ones, with just one subscriber
-	// type DelayedTask: DelayedTaskFactory?;
+/// Schedulers define a set of work that can be sent to the scheduler to
+/// then be executed by it's executor, and cancelled when no longer needed.
+pub trait Scheduler: WithWorkInputOutput + WithWorkContextProvider + Send + Sync {
+	type DelayedWorkFactory: DelayedWorkFactory<Self::Tick, Self::WorkContextProvider>;
+	type RepeatedWorkFactory: RepeatedTaskFactory<Self::Tick, Self::WorkContextProvider>;
+	type ContinuousWorkFactory: ContinuousTaskFactory<Self::Tick, Self::WorkContextProvider>;
+	type ImmediateWorkFactory: ImmediateTaskFactory<Self::Tick, Self::WorkContextProvider>;
+	type InvokedWorkFactory: InvokedTaskFactory<Self::Tick, Self::WorkContextProvider>;
 
-	type DelayedTaskFactory: DelayedTaskFactory<Self::Tick, Self::ContextProvider>;
-	type RepeatedTaskFactory: RepeatedTaskFactory<Self::Tick, Self::ContextProvider>;
-	type ContinuousTaskFactory: ContinuousTaskFactory<Self::Tick, Self::ContextProvider>;
-	type ImmediateTaskFactory: ImmediateTaskFactory<Self::Tick, Self::ContextProvider>;
-	type InvokedTaskFactory: InvokedTaskFactory<Self::Tick, Self::ContextProvider>;
-
-	fn schedule_task<T>(&mut self, task: T, cancellation_id: TaskCancellationId)
+	fn schedule_work<W>(&mut self, work: W, cancellation_id: WorkCancellationId)
 	where
-		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync;
+		W: 'static
+			+ ScheduledWork<Tick = Self::Tick, WorkContextProvider = Self::WorkContextProvider>
+			+ Send
+			+ Sync;
 
-	fn schedule_invoked_task<T>(&mut self, task: T, invoke_id: TaskInvokeId)
+	fn schedule_invoked_work<W>(&mut self, work: W, invoke_id: WorkInvokeId)
 	where
-		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync;
+		W: 'static
+			+ ScheduledWork<Tick = Self::Tick, WorkContextProvider = Self::WorkContextProvider>
+			+ Send
+			+ Sync;
 
-	fn cancel(&mut self, cancellation_id: TaskCancellationId);
+	fn cancel(&mut self, cancellation_id: WorkCancellationId);
 
-	fn invoke(&mut self, invoke_id: TaskInvokeId);
+	fn invoke(&mut self, invoke_id: WorkInvokeId);
 
-	fn cancel_invoked(&mut self, invoke_id: TaskInvokeId);
+	fn cancel_invoked(&mut self, invoke_id: WorkInvokeId);
 
-	fn generate_cancellation_id(&mut self) -> TaskCancellationId;
+	fn generate_cancellation_id(&mut self) -> WorkCancellationId;
 
-	fn generate_invoke_id(&mut self) -> TaskInvokeId;
+	fn generate_invoke_id(&mut self) -> WorkInvokeId;
 }
 
 #[derive_where(Debug)]
-pub enum ScheduledTaskAction<TickInput, Context>
+pub enum ScheduledWorkAction<TickInput, Context>
 where
-	Context: ContextProvider,
+	Context: WorkContextProvider,
 {
 	Activate(
 		#[derive_where(skip)]
 		(
-			TaskCancellationId,
-			Box<dyn Task<Tick = TickInput, ContextProvider = Context> + Send + Sync>,
+			WorkCancellationId,
+			Box<dyn ScheduledWork<Tick = TickInput, WorkContextProvider = Context> + Send + Sync>,
 		),
 	),
-	Cancel(TaskCancellationId),
+	Cancel(WorkCancellationId),
 	AddInvoked(
 		#[derive_where(skip)]
 		(
-			TaskInvokeId,
-			Box<dyn Task<Tick = TickInput, ContextProvider = Context> + Send + Sync>,
+			WorkInvokeId,
+			Box<dyn ScheduledWork<Tick = TickInput, WorkContextProvider = Context> + Send + Sync>,
 		),
 	),
-	Invoke(TaskInvokeId),
-	CancelInvoked(TaskInvokeId),
+	Invoke(WorkInvokeId),
+	CancelInvoked(WorkInvokeId),
 }
 
-pub trait TaskExecutor: WithTaskInputOutput + WithContextProvider {
-	type Scheduler: Scheduler<Tick = Self::Tick, ContextProvider = Self::ContextProvider>;
-
-	fn get_scheduler_handle(&self) -> SchedulerHandle<Self::Scheduler>;
-}
-
-pub trait SchedulerScheduleTaskExtension: Scheduler {
-	fn schedule_delayed_task<Work>(
+pub trait SchedulerScheduleWorkExtension: Scheduler {
+	fn schedule_delayed_work<Work>(
 		&mut self,
 		work: Work,
 		delay: Duration,
-		cancellation_id: TaskCancellationId,
+		cancellation_id: WorkCancellationId,
 	) where
-		Work: ScheduledOnceWork<Self::Tick, Self::ContextProvider>,
+		Work: ScheduledOnceWork<Self::Tick, Self::WorkContextProvider>,
 	{
-		self.schedule_task(Self::DelayedTaskFactory::new(work, delay), cancellation_id)
+		self.schedule_work(Self::DelayedWorkFactory::new(work, delay), cancellation_id)
 	}
 
-	fn schedule_repeated_task<Work>(
+	fn schedule_repeated_work<Work>(
 		&mut self,
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
 		max_work_per_tick: NonZero<usize>,
-		cancellation_id: TaskCancellationId,
+		cancellation_id: WorkCancellationId,
 	) where
-		Work: ScheduledRepeatedWork<Self::Tick, Self::ContextProvider>,
+		Work: ScheduledRepeatedWork<Self::Tick, Self::WorkContextProvider>,
 	{
-		self.schedule_task(
-			Self::RepeatedTaskFactory::new(work, interval, start_immediately, max_work_per_tick),
+		self.schedule_work(
+			Self::RepeatedWorkFactory::new(work, interval, start_immediately, max_work_per_tick),
 			cancellation_id,
 		)
 	}
 
-	fn schedule_continuous_task<Work>(&mut self, work: Work, cancellation_id: TaskCancellationId)
+	fn schedule_continuous_work<Work>(&mut self, work: Work, cancellation_id: WorkCancellationId)
 	where
-		Work: ScheduledRepeatedWork<Self::Tick, Self::ContextProvider>,
+		Work: ScheduledRepeatedWork<Self::Tick, Self::WorkContextProvider>,
 	{
-		self.schedule_task(Self::ContinuousTaskFactory::new(work), cancellation_id)
+		self.schedule_work(Self::ContinuousWorkFactory::new(work), cancellation_id)
 	}
 
-	fn schedule_immediate_task<Work>(&mut self, work: Work, cancellation_id: TaskCancellationId)
+	fn schedule_immediate_work<Work>(&mut self, work: Work, cancellation_id: WorkCancellationId)
 	where
-		Work: ScheduledOnceWork<Self::Tick, Self::ContextProvider>,
+		Work: ScheduledOnceWork<Self::Tick, Self::WorkContextProvider>,
 	{
-		self.schedule_task(Self::ImmediateTaskFactory::new(work), cancellation_id)
+		self.schedule_work(Self::ImmediateWorkFactory::new(work), cancellation_id)
 	}
 }
 
-impl<S> SchedulerScheduleTaskExtension for S where S: Scheduler {}
+impl<S> SchedulerScheduleWorkExtension for S where S: Scheduler {}

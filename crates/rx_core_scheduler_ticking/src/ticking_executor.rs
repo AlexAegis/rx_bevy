@@ -3,34 +3,36 @@ use std::{
 	time::Duration,
 };
 
+use derive_where::derive_where;
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_traits::{
-	ContextProvider, ScheduledTaskAction, Scheduler, SchedulerHandle, Task, TaskCancellationId,
-	TaskInvokeId, TaskResult,
+	ScheduledWork, ScheduledWorkAction, Scheduler, SchedulerHandle, WorkCancellationId,
+	WorkContextProvider, WorkInvokeId, WorkResult,
 };
 use slab::Slab;
 
 use crate::Tick;
 
-pub trait TickingExecutorsScheduler: Scheduler {
+pub trait SchedulerForTickingExecutor: Scheduler {
 	fn update_tick(&mut self, tick: Tick);
 
-	fn drain_tasks(
+	fn drain_actions(
 		&mut self,
-	) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, Self::ContextProvider>>;
+	) -> std::vec::Drain<'_, ScheduledWorkAction<Tick, Self::WorkContextProvider>>;
 
-	/// Returns true if there are tasks queued.
-	fn has_tasks(&self) -> bool;
+	/// Returns true if there are work actions queued.
+	fn has_actions(&self) -> bool;
 }
 
+#[derive_where(Default; S)]
 #[derive(RxExecutor)]
 #[rx_context(C)]
 #[rx_tick(Tick)]
 #[rx_scheduler(S)]
 pub struct TickingSchedulerExecutor<S, C>
 where
-	S: Scheduler<Tick = Tick, ContextProvider = C>,
-	C: 'static + ContextProvider + Send + Sync,
+	S: Scheduler<Tick = Tick, WorkContextProvider = C>,
+	C: 'static + WorkContextProvider + Send + Sync,
 {
 	#[scheduler_handle]
 	scheduler: SchedulerHandle<S>,
@@ -38,29 +40,31 @@ where
 	current_tick: Tick,
 
 	// TODO: ADD FROM THE BEVY SIDE SOME NEW TASK TYPES LIKE SEND EVENT, THAT NEEDS NO CALLBACKS
-	active_tasks: Slab<(
-		TaskCancellationId,
-		Box<dyn Task<Tick = Tick, ContextProvider = C> + Send + Sync>,
+	active_work: Slab<(
+		WorkCancellationId,
+		Box<dyn ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync>,
 	)>,
-	invokable_tasks:
-		HashMap<TaskInvokeId, Box<dyn Task<Tick = Tick, ContextProvider = C> + Send + Sync>>,
-	invoked: Vec<TaskInvokeId>,
-	tasks_already_ticked: HashSet<usize>,
+	invokable_work: HashMap<
+		WorkInvokeId,
+		Box<dyn ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync>,
+	>,
+	invoked: Vec<WorkInvokeId>,
+	already_ticked: HashSet<usize>,
 }
 
 impl<S, C> TickingSchedulerExecutor<S, C>
 where
-	S: TickingExecutorsScheduler<Tick = Tick, ContextProvider = C>,
-	C: 'static + ContextProvider + Send + Sync,
+	S: SchedulerForTickingExecutor<Tick = Tick, WorkContextProvider = C>,
+	C: 'static + WorkContextProvider + Send + Sync,
 {
 	pub fn new(scheduler: S) -> Self {
 		Self {
 			current_tick: Tick::default(),
-			active_tasks: Slab::new(),
-			invokable_tasks: HashMap::new(),
+			active_work: Slab::new(),
+			invokable_work: HashMap::new(),
 			invoked: Vec::new(),
 			scheduler: SchedulerHandle::new(scheduler),
-			tasks_already_ticked: HashSet::new(),
+			already_ticked: HashSet::new(),
 		}
 	}
 
@@ -68,9 +72,9 @@ where
 		self.current_tick.elapsed_since_start
 	}
 
-	/// Returns `true` when there are no active tasks in the executor.
+	/// Returns `true` when there is no active work in the executor.
 	pub fn is_empty(&self) -> bool {
-		self.active_tasks.is_empty()
+		self.active_work.is_empty()
 	}
 
 	pub fn get_current_tick(&self) -> Tick {
@@ -79,15 +83,15 @@ where
 
 	pub fn tick_to(&mut self, tick: Tick, context: &mut C::Item<'_>) {
 		self.current_tick.update(tick);
-		self.tasks_already_ticked.clear();
+		self.already_ticked.clear();
 		loop {
 			self.drain_scheduler_queue(tick);
 
-			let no_tasks_ticked = self.tick_scheduled_tasks(tick, context);
+			let no_work_ticked = self.tick_scheduled(tick, context);
 
-			self.execute_invoked_tasks(tick, context);
+			self.execute_invoked(tick, context);
 
-			if no_tasks_ticked {
+			if no_work_ticked {
 				break;
 			}
 		}
@@ -98,12 +102,12 @@ where
 		self.tick_to(next_tick, context);
 	}
 
-	fn execute_invoked_tasks(&mut self, tick: Tick, context: &mut C::Item<'_>) {
-		for invoked_task_id in self.invoked.drain(..) {
-			if let Some(invoked_task) = self.invokable_tasks.get_mut(&invoked_task_id) {
-				let invoke_result = invoked_task.tick(tick, context);
-				if matches!(invoke_result, TaskResult::Done) {
-					self.invokable_tasks.remove(&invoked_task_id);
+	fn execute_invoked(&mut self, tick: Tick, context: &mut C::Item<'_>) {
+		for invoked_id in self.invoked.drain(..) {
+			if let Some(invoked_work) = self.invokable_work.get_mut(&invoked_id) {
+				let invoke_result = invoked_work.tick(tick, context);
+				if matches!(invoke_result, WorkResult::Done) {
+					self.invokable_work.remove(&invoked_id);
 				}
 			}
 		}
@@ -113,55 +117,58 @@ where
 		let mut scheduler = self.scheduler.lock();
 		scheduler.update_tick(tick);
 
-		for task_action in scheduler.drain_tasks() {
-			match task_action {
-				ScheduledTaskAction::<Tick, C>::Activate((owner_id, task)) => {
-					self.active_tasks.insert((owner_id, task));
+		for action in scheduler.drain_actions() {
+			match action {
+				ScheduledWorkAction::<Tick, C>::Activate((owner_id, work)) => {
+					self.active_work.insert((owner_id, work));
 				}
-				ScheduledTaskAction::AddInvoked((invoke_id, task)) => {
-					self.invokable_tasks.insert(invoke_id, task);
+				ScheduledWorkAction::AddInvoked((invoke_id, work)) => {
+					self.invokable_work.insert(invoke_id, work);
 				}
-				ScheduledTaskAction::Invoke(invoke_id) => self.invoked.push(invoke_id),
-				ScheduledTaskAction::CancelInvoked(invoke_id) => {
-					self.invokable_tasks.remove(&invoke_id);
-					self.invoked.retain(|invoked_id| invoked_id == &invoke_id);
+				ScheduledWorkAction::Invoke(invoke_id) => self.invoked.push(invoke_id),
+				ScheduledWorkAction::CancelInvoked(cancelled_invokation_id) => {
+					self.invokable_work.remove(&cancelled_invokation_id);
+					self.invoked
+						.retain(|invoked_id| invoked_id == &cancelled_invokation_id);
 				}
-				ScheduledTaskAction::Cancel(owner_id) => {
-					self.active_tasks
-						.retain(|_task_id, (task_owner_id, _task)| task_owner_id != &owner_id);
+				ScheduledWorkAction::Cancel(cancelled_id) => {
+					self.active_work
+						.retain(|_work_id, (work_cancellation_id, _work)| {
+							work_cancellation_id != &cancelled_id
+						});
 				}
 			}
 		}
 	}
 
-	fn tick_scheduled_tasks(&mut self, tick: Tick, context: &mut C::Item<'_>) -> bool {
-		let mut tasks_done = Vec::<usize>::new();
-		let mut tasks_ticked = Vec::<usize>::new();
+	fn tick_scheduled(&mut self, tick: Tick, context: &mut C::Item<'_>) -> bool {
+		let mut work_done = Vec::<usize>::new();
+		let mut work_ticked = Vec::<usize>::new();
 
-		for (key, (_, task)) in self
-			.active_tasks
+		for (key, (_, work)) in self
+			.active_work
 			.iter_mut()
-			.filter(|(key, _)| !self.tasks_already_ticked.contains(key))
+			.filter(|(key, _)| !self.already_ticked.contains(key))
 		{
-			let task_result = task.tick(tick, context);
+			let work_result = work.tick(tick, context);
 
-			if matches!(task_result, TaskResult::Done) {
-				tasks_done.push(key);
+			if matches!(work_result, WorkResult::Done) {
+				work_done.push(key);
 			}
 
-			tasks_ticked.push(key);
+			work_ticked.push(key);
 		}
 
-		for task_key in tasks_done {
-			self.active_tasks.remove(task_key);
+		for key in work_done {
+			self.active_work.remove(key);
 		}
 
-		let no_tasks_ticked = tasks_ticked.is_empty();
+		let no_work_ticked = work_ticked.is_empty();
 
-		for task_key in tasks_ticked {
-			self.tasks_already_ticked.insert(task_key);
+		for key in work_ticked {
+			self.already_ticked.insert(key);
 		}
 
-		no_tasks_ticked
+		no_work_ticked
 	}
 }

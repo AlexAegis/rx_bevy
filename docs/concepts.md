@@ -766,7 +766,7 @@ and emit a signal when they do! And for that, a subscription or
 a subscriber needs to be able to emit signals even without upstream
 signals triggering it's own logic.
 
-This requires something that runs in the "background" to drive tasks issued
+This requires something that runs in the "background" to drive the work issued
 by subscribers or subscriptions.
 
 > For example: "Do a `next` call on this, 2 seconds from now!" or "Call `next`
@@ -775,55 +775,58 @@ by subscribers or subscriptions.
 ### Scheduler
 
 The scheduler is a shared queue that subscribers have access to
-(always passed in by the user) to issue tasks to be executed.
+(always passed in by the user) to issue work to be executed.
 
 ### Executor
 
-The executor is the thing responsible to drive tasks, collected by the
-scheduler queue. It owns the scheduler, and handles to the scheduler queue can
-be acquired from the executor.
+The executor is the thing responsible to drive the work delegated to the
+scheduler, collected by the schedulers queue. It owns the scheduler, for which
+handles can be acquired from the executor.
 
-### Tasks
+### Work
 
-There are multiple types of tasks, depending on how they are handled with
+There are multiple types of work, depending on how they are handled with
 respect to time. So that reimplementing basic time based logic - like a delay -
-is not required by the issuer of the task.
+is not required by the issuer of the work.
 
-Tasks can be issued, cancelled, or invoked from the scheduler queue.
+Work can be issued, cancelled, or invoked from the scheduler queue.
 
-#### Immediate Tasks
+#### Immediate Work
 
-The simplest type of tasks, they execute as soon as the executor can
-see the task and then drop it.
+The simplest type of work, it executes as soon as the executor receives it.
 
-#### Delayed Tasks
+#### Delayed Work
 
-Delayed tasks will be executed only after their specified delay has passed.
+Delayed work will be executed only after its specified delay had passed.
 
-#### Repeated Tasks
+#### Repeated Work
 
-Repeated tasks re-execute their work each time they repeat, after a specified
+Repeated work re-executes its work each time it repeats, after a specified
 time interval.
 
-#### Continuous Tasks
+#### Continuous Work
 
-Continouos tasks are like repeated tasks but without a time interval, they
+Continouos Work is like repeated work but without the time interval, they
 simply execute as many times as often as they can.
 
-> It depends on the executor to define the actual frequency these tasks are
+> It depends on the executor to define the actual frequency this type of work is
 > running at.
 >
 > - With the tickable executor, this means on every `tick` call.
 > - In Bevy, this means once every frame.
+> - In an async executor, this would be set to a reasonably fast interval, like
+>   a target FPS.
 
-#### Invoked Tasks
+#### Invoked Work
 
-Invoked tasks are not executed automatically, but based on their `invoke_id`
+Invoked work is not executed automatically, but based on its `invoke_id`
 can be "invoked" which means executing it as soon as the executor can.
+
+> For a ticking executor this means the next tick after invokation
 
 ### Scheduler Context
 
-Executors define a context, passed in as a mutable reference to the tasks
+Executors define a context, passed in as a mutable reference to the
 whenever they are executed. The main job of the context is to provide the
 current time (as a `Duration`, denoting the time passed since startup).
 
@@ -834,15 +837,15 @@ specific contexts too. Resulting in context specific subscribers with extra
 capabilities relevant only in that context, compatible only with that
 executor.
 
-### Scheduler Task Input
+### Scheduler Work Input
 
 Most generic scheduled subscribers do not need to know about anything
-besides the time coming from the context. Still, some executor
-can provide extra data relevant to the execution of the task at that
+besides the time coming from the context. Still, some executors
+can provide extra data relevant to the execution of the work at that
 moment.
 
 > For example: In the TickingExecutor, the `Tick` object is passed into every
-> executed task.
+> executed work.
 
 ### TickingExecutor
 

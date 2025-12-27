@@ -1,26 +1,26 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_macro_task_derive::RxTask;
+use rx_core_macro_work_derive::RxWork;
 use rx_core_traits::{
-	ContextProvider, ContinuousTaskFactory, ScheduledRepeatedWork, Task, TaskResult,
+	ContinuousTaskFactory, ScheduledRepeatedWork, ScheduledWork, WorkContextProvider, WorkResult,
 };
 
 use crate::Tick;
 
-pub struct ContinuousTaskTickedFactory<C>
+pub struct TickedContinuousWorkFactory<C>
 where
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<C> ContinuousTaskFactory<Tick, C> for ContinuousTaskTickedFactory<C>
+impl<C> ContinuousTaskFactory<Tick, C> for TickedContinuousWorkFactory<C>
 where
-	C: 'static + ContextProvider,
+	C: 'static + WorkContextProvider,
 {
 	type Item<Work>
-		= ContinuousTaskTicked<Work, C>
+		= TickedContinuousWork<Work, C>
 	where
 		Work: ScheduledRepeatedWork<Tick, C>;
 
@@ -28,7 +28,7 @@ where
 	where
 		Work: ScheduledRepeatedWork<Tick, C>,
 	{
-		ContinuousTaskTicked {
+		TickedContinuousWork {
 			last_tick: Tick::default(),
 			work,
 			_phantom_data: PhantomData,
@@ -36,14 +36,14 @@ where
 	}
 }
 
-#[derive(RxTask)]
+#[derive(RxWork)]
 #[rx_tick(Tick)]
 #[rx_context(C)]
 #[derive_where(Debug)]
-pub struct ContinuousTaskTicked<Work, C>
+pub struct TickedContinuousWork<Work, C>
 where
 	Work: ScheduledRepeatedWork<Tick, C>,
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	#[derive_where(skip(Debug))]
 	work: Work,
@@ -51,17 +51,17 @@ where
 	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<Work, C> Task for ContinuousTaskTicked<Work, C>
+impl<Work, C> ScheduledWork for TickedContinuousWork<Work, C>
 where
 	Work: ScheduledRepeatedWork<Tick, C>,
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
-	fn tick(&mut self, tick_input: Self::Tick, context: &mut C::Item<'_>) -> TaskResult {
+	fn tick(&mut self, tick_input: Self::Tick, context: &mut C::Item<'_>) -> WorkResult {
 		if tick_input.is_newer_than(Some(&self.last_tick)) {
 			self.last_tick.update(tick_input);
 			(self.work)(tick_input, context)
 		} else {
-			TaskResult::Pending
+			WorkResult::Pending
 		}
 	}
 

@@ -2,8 +2,8 @@ use std::{iter::Peekable, marker::PhantomData};
 
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Never, Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber,
-	Signal, Subscriber, SubscriptionLike, TaskCancellationId, TaskResult,
+	Never, Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
+	Signal, Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
 };
 
 use crate::observable::OnTickObservableOptions;
@@ -32,7 +32,7 @@ where
 	scheduler: SchedulerHandle<S>,
 	#[destination]
 	destination: SharedSubscriber<Destination>,
-	owner_id: Option<TaskCancellationId>,
+	owner_id: Option<WorkCancellationId>,
 	_phantom_data: PhantomData<fn(Iterator) -> Iterator>,
 }
 
@@ -80,13 +80,13 @@ where
 				destination: destination.clone(),
 			};
 
-			scheduler.schedule_continuous_task(
+			scheduler.schedule_continuous_work(
 				move |_, _context| {
 					state.observed_ticks += 1;
 
 					let mut destination = state.destination.lock();
 					if destination.is_closed() {
-						return TaskResult::Done;
+						return WorkResult::Done;
 					}
 
 					if state
@@ -99,12 +99,12 @@ where
 						if state.peekable_iterator.peek().is_none() {
 							destination.complete();
 							destination.unsubscribe();
-							TaskResult::Done
+							WorkResult::Done
 						} else {
-							TaskResult::Pending
+							WorkResult::Pending
 						}
 					} else {
-						TaskResult::Pending
+						WorkResult::Pending
 					}
 				},
 				owner_id,

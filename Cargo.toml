@@ -52,7 +52,7 @@ rx_core_macro_scheduler_derive = { path = "crates/rx_core_macro_scheduler_derive
 rx_core_macro_subject_derive = { path = "crates/rx_core_macro_subject_derive" }
 rx_core_macro_subscriber_derive = { path = "crates/rx_core_macro_subscriber_derive" }
 rx_core_macro_subscription_derive = { path = "crates/rx_core_macro_subscription_derive" }
-rx_core_macro_task_derive = { path = "crates/rx_core_macro_task_derive" }
+rx_core_macro_work_derive = { path = "crates/rx_core_macro_work_derive" }
 # Observables
 rx_core_observable_connectable = { path = "crates/rx_core_observable_connectable" }
 rx_core_observable_concat = { path = "crates/rx_core_observable_concat" }

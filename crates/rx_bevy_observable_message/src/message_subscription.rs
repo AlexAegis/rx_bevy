@@ -15,7 +15,7 @@ where
 	#[destination]
 	shared_destination: SharedSubscriber<Destination>,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
-	cancellation_id: TaskCancellationId,
+	cancellation_id: WorkCancellationId,
 }
 
 impl<Destination> MessageSubscription<Destination>
@@ -33,7 +33,7 @@ where
 
 		let mut message_cursor = EventCursor::<Destination::In>::default();
 
-		scheduler_lock.schedule_continuous_task(
+		scheduler_lock.schedule_continuous_work(
 			move |_, context| {
 				let events = context.deferred_world.resource::<Events<Destination::In>>();
 
@@ -41,14 +41,14 @@ where
 
 				let mut destination = shared_destination_clone.lock();
 				if destination.is_closed() {
-					return TaskResult::Done;
+					return WorkResult::Done;
 				}
 
 				for event in read_events {
 					destination.next(event);
 				}
 
-				TaskResult::Pending
+				WorkResult::Pending
 			},
 			cancellation_id,
 		);

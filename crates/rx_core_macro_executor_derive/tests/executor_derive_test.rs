@@ -3,12 +3,12 @@ use std::time::Duration;
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_macro_scheduler_derive::RxScheduler;
 use rx_core_scheduler_ticking::{
-	ContinuousTaskTickedFactory, DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory,
-	InvokedTaskTickedFactory, RepeatedTaskTickedFactory, Tick,
+	Tick, TickedContinuousWorkFactory, TickedDelayedOnceWorkFactory,
+	TickedImmediateOnceWorkFactory, TickedInvokedWorkFactory, TickedRepeatingWorkFactory,
 };
 use rx_core_traits::{
-	ContextProvider, Scheduler, SchedulerHandle, Task, TaskCancellationId, TaskContext,
-	TaskInvokeId,
+	ScheduledWork, Scheduler, SchedulerHandle, WorkCancellationId, WorkContext,
+	WorkContextProvider, WorkInvokeId,
 };
 
 #[derive(RxScheduler)]
@@ -17,38 +17,47 @@ use rx_core_traits::{
 struct FakeScheduler;
 
 impl Scheduler for FakeScheduler {
-	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<FakeContext>;
-	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<FakeContext>;
-	type RepeatedTaskFactory = RepeatedTaskTickedFactory<FakeContext>;
-	type InvokedTaskFactory = InvokedTaskTickedFactory<FakeContext>;
-	type ContinuousTaskFactory = ContinuousTaskTickedFactory<FakeContext>;
+	type DelayedWorkFactory = TickedDelayedOnceWorkFactory<FakeContext>;
+	type ImmediateWorkFactory = TickedImmediateOnceWorkFactory<FakeContext>;
+	type RepeatedWorkFactory = TickedRepeatingWorkFactory<FakeContext>;
+	type InvokedWorkFactory = TickedInvokedWorkFactory<FakeContext>;
+	type ContinuousWorkFactory = TickedContinuousWorkFactory<FakeContext>;
 
-	fn cancel(&mut self, _cancellation_id: TaskCancellationId) {}
+	fn cancel(&mut self, _cancellation_id: WorkCancellationId) {}
 
-	fn cancel_invoked(&mut self, _invoke_id: TaskInvokeId) {}
+	fn cancel_invoked(&mut self, _invoke_id: WorkInvokeId) {}
 
-	fn generate_cancellation_id(&mut self) -> TaskCancellationId {
+	fn generate_cancellation_id(&mut self) -> WorkCancellationId {
 		unreachable!()
 	}
-	fn generate_invoke_id(&mut self) -> TaskInvokeId {
+
+	fn generate_invoke_id(&mut self) -> WorkInvokeId {
 		unreachable!()
 	}
-	fn invoke(&mut self, _invoke_id: TaskInvokeId) {}
-	fn schedule_invoked_task<T>(&mut self, _task: T, _invoke_id: TaskInvokeId)
+
+	fn invoke(&mut self, _invoke_id: WorkInvokeId) {}
+
+	fn schedule_invoked_work<W>(&mut self, _work: W, _invoke_id: WorkInvokeId)
 	where
-		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync,
+		W: 'static
+			+ ScheduledWork<Tick = Self::Tick, WorkContextProvider = Self::WorkContextProvider>
+			+ Send
+			+ Sync,
 	{
 	}
-	fn schedule_task<T>(&mut self, _task: T, _cancellation_id: TaskCancellationId)
+	fn schedule_work<W>(&mut self, _work: W, _cancellation_id: WorkCancellationId)
 	where
-		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync,
+		W: 'static
+			+ ScheduledWork<Tick = Self::Tick, WorkContextProvider = Self::WorkContextProvider>
+			+ Send
+			+ Sync,
 	{
 	}
 }
 
-struct FakeTaskContext;
+struct FakeWorkContext;
 
-impl<'a> TaskContext<'a> for FakeTaskContext {
+impl<'a> WorkContext<'a> for FakeWorkContext {
 	fn now(&self) -> Duration {
 		Duration::ZERO
 	}
@@ -56,8 +65,8 @@ impl<'a> TaskContext<'a> for FakeTaskContext {
 
 struct FakeContext;
 
-impl ContextProvider for FakeContext {
-	type Item<'c> = FakeTaskContext;
+impl WorkContextProvider for FakeContext {
+	type Item<'c> = FakeWorkContext;
 }
 
 #[derive(RxExecutor)]

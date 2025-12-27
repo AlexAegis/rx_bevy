@@ -1,10 +1,12 @@
 use rx_core_macro_scheduler_derive::RxScheduler;
 use rx_core_scheduler_ticking::{
-	ContinuousTaskTickedFactory, DelayedOnceTaskTickedFactory, ImmediateOnceTaskTickedFactory,
-	InvokedTaskTickedFactory, RepeatedTaskTickedFactory, Tick, TickingExecutorsScheduler,
+	SchedulerForTickingExecutor, Tick, TickedContinuousWorkFactory, TickedDelayedOnceWorkFactory,
+	TickedImmediateOnceWorkFactory, TickedInvokedWorkFactory, TickedRepeatingWorkFactory,
 	TickingScheduler,
 };
-use rx_core_traits::{ScheduledTaskAction, Scheduler, Task, TaskCancellationId, TaskInvokeId};
+use rx_core_traits::{
+	ScheduledWork, ScheduledWorkAction, Scheduler, WorkCancellationId, WorkInvokeId,
+};
 
 use crate::RxBevyContext;
 
@@ -15,15 +17,15 @@ pub struct RxBevyScheduler {
 	ticking_scheduler: TickingScheduler<RxBevyContext>,
 }
 
-impl TickingExecutorsScheduler for RxBevyScheduler {
+impl SchedulerForTickingExecutor for RxBevyScheduler {
 	#[inline]
-	fn drain_tasks(&mut self) -> std::vec::Drain<'_, ScheduledTaskAction<Tick, RxBevyContext>> {
-		self.ticking_scheduler.drain_tasks()
+	fn drain_actions(&mut self) -> std::vec::Drain<'_, ScheduledWorkAction<Tick, RxBevyContext>> {
+		self.ticking_scheduler.drain_actions()
 	}
 
 	#[inline]
-	fn has_tasks(&self) -> bool {
-		self.ticking_scheduler.has_tasks()
+	fn has_actions(&self) -> bool {
+		self.ticking_scheduler.has_actions()
 	}
 
 	#[inline]
@@ -33,51 +35,57 @@ impl TickingExecutorsScheduler for RxBevyScheduler {
 }
 
 impl Scheduler for RxBevyScheduler {
-	type DelayedTaskFactory = DelayedOnceTaskTickedFactory<RxBevyContext>;
-	type ImmediateTaskFactory = ImmediateOnceTaskTickedFactory<RxBevyContext>;
-	type RepeatedTaskFactory = RepeatedTaskTickedFactory<RxBevyContext>;
-	type InvokedTaskFactory = InvokedTaskTickedFactory<RxBevyContext>;
-	type ContinuousTaskFactory = ContinuousTaskTickedFactory<RxBevyContext>;
+	type DelayedWorkFactory = TickedDelayedOnceWorkFactory<RxBevyContext>;
+	type ImmediateWorkFactory = TickedImmediateOnceWorkFactory<RxBevyContext>;
+	type RepeatedWorkFactory = TickedRepeatingWorkFactory<RxBevyContext>;
+	type InvokedWorkFactory = TickedInvokedWorkFactory<RxBevyContext>;
+	type ContinuousWorkFactory = TickedContinuousWorkFactory<RxBevyContext>;
 
 	#[inline]
-	fn schedule_task<T>(&mut self, task: T, owner_id: TaskCancellationId)
+	fn schedule_work<W>(&mut self, work: W, owner_id: WorkCancellationId)
 	where
-		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync,
+		W: 'static
+			+ ScheduledWork<Tick = Self::Tick, WorkContextProvider = Self::WorkContextProvider>
+			+ Send
+			+ Sync,
 	{
-		self.ticking_scheduler.schedule_task(task, owner_id);
+		self.ticking_scheduler.schedule_work(work, owner_id);
 	}
 
 	#[inline]
-	fn schedule_invoked_task<T>(&mut self, task: T, invoke_id: TaskInvokeId)
+	fn schedule_invoked_work<W>(&mut self, work: W, invoke_id: WorkInvokeId)
 	where
-		T: 'static + Task<Tick = Self::Tick, ContextProvider = Self::ContextProvider> + Send + Sync,
+		W: 'static
+			+ ScheduledWork<Tick = Self::Tick, WorkContextProvider = Self::WorkContextProvider>
+			+ Send
+			+ Sync,
 	{
 		self.ticking_scheduler
-			.schedule_invoked_task(task, invoke_id);
+			.schedule_invoked_work(work, invoke_id);
 	}
 
 	#[inline]
-	fn invoke(&mut self, invoke_id: TaskInvokeId) {
+	fn invoke(&mut self, invoke_id: WorkInvokeId) {
 		self.ticking_scheduler.invoke(invoke_id);
 	}
 
 	#[inline]
-	fn cancel(&mut self, owner_id: TaskCancellationId) {
+	fn cancel(&mut self, owner_id: WorkCancellationId) {
 		self.ticking_scheduler.cancel(owner_id);
 	}
 
 	#[inline]
-	fn cancel_invoked(&mut self, invoke_id: TaskInvokeId) {
+	fn cancel_invoked(&mut self, invoke_id: WorkInvokeId) {
 		self.ticking_scheduler.cancel_invoked(invoke_id);
 	}
 
 	#[inline]
-	fn generate_cancellation_id(&mut self) -> TaskCancellationId {
+	fn generate_cancellation_id(&mut self) -> WorkCancellationId {
 		self.ticking_scheduler.generate_cancellation_id()
 	}
 
 	#[inline]
-	fn generate_invoke_id(&mut self) -> TaskInvokeId {
+	fn generate_invoke_id(&mut self) -> WorkInvokeId {
 		self.ticking_scheduler.generate_invoke_id()
 	}
 }

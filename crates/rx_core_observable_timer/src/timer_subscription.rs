@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Subscriber,
-	SubscriptionLike, TaskCancellationId,
+	Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Subscriber,
+	SubscriptionLike, WorkCancellationId,
 };
 
 #[derive(RxSubscription)]
@@ -16,7 +16,7 @@ where
 	#[destination]
 	destination: SharedSubscriber<Destination>,
 	scheduler: SchedulerHandle<S>,
-	task_owner_id: Option<TaskCancellationId>,
+	cancellation_id: Option<WorkCancellationId>,
 }
 
 impl<Destination, S> TimerSubscription<Destination, S>
@@ -31,12 +31,12 @@ where
 	) -> Self {
 		let mut scheduler_clone = scheduler.clone();
 		let destination = SharedSubscriber::new(destination);
-		let task_owner_id = {
+		let cancellation_id = {
 			let mut scheduler = scheduler_clone.lock();
 			let cancellation_id = scheduler.generate_cancellation_id();
 			let destination_clone = destination.clone();
 
-			scheduler.schedule_delayed_task(
+			scheduler.schedule_delayed_work(
 				move |_, _| {
 					let mut destination = destination_clone.lock();
 					destination.next(());
@@ -53,7 +53,7 @@ where
 		TimerSubscription {
 			destination,
 			scheduler,
-			task_owner_id: Some(task_owner_id),
+			cancellation_id: Some(cancellation_id),
 		}
 	}
 }
@@ -68,8 +68,8 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if let Some(task_owner_id) = self.task_owner_id.take() {
-			self.scheduler.lock().cancel(task_owner_id);
+		if let Some(cancellation_id) = self.cancellation_id.take() {
+			self.scheduler.lock().cancel(cancellation_id);
 		}
 
 		if !self.destination.is_closed() {

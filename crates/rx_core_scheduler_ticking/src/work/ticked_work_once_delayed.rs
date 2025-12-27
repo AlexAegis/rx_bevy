@@ -1,33 +1,33 @@
 use std::{marker::PhantomData, time::Duration};
 
 use derive_where::derive_where;
-use rx_core_macro_task_derive::RxTask;
-use rx_core_traits::{ContextProvider, DelayedTask, DelayedTaskFactory, ScheduledOnceWork};
+use rx_core_macro_work_derive::RxWork;
+use rx_core_traits::{DelayedWork, DelayedWorkFactory, ScheduledOnceWork, WorkContextProvider};
 
-use rx_core_traits::{Task, TaskResult};
+use rx_core_traits::{ScheduledWork, WorkResult};
 
 use crate::Tick;
 
-pub struct DelayedOnceTaskTickedFactory<C>
+pub struct TickedDelayedOnceWorkFactory<C>
 where
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<C> DelayedTaskFactory<Tick, C> for DelayedOnceTaskTickedFactory<C>
+impl<C> DelayedWorkFactory<Tick, C> for TickedDelayedOnceWorkFactory<C>
 where
-	C: 'static + ContextProvider + Send + Sync,
+	C: 'static + WorkContextProvider + Send + Sync,
 {
 	type Item<Work>
-		= DelayedOnceTaskTicked<Work, C>
+		= TickedDelayedOnceWork<Work, C>
 	where
 		Work: ScheduledOnceWork<Tick, C>;
 	fn new<Work>(work: Work, delay: Duration) -> Self::Item<Work>
 	where
 		Work: ScheduledOnceWork<Tick, C>,
 	{
-		DelayedOnceTaskTicked {
+		TickedDelayedOnceWork {
 			work: Some(work),
 			current_tick: Tick::default(),
 			scheduled_on: Tick::default(),
@@ -37,14 +37,14 @@ where
 	}
 }
 
-#[derive(RxTask)]
+#[derive(RxWork)]
 #[rx_tick(Tick)]
 #[rx_context(C)]
 #[derive_where(Debug)]
-pub struct DelayedOnceTaskTicked<Work, C>
+pub struct TickedDelayedOnceWork<Work, C>
 where
 	Work: ScheduledOnceWork<Tick, C>,
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	scheduled_on: Tick,
 	current_tick: Tick,
@@ -56,30 +56,30 @@ where
 	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<Work, C> DelayedTask<Work, Tick, C> for DelayedOnceTaskTicked<Work, C>
+impl<Work, C> DelayedWork<Work, Tick, C> for TickedDelayedOnceWork<Work, C>
 where
 	Work: ScheduledOnceWork<Tick, C>,
-	C: ContextProvider + Send + Sync,
+	C: WorkContextProvider + Send + Sync,
 {
 }
 
-impl<Work, C> Task for DelayedOnceTaskTicked<Work, C>
+impl<Work, C> ScheduledWork for TickedDelayedOnceWork<Work, C>
 where
 	Work: ScheduledOnceWork<Tick, C>,
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
-	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> TaskResult {
+	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> WorkResult {
 		self.current_tick.update(tick);
 		if self.scheduled_on + self.delay <= self.current_tick {
 			let Some(work) = self.work.take() else {
-				return TaskResult::Done;
+				return WorkResult::Done;
 			};
 
 			(work)(tick, context);
 
-			TaskResult::Done
+			WorkResult::Done
 		} else {
-			TaskResult::Pending
+			WorkResult::Pending
 		}
 	}
 

@@ -30,7 +30,7 @@ rx_core_macro_scheduler_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_macro_subject_derive = { workspace = true }
 rx_core_macro_subscription_derive = { workspace = true }
-rx_core_macro_task_derive = { workspace = true }
+rx_core_macro_work_derive = { workspace = true }
 rx_bevy_common = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_app = { workspace = true }

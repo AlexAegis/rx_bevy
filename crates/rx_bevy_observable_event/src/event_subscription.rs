@@ -3,8 +3,8 @@ use disqualified::ShortName;
 use rx_bevy_context::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Subscriber,
-	SubscriptionClosedFlag, SubscriptionLike, TaskInvokeId,
+	Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Subscriber,
+	SubscriptionClosedFlag, SubscriptionLike, WorkInvokeId,
 };
 
 use crate::create_event_forwarder_observer_for_destination;
@@ -19,7 +19,7 @@ where
 	#[destination]
 	destination: SharedSubscriber<Destination>,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
-	despawn_invoke_id: TaskInvokeId,
+	despawn_invoke_id: WorkInvokeId,
 	closed_flag: SubscriptionClosedFlag,
 }
 
@@ -43,7 +43,7 @@ where
 		let cancellation_id = scheduler_lock.generate_cancellation_id();
 		let despawn_invoke_id = scheduler_lock.generate_invoke_id();
 
-		scheduler_lock.schedule_immediate_task(
+		scheduler_lock.schedule_immediate_work(
 			move |_, context| {
 				let mut commands = context.deferred_world.commands();
 				let observer_satellite_entity = commands.spawn((

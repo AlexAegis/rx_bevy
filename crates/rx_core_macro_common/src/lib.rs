@@ -3,7 +3,7 @@ pub mod derive_observable;
 pub mod derive_observer;
 pub mod derive_primary_category;
 pub mod derive_subscription;
-pub mod derive_task;
 pub mod derive_teardown_collection;
 pub mod derive_with_context_provider;
+pub mod derive_work;
 pub mod helpers;

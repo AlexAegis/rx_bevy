@@ -1,24 +1,26 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_macro_task_derive::RxTask;
-use rx_core_traits::{ContextProvider, ImmediateTaskFactory, ScheduledOnceWork, Task, TaskResult};
+use rx_core_macro_work_derive::RxWork;
+use rx_core_traits::{
+	ImmediateTaskFactory, ScheduledOnceWork, ScheduledWork, WorkContextProvider, WorkResult,
+};
 
 use crate::Tick;
 
-pub struct ImmediateOnceTaskTickedFactory<C>
+pub struct TickedImmediateOnceWorkFactory<C>
 where
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<C> ImmediateTaskFactory<Tick, C> for ImmediateOnceTaskTickedFactory<C>
+impl<C> ImmediateTaskFactory<Tick, C> for TickedImmediateOnceWorkFactory<C>
 where
-	C: 'static + ContextProvider,
+	C: 'static + WorkContextProvider,
 {
 	type Item<Work>
-		= ImmediateOnceTaskTicked<Work, C>
+		= TickedImmediateOnceWork<Work, C>
 	where
 		Work: ScheduledOnceWork<Tick, C>;
 
@@ -26,38 +28,38 @@ where
 	where
 		Work: ScheduledOnceWork<Tick, C>,
 	{
-		ImmediateOnceTaskTicked {
+		TickedImmediateOnceWork {
 			work: Some(work),
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-#[derive(RxTask)]
+#[derive(RxWork)]
 #[rx_tick(Tick)]
 #[rx_context(C)]
 #[derive_where(Debug)]
-pub struct ImmediateOnceTaskTicked<Work, C>
+pub struct TickedImmediateOnceWork<Work, C>
 where
 	Work: ScheduledOnceWork<Tick, C>,
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
 	#[derive_where(skip(Debug))]
 	work: Option<Work>,
 	_phantom_data: PhantomData<fn(C) -> C>,
 }
 
-impl<Work, C> Task for ImmediateOnceTaskTicked<Work, C>
+impl<Work, C> ScheduledWork for TickedImmediateOnceWork<Work, C>
 where
 	Work: ScheduledOnceWork<Tick, C>,
-	C: ContextProvider,
+	C: WorkContextProvider,
 {
-	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> TaskResult {
+	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> WorkResult {
 		let Some(work) = self.work.take() else {
-			return TaskResult::Done;
+			return WorkResult::Done;
 		};
 		(work)(tick, context);
-		TaskResult::Done
+		WorkResult::Done
 	}
 
 	fn on_scheduled_hook(&mut self, _tick_input: Self::Tick) {}

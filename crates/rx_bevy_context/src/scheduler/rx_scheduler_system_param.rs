@@ -5,15 +5,15 @@ use bevy_ecs::{
 };
 use bevy_time::Virtual;
 use rx_bevy_common::Clock;
-use rx_core_traits::{SchedulerHandle, TaskExecutor};
+use rx_core_traits::{SchedulerHandle, WorkExecutor};
 
 use crate::{RxBevyExecutor, RxBevyScheduler};
 
-/// Used for cleanup tasks like despawning entities
+/// Used for cleanup, like despawning entities
 /// (`RxSchedule<'w, Last, Virtual>`)
 pub type RxScheduleDespawn<'w> = RxSchedule<'w, Last, Virtual>;
 
-/// SystemParam to access scheduler handles to run scheduled tasks
+/// SystemParam to access scheduler handles to run scheduled work
 /// under certain bevy schedules like `Update` or `PostUpdate` and
 /// a clock like `Virtual` or `Real`.
 #[derive(SystemParam)]

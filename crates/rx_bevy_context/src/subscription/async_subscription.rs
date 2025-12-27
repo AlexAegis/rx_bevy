@@ -1,7 +1,7 @@
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Scheduler, SchedulerHandle, SubscriptionData, SubscriptionLike, TaskCancellationId,
-	TaskInvokeId,
+	Scheduler, SchedulerHandle, SubscriptionData, SubscriptionLike, WorkCancellationId,
+	WorkInvokeId,
 };
 
 use crate::RxBevyScheduler;
@@ -13,18 +13,18 @@ pub struct AsyncSubscription {
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	#[teardown]
 	teardown: SubscriptionData,
-	despawn_task_id: TaskInvokeId,
-	cancellation_id: TaskCancellationId,
+	despawn_work_id: WorkInvokeId,
+	cancellation_id: WorkCancellationId,
 }
 
 impl AsyncSubscription {
 	pub fn new(
 		scheduler: SchedulerHandle<RxBevyScheduler>,
-		cancellation_id: TaskCancellationId,
-		despawn_invoke_id: TaskInvokeId,
+		cancellation_id: WorkCancellationId,
+		despawn_invoke_id: WorkInvokeId,
 	) -> Self {
 		Self {
-			despawn_task_id: despawn_invoke_id,
+			despawn_work_id: despawn_invoke_id,
 			cancellation_id,
 			scheduler,
 			teardown: SubscriptionData::default(),
@@ -42,7 +42,7 @@ impl SubscriptionLike for AsyncSubscription {
 		if !self.is_closed() {
 			self.teardown.unsubscribe();
 			let mut scheduler = self.scheduler.lock();
-			scheduler.invoke(self.despawn_task_id);
+			scheduler.invoke(self.despawn_work_id);
 			scheduler.cancel(self.cancellation_id);
 		}
 	}

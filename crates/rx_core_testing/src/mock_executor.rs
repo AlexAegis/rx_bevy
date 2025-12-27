@@ -2,11 +2,11 @@ use std::{ops::Deref, time::Duration};
 
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_scheduler_ticking::{Tick, TickingScheduler, TickingSchedulerExecutor};
-use rx_core_traits::{ContextProvider, TaskContext};
+use rx_core_traits::{WorkContext, WorkContextProvider};
 
 pub struct TickingContextProvider;
 
-impl ContextProvider for TickingContextProvider {
+impl WorkContextProvider for TickingContextProvider {
 	type Item<'c> = TickingContext;
 }
 
@@ -20,7 +20,7 @@ impl TickingContext {
 	}
 }
 
-impl TaskContext<'_> for TickingContext {
+impl WorkContext<'_> for TickingContext {
 	fn now(&self) -> Duration {
 		self.now
 	}

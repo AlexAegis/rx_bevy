@@ -7,8 +7,8 @@ use bevy_ecs::resource::Resource;
 use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, Subscriber,
-	SubscriptionData, SubscriptionLike, TaskCancellationId, TaskResult,
+	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, Subscriber,
+	SubscriptionData, SubscriptionLike, WorkCancellationId, WorkResult,
 };
 
 use crate::observable::ResourceObservableOptions;
@@ -26,7 +26,7 @@ where
 	#[teardown]
 	teardown: SubscriptionData,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
-	cancellation_id: TaskCancellationId,
+	cancellation_id: WorkCancellationId,
 	_phantom_data: PhantomData<(R, Reader)>,
 }
 
@@ -50,7 +50,7 @@ where
 		let cancellation_id = scheduler_lock.generate_cancellation_id();
 		let mut resource_existed_in_the_previous_tick = false;
 
-		scheduler_lock.schedule_continuous_task(
+		scheduler_lock.schedule_continuous_work(
 			move |_tick, context| {
 				let resource_option = context.deferred_world.get_resource::<R>();
 				let is_changed = context.deferred_world.is_resource_changed::<R>();
@@ -76,7 +76,7 @@ where
 					}
 				}
 
-				TaskResult::Pending
+				WorkResult::Pending
 			},
 			cancellation_id,
 		);

@@ -16,8 +16,8 @@ where
 	destination: SharedSubscriber<Destination>,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	closed_flag: SubscriptionClosedFlag,
-	despawn_invoke_id: TaskInvokeId,
-	cancellation_id: TaskCancellationId,
+	despawn_invoke_id: WorkInvokeId,
+	cancellation_id: WorkCancellationId,
 }
 
 impl<Destination> ProxySubscription<Destination>
@@ -41,7 +41,7 @@ where
 		let cancellation_id = scheduler.generate_cancellation_id();
 		let despawn_invoke_id = scheduler.generate_invoke_id();
 
-		scheduler.schedule_immediate_task(
+		scheduler.schedule_immediate_work(
 			move |_, context| {
 				let proxy_subscription_entity = context
 					.deferred_world

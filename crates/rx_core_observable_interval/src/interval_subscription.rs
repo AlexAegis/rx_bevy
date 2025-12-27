@@ -2,8 +2,8 @@ use std::num::NonZero;
 
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Scheduler, SchedulerHandle, SchedulerScheduleTaskExtension, SharedSubscriber, Subscriber,
-	SubscriptionLike, TaskCancellationId, TaskResult,
+	Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Subscriber,
+	SubscriptionLike, WorkCancellationId, WorkResult,
 };
 
 use crate::observable::IntervalObservableOptions;
@@ -18,7 +18,7 @@ where
 	#[destination]
 	destination: SharedSubscriber<Destination>,
 	scheduler: SchedulerHandle<S>,
-	task_owner_id: TaskCancellationId,
+	owner_id: WorkCancellationId,
 }
 
 impl<Destination, S> IntervalSubscription<Destination, S>
@@ -33,7 +33,7 @@ where
 	) -> Self {
 		let mut scheduler_clone = scheduler.clone();
 		let destination = SharedSubscriber::new(destination);
-		let task_owner_id = {
+		let work_owner_id = {
 			let mut scheduler = scheduler_clone.lock();
 			let cancellation_id = scheduler.generate_cancellation_id();
 			let destination_clone = destination.clone();
@@ -44,18 +44,18 @@ where
 				0
 			};
 
-			scheduler.schedule_repeated_task(
+			scheduler.schedule_repeated_work(
 				move |_, _| {
 					let mut destination_lock = destination_clone.lock();
 
 					if destination_lock.is_closed() {
-						return TaskResult::Done;
+						return WorkResult::Done;
 					}
 
 					destination_lock.next(count);
 					count += 1;
 
-					TaskResult::Pending
+					WorkResult::Pending
 				},
 				interval_subscription_options.duration,
 				false,
@@ -70,7 +70,7 @@ where
 		IntervalSubscription {
 			destination,
 			scheduler,
-			task_owner_id,
+			owner_id: work_owner_id,
 		}
 	}
 }
@@ -85,7 +85,7 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		self.scheduler.lock().cancel(self.task_owner_id);
+		self.scheduler.lock().cancel(self.owner_id);
 		if !self.destination.is_closed() {
 			self.destination.unsubscribe();
 		}

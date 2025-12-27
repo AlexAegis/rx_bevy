@@ -26,7 +26,7 @@ pub fn impl_executor(derive_input: &DeriveInput) -> TokenStream {
 	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::TaskExecutor for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_traits_crate::WorkExecutor for #ident #ty_generics #where_clause {
 			type Scheduler = #scheduler_type;
 
 			#[inline]
@@ -55,7 +55,7 @@ mod test {
 		};
 		let tokens = impl_executor(&input);
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl rx_core_traits::TaskExecutor for Foo }.to_string()));
+		assert!(s.contains(&quote! { impl rx_core_traits::WorkExecutor for Foo }.to_string()));
 		assert!(s.contains(&quote! { type Scheduler = MyScheduler; }.to_string()));
 		assert!(
 			s.contains(
@@ -82,7 +82,7 @@ mod test {
 		};
 		let tokens = impl_executor(&input);
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl crate::TaskExecutor for Foo }.to_string()));
+		assert!(s.contains(&quote! { impl crate::WorkExecutor for Foo }.to_string()));
 		assert!(s.contains(&quote! { type Scheduler = MyScheduler; }.to_string()));
 		assert!(
 			s.contains(

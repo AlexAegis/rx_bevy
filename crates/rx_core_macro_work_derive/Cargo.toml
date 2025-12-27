@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_macro_task_derive"
-description = "rx_core task derive, implements associated type only traits"
+name = "rx_core_macro_work_derive"
+description = "rx_core work derive, implements associated type only traits"
 version = "0.1.0"
 readme = "readme.md"
 publish = false

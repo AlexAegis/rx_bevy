@@ -13,7 +13,7 @@ where
 {
 	#[destination]
 	shared_destination: SharedSubscriber<Destination>,
-	cancellation_id: TaskCancellationId,
+	cancellation_id: WorkCancellationId,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	closed_flag: SubscriptionClosedFlag,
 }
@@ -34,7 +34,7 @@ where
 		let cancellation_id = scheduler_lock.generate_cancellation_id();
 
 		let mut shared_destination_clone = shared_destination.clone();
-		scheduler_lock.schedule_continuous_task(
+		scheduler_lock.schedule_continuous_work(
 			move |_tick, context| {
 				if !shared_destination_clone.is_closed() {
 					let key_codes = {
@@ -57,7 +57,7 @@ where
 						shared_destination_clone.next(key_code);
 					}
 				}
-				TaskResult::Pending
+				WorkResult::Pending
 			},
 			cancellation_id,
 		);
