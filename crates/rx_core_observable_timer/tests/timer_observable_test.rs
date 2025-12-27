@@ -7,12 +7,10 @@ use std::{
 };
 
 use rx_core::prelude::*;
-use rx_core_testing::{MockExecutor, prelude::*};
+use rx_core_testing::prelude::*;
 use rx_core_traits::{
 	Observable, SubscriberNotification, SubscriptionLike, TeardownCollectionExtension,
 };
-
-use crate::{observable::TimerObservable, observable_fn::timer};
 
 #[test]
 fn should_send_a_unit_value_after_the_specified_amount_of_time() {

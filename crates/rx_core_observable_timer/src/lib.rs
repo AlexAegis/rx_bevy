@@ -14,6 +14,3 @@ mod timer_observable_fn;
 pub mod observable_fn {
 	pub use super::timer_observable_fn::*;
 }
-
-#[cfg(test)]
-mod timer_observable_test;

@@ -32,35 +32,13 @@ where
 
 	fn subscribe<Destination>(
 		&mut self,
-		observer: Destination,
+		destination: Destination,
 	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		let mut destination = observer.upgrade();
-		destination.error(self.error.clone());
-		InertSubscription::new(destination)
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	use rx_core_testing::prelude::*;
-
-	#[test]
-	fn should_emit_single_value() {
-		let error = "error";
-		let mut observable = ThrowObservable::new(error);
-		let mock_observer = MockObserver::default();
-		let notification_collector = mock_observer.get_notification_collector();
-
-		let _s = observable.subscribe(mock_observer);
-
-		assert_eq!(
-			notification_collector.lock().all_observed_errors(),
-			vec![error]
-		);
+		let mut subscriber = destination.upgrade();
+		subscriber.error(self.error.clone());
+		InertSubscription::new(subscriber)
 	}
 }

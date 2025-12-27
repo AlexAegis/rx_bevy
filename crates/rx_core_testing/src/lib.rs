@@ -13,6 +13,7 @@ pub use notification_collector::*;
 pub use tracked_iterator::*;
 
 pub mod prelude {
+	pub use super::mock_executor::*;
 	pub use super::mock_observer::*;
 	pub use super::multi_round_notification_collector::*;
 	pub use super::mute_panic::*;
