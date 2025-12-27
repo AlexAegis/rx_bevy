@@ -15,7 +15,7 @@ use rx_core_traits::{
 use crate::{observable::TimerObservable, observable_fn::timer};
 
 #[test]
-pub fn should_send_a_unit_value_after_the_specified_amount_of_time() {
+fn should_send_a_unit_value_after_the_specified_amount_of_time() {
 	let mut executor = MockExecutor::default();
 	let scheduler = executor.get_scheduler_handle();
 
@@ -47,7 +47,7 @@ pub fn should_send_a_unit_value_after_the_specified_amount_of_time() {
 }
 
 #[test]
-pub fn should_not_send_a_unit_value_after_the_specified_amount_of_time_when_unsubscribed() {
+fn should_not_send_a_unit_value_after_the_specified_amount_of_time_when_unsubscribed() {
 	let mut executor = MockExecutor::default();
 	let scheduler = executor.get_scheduler_handle();
 
@@ -81,7 +81,7 @@ pub fn should_not_send_a_unit_value_after_the_specified_amount_of_time_when_unsu
 }
 
 #[test]
-pub fn should_execute_teardowns_when_unsubscribed() {
+fn should_execute_teardowns_when_unsubscribed() {
 	let mut executor = MockExecutor::default();
 	let scheduler = executor.get_scheduler_handle();
 

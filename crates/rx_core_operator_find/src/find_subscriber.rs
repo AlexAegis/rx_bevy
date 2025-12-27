@@ -2,20 +2,8 @@ use derive_where::derive_where;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{Observer, Signal, Subscriber};
-use thiserror::Error;
 
-#[derive(Error, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum FindOperatorError<InError>
-where
-	InError: Signal,
-{
-	#[error("FindOperatorError::NoNextObservedBeforeComplete")]
-	NoNextObservedBeforeComplete,
-	#[error("FindOperatorError::NoMatchObserved")]
-	NoMatchObserved,
-	#[error(transparent)]
-	Upstream(InError),
-}
+use crate::operator::FindOperatorError;
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]

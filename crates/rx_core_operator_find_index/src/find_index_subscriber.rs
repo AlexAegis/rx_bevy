@@ -4,20 +4,8 @@ use derive_where::derive_where;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{Observer, Signal, Subscriber};
-use thiserror::Error;
 
-#[derive(Error, Debug)]
-pub enum FindIndexOperatorError<InError>
-where
-	InError: Signal,
-{
-	#[error("FindIndexOperatorError::NoNextObservedBeforeComplete")]
-	NoNextObservedBeforeComplete,
-	#[error("FindIndexOperatorError::NoMatchObserved")]
-	NoMatchObserved,
-	#[error(transparent)]
-	Upstream(InError),
-}
+use crate::operator::FindIndexOperatorError;
 
 #[derive_where(Debug)]
 #[derive_where(skip_inner(Debug))]

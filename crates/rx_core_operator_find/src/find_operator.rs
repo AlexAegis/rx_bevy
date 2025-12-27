@@ -4,7 +4,7 @@ use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
-use crate::{FindOperatorError, FindSubscriber};
+use crate::{FindSubscriber, operator::FindOperatorError};
 
 #[derive_where(Debug, Clone)]
 #[derive_where(skip_inner(Debug))]

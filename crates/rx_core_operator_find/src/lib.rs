@@ -1,10 +1,12 @@
 mod find_operator;
+mod find_operator_error;
 mod find_subscriber;
 
 pub use find_subscriber::*;
 
 pub mod operator {
 	pub use super::find_operator::*;
+	pub use super::find_operator_error::*;
 }
 
 #[cfg(feature = "compose")]

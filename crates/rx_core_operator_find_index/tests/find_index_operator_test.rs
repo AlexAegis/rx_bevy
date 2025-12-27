@@ -3,27 +3,27 @@ use rx_core_testing::prelude::*;
 use rx_core_traits::{Observable, SubscriberNotification};
 
 #[test]
-fn should_emit_the_found_value_and_complete() {
-	let destination = MockObserver::<usize, FindOperatorError<&'static str>>::default();
+fn should_emit_the_found_values_index_and_complete() {
+	let destination = MockObserver::<usize, FindIndexOperatorError<&'static str>>::default();
 	let notification_collector = destination.get_notification_collector();
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
 	let subscription = source
 		.clone()
-		.find(|next| next == &2)
+		.find_index(|next| next == &90)
 		.subscribe(destination);
 
-	source.next(0);
-	source.next(1);
-	source.next(2);
+	source.next(99);
+	source.next(90);
+	source.next(20);
 	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
-		"find",
+		"find_index",
 		0,
 		[
-			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
 			SubscriberNotification::Unsubscribe,
 		],
@@ -33,22 +33,22 @@ fn should_emit_the_found_value_and_complete() {
 
 #[test]
 fn should_compose() {
-	let destination = MockObserver::<usize, FindOperatorError<&'static str>>::default();
+	let destination = MockObserver::<usize, FindIndexOperatorError<&'static str>>::default();
 	let notification_collector = destination.get_notification_collector();
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let composed = compose_operator::<usize, &'static str>().find(|next| next == &2);
+	let composed = compose_operator::<usize, &'static str>().find_index(|next| next == &20);
 
 	let subscription = source.clone().pipe(composed).subscribe(destination);
 
-	source.next(0);
-	source.next(1);
-	source.next(2);
+	source.next(99);
+	source.next(90);
+	source.next(20);
 	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
-		"find",
+		"find_index",
 		0,
 		[
 			SubscriberNotification::Next(2),
@@ -61,14 +61,14 @@ fn should_compose() {
 
 #[test]
 fn should_forward_upstream_errors_wrapped() {
-	let destination = MockObserver::<usize, FindOperatorError<&'static str>>::default();
+	let destination = MockObserver::<usize, FindIndexOperatorError<&'static str>>::default();
 	let notification_collector = destination.get_notification_collector();
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
 	let subscription = source
 		.clone()
-		.find(|next| next == &2)
+		.find_index(|next| next == &2)
 		.subscribe(destination);
 
 	let error = "error";
@@ -76,10 +76,10 @@ fn should_forward_upstream_errors_wrapped() {
 	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
-		"find",
+		"find_index",
 		0,
 		[
-			SubscriberNotification::Error(FindOperatorError::Upstream(error)),
+			SubscriberNotification::Error(FindIndexOperatorError::Upstream(error)),
 			SubscriberNotification::Unsubscribe,
 		],
 		true,
@@ -91,14 +91,14 @@ mod no_match_observed_error {
 
 	#[test]
 	fn should_error_when_completing_before_the_result_was_found_but_notifications_were_observed() {
-		let destination = MockObserver::<usize, FindOperatorError<&'static str>>::default();
+		let destination = MockObserver::<usize, FindIndexOperatorError<&'static str>>::default();
 		let notification_collector = destination.get_notification_collector();
 
 		let mut source = PublishSubject::<usize, &'static str>::default();
 
 		let subscription = source
 			.clone()
-			.find(|next| next == &2)
+			.find_index(|next| next == &2)
 			.subscribe(destination);
 
 		source.next(0);
@@ -106,10 +106,10 @@ mod no_match_observed_error {
 		assert!(subscription.is_closed());
 
 		notification_collector.lock().assert_notifications(
-			"find",
+			"find_index",
 			0,
 			[
-				SubscriberNotification::Error(FindOperatorError::NoMatchObserved),
+				SubscriberNotification::Error(FindIndexOperatorError::NoMatchObserved),
 				SubscriberNotification::Unsubscribe,
 			],
 			true,
@@ -122,24 +122,24 @@ mod no_next_observed_error {
 
 	#[test]
 	fn should_error_when_completing_before_any_value_was_even_observed() {
-		let destination = MockObserver::<usize, FindOperatorError<&'static str>>::default();
+		let destination = MockObserver::<usize, FindIndexOperatorError<&'static str>>::default();
 		let notification_collector = destination.get_notification_collector();
 
 		let mut source = PublishSubject::<usize, &'static str>::default();
 
 		let subscription = source
 			.clone()
-			.find(|next| next == &2)
+			.find_index(|next| next == &2)
 			.subscribe(destination);
 
 		source.complete();
 		assert!(subscription.is_closed());
 
 		notification_collector.lock().assert_notifications(
-			"find",
+			"find_index",
 			0,
 			[
-				SubscriberNotification::Error(FindOperatorError::NoNextObservedBeforeComplete),
+				SubscriberNotification::Error(FindIndexOperatorError::NoNextObservedBeforeComplete),
 				SubscriberNotification::Unsubscribe,
 			],
 			true,

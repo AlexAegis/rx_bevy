@@ -1,10 +1,12 @@
 mod find_index_operator;
+mod find_index_operator_error;
 mod find_index_subscriber;
 
 pub use find_index_subscriber::*;
 
 pub mod operator {
 	pub use super::find_index_operator::*;
+	pub use super::find_index_operator_error::*;
 }
 
 #[cfg(feature = "compose")]
