@@ -25,6 +25,63 @@ fn should_replay_its_value_to_new_subscribers() {
 	);
 }
 
+#[test]
+fn should_error_normally() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut provenance_subject =
+		ProvenanceSubject::<TestProvenance, usize, &'static str>::new(1, TestProvenance::Foo);
+
+	let _s = provenance_subject.clone().subscribe(destination);
+
+	let error = "error";
+	provenance_subject.error(error);
+
+	notification_collector.lock().assert_notifications(
+		"provenance_subject",
+		0,
+		[
+			SubscriberNotification::Next((1, TestProvenance::Foo)),
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+}
+
+#[test]
+fn should_complete_normally() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut provenance_subject =
+		ProvenanceSubject::<TestProvenance, usize, &'static str>::new(1, TestProvenance::Foo);
+
+	let _s = provenance_subject.clone().subscribe(destination);
+
+	provenance_subject.complete();
+
+	notification_collector.lock().assert_notifications(
+		"provenance_subject",
+		0,
+		[
+			SubscriberNotification::Next((1, TestProvenance::Foo)),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+}
+
+#[test]
+fn should_provide_access_to_the_current_value() {
+	let provenance_subject =
+		ProvenanceSubject::<TestProvenance, usize, &'static str>::new(1, TestProvenance::Foo);
+
+	assert_eq!(provenance_subject.value(), (1, TestProvenance::Foo))
+}
+
 mod all {
 	use super::*;
 
