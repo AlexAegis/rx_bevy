@@ -1,5 +1,6 @@
 use std::sync::{Arc, Mutex};
 
+use derive_where::derive_where;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
 	LockWithPoisonBehavior, Observable, SubjectLike, Subscriber, SubscriptionLike,
@@ -16,6 +17,7 @@ use crate::{
 pub type ConnectionSubscription<Source, Connector> =
 	<Source as Observable>::Subscription<ConnectionSubscriber<Connector>>;
 
+#[derive_where(Clone)]
 #[derive(RxObservable)]
 #[rx_out(Connector::Out)]
 #[rx_out_error(Connector::OutError)]
@@ -56,22 +58,6 @@ where
 			))),
 			connection,
 			connection_state,
-		}
-	}
-}
-
-impl<Source, Connector> Clone for ConnectableObservable<Source, Connector>
-where
-	Source: Observable,
-	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
-		'static + TeardownCollection,
-{
-	fn clone(&self) -> Self {
-		Self {
-			connector: self.connector.clone(),
-			connection: self.connection.clone(),
-			connection_state: self.connection_state.clone(),
 		}
 	}
 }
