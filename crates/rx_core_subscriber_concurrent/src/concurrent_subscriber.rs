@@ -282,6 +282,7 @@ where
 				.data
 				.lock_with_poison_behavior(|inner| inner.unsubscribe());
 			lock.destination.error(error);
+			lock.destination.unsubscribe();
 		}
 	}
 
