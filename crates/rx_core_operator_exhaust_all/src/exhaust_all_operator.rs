@@ -1,42 +1,51 @@
 use core::{marker::PhantomData, num::NonZero};
 
+use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_exhaust::ExhaustSubscriberProvider;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
+// TODO: ALL HIGHER ORDER OPERATORS NEED ERROR MAPPER FNs BECAUSE INFALLIBLE ISN'T INTO<T> (unreachable) by itself.
+// maybe try a inner error type that never can impl from for and outerror too generically? to swap between unreachable and into easily
+#[derive_where(Clone; ErrorMapper)]
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(In::Out)]
 #[rx_out_error(In::OutError)]
-pub struct ExhaustAllOperator<In, InError>
+pub struct ExhaustAllOperator<In, InError, ErrorMapper>
 where
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync + Clone,
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
 {
-	_phantom_data: PhantomData<(In, InError)>,
+	error_mapper: ErrorMapper,
+	_phantom_data: PhantomData<fn(In, InError, ErrorMapper) -> (In, InError, ErrorMapper)>,
 }
 
-impl<In, InError> Default for ExhaustAllOperator<In, InError>
+impl<In, InError, ErrorMapper> ExhaustAllOperator<In, InError, ErrorMapper>
 where
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync + Clone,
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
 {
-	fn default() -> Self {
+	pub fn new(error_mapper: ErrorMapper) -> Self {
 		Self {
+			error_mapper,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError> ComposableOperator for ExhaustAllOperator<In, InError>
+impl<In, InError, ErrorMapper> ComposableOperator for ExhaustAllOperator<In, InError, ErrorMapper>
 where
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync + Clone,
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
 {
 	type Subscriber<Destination>
-		= HigherOrderAllSubscriber<In, InError, ExhaustSubscriberProvider, Destination>
+		= HigherOrderAllSubscriber<In, InError, ExhaustSubscriberProvider, ErrorMapper, Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -48,18 +57,10 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderAllSubscriber::new(destination, NonZero::<usize>::MIN)
-	}
-}
-
-impl<In, InError> Clone for ExhaustAllOperator<In, InError>
-where
-	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
-{
-	fn clone(&self) -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
+		HigherOrderAllSubscriber::new(
+			destination,
+			self.error_mapper.clone(),
+			NonZero::<usize>::MIN,
+		)
 	}
 }

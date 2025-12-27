@@ -23,6 +23,7 @@ fn main() {
 				Either::Right => r.clone(),
 			},
 			usize::MAX,
+			Never::error_mapper(),
 		)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("merge_map"));

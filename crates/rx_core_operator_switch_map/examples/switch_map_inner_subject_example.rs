@@ -17,10 +17,13 @@ fn main() {
 		.clone()
 		.finalize(|| println!("finalize: upstream"))
 		.tap_next(|n| println!("emit (source): {n:?}"))
-		.switch_map(move |next| match next {
-			Either::Left => l.clone(),
-			Either::Right => r.clone(),
-		})
+		.switch_map(
+			move |next| match next {
+				Either::Left => l.clone(),
+				Either::Right => r.clone(),
+			},
+			|_| unreachable!(),
+		)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("switch_map"));
 

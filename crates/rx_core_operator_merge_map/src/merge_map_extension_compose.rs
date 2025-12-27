@@ -8,18 +8,24 @@ pub trait OperatorComposeExtensionMergeMap: ComposableOperator + Sized {
 	fn merge_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		ErrorMapper: 'static + Fn(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
 		concurrency_limit: usize,
+		error_mapper: ErrorMapper,
 	) -> CompositeOperator<
 		Self,
-		MergeMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>,
+		MergeMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable>,
 	>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		self.compose_with(MergeMapOperator::new(mapper, concurrency_limit))
+		self.compose_with(MergeMapOperator::new(
+			mapper,
+			error_mapper,
+			concurrency_limit,
+		))
 	}
 }
 

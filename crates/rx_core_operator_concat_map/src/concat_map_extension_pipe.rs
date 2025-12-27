@@ -7,14 +7,16 @@ pub trait ObservablePipeExtensionConcatMap: Observable + Sized {
 	fn concat_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		ErrorMapper: 'static + Fn(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
-	) -> <ConcatMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable> as Operator>::OutObservable<Self>
+		error_mapper: ErrorMapper,
+	) -> <ConcatMapOperator<Self::Out, Self::OutError, Mapper,ErrorMapper, NextInnerObservable> as Operator>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		ConcatMapOperator::new(mapper).operate(self)
+		ConcatMapOperator::new(mapper, error_mapper).operate(self)
 	}
 }
 

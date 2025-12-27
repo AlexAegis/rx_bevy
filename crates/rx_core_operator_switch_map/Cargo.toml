@@ -33,6 +33,7 @@ rx_core_macro_operator_derive = { workspace = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 rx_core_subscriber_switch = { workspace = true }
 rx_core_subscriber_higher_order_map = { workspace = true }
+derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

@@ -25,7 +25,7 @@ fn main() {
 			.take(next)
 			.map(move |i| format!("{i} (Timer of {next})"))
 		})
-		.concat_all()
+		.concat_all(Never::error_mapper())
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("concat_all"));
 

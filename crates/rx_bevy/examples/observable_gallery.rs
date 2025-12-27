@@ -244,24 +244,27 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 						KeyCode::Digit1 | KeyCode::Digit2 | KeyCode::Digit3 | KeyCode::Digit4
 					)
 				})
-				.switch_map(move |key_code| {
-					let duration = match key_code {
-						KeyCode::Digit1 => Duration::from_millis(5),
-						KeyCode::Digit2 => Duration::from_millis(100),
-						KeyCode::Digit3 => Duration::from_millis(500),
-						KeyCode::Digit4 => Duration::from_millis(2000),
-						_ => unreachable!(),
-					};
-					println!("Switching to a new inner observable with duration: {duration:?}");
-					IntervalObservable::new(
-						IntervalObservableOptions {
-							duration,
-							start_on_subscribe: false,
-							max_emissions_per_tick: 4,
-						},
-						schedule_update_virtual.clone(),
-					)
-				})
+				.switch_map(
+					move |key_code| {
+						let duration = match key_code {
+							KeyCode::Digit1 => Duration::from_millis(5),
+							KeyCode::Digit2 => Duration::from_millis(100),
+							KeyCode::Digit3 => Duration::from_millis(500),
+							KeyCode::Digit4 => Duration::from_millis(2000),
+							_ => unreachable!(),
+						};
+						println!("Switching to a new inner observable with duration: {duration:?}");
+						IntervalObservable::new(
+							IntervalObservableOptions {
+								duration,
+								start_on_subscribe: false,
+								max_emissions_per_tick: 4,
+							},
+							schedule_update_virtual.clone(),
+						)
+					},
+					|_| unreachable!(),
+				)
 				.scan(|acc, _next| acc + 1, 0_usize)
 				.into_component(),
 		))

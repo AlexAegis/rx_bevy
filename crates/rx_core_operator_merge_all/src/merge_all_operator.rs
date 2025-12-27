@@ -12,35 +12,40 @@ use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 #[rx_in_error(InError)]
 #[rx_out(In::Out)]
 #[rx_out_error(In::OutError)]
-pub struct MergeAllOperator<In, InError>
+pub struct MergeAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
 {
 	concurrency_limit: NonZero<usize>,
+	error_mapper: ErrorMapper,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError> MergeAllOperator<In, InError>
+impl<In, InError, ErrorMapper> MergeAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
 {
-	pub fn new(concurrency_limit: usize) -> Self {
+	pub fn new(concurrency_limit: usize, error_mapper: ErrorMapper) -> Self {
 		Self {
 			concurrency_limit: NonZero::new(concurrency_limit).unwrap_or(NonZero::<usize>::MIN),
+			error_mapper,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError> ComposableOperator for MergeAllOperator<In, InError>
+impl<In, InError, ErrorMapper> ComposableOperator for MergeAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
-		= HigherOrderAllSubscriber<In, InError, ConcurrentSubscriberProvider, Destination>
+		= HigherOrderAllSubscriber<In, InError, ConcurrentSubscriberProvider, ErrorMapper, Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -52,7 +57,11 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderAllSubscriber::new(destination, self.concurrency_limit)
+		HigherOrderAllSubscriber::new(
+			destination,
+			self.error_mapper.clone(),
+			self.concurrency_limit,
+		)
 	}
 }
 
@@ -70,7 +79,7 @@ mod test {
 
 		let mut source = (1..=2)
 			.into_observable()
-			.switch_map(|_| (10..=12).into_observable());
+			.switch_map(|_| (10..=12).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 		assert!(
 			notification_collector
@@ -91,7 +100,9 @@ mod test {
 		let notification_collector = mock_destination.get_notification_collector();
 
 		let mut subject = PublishSubject::<i32, Never>::default();
-		let mut source = subject.clone().switch_map(|i| (0..=i).into_observable());
+		let mut source = subject
+			.clone()
+			.switch_map(|i| (0..=i).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 
 		subject.next(1);
@@ -130,7 +141,9 @@ mod test {
 		let notification_collector = mock_destination.get_notification_collector();
 
 		let mut subject = PublishSubject::<i32, Never>::default();
-		let mut source = subject.clone().switch_map(|i| (0..=i).into_observable());
+		let mut source = subject
+			.clone()
+			.switch_map(|i| (0..=i).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 
 		subject.next(1);

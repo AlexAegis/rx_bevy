@@ -17,36 +17,49 @@ pub struct HigherOrderMapSubscriber<
 	Mapper,
 	InnerObservable,
 	HigherOrderSubscriber,
+	ErrorMapper,
 	Destination,
 > where
 	In: Signal,
-	InError: Signal + Into<InnerObservable::OutError>,
+	InError: Signal,
 	Mapper: FnMut(In) -> InnerObservable,
 	InnerObservable: Observable + Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
+	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Send + Sync,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	#[destination]
 	destination: HigherOrderSubscriber::HigherOrderSubscriber<InnerObservable, Destination>,
 	mapper: Mapper,
+	error_mapper: ErrorMapper,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError, Mapper, InnerObservable, HigherOrderSubscriber, Destination>
-	HigherOrderMapSubscriber<In, InError, Mapper, InnerObservable, HigherOrderSubscriber, Destination>
+impl<In, InError, Mapper, InnerObservable, HigherOrderSubscriber, ErrorMapper, Destination>
+	HigherOrderMapSubscriber<
+		In,
+		InError,
+		Mapper,
+		InnerObservable,
+		HigherOrderSubscriber,
+		ErrorMapper,
+		Destination,
+	>
 where
 	In: Signal,
-	InError: Signal + Into<InnerObservable::OutError>,
+	InError: Signal,
 	Mapper: FnMut(In) -> InnerObservable,
 	InnerObservable: Observable + Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
+	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Send + Sync,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	pub fn new(
 		destination: Destination,
 		mapper: Mapper,
+		error_mapper: ErrorMapper,
 		concurrency_limit: NonZero<usize>,
 	) -> Self {
 		Self {
@@ -55,26 +68,29 @@ where
 				Destination,
 			>::new_from_destination(destination, concurrency_limit),
 			mapper,
+			error_mapper,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, Mapper, InnerObservable, HigherOrderSubscriber, Destination> Observer
+impl<In, InError, Mapper, InnerObservable, HigherOrderSubscriber, ErrorMapper, Destination> Observer
 	for HigherOrderMapSubscriber<
 		In,
 		InError,
 		Mapper,
 		InnerObservable,
 		HigherOrderSubscriber,
+		ErrorMapper,
 		Destination,
 	>
 where
 	In: Signal,
-	InError: Signal + Into<InnerObservable::OutError>,
+	InError: Signal,
 	Mapper: FnMut(In) -> InnerObservable,
 	InnerObservable: Observable + Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
+	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Send + Sync,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
@@ -86,7 +102,7 @@ where
 	/// For upstream errors
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error(error.into());
+		self.destination.error((self.error_mapper)(error));
 	}
 
 	#[inline]

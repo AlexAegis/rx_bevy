@@ -6,39 +6,44 @@ use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
-#[derive_where(Clone, Default)]
+#[derive_where(Clone)]
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(In::Out)]
 #[rx_out_error(In::OutError)]
-pub struct ConcatAllOperator<In, InError>
+pub struct ConcatAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
 {
+	error_mapper: ErrorMapper,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError> ConcatAllOperator<In, InError>
+impl<In, InError, ErrorMapper> ConcatAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
 {
-	pub fn new() -> Self {
+	pub fn new(error_mapper: ErrorMapper) -> Self {
 		Self {
+			error_mapper,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError> ComposableOperator for ConcatAllOperator<In, InError>
+impl<In, InError, ErrorMapper> ComposableOperator for ConcatAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
-	InError: Signal + Into<In::OutError>,
+	InError: Signal,
+	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
-		= HigherOrderAllSubscriber<In, InError, ConcurrentSubscriberProvider, Destination>
+		= HigherOrderAllSubscriber<In, InError, ConcurrentSubscriberProvider, ErrorMapper, Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 
@@ -50,13 +55,16 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderAllSubscriber::new(destination, NonZero::<usize>::MIN)
+		HigherOrderAllSubscriber::new(
+			destination,
+			self.error_mapper.clone(),
+			NonZero::<usize>::MIN,
+		)
 	}
 }
 
 #[cfg(test)]
 mod test {
-
 	use rx_core::prelude::*;
 	use rx_core_testing::prelude::*;
 	use rx_core_traits::SubscriberNotification;
@@ -68,7 +76,7 @@ mod test {
 
 		let mut source = (1..=2)
 			.into_observable()
-			.switch_map(|_| (10..=12).into_observable());
+			.switch_map(|_| (10..=12).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 		assert!(
 			notification_collector
@@ -89,7 +97,9 @@ mod test {
 		let notification_collector = mock_destination.get_notification_collector();
 
 		let mut subject = PublishSubject::<i32, Never>::default();
-		let mut source = subject.clone().switch_map(|i| (0..=i).into_observable());
+		let mut source = subject
+			.clone()
+			.switch_map(|i| (0..=i).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 
 		subject.next(1);
@@ -128,7 +138,9 @@ mod test {
 		let notification_collector = mock_destination.get_notification_collector();
 
 		let mut subject = PublishSubject::<i32, Never>::default();
-		let mut source = subject.clone().switch_map(|i| (0..=i).into_observable());
+		let mut source = subject
+			.clone()
+			.switch_map(|i| (0..=i).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 
 		subject.next(1);

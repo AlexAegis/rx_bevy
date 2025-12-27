@@ -11,18 +11,21 @@ fn main() {
 
 	let mut subscription = source
 		.clone()
-		.exhaust_map(move |next| {
-			println!("Trying to switch to the {}. inner observable..", next);
-			interval(
-				IntervalObservableOptions {
-					duration: Duration::from_millis(1000),
-					max_emissions_per_tick: 10,
-					start_on_subscribe: false,
-				},
-				scheduler.clone(),
-			)
-			.take(3)
-		})
+		.exhaust_map(
+			move |next| {
+				println!("Trying to switch to the {}. inner observable..", next);
+				interval(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(1000),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: false,
+					},
+					scheduler.clone(),
+				)
+				.take(3)
+			},
+			Never::error_mapper(),
+		)
 		.subscribe(PrintObserver::new("exhaust_map"));
 
 	source.next(1);

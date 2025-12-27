@@ -5,13 +5,16 @@ fn main() {
 		.into_observable()
 		.finalize(|| println!("finalize: upstream"))
 		.tap_next(|n| println!("emit (source): {n}"))
-		.switch_map(|next| {
-			(next..=3)
-				.into_observable()
-				.map(move |i| format!("from {next} through 3, current: {i}"))
-				.finalize(|| println!("finalize: inner"))
-				.tap_next(|n| println!("emit (inner): '{n}'"))
-		})
+		.switch_map(
+			|next| {
+				(next..=3)
+					.into_observable()
+					.map(move |i| format!("from {next} through 3, current: {i}"))
+					.finalize(|| println!("finalize: inner"))
+					.tap_next(|n| println!("emit (inner): '{n}'"))
+			},
+			|_| unreachable!(),
+		)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("switch_map"));
 	subscription.unsubscribe();

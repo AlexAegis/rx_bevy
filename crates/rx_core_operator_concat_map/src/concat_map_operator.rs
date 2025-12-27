@@ -1,47 +1,55 @@
 use core::{marker::PhantomData, num::NonZero};
 
+use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
 use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
 use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
+#[derive_where(Clone)]
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_out(InnerObservable::Out)]
 #[rx_out_error(InnerObservable::OutError)]
-pub struct ConcatMapOperator<In, InError, Mapper, InnerObservable>
+pub struct ConcatMapOperator<In, InError, Mapper, ErrorMapper, InnerObservable>
 where
 	In: Signal,
-	InError: Signal + Into<InnerObservable::OutError>,
+	InError: Signal,
 	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	mapper: Mapper,
+	error_mapper: ErrorMapper,
 	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
 }
 
-impl<In, InError, Mapper, InnerObservable> ConcatMapOperator<In, InError, Mapper, InnerObservable>
+impl<In, InError, Mapper, ErrorMapper, InnerObservable>
+	ConcatMapOperator<In, InError, Mapper, ErrorMapper, InnerObservable>
 where
 	In: Signal,
-	InError: Signal + Into<InnerObservable::OutError>,
+	InError: Signal,
 	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
-	pub fn new(mapper: Mapper) -> Self {
+	pub fn new(mapper: Mapper, error_mapper: ErrorMapper) -> Self {
 		Self {
 			mapper,
+			error_mapper,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<In, InError, Mapper, InnerObservable> ComposableOperator
-	for ConcatMapOperator<In, InError, Mapper, InnerObservable>
+impl<In, InError, Mapper, ErrorMapper, InnerObservable> ComposableOperator
+	for ConcatMapOperator<In, InError, Mapper, ErrorMapper, InnerObservable>
 where
 	In: Signal,
-	InError: Signal + Into<InnerObservable::OutError>,
+	InError: Signal,
 	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
+	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>
@@ -51,6 +59,7 @@ where
 		Mapper,
 		InnerObservable,
 		ConcurrentSubscriberProvider,
+		ErrorMapper,
 		Destination,
 	>
 	where
@@ -64,23 +73,12 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderMapSubscriber::new(destination, self.mapper.clone(), NonZero::<usize>::MIN)
-	}
-}
-
-impl<In, InError, Mapper, InnerObservable> Clone
-	for ConcatMapOperator<In, InError, Mapper, InnerObservable>
-where
-	In: Signal,
-	InError: Signal + Into<InnerObservable::OutError>,
-	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
-	InnerObservable: Observable + Signal,
-{
-	fn clone(&self) -> Self {
-		Self {
-			mapper: self.mapper.clone(),
-			_phantom_data: PhantomData,
-		}
+		HigherOrderMapSubscriber::new(
+			destination,
+			self.mapper.clone(),
+			self.error_mapper.clone(),
+			NonZero::<usize>::MIN,
+		)
 	}
 }
 
@@ -89,7 +87,7 @@ mod test {
 
 	use rx_core::prelude::*;
 	use rx_core_testing::prelude::*;
-	use rx_core_traits::SubscriberNotification;
+	use rx_core_traits::{Never, SubscriberNotification, WithErrorMapper};
 
 	#[test]
 	fn subscribes_to_the_inner_observable_as_many_times_as_many_upstream_emissions_there_are() {
@@ -98,7 +96,7 @@ mod test {
 
 		let mut source = (1..=2)
 			.into_observable()
-			.switch_map(|_| (10..=12).into_observable());
+			.switch_map(|_| (10..=12).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 		assert!(
 			notification_collector
@@ -119,7 +117,9 @@ mod test {
 		let notification_collector = mock_destination.get_notification_collector();
 
 		let mut subject = PublishSubject::<i32, Never>::default();
-		let mut source = subject.clone().switch_map(|i| (0..=i).into_observable());
+		let mut source = subject
+			.clone()
+			.switch_map(|i| (0..=i).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 
 		subject.next(1);
@@ -158,7 +158,9 @@ mod test {
 		let notification_collector = mock_destination.get_notification_collector();
 
 		let mut subject = PublishSubject::<i32, Never>::default();
-		let mut source = subject.clone().switch_map(|i| (0..=i).into_observable());
+		let mut source = subject
+			.clone()
+			.switch_map(|i| (0..=i).into_observable(), Never::error_mapper());
 		let mut subscription = source.subscribe(mock_destination);
 
 		subject.next(1);

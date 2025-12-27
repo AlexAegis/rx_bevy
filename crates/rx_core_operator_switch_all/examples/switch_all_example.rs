@@ -12,7 +12,7 @@ fn main() {
 				.finalize(|| println!("finalize: inner"))
 				.tap_next(|n| println!("emit (inner): '{n}'"))
 		})
-		.switch_all()
+		.switch_all(Never::error_mapper())
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("switch_map"));
 	subscription.unsubscribe();

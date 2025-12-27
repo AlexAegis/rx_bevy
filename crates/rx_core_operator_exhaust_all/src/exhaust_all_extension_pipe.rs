@@ -4,14 +4,21 @@ use crate::operator::ExhaustAllOperator;
 
 pub trait ObservablePipeExtensionExhaustAll: Observable + Sized {
 	#[inline]
-	fn exhaust_all(
+	fn exhaust_all<
+		ErrorMapper: 'static
+			+ Fn(Self::OutError) -> <Self::Out as ObservableOutput>::OutError
+			+ Clone
+			+ Send
+			+ Sync,
+	>(
 		self,
-	) -> <ExhaustAllOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self>
+		error_mapper: ErrorMapper,
+	) -> <ExhaustAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator>::OutObservable<Self>
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
 	{
-		ExhaustAllOperator::default().operate(self)
+		ExhaustAllOperator::new(error_mapper).operate(self)
 	}
 }
 

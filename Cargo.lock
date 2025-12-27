@@ -4815,6 +4815,7 @@ dependencies = [
 name = "rx_core_operator_concat_map"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
@@ -4893,6 +4894,7 @@ dependencies = [
 name = "rx_core_operator_exhaust_all"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
@@ -4906,6 +4908,7 @@ dependencies = [
 name = "rx_core_operator_exhaust_map"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
@@ -5116,6 +5119,7 @@ dependencies = [
 name = "rx_core_operator_merge_map"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
@@ -5194,6 +5198,7 @@ dependencies = [
 name = "rx_core_operator_switch_all"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
@@ -5207,6 +5212,7 @@ dependencies = [
 name = "rx_core_operator_switch_map"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",

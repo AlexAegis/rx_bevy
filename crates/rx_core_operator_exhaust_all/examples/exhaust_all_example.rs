@@ -23,7 +23,7 @@ fn main() {
 			)
 			.take(3)
 		})
-		.exhaust_all()
+		.exhaust_all(Never::error_mapper())
 		.subscribe(PrintObserver::new("exhaust_map"));
 
 	source.next(1);

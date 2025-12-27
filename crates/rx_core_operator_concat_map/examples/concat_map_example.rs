@@ -17,10 +17,13 @@ fn main() {
 		.clone()
 		.finalize(|| println!("finalize: upstream"))
 		.tap_next(|n| println!("emit (source): {n:?}"))
-		.concat_map(move |next| match next {
-			Either::Left => l.clone(),
-			Either::Right => r.clone(),
-		})
+		.concat_map(
+			move |next| match next {
+				Either::Left => l.clone(),
+				Either::Right => r.clone(),
+			},
+			Never::error_mapper(),
+		)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("concat_map"));
 

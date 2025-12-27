@@ -7,14 +7,16 @@ pub trait ObservablePipeExtensionExhaustMap: Observable + Sized {
 	fn exhaust_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		ErrorMapper: 'static + Fn(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
-	) -> <ExhaustMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable> as Operator>::OutObservable<Self>
+		error_mapper: ErrorMapper,
+	) -> <ExhaustMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		ExhaustMapOperator::new(mapper).operate(self)
+		ExhaustMapOperator::new(mapper, error_mapper).operate(self)
 	}
 }
 

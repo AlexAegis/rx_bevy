@@ -8,17 +8,19 @@ pub trait OperatorComposeExtensionConcatMap: ComposableOperator + Sized {
 	fn concat_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+		ErrorMapper: 'static + Fn(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,
+		error_mapper: ErrorMapper,
 	) -> CompositeOperator<
 		Self,
-		ConcatMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable>,
+		ConcatMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable>,
 	>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		self.compose_with(ConcatMapOperator::new(mapper))
+		self.compose_with(ConcatMapOperator::new(mapper, error_mapper))
 	}
 }
 

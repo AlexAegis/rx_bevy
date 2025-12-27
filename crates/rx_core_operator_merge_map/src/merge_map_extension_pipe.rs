@@ -7,15 +7,18 @@ pub trait ObservablePipeExtensionMergeMap: Observable + Sized {
 	fn merge_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
+				ErrorMapper: 'static + Fn(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
+
 	>(
 		self,
 		mapper: Mapper,
 		concurrency_limit: usize,
-	) -> <MergeMapOperator<Self::Out, Self::OutError, Mapper, NextInnerObservable> as Operator>::OutObservable<Self>
+		error_mapper: ErrorMapper,
+	) -> <MergeMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
-		MergeMapOperator::new(mapper, concurrency_limit).operate(self)
+		MergeMapOperator::new(mapper, error_mapper, concurrency_limit).operate(self)
 	}
 }
 

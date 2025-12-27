@@ -4,14 +4,21 @@ use crate::operator::SwitchAllOperator;
 
 pub trait ObservablePipeExtensionSwitchAll: Observable + Sized {
 	#[inline]
-	fn switch_all(
+	fn switch_all<
+		ErrorMapper: 'static
+			+ Fn(Self::OutError) -> <Self::Out as ObservableOutput>::OutError
+			+ Clone
+			+ Send
+			+ Sync,
+	>(
 		self,
-	) -> <SwitchAllOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self>
+		error_mapper: ErrorMapper,
+	) -> <SwitchAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator>::OutObservable<Self>
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
 	{
-		SwitchAllOperator::default().operate(self)
+		SwitchAllOperator::new(error_mapper).operate(self)
 	}
 }
 

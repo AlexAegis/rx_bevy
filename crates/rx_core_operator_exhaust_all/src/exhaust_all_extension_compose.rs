@@ -5,12 +5,21 @@ use crate::operator::ExhaustAllOperator;
 
 pub trait OperatorComposeExtensionExhaustAll: ComposableOperator + Sized {
 	#[inline]
-	fn exhaust_all(self) -> CompositeOperator<Self, ExhaustAllOperator<Self::Out, Self::OutError>>
+	fn exhaust_all<
+		ErrorMapper: 'static
+			+ Fn(Self::OutError) -> <Self::Out as ObservableOutput>::OutError
+			+ Clone
+			+ Send
+			+ Sync,
+	>(
+		self,
+		error_mapper: ErrorMapper,
+	) -> CompositeOperator<Self, ExhaustAllOperator<Self::Out, Self::OutError, ErrorMapper>>
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
 	{
-		self.compose_with(ExhaustAllOperator::default())
+		self.compose_with(ExhaustAllOperator::new(error_mapper))
 	}
 }
 

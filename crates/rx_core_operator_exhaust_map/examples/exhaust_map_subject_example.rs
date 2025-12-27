@@ -17,11 +17,14 @@ fn main() {
 	let top_clone = top.clone();
 	let mut subscription = source
 		.clone()
-		.exhaust_map(move |next| match next {
-			Either::Left => left_clone.clone(),
-			Either::Right => right_clone.clone(),
-			Either::Top => top_clone.clone(),
-		})
+		.exhaust_map(
+			move |next| match next {
+				Either::Left => left_clone.clone(),
+				Either::Right => right_clone.clone(),
+				Either::Top => top_clone.clone(),
+			},
+			Never::error_mapper(),
+		)
 		.subscribe(PrintObserver::new("exhaust_map"));
 
 	source.next(Either::Left);
