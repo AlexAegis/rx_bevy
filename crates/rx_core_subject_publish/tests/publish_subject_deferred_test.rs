@@ -648,7 +648,7 @@ fn should_be_able_to_handle_a_lot_of_nested_deferred_events() {
 
 /// Don't do this either.
 #[test]
-fn should_be_able_to_() {
+fn should_be_able_to_recursively_subscribe_to_itself() {
 	let destination_1 = MockObserver::default();
 	let notification_collector_1 = destination_1.get_notification_collector();
 

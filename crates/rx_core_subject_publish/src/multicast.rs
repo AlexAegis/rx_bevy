@@ -115,13 +115,12 @@ where
 		state: Arc<Mutex<MulticastState<In, InError>>>,
 		subscribers: &mut MutexGuard<'_, Subscribers<In, InError>>,
 	) {
-		let mut queue_depth = 0;
-		loop {
+		for queue_depth in 0..=MULTICAST_MAX_RECURSION_DEPTH {
 			let notifications = {
 				let mut locked_state = state.lock_ignore_poison();
 
 				// Infinite loop protection
-				if queue_depth > MULTICAST_MAX_RECURSION_DEPTH {
+				if queue_depth == MULTICAST_MAX_RECURSION_DEPTH {
 					panic!(
 						"Notification queue depth have exceeded {MULTICAST_MAX_RECURSION_DEPTH}!"
 					)
@@ -153,10 +152,11 @@ where
 					}
 				}
 
-				let is_terminal_signal = matches!(
-					&notification,
-					MulticastNotification::Complete | MulticastNotification::Error(_)
-				);
+				let is_complete = matches!(&notification, MulticastNotification::Complete);
+
+				let is_error = matches!(&notification, MulticastNotification::Error(_));
+
+				let is_terminal = is_complete || is_error;
 
 				let is_unsubscribe = matches!(&notification, MulticastNotification::Unsubscribe);
 
@@ -165,17 +165,16 @@ where
 					subscribers.apply(notification);
 				}
 
-				if is_terminal_signal {
+				if is_terminal {
 					subscribers.apply(MulticastNotification::Unsubscribe);
 				}
 
-				if is_unsubscribe || is_terminal_signal {
+				if is_unsubscribe || is_terminal {
 					state.lock_ignore_poison().closed_flag.close();
 				}
 			}
 
 			subscribers.clean();
-			queue_depth += 1;
 		}
 	}
 
@@ -365,5 +364,100 @@ where
 			observed_error: None,
 			deferred_notifications_queue: Vec::default(),
 		}
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use std::sync::{Arc, Mutex};
+
+	use rx_core_testing::MockObserver;
+	use rx_core_traits::{LockWithPoisonBehavior, Never, SubscriptionLike};
+
+	use crate::internal::{MulticastNotification, MulticastState, SharedSubscribers};
+
+	#[test]
+	fn should_unsubscribe_deferred_subscriber_adds_when_adding_to_an_already_closed_multicast() {
+		let mut multicast_state = MulticastState::<usize, Never>::default();
+		let shared_destination = Arc::new(Mutex::new(MockObserver::default()));
+		multicast_state.closed_flag.close();
+		assert!(!shared_destination.is_closed());
+
+		multicast_state.defer_notification(MulticastNotification::Add(shared_destination.clone()));
+		assert!(shared_destination.is_closed());
+	}
+
+	#[test]
+	fn should_unsubscribe_deferred_subscriber_if_multicast_was_closed_between_defer_and_apply() {
+		let multicast_state = Arc::new(Mutex::new(MulticastState::<usize, Never>::default()));
+		let shared_subscribers = SharedSubscribers::new(multicast_state.clone());
+		let shared_destination = Arc::new(Mutex::new(MockObserver::default()));
+
+		assert!(!shared_destination.is_closed());
+
+		multicast_state
+			.lock_ignore_poison()
+			.defer_notification(MulticastNotification::Add(shared_destination.clone()));
+
+		assert!(!shared_destination.is_closed());
+
+		multicast_state.lock_ignore_poison().closed_flag.close();
+
+		SharedSubscribers::apply_notification_queue(
+			multicast_state,
+			&mut shared_subscribers.subscribers.lock_ignore_poison(),
+		);
+
+		assert!(shared_destination.is_closed());
+	}
+
+	#[test]
+	fn should_unsubscribe_subscribers_when_a_deferred_terminal_complete_signal_is_applied() {
+		let multicast_state = Arc::new(Mutex::new(MulticastState::<usize, Never>::default()));
+		let mut shared_subscribers = SharedSubscribers::new(multicast_state.clone());
+		let shared_destination = Arc::new(Mutex::new(MockObserver::<usize, Never>::default()));
+		shared_subscribers
+			.try_add_subscriber(shared_destination.clone())
+			.expect("to be successful");
+
+		assert!(!shared_destination.is_closed());
+
+		multicast_state
+			.lock_ignore_poison()
+			.defer_notification(MulticastNotification::Complete);
+
+		assert!(!shared_destination.is_closed());
+
+		SharedSubscribers::apply_notification_queue(
+			multicast_state,
+			&mut shared_subscribers.subscribers.lock_ignore_poison(),
+		);
+		assert!(shared_destination.is_closed());
+	}
+
+	#[test]
+	fn should_unsubscribe_subscribers_when_a_deferred_terminal_error_signal_is_applied() {
+		let multicast_state =
+			Arc::new(Mutex::new(MulticastState::<usize, &'static str>::default()));
+		let mut shared_subscribers = SharedSubscribers::new(multicast_state.clone());
+		let shared_destination =
+			Arc::new(Mutex::new(MockObserver::<usize, &'static str>::default()));
+		shared_subscribers
+			.try_add_subscriber(shared_destination.clone())
+			.expect("to be successful");
+
+		assert!(!shared_destination.is_closed());
+
+		multicast_state
+			.lock_ignore_poison()
+			.defer_notification(MulticastNotification::Error("error"));
+
+		assert!(!shared_destination.is_closed());
+
+		SharedSubscribers::apply_notification_queue(
+			multicast_state,
+			&mut shared_subscribers.subscribers.lock_ignore_poison(),
+		);
+		assert!(shared_destination.is_closed());
 	}
 }
