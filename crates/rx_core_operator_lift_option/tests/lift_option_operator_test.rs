@@ -9,10 +9,11 @@ fn should_turn_unpack_okay_results_into_nexts() {
 
 	let mut source = PublishSubject::<Option<usize>>::default();
 
-	let _subscription = source.clone().lift_option().subscribe(destination);
+	let subscription = source.clone().lift_option().subscribe(destination);
 
 	source.next(Some(0));
 	source.next(Some(1));
+	assert!(!subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"lift_option",
@@ -32,7 +33,7 @@ fn should_not_do_anything_when_observing_a_none() {
 
 	let mut source = PublishSubject::<Option<usize>>::default();
 
-	let _subscription = source.clone().lift_option().subscribe(destination);
+	let subscription = source.clone().lift_option().subscribe(destination);
 
 	notification_collector.lock().assert_is_empty("lift_option");
 	source.next(None);
@@ -41,6 +42,8 @@ fn should_not_do_anything_when_observing_a_none() {
 	source.next(Some(0));
 	source.next(None);
 	source.next(Some(1));
+
+	assert!(!subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"lift_option",
@@ -60,11 +63,12 @@ fn should_error_normally() {
 
 	let mut source = PublishSubject::<Option<usize>, &'static str>::default();
 
-	let _subscription = source.clone().lift_option().subscribe(destination);
+	let subscription = source.clone().lift_option().subscribe(destination);
 
 	let error = "error";
 	source.next(Some(0));
 	source.error(error);
+	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"lift_option",
@@ -85,9 +89,10 @@ fn should_complete_normally() {
 
 	let mut source = PublishSubject::<Option<usize>>::default();
 
-	let _subscription = source.clone().lift_option().subscribe(destination);
+	let subscription = source.clone().lift_option().subscribe(destination);
 
 	source.complete();
+	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"lift_option",
@@ -109,9 +114,10 @@ fn should_compose() {
 
 	let composed = compose_operator::<Option<usize>, Never>().lift_option();
 
-	let _subscription = source.clone().pipe(composed).subscribe(destination);
+	let subscription = source.clone().pipe(composed).subscribe(destination);
 
 	source.complete();
+	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"lift_option",

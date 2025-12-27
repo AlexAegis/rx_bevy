@@ -10,10 +10,11 @@ fn should_be_a_noop_operator() {
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
 	let composable = compose_operator::<usize, &'static str>();
-	let _subscription = source.clone().pipe(composable).subscribe(destination);
+	let subscription = source.clone().pipe(composable).subscribe(destination);
 
 	source.next(0);
 	source.next(1);
+	assert!(!subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"identity",
@@ -34,11 +35,12 @@ fn should_just_forward_complete_calls() {
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
 	let composable = compose_operator::<usize, &'static str>();
-	let _subscription = source.clone().pipe(composable).subscribe(destination);
+	let subscription = source.clone().pipe(composable).subscribe(destination);
 
 	source.next(0);
 	source.next(1);
 	source.complete();
+	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"identity",
@@ -61,12 +63,13 @@ fn should_just_forward_error_calls() {
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
 	let composable = compose_operator::<usize, &'static str>();
-	let _subscription = source.clone().pipe(composable).subscribe(destination);
+	let subscription = source.clone().pipe(composable).subscribe(destination);
 
 	let error = "error";
 	source.next(0);
 	source.next(1);
 	source.error(error);
+	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"identity",

@@ -9,10 +9,11 @@ fn should_turn_next_emissions_into_results() {
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let _subscription = source.clone().into_result().subscribe(destination);
+	let subscription = source.clone().into_result().subscribe(destination);
 
 	source.next(0);
 	source.next(1);
+	assert!(!subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"into_result",
@@ -32,11 +33,12 @@ fn should_turn_error_emissions_into_results_and_not_error() {
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let _subscription = source.clone().into_result().subscribe(destination);
+	let subscription = source.clone().into_result().subscribe(destination);
 
 	let error = "error";
 	source.next(0);
 	source.error(error);
+	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"into_result",
@@ -57,9 +59,10 @@ fn should_complete_normally() {
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let _subscription = source.clone().into_result().subscribe(destination);
+	let subscription = source.clone().into_result().subscribe(destination);
 
 	source.complete();
+	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"into_result",
@@ -81,9 +84,10 @@ fn should_compose() {
 
 	let composed = compose_operator::<usize, &'static str>().into_result();
 
-	let _subscription = source.clone().pipe(composed).subscribe(destination);
+	let subscription = source.clone().pipe(composed).subscribe(destination);
 
 	source.complete();
+	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
 		"into_result",
