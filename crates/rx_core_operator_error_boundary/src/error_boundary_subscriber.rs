@@ -19,6 +19,7 @@ impl<Destination> ErrorBoundarySubscriber<Destination>
 where
 	Destination: Subscriber<InError = Never>,
 {
+	#[inline]
 	pub fn new(destination: Destination) -> Self {
 		Self { destination }
 	}

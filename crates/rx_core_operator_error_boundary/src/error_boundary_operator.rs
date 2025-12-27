@@ -9,8 +9,8 @@ use crate::ErrorBoundarySubscriber;
 /// # [ErrorBoundaryOperator]
 ///
 /// The [ErrorBoundaryOperator] does nothing but ensure that the error type is
-/// [Never], giving you a compile error if the upstream error type has
-/// accidentally changed to something else, when you want to ensure the
+/// [Never], giving you a compile error if the upstream error type was
+/// accidentally changed to something else. Use when you want to ensure the
 /// downstream error type stays [Never].
 #[derive_where(Debug, Default, Clone)]
 #[derive(RxOperator)]
