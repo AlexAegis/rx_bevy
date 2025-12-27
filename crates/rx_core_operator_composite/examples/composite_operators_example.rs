@@ -15,7 +15,7 @@ fn main() {
 	// Or though the type extensions you can chain built in operators just like on observables
 	let op_2 = IdentityOperator::<i32, Never>::default()
 		.map(|i| i * 2)
-		.filter(|i| i % 2 == 0);
+		.filter(|i, _| i % 2 == 0);
 
 	let _s2 = of(1).pipe(op_2).subscribe(PrintObserver::new("bello"));
 }

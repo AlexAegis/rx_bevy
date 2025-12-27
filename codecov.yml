@@ -257,6 +257,9 @@ component_management:
     - component_id: rx_core_subject_behavior
       paths:
         - crates/rx_core_subject_behavior/**
+    - component_id: rx_core_subject_provenance
+      paths:
+        - crates/rx_core_subject_provenance/**
     - component_id: rx_core_subject_publish
       paths:
         - crates/rx_core_subject_publish/**

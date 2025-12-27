@@ -75,6 +75,7 @@ debug = [
     "rx_core_operator_tap_next?/debug",
     "rx_core_subject_async?/debug",
     "rx_core_subject_behavior?/debug",
+    "rx_core_subject_provenance?/debug",
     "rx_core_subject_publish?/debug",
     "rx_core_subject_replay?/debug",
     "rx_core_testing/debug",
@@ -293,11 +294,13 @@ scheduler_ticking = ["dep:rx_core_scheduler_ticking"]
 all_subjects = [
     "subject_async",
     "subject_behavior",
+    "subject_provenance",
     "subject_publish",
     "subject_replay",
 ]
 subject_async = ["dep:rx_core_subject_async"]
 subject_behavior = ["dep:rx_core_subject_behavior"]
+subject_provenance = ["dep:rx_core_subject_provenance"]
 subject_publish = ["dep:rx_core_subject_publish"]
 subject_replay = ["dep:rx_core_subject_replay"]
 
@@ -367,6 +370,7 @@ rx_core_scheduler_ticking = { workspace = true, optional = true }
 # Subjects
 rx_core_subject_async = { workspace = true, optional = true }
 rx_core_subject_behavior = { workspace = true, optional = true }
+rx_core_subject_provenance = { workspace = true, optional = true }
 rx_core_subject_publish = { workspace = true, optional = true }
 rx_core_subject_replay = { workspace = true, optional = true }
 

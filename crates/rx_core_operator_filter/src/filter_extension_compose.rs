@@ -5,7 +5,7 @@ use crate::operator::FilterOperator;
 
 pub trait OperatorComposeExtensionFilter: ComposableOperator + Sized {
 	#[inline]
-	fn filter<Filter: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync>(
+	fn filter<Filter: 'static + Fn(&Self::Out, usize) -> bool + Clone + Send + Sync>(
 		self,
 		filter: Filter,
 	) -> CompositeOperator<Self, FilterOperator<Self::Out, Self::OutError, Filter>> {

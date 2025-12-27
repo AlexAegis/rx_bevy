@@ -62,7 +62,7 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 		.spawn((
 			Name::new("KeyboardObservable"),
 			KeyboardObservable::new(default(), rx_schedule_update_virtual.handle())
-				.filter(|key_code| {
+				.filter(|key_code, _| {
 					matches!(
 						key_code,
 						KeyCode::KeyW | KeyCode::KeyA | KeyCode::KeyS | KeyCode::KeyD

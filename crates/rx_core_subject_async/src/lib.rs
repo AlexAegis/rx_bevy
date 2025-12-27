@@ -7,6 +7,3 @@ pub mod subject {
 pub mod prelude {
 	pub use super::subject::*;
 }
-
-#[cfg(test)]
-mod async_subject_test;

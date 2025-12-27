@@ -72,6 +72,7 @@
 - [Subjects](subjects.md)
   - [async](subject/async.md)
   - [behavior](subject/behavior.md)
+  - [provenance](subject/provenance.md)
   - [publish](subject/publish.md)
   - [replay](subject/replay.md)
 - [Development](development.md)

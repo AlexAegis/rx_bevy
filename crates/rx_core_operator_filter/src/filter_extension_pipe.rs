@@ -4,7 +4,7 @@ use crate::operator::FilterOperator;
 
 pub trait ObservablePipeExtensionFilter: Observable + Sized {
 	#[inline]
-	fn filter<Filter: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync>(
+	fn filter<Filter: 'static + Fn(&Self::Out, usize) -> bool + Clone + Send + Sync>(
 		self,
 		filter: Filter,
 	) -> <FilterOperator<Self::Out, Self::OutError, Filter> as Operator>::OutObservable<Self> {

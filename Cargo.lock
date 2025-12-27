@@ -4429,6 +4429,7 @@ dependencies = [
  "rx_core_scheduler_ticking",
  "rx_core_subject_async",
  "rx_core_subject_behavior",
+ "rx_core_subject_provenance",
  "rx_core_subject_publish",
  "rx_core_subject_replay",
  "rx_core_testing",
@@ -5284,6 +5285,20 @@ version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_macro_subject_derive",
+ "rx_core_subject_publish",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_subject_provenance"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_subject_derive",
+ "rx_core_operator_filter",
+ "rx_core_operator_map",
+ "rx_core_subject_behavior",
  "rx_core_subject_publish",
  "rx_core_testing",
  "rx_core_traits",

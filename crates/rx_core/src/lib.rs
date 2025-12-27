@@ -309,6 +309,8 @@ pub mod subject {
 	pub use rx_core_subject_async::subject::*;
 	#[cfg(feature = "subject_behavior")]
 	pub use rx_core_subject_behavior::subject::*;
+	#[cfg(feature = "subject_provenance")]
+	pub use rx_core_subject_provenance::subject::*;
 	#[cfg(feature = "subject_publish")]
 	pub use rx_core_subject_publish::subject::*;
 	#[cfg(feature = "subject_replay")]

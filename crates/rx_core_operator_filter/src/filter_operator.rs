@@ -16,7 +16,7 @@ pub struct FilterOperator<In, InError, Filter>
 where
 	In: Signal,
 	InError: Signal,
-	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
+	Filter: 'static + for<'a> Fn(&'a In, usize) -> bool + Clone + Send + Sync,
 {
 	filter: Filter,
 	_phantom_data: PhantomData<(In, InError)>,
@@ -26,7 +26,7 @@ impl<In, InError, Filter> FilterOperator<In, InError, Filter>
 where
 	In: Signal,
 	InError: Signal,
-	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
+	Filter: 'static + for<'a> Fn(&'a In, usize) -> bool + Clone + Send + Sync,
 {
 	pub fn new(filter: Filter) -> Self {
 		Self {
@@ -40,7 +40,7 @@ impl<In, InError, Filter> ComposableOperator for FilterOperator<In, InError, Fil
 where
 	In: Signal,
 	InError: Signal,
-	Filter: 'static + for<'a> Fn(&'a In) -> bool + Clone + Send + Sync,
+	Filter: 'static + for<'a> Fn(&'a In, usize) -> bool + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
 		= FilterSubscriber<Filter, Destination>

@@ -6,6 +6,6 @@ fn main() {
 	let _s = (1..=5)
 		.into_observable()
 		.map(|next: i32| next + 1)
-		.filter(|i| i > &2)
+		.filter(|i, _| i > &2)
 		.subscribe(PrintObserver::new("filter_operator"));
 }

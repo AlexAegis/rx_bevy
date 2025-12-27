@@ -10,10 +10,11 @@ fn should_replay_its_value_to_new_subscribers() {
 
 	let _s = behavior_subject.clone().subscribe(destination_1);
 
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(0),
-		&SubscriberNotification::Next(1),
-		"destination did not receive the replay"
+	notification_collector_1.lock().assert_notifications(
+		"behavior_subject",
+		0,
+		[SubscriberNotification::Next(1)],
+		true,
 	);
 }
 

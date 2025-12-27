@@ -8,37 +8,40 @@ use rx_core_traits::{Observer, Subscriber};
 #[rx_delegate_subscription_like_to_destination]
 pub struct FilterSubscriber<Filter, Destination>
 where
-	Filter: for<'a> Fn(&'a Destination::In) -> bool,
+	Filter: for<'a> Fn(&'a Destination::In, usize) -> bool,
 	Destination: Subscriber,
 {
 	#[destination]
 	destination: Destination,
 	filter: Filter,
+	index: usize,
 }
 
 impl<Filter, Destination> FilterSubscriber<Filter, Destination>
 where
-	Filter: for<'a> Fn(&'a Destination::In) -> bool,
+	Filter: for<'a> Fn(&'a Destination::In, usize) -> bool,
 	Destination: Subscriber,
 {
 	pub fn new(destination: Destination, filter: Filter) -> Self {
 		Self {
 			destination,
 			filter,
+			index: 0,
 		}
 	}
 }
 
 impl<Filter, Destination> Observer for FilterSubscriber<Filter, Destination>
 where
-	Filter: for<'a> Fn(&'a Destination::In) -> bool + Send + Sync,
+	Filter: for<'a> Fn(&'a Destination::In, usize) -> bool + Send + Sync,
 	Destination: Subscriber,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		if (self.filter)(&next) {
+		if (self.filter)(&next, self.index) {
 			self.destination.next(next);
 		}
+		self.index = self.index.saturating_add(1)
 	}
 
 	#[inline]

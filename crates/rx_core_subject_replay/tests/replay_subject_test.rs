@@ -2,8 +2,6 @@ use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 use rx_core_traits::{Observer, SubscriptionLike};
 
-use crate::subject::ReplaySubject;
-
 #[test]
 fn should_not_replay_if_there_is_nothing_to_replay() {
 	let destination_1 = MockObserver::default();

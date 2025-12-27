@@ -238,7 +238,7 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 		.spawn((
 			Name::new("KeyboardSwitchMapToIntervalObservable"),
 			KeyboardObservable::new(default(), rx_schedule_update_virtual.handle())
-				.filter(|key_code| {
+				.filter(|key_code, _| {
 					matches!(
 						key_code,
 						KeyCode::Digit1 | KeyCode::Digit2 | KeyCode::Digit3 | KeyCode::Digit4

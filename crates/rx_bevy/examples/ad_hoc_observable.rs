@@ -69,7 +69,7 @@ fn setup(
 			),
 			rx_schedule_despawn.handle(),
 		)
-		.filter(|next| next % 2 == 1)
+		.filter(|next, _| next % 2 == 1)
 		.subscribe(EntityDestination::new(
 			destination_entity,
 			rx_schedule_update_virtual.handle(),
@@ -84,7 +84,7 @@ fn setup(
 		rx_schedule_update_virtual.handle(),
 	)
 	.with_commands(commands.reborrow(), rx_schedule_despawn.handle())
-	.filter(|next| next % 2 == 0)
+	.filter(|next, _| next % 2 == 0)
 	.subscribe(EntityDestination::new(
 		destination_entity,
 		rx_schedule_update_virtual.handle(),

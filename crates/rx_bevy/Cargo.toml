@@ -203,11 +203,13 @@ operator_tap_next = ["rx_core/operator_tap_next"]
 all_core_subjects = [
     "subject_async",
     "subject_behavior",
+    "subject_provenance",
     "subject_publish",
     "subject_replay",
 ]
 subject_async = ["rx_core/subject_async"]
 subject_behavior = ["rx_core/subject_behavior"]
+subject_provenance = ["rx_core/subject_provenance"]
 subject_publish = ["rx_core/subject_publish"]
 subject_replay = ["rx_core/subject_replay"]
 
