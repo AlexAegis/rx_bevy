@@ -15,7 +15,7 @@ where
 {
 	#[destination]
 	destination: Destination,
-	counter: usize,
+	index: usize,
 	_phantom_data: PhantomData<In>,
 }
 
@@ -27,7 +27,7 @@ where
 	pub fn new(destination: Destination) -> Self {
 		Self {
 			destination,
-			counter: 0,
+			index: 0,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -40,17 +40,9 @@ where
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		self.destination.next((next, self.counter));
-
-		// Increment after emission, so the first value could be 0
-		#[cfg(feature = "saturating_add")]
-		{
-			self.counter = self.counter.saturating_add(1);
-		}
-		#[cfg(not(feature = "saturating_add"))]
-		{
-			self.counter += 1;
-		}
+		self.destination.next((next, self.index));
+		// Increment after emission, so the first index is 0
+		self.index = self.index.saturating_add(1);
 	}
 
 	#[inline]

@@ -24,9 +24,6 @@ debug = [
 ]
 compose = ["dep:rx_core_operator_composite"]
 pipe = ["rx_core_traits/pipe"]
-# It's not likely that a simple counter can ever overflow a usize, but if you
-# fear that, enable this feature and it will saturate the counter instead of overflowing
-saturating_add = []
 
 [dependencies]
 rx_core_traits = { workspace = true }
