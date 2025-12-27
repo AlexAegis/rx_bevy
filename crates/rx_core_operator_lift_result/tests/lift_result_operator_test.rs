@@ -16,7 +16,7 @@ fn should_turn_unpack_okay_results_into_nexts() {
 	assert!(!subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
-		"into_result",
+		"lift_result",
 		0,
 		[
 			SubscriberNotification::Next(0),
@@ -41,7 +41,7 @@ fn should_turn_error_results_into_actual_errors() {
 	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
-		"into_result",
+		"lift_result",
 		0,
 		[
 			SubscriberNotification::Next(0),
@@ -65,7 +65,7 @@ fn should_complete_normally() {
 	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
-		"into_result",
+		"lift_result",
 		0,
 		[
 			SubscriberNotification::Complete,
@@ -90,7 +90,7 @@ fn should_compose() {
 	assert!(subscription.is_closed());
 
 	notification_collector.lock().assert_notifications(
-		"into_result",
+		"lift_result",
 		0,
 		[
 			SubscriberNotification::Complete,
