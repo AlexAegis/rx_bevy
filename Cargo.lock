@@ -5023,6 +5023,7 @@ dependencies = [
 name = "rx_core_operator_into_result"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
@@ -5035,6 +5036,7 @@ dependencies = [
 name = "rx_core_operator_lift_option"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",

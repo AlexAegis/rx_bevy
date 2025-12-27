@@ -1,5 +1,6 @@
 use core::marker::PhantomData;
 
+use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_traits::{ComposableOperator, Never, Signal, Subscriber};
 
@@ -7,6 +8,7 @@ use crate::IntoResultSubscriber;
 
 /// The [IntoResultOperator] is used to pack incoming values and errors into a
 /// Result. When used, upstream errors are guaranteed to not reach downstream.
+#[derive_where(Clone)]
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
@@ -51,17 +53,5 @@ where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		IntoResultSubscriber::new(destination)
-	}
-}
-
-impl<In, InError> Clone for IntoResultOperator<In, InError>
-where
-	In: Signal,
-	InError: Signal,
-{
-	fn clone(&self) -> Self {
-		Self {
-			_phantom_data: PhantomData,
-		}
 	}
 }

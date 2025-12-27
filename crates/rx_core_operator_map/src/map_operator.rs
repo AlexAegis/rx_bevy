@@ -6,7 +6,7 @@ use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
 use crate::MapSubscriber;
 
-#[derive_where(Debug)]
+#[derive_where(Debug, Clone)]
 #[derive_where(skip_inner(Debug))]
 #[derive(RxOperator)]
 #[rx_in(In)]
@@ -60,20 +60,5 @@ where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		MapSubscriber::new(destination, self.mapper.clone())
-	}
-}
-
-impl<In, InError, Mapper, Out> Clone for MapOperator<In, InError, Mapper, Out>
-where
-	In: Signal,
-	InError: Signal,
-	Mapper: 'static + Fn(In) -> Out + Clone + Send + Sync,
-	Out: Signal,
-{
-	fn clone(&self) -> Self {
-		Self {
-			mapper: self.mapper.clone(),
-			_phantom_data: PhantomData,
-		}
 	}
 }
