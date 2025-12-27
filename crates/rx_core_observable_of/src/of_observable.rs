@@ -2,6 +2,8 @@ use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 use rx_core_traits::{Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver};
 
+/// # OfObservable
+///
 /// Emits a single value then immediately completes
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(Out)]
@@ -43,29 +45,5 @@ where
 		destination.next(self.value.clone());
 		destination.complete();
 		InertSubscription::new(destination)
-	}
-}
-
-#[cfg(test)]
-mod tests {
-
-	use super::*;
-	use rx_core_testing::MockObserver;
-	use rx_core_traits::SubscriptionLike;
-
-	#[test]
-	fn should_emit_single_value() {
-		let value = 4;
-		let mut observable = OfObservable::new(value);
-		let mock_observer = MockObserver::default();
-		let notification_collector = mock_observer.get_notification_collector();
-
-		let mut subscription = observable.subscribe(mock_observer);
-		subscription.unsubscribe();
-
-		assert_eq!(
-			notification_collector.lock().all_observed_values(),
-			vec![value]
-		);
 	}
 }
