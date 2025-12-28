@@ -6,7 +6,7 @@ use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 
 use crate::ReduceSubscriber;
 
-#[derive_where(Debug)]
+#[derive_where(Debug, Clone)]
 #[derive_where(skip_inner(Debug))]
 #[derive(RxOperator)]
 #[rx_in(In)]
@@ -62,21 +62,5 @@ where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		ReduceSubscriber::new(destination, self.reducer.clone(), self.seed.clone())
-	}
-}
-
-impl<In, InError, Reducer, Out> Clone for ReduceOperator<In, InError, Reducer, Out>
-where
-	In: Signal,
-	InError: Signal,
-	Reducer: 'static + Fn(&Out, In) -> Out + Clone + Send + Sync,
-	Out: Signal + Clone,
-{
-	fn clone(&self) -> Self {
-		Self {
-			seed: self.seed.clone(),
-			reducer: self.reducer.clone(),
-			_phantom_data: PhantomData,
-		}
 	}
 }
