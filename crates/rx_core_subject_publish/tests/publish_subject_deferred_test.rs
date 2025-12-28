@@ -94,7 +94,7 @@ fn should_be_able_to_subscribe_from_teardown() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
+			SubscriberNotification::Unsubscribe, // Because of `take`
 		],
 		true,
 	);
@@ -164,7 +164,7 @@ fn should_be_able_to_subscribe_and_next_to_the_new_subscription_from_teardown() 
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
+			SubscriberNotification::Unsubscribe, // Because of take
 		],
 		true,
 	);
@@ -217,7 +217,7 @@ fn should_be_able_to_detect_a_simple_infinite_loop_and_panic() {
 		})
 		.subscribe(destination_1);
 
-	subject.next(0); // Infinite loop!
+	mute_panic(|| subject.next(0)); // Infinite loop!
 }
 
 #[test]

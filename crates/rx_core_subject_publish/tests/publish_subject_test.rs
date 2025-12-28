@@ -4,7 +4,7 @@ use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
 #[test]
-fn should_forward_values_to_multiple_active_listeners() {
+fn should_forward_values_to_multiple_active_listeners_after_completion() {
 	let destination_1 = MockObserver::default();
 	let notification_collector_1 = destination_1.get_notification_collector();
 
@@ -47,43 +47,31 @@ fn should_forward_values_to_multiple_active_listeners() {
 
 	subject.complete();
 
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(2),
-		&SubscriberNotification::Complete,
-		"destination_1 did not receive the completion signal"
+	notification_collector_1.lock().assert_notifications(
+		"destination_1 did not receive the completion signal",
+		2,
+		[
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(3),
-		&SubscriberNotification::Unsubscribe,
-		"destination_1 did not receive the unsubscribe signal"
-	);
-
-	assert!(
-		!notification_collector_1.lock().nth_notification_exists(4),
-		"destination_1 received an extra notification"
-	);
-
-	assert_eq!(
-		notification_collector_2.lock().nth_notification(1),
-		&SubscriberNotification::Complete,
-		"destination_2 did not receive the completion signal"
-	);
-
-	assert_eq!(
-		notification_collector_2.lock().nth_notification(2),
-		&SubscriberNotification::Unsubscribe,
-		"destination_2 did not receive the unsubscribe signal"
-	);
-
-	assert!(
-		!notification_collector_2.lock().nth_notification_exists(3),
-		"destination_2 received an extra notification"
+	notification_collector_2.lock().assert_notifications(
+		"destination_2 did not receive the completion signal",
+		1,
+		[
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 }
 
+// In rxjs this is a panic. rx_core instead chooses to immediately unsubscribe
+// when trying to make an invalid subscription to a subject when it was already
+// closed.
 #[test]
-fn should_immediately_complete_new_subscribers_if_complete() {
+fn should_immediately_complete_and_unsubscribe_new_subscribers_if_already_complete() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
@@ -112,8 +100,11 @@ fn should_immediately_complete_new_subscribers_if_complete() {
 	);
 }
 
+// In rxjs this is a panic. rx_core instead chooses to immediately unsubscribe
+// when trying to make an invalid subscription to a subject when it was already
+// closed.
 #[test]
-fn should_immediately_error_new_subscribers_if_errored() {
+fn should_immediately_error_new_subscribers_if_errored_before_the_subscription() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 
@@ -365,7 +356,29 @@ fn should_be_able_to_chain_subjects_as_destinations() {
 }
 
 #[test]
-fn should_error_active_subscribers() {
+fn should_complete_active_subscribers() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut subject = PublishSubject::<usize, &'static str>::default();
+
+	let _subscription = subject.clone().subscribe(destination);
+
+	subject.complete();
+
+	notification_collector.lock().assert_notifications(
+		"publish_subject destination",
+		0,
+		[
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+}
+
+#[test]
+fn should_error_active_subscribers_but_not_unsubscribe_them() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 

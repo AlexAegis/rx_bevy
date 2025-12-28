@@ -20,6 +20,25 @@ use crate::internal::{
 ///
 /// > A subjects clone still multicasts to the same set of subscribers.
 ///
+/// ## Subjects
+///
+/// Subjects are both observers and observables! Anything they observe is
+/// then multicast and sent to each individual subscriber subscribing to
+/// this subject.
+///
+/// ## Example
+///
+/// ```rs
+/// use rx_core::prelude::*;
+///
+/// let mut subject = PublishSubject::<usize>::default();
+/// subject.next(1); // Has no effect, nobody is listening!
+/// let mut subscription = subject.subscribe(PrintObserver::new("subject"));
+/// subject.next(2); // This will get printed!
+/// subscription.unsubscribe();
+/// subject.next(3); // This will not get printed anymore!
+/// ```
+///
 /// ## Circular Signals
 ///
 /// Sometimes a subjects subscription would like to interact with the subject
@@ -109,7 +128,7 @@ where
 			MulticastSubscription::new_closed()
 		} else {
 			let shared_subscriber = Arc::new(Mutex::new(subscriber));
-			let subscriber_clone = shared_subscriber.clone();
+			let shared_subscriber_clone = shared_subscriber.clone();
 			if let Err(add_subscriber_error) =
 				self.subscribers.try_add_subscriber(shared_subscriber)
 			{
@@ -124,7 +143,7 @@ where
 				self.try_clean();
 			}
 
-			MulticastSubscription::new(subscriber_clone)
+			MulticastSubscription::new(shared_subscriber_clone)
 		}
 	}
 }
@@ -224,7 +243,7 @@ where
 
 		let was_closed = {
 			let mut state = self.state.lock_ignore_poison();
-			let was_closed = state.is_closed();
+			let was_closed = state.is_closed(); // state.observed_unsubscribe
 			state.observed_unsubscribe = true;
 			was_closed
 		};

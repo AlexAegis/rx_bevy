@@ -36,8 +36,6 @@ fn main() {
 	mock_executor.tick(Duration::from_secs(4));
 	mock_executor.tick(Duration::from_secs(1));
 	mock_executor.tick(Duration::from_secs(3));
-
-	println!("ticks finished");
 	subscription.unsubscribe();
 	println!("end");
 }

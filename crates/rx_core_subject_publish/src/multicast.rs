@@ -300,6 +300,7 @@ where
 		let is_first_unsubscribe = matches!(notification, MulticastNotification::Unsubscribe)
 			&& !self.observed_unsubscribe;
 
+		// TODO: SUBJECTG DONT UNSUB UNLESS MANUALLK
 		if *self.closed_flag && !is_first_unsubscribe {
 			if let MulticastNotification::Add(mut subscriber) = notification
 				&& !subscriber.is_closed()

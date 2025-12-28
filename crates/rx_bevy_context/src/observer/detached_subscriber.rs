@@ -7,7 +7,6 @@ use rx_core_traits::{
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
-#[rx_delegate_observer_to_destination]
 #[rx_skip_unsubscribe_on_drop_impl]
 pub struct DetachedSubscriber<Destination>
 where
@@ -28,6 +27,31 @@ where
 			destination,
 			closed_flag: false.into(),
 			teardown: None,
+		}
+	}
+}
+
+impl<Destination> Observer for DetachedSubscriber<Destination>
+where
+	Destination: Observer,
+{
+	fn next(&mut self, next: Self::In) {
+		if !self.is_closed() {
+			self.destination.next(next);
+		}
+	}
+
+	fn error(&mut self, error: Self::InError) {
+		if !self.is_closed() {
+			self.destination.error(error);
+			self.unsubscribe();
+		}
+	}
+
+	fn complete(&mut self) {
+		if !self.is_closed() {
+			self.destination.complete();
+			self.unsubscribe();
 		}
 	}
 }

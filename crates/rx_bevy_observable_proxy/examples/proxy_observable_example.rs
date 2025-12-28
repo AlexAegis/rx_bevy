@@ -27,7 +27,6 @@ fn main() -> AppExit {
 }
 
 fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
-	println!("Unsubscribe subscription!");
 	commands.entity(example_entities.subscription).despawn();
 }
 

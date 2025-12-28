@@ -17,9 +17,7 @@ fn main() {
 		.take(1)
 		.subscribe(PrintObserver::new("subject_sub_with_finalize"));
 
-	println!("nexting one");
 	subject.next(1);
-	println!("nexted one");
 
 	subscription.unsubscribe();
 	println!("end");

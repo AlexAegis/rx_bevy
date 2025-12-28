@@ -5344,6 +5344,7 @@ dependencies = [
  "rx_core_subscriber_higher_order",
  "rx_core_testing",
  "rx_core_traits",
+ "slab",
 ]
 
 [[package]]
