@@ -1,4 +1,10 @@
-use std::time::Duration;
+use std::{
+	sync::{
+		Arc,
+		atomic::{AtomicBool, AtomicUsize, Ordering},
+	},
+	time::Duration,
+};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
@@ -21,6 +27,8 @@ where
 	scheduler: SchedulerHandle<S>,
 	closed: SubscriptionClosedFlag,
 	cancellation_id: WorkCancellationId,
+	upstream_completed: Arc<AtomicBool>,
+	scheduled_work_counter: Arc<AtomicUsize>,
 }
 
 impl<Destination, S> DelaySubscriber<Destination, S>
@@ -41,6 +49,8 @@ where
 			duration,
 			scheduler,
 			cancellation_id,
+			upstream_completed: Arc::new(AtomicBool::new(false)),
+			scheduled_work_counter: Arc::new(AtomicUsize::new(0)),
 		}
 	}
 }
@@ -54,13 +64,30 @@ where
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
 			let destination = self.destination.clone();
+			let mut scheduler_clone = self.scheduler.clone();
+			let cancellation_id_copy = self.cancellation_id;
+
 			let mut scheduler = self.scheduler.lock();
 
+			self.scheduled_work_counter.fetch_add(1, Ordering::Relaxed);
+			let scheduled_work_counter = self.scheduled_work_counter.clone();
+			let upstream_completed = self.upstream_completed.clone();
 			scheduler.schedule_delayed_work(
 				move |_, _| {
 					let mut destination = destination.lock();
 					if !destination.is_closed() {
 						destination.next(next);
+					}
+
+					let previous_work_counter_before_sub =
+						scheduled_work_counter.fetch_sub(1, Ordering::Relaxed);
+
+					if upstream_completed.load(Ordering::Relaxed)
+						&& previous_work_counter_before_sub == 1
+					{
+						destination.complete();
+						destination.unsubscribe();
+						scheduler_clone.lock().cancel(cancellation_id_copy);
 					}
 				},
 				self.duration,
@@ -72,18 +99,36 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error);
+		self.destination.unsubscribe();
+		self.closed.close();
+		self.scheduler.lock().cancel(self.cancellation_id);
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		if !self.is_closed() {
+			self.upstream_completed.store(true, Ordering::Relaxed);
+
+			if self.scheduled_work_counter.load(Ordering::Relaxed) == 0 {
+				self.closed.close();
+				self.destination.complete();
+				self.destination.unsubscribe();
+				self.scheduler.lock().cancel(self.cancellation_id);
+				return;
+			}
+
 			let destination = self.destination.clone();
+			let mut scheduler_clone = self.scheduler.clone();
 			let mut scheduler = self.scheduler.lock();
+			let cancellation_id_copy = self.cancellation_id;
+
 			scheduler.schedule_delayed_work(
 				move |_, _context| {
 					let mut destination = destination.lock();
 					if !destination.is_closed() {
 						destination.complete();
+						destination.unsubscribe();
+						scheduler_clone.lock().cancel(cancellation_id_copy);
 					}
 				},
 				self.duration,
@@ -104,20 +149,21 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		let mut destination = self.destination.clone();
-		let mut scheduler_clone = self.scheduler.clone();
-		let mut scheduler = self.scheduler.lock();
-		let owner_id_copy = self.cancellation_id;
+		if !self.is_closed() {
+			let mut destination = self.destination.clone();
+			let mut scheduler_clone = self.scheduler.clone();
+			let mut scheduler = self.scheduler.lock();
+			let cancellation_id_copy = self.cancellation_id;
 
-		scheduler.schedule_delayed_work(
-			move |_, _context| {
-				destination.unsubscribe();
-				scheduler_clone.lock().cancel(owner_id_copy);
-			},
-			self.duration,
-			self.cancellation_id,
-		);
-
-		self.closed.close();
+			scheduler.schedule_delayed_work(
+				move |_, _context| {
+					destination.unsubscribe();
+					scheduler_clone.lock().cancel(cancellation_id_copy);
+				},
+				self.duration,
+				self.cancellation_id,
+			);
+			self.closed.close();
+		}
 	}
 }
