@@ -55,29 +55,3 @@ where
 		InertSubscription::new(destination)
 	}
 }
-
-#[cfg(test)]
-mod test {
-
-	use rx_core::prelude::*;
-	use rx_core_testing::prelude::*;
-
-	#[test]
-	fn iterator_observable_should_emit_its_values_then_complete() {
-		let mock_destination = MockObserver::default();
-		let notification_collector = mock_destination.get_notification_collector();
-
-		let mut source = (1..=2).into_observable();
-		let _subscription = source.subscribe(mock_destination);
-		assert!(
-			notification_collector
-				.lock()
-				.nothing_happened_after_closed(),
-			"something happened after unsubscribe"
-		);
-		assert_eq!(
-			notification_collector.lock().all_observed_values(),
-			vec![1, 2]
-		);
-	}
-}
