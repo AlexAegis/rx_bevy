@@ -292,7 +292,7 @@ mod complete {
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
 		source.next(1);
 		executor.tick(Duration::from_millis(500));
-		source.complete(); // This should not be delated a full 1000ms!
+		source.complete(); // This should not be delayed a full 1000ms!
 		source.next(2);
 
 		notification_collector.lock().assert_is_empty("delay");
@@ -305,6 +305,118 @@ mod complete {
 			[
 				SubscriberNotification::Next(1),
 				SubscriberNotification::Complete,
+				SubscriberNotification::Unsubscribe,
+			],
+			true,
+		);
+
+		assert!(executor.is_empty(), "All work should've been executed!");
+
+		assert!(subscription.is_closed());
+	}
+}
+
+mod unsubscribe {
+	use super::*;
+
+	#[test]
+	fn should_unsubscribe_after_a_delay_when_there_are_delayed_emissions() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let destination = MockObserver::<usize, &'static str>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut source = PublishSubject::<usize, &'static str>::default();
+		let subscription = source
+			.clone()
+			.delay(Duration::from_millis(1000), scheduler.clone())
+			.subscribe(destination);
+
+		assert!(executor.is_empty(), "No work should've been scheduled yet");
+
+		source.next(1);
+		source.unsubscribe();
+
+		notification_collector.lock().assert_is_empty("delay");
+
+		executor.tick(Duration::from_millis(1000));
+
+		notification_collector.lock().assert_notifications(
+			"delay",
+			0,
+			[
+				SubscriberNotification::Next(1),
+				SubscriberNotification::Unsubscribe,
+			],
+			true,
+		);
+
+		assert!(executor.is_empty(), "All work should've been executed!");
+
+		assert!(subscription.is_closed());
+	}
+
+	#[test]
+	fn should_immediately_unsubscribe_when_there_were_no_delayed_emissions_yet() {
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let destination = MockObserver::<usize, &'static str>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut source = PublishSubject::<usize, &'static str>::default();
+		let subscription = source
+			.clone()
+			.delay(Duration::from_millis(1000), scheduler.clone())
+			.subscribe(destination);
+
+		assert!(executor.is_empty(), "No work should've been scheduled yet");
+
+		source.unsubscribe();
+
+		notification_collector.lock().assert_notifications(
+			"delay",
+			0,
+			[SubscriberNotification::Unsubscribe],
+			true,
+		);
+
+		assert!(executor.is_empty(), "All work should've been executed!");
+
+		assert!(subscription.is_closed());
+	}
+
+	#[test]
+	fn should_immediately_unsubscribe_when_an_emission_had_passed_and_unsubscribe_was_received_later()
+	 {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let destination = MockObserver::<usize, &'static str>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut source = PublishSubject::<usize, &'static str>::default();
+		let subscription = source
+			.clone()
+			.delay(Duration::from_millis(1000), scheduler.clone())
+			.subscribe(destination);
+
+		assert!(executor.is_empty(), "No work should've been scheduled yet");
+		source.next(1);
+		executor.tick(Duration::from_millis(500));
+		source.unsubscribe(); // This should not be delayed a full 1000ms!
+		source.next(2);
+
+		notification_collector.lock().assert_is_empty("delay");
+
+		executor.tick(Duration::from_millis(500));
+
+		notification_collector.lock().assert_notifications(
+			"delay",
+			0,
+			[
+				SubscriberNotification::Next(1),
 				SubscriberNotification::Unsubscribe,
 			],
 			true,

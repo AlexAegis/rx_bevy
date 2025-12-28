@@ -28,6 +28,7 @@ where
 	closed: SubscriptionClosedFlag,
 	cancellation_id: WorkCancellationId,
 	upstream_completed: Arc<AtomicBool>,
+	upstream_unsubscribed: Arc<AtomicBool>,
 	scheduled_work_counter: Arc<AtomicUsize>,
 }
 
@@ -50,6 +51,7 @@ where
 			scheduler,
 			cancellation_id,
 			upstream_completed: Arc::new(AtomicBool::new(false)),
+			upstream_unsubscribed: Arc::new(AtomicBool::new(false)),
 			scheduled_work_counter: Arc::new(AtomicUsize::new(0)),
 		}
 	}
@@ -72,6 +74,7 @@ where
 			self.scheduled_work_counter.fetch_add(1, Ordering::Relaxed);
 			let scheduled_work_counter = self.scheduled_work_counter.clone();
 			let upstream_completed = self.upstream_completed.clone();
+			let upstream_unsubscribed = self.upstream_unsubscribed.clone();
 			scheduler.schedule_delayed_work(
 				move |_, _| {
 					let mut destination = destination.lock();
@@ -82,10 +85,18 @@ where
 					let previous_work_counter_before_sub =
 						scheduled_work_counter.fetch_sub(1, Ordering::Relaxed);
 
+					// try complete
 					if upstream_completed.load(Ordering::Relaxed)
 						&& previous_work_counter_before_sub == 1
 					{
 						destination.complete();
+						destination.unsubscribe();
+						scheduler_clone.lock().cancel(cancellation_id_copy);
+						return;
+					}
+
+					// try unsubscribe
+					if upstream_unsubscribed.load(Ordering::Relaxed) {
 						destination.unsubscribe();
 						scheduler_clone.lock().cancel(cancellation_id_copy);
 					}
@@ -98,6 +109,8 @@ where
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
+		self.upstream_unsubscribed.store(true, Ordering::Relaxed);
+
 		self.destination.error(error);
 		self.destination.unsubscribe();
 		self.closed.close();
@@ -107,33 +120,17 @@ where
 	#[inline]
 	fn complete(&mut self) {
 		if !self.is_closed() {
+			// If there is a scheduled next, just let it also complete
 			self.upstream_completed.store(true, Ordering::Relaxed);
+			self.upstream_unsubscribed.store(true, Ordering::Relaxed);
 
+			// if there aren't any, complete immediately
 			if self.scheduled_work_counter.load(Ordering::Relaxed) == 0 {
 				self.closed.close();
 				self.destination.complete();
 				self.destination.unsubscribe();
 				self.scheduler.lock().cancel(self.cancellation_id);
-				return;
 			}
-
-			let destination = self.destination.clone();
-			let mut scheduler_clone = self.scheduler.clone();
-			let mut scheduler = self.scheduler.lock();
-			let cancellation_id_copy = self.cancellation_id;
-
-			scheduler.schedule_delayed_work(
-				move |_, _context| {
-					let mut destination = destination.lock();
-					if !destination.is_closed() {
-						destination.complete();
-						destination.unsubscribe();
-						scheduler_clone.lock().cancel(cancellation_id_copy);
-					}
-				},
-				self.duration,
-				self.cancellation_id,
-			);
 		}
 	}
 }
@@ -150,20 +147,15 @@ where
 
 	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
-			let mut destination = self.destination.clone();
-			let mut scheduler_clone = self.scheduler.clone();
-			let mut scheduler = self.scheduler.lock();
-			let cancellation_id_copy = self.cancellation_id;
-
-			scheduler.schedule_delayed_work(
-				move |_, _context| {
-					destination.unsubscribe();
-					scheduler_clone.lock().cancel(cancellation_id_copy);
-				},
-				self.duration,
-				self.cancellation_id,
-			);
 			self.closed.close();
+			// If there is a scheduled next, just let it also unsubscribe
+			self.upstream_unsubscribed.store(true, Ordering::Relaxed);
+
+			// if there aren't any, unsubscribe immediately
+			if self.scheduled_work_counter.load(Ordering::Relaxed) == 0 {
+				self.destination.unsubscribe();
+				self.scheduler.lock().cancel(self.cancellation_id);
+			}
 		}
 	}
 }
