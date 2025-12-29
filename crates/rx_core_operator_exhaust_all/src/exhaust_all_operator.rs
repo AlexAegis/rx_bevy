@@ -50,15 +50,11 @@ where
 	#[inline]
 	fn operator_subscribe<Destination>(
 		&mut self,
-		destination: Destination,
+		observer: Destination,
 	) -> Self::Subscriber<Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderAllSubscriber::new(
-			destination,
-			self.error_mapper.clone(),
-			NonZero::<usize>::MIN,
-		)
+		HigherOrderAllSubscriber::new(observer, self.error_mapper.clone(), NonZero::<usize>::MIN)
 	}
 }

@@ -359,3 +359,52 @@ fn should_subscribe_to_as_many_of_the_inner_observables_as_the_limit_allows_it()
 		"subscription should be closed after completion"
 	);
 }
+
+#[test]
+fn should_compose_and_merge_all_iterators() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<_, _>::default();
+
+	let composed = compose_operator().merge_map(
+		move |next| match next {
+			Either::O1 => (0..=2).into_observable(),
+			Either::O2 => (3..=4).into_observable(),
+			Either::O3 => (5..=6).into_observable(),
+		},
+		usize::MAX,
+		|error| error,
+	);
+
+	let subscription = source.clone().pipe(composed).subscribe(destination);
+
+	notification_collector.lock().assert_is_empty("merge_all");
+
+	source.next(Either::O1);
+	source.next(Either::O2);
+	source.next(Either::O3);
+	source.complete();
+
+	notification_collector.lock().assert_notifications(
+		"merge_all - iterators",
+		0,
+		[
+			SubscriberNotification::Next(0),
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Next(4),
+			SubscriberNotification::Next(5),
+			SubscriberNotification::Next(6),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}

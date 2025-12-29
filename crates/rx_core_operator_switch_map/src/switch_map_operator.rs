@@ -127,11 +127,8 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		HigherOrderMapSubscriber::new(
-			destination,
-			self.mapper.clone(),
-			self.error_mapper.clone(),
-			NonZero::<usize>::MIN,
-		)
+		let mapper = self.mapper.clone();
+		let error_mapper = self.error_mapper.clone();
+		HigherOrderMapSubscriber::new(destination, mapper, error_mapper, NonZero::<usize>::MIN)
 	}
 }
