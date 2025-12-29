@@ -68,14 +68,14 @@ where
 			|| self.downstream_subscriber_state.is_errored()
 	}
 
-	pub fn upstream_complete_can_downstream(&mut self) -> bool {
+	pub fn upstream_completed_can_downstream(&mut self) -> bool {
 		self.upstream_subscriber_state.complete();
 		self.upstream_subscriber_state.unsubscribe();
 
 		self.can_downstream_complete()
 	}
 
-	pub fn inner_complete_can_downstream(&mut self) -> bool {
+	pub fn inner_completed_can_downstream(&mut self) -> bool {
 		let downstream_can_complete = self.can_downstream_complete();
 
 		if downstream_can_complete {
@@ -85,7 +85,7 @@ where
 		downstream_can_complete
 	}
 
-	pub fn inner_unsubscribe_can_downstream(&mut self) -> bool {
+	pub fn inner_unsubscribed_can_downstream(&mut self) -> bool {
 		let downstream_can_unsubscribe = self.can_downstream_unsubscribe();
 
 		if downstream_can_unsubscribe {

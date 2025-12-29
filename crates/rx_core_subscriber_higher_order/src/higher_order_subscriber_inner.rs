@@ -95,7 +95,7 @@ where
 			if self
 				.state
 				.lock_ignore_poison()
-				.inner_complete_can_downstream()
+				.inner_completed_can_downstream()
 			{
 				self.shared_destination.complete();
 				self.shared_destination.unsubscribe();

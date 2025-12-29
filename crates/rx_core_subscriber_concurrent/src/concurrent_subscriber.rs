@@ -142,10 +142,9 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 				);
 			}
 
-			// TODO: UNSURE
 			if state
 				.lock_ignore_poison()
-				.inner_unsubscribe_can_downstream()
+				.inner_unsubscribed_can_downstream()
 			{
 				for (other_key, inner_subscription) in
 					inner_subscriptions.lock_ignore_poison().iter_mut()
@@ -212,7 +211,7 @@ where
 			&& self
 				.state
 				.lock_ignore_poison()
-				.upstream_complete_can_downstream()
+				.upstream_completed_can_downstream()
 		{
 			self.shared_destination.complete();
 			self.unsubscribe();

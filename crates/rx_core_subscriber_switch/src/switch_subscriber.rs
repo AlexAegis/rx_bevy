@@ -77,7 +77,7 @@ where
 				move |_| {
 					if state_on_unsubscribe_clone
 						.lock_ignore_poison()
-						.inner_unsubscribe_can_downstream()
+						.inner_unsubscribed_can_downstream()
 					{
 						outer_teardown_on_unsubscribe_clone.unsubscribe();
 					}
@@ -105,7 +105,7 @@ where
 			&& self
 				.state
 				.lock_ignore_poison()
-				.upstream_complete_can_downstream()
+				.upstream_completed_can_downstream()
 		{
 			self.shared_destination.complete();
 			self.unsubscribe();
