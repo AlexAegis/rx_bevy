@@ -23,6 +23,7 @@ where
 	key: usize,
 	state: Arc<Mutex<HigherOrderSubscriberState<State>>>,
 	shared_destination: Arc<Mutex<Destination>>,
+	completed: bool,
 	on_complete: Option<OnComplete>,
 	on_unsubscribe: Option<OnUnsubscribe>,
 }
@@ -45,6 +46,7 @@ where
 		Self {
 			closed: false.into(),
 			key,
+			completed: false,
 			shared_destination,
 			state,
 			on_complete: Some(on_complete),
@@ -80,25 +82,23 @@ where
 
 	fn complete(&mut self) {
 		if !self.is_closed() {
+			self.completed = true;
 			{
 				let mut state = self.state.lock_ignore_poison();
-				state.non_completed_subscriptions -= 1;
+				state.non_completed_subscriptions -= 1; // TODO: move this into inner_complete_can_downstream
 			}
-
+			// TODO: move it up, to avoid locking state twice
 			if let Some(on_complete) = self.on_complete.take() {
 				on_complete(self.key);
 			}
 
+			if self
+				.state
+				.lock_ignore_poison()
+				.inner_complete_can_downstream()
 			{
-				let mut state = self.state.lock_ignore_poison();
-
-				if state.can_downstream_complete() {
-					state.downstream_subscriber_state.complete();
-					drop(state);
-
-					self.shared_destination.complete();
-					self.shared_destination.unsubscribe();
-				}
+				self.shared_destination.complete();
+				self.shared_destination.unsubscribe();
 			}
 
 			self.unsubscribe();
@@ -140,6 +140,9 @@ where
 			{
 				let mut state = self.state.lock_ignore_poison();
 				state.non_unsubscribed_subscriptions -= 1;
+				if !self.completed {
+					state.non_completed_subscriptions -= 1;
+				}
 			}
 
 			if let Some(on_unsubscribe) = self.on_unsubscribe.take() {

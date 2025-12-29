@@ -1,93 +1,320 @@
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
-use rx_core_traits::SubscriberNotification;
+
+#[derive(Clone)]
+enum Either {
+	O1,
+	O2,
+	O3,
+}
 
 #[test]
-fn subscribes_to_the_inner_observable_as_many_times_as_many_upstream_emissions_there_are() {
-	let mock_destination = MockObserver::<i32>::default();
-	let notification_collector = mock_destination.get_notification_collector();
+fn should_switch_all_iterators() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
 
-	let mut source = (1..=2)
-		.into_observable()
-		.switch_map(|_| (10..=12).into_observable(), |_| unreachable!());
-	let mut subscription = source.subscribe(mock_destination);
+	let mut source = PublishSubject::<_, _>::default();
+
+	let subscription = source
+		.clone()
+		.switch_map(
+			move |next| match next {
+				Either::O1 => (0..=2).into_observable(), // They all complete immediately
+				Either::O2 => (3..=4).into_observable(),
+				Either::O3 => (5..=6).into_observable(),
+			},
+			|error| error,
+		)
+		.subscribe(destination);
+
+	notification_collector.lock().assert_is_empty("switch_map");
+
+	source.next(Either::O1);
+	source.next(Either::O2);
+	source.next(Either::O3);
+	source.complete();
+
+	notification_collector.lock().assert_notifications(
+		"switch_map - iterators",
+		0,
+		[
+			SubscriberNotification::Next(0),
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Next(4),
+			SubscriberNotification::Next(5),
+			SubscriberNotification::Next(6),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
 	assert!(
-		notification_collector
-			.lock()
-			.nothing_happened_after_closed(),
-		"something happened after unsubscribe"
+		subscription.is_closed(),
+		"subscription should be closed after completion"
 	);
-	assert_eq!(
-		notification_collector.lock().all_observed_values(),
-		vec![10, 11, 12, 10, 11, 12]
-	);
-	subscription.unsubscribe();
 }
 
 #[test]
-fn subscribes_to_the_inner_observable_on_every_emit_of_a_source_subject_and_completes() {
-	let mock_destination = MockObserver::<i32>::default();
-	let notification_collector = mock_destination.get_notification_collector();
+fn should_subscribe_to_the_next_observable_immediately_and_unsubscribe_the_previous_subscription() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
 
-	let mut subject = PublishSubject::<i32, Never>::default();
-	let mut source = subject
+	let mut source = PublishSubject::<Either, &'static str>::default();
+
+	let mut inner_1 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_2 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let inner_1_clone = inner_1.clone();
+	let inner_2_clone = inner_2.clone();
+	let inner_3_clone = inner_3.clone();
+	let subscription = source
 		.clone()
-		.switch_map(|i| (0..=i).into_observable(), |_| unreachable!());
-	let mut subscription = source.subscribe(mock_destination);
+		.switch_map(
+			move |next| match next {
+				Either::O1 => inner_1_clone.clone(),
+				Either::O2 => inner_2_clone.clone(),
+				Either::O3 => inner_3_clone.clone(),
+			},
+			|error| error,
+		)
+		.subscribe(destination);
 
-	subject.next(1);
+	source.next(Either::O1);
+	notification_collector.lock().assert_is_empty("switch_all");
 
-	assert_eq!(
-		notification_collector.lock().all_observed_values(),
-		vec![0, 1]
+	inner_2.next(0);
+
+	source.next(Either::O2); // Switches immediately
+	inner_3.next(0); // Nothing should happen, haven't yet subscribed
+
+	inner_2.next(1);
+	inner_2.next(2);
+
+	notification_collector.lock().assert_notifications(
+		"switch_map - first observable",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+		],
+		true,
 	);
 
-	subject.next(3);
-	assert_eq!(
-		notification_collector.lock().all_observed_values(),
-		vec![0, 1, 0, 1, 2, 3]
+	inner_1.complete();
+	source.next(Either::O2);
+	inner_2.next(3);
+
+	source.complete();
+	inner_3.complete();
+	inner_2.complete();
+
+	notification_collector.lock().assert_notifications(
+		"switch_map - the rest",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 
-	subject.complete();
-
-	assert!(matches!(
-		notification_collector.lock().nth_notification(6),
-		&SubscriberNotification::Complete
-	));
-
-	subscription.unsubscribe();
-
-	assert!(matches!(
-		notification_collector.lock().nth_notification(7),
-		&SubscriberNotification::Unsubscribe
-	));
-
-	subject.unsubscribe();
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
 }
 
 #[test]
-fn upstream_ticks_are_forwarded_to_the_inner_subscription() {
-	let mock_destination = MockObserver::<i32>::default();
-	let notification_collector = mock_destination.get_notification_collector();
+fn should_immediately_complete_if_there_are_no_active_subscriptions() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
 
-	let mut subject = PublishSubject::<i32, Never>::default();
-	let mut source = subject
+	let mut source = PublishSubject::<Either, &'static str>::default();
+
+	let inner_1 = PublishSubject::<usize, &'static str>::default();
+	let inner_2 = PublishSubject::<usize, &'static str>::default();
+	let inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let inner_1_clone = inner_1.clone();
+	let inner_2_clone = inner_2.clone();
+	let inner_3_clone = inner_3.clone();
+	let subscription = source
 		.clone()
-		.switch_map(|i| (0..=i).into_observable(), |_| unreachable!());
-	let mut subscription = source.subscribe(mock_destination);
+		.switch_map(
+			move |next| match next {
+				Either::O1 => inner_1_clone.clone(),
+				Either::O2 => inner_2_clone.clone(),
+				Either::O3 => inner_3_clone.clone(),
+			},
+			|error| error,
+		)
+		.subscribe(destination);
 
-	subject.next(1);
-	assert_eq!(
-		notification_collector.lock().all_observed_values(),
-		vec![0, 1]
+	source.complete();
+
+	notification_collector.lock().assert_notifications(
+		"switch_map",
+		0,
+		[
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 
-	subject.next(3);
-	assert_eq!(
-		notification_collector.lock().all_observed_values(),
-		vec![0, 1, 0, 1, 2, 3]
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}
+
+#[test]
+fn should_immediately_error_by_an_inner_error() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<Either, &'static str>::default();
+
+	let mut inner_1 = PublishSubject::<usize, &'static str>::default();
+	let inner_2 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let inner_1_clone = inner_1.clone();
+	let inner_2_clone = inner_2.clone();
+	let inner_3_clone = inner_3.clone();
+	let subscription = source
+		.clone()
+		.switch_map(
+			move |next| match next {
+				Either::O1 => inner_1_clone.clone(),
+				Either::O2 => inner_2_clone.clone(),
+				Either::O3 => inner_3_clone.clone(),
+			},
+			|error| error,
+		)
+		.subscribe(destination);
+
+	source.next(Either::O1);
+	source.next(Either::O2);
+	source.next(Either::O3);
+	source.complete();
+
+	inner_1.next(1);
+	let error = "error";
+	inner_3.error(error);
+
+	notification_collector.lock().assert_notifications(
+		"switch_map",
+		0,
+		[
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
 	);
 
-	subject.unsubscribe();
-	subscription.unsubscribe();
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after error"
+	);
+}
+
+#[test]
+fn should_immediately_error_by_an_upstream_error() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<Either, &'static str>::default();
+
+	let inner_1 = PublishSubject::<usize, &'static str>::default();
+	let inner_2 = PublishSubject::<usize, &'static str>::default();
+	let inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let inner_1_clone = inner_1.clone();
+	let inner_2_clone = inner_2.clone();
+	let inner_3_clone = inner_3.clone();
+	let subscription = source
+		.clone()
+		.switch_map(
+			move |next| match next {
+				Either::O1 => inner_1_clone.clone(),
+				Either::O2 => inner_2_clone.clone(),
+				Either::O3 => inner_3_clone.clone(),
+			},
+			|error| error,
+		)
+		.subscribe(destination);
+
+	let error = "error";
+	source.error(error);
+
+	notification_collector.lock().assert_notifications(
+		"switch_map",
+		0,
+		[
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after error"
+	);
+}
+
+#[test]
+fn should_compose_and_switch_all_iterators() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<_, _>::default();
+
+	let composed = compose_operator().switch_map(
+		move |next| match next {
+			Either::O1 => (0..=2).into_observable(),
+			Either::O2 => (3..=4).into_observable(),
+			Either::O3 => (5..=6).into_observable(),
+		},
+		|error| error,
+	);
+
+	let subscription = source.clone().pipe(composed).subscribe(destination);
+
+	notification_collector.lock().assert_is_empty("switch_map");
+
+	source.next(Either::O1);
+	source.next(Either::O2);
+	source.next(Either::O3);
+	source.complete();
+
+	notification_collector.lock().assert_notifications(
+		"switch_map - iterators",
+		0,
+		[
+			SubscriberNotification::Next(0),
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Next(4),
+			SubscriberNotification::Next(5),
+			SubscriberNotification::Next(6),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
 }

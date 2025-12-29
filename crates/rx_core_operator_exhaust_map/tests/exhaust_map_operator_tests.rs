@@ -58,7 +58,7 @@ fn should_exhaust_all_iterators() {
 }
 
 #[test]
-fn should_subscribe_to_the_inner_observables_one_at_a_time() {
+fn should_subscribe_to_the_next_inner_observable_when_there_are_no_active_inner_subscriptions() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
 

@@ -52,14 +52,14 @@ where
 		}
 	}
 
-	pub fn can_downstream_complete(&self) -> bool {
+	fn can_downstream_complete(&self) -> bool {
 		self.state.can_downstream_complete()
 			&& self.non_completed_subscriptions == 0
 			&& self.upstream_subscriber_state.is_completed()
 			&& !self.downstream_subscriber_state.is_completed()
 	}
 
-	pub fn can_downstream_unsubscribe(&self) -> bool {
+	fn can_downstream_unsubscribe(&self) -> bool {
 		(self.state.can_downstream_unsubscribe()
 			&& self.non_unsubscribed_subscriptions == 0
 			&& self.upstream_subscriber_state.is_unsubscribed()
@@ -73,6 +73,27 @@ where
 		self.upstream_subscriber_state.unsubscribe();
 
 		self.can_downstream_complete()
+	}
+
+	pub fn inner_complete_can_downstream(&mut self) -> bool {
+		let downstream_can_complete = self.can_downstream_complete();
+
+		if downstream_can_complete {
+			self.downstream_subscriber_state.complete();
+		}
+
+		downstream_can_complete
+	}
+
+	pub fn inner_unsubscribe_can_downstream(&mut self) -> bool {
+		let downstream_can_unsubscribe = self.can_downstream_unsubscribe();
+
+		if downstream_can_unsubscribe {
+			self.downstream_subscriber_state
+				.unsubscribe_if_not_already();
+		}
+
+		downstream_can_unsubscribe
 	}
 
 	pub fn upstream_unsubscribe_can_downstream(&mut self) -> bool {

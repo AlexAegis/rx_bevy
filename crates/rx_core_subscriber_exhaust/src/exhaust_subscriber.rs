@@ -77,13 +77,10 @@ where
 				self.state.clone(),
 				move |_| {},
 				move |_| {
-					let mut state = state_on_unsubscribe_clone.lock_ignore_poison();
-					if state.can_downstream_unsubscribe() {
-						state
-							.downstream_subscriber_state
-							.unsubscribe_if_not_already();
-						drop(state);
-
+					if state_on_unsubscribe_clone
+						.lock_ignore_poison()
+						.inner_unsubscribe_can_downstream()
+					{
 						outer_teardown_on_unsubscribe_clone.unsubscribe();
 					}
 				},
