@@ -1,5 +1,5 @@
 use rx_core::prelude::*;
-use rx_core_subscriber_switch::SwitchSubscriber;
+use rx_core_subscriber_higher_order_switch::SwitchSubscriber;
 use rx_core_testing::prelude::*;
 
 #[test]

@@ -1,5 +1,5 @@
 [package]
-name = "rx_core_subscriber_concurrent"
+name = "rx_core_subscriber_higher_order_concurrent"
 description = "concurrent subscriber for rx_core."
 version = "0.1.0"
 readme = "readme.md"

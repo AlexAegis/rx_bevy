@@ -3,7 +3,7 @@ use core::{marker::PhantomData, num::NonZero};
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
-use rx_core_subscriber_switch::SwitchSubscriberProvider;
+use rx_core_subscriber_higher_order_switch::SwitchSubscriberProvider;
 use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
 /// # [switch_map][SwitchMapOperator]

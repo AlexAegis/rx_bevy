@@ -2,8 +2,8 @@ use core::{marker::PhantomData, num::NonZero};
 
 use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_subscriber_concurrent::ConcurrentSubscriberProvider;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
+use rx_core_subscriber_higher_order_concurrent::ConcurrentSubscriberProvider;
 use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
 #[derive_where(Clone)]

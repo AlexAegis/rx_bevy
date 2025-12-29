@@ -1,5 +1,5 @@
 use rx_core::prelude::*;
-use rx_core_subscriber_exhaust::ExhaustSubscriber;
+use rx_core_subscriber_higher_order_exhaust::ExhaustSubscriber;
 use rx_core_testing::prelude::*;
 
 #[test]

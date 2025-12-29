@@ -4570,8 +4570,8 @@ dependencies = [
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_observable_erased",
- "rx_core_subscriber_concurrent",
  "rx_core_subscriber_higher_order_all",
+ "rx_core_subscriber_higher_order_concurrent",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4676,8 +4676,8 @@ dependencies = [
  "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_observable_erased",
- "rx_core_subscriber_concurrent",
  "rx_core_subscriber_higher_order_all",
+ "rx_core_subscriber_higher_order_concurrent",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4804,8 +4804,8 @@ dependencies = [
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
- "rx_core_subscriber_concurrent",
  "rx_core_subscriber_higher_order_all",
+ "rx_core_subscriber_higher_order_concurrent",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4818,7 +4818,7 @@ dependencies = [
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
- "rx_core_subscriber_concurrent",
+ "rx_core_subscriber_higher_order_concurrent",
  "rx_core_subscriber_higher_order_map",
  "rx_core_testing",
  "rx_core_traits",
@@ -4897,8 +4897,8 @@ dependencies = [
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
- "rx_core_subscriber_exhaust",
  "rx_core_subscriber_higher_order_all",
+ "rx_core_subscriber_higher_order_exhaust",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -4911,7 +4911,7 @@ dependencies = [
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
- "rx_core_subscriber_exhaust",
+ "rx_core_subscriber_higher_order_exhaust",
  "rx_core_subscriber_higher_order_map",
  "rx_core_testing",
  "rx_core_traits",
@@ -5108,8 +5108,8 @@ dependencies = [
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
- "rx_core_subscriber_concurrent",
  "rx_core_subscriber_higher_order_all",
+ "rx_core_subscriber_higher_order_concurrent",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -5122,7 +5122,7 @@ dependencies = [
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
- "rx_core_subscriber_concurrent",
+ "rx_core_subscriber_higher_order_concurrent",
  "rx_core_subscriber_higher_order_map",
  "rx_core_testing",
  "rx_core_traits",
@@ -5202,7 +5202,7 @@ dependencies = [
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_all",
- "rx_core_subscriber_switch",
+ "rx_core_subscriber_higher_order_switch",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -5216,7 +5216,7 @@ dependencies = [
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_map",
- "rx_core_subscriber_switch",
+ "rx_core_subscriber_higher_order_switch",
  "rx_core_testing",
  "rx_core_traits",
 ]
@@ -5335,30 +5335,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_core_subscriber_concurrent"
-version = "0.1.0"
-dependencies = [
- "derive-where",
- "rx_core",
- "rx_core_macro_subscriber_derive",
- "rx_core_subscriber_higher_order",
- "rx_core_testing",
- "rx_core_traits",
- "slab",
-]
-
-[[package]]
-name = "rx_core_subscriber_exhaust"
-version = "0.1.0"
-dependencies = [
- "rx_core",
- "rx_core_macro_subscriber_derive",
- "rx_core_subscriber_higher_order",
- "rx_core_testing",
- "rx_core_traits",
-]
-
-[[package]]
 name = "rx_core_subscriber_higher_order"
 version = "0.1.0"
 dependencies = [
@@ -5380,7 +5356,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_core_subscriber_higher_order_concurrent"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_subscriber_higher_order",
+ "rx_core_testing",
+ "rx_core_traits",
+ "slab",
+]
+
+[[package]]
+name = "rx_core_subscriber_higher_order_exhaust"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_subscriber_higher_order",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
 name = "rx_core_subscriber_higher_order_map"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_subscriber_higher_order",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_subscriber_higher_order_switch"
 version = "0.1.0"
 dependencies = [
  "rx_core",
@@ -5399,17 +5410,6 @@ dependencies = [
  "rx_core",
  "rx_core_macro_subscriber_derive",
  "rx_core_observable_iterator",
- "rx_core_testing",
- "rx_core_traits",
-]
-
-[[package]]
-name = "rx_core_subscriber_switch"
-version = "0.1.0"
-dependencies = [
- "rx_core",
- "rx_core_macro_subscriber_derive",
- "rx_core_subscriber_higher_order",
  "rx_core_testing",
  "rx_core_traits",
 ]
