@@ -12,7 +12,6 @@ use slab::Slab;
 
 use crate::{create_inner_subscription, internal::ConcurrentSubscriberState};
 
-// TODO: The innerobservable generic is likely unneeded, remove it
 #[derive(RxSubscriber)]
 #[rx_in(InnerObservable::Out)]
 #[rx_in_error(InnerObservable::OutError)]

@@ -2,6 +2,48 @@ use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
 #[test]
+fn should_concat_all_iterators() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<_, _>::default();
+
+	let subscription = source
+		.clone()
+		.concat_all(|error| error)
+		.subscribe(destination);
+
+	notification_collector.lock().assert_is_empty("merge_all");
+
+	source.next((0..=2).into_observable());
+	source.next((3..=4).into_observable());
+	source.next((5..=6).into_observable());
+	source.complete();
+
+	notification_collector.lock().assert_notifications(
+		"merge_all - iterators",
+		0,
+		[
+			SubscriberNotification::Next(0),
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Next(4),
+			SubscriberNotification::Next(5),
+			SubscriberNotification::Next(6),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}
+
+#[test]
 fn should_subscribe_to_the_inner_observables_one_at_a_time() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();
@@ -51,6 +93,47 @@ fn should_subscribe_to_the_inner_observables_one_at_a_time() {
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Next(3),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}
+
+#[test]
+fn should_compose_and_concat_all_iterators() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<_, _>::default();
+
+	let composed = compose_operator().concat_all(|error| error);
+
+	let subscription = source.clone().pipe(composed).subscribe(destination);
+
+	notification_collector.lock().assert_is_empty("merge_all");
+
+	source.next((0..=2).into_observable());
+	source.next((3..=4).into_observable());
+	source.next((5..=6).into_observable());
+	source.complete();
+
+	notification_collector.lock().assert_notifications(
+		"merge_all - iterators",
+		0,
+		[
+			SubscriberNotification::Next(0),
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Next(4),
+			SubscriberNotification::Next(5),
+			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
 			SubscriberNotification::Unsubscribe,
 		],
