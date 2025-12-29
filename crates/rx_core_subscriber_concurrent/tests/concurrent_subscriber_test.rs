@@ -169,6 +169,49 @@ fn should_move_to_the_next_observable_in_queue_if_the_previous_one_had_unsubscri
 }
 
 #[test]
+fn should_move_to_the_next_observable_in_queue_if_the_the_concurrency_limit_allows_it() {
+	let destination = MockObserver::<usize, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut concurrent_subscriber =
+		ConcurrentSubscriber::<PublishSubject<usize, &'static str>, _>::new(
+			destination.upgrade(),
+			NonZero::new(2).unwrap(),
+		);
+
+	let mut inner_1 = PublishSubject::default();
+	let mut inner_2 = PublishSubject::default();
+	let mut inner_3 = PublishSubject::default();
+	concurrent_subscriber.next(inner_1.clone());
+	concurrent_subscriber.next(inner_2.clone());
+	concurrent_subscriber.next(inner_3.clone());
+	concurrent_subscriber.complete(); // Must not complete because there's an active or queued inner observable
+
+	notification_collector
+		.lock()
+		.assert_is_empty("concurrent_subscriber");
+
+	inner_1.next(1);
+	inner_2.next(2);
+	inner_1.unsubscribe();
+	inner_3.next(3);
+	inner_3.unsubscribe();
+	inner_2.unsubscribe();
+
+	notification_collector.lock().assert_notifications(
+		"concurrent_subscriber",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+}
+
+#[test]
 fn should_be_able_to_execute_upstream_teardown_on_unsubscribe() {
 	let destination = MockObserver::<usize>::default();
 	let _notification_collector = destination.get_notification_collector();

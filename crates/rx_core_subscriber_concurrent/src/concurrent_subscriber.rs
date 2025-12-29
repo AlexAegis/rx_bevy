@@ -5,7 +5,7 @@ use std::{
 };
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_subscriber_higher_order::HigherOrderSubscriberState;
+use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 use rx_core_traits::{
 	LockWithPoisonBehavior, Observable, Observer, Signal, Subscriber, SubscriptionData,
 	SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
@@ -13,9 +13,7 @@ use rx_core_traits::{
 };
 use slab::Slab;
 
-use crate::{
-	concurrent_subscriber_queue::ConcurrentSubscriberQueue, internal::ConcurrentSubscriberInner,
-};
+use crate::concurrent_subscriber_queue::ConcurrentSubscriberQueue;
 
 #[derive(RxSubscriber)]
 #[rx_in(InnerObservable)]
@@ -55,12 +53,41 @@ where
 	}
 }
 
+pub(crate) fn subscribe_to_next_in_queue<InnerObservable, Destination>(
+	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
+	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
+	shared_destination: Arc<Mutex<Destination>>,
+	outer_teardown: SubscriptionHandle,
+	concurrency_limit: NonZero<usize>,
+) where
+	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
+	Destination: 'static + Subscriber,
+{
+	let mut state_lock = state.lock_ignore_poison();
+
+	if let Some(next) = state_lock.state.queue.pop_front() {
+		state_lock.non_completed_subscriptions += 1;
+		state_lock.non_unsubscribed_subscriptions += 1;
+		drop(state_lock);
+
+		create_inner_subscription(
+			next,
+			state.clone(),
+			inner_subscriptions,
+			shared_destination,
+			outer_teardown,
+			concurrency_limit,
+		);
+	}
+}
+
 pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 	mut next_observable: InnerObservable,
 	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
 	shared_destination: Arc<Mutex<Destination>>,
 	outer_teardown: SubscriptionHandle,
+	concurrency_limit: NonZero<usize>,
 ) where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
 	Destination: 'static + Subscriber,
@@ -73,17 +100,54 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 		key
 	};
 
-	let next_subscription =
-		next_observable.subscribe(ConcurrentSubscriberInner::<InnerObservable, _>::new(
-			key,
-			shared_destination.clone(),
-			state,
-			inner_subscriptions.clone(),
-			outer_teardown,
-		));
+	let state_on_complete_clone = state.clone();
+	let shared_destination_on_complete_clone = shared_destination.clone();
+	let inner_subscriptions_on_complete_clone = inner_subscriptions.clone();
+	let outer_teardown_on_complete_clone = outer_teardown.clone();
+
+	let inner_subscriptions_clone = inner_subscriptions.clone();
+
+	let concurrency_limit_minus_one: usize = usize::from(concurrency_limit) - 1;
+
+	let next_subscription = next_observable.subscribe(HigherOrderInnerSubscriber::new(
+		key,
+		shared_destination.clone(),
+		state.clone(),
+		inner_subscriptions.clone(),
+		outer_teardown.clone(),
+		move |_key| {
+			subscribe_to_next_in_queue(
+				state_on_complete_clone,
+				inner_subscriptions_on_complete_clone,
+				shared_destination_on_complete_clone,
+				outer_teardown_on_complete_clone,
+				concurrency_limit,
+			);
+		},
+		move |key| {
+			let no_more_subscribers_besides_this = {
+				let mut inner_subscriptions = inner_subscriptions.lock_ignore_poison();
+				inner_subscriptions.retain(|_k, s| !s.is_closed());
+				inner_subscriptions
+					.iter()
+					.filter(|(k, _)| *k != key)
+					.count() == concurrency_limit_minus_one
+			};
+
+			if no_more_subscribers_besides_this {
+				subscribe_to_next_in_queue(
+					state,
+					inner_subscriptions,
+					shared_destination,
+					outer_teardown,
+					concurrency_limit,
+				);
+			}
+		},
+	));
 
 	if !next_subscription.is_closed() {
-		let mut slab = inner_subscriptions.lock_ignore_poison();
+		let mut slab = inner_subscriptions_clone.lock_ignore_poison();
 		slab.get_mut(key).unwrap().add(next_subscription);
 	}
 }
@@ -108,6 +172,7 @@ where
 					self.inner_subscriptions.clone(),
 					self.shared_destination.clone(),
 					self.outer_teardown.clone(),
+					self.concurrency_limit,
 				);
 			} else {
 				state.state.queue.push_back(next);
