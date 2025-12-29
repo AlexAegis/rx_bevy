@@ -8,6 +8,24 @@ pub trait HigherOrderSubscriberStateConditions {
 	fn on_downstream_error(&mut self);
 }
 
+impl HigherOrderSubscriberStateConditions for () {
+	#[inline]
+	fn can_downstream_complete(&self) -> bool {
+		true
+	}
+
+	#[inline]
+	fn can_downstream_unsubscribe(&self) -> bool {
+		true
+	}
+
+	#[inline]
+	fn on_downstream_error(&mut self) {}
+
+	#[inline]
+	fn on_upstream_error(&mut self) {}
+}
+
 #[derive(Default)]
 pub struct HigherOrderSubscriberState<State>
 where
@@ -48,6 +66,19 @@ where
 			&& !self.downstream_subscriber_state.is_unsubscribed())
 			|| self.upstream_subscriber_state.is_errored()
 			|| self.downstream_subscriber_state.is_errored()
+	}
+
+	pub fn upstream_complete_can_downstream(&mut self) -> bool {
+		self.upstream_subscriber_state.complete();
+		self.upstream_subscriber_state.unsubscribe();
+
+		self.can_downstream_complete()
+	}
+
+	pub fn upstream_unsubscribe_can_downstream(&mut self) -> bool {
+		self.upstream_subscriber_state.unsubscribe_if_not_already();
+
+		self.can_downstream_unsubscribe()
 	}
 
 	pub fn upstream_error(&mut self) {

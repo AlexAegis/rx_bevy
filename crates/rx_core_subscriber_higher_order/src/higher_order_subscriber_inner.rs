@@ -2,10 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observer, Subscriber, SubscriptionClosedFlag, SubscriptionData,
-	SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
+	LockWithPoisonBehavior, Observer, Subscriber, SubscriptionClosedFlag, SubscriptionLike,
+	Teardown, TeardownCollection,
 };
-use slab::Slab;
 
 use crate::{HigherOrderSubscriberState, HigherOrderSubscriberStateConditions};
 
@@ -23,9 +22,7 @@ where
 	closed: SubscriptionClosedFlag,
 	key: usize,
 	state: Arc<Mutex<HigherOrderSubscriberState<State>>>,
-	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
 	shared_destination: Arc<Mutex<Destination>>,
-	outer_teardown: SubscriptionHandle,
 	on_complete: Option<OnComplete>,
 	on_unsubscribe: Option<OnUnsubscribe>,
 }
@@ -42,8 +39,6 @@ where
 		key: usize,
 		shared_destination: Arc<Mutex<Destination>>,
 		state: Arc<Mutex<HigherOrderSubscriberState<State>>>,
-		inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
-		outer_teardown: SubscriptionHandle,
 		on_complete: OnComplete,
 		on_unsubscribe: OnUnsubscribe,
 	) -> Self {
@@ -51,9 +46,7 @@ where
 			closed: false.into(),
 			key,
 			shared_destination,
-			outer_teardown,
 			state,
-			inner_subscriptions,
 			on_complete: Some(on_complete),
 			on_unsubscribe: Some(on_unsubscribe),
 		}
@@ -102,7 +95,9 @@ where
 				if state.can_downstream_complete() {
 					state.downstream_subscriber_state.complete();
 					drop(state);
+
 					self.shared_destination.complete();
+					self.shared_destination.unsubscribe();
 				}
 			}
 
@@ -149,29 +144,6 @@ where
 
 			if let Some(on_unsubscribe) = self.on_unsubscribe.take() {
 				on_unsubscribe(self.key);
-			}
-
-			let mut state = self.state.lock_ignore_poison();
-			if state.can_downstream_unsubscribe() {
-				state
-					.downstream_subscriber_state
-					.unsubscribe_if_not_already();
-				drop(state);
-
-				for (key, inner_subscription) in
-					self.inner_subscriptions.lock_ignore_poison().iter_mut()
-				{
-					// Must not unsubscribe itself, as we're in the middle of
-					// unsubscribing! It would lock up!
-					if key != self.key && !inner_subscription.is_closed() {
-						inner_subscription.unsubscribe();
-					}
-				}
-
-				// Close the subscriber, signaling upstream that we're closed
-				self.outer_teardown.unsubscribe();
-				// Close downstream
-				self.shared_destination.unsubscribe();
 			}
 		}
 	}

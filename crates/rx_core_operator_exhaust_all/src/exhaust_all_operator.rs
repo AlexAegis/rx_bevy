@@ -6,8 +6,6 @@ use rx_core_subscriber_exhaust::ExhaustSubscriberProvider;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 
-// TODO: ALL HIGHER ORDER OPERATORS NEED ERROR MAPPER FNs BECAUSE INFALLIBLE ISN'T INTO<T> (unreachable) by itself.
-// maybe try a inner error type that never can impl from for and outerror too generically? to swap between unreachable and into easily
 #[derive_where(Clone; ErrorMapper)]
 #[derive(RxOperator)]
 #[rx_in(In)]

@@ -85,8 +85,8 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 	mut next_observable: InnerObservable,
 	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
-	shared_destination: Arc<Mutex<Destination>>,
-	outer_teardown: SubscriptionHandle,
+	mut shared_destination: Arc<Mutex<Destination>>,
+	mut outer_teardown: SubscriptionHandle,
 	concurrency_limit: NonZero<usize>,
 ) where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
@@ -113,8 +113,6 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 		key,
 		shared_destination.clone(),
 		state.clone(),
-		inner_subscriptions.clone(),
-		outer_teardown.clone(),
 		move |_key| {
 			subscribe_to_next_in_queue(
 				state_on_complete_clone,
@@ -136,12 +134,34 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 
 			if no_more_subscribers_besides_this {
 				subscribe_to_next_in_queue(
-					state,
-					inner_subscriptions,
-					shared_destination,
-					outer_teardown,
+					state.clone(),
+					inner_subscriptions.clone(),
+					shared_destination.clone(),
+					outer_teardown.clone(),
 					concurrency_limit,
 				);
+			}
+
+			let mut state = state.lock_ignore_poison();
+			if state.can_downstream_unsubscribe() {
+				state
+					.downstream_subscriber_state
+					.unsubscribe_if_not_already();
+				drop(state);
+
+				for (other_key, inner_subscription) in
+					inner_subscriptions.lock_ignore_poison().iter_mut()
+				{
+					// Must not unsubscribe itself, as we're in the middle of
+					// unsubscribing! It would lock up!
+					if other_key != key && !inner_subscription.is_closed() {
+						inner_subscription.unsubscribe();
+					}
+				}
+
+				// Close downstream
+				shared_destination.unsubscribe();
+				outer_teardown.unsubscribe();
 			}
 		},
 	));
@@ -182,26 +202,22 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			{
-				let mut state = self.state.lock_ignore_poison();
-				state.upstream_error();
-			}
+			self.state.lock_ignore_poison().upstream_error();
+
 			self.shared_destination.error(error);
 			self.unsubscribe();
 		}
 	}
 
 	fn complete(&mut self) {
-		if !self.is_closed() {
-			let mut state = self.state.lock_ignore_poison();
-			state.upstream_subscriber_state.complete();
-			state.upstream_subscriber_state.unsubscribe();
-
-			if state.can_downstream_complete() {
-				drop(state);
-				self.shared_destination.complete();
-				self.unsubscribe();
-			}
+		if !self.is_closed()
+			&& self
+				.state
+				.lock_ignore_poison()
+				.upstream_complete_can_downstream()
+		{
+			self.shared_destination.complete();
+			self.unsubscribe();
 		}
 	}
 }
@@ -218,26 +234,25 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if !self.is_closed() {
-			let mut state = self.state.lock_ignore_poison();
-			state.upstream_subscriber_state.unsubscribe_if_not_already();
-			if state.can_downstream_unsubscribe() {
-				drop(state);
+		if !self.is_closed()
+			&& self
+				.state
+				.lock_ignore_poison()
+				.upstream_unsubscribe_can_downstream()
+		{
+			self.outer_teardown.unsubscribe();
 
-				self.outer_teardown.unsubscribe();
+			let inner_subscriptions = self
+				.inner_subscriptions
+				.lock_ignore_poison()
+				.drain()
+				.collect::<Vec<_>>();
 
-				let inner_subscriptions = self
-					.inner_subscriptions
-					.lock_ignore_poison()
-					.drain()
-					.collect::<Vec<_>>();
-
-				for mut inner_subscription in inner_subscriptions {
-					inner_subscription.unsubscribe();
-				}
-
-				self.shared_destination.unsubscribe();
+			for mut inner_subscription in inner_subscriptions {
+				inner_subscription.unsubscribe();
 			}
+
+			self.shared_destination.unsubscribe();
 		}
 	}
 }

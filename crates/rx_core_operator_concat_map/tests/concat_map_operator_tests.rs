@@ -27,7 +27,7 @@ fn should_concat_all_iterators() {
 		)
 		.subscribe(destination);
 
-	notification_collector.lock().assert_is_empty("merge_all");
+	notification_collector.lock().assert_is_empty("concat_map");
 
 	source.next(Either::O1);
 	source.next(Either::O2);
@@ -35,7 +35,7 @@ fn should_concat_all_iterators() {
 	source.complete();
 
 	notification_collector.lock().assert_notifications(
-		"merge_all - iterators",
+		"concat_map - iterators",
 		0,
 		[
 			SubscriberNotification::Next(0),
@@ -291,7 +291,7 @@ fn should_compose_and_concat_all_iterators() {
 
 	let subscription = source.clone().pipe(composed).subscribe(destination);
 
-	notification_collector.lock().assert_is_empty("merge_all");
+	notification_collector.lock().assert_is_empty("concat_map");
 
 	source.next(Either::O1);
 	source.next(Either::O2);
@@ -299,7 +299,7 @@ fn should_compose_and_concat_all_iterators() {
 	source.complete();
 
 	notification_collector.lock().assert_notifications(
-		"merge_all - iterators",
+		"concat_map - iterators",
 		0,
 		[
 			SubscriberNotification::Next(0),

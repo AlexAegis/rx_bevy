@@ -1,39 +1,18 @@
-use core::num::NonZero;
+use std::{
+	marker::PhantomData,
+	sync::{Arc, Mutex},
+};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_subscriber_higher_order::{
-	HigherOrderSubscriberFactory, HigherOrderSubscriberProvider,
-};
-use rx_core_subscriber_rc::RcSubscriber;
+use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 use rx_core_traits::{
-	Observable, Observer, Signal, Subscriber, SubscriptionClosedFlag, SubscriptionLike, Teardown,
-	TeardownCollection,
+	LockWithPoisonBehavior, Observable, Observer, Signal, Subscriber, SubscriptionData,
+	SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
 };
 
-pub struct ExhaustSubscriberProvider;
-
-impl HigherOrderSubscriberProvider for ExhaustSubscriberProvider {
-	type HigherOrderSubscriber<InnerObservable, Destination>
-		= ExhaustSubscriber<InnerObservable, Destination>
-	where
-		InnerObservable: Observable + Signal,
-		Destination:
-			'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>;
-}
-
-impl<InnerObservable, Destination> HigherOrderSubscriberFactory<Destination>
-	for ExhaustSubscriber<InnerObservable, Destination>
-where
-	InnerObservable: Observable + Signal,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
-{
-	fn new_from_destination(destination: Destination, _concurrency_limit: NonZero<usize>) -> Self {
-		Self::new(destination)
-	}
-}
-
-/// A subscriber that switches to new inner observables, unsubscribing from the previous one.
+/// A subscriber that only subscribes to an incoming observable, if there are
+/// no active inner subscriptions already. If there is one, the incoming
+/// observable is simply dropped, and won't be subscribed to.
 #[derive(RxSubscriber)]
 #[rx_in(InnerObservable)]
 #[rx_in_error(InnerObservable::OutError)]
@@ -43,10 +22,11 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	pub(crate) destination: RcSubscriber<Destination>,
-	pub(crate) inner_subscription:
-		Option<<InnerObservable as Observable>::Subscription<RcSubscriber<Destination>>>,
-	pub(crate) closed_flag: SubscriptionClosedFlag,
+	outer_teardown: SubscriptionHandle,
+	shared_destination: Arc<Mutex<Destination>>,
+	state: Arc<Mutex<HigherOrderSubscriberState<()>>>,
+	inner_subscription: Option<SubscriptionData>,
+	_phantom_data: PhantomData<InnerObservable>,
 }
 
 impl<InnerObservable, Destination> ExhaustSubscriber<InnerObservable, Destination>
@@ -56,17 +36,16 @@ where
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	pub fn new(destination: Destination) -> Self {
-		Self {
-			destination: RcSubscriber::new(destination),
-			inner_subscription: None,
-			closed_flag: false.into(),
-		}
-	}
+		let shared_destination = Arc::new(Mutex::new(destination));
 
-	#[inline]
-	fn unsubscribe_inner(&mut self) {
-		if let Some(mut inner_subscription) = self.inner_subscription.take() {
-			inner_subscription.unsubscribe();
+		let state = Arc::new(Mutex::new(HigherOrderSubscriberState::default()));
+
+		Self {
+			outer_teardown: SubscriptionHandle::default(),
+			shared_destination,
+			state,
+			inner_subscription: None,
+			_phantom_data: PhantomData,
 		}
 	}
 }
@@ -78,26 +57,63 @@ where
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	fn next(&mut self, mut next: Self::In) {
-		if !self.is_closed()
-			&& (self.inner_subscription.is_none()
-				|| self.destination.lock().has_exactly_one_instance_open())
-		{
-			self.unsubscribe_inner();
-			let subscription = next.subscribe(self.destination.clone());
-			self.inner_subscription = Some(subscription);
+		let mut state_lock = self.state.lock_ignore_poison();
+
+		if !self.is_closed() && state_lock.non_unsubscribed_subscriptions == 0 {
+			state_lock.non_completed_subscriptions += 1;
+			state_lock.non_unsubscribed_subscriptions += 1;
+			drop(state_lock);
+
+			if let Some(mut inner_subscription) = self.inner_subscription.take() {
+				inner_subscription.unsubscribe();
+			}
+
+			let state_on_unsubscribe_clone = self.state.clone();
+			let mut outer_teardown_on_unsubscribe_clone = self.outer_teardown.clone();
+
+			let subscription = next.subscribe(HigherOrderInnerSubscriber::new(
+				0,
+				self.shared_destination.clone(),
+				self.state.clone(),
+				move |_| {},
+				move |_| {
+					let mut state = state_on_unsubscribe_clone.lock_ignore_poison();
+					if state.can_downstream_unsubscribe() {
+						state
+							.downstream_subscriber_state
+							.unsubscribe_if_not_already();
+						drop(state);
+
+						outer_teardown_on_unsubscribe_clone.unsubscribe();
+					}
+				},
+			));
+
+			if !subscription.is_closed() {
+				self.inner_subscription =
+					Some(SubscriptionData::new_with_teardown(subscription.into()));
+			}
 		}
 	}
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			self.unsubscribe_inner();
-			self.destination.error(error);
+			self.state.lock_ignore_poison().upstream_error();
+
+			self.shared_destination.error(error);
+			self.unsubscribe();
 		}
 	}
 
 	fn complete(&mut self) {
-		if !self.is_closed() {
-			self.destination.complete();
+		if !self.is_closed()
+			&& self
+				.state
+				.lock_ignore_poison()
+				.upstream_complete_can_downstream()
+		{
+			self.shared_destination.complete();
+			self.unsubscribe();
 		}
 	}
 }
@@ -111,16 +127,22 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.closed_flag.is_closed()
+		self.outer_teardown.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
-		// An upstream unsubscribe stops everything!
-		if !self.is_closed() {
-			self.closed_flag.close();
+		if !self.is_closed()
+			&& self
+				.state
+				.lock_ignore_poison()
+				.upstream_unsubscribe_can_downstream()
+		{
+			if let Some(subscription_handle) = &mut self.inner_subscription {
+				subscription_handle.unsubscribe();
+			};
 
-			self.unsubscribe_inner();
-			self.destination.unsubscribe();
+			self.outer_teardown.unsubscribe();
+			self.shared_destination.unsubscribe();
 		}
 	}
 }
@@ -134,7 +156,7 @@ where
 {
 	fn add_teardown(&mut self, teardown: Teardown) {
 		if !self.is_closed() {
-			self.destination.add_teardown(teardown);
+			self.shared_destination.add_teardown(teardown);
 		} else {
 			teardown.execute();
 		}
