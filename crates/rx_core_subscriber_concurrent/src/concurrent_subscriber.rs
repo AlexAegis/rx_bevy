@@ -1,13 +1,11 @@
 use core::num::NonZero;
 use std::{
 	marker::PhantomData,
-	sync::{
-		Arc, Mutex,
-		atomic::{AtomicBool, Ordering},
-	},
+	sync::{Arc, Mutex},
 };
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_subscriber_higher_order::HigherOrderSubscriberState;
 use rx_core_traits::{
 	LockWithPoisonBehavior, Observable, Observer, Signal, Subscriber, SubscriptionData,
 	SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
@@ -15,7 +13,9 @@ use rx_core_traits::{
 };
 use slab::Slab;
 
-use crate::internal::{ConcurrentSubscriberInner, ConcurrentSubscriberState};
+use crate::{
+	concurrent_subscriber_queue::ConcurrentSubscriberQueue, internal::ConcurrentSubscriberInner,
+};
 
 #[derive(RxSubscriber)]
 #[rx_in(InnerObservable)]
@@ -27,9 +27,9 @@ where
 {
 	outer_teardown: SubscriptionHandle,
 	shared_destination: Arc<Mutex<Destination>>,
-	upstream_completed: Arc<AtomicBool>,
-	state: Arc<Mutex<ConcurrentSubscriberState<InnerObservable>>>,
+	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
+	concurrency_limit: NonZero<usize>,
 	_phantom_data: PhantomData<InnerObservable>,
 }
 
@@ -40,18 +40,16 @@ where
 {
 	pub fn new(destination: Destination, concurrency_limit: NonZero<usize>) -> Self {
 		let shared_destination = Arc::new(Mutex::new(destination));
-		let upstream_completed = Arc::new(AtomicBool::new(false));
-		let state = Arc::new(Mutex::new(ConcurrentSubscriberState::new(
-			concurrency_limit,
-		)));
+
+		let state = Arc::new(Mutex::new(HigherOrderSubscriberState::default()));
 		let inner_subscriptions = Arc::new(Mutex::new(Slab::new()));
 
 		Self {
 			outer_teardown: SubscriptionHandle::default(),
-			upstream_completed,
 			shared_destination,
 			state,
 			inner_subscriptions,
+			concurrency_limit,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -59,7 +57,7 @@ where
 
 pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 	mut next_observable: InnerObservable,
-	state: Arc<Mutex<ConcurrentSubscriberState<InnerObservable>>>,
+	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
 	shared_destination: Arc<Mutex<Destination>>,
 	outer_teardown: SubscriptionHandle,
@@ -99,7 +97,7 @@ where
 		if !self.is_closed() {
 			let mut state = self.state.lock_ignore_poison();
 
-			if state.non_completed_subscriptions < state.concurrency_limit.into() {
+			if state.non_completed_subscriptions < self.concurrency_limit.into() {
 				state.non_completed_subscriptions += 1;
 				state.non_unsubscribed_subscriptions += 1;
 				drop(state);
@@ -112,7 +110,7 @@ where
 					self.outer_teardown.clone(),
 				);
 			} else {
-				state.queue.push_back(next);
+				state.state.queue.push_back(next);
 			}
 		}
 	}
@@ -121,8 +119,7 @@ where
 		if !self.is_closed() {
 			{
 				let mut state = self.state.lock_ignore_poison();
-				state.upstream_unsubscribed = true;
-				state.error();
+				state.upstream_error();
 			}
 			self.shared_destination.error(error);
 			self.unsubscribe();
@@ -131,11 +128,10 @@ where
 
 	fn complete(&mut self) {
 		if !self.is_closed() {
-			self.upstream_completed.store(true, Ordering::Relaxed);
-
 			let mut state = self.state.lock_ignore_poison();
-			state.upstream_completed = true;
-			state.upstream_unsubscribed = true;
+			state.upstream_subscriber_state.complete();
+			state.upstream_subscriber_state.unsubscribe();
+
 			if state.can_downstream_complete() {
 				drop(state);
 				self.shared_destination.complete();
@@ -159,8 +155,8 @@ where
 	fn unsubscribe(&mut self) {
 		if !self.is_closed() {
 			let mut state = self.state.lock_ignore_poison();
-			state.upstream_unsubscribed = true;
-			if state.can_downstream_unsubscribe() || state.upstream_errored {
+			state.upstream_subscriber_state.unsubscribe_if_not_already();
+			if state.can_downstream_unsubscribe() {
 				drop(state);
 
 				self.outer_teardown.unsubscribe();

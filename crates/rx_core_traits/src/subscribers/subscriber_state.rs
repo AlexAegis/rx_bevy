@@ -1,5 +1,5 @@
+use crate::{Signal, SubscriberNotification};
 use bitflags::bitflags;
-use rx_core_traits::{Signal, SubscriberNotification};
 
 bitflags! {
 	#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -190,6 +190,25 @@ impl SubscriberState {
 		self.state.insert(SubscriberStateBits::UNSUBSCRIBED);
 	}
 
+	/// Marks it as unsubscribed and no longer waiting.
+	///
+	/// Does the same thing as `unsubscribe` but it will never panic even if it
+	/// was already marked as unsubscribed.
+	///
+	/// Unlike with complete/error, which should definitely never happen twice,
+	/// sometimes the steps to unsubscribe has to be performed differently,
+	/// when erroring/completing, which may or may not happen before doing an
+	/// unsubscribe.
+	///
+	/// Therefore this method is more like a "make sure it's closed" kind of
+	/// method, but one should always prefer using `unsubscribe` here on
+	/// [SubscriberState], to catch double unsubscribes.
+	#[inline]
+	pub fn unsubscribe_if_not_already(&mut self) {
+		self.state.remove(SubscriberStateBits::WAITING);
+		self.state.insert(SubscriberStateBits::UNSUBSCRIBED);
+	}
+
 	/// Applies this notification to the state.
 	///
 	/// It will panic in debug builds when an invalid state change is attempted.
@@ -273,7 +292,14 @@ impl SubscriberState {
 #[cfg(test)]
 mod test {
 	use crate::SubscriberState;
-	use rx_core_testing::mute_panic;
+
+	fn mute_panic<R>(fun: impl FnOnce() -> R) -> R {
+		let hook = std::panic::take_hook();
+		std::panic::set_hook(Box::new(|_| {}));
+		let result = fun();
+		std::panic::set_hook(hook);
+		result
+	}
 
 	#[test]
 	fn it_should_be_waiting_by_default() {

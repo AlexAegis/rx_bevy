@@ -7,9 +7,11 @@ mod lock_with_poison_behavior;
 mod observer_subscriber;
 mod shared_destination_extension;
 mod shared_subscriber;
+mod subscriber_state;
 
 pub use erased_subscriber::*;
 pub use lock_with_poison_behavior::*;
 pub use observer_subscriber::*;
 pub use shared_destination_extension::*;
 pub use shared_subscriber::*;
+pub use subscriber_state::*;

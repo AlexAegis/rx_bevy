@@ -4,13 +4,14 @@ use std::{
 };
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_subscriber_higher_order::HigherOrderSubscriberState;
 use rx_core_traits::{
 	LockWithPoisonBehavior, Observable, Observer, Signal, Subscriber, SubscriptionClosedFlag,
 	SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
 };
 use slab::Slab;
 
-use crate::{create_inner_subscription, internal::ConcurrentSubscriberState};
+use crate::{concurrent_subscriber_queue::ConcurrentSubscriberQueue, create_inner_subscription};
 
 #[derive(RxSubscriber)]
 #[rx_in(InnerObservable::Out)]
@@ -22,9 +23,8 @@ where
 	Destination: 'static + Subscriber,
 {
 	closed: SubscriptionClosedFlag,
-	errored: bool,
 	key: usize,
-	state: Arc<Mutex<ConcurrentSubscriberState<InnerObservable>>>,
+	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
 	shared_destination: Arc<Mutex<Destination>>,
 	outer_teardown: SubscriptionHandle,
@@ -39,13 +39,12 @@ where
 	pub(crate) fn new(
 		key: usize,
 		shared_destination: Arc<Mutex<Destination>>,
-		state: Arc<Mutex<ConcurrentSubscriberState<InnerObservable>>>,
+		state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 		inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
 		outer_teardown: SubscriptionHandle,
 	) -> Self {
 		Self {
 			closed: false.into(),
-			errored: false,
 			key,
 			shared_destination,
 			outer_teardown,
@@ -70,8 +69,7 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
-			self.errored = true;
-			self.state.lock_ignore_poison().error();
+			self.state.lock_ignore_poison().downstream_error();
 			self.shared_destination.error(error);
 			self.shared_destination.unsubscribe();
 
@@ -86,7 +84,7 @@ where
 				let mut state = self.state.lock_ignore_poison();
 				state.non_completed_subscriptions -= 1;
 
-				if let Some(next) = state.queue.pop_front() {
+				if let Some(next) = state.state.queue.pop_front() {
 					state.non_completed_subscriptions += 1;
 					state.non_unsubscribed_subscriptions += 1;
 					drop(state);
@@ -105,7 +103,7 @@ where
 				let mut state = self.state.lock_ignore_poison();
 
 				if state.can_downstream_complete() {
-					state.downstream_completed = true;
+					state.downstream_subscriber_state.complete();
 					drop(state);
 					self.shared_destination.complete();
 				}
@@ -161,7 +159,7 @@ where
 				if no_more_subscribers_besides_this {
 					let mut state = self.state.lock_ignore_poison();
 
-					if let Some(next) = state.queue.pop_front() {
+					if let Some(next) = state.state.queue.pop_front() {
 						state.non_completed_subscriptions += 1;
 						state.non_unsubscribed_subscriptions += 1;
 						drop(state);
@@ -179,8 +177,10 @@ where
 
 			let mut state = self.state.lock_ignore_poison();
 
-			if state.can_downstream_unsubscribe() || self.errored {
-				state.downstream_unsubscribed = true;
+			if state.can_downstream_unsubscribe() {
+				state
+					.downstream_subscriber_state
+					.unsubscribe_if_not_already();
 
 				drop(state);
 				for (key, inner_subscription) in

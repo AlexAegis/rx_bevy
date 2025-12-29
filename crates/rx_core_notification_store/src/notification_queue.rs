@@ -1,9 +1,9 @@
 use std::{collections::VecDeque, ops::Deref};
 
 use derive_where::derive_where;
-use rx_core_traits::{Never, Signal, SubscriberNotification};
+use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriberState};
 
-use crate::{QueueOverflowBehavior, QueueOverflowOptions, SubscriberState};
+use crate::{QueueOverflowBehavior, QueueOverflowOptions};
 
 /// Stores a list of notifications from an upstream source to be used later,
 /// along with it's state reflecting the front of the queue.

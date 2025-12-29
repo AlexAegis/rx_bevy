@@ -4534,7 +4534,6 @@ dependencies = [
 name = "rx_core_notification_store"
 version = "0.1.0"
 dependencies = [
- "bitflags 2.10.0",
  "derive-where",
  "rx_core",
  "rx_core_testing",
@@ -5339,6 +5338,7 @@ dependencies = [
 name = "rx_core_subscriber_concurrent"
 version = "0.1.0"
 dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_higher_order",
@@ -5441,6 +5441,7 @@ dependencies = [
 name = "rx_core_traits"
 version = "0.1.0"
 dependencies = [
+ "bitflags 2.10.0",
  "derive-where",
  "disqualified",
  "rx_core",
