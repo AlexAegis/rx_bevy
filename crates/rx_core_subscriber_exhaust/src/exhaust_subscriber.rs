@@ -79,7 +79,7 @@ where
 				move |_| {
 					if state_on_unsubscribe_clone
 						.lock_ignore_poison()
-						.inner_unsubscribed_can_downstream()
+						.can_downstream_unsubscribe()
 					{
 						outer_teardown_on_unsubscribe_clone.unsubscribe();
 					}

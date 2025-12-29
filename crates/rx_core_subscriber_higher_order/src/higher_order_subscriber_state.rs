@@ -59,7 +59,7 @@ where
 			&& !self.downstream_subscriber_state.is_completed()
 	}
 
-	fn can_downstream_unsubscribe(&self) -> bool {
+	pub fn can_downstream_unsubscribe(&self) -> bool {
 		(self.state.can_downstream_unsubscribe()
 			&& self.non_unsubscribed_subscriptions == 0
 			&& self.upstream_subscriber_state.is_unsubscribed()
@@ -75,7 +75,9 @@ where
 		self.can_downstream_complete()
 	}
 
-	pub fn inner_completed_can_downstream(&mut self) -> bool {
+	pub(crate) fn inner_completed_can_downstream(&mut self) -> bool {
+		self.non_completed_subscriptions -= 1;
+
 		let downstream_can_complete = self.can_downstream_complete();
 
 		if downstream_can_complete {
@@ -85,12 +87,17 @@ where
 		downstream_can_complete
 	}
 
-	pub fn inner_unsubscribed_can_downstream(&mut self) -> bool {
+	pub(crate) fn inner_unsubscribed_can_downstream(&mut self, inner_completed: bool) -> bool {
 		let downstream_can_unsubscribe = self.can_downstream_unsubscribe();
 
 		if downstream_can_unsubscribe {
 			self.downstream_subscriber_state
 				.unsubscribe_if_not_already();
+		}
+
+		self.non_unsubscribed_subscriptions -= 1;
+		if !inner_completed {
+			self.non_completed_subscriptions -= 1;
 		}
 
 		downstream_can_unsubscribe

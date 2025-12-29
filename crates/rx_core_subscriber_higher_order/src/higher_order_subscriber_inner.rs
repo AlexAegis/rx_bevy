@@ -83,11 +83,6 @@ where
 	fn complete(&mut self) {
 		if !self.is_closed() {
 			self.completed = true;
-			{
-				let mut state = self.state.lock_ignore_poison();
-				state.non_completed_subscriptions -= 1; // TODO: move this into inner_complete_can_downstream
-			}
-			// TODO: move it up, to avoid locking state twice
 			if let Some(on_complete) = self.on_complete.take() {
 				on_complete(self.key);
 			}
@@ -137,16 +132,17 @@ where
 		if !*self.closed {
 			self.closed.close();
 
-			{
-				let mut state = self.state.lock_ignore_poison();
-				state.non_unsubscribed_subscriptions -= 1;
-				if !self.completed {
-					state.non_completed_subscriptions -= 1;
-				}
-			}
+			let can_downstream_unsubscribe = self
+				.state
+				.lock_ignore_poison()
+				.inner_unsubscribed_can_downstream(self.completed);
 
 			if let Some(on_unsubscribe) = self.on_unsubscribe.take() {
 				on_unsubscribe(self.key);
+			}
+
+			if can_downstream_unsubscribe {
+				self.shared_destination.unsubscribe();
 			}
 		}
 	}

@@ -142,10 +142,7 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 				);
 			}
 
-			if state
-				.lock_ignore_poison()
-				.inner_unsubscribed_can_downstream()
-			{
+			if state.lock_ignore_poison().can_downstream_unsubscribe() {
 				for (other_key, inner_subscription) in
 					inner_subscriptions.lock_ignore_poison().iter_mut()
 				{
