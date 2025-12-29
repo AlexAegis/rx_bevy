@@ -177,6 +177,116 @@ fn should_subscribe_to_as_many_of_the_inner_observables_as_the_limit_allows_it()
 }
 
 #[test]
+fn should_immediately_complete_if_there_are_no_active_subscriptions() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<PublishSubject<usize, &'static str>, &'static str>::default();
+
+	let subscription = source
+		.clone()
+		.merge_all(2, |error| error)
+		.subscribe(destination);
+
+	source.complete();
+
+	notification_collector.lock().assert_notifications(
+		"merge_all",
+		0,
+		[
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}
+
+#[test]
+fn should_immediately_error_by_an_inner_error() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<PublishSubject<usize, &'static str>, &'static str>::default();
+
+	let mut inner_1 = PublishSubject::<usize, &'static str>::default();
+	let inner_2 = PublishSubject::<usize, &'static str>::default();
+	let inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let subscription = source
+		.clone()
+		.merge_all(usize::MAX, |error| error)
+		.subscribe(destination);
+
+	source.next(inner_1.clone());
+	source.next(inner_2.clone());
+	source.next(inner_3.clone());
+	source.complete();
+
+	inner_1.next(1);
+	let error = "error";
+	inner_1.error(error);
+
+	notification_collector.lock().assert_notifications(
+		"merge_all",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after error"
+	);
+}
+
+#[test]
+fn should_immediately_error_by_an_upstream_error() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<PublishSubject<usize, &'static str>, &'static str>::default();
+
+	let inner_1 = PublishSubject::<usize, &'static str>::default();
+	let inner_2 = PublishSubject::<usize, &'static str>::default();
+	let inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let subscription = source
+		.clone()
+		.merge_all(usize::MAX, |error| error)
+		.subscribe(destination);
+
+	source.next(inner_1.clone());
+	source.next(inner_2.clone());
+	source.next(inner_3.clone());
+	let error = "error";
+	source.error(error);
+
+	notification_collector.lock().assert_notifications(
+		"merge_all",
+		0,
+		[
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after error"
+	);
+}
+
+#[test]
 fn should_compose_and_merge_all_iterators() {
 	let destination = MockObserver::default();
 	let notification_collector = destination.get_notification_collector();

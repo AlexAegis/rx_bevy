@@ -51,8 +51,6 @@ where
 
 	pub(crate) fn error(&mut self) {
 		self.queue.drain(..);
-		// self.non_completed_subscriptions = 0;
-		// self.non_unsubscribed_subscriptions = 0;
 		self.upstream_errored = true;
 		self.upstream_unsubscribed = true;
 		self.downstream_unsubscribed = true;

@@ -122,6 +122,7 @@ where
 			{
 				let mut state = self.state.lock_ignore_poison();
 				state.upstream_unsubscribed = true;
+				state.error();
 			}
 			self.shared_destination.error(error);
 			self.unsubscribe();
@@ -159,7 +160,7 @@ where
 		if !self.is_closed() {
 			let mut state = self.state.lock_ignore_poison();
 			state.upstream_unsubscribed = true;
-			if state.can_downstream_unsubscribe() {
+			if state.can_downstream_unsubscribe() || state.upstream_errored {
 				drop(state);
 
 				self.outer_teardown.unsubscribe();

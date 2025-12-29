@@ -22,6 +22,7 @@ where
 	Destination: 'static + Subscriber,
 {
 	closed: SubscriptionClosedFlag,
+	errored: bool,
 	key: usize,
 	state: Arc<Mutex<ConcurrentSubscriberState<InnerObservable>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
@@ -44,6 +45,7 @@ where
 	) -> Self {
 		Self {
 			closed: false.into(),
+			errored: false,
 			key,
 			shared_destination,
 			outer_teardown,
@@ -68,10 +70,12 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
+			self.errored = true;
 			self.state.lock_ignore_poison().error();
 			self.shared_destination.error(error);
-			self.unsubscribe();
 			self.shared_destination.unsubscribe();
+
+			self.unsubscribe();
 			self.closed.close();
 		}
 	}
@@ -136,7 +140,7 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if !self.is_closed() {
+		if !*self.closed {
 			self.closed.close();
 
 			{
@@ -175,8 +179,9 @@ where
 
 			let mut state = self.state.lock_ignore_poison();
 
-			if state.can_downstream_unsubscribe() {
+			if state.can_downstream_unsubscribe() || self.errored {
 				state.downstream_unsubscribed = true;
+
 				drop(state);
 				for (key, inner_subscription) in
 					self.inner_subscriptions.lock_ignore_poison().iter_mut()
