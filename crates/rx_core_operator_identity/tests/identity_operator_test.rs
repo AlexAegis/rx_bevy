@@ -63,13 +63,15 @@ fn should_just_forward_error_calls() {
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
 	let composable = compose_operator::<usize, &'static str>();
-	let subscription = source.clone().pipe(composable).subscribe(destination);
+	let mut subscription = source.clone().pipe(composable).subscribe(destination);
+	let teardown_tracker = subscription.add_tracked_teardown("identity");
 
 	let error = "error";
 	source.next(0);
 	source.next(1);
 	source.error(error);
 	assert!(subscription.is_closed());
+	teardown_tracker.assert_was_torn_down();
 
 	notification_collector.lock().assert_notifications(
 		"identity",

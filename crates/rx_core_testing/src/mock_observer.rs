@@ -11,7 +11,7 @@ use crate::NotificationCollector;
 
 /// While this is conceptually an Observer, used as an Observer, for testing
 /// purposes it behaves like a Subscriber by not being detached on upgrade.
-#[derive_where(Default)]
+#[derive_where(Default, Clone)]
 #[derive(RxObserver, Debug)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
@@ -21,6 +21,7 @@ where
 	In: Signal,
 	InError: Signal,
 {
+	#[derive_where(skip(Clone))]
 	teardown: SubscriptionData,
 	notification_collector: NotificationCollector<In, InError>,
 	_phantom_data: PhantomData<(In, InError)>,
