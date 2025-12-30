@@ -9,6 +9,7 @@ mod shared_destination_extension;
 mod shared_subscriber;
 mod subscriber_state;
 
+pub use box_subscriber::*;
 pub use erased_subscriber::*;
 pub use lock_with_poison_behavior::*;
 pub use observer_subscriber::*;

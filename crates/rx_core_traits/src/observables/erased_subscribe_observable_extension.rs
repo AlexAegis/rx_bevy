@@ -1,7 +1,4 @@
-use crate::{ErasedSubscriber, Observable, Subscriber, SubscriptionData};
-
-pub type BoxedSubscriber<In, InError> =
-	Box<dyn 'static + Subscriber<In = In, InError = InError> + Send + Sync>;
+use crate::{BoxedSubscriber, ErasedSubscriber, Observable, SubscriptionData};
 
 pub trait ErasedSubscribeObservableExtension<Out, OutError> {
 	fn erased_subscribe(&mut self, destination: BoxedSubscriber<Out, OutError>)
@@ -14,9 +11,7 @@ where
 {
 	fn erased_subscribe(
 		&mut self,
-		destination: Box<
-			dyn 'static + Subscriber<In = O::Out, InError = O::OutError> + Send + Sync,
-		>,
+		destination: BoxedSubscriber<O::Out, O::OutError>,
 	) -> SubscriptionData {
 		let subscription = self.subscribe(ErasedSubscriber::new(destination));
 		SubscriptionData::new_with_teardown(subscription.into())
