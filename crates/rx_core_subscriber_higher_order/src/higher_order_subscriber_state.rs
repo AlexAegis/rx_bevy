@@ -56,10 +56,10 @@ where
 		self.state.can_downstream_complete()
 			&& self.non_completed_subscriptions == 0
 			&& self.upstream_subscriber_state.is_completed()
-			&& !self.downstream_subscriber_state.is_completed()
+			&& !self.downstream_subscriber_state.is_closed()
 	}
 
-	pub fn can_downstream_unsubscribe(&self) -> bool {
+	pub fn can_downstream_unsubscribe(&mut self) -> bool {
 		(self.state.can_downstream_unsubscribe()
 			&& self.non_unsubscribed_subscriptions == 0
 			&& self.upstream_subscriber_state.is_unsubscribed()
@@ -87,8 +87,14 @@ where
 		downstream_can_complete
 	}
 
-	pub(crate) fn inner_unsubscribed_can_downstream(&mut self, inner_completed: bool) -> bool {
+	pub(crate) fn inner_unsubscribed_and_downstream_is_not_yet_unsubscribed(
+		&mut self,
+		inner_completed: bool,
+	) -> bool {
 		let downstream_can_unsubscribe = self.can_downstream_unsubscribe();
+
+		let was_downstream_already_unsubscribed =
+			self.downstream_subscriber_state.is_unsubscribed();
 
 		if downstream_can_unsubscribe {
 			self.downstream_subscriber_state
@@ -100,7 +106,7 @@ where
 			self.non_completed_subscriptions -= 1;
 		}
 
-		downstream_can_unsubscribe
+		!was_downstream_already_unsubscribed
 	}
 
 	pub fn upstream_unsubscribe_can_downstream(&mut self) -> bool {
@@ -113,25 +119,25 @@ where
 		self.state.on_upstream_error();
 		self.upstream_subscriber_state.error();
 
-		if !self.upstream_subscriber_state.is_unsubscribed() {
-			self.upstream_subscriber_state.unsubscribe();
-		}
-
-		if !self.downstream_subscriber_state.is_unsubscribed() {
-			self.downstream_subscriber_state.unsubscribe();
-		}
+		// if !self.upstream_subscriber_state.is_unsubscribed() {
+		// 	self.upstream_subscriber_state.unsubscribe();
+		// }
+		//
+		// if !self.downstream_subscriber_state.is_unsubscribed() {
+		// 	self.downstream_subscriber_state.unsubscribe();
+		// }
 	}
 
 	pub fn downstream_error(&mut self) {
 		self.state.on_downstream_error();
 		self.downstream_subscriber_state.error();
 
-		if !self.upstream_subscriber_state.is_unsubscribed() {
-			self.upstream_subscriber_state.unsubscribe();
-		}
-
-		if !self.downstream_subscriber_state.is_unsubscribed() {
-			self.downstream_subscriber_state.unsubscribe();
-		}
+		//if !self.upstream_subscriber_state.is_unsubscribed() {
+		//	self.upstream_subscriber_state.unsubscribe();
+		//}
+		//
+		//if !self.downstream_subscriber_state.is_unsubscribed() {
+		//	self.downstream_subscriber_state.unsubscribe();
+		//}
 	}
 }

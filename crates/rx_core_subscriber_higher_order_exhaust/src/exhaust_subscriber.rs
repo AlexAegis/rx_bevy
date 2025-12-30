@@ -71,6 +71,8 @@ where
 			let state_on_unsubscribe_clone = self.state.clone();
 			let mut outer_teardown_on_unsubscribe_clone = self.outer_teardown.clone();
 
+			let mut shared_destination_on_unsubscribe = self.shared_destination.clone();
+
 			let subscription = next.subscribe(HigherOrderInnerSubscriber::new(
 				0,
 				self.shared_destination.clone(),
@@ -82,6 +84,7 @@ where
 						.can_downstream_unsubscribe()
 					{
 						outer_teardown_on_unsubscribe_clone.unsubscribe();
+						shared_destination_on_unsubscribe.unsubscribe();
 					}
 				},
 			));

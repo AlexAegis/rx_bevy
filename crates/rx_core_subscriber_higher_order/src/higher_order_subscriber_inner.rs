@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observer, Subscriber, SubscriptionHandle, SubscriptionLike, Teardown,
+	LockWithPoisonBehavior, Observer, Subscriber, SubscriptionData, SubscriptionLike, Teardown,
 	TeardownCollection,
 };
 
@@ -18,7 +18,7 @@ where
 	OnUnsubscribe: FnOnce(usize),
 	Destination: 'static + Subscriber,
 {
-	inner_teardown: SubscriptionHandle,
+	inner_teardown: SubscriptionData,
 	key: usize,
 	state: Arc<Mutex<HigherOrderSubscriberState<State>>>,
 	shared_destination: Arc<Mutex<Destination>>,
@@ -42,12 +42,8 @@ where
 		on_complete: OnComplete,
 		on_unsubscribe: OnUnsubscribe,
 	) -> Self {
-		let inner_teardown = SubscriptionHandle::default();
-
-		// shared_destination.add_teardown(inner_teardown.clone().into()); // TODO: This is an idea to ensure stuff tears down on inner error
-
 		Self {
-			inner_teardown,
+			inner_teardown: SubscriptionData::default(),
 			key,
 			completed: false,
 			shared_destination,
@@ -76,7 +72,6 @@ where
 		if !self.is_closed() {
 			self.state.lock_ignore_poison().downstream_error();
 			self.shared_destination.error(error);
-			self.shared_destination.unsubscribe();
 			self.unsubscribe();
 		}
 	}
@@ -94,7 +89,6 @@ where
 				.inner_completed_can_downstream()
 			{
 				self.shared_destination.complete();
-				self.shared_destination.unsubscribe();
 			}
 
 			self.unsubscribe();
@@ -126,25 +120,23 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		// TODO: This should not care that downstream is closed or not
-		self.inner_teardown.is_closed() || self.shared_destination.is_closed()
+		self.inner_teardown.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
-		if !self.inner_teardown.is_closed() {
+		if !self.is_closed() {
 			self.inner_teardown.unsubscribe();
 
-			let can_downstream_unsubscribe = self
-				.state
-				.lock_ignore_poison()
-				.inner_unsubscribed_can_downstream(self.completed);
+			let downstream_is_not_yet_unsubscribed = {
+				let mut state = self.state.lock_ignore_poison();
 
-			if let Some(on_unsubscribe) = self.on_unsubscribe.take() {
+				state.inner_unsubscribed_and_downstream_is_not_yet_unsubscribed(self.completed)
+			};
+
+			if downstream_is_not_yet_unsubscribed
+				&& let Some(on_unsubscribe) = self.on_unsubscribe.take()
+			{
 				on_unsubscribe(self.key);
-			}
-
-			if can_downstream_unsubscribe {
-				self.shared_destination.unsubscribe();
 			}
 		}
 	}

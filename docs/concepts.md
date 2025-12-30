@@ -746,16 +746,6 @@ async_subject sub_3 - completed
 async_subject sub_3 - unsubscribed
 ```
 
-<!-- 
-TODO: Implement
-
-#### As internal components
-
-Besides being very useful as a surface api for the user, subjects are used as
-the multicasting primitive internally too in some operators for example in
-`share` and `shareReplay`.
--->
-
 ## Scheduling
 
 Every example so far was "immediate", they either emitted all their values

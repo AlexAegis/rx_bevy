@@ -132,7 +132,12 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 					.count() == concurrency_limit_minus_one
 			};
 
-			if no_more_subscribers_besides_this {
+			if no_more_subscribers_besides_this
+				&& !state
+					.lock_ignore_poison()
+					.downstream_subscriber_state
+					.is_closed()
+			{
 				subscribe_to_next_in_queue(
 					state.clone(),
 					inner_subscriptions.clone(),

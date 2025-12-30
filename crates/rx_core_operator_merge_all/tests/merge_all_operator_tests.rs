@@ -385,20 +385,18 @@ fn should_execute_all_active_inner_teardowns_when_one_errors() {
 	let error = "error";
 	inner_2.error(error);
 
-	// TODO: FAILS! Uncomment and fix bug
-	//assert!(
-	//	inner_1_teardown_was_called.load(Ordering::Relaxed),
-	//	"inner 1 teardown was not called"
-	//);
+	assert!(
+		inner_1_teardown_was_called.load(Ordering::Relaxed),
+		"inner 1 teardown was not called"
+	);
 	assert!(
 		inner_2_teardown_was_called.load(Ordering::Relaxed),
 		"inner 2 teardown was not called"
 	);
-	// TODO: FAILS! Uncomment and fix bug
-	//assert!(
-	//	inner_3_teardown_was_called.load(Ordering::Relaxed),
-	//	"inner 3 teardown was not called"
-	//);
+	assert!(
+		inner_3_teardown_was_called.load(Ordering::Relaxed),
+		"inner 3 teardown was not called"
+	);
 
 	notification_collector.lock().assert_notifications(
 		"merge_all - first observable",
@@ -414,7 +412,6 @@ fn should_execute_all_active_inner_teardowns_when_one_errors() {
 		true,
 	);
 
-	// TODO: FAILS! Uncomment and fix bug
 	assert!(
 		subscription.is_closed(),
 		"subscription should be closed after completion"

@@ -640,10 +640,6 @@ fn should_be_able_to_handle_a_lot_of_nested_deferred_events() {
 	subject.complete();
 
 	subscription.unsubscribe();
-
-	let _d = dbg!(notification_collector_level_1.lock());
-	let _d = dbg!(notification_collector_level_2.lock());
-	let _d = dbg!(notification_collector_level_3.lock());
 }
 
 /// Don't do this either.
