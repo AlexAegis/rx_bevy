@@ -1,7 +1,9 @@
 use core::marker::PhantomData;
 
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber};
+use rx_core_traits::{
+	ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber, WorkContextProvider,
+};
 
 use crate::FallbackWhenSilentSubscriber;
 
@@ -18,7 +20,11 @@ pub struct FallbackWhenSilentOperator<In, InError, Fallback, S>
 where
 	In: Signal,
 	InError: Signal,
-	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
+	Fallback: 'static
+		+ Fn(S::Tick, &mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>, usize) -> In
+		+ Clone
+		+ Send
+		+ Sync,
 	S: Scheduler,
 {
 	fallback: Fallback,
@@ -30,7 +36,11 @@ impl<In, InError, Fallback, S> FallbackWhenSilentOperator<In, InError, Fallback,
 where
 	In: Signal,
 	InError: Signal,
-	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
+	Fallback: 'static
+		+ Fn(S::Tick, &mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>, usize) -> In
+		+ Clone
+		+ Send
+		+ Sync,
 	S: Scheduler,
 {
 	pub fn new(fallback: Fallback, scheduler: SchedulerHandle<S>) -> Self {
@@ -47,7 +57,11 @@ impl<In, InError, Fallback, S> ComposableOperator
 where
 	In: Signal,
 	InError: Signal,
-	Fallback: 'static + Fn() -> In + Clone + Send + Sync,
+	Fallback: 'static
+		+ Fn(S::Tick, &mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>, usize) -> In
+		+ Clone
+		+ Send
+		+ Sync,
 	S: 'static + Scheduler + Send,
 {
 	type Subscriber<Destination>

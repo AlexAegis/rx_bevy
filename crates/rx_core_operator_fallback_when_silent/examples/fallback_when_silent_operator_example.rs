@@ -11,8 +11,8 @@ fn main() {
 
 	let mut subscription = subject
 		.clone()
-		.fallback_when_silent(Default::default, scheduler)
-		.subscribe(PrintObserver::<i32>::new("into_operator"));
+		.fallback_when_silent(|_, _, _| Default::default(), scheduler)
+		.subscribe(PrintObserver::<i32>::new("fallback_when_silent"));
 
 	subject.next(1);
 	executor.tick(Duration::from_millis(200));

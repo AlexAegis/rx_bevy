@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
+	Subscriber, SubscriptionLike, WorkCancellationId, WorkContextProvider, WorkResult,
 };
 
 struct FallbackWhenSilentSubscriberState<In> {
@@ -19,7 +19,10 @@ pub struct FallbackWhenSilentSubscriber<In, InError, Fallback, Destination, S>
 where
 	In: Signal,
 	InError: Signal,
-	Fallback: Fn() -> In + Send + Sync,
+	Fallback: 'static
+		+ Fn(S::Tick, &mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>, usize) -> In
+		+ Send
+		+ Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 	S: Scheduler,
 {
@@ -36,7 +39,10 @@ impl<In, InError, Fallback, Destination, S>
 where
 	In: Signal,
 	InError: Signal,
-	Fallback: 'static + Fn() -> In + Send + Sync,
+	Fallback: 'static
+		+ Fn(S::Tick, &mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>, usize) -> In
+		+ Send
+		+ Sync,
 	Destination: 'static + Subscriber<In = In, InError = InError>,
 	S: Scheduler,
 {
@@ -57,15 +63,16 @@ where
 
 		let shared_state_clone = state.clone();
 		let mut shared_destination_clone = shared_destination.clone();
+		let mut index = 0;
 		scheduler.schedule_continuous_work(
-			move |_tick, _context| {
+			move |tick, context| {
 				let observed_next = {
 					let mut state = shared_state_clone.lock().unwrap_or_else(|a| a.into_inner());
 					state.next_observed_this_tick.take()
 				};
 
-				let next = observed_next.unwrap_or_else(&(fallback));
-
+				let next = observed_next.unwrap_or_else(|| fallback(tick, context, index));
+				index += 1;
 				shared_destination_clone.next(next);
 
 				WorkResult::Pending
@@ -88,7 +95,10 @@ impl<In, InError, Fallback, Destination, S> Observer
 where
 	In: Signal,
 	InError: Signal,
-	Fallback: Fn() -> In + Send + Sync,
+	Fallback: 'static
+		+ Fn(S::Tick, &mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>, usize) -> In
+		+ Send
+		+ Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 	S: Scheduler,
 {
@@ -117,10 +127,14 @@ impl<In, InError, Fallback, Destination, S> SubscriptionLike
 where
 	In: Signal,
 	InError: Signal,
-	Fallback: Fn() -> In + Send + Sync,
+	Fallback: 'static
+		+ Fn(S::Tick, &mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>, usize) -> In
+		+ Send
+		+ Sync,
 	Destination: Subscriber<In = In, InError = InError>,
 	S: Scheduler,
 {
+	#[inline]
 	fn is_closed(&self) -> bool {
 		self.shared_destination.is_closed()
 	}

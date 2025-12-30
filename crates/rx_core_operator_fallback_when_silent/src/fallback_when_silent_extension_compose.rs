@@ -1,12 +1,20 @@
 use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
-use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle};
+use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle, WorkContextProvider};
 
 use crate::operator::FallbackWhenSilentOperator;
 
 pub trait OperatorComposeExtensionFallbackWhenSilent: ComposableOperator + Sized {
 	#[inline]
 	fn fallback_when_silent<
-		Fallback: 'static + Fn() -> Self::Out + Clone + Send + Sync,
+		Fallback: 'static
+			+ Fn(
+				S::Tick,
+				&mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>,
+				usize,
+			) -> Self::Out
+			+ Clone
+			+ Send
+			+ Sync,
 		S: 'static + Scheduler + Send + Sync,
 	>(
 		self,

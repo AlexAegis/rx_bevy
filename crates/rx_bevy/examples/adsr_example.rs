@@ -59,7 +59,10 @@ fn setup(
 				rx_schedule_update_virtual.handle(),
 			)
 			.map(Into::<Option<KeyCode>>::into)
-			.fallback_when_silent(Default::default, rx_schedule_update_virtual.handle()) // When nothing pressed, emit the default of the input type
+			.fallback_when_silent(
+				|_, _, _| Default::default(),
+				rx_schedule_update_virtual.handle(),
+			) // When nothing pressed, emit the default of the input type
 			.map(|key| matches!(key, Some(KeyCode::Space)))
 			.map_into::<AdsrTrigger, Never>()
 			.adsr(
