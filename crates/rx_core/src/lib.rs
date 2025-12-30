@@ -118,6 +118,8 @@ pub mod operator {
 	pub use rx_core_operator_merge_all::operator::*;
 	#[cfg(feature = "operator_merge_map")]
 	pub use rx_core_operator_merge_map::operator::*;
+	#[cfg(feature = "operator_on_subscribe")]
+	pub use rx_core_operator_on_subscribe::operator::*;
 	#[cfg(feature = "operator_reduce")]
 	pub use rx_core_operator_reduce::operator::*;
 	#[cfg(feature = "operator_scan")]
@@ -194,6 +196,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_merge_all::extension_compose::*;
 	#[cfg(feature = "operator_merge_map")]
 	pub use rx_core_operator_merge_map::extension_compose::*;
+	#[cfg(feature = "operator_on_subscribe")]
+	pub use rx_core_operator_on_subscribe::extension_compose::*;
 	#[cfg(feature = "operator_reduce")]
 	pub use rx_core_operator_reduce::extension_compose::*;
 	#[cfg(feature = "operator_scan")]
@@ -266,6 +270,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_merge_all::extension_pipe::*;
 	#[cfg(feature = "operator_merge_map")]
 	pub use rx_core_operator_merge_map::extension_pipe::*;
+	#[cfg(feature = "operator_on_subscribe")]
+	pub use rx_core_operator_on_subscribe::extension_pipe::*;
 	#[cfg(feature = "operator_reduce")]
 	pub use rx_core_operator_reduce::extension_pipe::*;
 	#[cfg(feature = "operator_scan")]

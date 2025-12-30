@@ -55,6 +55,7 @@
   - [materialize](operator/materialize.md)
   - [merge_all](operator/merge_all.md)
   - [merge_map](operator/merge_map.md)
+  - [on_subscribe](operator/on_subscribe.md)
   - [reduce](operator/reduce.md)
   - [scan](operator/scan.md)
   - [share](operator/share.md)
