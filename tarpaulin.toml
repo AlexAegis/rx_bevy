@@ -11,6 +11,16 @@ out = ["Html", "Xml", "Lcov"]
 target-dir = "target/tarpaulin"
 output-dir = "target/coverage"
 no-default-features = true
-exclude-files = ["crates/rx_core_macro_*_derive/*"]
+# - Code coverage should indicate the coverage of what's being shipped, not
+#   local dev tools.
+# - Derive macros can't be tested easily and these are thin users of the
+#   included rx_core_macro_common crate anyway, so it doesn't worth it.
+exclude-files = [
+    "crates/examples_common/*",
+    "crates/bevy_mod_alternate_system_on_press/*",
+    "crates/feature_checker/*",
+    "crates/xtask/*",
+    "crates/rx_core_macro_*_derive/*",
+]
 count = true
 include-files = ["crates/**/*"]
