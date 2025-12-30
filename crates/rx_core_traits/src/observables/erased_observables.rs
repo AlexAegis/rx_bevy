@@ -1,10 +1,10 @@
 use std::ops::{Deref, DerefMut};
 
+use crate::{Observable, Signal};
 use derive_where::derive_where;
-use rx_core_traits::{Observable, Signal};
 use variadics_please::all_tuples;
 
-use crate::observable::ErasedObservable;
+use super::ErasedObservable;
 
 #[derive_where(Clone)]
 pub struct ErasedObservables<Out, OutError, const SIZE: usize>

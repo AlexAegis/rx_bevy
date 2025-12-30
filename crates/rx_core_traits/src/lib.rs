@@ -1,4 +1,5 @@
 mod observable;
+mod observables;
 mod observer;
 mod operator;
 mod operators;
@@ -13,6 +14,7 @@ mod subscriptions;
 mod upgradeable_observer;
 
 pub use observable::*;
+pub use observables::*;
 pub use observer::*;
 pub use operator::*;
 pub use operators::*;
@@ -28,6 +30,7 @@ pub use upgradeable_observer::*;
 
 pub mod prelude {
 	pub use super::observable::*;
+	pub use super::observables::*;
 	pub use super::observer::*;
 	pub use super::operator::*;
 	pub use super::operators::*;

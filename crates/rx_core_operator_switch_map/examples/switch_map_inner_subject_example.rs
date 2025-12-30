@@ -19,8 +19,15 @@ fn main() {
 		.tap_next(|n| println!("emit (source): {n:?}"))
 		.switch_map(
 			move |next| match next {
-				Either::Left => l.clone(),
-				Either::Right => r.clone(),
+				Either::Left => l
+					.clone()
+					.finalize(|| println!("finalize: left inner"))
+					.erase(),
+				Either::Right => r
+					.clone()
+					.finalize(|| println!("finalize: right inner"))
+					.map(|i| i * 10)
+					.erase(),
 			},
 			|_| unreachable!(),
 		)

@@ -1,7 +1,7 @@
 use derive_where::derive_where;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
-use crate::{Signal, Subscriber};
+use crate::{Signal, Subscriber, subscribers::box_subscriber::BoxedSubscriber};
 
 #[derive_where(Debug)]
 #[derive(RxSubscriber)]
@@ -18,7 +18,7 @@ where
 {
 	#[derive_where(skip(Debug))]
 	#[destination]
-	destination: Box<dyn Subscriber<In = In, InError = InError>>,
+	destination: BoxedSubscriber<In, InError>,
 }
 
 impl<In, InError> ErasedSubscriber<In, InError>
@@ -28,7 +28,7 @@ where
 {
 	pub fn new<Destination>(destination: Destination) -> Self
 	where
-		Destination: 'static + Subscriber<In = In, InError = InError>,
+		Destination: 'static + Subscriber<In = In, InError = InError> + Send + Sync,
 	{
 		Self {
 			destination: Box::new(destination),

@@ -2,8 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observer, Subscriber, SubscriptionClosedFlag, SubscriptionLike,
-	Teardown, TeardownCollection,
+	LockWithPoisonBehavior, Observer, Subscriber, SubscriptionHandle, SubscriptionLike, Teardown,
+	TeardownCollection,
 };
 
 use crate::{HigherOrderSubscriberState, HigherOrderSubscriberStateConditions};
@@ -11,7 +11,6 @@ use crate::{HigherOrderSubscriberState, HigherOrderSubscriberStateConditions};
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
-#[rx_skip_unsubscribe_on_drop_impl]
 pub struct HigherOrderInnerSubscriber<State, OnComplete, OnUnsubscribe, Destination>
 where
 	State: HigherOrderSubscriberStateConditions,
@@ -19,7 +18,7 @@ where
 	OnUnsubscribe: FnOnce(usize),
 	Destination: 'static + Subscriber,
 {
-	closed: SubscriptionClosedFlag,
+	inner_teardown: SubscriptionHandle,
 	key: usize,
 	state: Arc<Mutex<HigherOrderSubscriberState<State>>>,
 	shared_destination: Arc<Mutex<Destination>>,
@@ -43,8 +42,12 @@ where
 		on_complete: OnComplete,
 		on_unsubscribe: OnUnsubscribe,
 	) -> Self {
+		let inner_teardown = SubscriptionHandle::default();
+
+		// shared_destination.add_teardown(inner_teardown.clone().into()); // TODO: This is an idea to ensure stuff tears down on inner error
+
 		Self {
-			closed: false.into(),
+			inner_teardown,
 			key,
 			completed: false,
 			shared_destination,
@@ -74,9 +77,7 @@ where
 			self.state.lock_ignore_poison().downstream_error();
 			self.shared_destination.error(error);
 			self.shared_destination.unsubscribe();
-
 			self.unsubscribe();
-			self.closed.close();
 		}
 	}
 
@@ -111,7 +112,7 @@ where
 {
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown) {
-		self.shared_destination.add_teardown(teardown);
+		self.inner_teardown.add_teardown(teardown);
 	}
 }
 
@@ -125,12 +126,13 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		*self.closed || self.shared_destination.is_closed()
+		// TODO: This should not care that downstream is closed or not
+		self.inner_teardown.is_closed() || self.shared_destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
-		if !*self.closed {
-			self.closed.close();
+		if !self.inner_teardown.is_closed() {
+			self.inner_teardown.unsubscribe();
 
 			let can_downstream_unsubscribe = self
 				.state
@@ -145,19 +147,5 @@ where
 				self.shared_destination.unsubscribe();
 			}
 		}
-	}
-}
-
-impl<State, OnComplete, OnUnsubscribe, Destination> Drop
-	for HigherOrderInnerSubscriber<State, OnComplete, OnUnsubscribe, Destination>
-where
-	State: HigherOrderSubscriberStateConditions,
-	OnComplete: FnOnce(usize),
-	OnUnsubscribe: FnOnce(usize),
-	Destination: 'static + Subscriber,
-{
-	fn drop(&mut self) {
-		self.unsubscribe();
-		self.closed.close();
 	}
 }

@@ -1,5 +1,4 @@
-use rx_core::prelude::of;
-use rx_core_observable_erased::ErasedObservables;
+use rx_core::{ErasedObservables, prelude::of};
 
 #[test]
 fn should_be_able_to_convert_a_tuple() {

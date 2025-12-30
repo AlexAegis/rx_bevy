@@ -1,12 +1,11 @@
 use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_observable_erased::{ErasedObservables, observable::ErasedObservable};
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_subscriber_higher_order_concurrent::ConcurrentSubscriberProvider;
 use rx_core_traits::{
-	Never, Observable, Observer, Signal, Subscriber, SubscriptionData, TeardownCollection,
-	UpgradeableObserver, WithErrorMapper,
+	ErasedObservable, ErasedObservables, Never, Observable, Observer, Signal, Subscriber,
+	SubscriptionData, TeardownCollection, UpgradeableObserver, WithErrorMapper,
 };
 
 #[derive(RxObservable, Clone)]

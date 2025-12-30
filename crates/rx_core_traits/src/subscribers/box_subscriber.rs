@@ -5,10 +5,14 @@ use crate::{
 	SubscriptionLike, Teardown, TeardownCollection, WithPrimaryCategory,
 };
 
-impl<In, InError> Observer for Box<dyn Subscriber<In = In, InError = InError>>
+pub type BoxedSubscriber<In, InError> =
+	Box<dyn 'static + Subscriber<In = In, InError = InError> + Send + Sync>;
+
+impl<In, InError, S> Observer for Box<S>
 where
 	In: Signal,
 	InError: Signal,
+	S: ?Sized + Subscriber<In = In, InError = InError> + Send + Sync,
 {
 	fn next(&mut self, next: Self::In) {
 		self.deref_mut().next(next);
@@ -23,34 +27,38 @@ where
 	}
 }
 
-impl<In, InError> ObserverInput for Box<dyn Subscriber<In = In, InError = InError>>
+impl<In, InError, S> ObserverInput for Box<S>
 where
 	In: Signal,
 	InError: Signal,
+	S: ?Sized + Subscriber<In = In, InError = InError> + Send + Sync,
 {
 	type In = In;
 	type InError = InError;
 }
 
-impl<In, InError> WithPrimaryCategory for Box<dyn Subscriber<In = In, InError = InError>>
+impl<In, InError, S> WithPrimaryCategory for Box<S>
 where
 	In: Signal,
 	InError: Signal,
+	S: ?Sized + Subscriber<In = In, InError = InError> + Send + Sync,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
 
-impl<In, InError> ObserverUpgradesToSelf for Box<dyn Subscriber<In = In, InError = InError>>
+impl<In, InError, S> ObserverUpgradesToSelf for Box<S>
 where
 	In: Signal,
 	InError: Signal,
+	S: ?Sized + Subscriber<In = In, InError = InError> + Send + Sync,
 {
 }
 
-impl<In, InError> SubscriptionLike for Box<dyn Subscriber<In = In, InError = InError>>
+impl<In, InError, S> SubscriptionLike for Box<S>
 where
 	In: Signal,
 	InError: Signal,
+	S: ?Sized + Subscriber<In = In, InError = InError> + Send + Sync,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -63,10 +71,11 @@ where
 	}
 }
 
-impl<In, InError> TeardownCollection for Box<dyn Subscriber<In = In, InError = InError>>
+impl<In, InError, S> TeardownCollection for Box<S>
 where
 	In: Signal,
 	InError: Signal,
+	S: ?Sized + Subscriber<In = In, InError = InError> + Send + Sync,
 {
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown) {

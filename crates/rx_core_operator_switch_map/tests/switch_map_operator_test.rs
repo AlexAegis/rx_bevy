@@ -1,3 +1,8 @@
+use std::sync::{
+	Arc,
+	atomic::{AtomicBool, Ordering},
+};
+
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
@@ -307,6 +312,168 @@ fn should_compose_and_switch_all_iterators() {
 			SubscriberNotification::Next(4),
 			SubscriberNotification::Next(5),
 			SubscriberNotification::Next(6),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}
+
+#[test]
+fn should_be_able_to_subscribe_to_different_observables_if_they_are_erased() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<Either, &'static str>::default();
+
+	let mut inner_1 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_2 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let inner_1_clone = inner_1.clone();
+	let inner_2_clone = inner_2.clone();
+	let inner_3_clone = inner_3.clone();
+	let subscription = source
+		.clone()
+		.switch_map(
+			move |next| match next {
+				Either::O1 => inner_1_clone.clone().take(2).erase(),
+				Either::O2 => inner_2_clone.clone().map(|i| i * 10).erase(),
+				Either::O3 => inner_3_clone.clone().skip(1).erase(),
+			},
+			|error| error,
+		)
+		.subscribe(destination);
+
+	source.next(Either::O1);
+	notification_collector.lock().assert_is_empty("switch_all");
+
+	inner_1.next(1);
+	inner_1.next(2); // take 2 completes!
+	inner_1.next(99); // nothing!
+	source.next(Either::O2); // Switches immediately
+	inner_3.next(0); // Nothing should happen, haven't yet subscribed
+
+	inner_2.next(3); // Becomes 30!
+	inner_2.next(4); // 40!
+
+	source.next(Either::O3);
+	source.complete();
+
+	inner_3.next(99); // Skipped!
+	inner_3.next(5);
+	inner_3.complete();
+
+	notification_collector.lock().assert_notifications(
+		"switch_map - erased",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(30),
+			SubscriberNotification::Next(40),
+			SubscriberNotification::Next(5),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}
+
+#[test]
+fn should_be_able_to_execute_inner_teardown_on_switch() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<Either, &'static str>::default();
+
+	let mut inner_1 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_2 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let inner_1_clone = inner_1.clone();
+	let inner_2_clone = inner_2.clone();
+	let inner_3_clone = inner_3.clone();
+
+	let inner_1_teardown_called = Arc::new(AtomicBool::new(false));
+	let inner_1_teardown_called_clone = inner_1_teardown_called.clone();
+	let inner_2_teardown_called = Arc::new(AtomicBool::new(false));
+	let inner_2_teardown_called_clone = inner_2_teardown_called.clone();
+	let inner_3_teardown_called = Arc::new(AtomicBool::new(false));
+	let inner_3_teardown_called_clone = inner_3_teardown_called.clone();
+
+	let subscription = source
+		.clone()
+		.switch_map(
+			move |next| {
+				let inner_1_teardown = inner_1_teardown_called_clone.clone();
+				let inner_2_teardown = inner_2_teardown_called_clone.clone();
+				let inner_3_teardown = inner_3_teardown_called_clone.clone();
+				match next {
+					Either::O1 => inner_1_clone
+						.clone()
+						.finalize(move || inner_1_teardown.store(true, Ordering::Relaxed))
+						.erase(),
+					Either::O2 => inner_2_clone
+						.clone()
+						.finalize(move || inner_2_teardown.store(true, Ordering::Relaxed))
+						.erase(),
+					Either::O3 => inner_3_clone
+						.clone()
+						.finalize(move || inner_3_teardown.store(true, Ordering::Relaxed))
+						.erase(),
+				}
+			},
+			|error| error,
+		)
+		.subscribe(destination);
+
+	source.next(Either::O1);
+	notification_collector.lock().assert_is_empty("switch_all");
+
+	inner_1.next(1);
+	inner_1.next(2);
+	assert!(!inner_1_teardown_called.load(Ordering::Relaxed));
+	source.next(Either::O2); // Switches immediately
+	assert!(
+		inner_1_teardown_called.load(Ordering::Relaxed),
+		"inner teardown 1 not called!"
+	);
+	inner_2.next(3);
+	inner_2.next(4);
+
+	source.next(Either::O3);
+	assert!(
+		inner_2_teardown_called.load(Ordering::Relaxed),
+		"inner teardown 2 not called!"
+	);
+	source.complete();
+	inner_3.next(5);
+	inner_3.complete();
+	assert!(
+		inner_3_teardown_called.load(Ordering::Relaxed),
+		"inner teardown 3 not called!"
+	);
+
+	notification_collector.lock().assert_notifications(
+		"switch_map - inner teardown",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Next(4),
+			SubscriberNotification::Next(5),
 			SubscriberNotification::Complete,
 			SubscriberNotification::Unsubscribe,
 		],

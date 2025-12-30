@@ -59,7 +59,6 @@ rx_core_observable_concat = { path = "crates/rx_core_observable_concat" }
 rx_core_observable_combine_latest = { path = "crates/rx_core_observable_combine_latest" }
 rx_core_observable_deferred = { path = "crates/rx_core_observable_deferred" }
 rx_core_observable_empty = { path = "crates/rx_core_observable_empty" }
-rx_core_observable_erased = { path = "crates/rx_core_observable_erased" }
 rx_core_observable_interval = { path = "crates/rx_core_observable_interval" }
 rx_core_observable_iterator = { path = "crates/rx_core_observable_iterator" }
 rx_core_observable_iterator_on_tick = { path = "crates/rx_core_observable_iterator_on_tick" }

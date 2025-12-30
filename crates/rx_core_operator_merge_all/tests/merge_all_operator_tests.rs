@@ -1,3 +1,8 @@
+use std::sync::{
+	Arc,
+	atomic::{AtomicBool, Ordering},
+};
+
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
@@ -321,6 +326,95 @@ fn should_compose_and_merge_all_iterators() {
 		true,
 	);
 
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}
+
+#[test]
+fn should_execute_all_active_inner_teardowns_when_one_errors() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source =
+		PublishSubject::<ErasedObservable<usize, &'static str>, &'static str>::default();
+
+	let mut inner_1 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_2 = PublishSubject::<usize, &'static str>::default();
+	let mut inner_3 = PublishSubject::<usize, &'static str>::default();
+
+	let subscription = source
+		.clone()
+		.merge_all(usize::MAX, |error| error)
+		.subscribe(destination);
+
+	let inner_1_teardown_was_called = Arc::new(AtomicBool::new(false));
+	let inner_1_teardown_was_called_finalze = inner_1_teardown_was_called.clone();
+	let inner_2_teardown_was_called = Arc::new(AtomicBool::new(false));
+	let inner_2_teardown_was_called_finalze = inner_2_teardown_was_called.clone();
+	let inner_3_teardown_was_called = Arc::new(AtomicBool::new(false));
+	let inner_3_teardown_was_called_finalze = inner_3_teardown_was_called.clone();
+
+	source.next(
+		inner_1
+			.clone()
+			.finalize(move || inner_1_teardown_was_called_finalze.store(true, Ordering::Relaxed))
+			.erase(),
+	);
+	source.next(
+		inner_2
+			.clone()
+			.finalize(move || inner_2_teardown_was_called_finalze.store(true, Ordering::Relaxed))
+			.erase(),
+	);
+	source.next(
+		inner_3
+			.clone()
+			.finalize(move || inner_3_teardown_was_called_finalze.store(true, Ordering::Relaxed))
+			.erase(),
+	);
+	source.complete();
+
+	notification_collector.lock().assert_is_empty("merge_all");
+
+	inner_2.next(0);
+	inner_3.next(1);
+	inner_1.next(2);
+	inner_1.next(3);
+	let error = "error";
+	inner_2.error(error);
+
+	// TODO: FAILS! Uncomment and fix bug
+	//assert!(
+	//	inner_1_teardown_was_called.load(Ordering::Relaxed),
+	//	"inner 1 teardown was not called"
+	//);
+	assert!(
+		inner_2_teardown_was_called.load(Ordering::Relaxed),
+		"inner 2 teardown was not called"
+	);
+	// TODO: FAILS! Uncomment and fix bug
+	//assert!(
+	//	inner_3_teardown_was_called.load(Ordering::Relaxed),
+	//	"inner 3 teardown was not called"
+	//);
+
+	notification_collector.lock().assert_notifications(
+		"merge_all - first observable",
+		0,
+		[
+			SubscriberNotification::Next(0),
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	// TODO: FAILS! Uncomment and fix bug
 	assert!(
 		subscription.is_closed(),
 		"subscription should be closed after completion"

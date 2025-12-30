@@ -11,7 +11,6 @@
   - [connectable](observable/connectable.md)
   - [deferred](observable/deferred.md)
   - [empty](observable/empty.md)
-  - [erased](observable/erased.md)
   - [interval](observable/interval.md)
   - [iterator](observable/iterator.md)
   - [iterator_on_tick](observable/iterator_on_tick.md)

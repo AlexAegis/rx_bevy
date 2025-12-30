@@ -89,7 +89,6 @@ all_core_observables = [
     "observable_connectable",
     "observable_deferred",
     "observable_empty",
-    "observable_erased",
     "observable_interval",
     "observable_iterator",
     "observable_iterator_on_tick",
@@ -106,7 +105,6 @@ observable_concat = ["rx_core/observable_concat"]
 observable_connectable = ["rx_core/observable_connectable"]
 observable_deferred = ["rx_core/observable_deferred"]
 observable_empty = ["rx_core/observable_empty"]
-observable_erased = ["rx_core/observable_erased"]
 observable_interval = ["rx_core/observable_interval"]
 observable_iterator = ["rx_core/observable_iterator"]
 observable_iterator_on_tick = ["rx_core/observable_iterator_on_tick"]

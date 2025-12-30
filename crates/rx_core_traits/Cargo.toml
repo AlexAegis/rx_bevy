@@ -30,6 +30,7 @@ rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_macro_subscription_derive = { workspace = true }
 thiserror = { workspace = true }
+variadics_please = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true }

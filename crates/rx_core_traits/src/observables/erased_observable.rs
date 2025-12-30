@@ -3,12 +3,13 @@ use std::{
 	sync::{Arc, Mutex},
 };
 
-use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{
+use crate::{
 	ErasedSubscriber, Observable, Signal, Subscriber, SubscriptionData, UpgradeableObserver,
 };
+use rx_core_macro_observable_derive::RxObservable;
 
 #[derive(RxObservable)]
+#[_rx_core_traits_crate(crate)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
 pub struct ErasedObservable<Out, OutError>

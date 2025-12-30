@@ -13,8 +13,6 @@ pub mod observable {
 	pub use rx_core_observable_deferred::observable::*;
 	#[cfg(feature = "observable_empty")]
 	pub use rx_core_observable_empty::observable::*;
-	#[cfg(feature = "observable_erased")]
-	pub use rx_core_observable_erased::observable::*;
 	#[cfg(feature = "observable_interval")]
 	pub use rx_core_observable_interval::observable::*;
 	#[cfg(feature = "observable_iterator")]
