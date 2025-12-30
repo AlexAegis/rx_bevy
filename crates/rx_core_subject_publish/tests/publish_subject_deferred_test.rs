@@ -312,7 +312,7 @@ fn should_be_able_to_defer_a_pre_closed_subscription_to_itself_without_adding_it
 				let mut subscription =
 					subject_clone
 						.clone()
-						.start_with(|| 10)
+						.start_with(10)
 						.subscribe(MockObserver::new(
 							notification_collector_inner_clone.clone(),
 						));
@@ -375,7 +375,7 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 				let subscription =
 					subject_clone
 						.clone()
-						.start_with(|| 10)
+						.start_with(10)
 						.subscribe(MockObserver::new(
 							notification_collector_inner_clone.clone(),
 						));
@@ -436,7 +436,7 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 				let subscription =
 					subject_clone
 						.clone()
-						.start_with(|| 10)
+						.start_with(10)
 						.subscribe(MockObserver::new(
 							notification_collector_inner_clone.clone(),
 						));
@@ -500,7 +500,7 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 				let subscription =
 					subject_clone
 						.clone()
-						.start_with(|| 10)
+						.start_with(10)
 						.subscribe(MockObserver::new(
 							notification_collector_inner_clone.clone(),
 						));

@@ -5,14 +5,14 @@ use crate::operator::StartWithOperator;
 
 pub trait OperatorComposeExtensionStartWith: ComposableOperator + Sized {
 	#[inline]
-	fn start_with<OnSubscribe>(
+	fn start_with(
 		self,
-		on_subscribe: OnSubscribe,
-	) -> CompositeOperator<Self, StartWithOperator<OnSubscribe, Self::Out, Self::OutError>>
+		start_with: Self::Out,
+	) -> CompositeOperator<Self, StartWithOperator<Self::Out, Self::OutError>>
 	where
-		OnSubscribe: 'static + FnMut() -> Self::Out + Send + Sync,
+		Self::Out: Clone,
 	{
-		self.compose_with(StartWithOperator::new(on_subscribe))
+		self.compose_with(StartWithOperator::new(start_with))
 	}
 }
 

@@ -11,34 +11,31 @@ use rx_core_traits::{ComposableOperator, Never, Signal, Subscriber};
 #[rx_in_error(InError)]
 #[rx_out(In)]
 #[rx_out_error(InError)]
-pub struct StartWithOperator<OnSubscribe, In, InError = Never>
+pub struct StartWithOperator<In, InError = Never>
 where
-	OnSubscribe: 'static + FnMut() -> In + Send + Sync,
-	In: Signal,
+	In: Signal + Clone,
 	InError: Signal,
 {
-	on_subscribe: OnSubscribe,
+	start_with: In,
 	_phantom_data: PhantomData<InError>,
 }
 
-impl<OnSubscribe, In, InError> StartWithOperator<OnSubscribe, In, InError>
+impl<In, InError> StartWithOperator<In, InError>
 where
-	OnSubscribe: 'static + FnMut() -> In + Send + Sync,
-	In: Signal,
+	In: Signal + Clone,
 	InError: Signal,
 {
-	pub fn new(on_subscribe: OnSubscribe) -> Self {
+	pub fn new(start_with: In) -> Self {
 		Self {
-			on_subscribe,
+			start_with,
 			_phantom_data: PhantomData,
 		}
 	}
 }
 
-impl<OnSubscribe, In, InError> ComposableOperator for StartWithOperator<OnSubscribe, In, InError>
+impl<In, InError> ComposableOperator for StartWithOperator<In, InError>
 where
-	OnSubscribe: 'static + FnMut() -> In + Send + Sync,
-	In: Signal,
+	In: Signal + Clone,
 	InError: Signal,
 {
 	type Subscriber<Destination>
@@ -54,7 +51,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		destination.next((self.on_subscribe)());
+		destination.next(self.start_with.clone());
 		destination
 	}
 }
