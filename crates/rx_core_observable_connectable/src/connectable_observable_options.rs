@@ -1,6 +1,6 @@
 use rx_core_traits::{Provider, SubjectLike};
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ConnectableOptions<ConnectorProvider>
 where
 	ConnectorProvider: 'static + Provider,
@@ -55,5 +55,26 @@ where
 			reset_connector_on_complete: true,
 			..self
 		}
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use rx_core_subject_publish::subject::PublishSubject;
+
+	use crate::observable::ConnectableOptions;
+
+	#[test]
+	fn connectable_options_builder_works() {
+		let result = ConnectableOptions::<PublishSubject<usize, &'static str>>::default()
+			.disconnect_when_ref_count_zero()
+			.reset_connector_on_complete()
+			.reset_connector_on_disconnect()
+			.reset_connector_on_error();
+
+		assert!(result.disconnect_when_ref_count_zero);
+		assert!(result.reset_connector_on_complete);
+		assert!(result.reset_connector_on_disconnect);
+		assert!(result.reset_connector_on_error);
 	}
 }
