@@ -1,4 +1,7 @@
-use crate::{Observable, Observer, PrimaryCategorySubject, SubscriptionLike, UpgradeableObserver};
+use crate::{
+	Observable, Observer, ObserverInput, PrimaryCategorySubject, SubscriptionLike,
+	UpgradeableObserver,
+};
 
 /// A Subject is something that is an Observable and Observer (Subscriber) at
 /// the same time. Signals pushed into it will be received by the subscriptions
@@ -20,10 +23,13 @@ pub trait SubjectLike:
 {
 }
 
-impl<T> SubjectLike for T where
+impl<T> SubjectLike for T
+where
 	T: Observable<PrimaryCategory = PrimaryCategorySubject>
 		+ Observer
 		+ SubscriptionLike
-		+ UpgradeableObserver
+		+ UpgradeableObserver,
+	<T as ObserverInput>::In: Clone,
+	<T as ObserverInput>::InError: Clone,
 {
 }

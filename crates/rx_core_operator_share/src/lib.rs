@@ -1,6 +1,5 @@
 mod share_observable;
 mod share_operator;
-mod share_options;
 
 pub mod observable {
 	pub use super::share_observable::*;
@@ -8,7 +7,7 @@ pub mod observable {
 
 pub mod operator {
 	pub use super::share_operator::*;
-	pub use super::share_options::*;
+	pub use rx_core_observable_connectable::observable::ConnectableOptions;
 }
 
 #[cfg(feature = "pipe")]

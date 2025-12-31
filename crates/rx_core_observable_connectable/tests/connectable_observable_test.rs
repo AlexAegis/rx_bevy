@@ -13,7 +13,7 @@ mod connector_publish_subject {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -40,7 +40,7 @@ mod connector_publish_subject {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -70,7 +70,7 @@ mod connector_publish_subject {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -114,7 +114,7 @@ mod connector_replay_subject {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: ReplaySubject::<1, _, _>::default,
+				connector_provider: ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -141,7 +141,7 @@ mod connector_replay_subject {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: ReplaySubject::<1, _, _>::default,
+				connector_provider: ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -178,7 +178,7 @@ mod connector_replay_subject {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: ReplaySubject::<1, _, _>::default,
+				connector_provider: ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -218,7 +218,7 @@ mod connector_behavior_subject {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: || BehaviorSubject::new(0),
+				connector_provider: || BehaviorSubject::new(0),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -244,8 +244,9 @@ mod connectable_options {
 
 	#[test]
 	fn should_default_to_using_the_publish_subject() {
-		let default_options = ConnectableOptions::default();
-		let subject: PublishSubject<usize, &'static str> = (default_options.connector_creator)();
+		let default_options = ConnectableOptions::<PublishSubject<_, _>>::default();
+		let subject: PublishSubject<usize, &'static str> =
+			default_options.connector_provider.provide();
 		assert!(!subject.is_closed());
 	}
 }

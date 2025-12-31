@@ -1,22 +1,12 @@
-use rx_core_subject_publish::subject::PublishSubject;
-use rx_core_traits::{Signal, SubjectLike};
+use rx_core_traits::{Provider, SubjectLike};
 
-pub type ConnectorCreatorFn<Connector> = fn() -> Connector;
-
-pub fn create_default_connector<In, InError>() -> PublishSubject<In, InError>
+#[derive(Clone, Default)]
+pub struct ConnectableOptions<ConnectorProvider>
 where
-	In: Signal + Clone,
-	InError: Signal + Clone,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike,
 {
-	PublishSubject::default()
-}
-
-#[derive(Clone)]
-pub struct ConnectableOptions<Connector>
-where
-	Connector: 'static + SubjectLike,
-{
-	pub connector_creator: ConnectorCreatorFn<Connector>,
+	pub connector_provider: ConnectorProvider,
 	pub disconnect_when_ref_count_zero: bool,
 	/// When true, the connector subject will be dropped when it disconnects.
 	/// Reconnects will create a new Subject.
@@ -27,18 +17,43 @@ where
 	pub reset_connector_on_complete: bool,
 }
 
-impl<In, InError> Default for ConnectableOptions<PublishSubject<In, InError>>
+impl<ConnectorProvider> ConnectableOptions<ConnectorProvider>
 where
-	In: Signal + Clone,
-	InError: Signal + Clone,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike,
 {
-	fn default() -> Self {
+	pub fn with_connector_creator(self, connector_provider: ConnectorProvider) -> Self {
 		Self {
-			connector_creator: create_default_connector::<In, InError>,
+			connector_provider,
+			..self
+		}
+	}
+
+	pub fn disconnect_when_ref_count_zero(self) -> Self {
+		Self {
 			disconnect_when_ref_count_zero: true,
+			..self
+		}
+	}
+
+	pub fn reset_connector_on_disconnect(self) -> Self {
+		Self {
 			reset_connector_on_disconnect: true,
-			reset_connector_on_complete: false,
-			reset_connector_on_error: false,
+			..self
+		}
+	}
+
+	pub fn reset_connector_on_error(self) -> Self {
+		Self {
+			reset_connector_on_error: true,
+			..self
+		}
+	}
+
+	pub fn reset_connector_on_complete(self) -> Self {
+		Self {
+			reset_connector_on_complete: true,
+			..self
 		}
 	}
 }

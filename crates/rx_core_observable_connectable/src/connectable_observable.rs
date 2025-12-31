@@ -3,8 +3,8 @@ use std::sync::{Arc, Mutex};
 use derive_where::derive_where;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observable, SubjectLike, Subscriber, SubscriptionLike,
-	TeardownCollection, TeardownCollectionExtension, UpgradeableObserver,
+	LockWithPoisonBehavior, Observable, ObservableOutput, Provider, SubjectLike, Subscriber,
+	SubscriptionLike, TeardownCollection, TeardownCollectionExtension, UpgradeableObserver,
 };
 
 use crate::{
@@ -19,32 +19,34 @@ pub type ConnectionSubscription<Source, Connector> =
 
 #[derive_where(Clone)]
 #[derive(RxObservable)]
-#[rx_out(Connector::Out)]
-#[rx_out_error(Connector::OutError)]
-pub struct ConnectableObservable<Source, Connector>
+#[rx_out(<ConnectorProvider::Provided as ObservableOutput>::Out)]
+#[rx_out_error(<ConnectorProvider::Provided as ObservableOutput>::OutError)]
+pub struct ConnectableObservable<Source, ConnectorProvider>
 where
 	Source: Observable,
-	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
-	ConnectionSubscription<Source, Connector>: 'static + TeardownCollection,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike<In = Source::Out, InError = Source::OutError> + Clone,
+	ConnectionSubscription<Source, ConnectorProvider::Provided>: 'static + TeardownCollection,
 {
 	/// The only reason this field is behind an `Arc<RwLock>` is to be able to
 	/// pipe operators over a connectable observable.
 	/// ? It could very well be the case that piped operators are not even needed
 	/// ? for this ConnectableObservable as it is a low level component of other operators. (share)
 	/// ? if that's the case, revisit this and remove the arc
-	connector: Arc<Mutex<ConnectorState<Source, Connector>>>,
+	connector: Arc<Mutex<ConnectorState<Source, ConnectorProvider>>>,
 
-	connection: Arc<Mutex<Connection<ConnectionSubscription<Source, Connector>>>>,
+	connection: Arc<Mutex<Connection<ConnectionSubscription<Source, ConnectorProvider::Provided>>>>,
 	connection_state: Arc<Mutex<ConnectionState>>,
 }
 
-impl<Source, Connector> ConnectableObservable<Source, Connector>
+impl<Source, ConnectorProvider> ConnectableObservable<Source, ConnectorProvider>
 where
 	Source: Observable,
-	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
-	ConnectionSubscription<Source, Connector>: 'static + TeardownCollection,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike<In = Source::Out, InError = Source::OutError> + Clone,
+	ConnectionSubscription<Source, ConnectorProvider::Provided>: 'static + TeardownCollection,
 {
-	pub fn new(source: Source, options: ConnectableOptions<Connector>) -> Self {
+	pub fn new(source: Source, options: ConnectableOptions<ConnectorProvider>) -> Self {
 		let connection_state = Arc::new(Mutex::new(ConnectionState::new(
 			ConnectionOptions::from_connectable_options(&options),
 		)));
@@ -62,15 +64,15 @@ where
 	}
 }
 
-impl<Source, Connector> Observable for ConnectableObservable<Source, Connector>
+impl<Source, ConnectorProvider> Observable for ConnectableObservable<Source, ConnectorProvider>
 where
 	Source: Observable,
-	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
-		'static + TeardownCollection,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike<In = Source::Out, InError = Source::OutError> + Clone,
+	ConnectionSubscription<Source, ConnectorProvider::Provided>: 'static + TeardownCollection,
 {
 	type Subscription<Destination>
-		= Connector::Subscription<Destination>
+		= <ConnectorProvider::Provided as Observable>::Subscription<Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
@@ -120,14 +122,14 @@ where
 	}
 }
 
-impl<Source, Connector> Connectable for ConnectableObservable<Source, Connector>
+impl<Source, ConnectorProvider> Connectable for ConnectableObservable<Source, ConnectorProvider>
 where
 	Source: Observable,
-	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
-	Source::Subscription<<Connector as UpgradeableObserver>::Upgraded>:
-		'static + TeardownCollection,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike<In = Source::Out, InError = Source::OutError> + Clone,
+	ConnectionSubscription<Source, ConnectorProvider::Provided>: 'static + TeardownCollection,
 {
-	type ConnectionSubscription = ConnectionSubscription<Source, Connector>;
+	type ConnectionSubscription = ConnectionSubscription<Source, ConnectorProvider::Provided>;
 
 	fn connect(&mut self) -> ConnectionHandle<Self::ConnectionSubscription> {
 		self.connector.lock_ignore_poison().connect()
@@ -157,7 +159,7 @@ mod test {
 	};
 
 	use rx_core_subject_publish::subject::PublishSubject;
-	use rx_core_traits::{LockWithPoisonBehavior, TeardownCollectionExtension};
+	use rx_core_traits::{LockWithPoisonBehavior, ProvideWithDefault, TeardownCollectionExtension};
 
 	use crate::observable::{Connectable, ConnectableObservable, ConnectableOptions};
 
@@ -167,7 +169,8 @@ mod test {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider:
+					ProvideWithDefault::<PublishSubject<usize, &'static str>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,

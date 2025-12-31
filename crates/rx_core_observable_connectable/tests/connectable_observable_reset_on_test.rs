@@ -1,7 +1,13 @@
+use std::sync::{
+	Arc,
+	atomic::{AtomicUsize, Ordering},
+};
+
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
 mod manual_reset {
+
 	use super::*;
 
 	#[test]
@@ -10,12 +16,11 @@ mod manual_reset {
 		let notification_collector = destination.get_notification_collector();
 
 		let mut source = PublishSubject::<usize, &'static str>::default();
-		// let mut connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-		// connector_creator_call_count.fetch_add(1, Ordering::Relaxed);
+
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: ReplaySubject::<1, _, _>::default,
+				connector_provider: ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -63,12 +68,11 @@ mod reset_on_disconnect {
 			let notification_collector = destination.get_notification_collector();
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
-			// let mut connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			// connector_creator_call_count.fetch_add(1, Ordering::Relaxed);
+
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
-					connector_creator: ReplaySubject::<1, _, _>::default,
+					connector_provider: ReplaySubject::<1, _, _>::default,
 					disconnect_when_ref_count_zero: false,
 					reset_connector_on_disconnect: true,
 					reset_connector_on_complete: false,
@@ -112,12 +116,11 @@ mod reset_on_disconnect {
 			let notification_collector = destination.get_notification_collector();
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
-			// let mut connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			// connector_creator_call_count.fetch_add(1, Ordering::Relaxed);
+
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
-					connector_creator: ReplaySubject::<1, _, _>::default,
+					connector_provider: ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 					disconnect_when_ref_count_zero: false,
 					reset_connector_on_disconnect: false,
 					reset_connector_on_complete: false,
@@ -156,7 +159,6 @@ mod reset_on_disconnect {
 }
 
 mod reset_on_complete {
-
 	use super::*;
 
 	mod when_enabled {
@@ -168,12 +170,15 @@ mod reset_on_complete {
 			let notification_collector = destination.get_notification_collector();
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
-			// let mut connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			// connector_creator_call_count.fetch_add(1, Ordering::Relaxed);
+			let connector_creator_call_count = Arc::new(AtomicUsize::new(0));
+			let connector_creator_call_count_clone = connector_creator_call_count.clone();
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
-					connector_creator: ReplaySubject::<1, _, _>::default,
+					connector_provider: move || {
+						connector_creator_call_count_clone.fetch_add(1, Ordering::Relaxed);
+						ReplaySubject::<1, _, _>::default()
+					},
 					disconnect_when_ref_count_zero: false,
 					reset_connector_on_disconnect: false,
 					reset_connector_on_complete: true,
@@ -202,6 +207,8 @@ mod reset_on_complete {
 				true,
 			);
 
+			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+
 			// Asserting reset by checking if the replay is still primed or not
 			let destination_2 = MockObserver::default();
 			let notification_collector_2 = destination_2.get_notification_collector();
@@ -209,6 +216,8 @@ mod reset_on_complete {
 			notification_collector_2
 				.lock()
 				.assert_is_empty("connectable - reset_on_complete 2");
+
+			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 2);
 		}
 	}
 
@@ -221,12 +230,15 @@ mod reset_on_complete {
 			let notification_collector = destination.get_notification_collector();
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
-			// let mut connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			// connector_creator_call_count.fetch_add(1, Ordering::Relaxed);
+			let connector_creator_call_count = Arc::new(AtomicUsize::new(0));
+			let connector_creator_call_count_clone = connector_creator_call_count.clone();
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
-					connector_creator: ReplaySubject::<1, _, _>::default,
+					connector_provider: move || {
+						connector_creator_call_count_clone.fetch_add(1, Ordering::Relaxed);
+						ReplaySubject::<1, _, _>::default()
+					},
 					disconnect_when_ref_count_zero: false,
 					reset_connector_on_disconnect: false,
 					reset_connector_on_complete: false,
@@ -255,6 +267,8 @@ mod reset_on_complete {
 				true,
 			);
 
+			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+
 			// Asserting reset by checking if the replay is still primed or not
 			let destination_2 = MockObserver::default();
 			let notification_collector_2 = destination_2.get_notification_collector();
@@ -270,6 +284,8 @@ mod reset_on_complete {
 				],
 				true,
 			);
+
+			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
 		}
 	}
 }
@@ -288,10 +304,16 @@ mod reset_on_error {
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
 
+			let connector_creator_call_count = Arc::new(AtomicUsize::new(0));
+			let connector_creator_call_count_clone = connector_creator_call_count.clone();
+
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
-					connector_creator: ReplaySubject::<1, _, _>::default,
+					connector_provider: move || {
+						connector_creator_call_count_clone.fetch_add(1, Ordering::Relaxed);
+						ReplaySubject::<1, _, _>::default()
+					},
 					disconnect_when_ref_count_zero: false,
 					reset_connector_on_disconnect: false,
 					reset_connector_on_complete: false,
@@ -321,6 +343,8 @@ mod reset_on_error {
 				true,
 			);
 
+			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+
 			// Asserting reset by checking if the replay is still primed or not
 			let destination_2 = MockObserver::default();
 			let notification_collector_2 = destination_2.get_notification_collector();
@@ -328,6 +352,8 @@ mod reset_on_error {
 			notification_collector_2
 				.lock()
 				.assert_is_empty("connectable - reset_on_error 2");
+
+			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 2);
 		}
 	}
 
@@ -340,12 +366,17 @@ mod reset_on_error {
 			let notification_collector = destination.get_notification_collector();
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
-			// let mut connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			// connector_creator_call_count.fetch_add(1, Ordering::Relaxed);
+
+			let connector_creator_call_count = Arc::new(AtomicUsize::new(0));
+			let connector_creator_call_count_clone = connector_creator_call_count.clone();
+
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
-					connector_creator: ReplaySubject::<1, _, _>::default,
+					connector_provider: move || {
+						connector_creator_call_count_clone.fetch_add(1, Ordering::Relaxed);
+						ReplaySubject::<1, _, _>::default()
+					},
 					disconnect_when_ref_count_zero: false,
 					reset_connector_on_disconnect: false,
 					reset_connector_on_complete: false,
@@ -375,6 +406,8 @@ mod reset_on_error {
 				true,
 			);
 
+			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+
 			// Asserting reset by checking if the replay is still primed or not
 			let destination_2 = MockObserver::default();
 			let notification_collector_2 = destination_2.get_notification_collector();
@@ -389,6 +422,8 @@ mod reset_on_error {
 				],
 				true,
 			);
+
+			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
 		}
 	}
 }
@@ -406,7 +441,7 @@ mod disconnect_on_ref_count_zero {
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
-					connector_creator: PublishSubject::default,
+					connector_provider: ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 					disconnect_when_ref_count_zero: true,
 					reset_connector_on_disconnect: false,
 					reset_connector_on_complete: false,
@@ -447,7 +482,8 @@ mod disconnect_on_ref_count_zero {
 					let mut connectable_observable = ConnectableObservable::new(
 						source.clone(),
 						ConnectableOptions {
-							connector_creator: ReplaySubject::<1, _, _>::default,
+							connector_provider:
+								ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 							disconnect_when_ref_count_zero: true,
 							reset_connector_on_disconnect: true,
 							reset_connector_on_complete: false,
@@ -494,12 +530,12 @@ mod disconnect_on_ref_count_zero {
 					let notification_collector = destination.get_notification_collector();
 
 					let mut source = PublishSubject::<usize, &'static str>::default();
-					// let mut connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-					// connector_creator_call_count.fetch_add(1, Ordering::Relaxed);
+
 					let mut connectable_observable = ConnectableObservable::new(
 						source.clone(),
 						ConnectableOptions {
-							connector_creator: ReplaySubject::<1, _, _>::default,
+							connector_provider:
+								ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 							disconnect_when_ref_count_zero: true,
 							reset_connector_on_disconnect: false,
 							reset_connector_on_complete: false,
@@ -549,7 +585,7 @@ mod disconnect_on_ref_count_zero {
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
-					connector_creator: PublishSubject::default,
+					connector_provider: ProvideWithDefault::<ReplaySubject<1, _, _>>::default(),
 					disconnect_when_ref_count_zero: false,
 					reset_connector_on_disconnect: false,
 					reset_connector_on_complete: false,

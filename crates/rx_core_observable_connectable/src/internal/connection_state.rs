@@ -1,4 +1,4 @@
-use rx_core_traits::SubjectLike;
+use rx_core_traits::{Provider, SubjectLike};
 
 use crate::observable::ConnectableOptions;
 
@@ -14,9 +14,12 @@ pub(crate) struct ConnectionState {
 }
 
 impl ConnectionOptions {
-	pub(crate) fn from_connectable_options<Connector>(value: &ConnectableOptions<Connector>) -> Self
+	pub(crate) fn from_connectable_options<ConnectorProvider>(
+		value: &ConnectableOptions<ConnectorProvider>,
+	) -> Self
 	where
-		Connector: 'static + Clone + SubjectLike,
+		ConnectorProvider: 'static + Provider,
+		ConnectorProvider::Provided: SubjectLike,
 	{
 		Self {
 			disconnect_when_ref_count_zero: value.disconnect_when_ref_count_zero,

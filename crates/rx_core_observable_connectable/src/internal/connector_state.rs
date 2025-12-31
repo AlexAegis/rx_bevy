@@ -1,7 +1,9 @@
 use std::sync::{Arc, Mutex};
 
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{LockWithPoisonBehavior, Observable, SubjectLike, TeardownCollection};
+use rx_core_traits::{
+	LockWithPoisonBehavior, Observable, ObservableOutput, Provider, SubjectLike, TeardownCollection,
+};
 
 use crate::{
 	internal::{Connection, ConnectionState, ConnectionSubscriber},
@@ -9,13 +11,14 @@ use crate::{
 };
 
 #[derive(RxObservable)]
-#[rx_out(Connector::Out)]
-#[rx_out_error(Connector::OutError)]
-pub(crate) struct ConnectorState<Source, Connector>
+#[rx_out(<ConnectorProvider::Provided as ObservableOutput>::Out)]
+#[rx_out_error(<ConnectorProvider::Provided as ObservableOutput>::OutError)]
+pub(crate) struct ConnectorState<Source, ConnectorProvider>
 where
 	Source: Observable,
-	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
-	ConnectionSubscription<Source, Connector>: 'static + TeardownCollection,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike<In = Source::Out, InError = Source::OutError> + Clone,
+	ConnectionSubscription<Source, ConnectorProvider::Provided>: 'static + TeardownCollection,
 {
 	/// Upon connection, the connector subject will subscribe to this source
 	/// observable
@@ -23,26 +26,29 @@ where
 
 	/// Upon subscription this connector subject is what will be used as the
 	/// source
-	connector: Arc<Mutex<Option<Connector>>>,
+	connector: Arc<Mutex<Option<ConnectorProvider::Provided>>>,
 
-	connection: Arc<Mutex<Connection<ConnectionSubscription<Source, Connector>>>>,
+	connection: Arc<Mutex<Connection<ConnectionSubscription<Source, ConnectorProvider::Provided>>>>,
 
 	connection_state: Arc<Mutex<ConnectionState>>,
 
-	options: ConnectableOptions<Connector>,
+	options: ConnectableOptions<ConnectorProvider>,
 }
 
-impl<Source, Connector> ConnectorState<Source, Connector>
+impl<Source, ConnectorProvider> ConnectorState<Source, ConnectorProvider>
 where
 	Source: Observable,
-	Connector: 'static + Clone + SubjectLike<In = Source::Out, InError = Source::OutError>,
-	ConnectionSubscription<Source, Connector>: 'static + TeardownCollection,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike<In = Source::Out, InError = Source::OutError> + Clone,
+	ConnectionSubscription<Source, ConnectorProvider::Provided>: 'static + TeardownCollection,
 {
 	pub(crate) fn new(
 		source: Source,
-		connection: Arc<Mutex<Connection<ConnectionSubscription<Source, Connector>>>>,
+		connection: Arc<
+			Mutex<Connection<ConnectionSubscription<Source, ConnectorProvider::Provided>>>,
+		>,
 		connection_state: Arc<Mutex<ConnectionState>>,
-		options: ConnectableOptions<Connector>,
+		options: ConnectableOptions<ConnectorProvider>,
 	) -> Self {
 		Self {
 			source,
@@ -53,14 +59,16 @@ where
 		}
 	}
 
-	pub(crate) fn get_connector(&mut self) -> Connector {
+	pub(crate) fn get_connector(&mut self) -> ConnectorProvider::Provided {
 		let mut connector = self.connector.lock_ignore_poison();
 		connector
-			.get_or_insert_with(|| (self.options.connector_creator)())
+			.get_or_insert_with(|| self.options.connector_provider.provide())
 			.clone()
 	}
 
-	pub(crate) fn create_connection(&mut self) -> ConnectionSubscription<Source, Connector> {
+	pub(crate) fn create_connection(
+		&mut self,
+	) -> ConnectionSubscription<Source, ConnectorProvider::Provided> {
 		let connector = self.get_connector().clone();
 
 		let reset_connector_on_disconnect = self.options.reset_connector_on_disconnect;
@@ -104,8 +112,8 @@ where
 
 	pub(crate) fn register_connection(
 		&mut self,
-		connection: ConnectionSubscription<Source, Connector>,
-	) -> ConnectionHandle<ConnectionSubscription<Source, Connector>> {
+		connection: ConnectionSubscription<Source, ConnectorProvider::Provided>,
+	) -> ConnectionHandle<ConnectionSubscription<Source, ConnectorProvider::Provided>> {
 		self.connection
 			.lock_clear_poison()
 			.register_connection(connection)
@@ -113,7 +121,7 @@ where
 
 	pub(crate) fn connect(
 		&mut self,
-	) -> ConnectionHandle<ConnectionSubscription<Source, Connector>> {
+	) -> ConnectionHandle<ConnectionSubscription<Source, ConnectorProvider::Provided>> {
 		let active_connection = self.connection.lock_ignore_poison().get_active_connection();
 
 		active_connection.unwrap_or_else(move || {

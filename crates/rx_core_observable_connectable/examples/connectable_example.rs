@@ -5,7 +5,7 @@ fn main() {
 	let mut connectable = ConnectableObservable::new(
 		source.clone().finalize(|| println!("disconnected...")),
 		ConnectableOptions {
-			connector_creator: ReplaySubject::<1, _>::default,
+			connector_provider: ProvideWithDefault::<ReplaySubject<1, _>>::default(),
 			disconnect_when_ref_count_zero: true,
 			reset_connector_on_disconnect: false,
 			reset_connector_on_complete: false,

@@ -13,7 +13,7 @@ mod when_connected {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -49,7 +49,7 @@ mod when_connected {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -85,7 +85,7 @@ mod when_connected {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -126,7 +126,7 @@ mod when_disconnected {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -159,7 +159,7 @@ mod when_disconnected {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,
@@ -185,7 +185,7 @@ mod when_disconnected {
 		let mut connectable_observable = ConnectableObservable::new(
 			source.clone(),
 			ConnectableOptions {
-				connector_creator: PublishSubject::default,
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
 				disconnect_when_ref_count_zero: false,
 				reset_connector_on_disconnect: false,
 				reset_connector_on_complete: false,

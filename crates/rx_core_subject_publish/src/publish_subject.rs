@@ -3,8 +3,8 @@ use std::sync::{Arc, Mutex};
 use derive_where::derive_where;
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, SubscriptionLike,
-	UpgradeableObserver,
+	LockWithPoisonBehavior, Never, Observable, Observer, Provider, Signal, Subscriber,
+	SubscriptionLike, UpgradeableObserver,
 };
 
 use crate::internal::{
@@ -63,6 +63,18 @@ where
 {
 	subscribers: SharedSubscribers<In, InError>,
 	state: Arc<Mutex<MulticastState<In, InError>>>,
+}
+
+impl<In, InError> Provider for PublishSubject<In, InError>
+where
+	In: Signal + Clone,
+	InError: Signal + Clone,
+{
+	type Provided = Self;
+
+	fn provide(&self) -> Self::Provided {
+		Self::default()
+	}
 }
 
 impl<In, InError> PublishSubject<In, InError>

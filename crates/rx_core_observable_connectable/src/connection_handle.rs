@@ -1,10 +1,12 @@
 use std::sync::{Arc, Mutex};
 
+use derive_where::derive_where;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::SubscriptionWithTeardown;
 
 /// Subscription that represents an active connection for a
 /// [ConnectableObservable][crate::ConnectableObservable].
+#[derive_where(Clone)]
 #[derive(RxSubscription)]
 #[rx_delegate_subscription_like_to_destination]
 #[rx_delegate_teardown_collection]
@@ -24,17 +26,6 @@ where
 	pub fn new(subscription: Subscription) -> Self {
 		Self {
 			handle: Arc::new(Mutex::new(subscription)),
-		}
-	}
-}
-
-impl<Subscription> Clone for ConnectionHandle<Subscription>
-where
-	Subscription: SubscriptionWithTeardown,
-{
-	fn clone(&self) -> Self {
-		Self {
-			handle: self.handle.clone(),
 		}
 	}
 }

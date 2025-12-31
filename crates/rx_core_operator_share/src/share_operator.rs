@@ -1,46 +1,43 @@
-use std::marker::PhantomData;
-
-use derive_where::derive_where;
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Observable, Operator, Signal};
+use rx_core_observable_connectable::observable::ConnectableOptions;
+use rx_core_traits::{
+	Observable, ObservableOutput, ObserverInput, Operator, Provider, SubjectLike,
+};
 
-use crate::{observable::ShareObservable, operator::ShareOptions};
+use crate::observable::ShareObservable;
 
-#[derive_where(Clone, Default)]
-#[derive(RxOperator)]
-#[rx_in(In)]
-#[rx_in_error(InError)]
-#[rx_out(In)]
-#[rx_out_error(InError)]
-pub struct ShareOperator<In, InError>
+#[derive(RxOperator, Clone, Default)]
+#[rx_in(<ConnectorProvider::Provided as ObserverInput>::In)]
+#[rx_in_error(<ConnectorProvider::Provided as ObserverInput>::InError)]
+#[rx_out(<ConnectorProvider::Provided as ObservableOutput>::Out)]
+#[rx_out_error(<ConnectorProvider::Provided as ObservableOutput>::OutError)]
+pub struct ShareOperator<ConnectorProvider>
 where
-	In: Signal + Clone,
-	InError: Signal + Clone,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike + Clone,
 {
-	options: ShareOptions<In, InError>,
-	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
+	options: ConnectableOptions<ConnectorProvider>,
 }
 
-impl<In, InError> ShareOperator<In, InError>
+impl<ConnectorProvider> ShareOperator<ConnectorProvider>
 where
-	In: Signal + Clone,
-	InError: Signal + Clone,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike + Clone,
 {
-	pub fn new(options: ShareOptions<In, InError>) -> Self {
-		Self {
-			options,
-			_phantom_data: PhantomData,
-		}
+	pub fn new(options: ConnectableOptions<ConnectorProvider>) -> Self {
+		Self { options }
 	}
 }
 
-impl<In, InError> Operator for ShareOperator<In, InError>
+impl<ConnectorProvider> Operator for ShareOperator<ConnectorProvider>
 where
-	In: Signal + Clone,
-	InError: Signal + Clone,
+	ConnectorProvider: 'static + Provider,
+	ConnectorProvider::Provided: SubjectLike + Clone,
+	Self::In: Clone,
+	Self::InError: Clone,
 {
 	type OutObservable<InObservable>
-		= ShareObservable<InObservable>
+		= ShareObservable<InObservable, ConnectorProvider>
 	where
 		InObservable: Observable<Out = Self::In, OutError = Self::InError>;
 
