@@ -16,10 +16,11 @@ fn should_be_able_to_immediately_next_to_its_destination() {
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let subscription = source
+	let mut subscription = source
 		.clone()
 		.fallback_when_silent(|_, _, i| i, scheduler)
 		.subscribe(destination);
+	let tracked_teardown = subscription.add_tracked_teardown("fallback_when_silent");
 
 	source.next(10);
 	// Ticks are indexed since subscription
@@ -48,6 +49,7 @@ fn should_be_able_to_immediately_next_to_its_destination() {
 	);
 
 	assert!(subscription.is_closed());
+	tracked_teardown.assert_was_torn_down();
 }
 
 #[test]
@@ -109,6 +111,35 @@ fn should_close_when_completed() {
 			SubscriberNotification::Complete,
 			SubscriberNotification::Unsubscribe,
 		],
+		true,
+	);
+
+	assert!(subscription.is_closed());
+	teardown_tracker.assert_was_torn_down();
+}
+
+#[test]
+fn should_close_when_unsubscribed() {
+	let executor = MockExecutor::default();
+	let scheduler = executor.get_scheduler_handle();
+
+	let destination = MockObserver::<usize, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let source = PublishSubject::<usize, &'static str>::default();
+
+	let mut subscription = source
+		.clone()
+		.fallback_when_silent(|_, _, _| 10, scheduler)
+		.subscribe(destination);
+	let teardown_tracker = subscription.add_tracked_teardown("fallback_when_silent");
+
+	subscription.unsubscribe();
+
+	notification_collector.lock().assert_notifications(
+		"fallback_when_silent",
+		0,
+		[SubscriberNotification::Unsubscribe],
 		true,
 	);
 

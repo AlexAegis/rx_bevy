@@ -114,11 +114,13 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.shared_destination.error(error);
+		self.unsubscribe();
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		self.shared_destination.complete();
+		self.unsubscribe();
 	}
 }
 
