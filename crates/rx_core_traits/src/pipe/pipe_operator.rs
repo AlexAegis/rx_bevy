@@ -57,19 +57,19 @@ where
 	}
 }
 
-impl<Op> Operator for Op
+impl<'o, Op> Operator<'o> for Op
 where
 	Op: 'static + ComposableOperator,
 {
 	type OutObservable<InObservable>
 		= Pipe<InObservable, Op>
 	where
-		InObservable: Observable<Out = Self::In, OutError = Self::InError>;
+		InObservable: 'o + Observable<Out = Self::In, OutError = Self::InError> + Send + Sync;
 
 	#[inline]
 	fn operate<InObservable>(self, source: InObservable) -> Self::OutObservable<InObservable>
 	where
-		InObservable: Observable<Out = Self::In, OutError = Self::InError>,
+		InObservable: 'o + Observable<Out = Self::In, OutError = Self::InError> + Send + Sync,
 	{
 		Pipe::new(source, self)
 	}

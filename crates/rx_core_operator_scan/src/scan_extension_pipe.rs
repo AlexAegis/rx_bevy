@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::ScanOperator;
 
-pub trait ObservablePipeExtensionScan: Observable + Sized {
+pub trait ObservablePipeExtensionScan<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn scan<
 		NextOut: Signal + Clone,
@@ -11,10 +11,11 @@ pub trait ObservablePipeExtensionScan: Observable + Sized {
 		self,
 		reducer: Reducer,
 		seed: NextOut,
-	) -> <ScanOperator<Self::Out, Self::OutError, Reducer, NextOut> as Operator>::OutObservable<Self>
-	{
+	) -> <ScanOperator<Self::Out, Self::OutError, Reducer, NextOut> as Operator<'o>>::OutObservable<
+		Self,
+	> {
 		ScanOperator::new(reducer, seed).operate(self)
 	}
 }
 
-impl<O> ObservablePipeExtensionScan for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionScan<'o> for O where O: 'o + Observable + Send + Sync {}

@@ -2,12 +2,12 @@ use rx_core_traits::{Observable, Observer, Operator};
 
 use crate::operator::TapOperator;
 
-pub trait ObservablePipeExtensionTap: Observable + Sized {
+pub trait ObservablePipeExtensionTap<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn tap<TapDestination>(
 		self,
 		tap_destination: TapDestination,
-	) -> <TapOperator<TapDestination> as Operator>::OutObservable<Self>
+	) -> <TapOperator<TapDestination> as Operator<'o>>::OutObservable<Self>
 	where
 		TapDestination:
 			'static + Observer<In = Self::Out, InError = Self::OutError> + Clone + Send + Sync,
@@ -18,4 +18,4 @@ pub trait ObservablePipeExtensionTap: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionTap for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionTap<'o> for O where O: 'o + Observable + Send + Sync {}

@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, ObservableOutput, Operator};
 
 use crate::operator::MergeAllOperator;
 
-pub trait ObservablePipeExtensionMergeAll: Observable + Sized {
+pub trait ObservablePipeExtensionMergeAll<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn merge_all<
 		ErrorMapper: 'static
@@ -14,7 +14,9 @@ pub trait ObservablePipeExtensionMergeAll: Observable + Sized {
 		self,
 		concurrency_limit: usize,
 		error_mapper: ErrorMapper,
-	) -> <MergeAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator>::OutObservable<Self>
+	) -> <MergeAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator<'o>>::OutObservable<
+		Self,
+	>
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
@@ -23,4 +25,4 @@ pub trait ObservablePipeExtensionMergeAll: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionMergeAll for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionMergeAll<'o> for O where O: 'o + Observable + Send + Sync {}

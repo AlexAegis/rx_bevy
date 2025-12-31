@@ -3,7 +3,7 @@ use rx_core_testing::prelude::*;
 use rx_core_traits::{Observable, SubscriberNotification};
 
 #[test]
-fn should_automatucally_connect_on_subscribe_and_share_emissions_across_all_subscribers() {
+fn should_automatically_connect_on_subscribe_and_share_emissions_across_all_subscribers() {
 	let destination_1 = MockObserver::<usize, &'static str>::default();
 	let notification_collector_1 = destination_1.get_notification_collector();
 

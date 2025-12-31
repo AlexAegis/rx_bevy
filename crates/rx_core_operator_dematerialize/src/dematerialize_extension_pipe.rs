@@ -2,8 +2,8 @@ use rx_core_traits::{Never, Observable, ObserverNotification, Operator, Signal};
 
 use crate::operator::DematerializeOperator;
 
-pub trait ObservablePipeExtensionDematerialize<In, InError>:
-	Observable<Out = ObserverNotification<In, InError>, OutError = Never> + Sized
+pub trait ObservablePipeExtensionDematerialize<'o, In, InError>:
+	'o + Observable<Out = ObserverNotification<In, InError>, OutError = Never> + Sized + Send + Sync
 where
 	In: Signal,
 	InError: Signal,
@@ -11,14 +11,14 @@ where
 	#[inline]
 	fn dematerialize(
 		self,
-	) -> <DematerializeOperator<In, InError> as Operator>::OutObservable<Self> {
+	) -> <DematerializeOperator<In, InError> as Operator<'o>>::OutObservable<Self> {
 		DematerializeOperator::<In, InError>::default().operate(self)
 	}
 }
 
-impl<O, In, InError> ObservablePipeExtensionDematerialize<In, InError> for O
+impl<'o, O, In, InError> ObservablePipeExtensionDematerialize<'o, In, InError> for O
 where
-	O: Observable<Out = ObserverNotification<In, InError>, OutError = Never>,
+	O: 'o + Observable<Out = ObserverNotification<In, InError>, OutError = Never> + Send + Sync,
 	In: Signal,
 	InError: Signal,
 {

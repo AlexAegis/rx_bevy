@@ -2,9 +2,11 @@ use rx_core_traits::{Observable, Operator};
 
 use crate::operator::FirstOperator;
 
-pub trait ObservablePipeExtensionFirst: Observable + Sized {
+pub trait ObservablePipeExtensionFirst<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
-	fn first(self) -> <FirstOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self>
+	fn first(
+		self,
+	) -> <FirstOperator<Self::Out, Self::OutError> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::Out: Clone,
 	{
@@ -12,4 +14,4 @@ pub trait ObservablePipeExtensionFirst: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionFirst for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionFirst<'o> for O where O: 'o + Observable + Send + Sync {}

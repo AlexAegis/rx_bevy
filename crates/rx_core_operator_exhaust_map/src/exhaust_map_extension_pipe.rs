@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::ExhaustMapOperator;
 
-pub trait ObservablePipeExtensionExhaustMap: Observable + Sized {
+pub trait ObservablePipeExtensionExhaustMap<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn exhaust_map<
 		NextInnerObservable: Observable + Signal,
@@ -12,7 +12,7 @@ pub trait ObservablePipeExtensionExhaustMap: Observable + Sized {
 		self,
 		mapper: Mapper,
 		error_mapper: ErrorMapper,
-	) -> <ExhaustMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator>::OutObservable<Self>
+	) -> <ExhaustMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
@@ -20,4 +20,4 @@ pub trait ObservablePipeExtensionExhaustMap: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionExhaustMap for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionExhaustMap<'o> for O where O: 'o + Observable + Send + Sync {}

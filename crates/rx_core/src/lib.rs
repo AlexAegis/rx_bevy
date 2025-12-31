@@ -126,6 +126,8 @@ pub mod operator {
 	pub use rx_core_operator_on_subscribe::operator::*;
 	#[cfg(feature = "operator_reduce")]
 	pub use rx_core_operator_reduce::operator::*;
+	#[cfg(feature = "operator_retry")]
+	pub use rx_core_operator_retry::operator::*;
 	#[cfg(feature = "operator_scan")]
 	pub use rx_core_operator_scan::operator::*;
 	#[cfg(feature = "operator_share")]
@@ -286,6 +288,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_on_subscribe::extension_pipe::*;
 	#[cfg(feature = "operator_reduce")]
 	pub use rx_core_operator_reduce::extension_pipe::*;
+	#[cfg(feature = "operator_retry")]
+	pub use rx_core_operator_retry::extension_pipe::*;
 	#[cfg(feature = "operator_scan")]
 	pub use rx_core_operator_scan::extension_pipe::*;
 	#[cfg(feature = "operator_share")]

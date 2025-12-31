@@ -59,6 +59,7 @@
   - [on_next](operator/on_next.md)
   - [on_subscribe](operator/on_subscribe.md)
   - [reduce](operator/reduce.md)
+  - [retry](operator/retry.md)
   - [scan](operator/scan.md)
   - [share](operator/share.md)
   - [skip](operator/skip.md)

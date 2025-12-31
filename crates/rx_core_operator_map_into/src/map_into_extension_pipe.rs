@@ -2,11 +2,11 @@ use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::MapIntoOperator;
 
-pub trait ObservablePipeExtensionMapInto: Observable + Sized {
+pub trait ObservablePipeExtensionMapInto<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn map_into<NextOut: Signal, NextOutError: Signal>(
 		self,
-	) -> <MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError> as Operator>::OutObservable<Self>
+	) -> <MapIntoOperator<Self::Out, Self::OutError, NextOut, NextOutError> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::Out: Into<NextOut>,
 		Self::OutError: Into<NextOutError>,
@@ -15,4 +15,4 @@ pub trait ObservablePipeExtensionMapInto: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionMapInto for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionMapInto<'o> for O where O: 'o + Observable + Send + Sync {}

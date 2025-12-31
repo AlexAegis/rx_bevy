@@ -2,13 +2,13 @@ use rx_core_traits::{Observable, Operator};
 
 use crate::operator::IntoResultOperator;
 
-pub trait ObservablePipeExtensionTryCapture: Observable + Sized {
+pub trait ObservablePipeExtensionTryCapture<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn into_result(
 		self,
-	) -> <IntoResultOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self> {
+	) -> <IntoResultOperator<Self::Out, Self::OutError> as Operator<'o>>::OutObservable<Self> {
 		IntoResultOperator::default().operate(self)
 	}
 }
 
-impl<O> ObservablePipeExtensionTryCapture for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionTryCapture<'o> for O where O: 'o + Observable + Send + Sync {}

@@ -1,4 +1,4 @@
-use crate::{ComposableOperator, ObservableOutput, ObserverInput, Signal, Subscriber};
+use crate::{ComposableOperator, Signal, Subscriber};
 
 use super::OptionSubscriber;
 
@@ -30,24 +30,4 @@ where
 			None => OptionSubscriber::None(destination),
 		}
 	}
-}
-
-impl<In, InError, Op> ObserverInput for Option<Op>
-where
-	Op: ComposableOperator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: Signal,
-	InError: Signal,
-{
-	type In = In;
-	type InError = InError;
-}
-
-impl<In, InError, Op> ObservableOutput for Option<Op>
-where
-	Op: ComposableOperator<In = In, InError = InError, Out = In, OutError = InError>,
-	In: Signal,
-	InError: Signal,
-{
-	type Out = In;
-	type OutError = InError;
 }

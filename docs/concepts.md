@@ -325,7 +325,7 @@ If we take a look at that `.map` function, we can see that it really is just
 the Pipe observable and the `MapOperator` combined.
 
 ```rs
-pub trait ObservablePipeExtensionMap: Observable + Sized {
+pub trait ObservablePipeExtensionMap: 'static + Observable + Sized + Send + Sync {
     fn map<NextOut: Signal, Mapper: 'static + Fn(Self::Out) -> NextOut + Clone + Send + Sync>(
         self,
         mapper: Mapper,
@@ -334,7 +334,7 @@ pub trait ObservablePipeExtensionMap: Observable + Sized {
     }
 }
 
-impl<O> ObservablePipeExtensionMap for O where O: Observable {}
+impl<O> ObservablePipeExtensionMap for O where O: 'static + Observable + Send + Sync {}
 ```
 
 ### Subscribers

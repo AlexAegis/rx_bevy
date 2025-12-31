@@ -112,6 +112,7 @@ rx_core_operator_merge_map = { path = "crates/rx_core_operator_merge_map" }
 rx_core_operator_on_next = { path = "crates/rx_core_operator_on_next" }
 rx_core_operator_on_subscribe = { path = "crates/rx_core_operator_on_subscribe" }
 rx_core_operator_reduce = { path = "crates/rx_core_operator_reduce" }
+rx_core_operator_retry = { path = "crates/rx_core_operator_retry" }
 rx_core_operator_scan = { path = "crates/rx_core_operator_scan" }
 rx_core_operator_share = { path = "crates/rx_core_operator_share" }
 rx_core_operator_skip = { path = "crates/rx_core_operator_skip" }

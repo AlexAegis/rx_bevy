@@ -2,12 +2,12 @@ use rx_core_traits::{Observable, Operator};
 
 use crate::operator::EndWithOperator;
 
-pub trait ObservablePipeExtensionEndWith: Observable + Sized {
+pub trait ObservablePipeExtensionEndWith<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn end_with(
 		self,
 		end_with: Self::Out,
-	) -> <EndWithOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self>
+	) -> <EndWithOperator<Self::Out, Self::OutError> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::Out: Clone,
 	{
@@ -15,4 +15,4 @@ pub trait ObservablePipeExtensionEndWith: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionEndWith for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionEndWith<'o> for O where O: 'o + Observable + Send + Sync {}

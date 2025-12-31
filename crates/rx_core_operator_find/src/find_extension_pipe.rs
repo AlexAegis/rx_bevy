@@ -2,12 +2,12 @@ use rx_core_traits::{Observable, Operator};
 
 use crate::operator::FindOperator;
 
-pub trait ObservablePipeExtensionFind: Observable + Sized {
+pub trait ObservablePipeExtensionFind<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn find<Predicate>(
 		self,
 		predicate: Predicate,
-	) -> <FindOperator<Self::Out, Self::OutError, Predicate> as Operator>::OutObservable<Self>
+	) -> <FindOperator<Self::Out, Self::OutError, Predicate> as Operator<'o>>::OutObservable<Self>
 	where
 		Predicate: 'static + Fn(&Self::Out) -> bool + Clone + Send + Sync,
 	{
@@ -15,4 +15,4 @@ pub trait ObservablePipeExtensionFind: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionFind for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionFind<'o> for O where O: 'o + Observable + Send + Sync {}

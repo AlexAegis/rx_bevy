@@ -2,12 +2,12 @@ use rx_core_traits::{Observable, Operator, Subscriber};
 
 use crate::operator::OnSubscribeOperator;
 
-pub trait ObservablePipeExtensionOnSubscribe: Observable + Sized {
+pub trait ObservablePipeExtensionOnSubscribe<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn on_subscribe<OnSubscribe>(
 		self,
 		on_subscribe: OnSubscribe,
-	) -> <OnSubscribeOperator<OnSubscribe, Self::Out, Self::OutError> as Operator>::OutObservable<
+	) -> <OnSubscribeOperator<OnSubscribe, Self::Out, Self::OutError> as Operator<'o>>::OutObservable<
 		Self,
 	>
 	where
@@ -20,4 +20,4 @@ pub trait ObservablePipeExtensionOnSubscribe: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionOnSubscribe for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionOnSubscribe<'o> for O where O: 'o + Observable + Send + Sync {}

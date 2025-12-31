@@ -2,12 +2,12 @@ use rx_core_traits::{Observable, Operator, Subscriber};
 
 use crate::operator::OnNextOperator;
 
-pub trait ObservablePipeExtensionOnNext: Observable + Sized {
+pub trait ObservablePipeExtensionOnNext<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn on_next<OnNext>(
 		self,
 		on_next: OnNext,
-	) -> <OnNextOperator<OnNext, Self::Out, Self::OutError> as Operator>::OutObservable<Self>
+	) -> <OnNextOperator<OnNext, Self::Out, Self::OutError> as Operator<'o>>::OutObservable<Self>
 	where
 		OnNext: 'static
 			+ FnMut(&Self::Out, &mut dyn Subscriber<In = Self::Out, InError = Self::OutError>)
@@ -19,4 +19,4 @@ pub trait ObservablePipeExtensionOnNext: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionOnNext for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionOnNext<'o> for O where O: 'o + Observable + Send + Sync {}

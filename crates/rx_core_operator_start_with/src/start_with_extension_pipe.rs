@@ -2,12 +2,12 @@ use rx_core_traits::{Observable, Operator};
 
 use crate::operator::StartWithOperator;
 
-pub trait ObservablePipeExtensionStartWith: Observable + Sized {
+pub trait ObservablePipeExtensionStartWith<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn start_with(
 		self,
 		start_with: Self::Out,
-	) -> <StartWithOperator<Self::Out, Self::OutError> as Operator>::OutObservable<Self>
+	) -> <StartWithOperator<Self::Out, Self::OutError> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::Out: Clone,
 	{
@@ -15,4 +15,4 @@ pub trait ObservablePipeExtensionStartWith: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionStartWith for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionStartWith<'o> for O where O: 'o + Observable + Send + Sync {}

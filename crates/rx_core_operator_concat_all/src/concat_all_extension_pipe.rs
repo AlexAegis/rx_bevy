@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, ObservableOutput, Operator};
 
 use crate::operator::ConcatAllOperator;
 
-pub trait ObservablePipeExtensionConcatAll: Observable + Sized {
+pub trait ObservablePipeExtensionConcatAll<'o>: 'o + Observable + Sized + Send + Sync {
 	fn concat_all<
 		ErrorMapper: 'static
 			+ Fn(Self::OutError) -> <Self::Out as ObservableOutput>::OutError
@@ -12,7 +12,9 @@ pub trait ObservablePipeExtensionConcatAll: Observable + Sized {
 	>(
 		self,
 		error_mapper: ErrorMapper,
-	) -> <ConcatAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator>::OutObservable<Self>
+	) -> <ConcatAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator<'o>>::OutObservable<
+		Self,
+	>
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
@@ -21,4 +23,4 @@ pub trait ObservablePipeExtensionConcatAll: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionConcatAll for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionConcatAll<'o> for O where O: 'o + Observable + Send + Sync {}

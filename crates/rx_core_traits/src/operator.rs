@@ -32,12 +32,12 @@ pub trait ComposableOperator: ObserverInput + ObservableOutput {
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 }
 
-pub trait Operator: ObserverInput + ObservableOutput {
-	type OutObservable<InObservable>: Observable<Out = Self::Out, OutError = Self::OutError>
+pub trait Operator<'o>: ObserverInput + ObservableOutput {
+	type OutObservable<InObservable>: 'o + Observable<Out = Self::Out, OutError = Self::OutError>
 	where
-		InObservable: Observable<Out = Self::In, OutError = Self::InError>;
+		InObservable: 'o + Observable<Out = Self::In, OutError = Self::InError> + Send + Sync;
 
 	fn operate<InObservable>(self, source: InObservable) -> Self::OutObservable<InObservable>
 	where
-		InObservable: Observable<Out = Self::In, OutError = Self::InError>;
+		InObservable: 'o + Observable<Out = Self::In, OutError = Self::InError> + Send + Sync;
 }

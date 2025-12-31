@@ -5,13 +5,15 @@ use crate::{
 	operator::{AdsrOperator, AdsrOperatorOptions},
 };
 
-pub trait ObservablePipeExtensionAdsr: Observable<Out = AdsrTrigger> + Sized {
+pub trait ObservablePipeExtensionAdsr<'o>:
+	'o + Observable<Out = AdsrTrigger> + Sized + Send + Sync
+{
 	#[inline]
 	fn adsr<S>(
 		self,
 		options: AdsrOperatorOptions,
 		scheduler: SchedulerHandle<S>,
-	) -> <AdsrOperator<Self::OutError, S> as Operator>::OutObservable<Self>
+	) -> <AdsrOperator<Self::OutError, S> as Operator<'o>>::OutObservable<Self>
 	where
 		S: Scheduler,
 	{
@@ -19,4 +21,7 @@ pub trait ObservablePipeExtensionAdsr: Observable<Out = AdsrTrigger> + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionAdsr for O where O: Observable<Out = AdsrTrigger> {}
+impl<'o, O> ObservablePipeExtensionAdsr<'o> for O where
+	O: 'o + Observable<Out = AdsrTrigger> + Send + Sync
+{
+}

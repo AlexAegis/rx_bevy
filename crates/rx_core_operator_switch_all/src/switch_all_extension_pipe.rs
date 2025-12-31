@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, ObservableOutput, Operator};
 
 use crate::operator::SwitchAllOperator;
 
-pub trait ObservablePipeExtensionSwitchAll: Observable + Sized {
+pub trait ObservablePipeExtensionSwitchAll<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn switch_all<
 		ErrorMapper: 'static
@@ -13,7 +13,9 @@ pub trait ObservablePipeExtensionSwitchAll: Observable + Sized {
 	>(
 		self,
 		error_mapper: ErrorMapper,
-	) -> <SwitchAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator>::OutObservable<Self>
+	) -> <SwitchAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator<'o>>::OutObservable<
+		Self,
+	>
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
@@ -22,4 +24,4 @@ pub trait ObservablePipeExtensionSwitchAll: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionSwitchAll for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionSwitchAll<'o> for O where O: 'o + Observable + Send + Sync {}

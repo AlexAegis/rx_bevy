@@ -13,3 +13,9 @@ pub struct SubscriptionHandle {
 	#[destination]
 	subscription: Arc<Mutex<SubscriptionData>>,
 }
+
+impl Drop for SubscriptionHandle {
+	fn drop(&mut self) {
+		// Don't do anything, it's shared
+	}
+}

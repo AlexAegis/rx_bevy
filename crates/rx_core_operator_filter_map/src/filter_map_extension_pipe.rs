@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::FilterMapOperator;
 
-pub trait ObservablePipeExtensionFilterMap: Observable + Sized {
+pub trait ObservablePipeExtensionFilterMap<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn filter_map<
 		NextOut: Signal,
@@ -10,11 +10,11 @@ pub trait ObservablePipeExtensionFilterMap: Observable + Sized {
 	>(
 		self,
 		mapper: Mapper,
-	) -> <FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut> as Operator>::OutObservable<
+	) -> <FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut> as Operator<'o>>::OutObservable<
 		Self,
-	> {
+	>{
 		FilterMapOperator::new(mapper).operate(self)
 	}
 }
 
-impl<O> ObservablePipeExtensionFilterMap for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionFilterMap<'o> for O where O: 'o + Observable + Send + Sync {}

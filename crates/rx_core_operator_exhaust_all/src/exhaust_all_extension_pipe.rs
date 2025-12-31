@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, ObservableOutput, Operator};
 
 use crate::operator::ExhaustAllOperator;
 
-pub trait ObservablePipeExtensionExhaustAll: Observable + Sized {
+pub trait ObservablePipeExtensionExhaustAll<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn exhaust_all<
 		ErrorMapper: 'static
@@ -13,7 +13,7 @@ pub trait ObservablePipeExtensionExhaustAll: Observable + Sized {
 	>(
 		self,
 		error_mapper: ErrorMapper,
-	) -> <ExhaustAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator>::OutObservable<Self>
+	) -> <ExhaustAllOperator<Self::Out, Self::OutError, ErrorMapper> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
@@ -22,4 +22,4 @@ pub trait ObservablePipeExtensionExhaustAll: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionExhaustAll for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionExhaustAll<'o> for O where O: 'o + Observable + Send + Sync {}

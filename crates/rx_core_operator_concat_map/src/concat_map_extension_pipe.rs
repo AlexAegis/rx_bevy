@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::ConcatMapOperator;
 
-pub trait ObservablePipeExtensionConcatMap: Observable + Sized {
+pub trait ObservablePipeExtensionConcatMap<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn concat_map<
 		NextInnerObservable: Observable + Signal,
@@ -12,7 +12,7 @@ pub trait ObservablePipeExtensionConcatMap: Observable + Sized {
 		self,
 		mapper: Mapper,
 		error_mapper: ErrorMapper,
-	) -> <ConcatMapOperator<Self::Out, Self::OutError, Mapper,ErrorMapper, NextInnerObservable> as Operator>::OutObservable<Self>
+	) -> <ConcatMapOperator<Self::Out, Self::OutError, Mapper,ErrorMapper, NextInnerObservable> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
@@ -20,4 +20,4 @@ pub trait ObservablePipeExtensionConcatMap: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionConcatMap for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionConcatMap<'o> for O where O: 'o + Observable + Send + Sync {}

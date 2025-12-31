@@ -29,7 +29,7 @@ where
 	}
 }
 
-impl<ConnectorProvider> Operator for ShareOperator<ConnectorProvider>
+impl<'o, ConnectorProvider> Operator<'o> for ShareOperator<ConnectorProvider>
 where
 	ConnectorProvider: 'static + Provider,
 	ConnectorProvider::Provided: SubjectLike + Clone,
@@ -39,11 +39,11 @@ where
 	type OutObservable<InObservable>
 		= ShareObservable<InObservable, ConnectorProvider>
 	where
-		InObservable: Observable<Out = Self::In, OutError = Self::InError>;
+		InObservable: 'o + Observable<Out = Self::In, OutError = Self::InError> + Send + Sync;
 
 	fn operate<InObservable>(self, source: InObservable) -> Self::OutObservable<InObservable>
 	where
-		InObservable: Observable<Out = Self::In, OutError = Self::InError>,
+		InObservable: 'o + Observable<Out = Self::In, OutError = Self::InError> + Send + Sync,
 	{
 		ShareObservable::new(source, self.options)
 	}

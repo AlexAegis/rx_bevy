@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::SwitchMapOperator;
 
-pub trait ObservablePipeExtensionSwitchMap: Observable + Sized {
+pub trait ObservablePipeExtensionSwitchMap<'o>: 'o + Observable + Sized + Send + Sync {
 	/// # [switch_map][SwitchMapOperator]
 	///
 	/// > Category: Higher Order Operator
@@ -66,7 +66,7 @@ pub trait ObservablePipeExtensionSwitchMap: Observable + Sized {
 		self,
 		mapper: Mapper,
 		error_mapper: ErrorMapper,
-	) -> <SwitchMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator>::OutObservable<Self>
+	) -> <SwitchMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
 	{
@@ -74,4 +74,4 @@ pub trait ObservablePipeExtensionSwitchMap: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionSwitchMap for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionSwitchMap<'o> for O where O: 'o + Observable + Send + Sync {}

@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, Operator, Scheduler, SchedulerHandle, WorkConte
 
 use crate::operator::FallbackWhenSilentOperator;
 
-pub trait ObservablePipeExtensionInto: Observable + Sized {
+pub trait ObservablePipeExtensionInto<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn fallback_when_silent<
 		Fallback: 'static
@@ -15,9 +15,9 @@ pub trait ObservablePipeExtensionInto: Observable + Sized {
 		self,
 		fallback: Fallback,
 		scheduler: SchedulerHandle<S>,
-	) -> <FallbackWhenSilentOperator<Self::Out, Self::OutError, Fallback, S> as Operator>::OutObservable<Self>{
+	) -> <FallbackWhenSilentOperator<Self::Out, Self::OutError, Fallback, S> as Operator<'o>>::OutObservable<Self>{
 		FallbackWhenSilentOperator::new(fallback, scheduler).operate(self)
 	}
 }
 
-impl<O> ObservablePipeExtensionInto for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionInto<'o> for O where O: 'o + Observable + Send + Sync {}

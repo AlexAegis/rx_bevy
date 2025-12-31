@@ -2,7 +2,7 @@ use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::operator::ReduceOperator;
 
-pub trait ObservablePipeExtensionReduce: Observable + Sized {
+pub trait ObservablePipeExtensionReduce<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn reduce<
 		NextOut: Signal + Clone,
@@ -11,11 +11,11 @@ pub trait ObservablePipeExtensionReduce: Observable + Sized {
 		self,
 		reducer: Reducer,
 		seed: NextOut,
-	) -> <ReduceOperator<Self::Out, Self::OutError, Reducer, NextOut> as Operator>::OutObservable<
+	) -> <ReduceOperator<Self::Out, Self::OutError, Reducer, NextOut> as Operator<'o>>::OutObservable<
 		Self,
-	> {
+	>{
 		ReduceOperator::new(reducer, seed).operate(self)
 	}
 }
 
-impl<O> ObservablePipeExtensionReduce for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionReduce<'o> for O where O: 'o + Observable + Send + Sync {}

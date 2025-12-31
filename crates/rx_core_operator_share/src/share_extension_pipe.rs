@@ -2,12 +2,12 @@ use rx_core_traits::{Observable, Operator, Provider, SubjectLike};
 
 use crate::operator::{ConnectableOptions, ShareOperator};
 
-pub trait ObservablePipeExtensionShare: Observable + Sized {
+pub trait ObservablePipeExtensionShare<'o>: 'o + Observable + Sized + Send + Sync {
 	#[inline]
 	fn share<ConnectorProvider>(
 		self,
 		options: ConnectableOptions<ConnectorProvider>,
-	) -> <ShareOperator<ConnectorProvider> as Operator>::OutObservable<Self>
+	) -> <ShareOperator<ConnectorProvider> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::Out: Clone,
 		Self::OutError: Clone,
@@ -18,4 +18,4 @@ pub trait ObservablePipeExtensionShare: Observable + Sized {
 	}
 }
 
-impl<O> ObservablePipeExtensionShare for O where O: Observable {}
+impl<'o, O> ObservablePipeExtensionShare<'o> for O where O: 'o + Observable + Send + Sync {}
