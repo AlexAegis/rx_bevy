@@ -6,6 +6,10 @@ use rx_core_traits::{
 	TeardownCollection,
 };
 
+use crate::internal::{
+	MulticastNotification, MulticastState, MulticastSubscriberId, SharedSubscribers,
+};
+
 #[derive(RxSubscription)]
 #[rx_skip_unsubscribe_on_drop_impl]
 pub struct MulticastSubscription<In, InError = Never>
@@ -13,6 +17,9 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
+	id: Option<MulticastSubscriberId>,
+	subscribers: SharedSubscribers<In, InError>,
+	state: Arc<Mutex<MulticastState<In, InError>>>,
 	subscriber: Option<Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>>,
 }
 
@@ -21,14 +28,49 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	pub fn new(shared_subscriber: Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>) -> Self {
+	pub(crate) fn new(
+		id: MulticastSubscriberId,
+		state: Arc<Mutex<MulticastState<In, InError>>>,
+		subscribers: SharedSubscribers<In, InError>,
+		shared_subscriber: Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>,
+	) -> Self {
 		Self {
+			id: Some(id),
+			subscribers,
+			state,
 			subscriber: Some(shared_subscriber),
 		}
 	}
 
-	pub fn new_closed() -> Self {
-		Self { subscriber: None }
+	pub(crate) fn new_closed(
+		state: Arc<Mutex<MulticastState<In, InError>>>,
+		subscribers: SharedSubscribers<In, InError>,
+	) -> Self {
+		Self {
+			id: None,
+			state,
+			subscribers,
+			subscriber: None,
+		}
+	}
+
+	fn try_clean(&mut self) {
+		if self.state.lock_ignore_poison().is_dirty()
+			&& let Ok(mut subscribers) = self.subscribers.subscribers.try_lock()
+		{
+			SharedSubscribers::apply_notification_queue(self.state.clone(), &mut subscribers);
+		}
+	}
+
+	fn try_check_is_closed(&self) -> bool {
+		if let Some(subscriber) = self.subscriber.as_ref() {
+			subscriber
+				.try_lock()
+				.map(|s| s.is_closed())
+				.unwrap_or(false)
+		} else {
+			true
+		}
 	}
 }
 
@@ -46,11 +88,18 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if let Some(subscriber) = self.subscriber.take() {
-			let mut destination = subscriber.lock_ignore_poison();
-			if !destination.is_closed() {
-				destination.unsubscribe();
+		if !self.try_check_is_closed() {
+			self.try_clean();
+
+			if let Some(id) = self.id
+				&& let Err(_unsubscribe_error) = self.subscribers.try_unsubscribe_by_id(id)
+			{
+				self.state
+					.lock_ignore_poison()
+					.defer_notification(MulticastNotification::UnsubscribeById(id));
 			}
+
+			self.try_clean();
 		}
 	}
 }

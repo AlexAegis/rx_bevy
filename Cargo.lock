@@ -5359,7 +5359,6 @@ dependencies = [
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
  "rx_core_traits",
- "smallvec",
 ]
 
 [[package]]

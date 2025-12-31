@@ -1,14 +1,17 @@
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::{
+	collections::HashMap,
+	sync::{Arc, Mutex, MutexGuard},
+};
 
 use derive_where::derive_where;
 use rx_core_traits::{
 	LockWithPoisonBehavior, Observer, Signal, Subscriber, SubscriptionClosedFlag, SubscriptionLike,
 };
-use smallvec::SmallVec;
 
 use crate::internal::{
 	MulticastAddLockError, MulticastCompleteLockError, MulticastErrorLockError,
-	MulticastNextLockError, MulticastNotification, MulticastUnsubscribeLockError,
+	MulticastNextLockError, MulticastNotification, MulticastSubscriberId,
+	MulticastSubscriberIdGenerator, MulticastUnsubscribeLockError,
 };
 
 pub(crate) const MULTICAST_MAX_RECURSION_DEPTH: usize = 10;
@@ -20,7 +23,8 @@ where
 	InError: Signal,
 {
 	#[derive_where(skip)]
-	pub(crate) subscribers: SmallVec<[Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>; 1]>,
+	pub(crate) subscribers:
+		HashMap<MulticastSubscriberId, Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>>,
 }
 
 // TODO: This could be real subscriber impls
@@ -33,14 +37,15 @@ where
 	#[inline]
 	pub(crate) fn clean(&mut self) {
 		self.subscribers
-			.retain(|subscriber| !subscriber.is_closed());
+			.retain(|_, subscriber| !subscriber.is_closed());
 	}
 
 	pub(crate) fn add_subscriber(
 		&mut self,
+		id: MulticastSubscriberId,
 		subscriber: Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>,
 	) {
-		self.subscribers.push(subscriber);
+		self.subscribers.insert(id, subscriber);
 	}
 
 	pub(crate) fn apply(&mut self, notification: MulticastNotification<In, InError>) {
@@ -49,12 +54,15 @@ where
 			MulticastNotification::Error(error) => self.error(error),
 			MulticastNotification::Complete => self.complete(),
 			MulticastNotification::Unsubscribe => self.unsubscribe(),
-			MulticastNotification::Add(subscriber) => self.add_subscriber(subscriber),
+			MulticastNotification::UnsubscribeById(id) => self.unsubscribe_by_id(id),
+			MulticastNotification::Add(id, subscriber) => {
+				self.add_subscriber(id, subscriber);
+			}
 		}
 	}
 
 	pub(crate) fn next(&mut self, next: In) {
-		for destination in self.subscribers.iter_mut() {
+		for (_, destination) in self.subscribers.iter_mut() {
 			if !destination.is_closed() {
 				destination.next(next.clone());
 			}
@@ -62,7 +70,7 @@ where
 	}
 
 	pub(crate) fn error(&mut self, error: InError) {
-		for destination in self.subscribers.iter_mut() {
+		for (_, destination) in self.subscribers.iter_mut() {
 			if !destination.is_closed() {
 				destination.error(error.clone());
 				destination.unsubscribe();
@@ -71,7 +79,7 @@ where
 	}
 
 	pub(crate) fn complete(&mut self) {
-		for destination in self.subscribers.iter_mut() {
+		for (_, destination) in self.subscribers.iter_mut() {
 			if !destination.is_closed() {
 				destination.complete();
 				destination.unsubscribe();
@@ -80,10 +88,18 @@ where
 	}
 
 	pub(crate) fn unsubscribe(&mut self) {
-		for mut destination in self.subscribers.drain(..) {
+		for (_, mut destination) in self.subscribers.drain() {
 			if !destination.is_closed() {
 				destination.unsubscribe();
 			}
+		}
+	}
+
+	pub(crate) fn unsubscribe_by_id(&mut self, id: MulticastSubscriberId) {
+		if let Some(mut destination) = self.subscribers.remove(&id)
+			&& !destination.is_closed()
+		{
+			destination.unsubscribe();
 		}
 	}
 }
@@ -96,6 +112,7 @@ where
 	InError: Signal + Clone,
 {
 	pub(crate) shared_multicast_state: Arc<Mutex<MulticastState<In, InError>>>,
+	pub(crate) subscriber_id_generator: Arc<Mutex<MulticastSubscriberIdGenerator>>,
 	pub(crate) subscribers: Arc<Mutex<Subscribers<In, InError>>>,
 }
 
@@ -104,9 +121,13 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	pub(crate) fn new(shared_multicast_state: Arc<Mutex<MulticastState<In, InError>>>) -> Self {
+	pub(crate) fn new(
+		shared_multicast_state: Arc<Mutex<MulticastState<In, InError>>>,
+		subscriber_id_generator: Arc<Mutex<MulticastSubscriberIdGenerator>>,
+	) -> Self {
 		Self {
 			shared_multicast_state,
+			subscriber_id_generator,
 			subscribers: Arc::new(Mutex::new(Subscribers::default())),
 		}
 	}
@@ -140,7 +161,7 @@ where
 			// information and immediately releases it to allow applied
 			// notifications to acquire it again
 			for mut notification in notifications.into_iter() {
-				if let MulticastNotification::Add(subscriber) = &mut notification {
+				if let MulticastNotification::Add(_id, subscriber) = &mut notification {
 					if subscriber.is_closed() {
 						// Don't add an already closed subscriber, just drop it
 						continue;
@@ -181,7 +202,9 @@ where
 	pub(crate) fn try_add_subscriber(
 		&mut self,
 		subscriber: Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>,
-	) -> Result<(), MulticastAddLockError<In, InError>> {
+	) -> Result<MulticastSubscriberId, MulticastAddLockError<In, InError>> {
+		let id = self.subscriber_id_generator.lock_ignore_poison().get_next();
+
 		match self.subscribers.try_lock() {
 			Ok(mut subscribers) => {
 				Self::apply_notification_queue(
@@ -189,11 +212,11 @@ where
 					&mut subscribers,
 				); // First, the notification queue!
 
-				subscribers.add_subscriber(subscriber);
+				subscribers.add_subscriber(id, subscriber);
 
-				Ok(())
+				Ok(id)
 			}
-			Err(_) => Err(MulticastAddLockError { subscriber }),
+			Err(_) => Err(MulticastAddLockError { id, subscriber }),
 		}
 	}
 
@@ -267,6 +290,25 @@ where
 			Err(_) => Err(MulticastUnsubscribeLockError),
 		}
 	}
+
+	pub(crate) fn try_unsubscribe_by_id(
+		&mut self,
+		id: MulticastSubscriberId,
+	) -> Result<(), MulticastUnsubscribeLockError> {
+		match self.subscribers.try_lock() {
+			Ok(mut subscribers) => {
+				Self::apply_notification_queue(
+					self.shared_multicast_state.clone(),
+					&mut subscribers,
+				); // First, the notification queue!
+
+				subscribers.unsubscribe_by_id(id);
+
+				Ok(())
+			}
+			Err(_) => Err(MulticastUnsubscribeLockError),
+		}
+	}
 }
 
 #[derive(Debug)]
@@ -302,7 +344,7 @@ where
 
 		// TODO: SUBJECTG DONT UNSUB UNLESS MANUALLK
 		if *self.closed_flag && !is_first_unsubscribe {
-			if let MulticastNotification::Add(mut subscriber) = notification
+			if let MulticastNotification::Add(_id, mut subscriber) = notification
 				&& !subscriber.is_closed()
 			{
 				subscriber.unsubscribe();
@@ -375,30 +417,44 @@ mod test {
 	use rx_core_testing::MockObserver;
 	use rx_core_traits::{LockWithPoisonBehavior, Never, SubscriptionLike};
 
-	use crate::internal::{MulticastNotification, MulticastState, SharedSubscribers};
+	use crate::internal::{
+		MulticastNotification, MulticastState, MulticastSubscriberIdGenerator, SharedSubscribers,
+	};
 
 	#[test]
 	fn should_unsubscribe_deferred_subscriber_adds_when_adding_to_an_already_closed_multicast() {
 		let mut multicast_state = MulticastState::<usize, Never>::default();
 		let shared_destination = Arc::new(Mutex::new(MockObserver::default()));
+		let mut subscriber_id_generator = MulticastSubscriberIdGenerator::default();
+
 		multicast_state.closed_flag.close();
 		assert!(!shared_destination.is_closed());
 
-		multicast_state.defer_notification(MulticastNotification::Add(shared_destination.clone()));
+		multicast_state.defer_notification(MulticastNotification::Add(
+			subscriber_id_generator.get_next(),
+			shared_destination.clone(),
+		));
 		assert!(shared_destination.is_closed());
 	}
 
 	#[test]
 	fn should_unsubscribe_deferred_subscriber_if_multicast_was_closed_between_defer_and_apply() {
 		let multicast_state = Arc::new(Mutex::new(MulticastState::<usize, Never>::default()));
-		let shared_subscribers = SharedSubscribers::new(multicast_state.clone());
+
+		let subscriber_id_generator =
+			Arc::new(Mutex::new(MulticastSubscriberIdGenerator::default()));
+
+		let id = subscriber_id_generator.lock_ignore_poison().get_next();
+
+		let shared_subscribers =
+			SharedSubscribers::new(multicast_state.clone(), subscriber_id_generator.clone());
 		let shared_destination = Arc::new(Mutex::new(MockObserver::default()));
 
 		assert!(!shared_destination.is_closed());
 
 		multicast_state
 			.lock_ignore_poison()
-			.defer_notification(MulticastNotification::Add(shared_destination.clone()));
+			.defer_notification(MulticastNotification::Add(id, shared_destination.clone()));
 
 		assert!(!shared_destination.is_closed());
 
@@ -415,7 +471,12 @@ mod test {
 	#[test]
 	fn should_unsubscribe_subscribers_when_a_deferred_terminal_complete_signal_is_applied() {
 		let multicast_state = Arc::new(Mutex::new(MulticastState::<usize, Never>::default()));
-		let mut shared_subscribers = SharedSubscribers::new(multicast_state.clone());
+
+		let subscriber_id_generator =
+			Arc::new(Mutex::new(MulticastSubscriberIdGenerator::default()));
+
+		let mut shared_subscribers =
+			SharedSubscribers::new(multicast_state.clone(), subscriber_id_generator);
 		let shared_destination = Arc::new(Mutex::new(MockObserver::<usize, Never>::default()));
 		shared_subscribers
 			.try_add_subscriber(shared_destination.clone())
@@ -440,7 +501,13 @@ mod test {
 	fn should_unsubscribe_subscribers_when_a_deferred_terminal_error_signal_is_applied() {
 		let multicast_state =
 			Arc::new(Mutex::new(MulticastState::<usize, &'static str>::default()));
-		let mut shared_subscribers = SharedSubscribers::new(multicast_state.clone());
+
+		let subscriber_id_generator =
+			Arc::new(Mutex::new(MulticastSubscriberIdGenerator::default()));
+
+		let mut shared_subscribers =
+			SharedSubscribers::new(multicast_state.clone(), subscriber_id_generator);
+
 		let shared_destination =
 			Arc::new(Mutex::new(MockObserver::<usize, &'static str>::default()));
 		shared_subscribers

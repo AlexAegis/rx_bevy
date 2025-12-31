@@ -8,7 +8,8 @@ use rx_core_traits::{
 };
 
 use crate::internal::{
-	MulticastNotification, MulticastState, MulticastSubscription, SharedSubscribers,
+	MulticastNotification, MulticastState, MulticastSubscriberIdGenerator, MulticastSubscription,
+	SharedSubscribers,
 };
 
 /// # [PublishSubject]
@@ -137,25 +138,35 @@ where
 		if self.is_closed() {
 			// Subscribing to a closed subject could also cause a panic, but I prefer this
 			subscriber.unsubscribe();
-			MulticastSubscription::new_closed()
+			MulticastSubscription::new_closed(self.state.clone(), self.subscribers.clone())
 		} else {
 			let shared_subscriber = Arc::new(Mutex::new(subscriber));
 			let shared_subscriber_clone = shared_subscriber.clone();
-			if let Err(add_subscriber_error) =
-				self.subscribers.try_add_subscriber(shared_subscriber)
-			{
-				self.state
-					.lock_ignore_poison()
-					.defer_notification(MulticastNotification::Add(
-						add_subscriber_error.subscriber,
-					));
-			} else {
-				// In case the new subscription immediately did something with
-				// this subject
-				self.try_clean();
-			}
 
-			MulticastSubscription::new(shared_subscriber_clone)
+			let try_add_result = self.subscribers.try_add_subscriber(shared_subscriber);
+			let id = match try_add_result {
+				Ok(id) => id,
+				Err(add_subscriber_error) => {
+					self.state
+						.lock_ignore_poison()
+						.defer_notification(MulticastNotification::Add(
+							add_subscriber_error.id,
+							add_subscriber_error.subscriber,
+						));
+					add_subscriber_error.id
+				}
+			};
+
+			// In case the new subscription immediately did something with
+			// this subject
+			self.try_clean();
+
+			MulticastSubscription::new(
+				id,
+				self.state.clone(),
+				self.subscribers.clone(),
+				shared_subscriber_clone,
+			)
 		}
 	}
 }
@@ -277,8 +288,14 @@ where
 {
 	fn default() -> Self {
 		let shared_multicast_state = Arc::new(Mutex::new(MulticastState::default()));
+		let subscriber_id_generator =
+			Arc::new(Mutex::new(MulticastSubscriberIdGenerator::default()));
+
 		Self {
-			subscribers: SharedSubscribers::new(shared_multicast_state.clone()),
+			subscribers: SharedSubscribers::new(
+				shared_multicast_state.clone(),
+				subscriber_id_generator,
+			),
 			state: shared_multicast_state,
 		}
 	}

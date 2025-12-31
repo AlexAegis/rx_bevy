@@ -3,6 +3,8 @@ use std::sync::{Arc, Mutex};
 use derive_where::derive_where;
 use rx_core_traits::{Signal, Subscriber};
 
+use crate::internal::MulticastSubscriberId;
+
 #[derive_where(Debug)]
 pub(crate) enum MulticastNotification<In, InError>
 where
@@ -15,6 +17,10 @@ where
 	Error(InError),
 	Complete,
 	Unsubscribe,
+	UnsubscribeById(MulticastSubscriberId),
 	#[derive_where(skip_inner(Debug))]
-	Add(Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>),
+	Add(
+		MulticastSubscriberId,
+		Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>,
+	),
 }
