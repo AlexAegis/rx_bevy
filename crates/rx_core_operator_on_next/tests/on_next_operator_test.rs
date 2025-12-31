@@ -11,7 +11,10 @@ fn should_be_able_to_interact_with_the_destination_on_next() {
 
 	let subscription = source
 		.clone()
-		.on_next(move |next, destination| destination.next(next + 10))
+		.on_next(move |next, destination| {
+			destination.next(next + 10);
+			true
+		})
 		.subscribe(destination);
 
 	source.next(0);
@@ -37,6 +40,41 @@ fn should_be_able_to_interact_with_the_destination_on_next() {
 }
 
 #[test]
+fn should_be_able_to_interact_with_the_destination_on_next_and_prevent_the_original_next() {
+	let destination = MockObserver::<usize, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<usize, &'static str>::default();
+
+	let subscription = source
+		.clone()
+		.on_next(move |next, destination| {
+			destination.next(next + 10);
+			false
+		})
+		.subscribe(destination);
+
+	source.next(0);
+	source.next(1);
+	assert!(!subscription.is_closed());
+	source.complete();
+
+	notification_collector.lock().assert_notifications(
+		"on_next",
+		0,
+		[
+			SubscriberNotification::Next(10),
+			SubscriberNotification::Next(11),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(subscription.is_closed());
+}
+
+#[test]
 fn should_close_when_errored() {
 	let destination = MockObserver::<usize, &'static str>::default();
 	let notification_collector = destination.get_notification_collector();
@@ -45,7 +83,10 @@ fn should_close_when_errored() {
 
 	let mut subscription = source
 		.clone()
-		.on_next(move |next, destination| destination.next(next + 10))
+		.on_next(move |next, destination| {
+			destination.next(next + 10);
+			true
+		})
 		.subscribe(destination);
 	let teardown_tracker = subscription.add_tracked_teardown("on_next");
 
@@ -75,7 +116,10 @@ fn should_close_when_completed() {
 
 	let mut subscription = source
 		.clone()
-		.on_next(move |next, destination| destination.next(next + 10))
+		.on_next(move |next, destination| {
+			destination.next(next + 10);
+			true
+		})
 		.subscribe(destination);
 
 	let teardown_tracker = subscription.add_tracked_teardown("on_next");
@@ -103,9 +147,10 @@ fn should_compose() {
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let composed = compose_operator::<usize, &'static str>()
-		.on_next(move |next, destination| destination.next(next + 10));
-
+	let composed = compose_operator::<usize, &'static str>().on_next(move |next, destination| {
+		destination.next(next + 10);
+		true
+	});
 	let subscription = source.clone().pipe(composed).subscribe(destination);
 
 	source.next(1);

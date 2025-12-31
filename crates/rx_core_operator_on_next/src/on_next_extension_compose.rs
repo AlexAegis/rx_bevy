@@ -11,7 +11,7 @@ pub trait OperatorComposeExtensionOnNext: ComposableOperator + Sized {
 	) -> CompositeOperator<Self, OnNextOperator<OnNext, Self::Out, Self::OutError>>
 	where
 		OnNext: 'static
-			+ FnMut(&Self::Out, &mut dyn Subscriber<In = Self::Out, InError = Self::OutError>)
+			+ FnMut(&Self::Out, &mut dyn Subscriber<In = Self::Out, InError = Self::OutError>) -> bool
 			+ Send
 			+ Sync
 			+ Clone,

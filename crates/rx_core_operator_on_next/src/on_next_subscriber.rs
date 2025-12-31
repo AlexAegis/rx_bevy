@@ -15,7 +15,7 @@ where
 		+ FnMut(
 			&Destination::In,
 			&mut dyn Subscriber<In = Destination::In, InError = Destination::InError>,
-		)
+		) -> bool
 		+ Send
 		+ Sync,
 	Destination: Subscriber,
@@ -31,7 +31,7 @@ where
 		+ FnMut(
 			&Destination::In,
 			&mut dyn Subscriber<In = Destination::In, InError = Destination::InError>,
-		)
+		) -> bool
 		+ Send
 		+ Sync,
 	Destination: Subscriber,
@@ -50,15 +50,15 @@ where
 		+ FnMut(
 			&Destination::In,
 			&mut dyn Subscriber<In = Destination::In, InError = Destination::InError>,
-		)
+		) -> bool
 		+ Send
 		+ Sync,
 	Destination: Subscriber,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		(self.on_next)(&next, &mut self.destination);
-		if !self.destination.is_closed() {
+		let can_emit = (self.on_next)(&next, &mut self.destination);
+		if can_emit && !self.destination.is_closed() {
 			self.destination.next(next);
 		}
 	}

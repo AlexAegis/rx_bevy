@@ -10,7 +10,7 @@ pub trait ObservablePipeExtensionOnNext<'o>: 'o + Observable + Sized + Send + Sy
 	) -> <OnNextOperator<OnNext, Self::Out, Self::OutError> as Operator<'o>>::OutObservable<Self>
 	where
 		OnNext: 'static
-			+ FnMut(&Self::Out, &mut dyn Subscriber<In = Self::Out, InError = Self::OutError>)
+			+ FnMut(&Self::Out, &mut dyn Subscriber<In = Self::Out, InError = Self::OutError>) -> bool
 			+ Send
 			+ Sync
 			+ Clone,

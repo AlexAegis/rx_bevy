@@ -4,6 +4,9 @@ use rx_core::prelude::*;
 fn main() {
 	let _s = (1..=5)
 		.into_observable()
-		.on_next(|next, destination| destination.next(next * 99))
+		.on_next(|next, destination| {
+			destination.next(next * 99);
+			true
+		})
 		.subscribe(PrintObserver::new("on_next_operator"));
 }

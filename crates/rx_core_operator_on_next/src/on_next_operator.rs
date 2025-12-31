@@ -15,8 +15,11 @@ use crate::internal::OnNextSubscriber;
 #[rx_out_error(InError)]
 pub struct OnNextOperator<OnNext, In, InError = Never>
 where
-	OnNext:
-		'static + FnMut(&In, &mut dyn Subscriber<In = In, InError = InError>) + Send + Sync + Clone,
+	OnNext: 'static
+		+ FnMut(&In, &mut dyn Subscriber<In = In, InError = InError>) -> bool
+		+ Send
+		+ Sync
+		+ Clone,
 	In: Signal,
 	InError: Signal,
 {
@@ -26,8 +29,11 @@ where
 
 impl<OnNext, In, InError> OnNextOperator<OnNext, In, InError>
 where
-	OnNext:
-		'static + FnMut(&In, &mut dyn Subscriber<In = In, InError = InError>) + Send + Sync + Clone,
+	OnNext: 'static
+		+ FnMut(&In, &mut dyn Subscriber<In = In, InError = InError>) -> bool
+		+ Send
+		+ Sync
+		+ Clone,
 	In: Signal,
 	InError: Signal,
 {
@@ -41,8 +47,11 @@ where
 
 impl<OnNext, In, InError> ComposableOperator for OnNextOperator<OnNext, In, InError>
 where
-	OnNext:
-		'static + FnMut(&In, &mut dyn Subscriber<In = In, InError = InError>) + Send + Sync + Clone,
+	OnNext: 'static
+		+ FnMut(&In, &mut dyn Subscriber<In = In, InError = InError>) -> bool
+		+ Send
+		+ Sync
+		+ Clone,
 	In: Signal,
 	InError: Signal,
 {
