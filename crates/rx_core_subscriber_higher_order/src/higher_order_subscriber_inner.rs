@@ -2,8 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observer, Subscriber, SubscriptionData, SubscriptionLike, Teardown,
-	TeardownCollection,
+	LockWithPoisonBehavior, Observer, SharedSubscriber, Subscriber, SubscriptionData,
+	SubscriptionLike, Teardown, TeardownCollection,
 };
 
 use crate::{HigherOrderSubscriberState, HigherOrderSubscriberStateConditions};
@@ -21,7 +21,7 @@ where
 	inner_teardown: SubscriptionData,
 	key: usize,
 	state: Arc<Mutex<HigherOrderSubscriberState<State>>>,
-	shared_destination: Arc<Mutex<Destination>>,
+	shared_destination: SharedSubscriber<Destination>,
 	completed: bool,
 	on_complete: Option<OnComplete>,
 	on_unsubscribe: Option<OnUnsubscribe>,
@@ -37,7 +37,7 @@ where
 {
 	pub fn new(
 		key: usize,
-		shared_destination: Arc<Mutex<Destination>>,
+		shared_destination: SharedSubscriber<Destination>,
 		state: Arc<Mutex<HigherOrderSubscriberState<State>>>,
 		on_complete: OnComplete,
 		on_unsubscribe: OnUnsubscribe,

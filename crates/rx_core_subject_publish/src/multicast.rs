@@ -111,7 +111,7 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	pub(crate) shared_multicast_state: Arc<Mutex<MulticastState<In, InError>>>,
+	pub(crate) deferred_state: Arc<Mutex<MulticastDeferredState<In, InError>>>,
 	pub(crate) subscriber_id_generator: Arc<Mutex<MulticastSubscriberIdGenerator>>,
 	pub(crate) subscribers: Arc<Mutex<Subscribers<In, InError>>>,
 }
@@ -122,18 +122,19 @@ where
 	InError: Signal + Clone,
 {
 	pub(crate) fn new(
-		shared_multicast_state: Arc<Mutex<MulticastState<In, InError>>>,
+		deferred_state: Arc<Mutex<MulticastDeferredState<In, InError>>>,
 		subscriber_id_generator: Arc<Mutex<MulticastSubscriberIdGenerator>>,
 	) -> Self {
 		Self {
-			shared_multicast_state,
+			deferred_state,
 			subscriber_id_generator,
 			subscribers: Arc::new(Mutex::new(Subscribers::default())),
 		}
 	}
 
+	// TODO: Too similar fn to other apply_notification_queue's
 	pub(crate) fn apply_notification_queue(
-		state: Arc<Mutex<MulticastState<In, InError>>>,
+		state: Arc<Mutex<MulticastDeferredState<In, InError>>>,
 		subscribers: &mut MutexGuard<'_, Subscribers<In, InError>>,
 	) {
 		for queue_depth in 0..=MULTICAST_MAX_RECURSION_DEPTH {
@@ -207,10 +208,7 @@ where
 
 		match self.subscribers.try_lock() {
 			Ok(mut subscribers) => {
-				Self::apply_notification_queue(
-					self.shared_multicast_state.clone(),
-					&mut subscribers,
-				); // First, the notification queue!
+				Self::apply_notification_queue(self.deferred_state.clone(), &mut subscribers); // First, the notification queue!
 
 				subscribers.add_subscriber(id, subscriber);
 
@@ -223,10 +221,7 @@ where
 	pub(crate) fn try_next(&mut self, next: In) -> Result<(), MulticastNextLockError<In>> {
 		match self.subscribers.try_lock() {
 			Ok(mut subscribers) => {
-				Self::apply_notification_queue(
-					self.shared_multicast_state.clone(),
-					&mut subscribers,
-				); // First, the notification queue!
+				Self::apply_notification_queue(self.deferred_state.clone(), &mut subscribers); // First, the notification queue!
 
 				subscribers.next(next);
 
@@ -242,10 +237,7 @@ where
 	) -> Result<(), MulticastErrorLockError<InError>> {
 		match self.subscribers.try_lock() {
 			Ok(mut subscribers) => {
-				Self::apply_notification_queue(
-					self.shared_multicast_state.clone(),
-					&mut subscribers,
-				); // First, the notification queue!
+				Self::apply_notification_queue(self.deferred_state.clone(), &mut subscribers); // First, the notification queue!
 
 				subscribers.error(error);
 
@@ -258,10 +250,7 @@ where
 	pub(crate) fn try_complete(&mut self) -> Result<(), MulticastCompleteLockError> {
 		match self.subscribers.try_lock() {
 			Ok(mut subscribers) => {
-				Self::apply_notification_queue(
-					self.shared_multicast_state.clone(),
-					&mut subscribers,
-				); // First, the notification queue!
+				Self::apply_notification_queue(self.deferred_state.clone(), &mut subscribers); // First, the notification queue!
 
 				subscribers.complete();
 				Ok(())
@@ -273,15 +262,9 @@ where
 	pub(crate) fn try_unsubscribe(&mut self) -> Result<(), MulticastUnsubscribeLockError> {
 		match self.subscribers.try_lock() {
 			Ok(mut subscribers) => {
-				Self::apply_notification_queue(
-					self.shared_multicast_state.clone(),
-					&mut subscribers,
-				); // First, the notification queue!
+				Self::apply_notification_queue(self.deferred_state.clone(), &mut subscribers); // First, the notification queue!
 
-				self.shared_multicast_state
-					.lock_ignore_poison()
-					.closed_flag
-					.close();
+				self.deferred_state.lock_ignore_poison().closed_flag.close();
 
 				subscribers.unsubscribe();
 
@@ -297,10 +280,7 @@ where
 	) -> Result<(), MulticastUnsubscribeLockError> {
 		match self.subscribers.try_lock() {
 			Ok(mut subscribers) => {
-				Self::apply_notification_queue(
-					self.shared_multicast_state.clone(),
-					&mut subscribers,
-				); // First, the notification queue!
+				Self::apply_notification_queue(self.deferred_state.clone(), &mut subscribers); // First, the notification queue!
 
 				subscribers.unsubscribe_by_id(id);
 
@@ -312,7 +292,7 @@ where
 }
 
 #[derive(Debug)]
-pub(crate) struct MulticastState<In, InError>
+pub(crate) struct MulticastDeferredState<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -331,7 +311,7 @@ where
 	pub(crate) observed_error: Option<InError>,
 }
 
-impl<In, InError> MulticastState<In, InError>
+impl<In, InError> MulticastDeferredState<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -368,6 +348,10 @@ where
 		!self.deferred_notifications_queue.is_empty()
 	}
 
+	pub(crate) fn is_unsubscribed(&self) -> bool {
+		self.observed_unsubscribe
+	}
+
 	pub(crate) fn is_closed(&self) -> bool {
 		self.is_closed_ignoring_deferred()
 			|| self.observed_completion
@@ -381,7 +365,7 @@ where
 	}
 }
 
-impl<In, InError> Drop for MulticastState<In, InError>
+impl<In, InError> Drop for MulticastDeferredState<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -394,7 +378,7 @@ where
 	}
 }
 
-impl<In, InError> Default for MulticastState<In, InError>
+impl<In, InError> Default for MulticastDeferredState<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -418,12 +402,13 @@ mod test {
 	use rx_core_traits::{LockWithPoisonBehavior, Never, SubscriptionLike};
 
 	use crate::internal::{
-		MulticastNotification, MulticastState, MulticastSubscriberIdGenerator, SharedSubscribers,
+		MulticastDeferredState, MulticastNotification, MulticastSubscriberIdGenerator,
+		SharedSubscribers,
 	};
 
 	#[test]
 	fn should_unsubscribe_deferred_subscriber_adds_when_adding_to_an_already_closed_multicast() {
-		let mut multicast_state = MulticastState::<usize, Never>::default();
+		let mut multicast_state = MulticastDeferredState::<usize, Never>::default();
 		let shared_destination = Arc::new(Mutex::new(MockObserver::default()));
 		let mut subscriber_id_generator = MulticastSubscriberIdGenerator::default();
 
@@ -439,7 +424,8 @@ mod test {
 
 	#[test]
 	fn should_unsubscribe_deferred_subscriber_if_multicast_was_closed_between_defer_and_apply() {
-		let multicast_state = Arc::new(Mutex::new(MulticastState::<usize, Never>::default()));
+		let multicast_state =
+			Arc::new(Mutex::new(MulticastDeferredState::<usize, Never>::default()));
 
 		let subscriber_id_generator =
 			Arc::new(Mutex::new(MulticastSubscriberIdGenerator::default()));
@@ -470,7 +456,8 @@ mod test {
 
 	#[test]
 	fn should_unsubscribe_subscribers_when_a_deferred_terminal_complete_signal_is_applied() {
-		let multicast_state = Arc::new(Mutex::new(MulticastState::<usize, Never>::default()));
+		let multicast_state =
+			Arc::new(Mutex::new(MulticastDeferredState::<usize, Never>::default()));
 
 		let subscriber_id_generator =
 			Arc::new(Mutex::new(MulticastSubscriberIdGenerator::default()));
@@ -499,8 +486,9 @@ mod test {
 
 	#[test]
 	fn should_unsubscribe_subscribers_when_a_deferred_terminal_error_signal_is_applied() {
-		let multicast_state =
-			Arc::new(Mutex::new(MulticastState::<usize, &'static str>::default()));
+		let multicast_state = Arc::new(Mutex::new(
+			MulticastDeferredState::<usize, &'static str>::default(),
+		));
 
 		let subscriber_id_generator =
 			Arc::new(Mutex::new(MulticastSubscriberIdGenerator::default()));

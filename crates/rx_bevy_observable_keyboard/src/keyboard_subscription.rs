@@ -9,7 +9,7 @@ use crate::{KeyboardObservableEmit, KeyboardObservableOptions};
 #[rx_delegate_teardown_collection]
 pub struct KeyboardSubscription<Destination>
 where
-	Destination: Subscriber<In = KeyCode>,
+	Destination: 'static + Subscriber<In = KeyCode>,
 {
 	#[destination]
 	shared_destination: SharedSubscriber<Destination>,

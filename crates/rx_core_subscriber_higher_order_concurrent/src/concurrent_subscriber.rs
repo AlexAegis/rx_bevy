@@ -7,8 +7,8 @@ use std::{
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observable, Observer, Signal, Subscriber, SubscriptionData,
-	SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
+	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, Signal, Subscriber,
+	SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
 	TeardownCollectionExtension,
 };
 use slab::Slab;
@@ -24,7 +24,7 @@ where
 	Destination: 'static + Subscriber,
 {
 	outer_teardown: SubscriptionHandle,
-	shared_destination: Arc<Mutex<Destination>>,
+	shared_destination: SharedSubscriber<Destination>,
 	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
 	concurrency_limit: NonZero<usize>,
@@ -37,7 +37,7 @@ where
 	Destination: 'static + Subscriber,
 {
 	pub fn new(destination: Destination, concurrency_limit: NonZero<usize>) -> Self {
-		let shared_destination = Arc::new(Mutex::new(destination));
+		let shared_destination = SharedSubscriber::new(destination);
 
 		let state = Arc::new(Mutex::new(HigherOrderSubscriberState::default()));
 		let inner_subscriptions = Arc::new(Mutex::new(Slab::new()));
@@ -56,7 +56,7 @@ where
 pub(crate) fn subscribe_to_next_in_queue<InnerObservable, Destination>(
 	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
-	shared_destination: Arc<Mutex<Destination>>,
+	shared_destination: SharedSubscriber<Destination>,
 	outer_teardown: SubscriptionHandle,
 	concurrency_limit: NonZero<usize>,
 ) where
@@ -85,7 +85,7 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 	mut next_observable: InnerObservable,
 	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
-	mut shared_destination: Arc<Mutex<Destination>>,
+	mut shared_destination: SharedSubscriber<Destination>,
 	mut outer_teardown: SubscriptionHandle,
 	concurrency_limit: NonZero<usize>,
 ) where

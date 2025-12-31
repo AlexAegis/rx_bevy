@@ -1,14 +1,11 @@
-use std::{
-	marker::PhantomData,
-	sync::{Arc, Mutex},
-};
+use std::marker::PhantomData;
 
 use bevy_ecs::resource::Resource;
 use rx_bevy_context::RxBevyScheduler;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, Subscriber,
-	SubscriptionData, SubscriptionLike, WorkCancellationId, WorkResult,
+	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
+	Subscriber, SubscriptionData, SubscriptionLike, WorkCancellationId, WorkResult,
 };
 
 use crate::observable::ResourceObservableOptions;
@@ -22,7 +19,7 @@ where
 	Destination: 'static + Subscriber,
 {
 	#[destination]
-	shared_destination: Arc<Mutex<Destination>>,
+	shared_destination: SharedSubscriber<Destination>,
 	#[teardown]
 	teardown: SubscriptionData,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
@@ -42,7 +39,7 @@ where
 		options: ResourceObservableOptions,
 		mut scheduler: SchedulerHandle<RxBevyScheduler>,
 	) -> Self {
-		let shared_destination = Arc::new(Mutex::new(destination));
+		let shared_destination = SharedSubscriber::new(destination);
 		let subscription_scheduler = scheduler.clone();
 
 		let mut shared_destination_clone = shared_destination.clone();

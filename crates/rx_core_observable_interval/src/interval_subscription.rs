@@ -12,7 +12,7 @@ use crate::observable::IntervalObservableOptions;
 #[rx_delegate_teardown_collection]
 pub struct IntervalSubscription<Destination, S>
 where
-	Destination: Subscriber<In = usize>,
+	Destination: 'static + Subscriber<In = usize>,
 	S: Scheduler,
 {
 	#[destination]

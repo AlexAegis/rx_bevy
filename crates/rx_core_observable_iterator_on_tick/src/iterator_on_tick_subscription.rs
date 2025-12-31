@@ -10,7 +10,7 @@ use crate::observable::OnTickObservableOptions;
 
 struct OnTickIteratorState<Destination, Iterator>
 where
-	Destination: Subscriber<In = Iterator::Item, InError = Never>,
+	Destination: 'static + Subscriber<In = Iterator::Item, InError = Never>,
 	Iterator: IntoIterator,
 	Iterator::Item: Signal,
 {
@@ -24,7 +24,7 @@ where
 #[rx_delegate_teardown_collection]
 pub struct OnTickIteratorSubscription<Destination, Iterator, S>
 where
-	Destination: Subscriber<In = Iterator::Item, InError = Never>,
+	Destination: 'static + Subscriber<In = Iterator::Item, InError = Never>,
 	Iterator: IntoIterator,
 	Iterator::Item: Signal,
 	S: Scheduler,
@@ -125,7 +125,7 @@ where
 impl<Destination, Iterator, S> SubscriptionLike
 	for OnTickIteratorSubscription<Destination, Iterator, S>
 where
-	Destination: Subscriber<In = Iterator::Item, InError = Never>,
+	Destination: 'static + Subscriber<In = Iterator::Item, InError = Never>,
 	Iterator: IntoIterator,
 	Iterator::Item: Signal,
 	S: Scheduler,

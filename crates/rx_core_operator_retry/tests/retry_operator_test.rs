@@ -89,8 +89,8 @@ fn should_retry_on_later_errors() {
 	teardown_tracker.assert_was_torn_down();
 }
 
-// #[test] // TODO: Fix, locks up
-fn _should_retry_on_mixed_immediate_and_later_errors() {
+#[test]
+fn should_retry_on_mixed_immediate_and_later_errors() {
 	let destination = MockObserver::<usize, &'static str>::default();
 	let notification_collector = destination.get_notification_collector();
 
@@ -116,15 +116,12 @@ fn _should_retry_on_mixed_immediate_and_later_errors() {
 	let teardown_tracker = subscription.add_tracked_teardown("retry - destination");
 
 	source.next(2);
-	println!("omg");
 	source.next(99); // First retry!
 	source.next(3);
 	source.next(99); // Second retry!
 	source.next(4);
 	source.next(99); // Error will go through!
 	source.next(5);
-
-	notification_collector.print();
 
 	notification_collector.lock().assert_notifications(
 		"retry - destination",

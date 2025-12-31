@@ -28,7 +28,7 @@ struct AdsrEnvelopeSharedState {
 pub struct AdsrSubscriber<InError, Destination, S>
 where
 	InError: Signal,
-	Destination: Subscriber<In = AdsrSignal, InError = InError>,
+	Destination: 'static + Subscriber<In = AdsrSignal, InError = InError>,
 	S: Scheduler,
 {
 	#[destination]

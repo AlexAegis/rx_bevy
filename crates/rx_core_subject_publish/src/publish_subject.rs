@@ -8,8 +8,8 @@ use rx_core_traits::{
 };
 
 use crate::internal::{
-	MulticastNotification, MulticastState, MulticastSubscriberIdGenerator, MulticastSubscription,
-	SharedSubscribers,
+	MulticastDeferredState, MulticastNotification, MulticastSubscriberIdGenerator,
+	MulticastSubscription, SharedSubscribers,
 };
 
 /// # [PublishSubject]
@@ -62,8 +62,8 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
+	deferred_state: Arc<Mutex<MulticastDeferredState<In, InError>>>,
 	subscribers: SharedSubscribers<In, InError>,
-	state: Arc<Mutex<MulticastState<In, InError>>>,
 }
 
 impl<In, InError> Provider for PublishSubject<In, InError>
@@ -84,10 +84,13 @@ where
 	InError: Signal + Clone,
 {
 	fn try_clean(&mut self) {
-		if self.state.lock_ignore_poison().is_dirty()
+		if self.deferred_state.lock_ignore_poison().is_dirty()
 			&& let Ok(mut subscribers) = self.subscribers.subscribers.try_lock()
 		{
-			SharedSubscribers::apply_notification_queue(self.state.clone(), &mut subscribers);
+			SharedSubscribers::apply_notification_queue(
+				self.deferred_state.clone(),
+				&mut subscribers,
+			);
 		}
 	}
 }
@@ -99,7 +102,7 @@ where
 {
 	#[inline]
 	pub fn is_errored(&self) -> bool {
-		let state = self.state.lock_ignore_poison();
+		let state = self.deferred_state.lock_ignore_poison();
 		state.observed_error.is_some()
 	}
 }
@@ -127,7 +130,7 @@ where
 		let mut subscriber = destination.upgrade();
 
 		{
-			let state = self.state.lock_ignore_poison();
+			let state = self.deferred_state.lock_ignore_poison();
 			if let Some(error) = state.observed_error.clone() {
 				subscriber.error(error);
 			} else if state.observed_completion {
@@ -138,7 +141,7 @@ where
 		if self.is_closed() {
 			// Subscribing to a closed subject could also cause a panic, but I prefer this
 			subscriber.unsubscribe();
-			MulticastSubscription::new_closed(self.state.clone(), self.subscribers.clone())
+			MulticastSubscription::new_closed(self.deferred_state.clone(), self.subscribers.clone())
 		} else {
 			let shared_subscriber = Arc::new(Mutex::new(subscriber));
 			let shared_subscriber_clone = shared_subscriber.clone();
@@ -147,12 +150,12 @@ where
 			let id = match try_add_result {
 				Ok(id) => id,
 				Err(add_subscriber_error) => {
-					self.state
-						.lock_ignore_poison()
-						.defer_notification(MulticastNotification::Add(
+					self.deferred_state.lock_ignore_poison().defer_notification(
+						MulticastNotification::Add(
 							add_subscriber_error.id,
 							add_subscriber_error.subscriber,
-						));
+						),
+					);
 					add_subscriber_error.id
 				}
 			};
@@ -163,7 +166,7 @@ where
 
 			MulticastSubscription::new(
 				id,
-				self.state.clone(),
+				self.deferred_state.clone(),
 				self.subscribers.clone(),
 				shared_subscriber_clone,
 			)
@@ -182,7 +185,7 @@ where
 		if !self.is_closed()
 			&& let Err(next_error) = self.subscribers.try_next(next)
 		{
-			self.state
+			self.deferred_state
 				.lock_ignore_poison()
 				.defer_notification(MulticastNotification::Next(next_error.next));
 		}
@@ -194,10 +197,10 @@ where
 		self.try_clean();
 
 		if !self.is_closed() {
-			self.state.lock_ignore_poison().observed_error = Some(error.clone());
+			self.deferred_state.lock_ignore_poison().observed_error = Some(error.clone());
 
 			if let Err(error_error) = self.subscribers.try_error(error) {
-				self.state
+				self.deferred_state
 					.lock_ignore_poison()
 					.defer_notification(MulticastNotification::Error(error_error.error));
 			}
@@ -210,10 +213,10 @@ where
 		self.try_clean();
 
 		if !self.is_closed() {
-			self.state.lock_ignore_poison().observed_completion = true;
+			self.deferred_state.lock_ignore_poison().observed_completion = true;
 
 			if let Err(_complete_error) = self.subscribers.try_complete() {
-				self.state
+				self.deferred_state
 					.lock_ignore_poison()
 					.defer_notification(MulticastNotification::Complete);
 			}
@@ -258,21 +261,21 @@ where
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.state.lock_ignore_poison().is_closed()
+		self.deferred_state.lock_ignore_poison().is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
 		self.try_clean();
 
-		let was_closed = {
-			let mut state = self.state.lock_ignore_poison();
-			let was_closed = state.is_closed(); // state.observed_unsubscribe
+		let was_unsubscribed = {
+			let mut state = self.deferred_state.lock_ignore_poison();
+			let was_unsubscribed = state.is_unsubscribed();
 			state.observed_unsubscribe = true;
-			was_closed
+			was_unsubscribed
 		};
 
-		if !was_closed && let Err(_unsubscribe_error) = self.subscribers.try_unsubscribe() {
-			self.state
+		if !was_unsubscribed && let Err(_unsubscribe_error) = self.subscribers.try_unsubscribe() {
+			self.deferred_state
 				.lock_ignore_poison()
 				.defer_notification(MulticastNotification::Unsubscribe);
 		}
@@ -287,16 +290,13 @@ where
 	InError: Signal + Clone,
 {
 	fn default() -> Self {
-		let shared_multicast_state = Arc::new(Mutex::new(MulticastState::default()));
+		let deferred_state = Arc::new(Mutex::new(MulticastDeferredState::default()));
 		let subscriber_id_generator =
 			Arc::new(Mutex::new(MulticastSubscriberIdGenerator::default()));
 
 		Self {
-			subscribers: SharedSubscribers::new(
-				shared_multicast_state.clone(),
-				subscriber_id_generator,
-			),
-			state: shared_multicast_state,
+			subscribers: SharedSubscribers::new(deferred_state.clone(), subscriber_id_generator),
+			deferred_state,
 		}
 	}
 }

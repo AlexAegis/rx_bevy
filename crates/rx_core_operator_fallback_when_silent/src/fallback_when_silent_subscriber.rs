@@ -23,7 +23,7 @@ where
 		+ Fn(S::Tick, &mut <S::WorkContextProvider as WorkContextProvider>::Item<'_>, usize) -> In
 		+ Send
 		+ Sync,
-	Destination: Subscriber<In = In, InError = InError>,
+	Destination: 'static + Subscriber<In = In, InError = InError>,
 	S: Scheduler,
 {
 	#[destination]

@@ -7,7 +7,7 @@ use rx_core_traits::{
 };
 
 use crate::internal::{
-	MulticastNotification, MulticastState, MulticastSubscriberId, SharedSubscribers,
+	MulticastDeferredState, MulticastNotification, MulticastSubscriberId, SharedSubscribers,
 };
 
 #[derive(RxSubscription)]
@@ -19,7 +19,7 @@ where
 {
 	id: Option<MulticastSubscriberId>,
 	subscribers: SharedSubscribers<In, InError>,
-	state: Arc<Mutex<MulticastState<In, InError>>>,
+	state: Arc<Mutex<MulticastDeferredState<In, InError>>>,
 	subscriber: Option<Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>>,
 }
 
@@ -30,7 +30,7 @@ where
 {
 	pub(crate) fn new(
 		id: MulticastSubscriberId,
-		state: Arc<Mutex<MulticastState<In, InError>>>,
+		state: Arc<Mutex<MulticastDeferredState<In, InError>>>,
 		subscribers: SharedSubscribers<In, InError>,
 		shared_subscriber: Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>,
 	) -> Self {
@@ -43,7 +43,7 @@ where
 	}
 
 	pub(crate) fn new_closed(
-		state: Arc<Mutex<MulticastState<In, InError>>>,
+		state: Arc<Mutex<MulticastDeferredState<In, InError>>>,
 		subscribers: SharedSubscribers<In, InError>,
 	) -> Self {
 		Self {
