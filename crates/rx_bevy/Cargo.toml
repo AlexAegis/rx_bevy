@@ -150,6 +150,7 @@ all_core_operators = [
     "operator_materialize",
     "operator_merge_all",
     "operator_merge_map",
+    "operator_on_next",
     "operator_on_subscribe",
     "operator_reduce",
     "operator_scan",
@@ -190,6 +191,7 @@ operator_map_into = ["rx_core/operator_map_into"]
 operator_materialize = ["rx_core/operator_materialize"]
 operator_merge_all = ["rx_core/operator_merge_all"]
 operator_merge_map = ["rx_core/operator_merge_map"]
+operator_on_next = ["rx_core/operator_on_next"]
 operator_on_subscribe = ["rx_core/operator_on_subscribe"]
 operator_reduce = ["rx_core/operator_reduce"]
 operator_scan = ["rx_core/operator_scan"]

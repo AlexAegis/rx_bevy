@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_operator_take"
-description = "take operator for rx_core"
+name = "rx_core_operator_on_next"
+description = "on_next operator for rx_core"
 version = "0.1.0"
 readme = "readme.md"
 publish = false

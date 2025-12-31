@@ -165,6 +165,7 @@ all_operators = [
     "operator_materialize",
     "operator_merge_all",
     "operator_merge_map",
+    "operator_on_next",
     "operator_on_subscribe",
     "operator_reduce",
     "operator_scan",
@@ -205,6 +206,7 @@ operator_map_into = ["dep:rx_core_operator_map_into"]
 operator_materialize = ["dep:rx_core_operator_materialize"]
 operator_merge_all = ["dep:rx_core_operator_merge_all"]
 operator_merge_map = ["dep:rx_core_operator_merge_map"]
+operator_on_next = ["dep:rx_core_operator_on_next"]
 operator_on_subscribe = ["dep:rx_core_operator_on_subscribe"]
 operator_reduce = ["dep:rx_core_operator_reduce"]
 operator_scan = ["dep:rx_core_operator_scan"]
@@ -243,6 +245,7 @@ pipe = [
     "rx_core_operator_materialize?/pipe",
     "rx_core_operator_merge_all?/pipe",
     "rx_core_operator_merge_map?/pipe",
+    "rx_core_operator_on_next?/pipe",
     "rx_core_operator_on_subscribe?/pipe",
     "rx_core_operator_reduce?/pipe",
     "rx_core_operator_scan?/pipe",
@@ -283,6 +286,7 @@ compose = [
     "rx_core_operator_materialize?/compose",
     "rx_core_operator_merge_all?/compose",
     "rx_core_operator_merge_map?/compose",
+    "rx_core_operator_on_next?/compose",
     "rx_core_operator_on_subscribe?/compose",
     "rx_core_operator_reduce?/compose",
     "rx_core_operator_scan?/compose",
@@ -361,6 +365,7 @@ rx_core_operator_map_into = { workspace = true, optional = true }
 rx_core_operator_materialize = { workspace = true, optional = true }
 rx_core_operator_merge_all = { workspace = true, optional = true }
 rx_core_operator_merge_map = { workspace = true, optional = true }
+rx_core_operator_on_next = { workspace = true, optional = true }
 rx_core_operator_on_subscribe = { workspace = true, optional = true }
 rx_core_operator_reduce = { workspace = true, optional = true }
 rx_core_operator_scan = { workspace = true, optional = true }
