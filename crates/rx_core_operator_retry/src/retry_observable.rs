@@ -60,28 +60,48 @@ where
 
 		let caught_error = Arc::new(Mutex::new(None));
 
+		let last_subscription = Arc::new(Mutex::new(Option::<SubscriptionHandle>::None));
+
 		while immediate_retries <= self.max_retries {
 			caught_error.lock_ignore_poison().take();
 			let mut stolen_source = self.source.lock_ignore_poison().take().unwrap();
-			let subscription = stolen_source.subscribe(RetrySubscriber::new(
+
+			if let Some(mut last_subscription) = last_subscription.lock_ignore_poison().take() {
+				last_subscription.unsubscribe();
+			}
+
+			let next_subscription = stolen_source.subscribe(RetrySubscriber::new(
 				self.source.clone(),
 				shared_destination.clone(),
 				self.max_retries,
 				immediate_retries,
 				outer_subscription.clone(),
+				last_subscription.clone(),
 				caught_error.clone(),
 			));
+
+			if !next_subscription.is_closed() {
+				let mut handle = SubscriptionHandle::default();
+				handle.add(next_subscription);
+				last_subscription.lock_ignore_poison().replace(handle);
+			}
+
 			self.source.lock_ignore_poison().replace(stolen_source);
 			immediate_retries += 1;
 
-			let immediately_errored = caught_error.lock_ignore_poison().is_some();
-			if immediately_errored {
+			if caught_error.lock_ignore_poison().is_some() {
+				if let Some(mut last_subscription) = last_subscription.lock_ignore_poison().take() {
+					last_subscription.unsubscribe();
+				}
 				continue;
-			}
+			} else if shared_destination.is_closed() {
+				if let Some(mut last_subscription) = last_subscription.lock_ignore_poison().take() {
+					last_subscription.unsubscribe();
+				}
+				break;
+			} else {
+				outer_subscription.add(last_subscription);
 
-			outer_subscription.add(subscription);
-
-			if shared_destination.is_closed() {
 				break;
 			}
 		}

@@ -15,13 +15,14 @@ where
 	Source: 'static + Observable + Send + Sync,
 	Destination: 'static + Subscriber<In = Source::Out, InError = Source::OutError>,
 {
-	// source: ErasedObservable<Destination::In, Destination::InError>,
 	source: Arc<Mutex<Option<Source>>>,
 	retries: usize,
 	max_retries: usize,
+	finished: bool,
 	#[destination]
 	destination: SharedSubscriber<Destination>,
 	outer_subscription: SubscriptionHandle,
+	last_subscription: Arc<Mutex<Option<SubscriptionHandle>>>,
 	caught_error: Arc<Mutex<Option<Source::OutError>>>,
 }
 
@@ -36,16 +37,28 @@ where
 		max_retries: usize,
 		retries: usize,
 		outer_subscription: SubscriptionHandle,
+		last_subscription: Arc<Mutex<Option<SubscriptionHandle>>>,
 		caught_error: Arc<Mutex<Option<Source::OutError>>>,
 	) -> Self {
 		Self {
 			source,
 			destination,
 			outer_subscription,
+			finished: false,
 			max_retries,
 			retries,
 			caught_error,
+			last_subscription,
 		}
+	}
+
+	#[inline]
+	fn unsubscribe_inner_subscription(&mut self) {
+		if let Some(mut last_subscription) = self.last_subscription.lock_ignore_poison().take()
+			&& !last_subscription.is_closed()
+		{
+			last_subscription.unsubscribe();
+		};
 	}
 }
 
@@ -70,35 +83,56 @@ where
 		while self.retries <= self.max_retries {
 			self.caught_error.lock_ignore_poison().take();
 
+			self.unsubscribe_inner_subscription();
+
 			let mut stolen_source = self.source.lock_ignore_poison().take().unwrap();
+
+			self.retries += 1;
+
 			let next_subscription = stolen_source.subscribe(RetrySubscriber::new(
 				self.source.clone(),
 				self.destination.clone(),
 				self.max_retries,
 				self.retries,
 				self.outer_subscription.clone(),
+				self.last_subscription.clone(),
 				self.caught_error.clone(),
 			));
+
 			self.source.lock_ignore_poison().replace(stolen_source);
-			self.retries += 1;
+
 			if !next_subscription.is_closed() {
-				self.outer_subscription.add(next_subscription);
-				break;
+				let mut handle = SubscriptionHandle::default();
+				handle.add(next_subscription);
+				self.last_subscription
+					.lock_ignore_poison()
+					.replace(handle.clone());
 			}
 
-			self.outer_subscription.add(next_subscription);
+			if self.caught_error.lock_ignore_poison().is_some() {
+				self.unsubscribe_inner_subscription();
+				continue;
+			} else if self.is_closed() {
+				self.unsubscribe_inner_subscription();
+				break;
+			} else {
+				self.outer_subscription.add(self.last_subscription.clone());
+				break;
+			}
 		}
 
 		if self.retries > self.max_retries {
+			self.finished = true;
 			self.destination.error(error);
-			self.destination.unsubscribe();
-			self.outer_subscription.unsubscribe();
+			self.unsubscribe();
 		}
 	}
 
 	#[inline]
 	fn complete(&mut self) {
+		self.finished = true;
 		self.destination.complete();
+		self.unsubscribe();
 	}
 }
 
@@ -114,7 +148,8 @@ where
 
 	#[inline]
 	fn unsubscribe(&mut self) {
-		if self.retries > self.max_retries {
+		if self.finished || self.retries > self.max_retries {
+			self.unsubscribe_inner_subscription();
 			self.destination.unsubscribe();
 			self.outer_subscription.unsubscribe();
 		}
