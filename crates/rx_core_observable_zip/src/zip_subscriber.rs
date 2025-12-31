@@ -19,6 +19,7 @@ const UNREACHABLE_ERROR: &str = "The ZipSubscriber expects only materialized not
 #[rx_in(EitherObservableNotification2<O1, O2>)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection]
+#[rx_skip_unsubscribe_on_drop_impl]
 pub struct ZipSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out)>,
@@ -164,5 +165,26 @@ where
 	#[inline]
 	fn unsubscribe(&mut self) {
 		unreachable!("{}", UNREACHABLE_ERROR)
+	}
+}
+
+impl<Destination, O1, O2> Drop for ZipSubscriber<Destination, O1, O2>
+where
+	Destination: Subscriber<In = (O1::Out, O2::Out)>,
+	O1: 'static + Observable,
+	O1::Out: Clone,
+	O1::OutError: Into<Destination::InError>,
+	O2: 'static + Observable,
+	O2::Out: Clone,
+	O2::OutError: Into<Destination::InError>,
+{
+	fn drop(&mut self) {
+		self.next(EitherObservableNotification2::O1(
+			SubscriberNotification::Unsubscribe,
+		));
+
+		self.next(EitherObservableNotification2::O2(
+			SubscriberNotification::Unsubscribe,
+		));
 	}
 }
