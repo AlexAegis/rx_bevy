@@ -34,6 +34,14 @@ where
 			.lock()
 			.unwrap_or_else(|p| p.into_inner())
 	}
+
+	pub fn print(&self)
+	where
+		In: Debug,
+		InError: Debug,
+	{
+		println!("{:?}", self.lock());
+	}
 }
 
 #[derive(Debug)]

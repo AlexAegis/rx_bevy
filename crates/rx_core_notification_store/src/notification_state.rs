@@ -101,7 +101,9 @@ where
 
 	#[inline]
 	pub fn unsubscribe(&mut self) {
-		self.state.unsubscribe();
+		if !self.state.is_unsubscribed() {
+			self.state.unsubscribe();
+		}
 	}
 
 	pub fn push(&mut self, notification: SubscriberNotification<Out, OutError>) {
