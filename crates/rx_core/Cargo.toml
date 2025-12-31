@@ -27,6 +27,7 @@ default = [
     "pipe",
 ]
 debug = [
+    "rx_core_observable_combine_changes?/debug",
     "rx_core_observable_combine_latest?/debug",
     "rx_core_observable_connectable?/debug",
     "rx_core_observable_deferred?/debug",
@@ -84,6 +85,7 @@ debug = [
 ]
 # Observables
 all_observables = [
+    "observable_combine_changes",
     "observable_combine_latest",
     "observable_concat",
     "observable_connectable",
@@ -100,6 +102,7 @@ all_observables = [
     "observable_timer",
     "observable_zip",
 ]
+observable_combine_changes = ["dep:rx_core_observable_combine_changes"]
 observable_combine_latest = ["dep:rx_core_observable_combine_latest"]
 observable_concat = ["dep:rx_core_observable_concat"]
 observable_connectable = ["dep:rx_core_observable_connectable"]
@@ -117,6 +120,7 @@ observable_timer = ["dep:rx_core_observable_timer"]
 observable_zip = ["dep:rx_core_observable_zip"]
 # Observable Creation Functions
 observable_fn = [
+    "rx_core_observable_combine_changes?/observable_fn",
     "rx_core_observable_combine_latest?/observable_fn",
     "rx_core_observable_concat?/observable_fn",
     "rx_core_observable_empty?/observable_fn",
@@ -321,6 +325,7 @@ subject_replay = ["dep:rx_core_subject_replay"]
 [dependencies]
 rx_core_traits = { workspace = true }
 # Observables
+rx_core_observable_combine_changes = { workspace = true, optional = true }
 rx_core_observable_combine_latest = { workspace = true, optional = true }
 rx_core_observable_concat = { workspace = true, optional = true }
 rx_core_observable_connectable = { workspace = true, optional = true }

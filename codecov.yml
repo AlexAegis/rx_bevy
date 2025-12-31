@@ -80,6 +80,9 @@ component_management:
     - component_id: rx_core_macro_work_derive
       paths:
         - crates/rx_core_macro_work_derive/**
+    - component_id: rx_core_observable_combine_changes
+      paths:
+        - crates/rx_core_observable_combine_changes/**
     - component_id: rx_core_observable_combine_latest
       paths:
         - crates/rx_core_observable_combine_latest/**

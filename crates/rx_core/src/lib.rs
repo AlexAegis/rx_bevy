@@ -3,6 +3,8 @@
 pub use rx_core_traits::*;
 
 pub mod observable {
+	#[cfg(feature = "observable_combine_changes")]
+	pub use rx_core_observable_combine_changes::observable::*;
 	#[cfg(feature = "observable_combine_latest")]
 	pub use rx_core_observable_combine_latest::observable::*;
 	#[cfg(feature = "observable_concat")]
@@ -37,6 +39,8 @@ pub mod observable {
 
 #[cfg(feature = "observable_fn")]
 pub mod observable_fn {
+	#[cfg(feature = "observable_combine_changes")]
+	pub use rx_core_observable_combine_changes::observable_fn::*;
 	#[cfg(feature = "observable_combine_latest")]
 	pub use rx_core_observable_combine_latest::observable_fn::*;
 	#[cfg(feature = "observable_concat")]

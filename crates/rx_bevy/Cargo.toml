@@ -84,6 +84,7 @@ all_subjects = ["all_core_subjects"]
 observable_fn = ["rx_core/observable_fn"]
 # Core Observables
 all_core_observables = [
+    "observable_combine_changes",
     "observable_combine_latest",
     "observable_concat",
     "observable_connectable",
@@ -100,6 +101,7 @@ all_core_observables = [
     "observable_timer",
     "observable_zip",
 ]
+observable_combine_changes = ["rx_core/observable_combine_changes"]
 observable_combine_latest = ["rx_core/observable_combine_latest"]
 observable_concat = ["rx_core/observable_concat"]
 observable_connectable = ["rx_core/observable_connectable"]
