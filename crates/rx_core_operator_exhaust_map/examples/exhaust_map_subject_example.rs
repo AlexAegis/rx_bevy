@@ -23,7 +23,7 @@ fn main() {
 				Either::Right => right_clone.clone(),
 				Either::Top => top_clone.clone(),
 			},
-			Never::error_mapper(),
+			Never::map_into(),
 		)
 		.subscribe(PrintObserver::new("exhaust_map"));
 

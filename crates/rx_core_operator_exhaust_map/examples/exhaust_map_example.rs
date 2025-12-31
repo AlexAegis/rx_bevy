@@ -24,7 +24,7 @@ fn main() {
 				)
 				.take(3)
 			},
-			Never::error_mapper(),
+			Never::map_into(),
 		)
 		.subscribe(PrintObserver::new("exhaust_map"));
 

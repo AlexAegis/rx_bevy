@@ -22,7 +22,7 @@ fn main() {
 				Either::Left => l.clone(),
 				Either::Right => r.clone(),
 			},
-			Never::error_mapper(),
+			Never::map_into(),
 		)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("concat_map"));

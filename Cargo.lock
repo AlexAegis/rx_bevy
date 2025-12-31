@@ -4411,6 +4411,7 @@ dependencies = [
  "rx_core_operator_lift_option",
  "rx_core_operator_lift_result",
  "rx_core_operator_map",
+ "rx_core_operator_map_error",
  "rx_core_operator_map_into",
  "rx_core_operator_materialize",
  "rx_core_operator_merge_all",
@@ -5049,6 +5050,19 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_map"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_map_error"
 version = "0.1.0"
 dependencies = [
  "derive-where",

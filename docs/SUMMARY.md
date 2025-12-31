@@ -51,6 +51,7 @@
   - [lift_option](operator/lift_option.md)
   - [lift_result](operator/lift_result.md)
   - [map](operator/map.md)
+  - [map_error](operator/map_error.md)
   - [map_into](operator/map_into.md)
   - [materialize](operator/materialize.md)
   - [merge_all](operator/merge_all.md)

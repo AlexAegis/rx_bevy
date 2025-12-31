@@ -4,8 +4,8 @@ use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_subscriber_higher_order_concurrent::ConcurrentSubscriberProvider;
 use rx_core_traits::{
-	ErasedObservable, ErasedObservables, Never, Observable, Observer, Signal, Subscriber,
-	SubscriptionData, TeardownCollection, UpgradeableObserver, WithErrorMapper,
+	ErasedObservable, ErasedObservables, Never, NeverMapIntoExtension, Observable, Observer,
+	Signal, Subscriber, SubscriptionData, TeardownCollection, UpgradeableObserver,
 };
 
 #[derive(RxObservable, Clone)]
@@ -57,14 +57,13 @@ where
 	{
 		let destination = observer.upgrade();
 
-		let mut concat_subscriber =
-			HigherOrderAllSubscriber::<
-				ErasedObservable<Out, OutError>,
-				Never,
-				ConcurrentSubscriberProvider,
-				_,
-				<Destination as UpgradeableObserver>::Upgraded,
-			>::new(destination, Never::error_mapper(), self.concurrency_limit);
+		let mut concat_subscriber = HigherOrderAllSubscriber::<
+			ErasedObservable<Out, OutError>,
+			Never,
+			ConcurrentSubscriberProvider,
+			_,
+			<Destination as UpgradeableObserver>::Upgraded,
+		>::new(destination, Never::map_into(), self.concurrency_limit);
 
 		for next_observable in self.observables.iter().cloned() {
 			concat_subscriber.next(next_observable);
