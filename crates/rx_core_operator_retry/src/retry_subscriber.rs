@@ -85,6 +85,10 @@ where
 	#[inline]
 	fn next(&mut self, next: Self::In) {
 		self.destination.next(next);
+
+		if self.destination.is_closed() {
+			self.unsubscribe();
+		}
 	}
 
 	fn error(&mut self, error: Self::InError) {
@@ -120,8 +124,6 @@ where
 
 			if self.caught_error.lock_ignore_poison().is_some() {
 				continue;
-			} else if self.is_closed() {
-				break;
 			} else {
 				self.outer_subscription.add(self.last_subscription.clone());
 				break;

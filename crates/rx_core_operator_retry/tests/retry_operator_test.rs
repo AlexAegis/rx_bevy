@@ -95,6 +95,51 @@ fn should_retry_on_later_errors() {
 }
 
 #[test]
+fn should_retry_on_later_errors_but_stop_if_downstream_had_already_unsubscribed() {
+	let destination = MockObserver::<usize, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source = PublishSubject::<usize, &'static str>::default();
+
+	let error = "error";
+	let mut retried = source
+		.clone()
+		.on_next(|next, destination| {
+			if *next > 10 {
+				destination.error(error);
+				false
+			} else {
+				true
+			}
+		})
+		.retry(2)
+		.take(2);
+
+	let mut subscription = retried.subscribe(destination);
+	let teardown_tracker = subscription.add_tracked_teardown("retry - destination");
+
+	source.next(1);
+	source.next(99); // First retry!
+	source.next(2); // Complete because of take
+
+	notification_collector.lock().assert_notifications(
+		"retry - take 2",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Complete,
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(subscription.is_closed());
+
+	teardown_tracker.assert_was_torn_down();
+}
+
+#[test]
 fn should_retry_on_mixed_immediate_and_later_errors() {
 	let destination = MockObserver::<usize, &'static str>::default();
 	let notification_collector = destination.get_notification_collector();
