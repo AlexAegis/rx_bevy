@@ -50,7 +50,7 @@ where
 		options: OnTickObservableOptions,
 		scheduler: SchedulerHandle<S>,
 	) -> Self {
-		let mut scheduler_clone = scheduler.clone();
+		let scheduler_clone = scheduler.clone();
 		let mut peekable_iterator = iterator.peekable();
 		let mut destination = SharedSubscriber::new(destination);
 

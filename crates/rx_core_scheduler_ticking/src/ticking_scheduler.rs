@@ -55,14 +55,16 @@ where
 	type InvokedWorkFactory = TickedInvokedWorkFactory<C>;
 	type ContinuousWorkFactory = TickedContinuousWorkFactory<C>;
 
-	fn schedule_work<W>(&mut self, mut work: W, owner_id: WorkCancellationId)
+	fn schedule_work<W>(&mut self, mut work: W, cancellation_id: WorkCancellationId)
 	where
 		W: 'static + ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync,
 	{
 		work.on_scheduled_hook(self.current_tick);
 
-		self.action_queue
-			.push(ScheduledWorkAction::Activate((owner_id, Box::new(work))));
+		self.action_queue.push(ScheduledWorkAction::Activate((
+			cancellation_id,
+			Box::new(work),
+		)));
 
 		//	let mut s = SubscriptionData::<ContextProvider>::default();
 		// TODO: Try returning subscriptions instead of ownerids

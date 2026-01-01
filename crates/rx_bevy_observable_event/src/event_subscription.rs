@@ -31,12 +31,12 @@ where
 	pub fn new(
 		observed_event_source_entity: Entity,
 		destination: Destination,
-		mut scheduler: SchedulerHandle<RxBevyScheduler>,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
 	) -> Self {
 		let shared_destination = SharedSubscriber::new(destination);
 
 		let scheduler_subscription_clone = scheduler.clone();
-		let mut scheduler_schedule_clone = scheduler.clone();
+		let scheduler_schedule_clone = scheduler.clone();
 		let mut scheduler_lock = scheduler.lock();
 		let shared_destination_clone = shared_destination.clone();
 

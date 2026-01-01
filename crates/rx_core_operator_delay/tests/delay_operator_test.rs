@@ -7,7 +7,7 @@ use rx_core_traits::Observable;
 #[test]
 fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
 	let mut executor = MockExecutor::default();
-	let mut scheduler = executor.get_scheduler_handle();
+	let scheduler = executor.get_scheduler_handle();
 
 	let destination = MockObserver::<usize, &'static str>::default();
 	let notification_collector = destination.get_notification_collector();
@@ -431,7 +431,7 @@ mod unsubscribe {
 #[test]
 fn should_compose() {
 	let mut executor = MockExecutor::default();
-	let mut scheduler = executor.get_scheduler_handle();
+	let scheduler = executor.get_scheduler_handle();
 
 	let destination = MockObserver::<usize, &'static str>::default();
 	let notification_collector = destination.get_notification_collector();

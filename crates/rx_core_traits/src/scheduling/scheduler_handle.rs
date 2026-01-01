@@ -34,7 +34,7 @@ where
 		}
 	}
 
-	pub fn lock(&mut self) -> MutexGuard<'_, S> {
+	pub fn lock(&self) -> MutexGuard<'_, S> {
 		self.scheduler.lock().unwrap_or_else(|poison_error| {
 			eprintln!("Scheduler ({}) got poisoned!", ShortName::of::<Self>());
 			self.scheduler.clear_poison();

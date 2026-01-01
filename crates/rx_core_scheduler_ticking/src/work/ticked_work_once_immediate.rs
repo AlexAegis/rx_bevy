@@ -55,10 +55,9 @@ where
 	C: WorkContextProvider,
 {
 	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> WorkResult {
-		let Some(work) = self.work.take() else {
-			return WorkResult::Done;
+		if let Some(work) = self.work.take() {
+			(work)(tick, context);
 		};
-		(work)(tick, context);
 		WorkResult::Done
 	}
 

@@ -41,7 +41,7 @@ where
 	In: Signal,
 	InError: Signal,
 {
-	pub fn new(destination: Entity, mut scheduler: SchedulerHandle<RxBevyScheduler>) -> Self {
+	pub fn new(destination: Entity, scheduler: SchedulerHandle<RxBevyScheduler>) -> Self {
 		let owner_id = scheduler.lock().generate_cancellation_id();
 		Self {
 			destination,
@@ -61,7 +61,7 @@ where
 
 	fn upgrade(self) -> Self::Upgraded {
 		let owner_id = self.owner_id;
-		let mut scheduler = self.scheduler.clone();
+		let scheduler = self.scheduler.clone();
 		let mut upgraded = DetachedSubscriber::new(self);
 		upgraded.add_fn(move || {
 			scheduler.lock().cancel(owner_id);

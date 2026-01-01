@@ -66,7 +66,6 @@ where
 		self.caught_error.lock_ignore_poison().take();
 	}
 
-	#[inline]
 	fn finish(&mut self) {
 		match self.finished_with.take() {
 			Some(ObserverTerminalNotification::Error(error)) => self.destination.error(error),
@@ -156,7 +155,6 @@ where
 		self.destination.is_closed()
 	}
 
-	#[inline]
 	fn unsubscribe(&mut self) {
 		if self.caught_error.lock_ignore_poison().is_none() && self.finished_with.is_none() {
 			self.finish();

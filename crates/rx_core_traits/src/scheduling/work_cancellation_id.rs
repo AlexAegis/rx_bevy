@@ -17,21 +17,38 @@ impl Deref for WorkCancellationId {
 	}
 }
 
-impl From<usize> for WorkCancellationId {
-	fn from(value: usize) -> Self {
-		Self(value)
-	}
-}
-
 #[derive(Default, Debug)]
 pub struct WorkCancellationIdGenerator {
-	current_tick_index: usize,
+	current_index: usize,
 }
 
 impl WorkCancellationIdGenerator {
 	pub fn get_next(&mut self) -> WorkCancellationId {
-		let tick_id: WorkCancellationId = self.current_tick_index.into();
-		self.current_tick_index += 1;
-		tick_id
+		let id = WorkCancellationId(self.current_index);
+		self.current_index += 1;
+		id
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use std::ops::Deref;
+
+	use crate::WorkCancellationIdGenerator;
+
+	#[test]
+	fn should_generate_incremental_numbers() {
+		let mut id_generator = WorkCancellationIdGenerator::default();
+		assert_eq!(id_generator.get_next().deref(), &0);
+		assert_eq!(id_generator.get_next().deref(), &1);
+		assert_eq!(id_generator.get_next().deref(), &2);
+		assert_eq!(id_generator.get_next().deref(), &3);
+	}
+
+	#[test]
+	fn should_display_as_a_number() {
+		let mut id_generator = WorkCancellationIdGenerator::default();
+		let next = id_generator.get_next();
+		assert_eq!(format!("{}", next), "0");
 	}
 }

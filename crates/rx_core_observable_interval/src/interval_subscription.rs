@@ -1,5 +1,3 @@
-use std::num::NonZero;
-
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Subscriber,
@@ -31,7 +29,7 @@ where
 		interval_subscription_options: IntervalObservableOptions,
 		scheduler: SchedulerHandle<S>,
 	) -> Self {
-		let mut scheduler_clone = scheduler.clone();
+		let scheduler_clone = scheduler.clone();
 		let destination = SharedSubscriber::new(destination);
 		let work_owner_id = {
 			let mut scheduler = scheduler_clone.lock();
@@ -59,8 +57,7 @@ where
 				},
 				interval_subscription_options.duration,
 				false,
-				NonZero::new(interval_subscription_options.max_emissions_per_tick)
-					.unwrap_or(NonZero::<usize>::MIN),
+				interval_subscription_options.max_emissions_per_tick,
 				cancellation_id,
 			);
 

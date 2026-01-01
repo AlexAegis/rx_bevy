@@ -58,7 +58,7 @@ where
 		}));
 		let shared_state_clone = shared_state.clone();
 		let shared_destination_clone = shared_destination.clone();
-		let mut scheduler_clone = scheduler.clone();
+		let scheduler_clone = scheduler.clone();
 		let mut scheduler_lock = scheduler_clone.lock();
 		let cancellation_id = scheduler_lock.generate_cancellation_id();
 		let mut last_now = Duration::from_millis(0);

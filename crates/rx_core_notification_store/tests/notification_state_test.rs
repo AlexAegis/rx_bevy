@@ -40,6 +40,7 @@ fn should_error() {
 	let mut state = NotificationState::<i32, &'static str>::default();
 	state.error("error");
 	assert!(state.is_errored());
+	assert_eq!(state.get_error(), Some(&"error"));
 }
 
 #[test]

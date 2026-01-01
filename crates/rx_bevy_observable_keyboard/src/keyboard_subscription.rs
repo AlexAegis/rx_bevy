@@ -29,7 +29,7 @@ where
 	) -> Self {
 		let shared_destination = SharedSubscriber::new(destination);
 
-		let mut scheduler_clone = scheduler.clone();
+		let scheduler_clone = scheduler.clone();
 		let mut scheduler_lock = scheduler_clone.lock();
 		let cancellation_id = scheduler_lock.generate_cancellation_id();
 

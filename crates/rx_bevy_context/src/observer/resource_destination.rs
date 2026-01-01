@@ -36,7 +36,7 @@ where
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
 	S: Scheduler<WorkContextProvider = RxBevyContext>,
 {
-	pub fn new(writer: ResourceWriter, mut scheduler: SchedulerHandle<S>) -> Self {
+	pub fn new(writer: ResourceWriter, scheduler: SchedulerHandle<S>) -> Self {
 		let owner_id = scheduler.lock().generate_cancellation_id();
 		Self {
 			writer: Arc::new(Mutex::new(writer)),

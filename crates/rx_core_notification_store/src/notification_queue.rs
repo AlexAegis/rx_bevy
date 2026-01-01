@@ -79,7 +79,6 @@ where
 	/// Pushes a new notification onto the queue using `push_back`.
 	/// If this is the first notification, it also updates the queue's state
 	/// to reflect the state of it's "front".
-	#[inline]
 	pub fn push(&mut self, notification: SubscriberNotification<In, InError>) {
 		if self.count_nexts() >= self.options.max_queue_length
 			&& matches!(notification, SubscriberNotification::Next(_))
@@ -113,7 +112,6 @@ where
 		}
 	}
 
-	#[inline]
 	pub fn pop_next_if_in_front(&mut self) -> Option<In> {
 		if self.queue.front().is_some_and(|front_notification| {
 			matches!(front_notification, SubscriberNotification::Next(_))
@@ -139,7 +137,6 @@ where
 		self.queue.len()
 	}
 
-	#[inline]
 	pub fn count_nexts(&self) -> usize {
 		self.queue
 			.iter()
@@ -147,7 +144,6 @@ where
 			.count()
 	}
 
-	#[inline]
 	pub fn has_next(&self) -> bool {
 		self.queue
 			.iter()

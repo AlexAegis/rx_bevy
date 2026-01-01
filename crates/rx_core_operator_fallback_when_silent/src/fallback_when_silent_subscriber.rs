@@ -49,7 +49,7 @@ where
 	pub fn new(
 		destination: Destination,
 		fallback: Fallback,
-		mut scheduler_handle: SchedulerHandle<S>,
+		scheduler_handle: SchedulerHandle<S>,
 	) -> Self {
 		let shared_destination = SharedSubscriber::new(destination);
 		let state = Arc::new(Mutex::new(FallbackWhenSilentSubscriberState {

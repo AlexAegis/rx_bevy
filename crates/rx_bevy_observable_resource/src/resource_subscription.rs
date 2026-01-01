@@ -37,7 +37,7 @@ where
 		destination: Destination,
 		reader: Reader,
 		options: ResourceObservableOptions,
-		mut scheduler: SchedulerHandle<RxBevyScheduler>,
+		scheduler: SchedulerHandle<RxBevyScheduler>,
 	) -> Self {
 		let shared_destination = SharedSubscriber::new(destination);
 		let subscription_scheduler = scheduler.clone();

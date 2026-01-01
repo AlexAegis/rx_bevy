@@ -54,14 +54,6 @@ where
 		}
 	}
 
-	fn try_apply_deferred(&mut self) {
-		if self.state.lock_ignore_poison().is_dirty()
-			&& let Ok(mut subscribers) = self.subscribers.subscribers.try_lock()
-		{
-			SharedSubscribers::apply_notification_queue(self.state.clone(), &mut subscribers);
-		}
-	}
-
 	fn try_check_is_closed(&self) -> bool {
 		if let Some(subscriber) = self.subscriber.as_ref() {
 			subscriber
@@ -88,16 +80,13 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if !self.try_check_is_closed() {
-			if let Some(id) = self.id
-				&& let Err(_unsubscribe_error) = self.subscribers.try_unsubscribe_by_id(id)
-			{
-				self.state
-					.lock_ignore_poison()
-					.defer_notification(MulticastNotification::UnsubscribeById(id));
-			}
-
-			self.try_apply_deferred();
+		if !self.try_check_is_closed()
+			&& let Some(id) = self.id
+			&& let Err(_unsubscribe_error) = self.subscribers.try_unsubscribe_by_id(id)
+		{
+			self.state
+				.lock_ignore_poison()
+				.defer_notification(MulticastNotification::UnsubscribeById(id));
 		}
 	}
 }

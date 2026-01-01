@@ -195,6 +195,7 @@ bitflags = { version = "2.10.0", default-features = false }
 either = { version = "1.15.0", default-features = false }
 ringbuffer = { version = "0.16.0", default-features = false }
 slab = { version = "0.4.9", default-features = false }
+indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
 smallvec = { version = "1.15.1", default-features = false }
 stealcell = { version = "0.2.0", default-features = false }
 # Error Handling

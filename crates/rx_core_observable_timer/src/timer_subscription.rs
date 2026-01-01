@@ -29,7 +29,7 @@ where
 		duration: Duration,
 		scheduler: SchedulerHandle<S>,
 	) -> Self {
-		let mut scheduler_clone = scheduler.clone();
+		let scheduler_clone = scheduler.clone();
 		let destination = SharedSubscriber::new(destination);
 		let cancellation_id = {
 			let mut scheduler = scheduler_clone.lock();

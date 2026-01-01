@@ -40,7 +40,7 @@ where
 	pub fn new(
 		destination: Destination,
 		duration: Duration,
-		mut scheduler: SchedulerHandle<S>,
+		scheduler: SchedulerHandle<S>,
 	) -> Self {
 		let cancellation_id = scheduler.lock().generate_cancellation_id();
 
@@ -66,7 +66,7 @@ where
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
 			let destination = self.destination.clone();
-			let mut scheduler_clone = self.scheduler.clone();
+			let scheduler_clone = self.scheduler.clone();
 			let cancellation_id_copy = self.cancellation_id;
 
 			let mut scheduler = self.scheduler.lock();
@@ -104,6 +104,10 @@ where
 				self.duration,
 				self.cancellation_id,
 			);
+		}
+
+		if self.destination.is_closed() {
+			self.unsubscribe();
 		}
 	}
 

@@ -316,13 +316,11 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	/// TODO: Needs tests to see how self feeding subscriptions react with this
 	pub(crate) fn defer_notification(&mut self, notification: MulticastNotification<In, InError>) {
 		// The first unsubscribe notification must be let through
 		let is_first_unsubscribe = matches!(notification, MulticastNotification::Unsubscribe)
 			&& !self.observed_unsubscribe;
 
-		// TODO: SUBJECTG DONT UNSUB UNLESS MANUALLK
 		if *self.closed_flag && !is_first_unsubscribe {
 			if let MulticastNotification::Add(_id, mut subscriber) = notification
 				&& !subscriber.is_closed()

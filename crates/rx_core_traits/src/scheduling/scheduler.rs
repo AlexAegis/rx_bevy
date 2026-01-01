@@ -68,6 +68,13 @@ where
 }
 
 pub trait SchedulerScheduleWorkExtension: Scheduler {
+	/// Schedules a task that will execute once **at least** a `delay` worth of
+	/// time had passed and the executor ticks.
+	///
+	/// This means that a nested series of delayed work that issues more
+	/// delayed work will **always** drift, and the total execution
+	/// time **will be** larger than the sum of the delays. If this is a problem,
+	/// use a repeated work that has its own internal timer.
 	fn schedule_delayed_work<Work>(
 		&mut self,
 		work: Work,
@@ -79,22 +86,41 @@ pub trait SchedulerScheduleWorkExtension: Scheduler {
 		self.schedule_work(Self::DelayedWorkFactory::new(work, delay), cancellation_id)
 	}
 
+	/// Schedules a task that will execute every time the `interval` worth of
+	/// time had passed, and the executor ticks.
+	///
+	/// If a single tick rolls the interval over multiple times, the work will
+	/// also be ticked multiple times, up to `max_work_per_tick`, but at least
+	/// once.
 	fn schedule_repeated_work<Work>(
 		&mut self,
 		work: Work,
 		interval: Duration,
 		start_immediately: bool,
-		max_work_per_tick: NonZero<usize>,
+		max_work_per_tick: usize,
 		cancellation_id: WorkCancellationId,
 	) where
 		Work: ScheduledRepeatedWork<Self::Tick, Self::WorkContextProvider>,
 	{
 		self.schedule_work(
-			Self::RepeatedWorkFactory::new(work, interval, start_immediately, max_work_per_tick),
+			Self::RepeatedWorkFactory::new(
+				work,
+				interval,
+				start_immediately,
+				NonZero::new(max_work_per_tick).unwrap_or(NonZero::<usize>::MIN),
+			),
 			cancellation_id,
 		)
 	}
 
+	/// Schedules a task that will execute every time the executor ticks!
+	/// This can mean different things dependning on the executor and the
+	/// environment it's used in.
+	///
+	/// For example, in a game engine, the executor is expected to be ticked
+	/// once every frame, therefore a continuous work is expected to be
+	/// executed once per frame. But in another environment this could mean
+	/// once every 1ms. It should be ticked very often.
 	fn schedule_continuous_work<Work>(&mut self, work: Work, cancellation_id: WorkCancellationId)
 	where
 		Work: ScheduledRepeatedWork<Self::Tick, Self::WorkContextProvider>,
@@ -102,6 +128,7 @@ pub trait SchedulerScheduleWorkExtension: Scheduler {
 		self.schedule_work(Self::ContinuousWorkFactory::new(work), cancellation_id)
 	}
 
+	/// Schedules a task that will execute as soon as the executor ticks!
 	fn schedule_immediate_work<Work>(&mut self, work: Work, cancellation_id: WorkCancellationId)
 	where
 		Work: ScheduledOnceWork<Self::Tick, Self::WorkContextProvider>,

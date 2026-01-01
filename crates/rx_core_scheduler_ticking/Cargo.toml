@@ -25,7 +25,7 @@ rx_core_macro_executor_derive = { workspace = true }
 rx_core_macro_scheduler_derive = { workspace = true }
 rx_core_macro_work_derive = { workspace = true }
 rx_core_traits = { workspace = true }
-slab = { workspace = true }
+indexmap = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }

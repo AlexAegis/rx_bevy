@@ -17,12 +17,6 @@ impl Deref for TickIndex {
 	}
 }
 
-impl From<usize> for TickIndex {
-	fn from(value: usize) -> Self {
-		Self(value)
-	}
-}
-
 #[derive(Default, Debug)]
 pub struct TickIndexGenerator {
 	current_tick_index: usize,
@@ -30,8 +24,31 @@ pub struct TickIndexGenerator {
 
 impl TickIndexGenerator {
 	pub fn get_next(&mut self) -> TickIndex {
-		let tick_id: TickIndex = self.current_tick_index.into();
+		let tick_id: TickIndex = TickIndex(self.current_tick_index);
 		self.current_tick_index += 1;
 		tick_id
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use std::ops::Deref;
+
+	use crate::TickIndexGenerator;
+
+	#[test]
+	fn should_generate_incremental_numbers() {
+		let mut id_generator = TickIndexGenerator::default();
+		assert_eq!(id_generator.get_next().deref(), &0);
+		assert_eq!(id_generator.get_next().deref(), &1);
+		assert_eq!(id_generator.get_next().deref(), &2);
+		assert_eq!(id_generator.get_next().deref(), &3);
+	}
+
+	#[test]
+	fn should_display_as_a_number() {
+		let mut id_generator = TickIndexGenerator::default();
+		let next = id_generator.get_next();
+		assert_eq!(format!("{}", next), "0");
 	}
 }
