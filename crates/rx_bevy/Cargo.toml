@@ -127,6 +127,7 @@ observer_print = ["rx_core/observer_print"]
 # Core Operators
 all_core_operators = [
     "operator_adsr",
+    "operator_buffer_count",
     "operator_composite",
     "operator_concat_all",
     "operator_concat_map",
@@ -169,6 +170,7 @@ all_core_operators = [
     "operator_tap_next",
 ]
 operator_adsr = ["rx_core/operator_adsr"]
+operator_buffer_count = ["rx_core/operator_buffer_count"]
 operator_composite = ["rx_core/operator_composite"]
 operator_concat_all = ["rx_core/operator_concat_all"]
 operator_concat_map = ["rx_core/operator_concat_map"]

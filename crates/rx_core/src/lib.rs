@@ -74,6 +74,8 @@ pub mod observable_fn {
 pub mod operator {
 	#[cfg(feature = "operator_adsr")]
 	pub use rx_core_operator_adsr::operator::*;
+	#[cfg(feature = "operator_buffer_count")]
+	pub use rx_core_operator_buffer_count::operator::*;
 	#[cfg(feature = "operator_composite")]
 	pub use rx_core_operator_composite::operator::*;
 	#[cfg(feature = "operator_concat_all")]
@@ -160,6 +162,8 @@ pub mod operator {
 pub mod extension_compose {
 	#[cfg(feature = "operator_adsr")]
 	pub use rx_core_operator_adsr::extension_compose::*;
+	#[cfg(feature = "operator_buffer_count")]
+	pub use rx_core_operator_buffer_count::extension_compose::*;
 	#[cfg(feature = "operator_composite")]
 	pub use rx_core_operator_composite::extension_compose::*;
 	#[cfg(feature = "operator_concat_all")]
@@ -240,6 +244,8 @@ pub mod extension_compose {
 pub mod extension_pipe {
 	#[cfg(feature = "operator_adsr")]
 	pub use rx_core_operator_adsr::extension_pipe::*;
+	#[cfg(feature = "operator_buffer_count")]
+	pub use rx_core_operator_buffer_count::extension_pipe::*;
 	#[cfg(feature = "operator_concat_all")]
 	pub use rx_core_operator_concat_all::extension_pipe::*;
 	#[cfg(feature = "operator_concat_map")]

@@ -31,6 +31,7 @@
   - [resource](observable_bevy/resource.md)
 - [Operators](operators.md)
   - [adsr](operator/adsr.md)
+  - [buffer_count](operator/buffer_count.md)
   - [composite](operator/composite.md)
   - [concat_all](operator/concat_all.md)
   - [concat_map](operator/concat_map.md)

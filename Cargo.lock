@@ -4391,6 +4391,7 @@ dependencies = [
  "rx_core_observer_noop",
  "rx_core_observer_print",
  "rx_core_operator_adsr",
+ "rx_core_operator_buffer_count",
  "rx_core_operator_composite",
  "rx_core_operator_concat_all",
  "rx_core_operator_concat_map",
@@ -4791,6 +4792,19 @@ dependencies = [
  "bevy_math",
  "bevy_time",
  "bitflags 2.10.0",
+ "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_buffer_count"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
  "rx_core",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
