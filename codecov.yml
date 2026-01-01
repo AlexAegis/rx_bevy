@@ -233,6 +233,9 @@ component_management:
     - component_id: rx_core_operator_on_subscribe
       paths:
         - crates/rx_core_operator_on_subscribe/**
+    - component_id: rx_core_operator_pairwise
+      paths:
+        - crates/rx_core_operator_pairwise/**
     - component_id: rx_core_operator_reduce
       paths:
         - crates/rx_core_operator_reduce/**

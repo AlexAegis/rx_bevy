@@ -134,6 +134,8 @@ pub mod operator {
 	pub use rx_core_operator_on_next::operator::*;
 	#[cfg(feature = "operator_on_subscribe")]
 	pub use rx_core_operator_on_subscribe::operator::*;
+	#[cfg(feature = "operator_pairwise")]
+	pub use rx_core_operator_pairwise::operator::*;
 	#[cfg(feature = "operator_reduce")]
 	pub use rx_core_operator_reduce::operator::*;
 	#[cfg(feature = "operator_retry")]
@@ -220,6 +222,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_on_next::extension_compose::*;
 	#[cfg(feature = "operator_on_subscribe")]
 	pub use rx_core_operator_on_subscribe::extension_compose::*;
+	#[cfg(feature = "operator_pairwise")]
+	pub use rx_core_operator_pairwise::extension_compose::*;
 	#[cfg(feature = "operator_reduce")]
 	pub use rx_core_operator_reduce::extension_compose::*;
 	#[cfg(feature = "operator_scan")]
@@ -300,6 +304,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_on_next::extension_pipe::*;
 	#[cfg(feature = "operator_on_subscribe")]
 	pub use rx_core_operator_on_subscribe::extension_pipe::*;
+	#[cfg(feature = "operator_pairwise")]
+	pub use rx_core_operator_pairwise::extension_pipe::*;
 	#[cfg(feature = "operator_reduce")]
 	pub use rx_core_operator_reduce::extension_pipe::*;
 	#[cfg(feature = "operator_retry")]

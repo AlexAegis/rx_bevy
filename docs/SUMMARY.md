@@ -61,6 +61,7 @@
   - [merge_map](operator/merge_map.md)
   - [on_next](operator/on_next.md)
   - [on_subscribe](operator/on_subscribe.md)
+  - [pairwise](operator/pairwise.md)
   - [reduce](operator/reduce.md)
   - [retry](operator/retry.md)
   - [scan](operator/scan.md)

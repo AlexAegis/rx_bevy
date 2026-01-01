@@ -157,6 +157,7 @@ all_core_operators = [
     "operator_merge_map",
     "operator_on_next",
     "operator_on_subscribe",
+    "operator_pairwise",
     "operator_reduce",
     "operator_retry",
     "operator_scan",
@@ -200,6 +201,7 @@ operator_merge_all = ["rx_core/operator_merge_all"]
 operator_merge_map = ["rx_core/operator_merge_map"]
 operator_on_next = ["rx_core/operator_on_next"]
 operator_on_subscribe = ["rx_core/operator_on_subscribe"]
+operator_pairwise = ["rx_core/operator_pairwise"]
 operator_reduce = ["rx_core/operator_reduce"]
 operator_retry = ["rx_core/operator_retry"]
 operator_scan = ["rx_core/operator_scan"]

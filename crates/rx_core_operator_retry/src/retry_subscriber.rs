@@ -54,6 +54,7 @@ where
 		}
 	}
 
+	#[inline]
 	fn reset(&mut self) {
 		if let Some(mut last_subscription) = self.last_subscription.lock_ignore_poison().take()
 			&& !last_subscription.is_closed()
@@ -65,6 +66,7 @@ where
 		self.caught_error.lock_ignore_poison().take();
 	}
 
+	#[inline]
 	fn finish(&mut self) {
 		match self.finished_with.take() {
 			Some(ObserverTerminalNotification::Error(error)) => self.destination.error(error),

@@ -177,6 +177,7 @@ all_operators = [
     "operator_merge_map",
     "operator_on_next",
     "operator_on_subscribe",
+    "operator_pairwise",
     "operator_reduce",
     "operator_retry",
     "operator_scan",
@@ -220,6 +221,7 @@ operator_merge_all = ["dep:rx_core_operator_merge_all"]
 operator_merge_map = ["dep:rx_core_operator_merge_map"]
 operator_on_next = ["dep:rx_core_operator_on_next"]
 operator_on_subscribe = ["dep:rx_core_operator_on_subscribe"]
+operator_pairwise = ["dep:rx_core_operator_pairwise"]
 operator_reduce = ["dep:rx_core_operator_reduce"]
 operator_retry = ["dep:rx_core_operator_retry"]
 operator_scan = ["dep:rx_core_operator_scan"]
@@ -261,6 +263,7 @@ pipe = [
     "rx_core_operator_merge_map?/pipe",
     "rx_core_operator_on_next?/pipe",
     "rx_core_operator_on_subscribe?/pipe",
+    "rx_core_operator_pairwise?/pipe",
     "rx_core_operator_reduce?/pipe",
     "rx_core_operator_retry?/pipe",
     "rx_core_operator_scan?/pipe",
@@ -304,6 +307,7 @@ compose = [
     "rx_core_operator_merge_map?/compose",
     "rx_core_operator_on_next?/compose",
     "rx_core_operator_on_subscribe?/compose",
+    "rx_core_operator_pairwise?/compose",
     "rx_core_operator_reduce?/compose",
     "rx_core_operator_scan?/compose",
     "rx_core_operator_skip?/compose",
@@ -386,6 +390,7 @@ rx_core_operator_merge_all = { workspace = true, optional = true }
 rx_core_operator_merge_map = { workspace = true, optional = true }
 rx_core_operator_on_next = { workspace = true, optional = true }
 rx_core_operator_on_subscribe = { workspace = true, optional = true }
+rx_core_operator_pairwise = { workspace = true, optional = true }
 rx_core_operator_reduce = { workspace = true, optional = true }
 rx_core_operator_retry = { workspace = true, optional = true }
 rx_core_operator_scan = { workspace = true, optional = true }
