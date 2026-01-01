@@ -288,6 +288,7 @@ where
 		self.count_observed_unsubscribes() + self.count_observed_unsubscribes_after_close()
 	}
 
+	/// Asserts that no notifications were observed at all.
 	pub fn assert_is_empty(&self, assert_message_prefix: &'static str)
 	where
 		In: Debug,
@@ -303,6 +304,39 @@ where
 		)
 	}
 
+	/// Asserts both that a notification at `last_notification_index` exists,
+	/// and that one at `last_notification_index + 1` does not.
+	///
+	/// Remember, the first notification is of `index` `0`. If you want to
+	/// assert that no notifications were observed, use
+	/// [`assert_is_empty`][NotificationCollectorState::assert_is_empty].
+	pub fn assert_nth_notification_is_last(
+		&self,
+		assert_message_prefix: &'static str,
+		last_notification_index: usize,
+	) where
+		In: Debug,
+		InError: Debug,
+	{
+		let last_notification = self.try_nth_notification(last_notification_index);
+
+		assert!(
+			last_notification.is_some(),
+			"{assert_message_prefix} - A notification at index {last_notification_index} should exist!"
+		);
+
+		let empty_index = last_notification_index + 1;
+		let extra_notification = self.try_nth_notification(empty_index);
+
+		assert!(
+			extra_notification.is_none(),
+			"{assert_message_prefix} - Notification at index {empty_index} should not exist: {extra_notification:?}"
+		);
+	}
+
+	/// Asserts all notifications from the given offset are matching the
+	/// array of expected notifications, and optionally that there are no more
+	/// notifications after them.
 	pub fn assert_notifications<const N: usize>(
 		&self,
 		assert_message_prefix: &'static str,

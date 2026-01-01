@@ -4370,6 +4370,7 @@ dependencies = [
 name = "rx_core"
 version = "0.1.0"
 dependencies = [
+ "rx_core_observable_closed",
  "rx_core_observable_combine_changes",
  "rx_core_observable_combine_latest",
  "rx_core_observable_concat",
@@ -4550,6 +4551,17 @@ version = "0.1.0"
 dependencies = [
  "rx_core",
  "rx_core_macro_subscriber_derive",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_observable_closed"
+version = "0.1.0"
+dependencies = [
+ "rx_core",
+ "rx_core_macro_observable_derive",
+ "rx_core_subscription_inert",
  "rx_core_testing",
  "rx_core_traits",
 ]

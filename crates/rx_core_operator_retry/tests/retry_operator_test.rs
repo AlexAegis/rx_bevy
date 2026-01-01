@@ -446,3 +446,43 @@ fn should_be_able_to_later_unsubscribe_if_an_immediate_error_was_retried() {
 
 	teardown_tracker.assert_was_torn_down();
 }
+
+#[test]
+fn should_be_able_to_immediately_unsubscribe_if_an_immediate_error_was_retried() {
+	let destination = MockObserver::<Never, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let was_retried = Arc::new(AtomicBool::new(false));
+	let was_retried_clone = was_retried.clone();
+
+	let error = "error";
+	let mut i = 0;
+	let mut retried = deferred_observable(move || {
+		let observable = if i % 2 == 0 {
+			was_retried_clone.store(true, Ordering::Relaxed);
+			throw(error).erase()
+		} else {
+			closed()
+				.map_error(Never::map_into::<&'static str>())
+				.erase()
+		};
+		i += 1;
+		observable
+	})
+	.retry(2);
+
+	let mut subscription = retried.subscribe(destination);
+	let teardown_tracker = subscription.add_tracked_teardown("retry - deferred");
+
+	notification_collector.lock().assert_notifications(
+		"retry - deferred",
+		0,
+		[SubscriberNotification::Unsubscribe],
+		true,
+	);
+
+	assert!(was_retried.load(Ordering::Relaxed));
+	assert!(subscription.is_closed());
+
+	teardown_tracker.assert_was_torn_down();
+}

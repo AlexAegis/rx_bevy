@@ -6,6 +6,7 @@
 - [Design](design.md)
 - [Usage Within Bevy](rx_in_bevy.md)
 - [Observables](observables.md)
+  - [closed](observable/closed.md)
   - [combine_changes](observable/combine_changes.md)
   - [combine_latest](observable/combine_latest.md)
   - [concat](observable/concat.md)

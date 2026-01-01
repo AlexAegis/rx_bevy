@@ -3,6 +3,8 @@
 pub use rx_core_traits::*;
 
 pub mod observable {
+	#[cfg(feature = "observable_closed")]
+	pub use rx_core_observable_closed::observable::*;
 	#[cfg(feature = "observable_combine_changes")]
 	pub use rx_core_observable_combine_changes::observable::*;
 	#[cfg(feature = "observable_combine_latest")]
@@ -39,6 +41,8 @@ pub mod observable {
 
 #[cfg(feature = "observable_fn")]
 pub mod observable_fn {
+	#[cfg(feature = "observable_closed")]
+	pub use rx_core_observable_closed::observable_fn::*;
 	#[cfg(feature = "observable_combine_changes")]
 	pub use rx_core_observable_combine_changes::observable_fn::*;
 	#[cfg(feature = "observable_combine_latest")]
