@@ -22,10 +22,13 @@ where
 	ConnectorProvider: 'static + Provider,
 	ConnectorProvider::Provided: SubjectLike,
 {
-	pub fn with_connector_creator(self, connector_provider: ConnectorProvider) -> Self {
+	pub fn new(connector_provider: ConnectorProvider) -> Self {
 		Self {
 			connector_provider,
-			..self
+			disconnect_when_ref_count_zero: false,
+			reset_connector_on_complete: false,
+			reset_connector_on_disconnect: false,
+			reset_connector_on_error: false,
 		}
 	}
 
@@ -61,6 +64,7 @@ where
 #[cfg(test)]
 mod test {
 	use rx_core_subject_publish::subject::PublishSubject;
+	use rx_core_traits::Provider;
 
 	use crate::observable::ConnectableOptions;
 
@@ -76,5 +80,24 @@ mod test {
 		assert!(result.reset_connector_on_complete);
 		assert!(result.reset_connector_on_disconnect);
 		assert!(result.reset_connector_on_error);
+	}
+
+	#[test]
+	fn connectable_options_new_with_connector() {
+		let result = ConnectableOptions::new(PublishSubject::<usize>::default);
+		assert!(!result.disconnect_when_ref_count_zero);
+		assert!(!result.reset_connector_on_complete);
+		assert!(!result.reset_connector_on_disconnect);
+		assert!(!result.reset_connector_on_error);
+	}
+
+	#[test]
+	fn connectable_options_default() {
+		let result = ConnectableOptions::<PublishSubject<usize>>::default();
+		let _subject: PublishSubject<usize> = result.connector_provider.provide();
+		assert!(!result.disconnect_when_ref_count_zero);
+		assert!(!result.reset_connector_on_complete);
+		assert!(!result.reset_connector_on_disconnect);
+		assert!(!result.reset_connector_on_error);
 	}
 }

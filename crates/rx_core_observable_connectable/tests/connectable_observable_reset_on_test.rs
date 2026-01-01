@@ -170,13 +170,13 @@ mod reset_on_complete {
 			let notification_collector = destination.get_notification_collector();
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
-			let connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			let connector_creator_call_count_clone = connector_creator_call_count.clone();
+			let connector_provider_call_count = Arc::new(AtomicUsize::new(0));
+			let connector_provider_call_count_clone = connector_provider_call_count.clone();
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
 					connector_provider: move || {
-						connector_creator_call_count_clone.fetch_add(1, Ordering::Relaxed);
+						connector_provider_call_count_clone.fetch_add(1, Ordering::Relaxed);
 						ReplaySubject::<1, _, _>::default()
 					},
 					disconnect_when_ref_count_zero: false,
@@ -207,7 +207,7 @@ mod reset_on_complete {
 				true,
 			);
 
-			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+			assert_eq!(connector_provider_call_count.load(Ordering::Relaxed), 1);
 
 			// Asserting reset by checking if the replay is still primed or not
 			let destination_2 = MockObserver::default();
@@ -217,7 +217,7 @@ mod reset_on_complete {
 				.lock()
 				.assert_is_empty("connectable - reset_on_complete 2");
 
-			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 2);
+			assert_eq!(connector_provider_call_count.load(Ordering::Relaxed), 2);
 		}
 	}
 
@@ -230,13 +230,13 @@ mod reset_on_complete {
 			let notification_collector = destination.get_notification_collector();
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
-			let connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			let connector_creator_call_count_clone = connector_creator_call_count.clone();
+			let connector_provider_call_count = Arc::new(AtomicUsize::new(0));
+			let connector_provider_call_count_clone = connector_provider_call_count.clone();
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
 					connector_provider: move || {
-						connector_creator_call_count_clone.fetch_add(1, Ordering::Relaxed);
+						connector_provider_call_count_clone.fetch_add(1, Ordering::Relaxed);
 						ReplaySubject::<1, _, _>::default()
 					},
 					disconnect_when_ref_count_zero: false,
@@ -267,7 +267,7 @@ mod reset_on_complete {
 				true,
 			);
 
-			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+			assert_eq!(connector_provider_call_count.load(Ordering::Relaxed), 1);
 
 			// Asserting reset by checking if the replay is still primed or not
 			let destination_2 = MockObserver::default();
@@ -285,7 +285,7 @@ mod reset_on_complete {
 				true,
 			);
 
-			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+			assert_eq!(connector_provider_call_count.load(Ordering::Relaxed), 1);
 		}
 	}
 }
@@ -304,14 +304,14 @@ mod reset_on_error {
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
 
-			let connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			let connector_creator_call_count_clone = connector_creator_call_count.clone();
+			let connector_provider_call_count = Arc::new(AtomicUsize::new(0));
+			let connector_provider_call_count_clone = connector_provider_call_count.clone();
 
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
 					connector_provider: move || {
-						connector_creator_call_count_clone.fetch_add(1, Ordering::Relaxed);
+						connector_provider_call_count_clone.fetch_add(1, Ordering::Relaxed);
 						ReplaySubject::<1, _, _>::default()
 					},
 					disconnect_when_ref_count_zero: false,
@@ -343,7 +343,7 @@ mod reset_on_error {
 				true,
 			);
 
-			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+			assert_eq!(connector_provider_call_count.load(Ordering::Relaxed), 1);
 
 			// Asserting reset by checking if the replay is still primed or not
 			let destination_2 = MockObserver::default();
@@ -353,7 +353,7 @@ mod reset_on_error {
 				.lock()
 				.assert_is_empty("connectable - reset_on_error 2");
 
-			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 2);
+			assert_eq!(connector_provider_call_count.load(Ordering::Relaxed), 2);
 		}
 	}
 
@@ -367,14 +367,14 @@ mod reset_on_error {
 
 			let mut source = PublishSubject::<usize, &'static str>::default();
 
-			let connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-			let connector_creator_call_count_clone = connector_creator_call_count.clone();
+			let connector_provider_call_count = Arc::new(AtomicUsize::new(0));
+			let connector_provider_call_count_clone = connector_provider_call_count.clone();
 
 			let mut connectable_observable = ConnectableObservable::new(
 				source.clone(),
 				ConnectableOptions {
 					connector_provider: move || {
-						connector_creator_call_count_clone.fetch_add(1, Ordering::Relaxed);
+						connector_provider_call_count_clone.fetch_add(1, Ordering::Relaxed);
 						ReplaySubject::<1, _, _>::default()
 					},
 					disconnect_when_ref_count_zero: false,
@@ -406,7 +406,7 @@ mod reset_on_error {
 				true,
 			);
 
-			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+			assert_eq!(connector_provider_call_count.load(Ordering::Relaxed), 1);
 
 			// Asserting reset by checking if the replay is still primed or not
 			let destination_2 = MockObserver::default();
@@ -423,7 +423,7 @@ mod reset_on_error {
 				true,
 			);
 
-			assert_eq!(connector_creator_call_count.load(Ordering::Relaxed), 1);
+			assert_eq!(connector_provider_call_count.load(Ordering::Relaxed), 1);
 		}
 	}
 }
@@ -477,8 +477,8 @@ mod disconnect_on_ref_count_zero {
 					let notification_collector = destination.get_notification_collector();
 
 					let mut source = PublishSubject::<usize, &'static str>::default();
-					// let mut connector_creator_call_count = Arc::new(AtomicUsize::new(0));
-					// connector_creator_call_count.fetch_add(1, Ordering::Relaxed);
+					// let mut connector_provider_call_count = Arc::new(AtomicUsize::new(0));
+					// connector_provider_call_count.fetch_add(1, Ordering::Relaxed);
 					let mut connectable_observable = ConnectableObservable::new(
 						source.clone(),
 						ConnectableOptions {
