@@ -1,5 +1,7 @@
 use core::convert::Infallible;
 
+use crate::Signal;
+
 /// Never cannot be constructed as it is an enum with no variants.
 /// So it's perfect to denote a signal that will never be emitted, like
 /// Observables that never error, or emit. Or Operators who catch errors.
@@ -10,7 +12,7 @@ use core::convert::Infallible;
 pub type Never = Infallible;
 
 pub trait NeverMapIntoExtension {
-	fn map_into<E>() -> impl Fn(Never) -> E + Clone + Send + Sync;
+	fn map_into<T>() -> impl Fn(Never) -> T + Signal + Clone;
 }
 
 impl NeverMapIntoExtension for Never {
@@ -19,7 +21,17 @@ impl NeverMapIntoExtension for Never {
 	///
 	/// The implementation is just: `|_| unreachable!()`.
 	#[inline]
-	fn map_into<E>() -> impl Fn(Never) -> E + Clone + Send + Sync {
+	fn map_into<T>() -> impl Fn(Never) -> T + Signal + Clone {
 		|_| unreachable!("Never cannot be created!")
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use super::*;
+
+	#[test]
+	fn should_return_a_function_that_cant_be_called_but_its_return_type_can_be_anything() {
+		let _impossible = Never::map_into::<usize>();
 	}
 }

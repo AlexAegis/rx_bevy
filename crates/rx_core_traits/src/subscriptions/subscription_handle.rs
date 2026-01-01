@@ -5,6 +5,7 @@ use rx_core_macro_subscription_derive::RxSubscription;
 use crate::{
 	LockWithPoisonBehavior, SubscriptionClosedFlag, SubscriptionData, SubscriptionLike,
 	SubscriptionLikePushNotificationExtention, SubscriptionNotification,
+	TeardownCollectionExtension,
 };
 
 pub(crate) const SUBSCRIPTION_MAX_RECURSION_DEPTH: usize = 10;
@@ -90,13 +91,21 @@ impl Default for SubscriptionDeferredState {
 #[rx_delegate_teardown_collection]
 #[rx_skip_unsubscribe_on_drop_impl] // It's shared
 pub struct SubscriptionHandle {
-	deferred_state: Arc<Mutex<SubscriptionDeferredState>>,
-
 	#[destination]
 	subscription: Arc<Mutex<SubscriptionData>>,
+	deferred_state: Arc<Mutex<SubscriptionDeferredState>>,
 }
 
 impl SubscriptionHandle {
+	pub fn new<S>(subscription: S) -> Self
+	where
+		S: 'static + SubscriptionLike + Send + Sync,
+	{
+		let mut default = Self::default();
+		default.add(subscription);
+		default
+	}
+
 	fn try_clean(&mut self) {
 		if self.deferred_state.lock_ignore_poison().is_dirty()
 			&& let Ok(mut subscription) = self.subscription.try_lock()

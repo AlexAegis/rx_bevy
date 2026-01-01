@@ -4,7 +4,8 @@ use bevy_ecs::{
 	event::Event,
 };
 use rx_core_traits::{
-	Never, ObserverNotification, Signal, SubscriberNotification, SubscriberNotificationTryFromError,
+	Never, ObserverNotification, Signal, SubscriberNotification,
+	SubscriberToObserverNotificationConversionError,
 };
 
 /// Since events are passed around as references and signals must be owned, we
@@ -73,7 +74,7 @@ where
 	In: Signal,
 	InError: Signal,
 {
-	type Error = SubscriberNotificationTryFromError;
+	type Error = SubscriberToObserverNotificationConversionError;
 
 	fn try_from(
 		value: SubscriberNotificationEvent<In, InError>,
