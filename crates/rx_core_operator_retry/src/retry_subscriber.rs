@@ -54,13 +54,26 @@ where
 		}
 	}
 
-	#[inline]
-	fn unsubscribe_inner_subscription(&mut self) {
+	fn reset(&mut self) {
 		if let Some(mut last_subscription) = self.last_subscription.lock_ignore_poison().take()
 			&& !last_subscription.is_closed()
 		{
 			last_subscription.unsubscribe();
 		};
+
+		self.finished_with = None;
+		self.caught_error.lock_ignore_poison().take();
+	}
+
+	fn finish(&mut self) {
+		match self.finished_with.take() {
+			Some(ObserverTerminalNotification::Error(error)) => self.destination.error(error),
+			Some(ObserverTerminalNotification::Complete) => self.destination.complete(),
+			None => {}
+		}
+
+		self.outer_subscription.unsubscribe();
+		self.destination.unsubscribe();
 	}
 }
 
@@ -83,11 +96,8 @@ where
 		};
 
 		while self.retries <= self.max_retries {
-			self.unsubscribe_inner_subscription(); // Just in case. There should never be two simultaneous subscriptions to the source.
-			self.caught_error.lock_ignore_poison().take();
-
 			let mut stolen_source = self.source.lock_ignore_poison().take().expect(SOURCE_STEAL);
-
+			self.reset();
 			self.retries += 1;
 
 			let next_subscription = stolen_source.subscribe(RetrySubscriber::new(
@@ -109,7 +119,6 @@ where
 			}
 
 			if self.caught_error.lock_ignore_poison().is_some() {
-				self.unsubscribe_inner_subscription();
 				continue;
 			} else if self.is_closed() {
 				break;
@@ -119,16 +128,17 @@ where
 			}
 		}
 
+		self.finished_with = Some(ObserverTerminalNotification::Error(error));
+
 		if self.retries > self.max_retries {
-			self.finished_with = Some(ObserverTerminalNotification::Error(error));
-			self.unsubscribe();
+			self.finish();
 		}
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		self.finished_with = Some(ObserverTerminalNotification::Complete);
-		self.unsubscribe();
+		self.finish();
 	}
 }
 
@@ -144,14 +154,8 @@ where
 
 	#[inline]
 	fn unsubscribe(&mut self) {
-		if let Some(finished_with) = self.finished_with.take() {
-			match finished_with {
-				ObserverTerminalNotification::Error(error) => self.destination.error(error),
-				ObserverTerminalNotification::Complete => self.destination.complete(),
-			}
-			self.unsubscribe_inner_subscription();
-			self.destination.unsubscribe();
-			self.outer_subscription.unsubscribe();
+		if self.caught_error.lock_ignore_poison().is_none() && self.finished_with.is_none() {
+			self.finish();
 		}
 	}
 }

@@ -1,7 +1,8 @@
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Never, Observable, Subscriber, Subscription, UpgradeableObserver};
 
-/// Never emits anything, never completes.
+/// Never emits anything, never completes and most importantly, it
+/// Never unsubscribes!
 #[derive(RxObservable, Clone, Debug, Default)]
 #[rx_out(Never)]
 #[rx_out_error(Never)]

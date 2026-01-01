@@ -209,6 +209,28 @@ fn should_close_when_completed() {
 }
 
 #[test]
+fn should_close_when_immediately_unsubscribed() {
+	let destination = MockObserver::<Never>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut retried = never().retry(1);
+
+	let mut subscription = retried.subscribe(destination);
+	let teardown_tracker = subscription.add_tracked_teardown("retry - never");
+	subscription.unsubscribe();
+
+	notification_collector.lock().assert_notifications(
+		"retry - never",
+		0,
+		[SubscriberNotification::Unsubscribe],
+		true,
+	);
+
+	assert!(subscription.is_closed());
+	teardown_tracker.assert_was_torn_down();
+}
+
+#[test]
 fn should_retry_on_later_replayable_errors() {
 	let destination = MockObserver::<usize, &'static str>::default();
 	let notification_collector = destination.get_notification_collector();
@@ -368,6 +390,52 @@ fn should_be_able_to_later_error_if_an_immediate_error_was_retried() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Error(error),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+
+	assert!(was_retried.load(Ordering::Relaxed));
+	assert!(subscription.is_closed());
+
+	teardown_tracker.assert_was_torn_down();
+}
+
+#[test]
+fn should_be_able_to_later_unsubscribe_if_an_immediate_error_was_retried() {
+	let destination = MockObserver::<usize, &'static str>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let was_retried = Arc::new(AtomicBool::new(false));
+	let was_retried_clone = was_retried.clone();
+
+	let mut second_source = PublishSubject::<usize, &'static str>::default();
+	let second_source_clone = second_source.clone();
+	let error = "error";
+	let mut i = 0;
+	let mut retried = deferred_observable(move || {
+		let observable = if i % 2 == 0 {
+			was_retried_clone.store(true, Ordering::Relaxed);
+			throw(error).map(Never::map_into::<usize>()).erase()
+		} else {
+			second_source_clone.clone().erase()
+		};
+		i += 1;
+		observable
+	})
+	.retry(2);
+
+	let mut subscription = retried.subscribe(destination);
+	let teardown_tracker = subscription.add_tracked_teardown("retry - deferred");
+
+	second_source.next(1);
+	second_source.unsubscribe();
+
+	notification_collector.lock().assert_notifications(
+		"retry - deferred",
+		0,
+		[
+			SubscriberNotification::Next(1),
 			SubscriberNotification::Unsubscribe,
 		],
 		true,
