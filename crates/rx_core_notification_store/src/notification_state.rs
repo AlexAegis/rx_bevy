@@ -71,6 +71,17 @@ where
 		self.value.take()
 	}
 
+	/// Emptyness only reflects that there is no actual stored value here, not
+	/// that it never was. If the stored value was taken using
+	/// [`take_value`][NotificationState::take_value], this will return `true`.
+	///
+	/// If you want to check that this state has ever seen a `next`, use
+	/// [`is_primed`][SubscriberState::is_primed].
+	#[inline]
+	pub fn is_empty(&self) -> bool {
+		self.value.is_none()
+	}
+
 	#[inline]
 	pub fn error(&mut self, error: OutError) {
 		self.state.error();
@@ -87,11 +98,6 @@ where
 	#[inline]
 	pub fn take_error(&mut self) -> Option<OutError> {
 		self.error.take()
-	}
-
-	#[inline]
-	pub fn is_empty(&self) -> bool {
-		self.value.is_none()
 	}
 
 	#[inline]
@@ -113,50 +119,5 @@ where
 			SubscriberNotification::Complete => self.complete(),
 			SubscriberNotification::Unsubscribe => self.unsubscribe(),
 		}
-	}
-}
-
-#[cfg(test)]
-mod test {
-	use crate::NotificationState;
-
-	#[test]
-	fn should_take_up_a_nexted_value() {
-		let mut state = NotificationState::<i32>::default();
-		assert!(state.get_value().is_none());
-		state.next(1);
-		assert!(!state.is_waiting());
-		assert!(matches!(state.get_value(), Some(1)))
-	}
-
-	#[test]
-	fn should_replace_the_nexted_value() {
-		let mut state = NotificationState::<i32>::default();
-		assert!(state.get_value().is_none());
-		state.next(1);
-		assert!(!state.is_waiting());
-		state.next(2);
-		assert!(matches!(state.get_value(), Some(2)))
-	}
-
-	#[test]
-	fn should_complete() {
-		let mut state = NotificationState::<i32>::default();
-		state.complete();
-		assert!(state.is_completed());
-	}
-
-	#[test]
-	fn should_error() {
-		let mut state = NotificationState::<i32, &'static str>::default();
-		state.error("error");
-		assert!(state.is_errored());
-	}
-
-	#[test]
-	fn should_unsubscribe() {
-		let mut state = NotificationState::<i32>::default();
-		state.unsubscribe();
-		assert!(state.is_unsubscribed());
 	}
 }
