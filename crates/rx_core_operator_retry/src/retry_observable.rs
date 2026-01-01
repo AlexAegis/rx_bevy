@@ -7,7 +7,7 @@ use derive_where::derive_where;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::prelude::*;
 
-use crate::internal::RetrySubscriber;
+use crate::internal::{RetrySubscriber, SOURCE_STEAL};
 
 #[derive_where(Clone)]
 #[derive(RxObservable)]
@@ -64,11 +64,7 @@ where
 
 		while immediate_retries <= self.max_retries {
 			caught_error.lock_ignore_poison().take();
-			let mut stolen_source = self.source.lock_ignore_poison().take().unwrap();
-
-			if let Some(mut last_subscription) = last_subscription.lock_ignore_poison().take() {
-				last_subscription.unsubscribe();
-			}
+			let mut stolen_source = self.source.lock_ignore_poison().take().expect(SOURCE_STEAL);
 
 			let next_subscription = stolen_source.subscribe(RetrySubscriber::new(
 				self.source.clone(),
@@ -81,12 +77,12 @@ where
 			));
 
 			if !next_subscription.is_closed() {
-				let mut handle = SubscriptionHandle::default();
-				handle.add(next_subscription);
-				last_subscription.lock_ignore_poison().replace(handle);
+				last_subscription
+					.lock_ignore_poison()
+					.replace(SubscriptionHandle::new(next_subscription));
 			}
-
 			self.source.lock_ignore_poison().replace(stolen_source);
+
 			immediate_retries += 1;
 
 			if caught_error.lock_ignore_poison().is_some() {
@@ -95,21 +91,17 @@ where
 				}
 				continue;
 			} else if shared_destination.is_closed() {
-				if let Some(mut last_subscription) = last_subscription.lock_ignore_poison().take() {
-					last_subscription.unsubscribe();
-				}
 				break;
 			} else {
 				outer_subscription.add(last_subscription);
-
 				break;
 			}
 		}
 
-		if immediate_retries > self.max_retries
-			&& let Some(error) = caught_error.lock_ignore_poison().take()
-		{
-			shared_destination.error(error);
+		if immediate_retries > self.max_retries {
+			if let Some(error) = caught_error.lock_ignore_poison().take() {
+				shared_destination.error(error);
+			}
 			shared_destination.unsubscribe();
 			outer_subscription.unsubscribe();
 		}

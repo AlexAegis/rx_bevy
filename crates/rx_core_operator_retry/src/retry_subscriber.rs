@@ -2,9 +2,11 @@ use std::sync::{Arc, Mutex};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, Subscriber, SubscriptionHandle,
-	SubscriptionLike, TeardownCollectionExtension,
+	LockWithPoisonBehavior, Observable, Observer, ObserverTerminalNotification, SharedSubscriber,
+	Subscriber, SubscriptionHandle, SubscriptionLike, TeardownCollectionExtension,
 };
+
+pub(crate) const SOURCE_STEAL: &str = "Source should be present!";
 
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
@@ -18,7 +20,7 @@ where
 	source: Arc<Mutex<Option<Source>>>,
 	retries: usize,
 	max_retries: usize,
-	finished: bool,
+	finished_with: Option<ObserverTerminalNotification<Source::OutError>>,
 	#[destination]
 	destination: SharedSubscriber<Destination>,
 	outer_subscription: SubscriptionHandle,
@@ -44,7 +46,7 @@ where
 			source,
 			destination,
 			outer_subscription,
-			finished: false,
+			finished_with: None,
 			max_retries,
 			retries,
 			caught_error,
@@ -74,18 +76,17 @@ where
 
 	fn error(&mut self, error: Self::InError) {
 		// If the source is "stolen", it's still owned by the observables
-		// subscribe method. it will check the caught error and retry there.
+		// subscribe method. It will check the caught error and retry there.
 		if self.source.lock_ignore_poison().is_none() {
 			self.caught_error.lock_ignore_poison().replace(error);
 			return;
 		};
 
 		while self.retries <= self.max_retries {
+			self.unsubscribe_inner_subscription(); // Just in case. There should never be two simultaneous subscriptions to the source.
 			self.caught_error.lock_ignore_poison().take();
 
-			self.unsubscribe_inner_subscription();
-
-			let mut stolen_source = self.source.lock_ignore_poison().take().unwrap();
+			let mut stolen_source = self.source.lock_ignore_poison().take().expect(SOURCE_STEAL);
 
 			self.retries += 1;
 
@@ -102,18 +103,15 @@ where
 			self.source.lock_ignore_poison().replace(stolen_source);
 
 			if !next_subscription.is_closed() {
-				let mut handle = SubscriptionHandle::default();
-				handle.add(next_subscription);
 				self.last_subscription
 					.lock_ignore_poison()
-					.replace(handle.clone());
+					.replace(SubscriptionHandle::new(next_subscription));
 			}
 
 			if self.caught_error.lock_ignore_poison().is_some() {
 				self.unsubscribe_inner_subscription();
 				continue;
 			} else if self.is_closed() {
-				self.unsubscribe_inner_subscription();
 				break;
 			} else {
 				self.outer_subscription.add(self.last_subscription.clone());
@@ -122,16 +120,14 @@ where
 		}
 
 		if self.retries > self.max_retries {
-			self.finished = true;
-			self.destination.error(error);
+			self.finished_with = Some(ObserverTerminalNotification::Error(error));
 			self.unsubscribe();
 		}
 	}
 
 	#[inline]
 	fn complete(&mut self) {
-		self.finished = true;
-		self.destination.complete();
+		self.finished_with = Some(ObserverTerminalNotification::Complete);
 		self.unsubscribe();
 	}
 }
@@ -148,7 +144,11 @@ where
 
 	#[inline]
 	fn unsubscribe(&mut self) {
-		if self.finished || self.retries > self.max_retries {
+		if let Some(finished_with) = self.finished_with.take() {
+			match finished_with {
+				ObserverTerminalNotification::Error(error) => self.destination.error(error),
+				ObserverTerminalNotification::Complete => self.destination.complete(),
+			}
 			self.unsubscribe_inner_subscription();
 			self.destination.unsubscribe();
 			self.outer_subscription.unsubscribe();
