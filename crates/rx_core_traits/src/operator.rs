@@ -1,37 +1,14 @@
-use crate::{Observable, ObservableOutput, ObserverInput, Subscriber};
+use crate::{Observable, ObservableOutput, ObserverInput};
 
-/// # [ComposableOperator]
+/// # [Operator]
 ///
-/// Composable Operators are a subset of regular Operators. Unlike - for
-/// example - the `retry` operator, that (as the name suggests) retries
-/// subscription to the source, many other operators do not interact with their
-/// source observable beyond just subscribing to them once.
+/// Operators transform [Observable]s, giving them new behavior.
 ///
-/// They simply subscribe to the source once, and all they do is:
+/// ## Composable Operators
 ///
-/// - Wrap the destination into a subscriber on subscribe
-/// - And/Or Interact with the destination on subscribe
-///   
-///   > The `start_with` and `finalize` operators don't create anything new on
-///   > subscribe, they only interact with the destination subscriber.
-///
-/// But they don't know anything about who the source observable is.
-pub trait ComposableOperator: ObserverInput + ObservableOutput {
-	type Subscriber<Destination>: 'static
-		+ Subscriber<In = Self::In, InError = Self::InError>
-		+ Send
-		+ Sync
-	where
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
-
-	fn operator_subscribe<Destination>(
-		&mut self,
-		destination: Destination,
-	) -> Self::Subscriber<Destination>
-	where
-		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
-}
-
+/// Operators who just want to wrap the destination in a subscriber can also
+/// implement [ComposableOperator][crate::ComposableOperator] instead.
+/// Which allows the operator to be composable in addition.
 pub trait Operator<'o>: ObserverInput + ObservableOutput {
 	type OutObservable<InObservable>: 'o + Observable<Out = Self::Out, OutError = Self::OutError>
 	where

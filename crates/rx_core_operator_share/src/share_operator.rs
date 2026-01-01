@@ -41,6 +41,7 @@ where
 	where
 		InObservable: 'o + Observable<Out = Self::In, OutError = Self::InError> + Send + Sync;
 
+	#[inline]
 	fn operate<InObservable>(self, source: InObservable) -> Self::OutObservable<InObservable>
 	where
 		InObservable: 'o + Observable<Out = Self::In, OutError = Self::InError> + Send + Sync,
