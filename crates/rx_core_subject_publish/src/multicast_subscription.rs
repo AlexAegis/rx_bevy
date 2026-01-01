@@ -54,7 +54,7 @@ where
 		}
 	}
 
-	fn try_clean(&mut self) {
+	fn try_apply_deferred(&mut self) {
 		if self.state.lock_ignore_poison().is_dirty()
 			&& let Ok(mut subscribers) = self.subscribers.subscribers.try_lock()
 		{
@@ -89,8 +89,6 @@ where
 
 	fn unsubscribe(&mut self) {
 		if !self.try_check_is_closed() {
-			self.try_clean();
-
 			if let Some(id) = self.id
 				&& let Err(_unsubscribe_error) = self.subscribers.try_unsubscribe_by_id(id)
 			{
@@ -99,7 +97,7 @@ where
 					.defer_notification(MulticastNotification::UnsubscribeById(id));
 			}
 
-			self.try_clean();
+			self.try_apply_deferred();
 		}
 	}
 }

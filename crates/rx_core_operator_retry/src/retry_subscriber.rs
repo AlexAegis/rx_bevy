@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	LockWithPoisonBehavior, Observable, Observer, ObserverTerminalNotification, SharedSubscriber,
-	Subscriber, SubscriptionHandle, SubscriptionLike, TeardownCollectionExtension,
+	SharedSubscription, Subscriber, SubscriptionLike, TeardownCollectionExtension,
 };
 
 pub(crate) const SOURCE_STEAL: &str = "Source should be present!";
@@ -23,8 +23,8 @@ where
 	finished_with: Option<ObserverTerminalNotification<Source::OutError>>,
 	#[destination]
 	destination: SharedSubscriber<Destination>,
-	outer_subscription: SubscriptionHandle,
-	last_subscription: Arc<Mutex<Option<SubscriptionHandle>>>,
+	outer_subscription: SharedSubscription,
+	last_subscription: Arc<Mutex<Option<SharedSubscription>>>,
 	caught_error: Arc<Mutex<Option<Source::OutError>>>,
 }
 
@@ -38,8 +38,8 @@ where
 		destination: SharedSubscriber<Destination>,
 		max_retries: usize,
 		retries: usize,
-		outer_subscription: SubscriptionHandle,
-		last_subscription: Arc<Mutex<Option<SubscriptionHandle>>>,
+		outer_subscription: SharedSubscription,
+		last_subscription: Arc<Mutex<Option<SharedSubscription>>>,
 		caught_error: Arc<Mutex<Option<Source::OutError>>>,
 	) -> Self {
 		Self {
@@ -105,7 +105,7 @@ where
 			if !next_subscription.is_closed() {
 				self.last_subscription
 					.lock_ignore_poison()
-					.replace(SubscriptionHandle::new(next_subscription));
+					.replace(SharedSubscription::new(next_subscription));
 			}
 
 			if self.caught_error.lock_ignore_poison().is_some() {

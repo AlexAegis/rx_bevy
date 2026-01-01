@@ -119,7 +119,7 @@ fn should_be_able_to_subscribe_and_next_to_the_new_subscription_from_teardown() 
 	let multi_round_notification_collector = MultiRoundNotificationCollector::default();
 
 	let mut subject = PublishSubject::<usize>::default();
-	let final_subscription = SubscriptionHandle::default();
+	let final_subscription = SharedSubscription::default();
 	let arc_round = Arc::new(AtomicUsize::default());
 
 	let mut clojures_subject = subject.clone();
@@ -362,7 +362,7 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 
 	let mut subject_clone = subject.clone();
 
-	let subscription_handle = SubscriptionHandle::default();
+	let subscription_handle = SharedSubscription::default();
 	let mut subscription_handle_clone = subscription_handle.clone();
 
 	let subscription = subject
@@ -423,7 +423,7 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 
 	let mut subject_clone = subject.clone();
 
-	let subscription_handle = SubscriptionHandle::default();
+	let subscription_handle = SharedSubscription::default();
 	let mut subscription_handle_clone = subscription_handle.clone();
 
 	let subscription = subject
@@ -487,7 +487,7 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 
 	let mut subject_clone = subject.clone();
 
-	let subscription_handle = SubscriptionHandle::default();
+	let subscription_handle = SharedSubscription::default();
 	let mut subscription_handle_clone = subscription_handle.clone();
 
 	let subscription = subject
@@ -548,7 +548,7 @@ fn should_be_able_to_handle_a_lot_of_nested_deferred_events() {
 
 	let mut subject = PublishSubject::<String>::default();
 
-	let final_subscription = SubscriptionHandle::default();
+	let final_subscription = SharedSubscription::default();
 
 	let notification_collector_level_1 = MultiRoundNotificationCollector::default();
 	let notification_collector_level_2 = MultiRoundNotificationCollector::default();
@@ -650,7 +650,7 @@ fn should_be_able_to_recursively_subscribe_to_itself() {
 
 	let mut subject = PublishSubject::<String>::default();
 
-	let final_subscription = SubscriptionHandle::default();
+	let final_subscription = SharedSubscription::default();
 
 	let notification_collector_level_1 = MultiRoundNotificationCollector::default();
 	let arc_round_level_1 = Arc::new(AtomicUsize::default());

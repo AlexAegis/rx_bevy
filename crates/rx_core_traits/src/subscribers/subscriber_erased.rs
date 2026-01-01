@@ -1,7 +1,7 @@
 use derive_where::derive_where;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
-use crate::{Signal, Subscriber, subscribers::box_subscriber::BoxedSubscriber};
+use crate::{Signal, Subscriber, subscribers::subscriber_box::BoxedSubscriber};
 
 #[derive_where(Debug)]
 #[derive(RxSubscriber)]

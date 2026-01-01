@@ -90,13 +90,13 @@ impl Default for SubscriptionDeferredState {
 #[_rx_core_traits_crate(crate)]
 #[rx_delegate_teardown_collection]
 #[rx_skip_unsubscribe_on_drop_impl] // It's shared
-pub struct SubscriptionHandle {
+pub struct SharedSubscription {
 	#[destination]
 	subscription: Arc<Mutex<SubscriptionData>>,
 	deferred_state: Arc<Mutex<SubscriptionDeferredState>>,
 }
 
-impl SubscriptionHandle {
+impl SharedSubscription {
 	pub fn new<S>(subscription: S) -> Self
 	where
 		S: 'static + SubscriptionLike + Send + Sync,
@@ -106,11 +106,11 @@ impl SubscriptionHandle {
 		default
 	}
 
-	fn try_clean(&mut self) {
+	fn try_apply_deferred(&mut self) {
 		if self.deferred_state.lock_ignore_poison().is_dirty()
 			&& let Ok(mut subscription) = self.subscription.try_lock()
 		{
-			SubscriptionHandle::apply_notification_queue(
+			SharedSubscription::apply_notification_queue(
 				self.deferred_state.clone(),
 				&mut subscription,
 			);
@@ -178,7 +178,7 @@ impl SubscriptionHandle {
 	}
 }
 
-impl SubscriptionLike for SubscriptionHandle {
+impl SubscriptionLike for SharedSubscription {
 	fn is_closed(&self) -> bool {
 		self.deferred_state.lock_ignore_poison().is_closed()
 			|| self
@@ -189,7 +189,7 @@ impl SubscriptionLike for SubscriptionHandle {
 	}
 
 	fn unsubscribe(&mut self) {
-		self.try_clean();
+		self.try_apply_deferred();
 
 		let was_unsubscribed = {
 			let mut state = self.deferred_state.lock_ignore_poison();
@@ -204,13 +204,13 @@ impl SubscriptionLike for SubscriptionHandle {
 				.defer_notification(SubscriptionNotification::Unsubscribe);
 		}
 
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 }
 
-impl Drop for SubscriptionHandle {
+impl Drop for SharedSubscription {
 	fn drop(&mut self) {
 		// Don't do anything, it's shared
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 }

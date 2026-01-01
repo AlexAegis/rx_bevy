@@ -41,7 +41,7 @@ where
 	'o: 'static,
 {
 	type Subscription<Destination>
-		= SubscriptionHandle
+		= SharedSubscription
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
@@ -54,13 +54,13 @@ where
 			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		let mut shared_destination = SharedSubscriber::new(destination.upgrade());
-		let mut outer_subscription = SubscriptionHandle::default();
+		let mut outer_subscription = SharedSubscription::default();
 
 		let mut immediate_retries = 0;
 
 		let caught_error = Arc::new(Mutex::new(None));
 
-		let last_subscription = Arc::new(Mutex::new(Option::<SubscriptionHandle>::None));
+		let last_subscription = Arc::new(Mutex::new(Option::<SharedSubscription>::None));
 
 		while immediate_retries <= self.max_retries {
 			caught_error.lock_ignore_poison().take();
@@ -79,7 +79,7 @@ where
 			if !next_subscription.is_closed() {
 				last_subscription
 					.lock_ignore_poison()
-					.replace(SubscriptionHandle::new(next_subscription));
+					.replace(SharedSubscription::new(next_subscription));
 			}
 			self.source.lock_ignore_poison().replace(stolen_source);
 

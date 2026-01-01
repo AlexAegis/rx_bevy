@@ -7,8 +7,8 @@ use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, Signal, Subscriber,
-	SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
+	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
+	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
@@ -21,7 +21,7 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	outer_teardown: SubscriptionHandle,
+	outer_teardown: SharedSubscription,
 	shared_destination: SharedSubscriber<Destination>,
 	state: Arc<Mutex<HigherOrderSubscriberState<()>>>,
 	inner_subscription: Option<SubscriptionData>,
@@ -36,7 +36,7 @@ where
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
-			outer_teardown: SubscriptionHandle::default(),
+			outer_teardown: SharedSubscription::default(),
 			shared_destination: SharedSubscriber::new(destination),
 			state: Arc::new(Mutex::new(HigherOrderSubscriberState::default())),
 			inner_subscription: None,

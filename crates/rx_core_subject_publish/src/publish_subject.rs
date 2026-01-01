@@ -83,7 +83,7 @@ where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	fn try_clean(&mut self) {
+	fn try_apply_deferred(&mut self) {
 		if self.deferred_state.lock_ignore_poison().is_dirty()
 			&& let Ok(mut subscribers) = self.subscribers.subscribers.try_lock()
 		{
@@ -125,7 +125,7 @@ where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		// In case a deferred notification would close this subject
-		self.try_clean();
+		self.try_apply_deferred();
 
 		let mut subscriber = destination.upgrade();
 
@@ -162,7 +162,7 @@ where
 
 			// In case the new subscription immediately did something with
 			// this subject
-			self.try_clean();
+			self.try_apply_deferred();
 
 			MulticastSubscription::new(
 				id,
@@ -180,8 +180,6 @@ where
 	InError: Signal + Clone,
 {
 	fn next(&mut self, next: Self::In) {
-		self.try_clean();
-
 		if !self.is_closed()
 			&& let Err(next_error) = self.subscribers.try_next(next)
 		{
@@ -190,12 +188,10 @@ where
 				.defer_notification(MulticastNotification::Next(next_error.next));
 		}
 
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		self.try_clean();
-
 		if !self.is_closed() {
 			self.deferred_state.lock_ignore_poison().observed_error = Some(error.clone());
 
@@ -206,12 +202,10 @@ where
 			}
 		}
 
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 
 	fn complete(&mut self) {
-		self.try_clean();
-
 		if !self.is_closed() {
 			self.deferred_state.lock_ignore_poison().observed_completion = true;
 
@@ -222,7 +216,7 @@ where
 			}
 		}
 
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 }
 
@@ -265,8 +259,6 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		self.try_clean();
-
 		let was_unsubscribed = {
 			let mut state = self.deferred_state.lock_ignore_poison();
 			let was_unsubscribed = state.is_unsubscribed();
@@ -280,7 +272,7 @@ where
 				.defer_notification(MulticastNotification::Unsubscribe);
 		}
 
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 }
 
@@ -309,6 +301,6 @@ where
 	fn drop(&mut self) {
 		// Does not need to unsubscribe on drop as it's shared
 		// But it does need to check for unprocessed notifications.
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 }

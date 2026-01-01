@@ -1,4 +1,6 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Mutex, Weak};
+
+use disqualified::ShortName;
 
 use crate::{
 	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
@@ -6,19 +8,19 @@ use crate::{
 	TeardownCollection, WithPrimaryCategory,
 };
 
-impl<Destination> WithPrimaryCategory for Arc<RwLock<Destination>>
+impl<Destination> WithPrimaryCategory for Weak<Mutex<Destination>>
 where
 	Destination: ?Sized + WithPrimaryCategory,
 {
 	type PrimaryCategory = PrimaryCategorySubscriber;
 }
 
-impl<Destination> ObserverUpgradesToSelf for Arc<RwLock<Destination>> where
+impl<Destination> ObserverUpgradesToSelf for Weak<Mutex<Destination>> where
 	Destination: ?Sized + ObserverUpgradesToSelf
 {
 }
 
-impl<Destination> ObserverInput for Arc<RwLock<Destination>>
+impl<Destination> ObserverInput for Weak<Mutex<Destination>>
 where
 	Destination: ?Sized + ObserverInput,
 {
@@ -26,7 +28,7 @@ where
 	type InError = Destination::InError;
 }
 
-impl<Destination> SharedDestination<Destination> for Arc<RwLock<Destination>>
+impl<Destination> SharedDestination<Destination> for Weak<Mutex<Destination>>
 where
 	Destination: 'static + ?Sized + Subscriber + Send + Sync,
 {
@@ -34,7 +36,9 @@ where
 	where
 		F: Fn(&Destination),
 	{
-		if let Ok(destination) = self.read() {
+		if let Some(upgraded) = self.upgrade()
+			&& let Ok(destination) = upgraded.lock()
+		{
 			accessor(&destination)
 		}
 	}
@@ -43,13 +47,15 @@ where
 	where
 		F: FnMut(&mut Destination),
 	{
-		if let Ok(mut destination) = self.write() {
+		if let Some(upgraded) = self.upgrade()
+			&& let Ok(mut destination) = upgraded.lock()
+		{
 			accessor(&mut destination)
 		}
 	}
 }
 
-impl<Destination> Observer for Arc<RwLock<Destination>>
+impl<Destination> Observer for Weak<Mutex<Destination>>
 where
 	Destination: ?Sized + Observer + SubscriptionLike,
 {
@@ -58,7 +64,11 @@ where
 			return;
 		}
 
-		match self.write() {
+		let Some(upgraded) = self.upgrade() else {
+			return;
+		};
+
+		match upgraded.lock() {
 			Ok(mut lock) => lock.next(next),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(),
 		}
@@ -69,7 +79,11 @@ where
 			return;
 		}
 
-		match self.write() {
+		let Some(upgraded) = self.upgrade() else {
+			return;
+		};
+
+		match upgraded.lock() {
 			Ok(mut lock) => lock.error(error),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(),
 		}
@@ -80,23 +94,32 @@ where
 			return;
 		}
 
-		match self.write() {
+		let Some(upgraded) = self.upgrade() else {
+			return;
+		};
+
+		match upgraded.lock() {
 			Ok(mut lock) => lock.complete(),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(),
 		}
 	}
 }
 
-impl<Destination> SubscriptionLike for Arc<RwLock<Destination>>
+impl<Destination> SubscriptionLike for Weak<Mutex<Destination>>
 where
 	Destination: ?Sized + SubscriptionLike,
 {
 	// Ignore the poison for is_closed checks, so the other signals can still
 	// operate and unsubscribe when it's poisoned.
 	fn is_closed(&self) -> bool {
-		self.read()
-			.unwrap_or_else(|err| err.into_inner())
-			.is_closed()
+		if let Some(upgraded) = self.upgrade() {
+			upgraded
+				.lock()
+				.unwrap_or_else(|err| err.into_inner())
+				.is_closed()
+		} else {
+			true
+		}
 	}
 
 	// Ignore the poison on unsubscribe. It's only relevant if you still
@@ -108,18 +131,28 @@ where
 			return;
 		}
 
-		self.write()
+		let Some(upgraded) = self.upgrade() else {
+			return;
+		};
+
+		upgraded
+			.lock()
 			.unwrap_or_else(|err| err.into_inner())
 			.unsubscribe()
 	}
 }
 
-impl<Destination> TeardownCollection for Arc<RwLock<Destination>>
+impl<Destination> TeardownCollection for Weak<Mutex<Destination>>
 where
 	Destination: ?Sized + TeardownCollection + SubscriptionLike,
 {
 	fn add_teardown(&mut self, teardown: Teardown) {
-		match self.write() {
+		let Some(upgraded) = self.upgrade() else {
+			teardown.execute();
+			return;
+		};
+
+		match upgraded.lock() {
 			Ok(mut lock) => {
 				lock.add_teardown(teardown);
 			}
@@ -131,7 +164,7 @@ where
 	}
 }
 
-impl<O> ObservableOutput for Arc<RwLock<O>>
+impl<O> ObservableOutput for Weak<Mutex<O>>
 where
 	O: ObservableOutput,
 {
@@ -139,7 +172,7 @@ where
 	type OutError = O::OutError;
 }
 
-impl<O> Observable for Arc<RwLock<O>>
+impl<O> Observable for Weak<Mutex<O>>
 where
 	O: Observable,
 {
@@ -158,13 +191,21 @@ where
 			+ Send
 			+ Sync,
 	{
-		let mut destination = destination.upgrade();
+		let destination = destination.upgrade();
 
-		match self.write() {
+		let Some(upgraded) = self.upgrade() else {
+			panic!(
+				"Tried to subscribe to a weak reference of observabe {}. But it was dropped!",
+				ShortName::of::<O>()
+			)
+		};
+
+		match upgraded.lock() {
 			Ok(mut lock) => lock.subscribe(destination),
 			Err(poison_error) => {
-				destination.unsubscribe();
-				panic!("Poisoned lock encountered, unable to subscribe! {poison_error:?}")
+				let mut subscription = poison_error.into_inner().subscribe(destination);
+				subscription.unsubscribe();
+				subscription
 			}
 		}
 	}

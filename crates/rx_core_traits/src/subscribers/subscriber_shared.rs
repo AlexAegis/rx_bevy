@@ -127,9 +127,22 @@ where
 	}
 }
 
-/// A SharedSubscriber is a subscriber that guarantees that if you clone it,
-/// the signals sent to the clone will reach the same recipient as the original
-/// subscriber did.
+/// # [SharedSubscriber]
+///
+/// This should be the very first thing you reach for when you want to share
+/// a subscriber between multiple places. Where each place with a clone of this
+/// can be sure to send signals to the exact same destination.
+///
+/// ## Deadlock Protection
+///
+/// While Subscriber and other traits are implemented on plain `Arc<Mutex<D>>`s
+/// too, and those too have uses of their own, this struct here features
+/// deadlock protection in form of a deferred notification queue.
+///
+/// - If the destination is not locked, the signals just go through.
+/// - If the destination is locked, the signal materializes into the queue
+///   and when the lock is released by the holder, the queue will clear itself,
+///   applying all deferred notifications.
 #[derive(Debug, RxSubscriber)]
 #[_rx_core_traits_crate(crate)]
 #[rx_in(Destination::In)]
@@ -140,10 +153,9 @@ pub struct SharedSubscriber<Destination>
 where
 	Destination: Subscriber + UpgradeableObserver + Send + Sync,
 {
-	deferred_state: Arc<Mutex<SubscriberDeferredState<Destination::In, Destination::InError>>>,
-	// TODO: Deadlock Mod it! Duble pointer of notification queue like in subject!
 	#[destination]
 	shared_destination: Arc<Mutex<Destination>>,
+	deferred_state: Arc<Mutex<SubscriberDeferredState<Destination::In, Destination::InError>>>,
 }
 
 impl<Destination> SharedSubscriber<Destination>
@@ -174,7 +186,7 @@ where
 		Arc::downgrade(&self.shared_destination)
 	}
 
-	fn try_clean(&mut self) {
+	fn try_apply_deferred(&mut self) {
 		if self.deferred_state.lock_ignore_poison().is_dirty()
 			&& let Ok(mut subscriber) = self.shared_destination.try_lock()
 		{
@@ -319,8 +331,6 @@ where
 	Destination: 'static + Subscriber + Send + Sync,
 {
 	fn next(&mut self, next: Self::In) {
-		self.try_clean();
-
 		if !self.is_closed()
 			&& let Err(next_error) = self.try_next(next)
 		{
@@ -329,12 +339,10 @@ where
 				.defer_notification(SubscriberNotification::Next(next_error.next));
 		}
 
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		self.try_clean();
-
 		if !self.is_closed() {
 			self.deferred_state.lock_ignore_poison().observed_error = true;
 
@@ -344,13 +352,11 @@ where
 					.defer_notification(SubscriberNotification::Error(error_error.error));
 			}
 		}
-
+		self.try_apply_deferred();
 		self.unsubscribe();
 	}
 
 	fn complete(&mut self) {
-		self.try_clean();
-
 		if !self.is_closed() {
 			self.deferred_state.lock_ignore_poison().observed_completion = true;
 
@@ -360,7 +366,7 @@ where
 					.defer_notification(SubscriberNotification::Complete);
 			}
 		}
-
+		self.try_apply_deferred();
 		self.unsubscribe();
 	}
 }
@@ -379,8 +385,6 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		self.try_clean();
-
 		let was_unsubscribed = {
 			let mut state = self.deferred_state.lock_ignore_poison();
 			let was_unsubscribed = state.is_unsubscribed();
@@ -394,7 +398,7 @@ where
 				.defer_notification(SubscriberNotification::Unsubscribe);
 		}
 
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 }
 
@@ -425,6 +429,6 @@ where
 {
 	fn drop(&mut self) {
 		// Should not unsubscribe on drop as it's shared!
-		self.try_clean();
+		self.try_apply_deferred();
 	}
 }

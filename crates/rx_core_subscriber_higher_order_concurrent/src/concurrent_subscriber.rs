@@ -7,8 +7,8 @@ use std::{
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, Signal, Subscriber,
-	SubscriptionData, SubscriptionHandle, SubscriptionLike, Teardown, TeardownCollection,
+	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
+	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 	TeardownCollectionExtension,
 };
 use slab::Slab;
@@ -23,7 +23,7 @@ where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
 	Destination: 'static + Subscriber,
 {
-	outer_teardown: SubscriptionHandle,
+	outer_teardown: SharedSubscription,
 	shared_destination: SharedSubscriber<Destination>,
 	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
@@ -43,7 +43,7 @@ where
 		let inner_subscriptions = Arc::new(Mutex::new(Slab::new()));
 
 		Self {
-			outer_teardown: SubscriptionHandle::default(),
+			outer_teardown: SharedSubscription::default(),
 			shared_destination,
 			state,
 			inner_subscriptions,
@@ -57,7 +57,7 @@ pub(crate) fn subscribe_to_next_in_queue<InnerObservable, Destination>(
 	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
 	shared_destination: SharedSubscriber<Destination>,
-	outer_teardown: SubscriptionHandle,
+	outer_teardown: SharedSubscription,
 	concurrency_limit: NonZero<usize>,
 ) where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
@@ -86,7 +86,7 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 	state: Arc<Mutex<HigherOrderSubscriberState<ConcurrentSubscriberQueue<InnerObservable>>>>,
 	inner_subscriptions: Arc<Mutex<Slab<SubscriptionData>>>,
 	mut shared_destination: SharedSubscriber<Destination>,
-	mut outer_teardown: SubscriptionHandle,
+	mut outer_teardown: SharedSubscription,
 	concurrency_limit: NonZero<usize>,
 ) where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
