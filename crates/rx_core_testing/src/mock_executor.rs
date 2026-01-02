@@ -4,42 +4,30 @@ use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_scheduler_ticking::{Tick, TickingScheduler, TickingSchedulerExecutor};
 use rx_core_traits::{WorkContext, WorkContextProvider};
 
-pub struct TickingContextProvider;
+pub struct MockContextProvider;
 
-impl WorkContextProvider for TickingContextProvider {
-	type Item<'c> = TickingContext;
+impl WorkContextProvider for MockContextProvider {
+	type Item<'c> = MockContext;
 }
 
-pub struct TickingContext {
-	now: Duration,
-}
+pub struct MockContext;
 
-impl TickingContext {
-	fn new(now: Duration) -> Self {
-		Self { now }
-	}
-}
-
-impl WorkContext<'_> for TickingContext {
-	fn now(&self) -> Duration {
-		self.now
-	}
-}
+impl WorkContext<'_> for MockContext {}
 
 #[derive(RxExecutor)]
-#[rx_context(TickingContextProvider)]
-#[rx_scheduler(TickingScheduler<TickingContextProvider>)]
+#[rx_context(MockContextProvider)]
+#[rx_scheduler(TickingScheduler<MockContextProvider>)]
 #[rx_tick(Tick)]
 pub struct MockExecutor {
 	#[scheduler_handle]
 	ticking_executor:
-		TickingSchedulerExecutor<TickingScheduler<TickingContextProvider>, TickingContextProvider>,
+		TickingSchedulerExecutor<TickingScheduler<MockContextProvider>, MockContextProvider>,
 	logging_enabled: bool,
 }
 
 impl Deref for MockExecutor {
 	type Target =
-		TickingSchedulerExecutor<TickingScheduler<TickingContextProvider>, TickingContextProvider>;
+		TickingSchedulerExecutor<TickingScheduler<MockContextProvider>, MockContextProvider>;
 
 	fn deref(&self) -> &Self::Target {
 		&self.ticking_executor
@@ -69,7 +57,7 @@ impl MockExecutor {
 		if self.logging_enabled {
 			println!("Ticking... ({:?})", tick);
 		}
-		let mut context = TickingContext::new(self.ticking_executor.now());
+		let mut context = MockContext;
 		self.ticking_executor.tick_to(tick, &mut context);
 	}
 
@@ -77,7 +65,7 @@ impl MockExecutor {
 		if self.logging_enabled {
 			println!("Ticking... ({:?})", delta);
 		}
-		let mut context = TickingContext::new(self.ticking_executor.now());
+		let mut context = MockContext;
 		self.ticking_executor.tick(delta, &mut context);
 	}
 }

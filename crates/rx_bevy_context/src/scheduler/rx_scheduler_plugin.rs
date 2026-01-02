@@ -10,7 +10,7 @@ use derive_where::derive_where;
 use rx_bevy_common::Clock;
 use rx_core_scheduler_ticking::Tick;
 
-use crate::{DeferredWorldAsRxBevyContextExtension, RxBevyExecutor, SubscribeRetryPlugin};
+use crate::{RxBevyExecutor, SubscribeRetryPlugin};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.
@@ -60,7 +60,7 @@ where
 
 	world.resource_scope(|world, mut executor: Mut<RxBevyExecutor<S, C>>| {
 		let deferred_world = DeferredWorld::from(world);
-		let mut context = deferred_world.into_rx_context::<C>();
+		let mut context = deferred_world.into();
 		executor.tick_to(tick, &mut context);
 	});
 }

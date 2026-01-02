@@ -3,6 +3,8 @@ use std::{
 	time::Duration,
 };
 
+use rx_core_traits::WorkTick;
+
 /// Used for scheduling, subscriptions are ticked with this event
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Tick {
@@ -18,6 +20,13 @@ impl Tick {
 		if self.now < tick.now {
 			self.now = tick.now;
 		}
+	}
+}
+
+impl WorkTick for Tick {
+	#[inline]
+	fn now(&self) -> Duration {
+		self.now
 	}
 }
 

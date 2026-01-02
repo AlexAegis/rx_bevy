@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_macro_scheduler_derive::RxScheduler;
 use rx_core_scheduler_ticking::{
@@ -57,11 +55,7 @@ impl Scheduler for FakeScheduler {
 
 struct FakeWorkContext;
 
-impl<'a> WorkContext<'a> for FakeWorkContext {
-	fn now(&self) -> Duration {
-		Duration::ZERO
-	}
-}
+impl<'a> WorkContext<'a> for FakeWorkContext {}
 
 struct FakeContext;
 

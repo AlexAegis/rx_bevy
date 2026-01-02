@@ -17,15 +17,9 @@ impl WorkContextProvider for TestContextProvider {
 	type Item<'c> = TestContext;
 }
 
-struct TestContext {
-	now: Duration,
-}
+struct TestContext;
 
-impl WorkContext<'_> for TestContext {
-	fn now(&self) -> Duration {
-		self.now
-	}
-}
+impl WorkContext<'_> for TestContext {}
 
 fn mute_panic<R>(fun: impl FnOnce() -> R) -> R {
 	let hook = std::panic::take_hook();
@@ -51,11 +45,9 @@ mod ticking {
 			"Initial now is not zero!"
 		);
 
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+		let mut context = TestContext;
 
-		assert_eq!(context.now(), Duration::ZERO);
+		assert_eq!(ticking_executor.now(), Duration::ZERO);
 
 		ticking_executor.tick_to(Tick::new(Duration::from_millis(1500)), &mut context);
 
@@ -85,9 +77,7 @@ mod immediate_work {
 			TestContextProvider,
 		>::new(TickingScheduler::<TestContextProvider>::default());
 
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+		let mut context = TestContext;
 
 		let inner_work_has_executed = Arc::new(AtomicBool::default());
 		let inner_work_has_executed_work = inner_work_has_executed.clone();
@@ -132,9 +122,7 @@ mod immediate_work {
 		>::new(TickingScheduler::<TestContextProvider>::default())
 		.with_max_single_tick_recursion_depth(2);
 
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+		let mut context = TestContext;
 
 		let inner_work_has_executed = Arc::new(AtomicBool::default());
 		let inner_work_has_executed_work = inner_work_has_executed.clone();
@@ -181,9 +169,7 @@ mod delayed_work {
 			TestContextProvider,
 		>::new(TickingScheduler::<TestContextProvider>::default());
 
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+		let mut context = TestContext;
 
 		let inner_work_has_executed = Arc::new(AtomicBool::default());
 		let inner_work_has_executed_work = inner_work_has_executed.clone();
@@ -237,9 +223,7 @@ mod repeated_work {
 			TestContextProvider,
 		>::new(TickingScheduler::<TestContextProvider>::default());
 
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+		let mut context = TestContext;
 
 		let interval_counter = Arc::new(AtomicUsize::default());
 		let interval_counter_work = interval_counter.clone();
@@ -294,9 +278,7 @@ mod repeated_work {
 			TestContextProvider,
 		>::new(TickingScheduler::<TestContextProvider>::default());
 
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+		let mut context = TestContext;
 
 		let interval_counter = Arc::new(AtomicUsize::default());
 		let interval_counter_work = interval_counter.clone();
@@ -341,9 +323,7 @@ mod continuous_work {
 			TestContextProvider,
 		>::new(TickingScheduler::<TestContextProvider>::default());
 
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+		let mut context = TestContext;
 
 		let execution_counter = Arc::new(AtomicUsize::default());
 		let execution_counter_work = execution_counter.clone();
@@ -406,9 +386,8 @@ mod invoked_work {
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
 		>::new(TickingScheduler::<TestContextProvider>::default());
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+
+		let mut context = TestContext;
 
 		let scheduler = ticking_executor.get_scheduler_handle();
 
@@ -452,9 +431,8 @@ mod invoked_work {
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
 		>::new(TickingScheduler::<TestContextProvider>::default());
-		let mut context = TestContext {
-			now: Duration::ZERO,
-		};
+
+		let mut context = TestContext;
 
 		let scheduler = ticking_executor.get_scheduler_handle();
 

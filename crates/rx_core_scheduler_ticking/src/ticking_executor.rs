@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_traits::{
 	ScheduledWork, ScheduledWorkAction, Scheduler, SchedulerHandle, WorkCancellationId,
-	WorkContextProvider, WorkInvokeId, WorkResult,
+	WorkContextProvider, WorkInvokeId, WorkResult, WorkTick,
 };
 
 use crate::{Tick, WorkId, WorkIdGenerator};
@@ -98,8 +98,9 @@ where
 		}
 	}
 
+	#[inline]
 	pub fn now(&self) -> Duration {
-		*self.current_tick
+		self.current_tick.now()
 	}
 
 	/// Returns `true` when there is no active work in the executor.

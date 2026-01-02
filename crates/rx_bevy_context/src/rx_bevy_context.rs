@@ -1,14 +1,10 @@
-use std::time::Duration;
-
 use bevy_ecs::{
 	component::{Component, Mutable},
 	entity::{ContainsEntity, Entity},
 	error::BevyError,
 	world::{DeferredWorld, Mut},
 };
-use bevy_time::Time;
 use disqualified::ShortName;
-use rx_bevy_common::Clock;
 use rx_core_traits::{
 	ObserverNotification, Signal, SubscriberNotification, SubscriptionNotification, WorkContext,
 	WorkContextProvider,
@@ -26,14 +22,9 @@ impl WorkContextProvider for RxBevyContext {
 
 pub struct RxBevyContextItem<'w> {
 	pub deferred_world: DeferredWorld<'w>,
-	now: Duration,
 }
 
-impl<'w> WorkContext<'w> for RxBevyContextItem<'w> {
-	fn now(&self) -> Duration {
-		self.now
-	}
-}
+impl<'w> WorkContext<'w> for RxBevyContextItem<'w> {}
 
 #[derive(Error, Debug)]
 pub enum ContextGetSubscriptionsErasedScheduleError {
@@ -50,7 +41,6 @@ impl<'w> RxBevyContextItem<'w> {
 	pub fn reborrow(&mut self) -> RxBevyContextItem<'_> {
 		RxBevyContextItem {
 			deferred_world: self.deferred_world.reborrow(),
-			now: self.now,
 		}
 	}
 
@@ -159,16 +149,8 @@ pub enum ContextAccessError {
 	NotAnObservable(String, Entity),
 }
 
-pub trait DeferredWorldAsRxBevyContextExtension<'w> {
-	fn into_rx_context<C: Clock>(self) -> RxBevyContextItem<'w>;
-}
-
-impl<'w> DeferredWorldAsRxBevyContextExtension<'w> for DeferredWorld<'w> {
-	fn into_rx_context<C: Clock>(self) -> RxBevyContextItem<'w> {
-		let now = self.get_resource::<Time<C>>().unwrap().elapsed();
-		RxBevyContextItem {
-			deferred_world: self,
-			now,
-		}
+impl<'w> From<DeferredWorld<'w>> for RxBevyContextItem<'w> {
+	fn from(deferred_world: DeferredWorld<'w>) -> Self {
+		RxBevyContextItem { deferred_world }
 	}
 }

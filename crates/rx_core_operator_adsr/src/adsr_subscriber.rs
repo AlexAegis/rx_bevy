@@ -7,7 +7,7 @@ use std::{
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike, WorkCancellationId, WorkContext, WorkResult,
+	Subscriber, SubscriptionLike, WorkCancellationId, WorkResult, WorkTick,
 };
 
 use crate::{
@@ -64,7 +64,7 @@ where
 		let mut last_now = Duration::from_millis(0);
 		let mut envelope_state = AdsrEnvelopeState::default();
 		scheduler_lock.schedule_continuous_work(
-			move |_, context| {
+			move |tick, _context| {
 				let mut destination_lock = shared_destination_clone.lock();
 				if destination_lock.is_closed() {
 					return WorkResult::Done;
@@ -72,7 +72,7 @@ where
 
 				let next = {
 					let mut state = shared_state_clone.lock().unwrap_or_else(|p| p.into_inner());
-					let now = context.now();
+					let now = tick.now();
 					let delta = now - last_now;
 					last_now = now;
 
