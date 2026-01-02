@@ -40,7 +40,7 @@ mod ticking {
 	use super::*;
 
 	#[test]
-	fn should_be_able_to_tick_to_arbitrary_points_after_now_even_if_the_delta_is_wrong() {
+	fn should_be_able_to_tick_to_arbitrary_points_after_now() {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
@@ -57,10 +57,7 @@ mod ticking {
 
 		assert_eq!(context.now(), Duration::ZERO);
 
-		ticking_executor.tick_to(
-			Tick::new(Duration::from_millis(1500), Duration::from_millis(1500)),
-			&mut context,
-		);
+		ticking_executor.tick_to(Tick::new(Duration::from_millis(1500)), &mut context);
 
 		assert_eq!(
 			ticking_executor.now(),
@@ -68,10 +65,7 @@ mod ticking {
 			"Ticked now is not correct!"
 		);
 
-		ticking_executor.tick_to(
-			Tick::new(Duration::from_millis(10000), Duration::from_millis(0)),
-			&mut context,
-		);
+		ticking_executor.tick_to(Tick::new(Duration::from_millis(10000)), &mut context);
 
 		assert_eq!(
 			ticking_executor.now(),

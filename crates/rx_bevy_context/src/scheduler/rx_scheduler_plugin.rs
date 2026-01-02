@@ -56,13 +56,7 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	let tick = {
-		let time = world.resource::<Time<C>>();
-		Tick {
-			delta: time.delta(),
-			elapsed_since_start: time.elapsed(),
-		}
-	};
+	let tick = Tick::new(world.resource::<Time<C>>().elapsed());
 
 	world.resource_scope(|world, mut executor: Mut<RxBevyExecutor<S, C>>| {
 		let deferred_world = DeferredWorld::from(world);

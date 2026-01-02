@@ -99,7 +99,7 @@ where
 	}
 
 	pub fn now(&self) -> Duration {
-		self.current_tick.elapsed_since_start
+		*self.current_tick
 	}
 
 	/// Returns `true` when there is no active work in the executor.

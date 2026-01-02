@@ -57,7 +57,7 @@ where
 	C: WorkContextProvider,
 {
 	fn tick(&mut self, tick_input: Self::Tick, context: &mut C::Item<'_>) -> WorkResult {
-		if tick_input.is_newer_than(Some(&self.last_tick)) {
+		if tick_input > self.last_tick {
 			self.last_tick.update(tick_input);
 			(self.work)(tick_input, context)
 		} else {
