@@ -459,3 +459,20 @@ fn additional_teardowns_should_immediately_execute_if_the_subscription_is_alread
 
 	subject.unsubscribe();
 }
+
+mod multicast_subscription {
+	use super::*;
+
+	#[test]
+	fn should_run_teardowns_instantly_when_already_closed() {
+		let destination = MockObserver::default();
+
+		let subject = PublishSubject::<usize, &'static str>::default();
+		let mut subscription = subject.clone().subscribe(destination);
+
+		subscription.unsubscribe();
+
+		let tracked_teardown = subscription.add_tracked_teardown("multicast");
+		tracked_teardown.assert_was_torn_down();
+	}
+}

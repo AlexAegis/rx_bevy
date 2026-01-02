@@ -88,6 +88,8 @@ where
 				.lock_ignore_poison()
 				.defer_notification(MulticastNotification::UnsubscribeById(id));
 		}
+
+		self.subscriber.take();
 	}
 }
 
