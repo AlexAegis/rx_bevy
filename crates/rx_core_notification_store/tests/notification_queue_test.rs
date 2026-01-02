@@ -37,11 +37,74 @@ fn should_be_able_to_step_to_next_notifications() {
 	queue.push(SubscriberNotification::Next(3));
 	queue.push(SubscriberNotification::Unsubscribe);
 
+	assert_eq!(queue.len(), 4);
 	assert!(!queue.is_waiting());
 	assert_eq!(queue.pop_next_if_in_front(), Some(1));
 	assert_eq!(queue.pop_next_if_in_front(), Some(2));
 	assert_eq!(queue.pop_next_if_in_front(), Some(3));
+	assert_eq!(queue.pop_next_if_in_front(), None);
 	assert!(queue.is_unsubscribed());
+}
+
+#[test]
+fn should_be_able_to_return_the_next_notification() {
+	let mut queue = NotificationQueue::<usize, &'static str>::default();
+	assert!(queue.is_waiting());
+
+	queue.push(SubscriberNotification::Next(1));
+	queue.push(SubscriberNotification::Next(2));
+
+	assert_eq!(queue.get_front(), Some(&SubscriberNotification::Next(1)));
+}
+
+#[test]
+fn should_push_a_complete_notification_with_the_complete_fn() {
+	let mut queue = NotificationQueue::<usize, &'static str>::default();
+	assert!(queue.is_waiting());
+
+	queue.complete();
+
+	assert!(queue.is_completed());
+	assert!(
+		!queue.is_unsubscribed(),
+		"the notification queue should not automatically unsubscribe"
+	);
+
+	assert_eq!(queue.get_front(), Some(&SubscriberNotification::Complete));
+}
+
+#[test]
+fn should_push_an_error_notification_with_the_error_fn() {
+	let mut queue = NotificationQueue::<usize, &'static str>::default();
+	assert!(queue.is_waiting());
+
+	let error = "error";
+	queue.error(error);
+
+	assert!(queue.is_errored());
+	assert!(
+		!queue.is_unsubscribed(),
+		"the notification queue should not automatically unsubscribe"
+	);
+
+	assert_eq!(
+		queue.get_front(),
+		Some(&SubscriberNotification::Error(error))
+	);
+}
+
+#[test]
+fn should_push_an_error_notification_with_the_unsubscribe_fn() {
+	let mut queue = NotificationQueue::<usize, &'static str>::default();
+	assert!(queue.is_waiting());
+	queue.unsubscribe();
+
+	assert!(queue.is_unsubscribed());
+
+	assert_eq!(
+		queue.get_front(),
+		Some(&SubscriberNotification::Unsubscribe)
+	);
 }
 
 mod overflow_behavior_drop_oldest {

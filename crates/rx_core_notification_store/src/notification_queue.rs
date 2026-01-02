@@ -84,20 +84,8 @@ where
 			&& matches!(notification, SubscriberNotification::Next(_))
 		{
 			match self.options.overflow_behavior {
-				QueueOverflowBehavior::DropOldest => {
-					if let Some((oldest_next_index, _)) = self
-						.queue
-						.iter()
-						.rev()
-						.enumerate()
-						.find(|(_, n)| matches!(n, SubscriberNotification::Next(_)))
-					{
-						self.queue.remove(oldest_next_index);
-					}
-				}
-				QueueOverflowBehavior::IgnoreNext => {
-					return;
-				}
+				QueueOverflowBehavior::DropOldest => self.drop_oldest(),
+				QueueOverflowBehavior::IgnoreNext => return,
 			}
 		}
 
@@ -109,6 +97,18 @@ where
 				self.state.update_with_notification(&notification);
 			}
 			self.queue.push_back(notification);
+		}
+	}
+
+	fn drop_oldest(&mut self) {
+		if let Some((oldest_next_index, _)) = self
+			.queue
+			.iter()
+			.rev()
+			.enumerate()
+			.find(|(_, n)| matches!(n, SubscriberNotification::Next(_)))
+		{
+			self.queue.remove(oldest_next_index);
 		}
 	}
 
@@ -169,15 +169,18 @@ where
 	#[inline]
 	pub fn complete(&mut self) {
 		self.queue.push_back(SubscriberNotification::Complete);
+		self.state.complete();
 	}
 
 	#[inline]
 	pub fn error(&mut self, error: InError) {
 		self.queue.push_back(SubscriberNotification::Error(error));
+		self.state.error();
 	}
 
 	#[inline]
 	pub fn unsubscribe(&mut self) {
 		self.queue.push_back(SubscriberNotification::Unsubscribe);
+		self.state.unsubscribe();
 	}
 }
