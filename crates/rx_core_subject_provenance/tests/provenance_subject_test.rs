@@ -1,8 +1,9 @@
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(Default, PartialEq, Clone, Debug)]
 enum TestProvenance {
+	#[default]
 	Foo,
 	Bar,
 }
@@ -13,14 +14,31 @@ fn should_replay_its_value_to_new_subscribers() {
 	let notification_collector = destination.get_notification_collector();
 
 	let provenance_subject =
-		ProvenanceSubject::<TestProvenance, usize>::new(1, TestProvenance::Foo);
+		ProvenanceSubject::<TestProvenance, usize>::new(1, TestProvenance::Bar);
 
 	let _s = provenance_subject.clone().subscribe(destination);
 
 	notification_collector.lock().assert_notifications(
 		"provenance_subject",
 		0,
-		[SubscriberNotification::Next((1, TestProvenance::Foo))],
+		[SubscriberNotification::Next((1, TestProvenance::Bar))],
+		true,
+	);
+}
+
+#[test]
+fn should_be_able_to_default_if_the_input_and_provenance_types_can() {
+	let destination_1 = MockObserver::default();
+	let notification_collector_1 = destination_1.get_notification_collector();
+
+	let provenance_subject = ProvenanceSubject::<TestProvenance, usize>::default();
+
+	let _s = provenance_subject.clone().subscribe(destination_1);
+
+	notification_collector_1.lock().assert_notifications(
+		"provenance_subject",
+		0,
+		[SubscriberNotification::Next((0, TestProvenance::Foo))],
 		true,
 	);
 }
