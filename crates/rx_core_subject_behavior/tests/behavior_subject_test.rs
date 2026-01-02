@@ -19,6 +19,23 @@ fn should_replay_its_value_to_new_subscribers() {
 }
 
 #[test]
+fn should_be_able_to_default_if_the_input_type_can() {
+	let destination_1 = MockObserver::default();
+	let notification_collector_1 = destination_1.get_notification_collector();
+
+	let behavior_subject = BehaviorSubject::<usize>::default();
+
+	let _s = behavior_subject.clone().subscribe(destination_1);
+
+	notification_collector_1.lock().assert_notifications(
+		"behavior_subject",
+		0,
+		[SubscriberNotification::Next(0)],
+		true,
+	);
+}
+
+#[test]
 fn should_continue_to_multicast() {
 	let destination_1 = MockObserver::default();
 	let notification_collector_1 = destination_1.get_notification_collector();
