@@ -76,27 +76,28 @@ where
 
 		let mut work_result = WorkResult::Pending;
 		let mut executions: usize = 0;
-		while self.consumed_until + self.interval <= self.current_tick
-			&& !matches!(work_result, WorkResult::Done)
+
+		while (self.consumed_until + self.interval <= self.current_tick
+			&& !matches!(work_result, WorkResult::Done))
+			|| self.start_immediately
 		{
 			if executions < self.max_work_per_tick.into() {
 				work_result += (self.work)(tick_input, context);
 			}
 			// The consumed until marker has to advance all the way,
 			// regardless of how much work was allowed to execute
-			self.consumed_until += self.interval;
+			if !self.start_immediately {
+				self.consumed_until += self.interval;
+			} else {
+				self.start_immediately = false;
+			}
 			executions += 1;
 		}
 		work_result
 	}
 
 	fn on_scheduled_hook(&mut self, tick_input: Self::Tick) {
-		if self.start_immediately {
-			self.consumed_until.update(tick_input - self.interval);
-		} else {
-			self.consumed_until.update(tick_input);
-		}
-
+		self.consumed_until.update(tick_input);
 		self.current_tick.update(tick_input);
 	}
 }

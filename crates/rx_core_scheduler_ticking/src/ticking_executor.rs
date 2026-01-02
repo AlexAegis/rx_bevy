@@ -12,6 +12,8 @@ use rx_core_traits::{
 
 use crate::{Tick, WorkId, WorkIdGenerator};
 
+const MAX_RECURSION_DEPTH: &str = "Recursive work exceeding `max_single_tick_recursion_depth`!";
+
 pub trait SchedulerForTickingExecutor: Scheduler {
 	fn update_tick(&mut self, tick: Tick);
 
@@ -127,10 +129,7 @@ where
 			}
 
 			if i == self.max_single_tick_recursion_depth {
-				panic!(
-					"The executor encountered recursive work {} layers deep!",
-					self.max_single_tick_recursion_depth
-				)
+				panic!("{}", MAX_RECURSION_DEPTH);
 			}
 		}
 	}

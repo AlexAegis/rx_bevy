@@ -71,12 +71,9 @@ where
 	fn tick(&mut self, tick: Tick, context: &mut C::Item<'_>) -> WorkResult {
 		self.current_tick.update(tick);
 		if self.scheduled_on + self.delay <= self.current_tick {
-			let Some(work) = self.work.take() else {
-				return WorkResult::Done;
-			};
-
-			(work)(tick, context);
-
+			if let Some(work) = self.work.take() {
+				(work)(tick, context);
+			}
 			WorkResult::Done
 		} else {
 			WorkResult::Pending
