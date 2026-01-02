@@ -5,7 +5,8 @@ use std::{
 
 use derive_where::derive_where;
 use rx_core_traits::{
-	LockWithPoisonBehavior, Observer, Signal, Subscriber, SubscriptionClosedFlag, SubscriptionLike,
+	LockWithPoisonBehavior, Observer, Signal, Subscriber, SubscriberState, SubscriptionClosedFlag,
+	SubscriptionLike,
 };
 
 use crate::internal::{
@@ -302,12 +303,9 @@ where
 	/// Separate close flag for the real, applied closedness, as non-deferred
 	/// signals only have to respect this.
 	pub(crate) closed_flag: SubscriptionClosedFlag,
-	/// TODO: USE STATE!
-	/// This flag is only meant to block incoming notifications, if an unsubscribe
-	/// had already observed, to not accept more.
-	pub(crate) observed_unsubscribe: bool,
-	/// Signals if Completion has been observed or not
-	pub(crate) observed_completion: bool,
+
+	pub(crate) observed_state: SubscriberState,
+
 	/// Signals if an error was observed or not
 	pub(crate) observed_error: Option<InError>,
 }
@@ -320,7 +318,7 @@ where
 	pub(crate) fn defer_notification(&mut self, notification: MulticastNotification<In, InError>) {
 		// The first unsubscribe notification must be let through
 		let is_first_unsubscribe = matches!(notification, MulticastNotification::Unsubscribe)
-			&& !self.observed_unsubscribe;
+			&& !self.observed_state.is_unsubscribed();
 
 		if *self.closed_flag && !is_first_unsubscribe {
 			if let MulticastNotification::Add(_id, mut subscriber) = notification
@@ -348,13 +346,13 @@ where
 	}
 
 	pub(crate) fn is_unsubscribed(&self) -> bool {
-		self.observed_unsubscribe
+		self.observed_state.is_unsubscribed()
 	}
 
 	pub(crate) fn is_closed(&self) -> bool {
 		self.is_closed_ignoring_deferred()
-			|| self.observed_completion
-			|| self.observed_unsubscribe
+			|| self.observed_state.is_completed()
+			|| self.observed_state.is_unsubscribed()
 			|| self.observed_error.is_some()
 	}
 
@@ -385,8 +383,7 @@ where
 	fn default() -> Self {
 		Self {
 			closed_flag: false.into(),
-			observed_completion: false,
-			observed_unsubscribe: false,
+			observed_state: SubscriberState::default(),
 			observed_error: None,
 			deferred_notifications_queue: Vec::default(),
 		}

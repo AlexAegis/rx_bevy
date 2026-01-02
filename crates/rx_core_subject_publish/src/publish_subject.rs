@@ -121,7 +121,7 @@ where
 			let state = self.deferred_state.lock_ignore_poison();
 			if let Some(error) = state.observed_error.clone() {
 				subscriber.error(error);
-			} else if state.observed_completion {
+			} else if state.observed_state.is_completed() {
 				subscriber.complete();
 			}
 		}
@@ -195,7 +195,10 @@ where
 
 	fn complete(&mut self) {
 		if !self.is_closed() {
-			self.deferred_state.lock_ignore_poison().observed_completion = true;
+			self.deferred_state
+				.lock_ignore_poison()
+				.observed_state
+				.complete();
 
 			if let Err(_complete_error) = self.subscribers.try_complete() {
 				self.deferred_state
@@ -250,7 +253,7 @@ where
 		let was_unsubscribed = {
 			let mut state = self.deferred_state.lock_ignore_poison();
 			let was_unsubscribed = state.is_unsubscribed();
-			state.observed_unsubscribe = true;
+			state.observed_state.unsubscribe_if_not_already();
 			was_unsubscribed
 		};
 
