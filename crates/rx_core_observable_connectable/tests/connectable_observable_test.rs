@@ -244,7 +244,8 @@ mod connectable_options {
 
 	#[test]
 	fn should_default_to_using_the_publish_subject() {
-		let default_options = ConnectableOptions::<PublishSubject<_, _>>::default();
+		let default_options =
+			ConnectableOptions::<ProvideWithDefault<PublishSubject<_, _>>>::default();
 		let subject: PublishSubject<usize, &'static str> =
 			default_options.connector_provider.provide();
 		assert!(!subject.is_closed());

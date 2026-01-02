@@ -16,7 +16,7 @@ fn main() {
 	)
 	.finalize(|| println!("shared interval: unsubscribed"))
 	.tap_next(|n| println!("shared interval next: {n}"))
-	.share(ConnectableOptions::<PublishSubject<_, _>>::default());
+	.share::<ProvideWithDefault<PublishSubject<_, _>>>(ConnectableOptions::default());
 
 	// No subscriptions yet, these will not advance the interval as there isn't one
 	executor.tick(Duration::from_secs(7));

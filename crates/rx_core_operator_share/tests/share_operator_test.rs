@@ -12,9 +12,9 @@ fn should_automatically_connect_on_subscribe_and_share_emissions_across_all_subs
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let mut shared = source
-		.clone()
-		.share(ConnectableOptions::<PublishSubject<usize, &'static str>>::default());
+	let mut shared = source.clone().share(ConnectableOptions::<
+		ProvideWithDefault<PublishSubject<usize, &'static str>>,
+	>::default());
 
 	let mut subscription_1 = shared.subscribe(destination_1);
 	let teardown_tracker_1 = subscription_1.add_tracked_teardown("share - destination_1");
@@ -71,7 +71,8 @@ fn should_disconnect_when_the_ref_count_is_zero() {
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
 	let mut shared = source.clone().share(
-		ConnectableOptions::<ReplaySubject<1, _, _>>::default().disconnect_when_ref_count_zero(),
+		ConnectableOptions::<ProvideWithDefault<ReplaySubject<1, _, _>>>::default()
+			.disconnect_when_ref_count_zero(),
 	);
 
 	let mut subscription_1 = shared.subscribe(destination_1);
@@ -126,9 +127,9 @@ fn should_close_when_errored() {
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let mut shared = source
-		.clone()
-		.share(ConnectableOptions::<PublishSubject<usize, &'static str>>::default());
+	let mut shared = source.clone().share(ConnectableOptions::<
+		ProvideWithDefault<PublishSubject<usize, &'static str>>,
+	>::default());
 
 	let mut subscription_1 = shared.subscribe(destination_1);
 	let teardown_tracker_1 = subscription_1.add_tracked_teardown("share - destination_1");
@@ -175,9 +176,9 @@ fn should_close_when_completed() {
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let mut shared = source
-		.clone()
-		.share(ConnectableOptions::<PublishSubject<usize, &'static str>>::default());
+	let mut shared = source.clone().share(ConnectableOptions::<
+		ProvideWithDefault<PublishSubject<usize, &'static str>>,
+	>::default());
 
 	let mut subscription_1 = shared.subscribe(destination_1);
 	let teardown_tracker_1 = subscription_1.add_tracked_teardown("share - destination_1");
@@ -223,9 +224,9 @@ fn should_handle_manual_connections_and_disconnections_and_close_when_completed(
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let mut shared = source
-		.clone()
-		.share(ConnectableOptions::<PublishSubject<usize, &'static str>>::default());
+	let mut shared = source.clone().share(ConnectableOptions::<
+		ProvideWithDefault<PublishSubject<usize, &'static str>>,
+	>::default());
 
 	let mut subscription_1 = shared.subscribe(destination_1);
 	let teardown_tracker_1 = subscription_1.add_tracked_teardown("share - destination_1");

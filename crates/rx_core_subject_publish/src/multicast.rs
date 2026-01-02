@@ -302,6 +302,7 @@ where
 	/// Separate close flag for the real, applied closedness, as non-deferred
 	/// signals only have to respect this.
 	pub(crate) closed_flag: SubscriptionClosedFlag,
+	/// TODO: USE STATE!
 	/// This flag is only meant to block incoming notifications, if an unsubscribe
 	/// had already observed, to not accept more.
 	pub(crate) observed_unsubscribe: bool,

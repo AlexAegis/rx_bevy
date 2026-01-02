@@ -13,7 +13,6 @@ where
 	/// When false, the connector subject will be kept
 	pub reset_connector_on_disconnect: bool,
 	pub reset_connector_on_error: bool,
-
 	pub reset_connector_on_complete: bool,
 }
 
@@ -64,13 +63,15 @@ where
 #[cfg(test)]
 mod test {
 	use rx_core_subject_publish::subject::PublishSubject;
-	use rx_core_traits::Provider;
+	use rx_core_traits::{ProvideWithDefault, Provider};
 
 	use crate::observable::ConnectableOptions;
 
 	#[test]
 	fn connectable_options_builder_works() {
-		let result = ConnectableOptions::<PublishSubject<usize, &'static str>>::default()
+		let result =
+			ConnectableOptions::<ProvideWithDefault<PublishSubject<usize, &'static str>>>::default(
+			)
 			.disconnect_when_ref_count_zero()
 			.reset_connector_on_complete()
 			.reset_connector_on_disconnect()
@@ -93,7 +94,7 @@ mod test {
 
 	#[test]
 	fn connectable_options_default() {
-		let result = ConnectableOptions::<PublishSubject<usize>>::default();
+		let result = ConnectableOptions::<ProvideWithDefault<PublishSubject<usize>>>::default();
 		let _subject: PublishSubject<usize> = result.connector_provider.provide();
 		assert!(!result.disconnect_when_ref_count_zero);
 		assert!(!result.reset_connector_on_complete);

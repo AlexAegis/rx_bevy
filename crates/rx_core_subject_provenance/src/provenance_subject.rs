@@ -39,6 +39,17 @@ where
 	subject: BehaviorSubject<(In, Provenance), InError>,
 }
 
+impl<Provenance, In, InError> Default for ProvenanceSubject<Provenance, In, InError>
+where
+	Provenance: Signal + Clone + PartialEq + Default,
+	In: Signal + Clone + Default,
+	InError: Signal + Clone,
+{
+	fn default() -> Self {
+		Self::new(In::default(), Provenance::default())
+	}
+}
+
 impl<Provenance, In, InError> ProvenanceSubject<Provenance, In, InError>
 where
 	Provenance: Signal + Clone + PartialEq,

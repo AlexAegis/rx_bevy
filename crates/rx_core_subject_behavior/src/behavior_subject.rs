@@ -3,8 +3,7 @@ use std::sync::{Arc, Mutex};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject_publish::{internal::MulticastSubscription, subject::PublishSubject};
 use rx_core_traits::{
-	LockWithPoisonBehavior, Never, Observable, Observer, Provider, Signal, Subscriber,
-	UpgradeableObserver,
+	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
 };
 
 /// A BehaviorSubject always contains a value, and immediately emits it
@@ -24,18 +23,6 @@ where
 	subject: PublishSubject<In, InError>,
 	/// So cloned subjects retain the same current value across clones
 	value: Arc<Mutex<In>>,
-}
-
-impl<In, InError> Provider for BehaviorSubject<In, InError>
-where
-	In: Signal + Clone + Default,
-	InError: Signal + Clone,
-{
-	type Provided = Self;
-
-	fn provide(&self) -> Self::Provided {
-		Self::default()
-	}
 }
 
 impl<In, InError> Default for BehaviorSubject<In, InError>
