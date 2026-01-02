@@ -24,15 +24,6 @@ impl WorkContextProvider for RxBevyContext {
 	type Item<'w> = RxBevyContextItem<'w>;
 }
 
-/// Use this to acquire the context using the `into_context` fn which extends
-/// this system param with additional data. Since a context can be unique for
-/// each pushed signal could have it's own "unique" context.
-///
-/// Currently this is only used for "cosmetic" reasons and isn't actually
-/// required for correct operation. But by passing in an Entity too, we can
-/// place internally spawned entities relative to another one. The subscriber
-/// component on these internally spawned entities are capable of despawning
-/// themselves so that's also not a reason to have this. It's purely cosmetic.
 pub struct RxBevyContextItem<'w> {
 	pub deferred_world: DeferredWorld<'w>,
 	now: Duration,

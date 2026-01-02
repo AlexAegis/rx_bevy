@@ -8,9 +8,9 @@ use rx_core_traits::{
 use crate::FallbackWhenSilentSubscriber;
 
 /// The [FallbackWhenSilentOperator] calls `into()` to map incoming values to the expected
-/// out value provided `From` is implemented on the downstream type.
-/// When both `In` and `Out`, and `InError` and `OutError` types are the same,
-/// it's equivalent to the `identity` operator and is a noop.
+/// output value, provided `From` is implemented on the downstream type.
+/// When `In` and `Out`, as well as `InError` and `OutError`, are the same types,
+/// it is equivalent to the `identity` operator and is a no-op.
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]

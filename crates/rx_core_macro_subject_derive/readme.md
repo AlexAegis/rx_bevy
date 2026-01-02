@@ -8,11 +8,13 @@
 
 > In case you want to inspect the output of the proc macro.
 
-If you haven't installed `cargo-expand` yet.
+If you haven't installed `cargo-expand` yet, install it first:
 
 ```sh
 cargo install cargo-expand
 ```
+
+Then expand the macro output:
 
 ```sh
 cargo expand -p rx_core_observable_interval

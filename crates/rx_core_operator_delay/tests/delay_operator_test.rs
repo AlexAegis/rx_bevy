@@ -32,7 +32,7 @@ fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
 	);
 	assert!(
 		notification_collector.lock().is_empty(),
-		"No notifications should've observed yet"
+		"No notifications should've been observed yet"
 	);
 	executor.tick(Duration::from_millis(999));
 	assert!(
@@ -41,7 +41,7 @@ fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
 	);
 	assert!(
 		notification_collector.lock().is_empty(),
-		"No notifications should've observed yet, insufficient time had passed"
+		"No notifications should've been observed yet; insufficient time had passed"
 	);
 
 	executor.tick(Duration::from_millis(1));

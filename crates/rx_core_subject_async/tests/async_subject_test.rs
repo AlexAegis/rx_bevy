@@ -49,7 +49,7 @@ fn should_emit_the_last_value_after_completed_and_unsubscribe() {
 
 	assert!(
 		!notification_collector_1.lock().nth_notification_exists(3),
-		"destination should not have recieved another notification"
+		"destination should not have received another notification"
 	);
 }
 

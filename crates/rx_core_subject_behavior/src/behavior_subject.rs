@@ -62,7 +62,7 @@ where
 
 	/// Returns a clone of the currently stored value
 	/// In case you want to access the current value, prefer using a
-	/// subscription though to keep your code reactive, only use this when it's
+	/// subscription to keep your code reactive; only use this when it is
 	/// absolutely necessary.
 	pub fn value(&self) -> In {
 		self.value.lock_ignore_poison().clone()

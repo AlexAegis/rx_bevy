@@ -20,7 +20,7 @@ use crate::{ObserverInput, Subscriber};
 ///   and Operators, and they must be fully connected.
 ///
 /// To prevent erroneously missing calling `upgrade` in an Observable's
-/// subscribe function, [UpgradeableObserver] does NOT have [Observer] as it's
+/// subscribe function, [UpgradeableObserver] does NOT have [Observer] as its
 /// supertrait!
 pub trait UpgradeableObserver: ObserverInput + Send + Sync {
 	type Upgraded: Subscriber<In = Self::In, InError = Self::InError>;
@@ -42,7 +42,7 @@ where
 /// To mark types that upgrade to themselves when used as a destination in an
 /// Observables subscribe method. Usually subscribers fall into this category
 /// as they are already subscribers, so there's no need for an upgrade. But
-/// there are a few regular observers too that chose implement
+/// there are a few regular observers too that chose to implement
 /// SubscriptionLike to implement a unique behavior. These observers take it
 /// upon themselves to manage their own closing logic, and maintain a teardown
 /// for added teardowns.

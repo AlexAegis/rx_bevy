@@ -407,7 +407,7 @@ mod test_notification_collector {
 			let notification_collector = NotificationCollectorState::<i32, String>::default();
 			assert!(
 				notification_collector.nothing_happened_after_closed(),
-				"a freshly created default mock context thinks something happend after closing without even passing in a single notification"
+				"a freshly created default mock context thinks something happened after closing without even passing in a single notification"
 			)
 		}
 

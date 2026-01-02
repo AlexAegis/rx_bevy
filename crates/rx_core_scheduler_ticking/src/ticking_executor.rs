@@ -41,7 +41,7 @@ where
 		WorkId,
 		Box<dyn ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync>,
 	>,
-	// TODO: Use ManyMap once done to make sure CancellationIds can't grow infinetly, they probably don't already as subscriptions always use the cancellationId, but I want to make it sure.
+	// TODO: Use ManyMap once done to make sure CancellationIds can't grow infinitely, they probably don't already as subscriptions always use the cancellationId, but I want to make it sure.
 	cancellation_map: HashMap<WorkCancellationId, Vec<WorkId>>,
 	invokable_work: HashMap<
 		WorkInvokeId,
@@ -81,8 +81,8 @@ where
 	/// that is then immediately scheduling work that can also be immediately
 	/// executed and so on.
 	///
-	/// > Nested delayed work above a delay of 0 is safe, and can not reach
-	/// > this limit ever! Such work scheduled from a scheudled task can only
+	/// > Nested delayed work above a delay of 0 is safe, and cannot reach
+	/// > this limit ever! Such work scheduled from a scheduled task can only
 	/// > start from the next tick, as the "scheduled_on" time of the next
 	/// > task is the already elapsed time of the current task. And the delay
 	/// > accounts for that time too.
@@ -172,10 +172,10 @@ where
 				ScheduledWorkAction::Invoke(invoke_id) => {
 					self.invoked.push(invoke_id);
 				}
-				ScheduledWorkAction::CancelInvoked(cancelled_invokation_id) => {
-					self.invokable_work.remove(&cancelled_invokation_id);
+				ScheduledWorkAction::CancelInvoked(cancelled_invocation_id) => {
+					self.invokable_work.remove(&cancelled_invocation_id);
 					self.invoked
-						.retain(|invoked_id| invoked_id == &cancelled_invokation_id);
+						.retain(|invoked_id| invoked_id == &cancelled_invocation_id);
 				}
 				ScheduledWorkAction::Cancel(cancelled_id) => {
 					if let Some(work_ids) = self.cancellation_map.remove(&cancelled_id) {

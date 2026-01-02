@@ -14,9 +14,9 @@ use crate::{DetachedSubscriber, RxBevyScheduler};
 /// destination for subscriptions. The entity here will receive all signals as
 /// [ConsumableSubscriberNotificationEvent][crate::ConsumableSubscriberNotificationEvent]'s.
 ///
-/// It's mainly used by user made subscriptions, whenever you make a subscription
-/// through [Commands][bevy_ecs::Commands], the destination entity will be
-/// wrapped into this one.
+/// It's mainly used by user-made subscriptions. Whenever you make a
+/// subscription through [Commands][bevy_ecs::Commands], the destination entity
+/// will be wrapped into this one.
 ///
 /// > Technically this is an Observer in the Rx terms and should be called
 /// > `EntityObserver` but that would be a very confusing term in Bevy.

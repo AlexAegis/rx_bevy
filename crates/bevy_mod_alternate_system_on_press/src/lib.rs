@@ -42,7 +42,7 @@ where
 /// Pressing the key will execute the first system, but pressing it again will
 /// execute the second one. Then the cycle restarts.
 ///
-/// It's like pen clicking, it performs alternative actions of extension and
+/// It's like pen clicking: it performs alternative actions of extension and
 /// retraction.
 pub fn alternate_systems_on_press<M1, M2>(
 	toggle_key_code: KeyCode,

@@ -22,7 +22,7 @@ use crate::{
 	SubscriptionOf, UnfinishedSubscription, default_on_subscribe_error_handler,
 };
 
-/// Note that if you accidentally subscribe to a subject entity, with itself,
+/// Note that if you accidentally subscribe to a subject entity with itself,
 /// then that will result in an infinite loop! With a regular Subject it's
 /// easy and self evident that this would happen, but since it's possible
 /// to subscribe to stuff by only knowing it's output types, it's harder to

@@ -4,7 +4,7 @@ use derive_where::derive_where;
 use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriberState};
 
 /// Stores a single `next` emission from an observable to be used later,
-/// along with it's state of being completed/unsubscribed or if it's still
+/// along with its state of being completed/unsubscribed or if it's still
 /// waiting for any interaction.
 #[derive_where(Debug; Out, OutError)]
 pub struct NotificationState<Out, OutError = Never>

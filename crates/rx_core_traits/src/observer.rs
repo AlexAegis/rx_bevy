@@ -29,7 +29,7 @@ pub trait ObserverInput {
 /// #[rx_in_error(String)]
 /// struct Print;
 ///
-/// // Impletemented by the derive
+/// // Implemented by the derive
 /// // impl ObserverInput for Print {
 /// //     type In = i32;
 /// //     type InError = String;

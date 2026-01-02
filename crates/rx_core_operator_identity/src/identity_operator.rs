@@ -8,8 +8,8 @@ use crate::IdentitySubscriber;
 
 /// # [IdentityOperator]
 ///
-/// The [IdentityOperator] does nothing. It's only purpose is to let you
-/// easily define input types for a [CompositeOperator]
+/// The [IdentityOperator] does nothing. Its only purpose is to let you
+/// easily define input types for a [CompositeOperator].
 #[derive(RxOperator)]
 #[derive_where(Default, Clone, Debug)]
 #[rx_in(In)]

@@ -60,7 +60,7 @@ The act of emitting a signal.
 
 ### Inputs
 
-Observers are things that can receive values, therefore it defines it's
+Observers are things that can receive values, therefore it defines its
 **input types** using the `ObserverInput` trait. These types define the values
 that are received by the `next` and `error` functions.
 
@@ -116,7 +116,7 @@ actual subscriptions can be created.
 > [`iterator`](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_observable_iterator/src/iterator_observable.rs)
 > observables both complete immediately on subscription.
 
-This may seem like a superficial disctinction to make as it still is the
+This may seem like a superficial distinction to make as it still is the
 observable that you directly interact with, but it is important to understand
 how they work.
 
@@ -300,7 +300,7 @@ easier to use, each of them have a chainable extension on the Observable trait,
 so you don't need to nest manually.
 
 For example, combining the `IteratorObservable` with a `MapOperator`, we can
-create an observable that emits a formatter string from made from the upstream
+create an observable that emits a formatted string made from the upstream
 numbers:
 
 ```rs
@@ -339,7 +339,7 @@ impl<O> ObservablePipeExtensionMap for O where O: 'static + Observable + Send + 
 
 ### Subscribers
 
-A subscriber is something that's **both** and **observer** and a
+A subscriber is something that's **both an observer** and a
 **subscription** at the same time!
 
 Most of the time, they wrap another observer or subscriber, which means you
@@ -387,8 +387,8 @@ let _s = (1..=5)
 
 > [UpgradeableObserver Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_traits/src/upgradeable_observer.rs)
 
-When subscribing to an Observable, sometimes we want to observable to
-be able to send an unsubscribe call do this destination, and sometimes it should
+When subscribing to an Observable, sometimes we want the observable to
+be able to send an unsubscribe call to this destination, and sometimes it should
 be **detached**.
 
 > Remember: A subscriber is both an observer and a subscription
@@ -531,7 +531,7 @@ subject_subscription_2 - unsubscribed
 ```
 
 You can see that the signal `3` was heard by both subscriptions! And each
-subscription had it's own finalize callback! Each individual subscription is
+subscription had its own finalize callback! Each individual subscription is
 unique and can have as many or little operators on it as you want!
 
 ### PublishSubject
@@ -812,7 +812,7 @@ simply execute as many times as often as they can.
 Invoked work is not executed automatically, but based on its `invoke_id`
 can be "invoked" which means executing it as soon as the executor can.
 
-> For a ticking executor this means the next tick after invokation
+> For a ticking executor this means the next tick after invocation
 
 ### Scheduler Context
 

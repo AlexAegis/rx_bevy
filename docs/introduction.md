@@ -46,15 +46,14 @@ use them within Bevy at the [Usage Within Bevy](./04_usage_within_bevy.md) page.
 
 ## Examples
 
-### Toggle a timers speed by keyboard
+### Toggle a timer's speed by keyboard
 
-In this example, the KeyboardObservables subscription will emit `just_pressed`
-KeyCodes, and the filter operator will limit them to just 4 of them. Then
-`switch_map` creates an internal subscription to an `IntervalObservable`
-whose speed will depend on the KeyCode observed! Then the scan operator will
-ignore the intervals emissions (as they restart on every new KeyCode!) and
-counts the number of emissions. The result is a counter whose speed changes
-based on the key pressed.
+In this example, the KeyboardObservables subscription emits `just_pressed`
+KeyCodes, and the filter operator limits them to 4. Then `switch_map` creates
+an internal subscription to an `IntervalObservable` whose speed depends on the
+KeyCode observed. The scan operator ignores the interval's emissions (they
+restart on every new KeyCode) and counts the number of emissions. The result is
+a counter whose speed changes based on the key pressed.
 
 Try this example in the observable gallery! Press `L` to subscribe/unsubscribe!
 

@@ -6,13 +6,13 @@ use rx_core_traits::{ComposableOperator, Never, Signal, Subscriber};
 
 use crate::LiftResultSubscriber;
 
-/// The [LiftResultOperator] unwraps a Result and passes it's Ok(T) variant, and
-/// errors it's Err(E) variant downstream. It also requires a mapping function
+/// The [LiftResultOperator] unwraps a Result and passes its Ok(T) variant, and
+/// errors its Err(E) variant downstream. It also requires a mapping function
 /// to normalize the upstream error to the new downstream error type, defined
 /// by the results Err variant.
 ///
-/// The reason it's not called an "UnwrapResultOperator" because that would imply
-/// that it can panic, however that's only true if the error isn't caught downstream.
+/// The reason it's not called an "UnwrapResultOperator" is that would imply
+/// it can panic; that is only true if the error isn't caught downstream.
 #[derive_where(Default)]
 #[derive(RxOperator)]
 #[rx_in(Result<ResultIn, ResultInError>)]

@@ -35,6 +35,6 @@ where
 	Subscription: SubscriptionWithTeardown,
 {
 	fn drop(&mut self) {
-		// Must not unsubscribe on drop, it's shared
+		// Must not unsubscribe on drop; it's shared
 	}
 }

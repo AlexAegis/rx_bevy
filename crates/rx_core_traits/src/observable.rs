@@ -5,7 +5,7 @@ use crate::{
 /// # [ObservableOutput]
 ///
 /// Defines the outputs of an [Observable]. Also used for [Operator]s to define
-/// the new outputs once the operator is applies.
+/// the new outputs once the operator is applied.
 pub trait ObservableOutput {
 	type Out: Signal;
 	type OutError: Signal;
@@ -72,7 +72,7 @@ pub trait ObservableOutput {
 /// don't directly handle subscriptions, such as in an ECS where everything
 /// is wrapped into components and events.
 ///
-/// > Note that not assigning the subscription to a variable (or assining it to
+/// > Note that not assigning the subscription to a variable (or assigning it to
 /// > `let _ =`) will cause it to be immediately dropped, hence `subscribe` is
 /// > `#[must_use]`!
 pub trait Observable: ObservableOutput + WithPrimaryCategory {

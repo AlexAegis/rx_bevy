@@ -3,8 +3,8 @@ use std::{
 	sync::{Arc, RwLock},
 };
 
-/// A small wrapper around iterators to track how many times it next-ed in a
-/// shared state.
+/// A small wrapper around iterators that tracks how many times `next` is
+/// called in shared state.
 /// Purely for testing purposes.
 #[derive(Clone)]
 pub struct TrackedIterator<Iterator>
@@ -46,10 +46,10 @@ pub trait IteratorTrackingDataAccess {
 }
 
 impl IteratorTrackingDataAccess for Arc<RwLock<IteratorTrackingData>> {
-	/// In case the iterator or any of its clones, were iterated over multiple
-	/// times, the instance_index is incremented by one.
-	/// As this is meant for tests, you have to track this index yourself in
-	/// your tests by tracking the logic of what you're testing.
+	/// If the iterator or any of its clones is iterated over multiple times, the
+	/// `instance_index` is incremented by one.
+	/// As this is meant for tests, you have to track this index yourself in your
+	/// tests based on the logic you are verifying.
 	fn read_next_count(&self, instance_id: usize) -> usize {
 		let tracking_data = self.read().unwrap();
 		tracking_data.get_instance_data(instance_id).next_count
@@ -115,7 +115,7 @@ where
 #[derive(Default)]
 pub struct IteratorTrackingData {
 	next_instance_id: usize,
-	instances: HashMap<usize, IteratorIntanceTrackingData>,
+	instances: HashMap<usize, IteratorInstanceTrackingData>,
 }
 
 impl IteratorTrackingData {
@@ -123,11 +123,11 @@ impl IteratorTrackingData {
 		let instance_id = self.next_instance_id;
 		self.next_instance_id += 1;
 		self.instances
-			.insert(instance_id, IteratorIntanceTrackingData::default());
+			.insert(instance_id, IteratorInstanceTrackingData::default());
 		instance_id
 	}
 
-	pub fn get_instance_data(&self, instance_id: usize) -> &IteratorIntanceTrackingData {
+	pub fn get_instance_data(&self, instance_id: usize) -> &IteratorInstanceTrackingData {
 		self.instances
 			.get(&instance_id)
 			.expect("iterator tracking instance {instance_id} does not exist")
@@ -136,7 +136,7 @@ impl IteratorTrackingData {
 	pub fn get_instance_data_mut(
 		&mut self,
 		instance_id: usize,
-	) -> &mut IteratorIntanceTrackingData {
+	) -> &mut IteratorInstanceTrackingData {
 		self.instances
 			.get_mut(&instance_id)
 			.expect("iterator tracking instance {instance_id} does not exist")
@@ -144,7 +144,7 @@ impl IteratorTrackingData {
 }
 
 #[derive(Default)]
-pub struct IteratorIntanceTrackingData {
+pub struct IteratorInstanceTrackingData {
 	next_count: usize,
 	finished: bool,
 }

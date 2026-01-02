@@ -2,7 +2,7 @@
 /// for blanket implementation. (Since negative trait bounds aren't a thing)
 ///
 /// For example, it's impossible to only implement something for all observers
-/// without also having to use the same implentations for all subscribers and
+/// without also having to use the same implementations for all subscribers and
 /// all subjects too, since they are all also observers!
 pub trait WithPrimaryCategory {
 	type PrimaryCategory: PrimaryCategoryMarker;

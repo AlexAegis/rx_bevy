@@ -122,10 +122,9 @@ where
 		}
 	}
 
-	// Ignore the poison on unsubscribe. It's only relevant if you still
-	// want to do something with it using the other signals. They will print
-	// errors on poison and unsubscribe instead. (And that would cause a double
-	// print)
+	// Ignore poison on unsubscribe; it only matters if other signals still need
+	// it. They already log poison errors and unsubscribe instead, which would
+	// otherwise double print.
 	fn unsubscribe(&mut self) {
 		if self.is_closed() {
 			return;

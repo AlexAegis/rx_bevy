@@ -240,7 +240,7 @@ fn should_handle_manual_connections_and_disconnections_and_close_when_completed(
 	assert!(!shared.is_connected(), "Did not get disconnected!");
 	assert!(
 		!shared.disconnect(),
-		"Did not failed to perform disconnect as it was already disconnected!"
+		"Failed to disconnect because it was already disconnected"
 	);
 
 	source.next(99);

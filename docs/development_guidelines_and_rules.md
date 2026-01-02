@@ -23,8 +23,8 @@ It is highly advised to have at least one unit test for each rule defined here
 wherever applicable!
 
 > If you're not writing custom observables and operators, it could still be
-> useful to know what's their expected behavior to notice potential bugs, or to
-> assure yourself that a certain behavior is intented or not.
+> useful to know what their expected behavior is to notice potential bugs, or to
+> assure yourself that a certain behavior is intended or not.
 
 Rules are fitted with rule codes to identify them in tests, to easily verify
 that a test for a rule exists for any given implementation.
@@ -91,12 +91,12 @@ fn complete(&mut self, context: &mut <Self::Context as SubscriptionContext>::Ite
 
 > Testable: Yes
 
-If an operator can't close itself because it's not not within it's ability to
+If an operator can't close itself because it's not within its ability to
 trigger an unsubscribe, then it's completely unnecessary to check if downstream
-is closed or not, as it will be downstreams job to ignore upstream events if it
+is closed or not, as it will be downstream's job to ignore upstream events if it
 had been closed.
 
-Checking too early would result in many more extra ifs that necessary.
+Checking too early would result in many more extra ifs than necessary.
 
 For example: `map` doesn't unsubscribe:
 
@@ -152,7 +152,7 @@ for item in self.iterator.clone().into_iter() {
 }
 ```
 
-### `RX_UNSUBSCRIBE_AFTER_COMPLETION`: What completes must immediately unsubscribe if and only when they themselves trigged the completion
+### `RX_UNSUBSCRIBE_AFTER_COMPLETION`: What completes must immediately unsubscribe if and only when they themselves triggered the completion
 
 > Testable: Yes
 
@@ -165,13 +165,13 @@ operator itself.
 > For example, the `take` operator can complete early, when that happens it must
 > also call `unsubscribe` on itself and close.
 
-### `RX_UNSUBSCRIBE_AFTER_ERROR`: What errors must immediately unsubscribe if and only when they themselves trigged the error
+### `RX_UNSUBSCRIBE_AFTER_ERROR`: What errors must immediately unsubscribe if and only when they themselves triggered the error
 
 > Testable: Yes
 
 An observable must unsubscribe after it had errored.
 
-But an operator that just received a error signal from upstream, does
+But an operator that just received an error signal from upstream, does
 not need to also call unsubscribe, only when the error was triggered by the
 operator itself.
 
@@ -193,7 +193,7 @@ fn is_closed(&self) -> bool {
 }
 ```
 
-If the operator can close itself, it should keep local state of it's closedness.
+If the operator can close itself, it should keep local state of its closedness.
 If it can't this is unnecessary and should just ask the destination if it's
 closed.
 
@@ -218,7 +218,7 @@ or internal teardown that isn't being closed by the time it drops in a
 `DropUnsafeSubscriptionContext` it **must** panic! Fail loud, and fail early!
 
 If you just don't deal with it because in some cases it's empty, then you'll
-just delay the problem until it's not empty in another usecase.
+just delay the problem until it's not empty in another use case.
 
 ### `RX_WHATS_CLOSED_STAYS_CLOSED`: Closed subscriptions can never re-open
 
@@ -247,15 +247,15 @@ This type **MUST** be used to denote signals that are never produced instead of
 using the unit type `()` which could be produced, and as such is inadequate to
 denote that something won't ever produce said signal.
 
-- If an Observable never produces an error, it **must** set it's `OutError`
+- If an Observable never produces an error, it **must** set its `OutError`
   type to `Never`.
-- If an Observable never produces a value, it's `Out` type **must** be set to
+- If an Observable never produces a value, its `Out` type **must** be set to
   `Never`.
   - For example the `ThrowObservable` only produces a single error, therefore
-    it's `Out` type is `Never`
+        its `Out` type is `Never`
   - And the `NeverObservable` never produces anything so both `Out` and
-    `OutError` is `Never`.
+        `OutError` is `Never`.
 - If a Subscriber never sends errors downstream (for example it catches
-  errors), it also **must** set it's `OutError` type to `Never`.
+    errors), it also **must** set its `OutError` type to `Never`.
 - If a Subscriber never sends values downstream (for example it re-throws them
-  as errors), it also **must** set it's `Out` type to `Never`.
+    as errors), it also **must** set its `Out` type to `Never`.

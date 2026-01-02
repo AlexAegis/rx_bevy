@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Schedulers define a set of work that can be sent to the scheduler to
-/// then be executed by it's executor, and cancelled when no longer needed.
+/// then be executed by its executor, and cancelled when no longer needed.
 pub trait Scheduler: WithWorkInputOutput + WithWorkContextProvider + Send + Sync {
 	type DelayedWorkFactory: DelayedWorkFactory<Self::Tick, Self::WorkContextProvider>;
 	type RepeatedWorkFactory: RepeatedTaskFactory<Self::Tick, Self::WorkContextProvider>;
@@ -114,7 +114,7 @@ pub trait SchedulerScheduleWorkExtension: Scheduler {
 	}
 
 	/// Schedules a task that will execute every time the executor ticks!
-	/// This can mean different things dependning on the executor and the
+	/// This can mean different things depending on the executor and the
 	/// environment it's used in.
 	///
 	/// For example, in a game engine, the executor is expected to be ticked

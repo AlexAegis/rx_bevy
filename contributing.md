@@ -183,7 +183,7 @@ between other crates, can have them as their category.
 
 #### Third Segment - Name
 
-The last segment has the name of the thing you implement. Should be consise but
+The last segment has the name of the thing you implement. Should be concise but
 clear on what it does.
 
 Prefer Rx and Rust conventions to name certain behaviors with words like `try`,
@@ -191,7 +191,7 @@ Prefer Rx and Rust conventions to name certain behaviors with words like `try`,
 
 ## Creating New Crates
 
-Once you have the name of what crate you want to implement, either crate one or
+Once you have the name of what crate you want to implement, either create one or
 just copy a similar one and rename the stuff inside.
 
 ### Creating New Observables
@@ -206,7 +206,7 @@ Observables usually have at least 3-4 files besides `lib.rs`:
   into the subscription. (Optional)
 - `foo_observable_fn.rs` Observable creator functions, they are shorter to write
   but can't have their generics default to something.
-  > `observabe_fn`s may be removed, but they are already behind a feature.
+  > `observable_fn`s may be removed, but they are already behind a feature.
   > Feedback and time shall tell if they are useful or not.
 - `lib.rs` pre-categorizes each module export for easy integration with the
   aggregator crate.
@@ -228,7 +228,7 @@ Observables usually have at least 3-4 files besides `lib.rs`:
    }
    ```
 
-#### Obserable Integration Checklist
+#### Observable Integration Checklist
 
 > Using `rx_bevy_observable_foo` as an example
 
@@ -363,7 +363,7 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 
 Operators usually have at least 4-5 files besides `lib.rs`:
 
-- `foo_operator.rs` The Operator implementation, which is responsible of
+- `foo_operator.rs` The Operator implementation, which is responsible for
   creating a subscriber.
 - `foo_subscriber.rs` The Subscriber implementation. (Optional if you use
   an existing one, or a combination of multiple other subscribers!)

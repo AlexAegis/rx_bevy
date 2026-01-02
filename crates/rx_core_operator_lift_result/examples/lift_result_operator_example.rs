@@ -1,8 +1,5 @@
 use rx_core::prelude::*;
 
-/// The [LiftResultOperator] is used to unpack an incoming Result<T, E> into T
-/// if it's Ok(T) and next it, and if it's an Err(E), downstream will receive it
-/// as an error.
 fn main() {
 	let _s = (1..=5)
 		.into_observable()

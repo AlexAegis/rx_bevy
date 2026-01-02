@@ -11,18 +11,18 @@ use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 /// > Category: Higher Order Operator
 ///
 /// The `switch_map` subscribes to incoming observables immediately,
-/// unsubscribing the existing inner subscription if there were any.
+/// unsubscribing the existing inner subscription if there was one.
 ///
-/// - The `switch_map` can only have at most one active inner subscriptions.
+/// - The `switch_map` can only have at most one active inner subscription.
 /// - The `switch_map` is a `map` and a `switch_all` operator combined where
 ///   `map` returns an observable.
 ///
 /// ## Higher Order Operators
 ///
-/// Higher Order Operators are operators that operator over a stream of
-/// observables. All they do is subscribe to incoming observables, and what
-/// they differ in is what happens with the inner observable and the incoming
-/// next inner observable when one is received.
+/// Higher Order Operators are operators that operate over a stream of
+/// observables. All they do is subscribe to incoming observables; they differ
+/// in what happens with the inner observable and the next inner observable
+/// when one is received.
 ///
 /// The higher order operators are:
 /// - [concat_all](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_concat_all)
@@ -36,7 +36,7 @@ use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 ///
 /// ### Mandatory Error Mapper for all Higher Order Operators
 ///
-/// Since the inner observables', and the upstream error type can differ, and
+/// Since the inner observables and the upstream error type can differ, and
 /// errors have to be able to go forward unless explicitly caught, a mapping
 /// between the two types must be defined. Ideally, this would be a simple
 /// `.into()` transformation, but the current `Never` type, `Infallible`
@@ -49,7 +49,7 @@ use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 /// impossible to use with higher order operators.
 ///
 /// ```text
-/// // Where subject_1 and subject_2 has an error type of `MyError`
+/// // Where subject_1 and subject_2 have an error type of `MyError`
 /// [subject_1, subject_2].into_observables().concat_all(); // Impossible: Infallible is not Into<MyError>
 /// ```
 ///

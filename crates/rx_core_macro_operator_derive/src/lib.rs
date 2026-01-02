@@ -40,9 +40,9 @@ fn primary_category_operator() -> Type {
 /// - `#[rx_in_error(...)]` (optional, default: `Never`): Defines the input
 ///   error type of the operator
 /// - `#[rx_out(...)]` (optional, default: `Never`): Defines the output type of
-///   the operator, usually it's the same as the input type
+///   the operator; usually it's the same as the input type
 /// - `#[rx_out_error(...)]` (optional, default: `Never`): Defines the output
-///   error type of the operator, usually it's the same as the input error type
+///   error type of the operator; usually it's the same as the input error type
 #[proc_macro_derive(
 	RxOperator,
 	attributes(rx_in, rx_in_error, rx_out, rx_out_error, _rx_core_traits_crate)

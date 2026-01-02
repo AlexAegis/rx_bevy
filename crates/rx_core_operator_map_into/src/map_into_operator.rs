@@ -7,9 +7,9 @@ use rx_core_traits::{ComposableOperator, Signal, Subscriber};
 use crate::MapIntoSubscriber;
 
 /// The [MapIntoOperator] calls `into()` to map incoming values to the expected
-/// out value provided `From` is implemented on the downstream type.
-/// When both `In` and `Out`, and `InError` and `OutError` types are the same,
-/// it's equivalent to the `identity` operator and is a noop.
+/// output value, provided `From` is implemented on the downstream type.
+/// When `In` and `Out`, as well as `InError` and `OutError`, are the same types,
+/// it is equivalent to the `identity` operator and is a no-op.
 #[derive_where(Debug, Clone, Default)]
 #[derive(RxOperator)]
 #[rx_in(In)]

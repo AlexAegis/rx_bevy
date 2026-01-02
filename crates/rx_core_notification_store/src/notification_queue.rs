@@ -6,7 +6,7 @@ use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriberState};
 use crate::{QueueOverflowBehavior, QueueOverflowOptions};
 
 /// Stores a list of notifications from an upstream source to be used later,
-/// along with it's state reflecting the front of the queue.
+/// along with its state reflecting the front of the queue.
 /// Errors jump the queue and mark the entire queue as errored immediately
 /// regardless of what's in the queue!
 #[derive_where(Debug)]
@@ -78,7 +78,7 @@ where
 {
 	/// Pushes a new notification onto the queue using `push_back`.
 	/// If this is the first notification, it also updates the queue's state
-	/// to reflect the state of it's "front".
+	/// to reflect the state of its "front".
 	pub fn push(&mut self, notification: SubscriberNotification<In, InError>) {
 		if self.count_nexts() >= self.options.max_queue_length
 			&& matches!(notification, SubscriberNotification::Next(_))
