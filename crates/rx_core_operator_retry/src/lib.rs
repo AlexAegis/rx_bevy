@@ -3,7 +3,7 @@ mod retry_operator;
 mod retry_subscriber;
 
 pub(crate) mod internal {
-	pub use super::retry_subscriber::*;
+	pub(crate) use super::retry_subscriber::*;
 }
 
 pub mod observable {

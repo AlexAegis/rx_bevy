@@ -12,7 +12,7 @@ pub(crate) const SOURCE_STEAL: &str = "Source should be present!";
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection]
-pub struct RetrySubscriber<Source, Destination>
+pub(crate) struct RetrySubscriber<Source, Destination>
 where
 	Source: 'static + Observable + Send + Sync,
 	Destination: 'static + Subscriber<In = Source::Out, InError = Source::OutError>,
