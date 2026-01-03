@@ -86,6 +86,7 @@ rx_core_subscriber_rc = { path = "crates/rx_core_subscriber_rc" }
 # Operators
 rx_core_operator_adsr = { path = "crates/rx_core_operator_adsr" }
 rx_core_operator_buffer_count = { path = "crates/rx_core_operator_buffer_count" }
+rx_core_operator_catch = { path = "crates/rx_core_operator_catch" }
 rx_core_operator_composite = { path = "crates/rx_core_operator_composite" }
 rx_core_operator_concat_all = { path = "crates/rx_core_operator_concat_all" }
 rx_core_operator_concat_map = { path = "crates/rx_core_operator_concat_map" }

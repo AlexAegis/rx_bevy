@@ -16,7 +16,7 @@ pub struct SwitchAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Clone + Send + Sync,
 {
 	error_mapper: ErrorMapper,
 	_phantom_data: PhantomData<(In, InError)>,
@@ -26,7 +26,7 @@ impl<In, InError, ErrorMapper> SwitchAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Clone + Send + Sync,
 {
 	pub fn new(error_mapper: ErrorMapper) -> Self {
 		Self {
@@ -40,7 +40,7 @@ impl<In, InError, ErrorMapper> ComposableOperator for SwitchAllOperator<In, InEr
 where
 	In: Observable + Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
 		= HigherOrderAllSubscriber<In, InError, SwitchSubscriberProvider, ErrorMapper, Destination>

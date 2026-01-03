@@ -14,7 +14,7 @@ use rx_core_traits::{ComposableOperator, Observable, Signal, Subscriber};
 #[rx_out_error(In::OutError)]
 pub struct ExhaustAllOperator<In, InError, ErrorMapper>
 where
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync + Clone,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Send + Sync + Clone,
 	In: Observable + Signal,
 	InError: Signal,
 {
@@ -24,7 +24,7 @@ where
 
 impl<In, InError, ErrorMapper> ExhaustAllOperator<In, InError, ErrorMapper>
 where
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync + Clone,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Send + Sync + Clone,
 	In: Observable + Signal,
 	InError: Signal,
 {
@@ -38,7 +38,7 @@ where
 
 impl<In, InError, ErrorMapper> ComposableOperator for ExhaustAllOperator<In, InError, ErrorMapper>
 where
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync + Clone,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Send + Sync + Clone,
 	In: Observable + Signal,
 	InError: Signal,
 {

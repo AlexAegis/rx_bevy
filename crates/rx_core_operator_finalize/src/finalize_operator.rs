@@ -17,7 +17,7 @@ where
 	Callback: 'static + Clone + FnOnce() + Send + Sync,
 {
 	#[derive_where(skip(Debug))]
-	callback: Callback,
+	teardown: Callback,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -27,9 +27,9 @@ where
 	InError: Signal,
 	Callback: 'static + Clone + FnOnce() + Send + Sync,
 {
-	pub fn new(callback: Callback) -> Self {
+	pub fn new(teardown: Callback) -> Self {
 		Self {
-			callback,
+			teardown,
 			_phantom_data: PhantomData,
 		}
 	}
@@ -54,7 +54,7 @@ where
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
-		destination.add_teardown(Teardown::new(self.callback.clone()));
+		destination.add_teardown(Teardown::new(self.teardown.clone()));
 		destination
 	}
 }

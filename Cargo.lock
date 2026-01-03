@@ -4392,6 +4392,7 @@ dependencies = [
  "rx_core_observer_print",
  "rx_core_operator_adsr",
  "rx_core_operator_buffer_count",
+ "rx_core_operator_catch",
  "rx_core_operator_composite",
  "rx_core_operator_concat_all",
  "rx_core_operator_concat_map",
@@ -4810,6 +4811,20 @@ dependencies = [
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
+ "rx_core_testing",
+ "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_operator_catch"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_operator_composite",
+ "rx_core_subscriber_higher_order",
  "rx_core_testing",
  "rx_core_traits",
 ]

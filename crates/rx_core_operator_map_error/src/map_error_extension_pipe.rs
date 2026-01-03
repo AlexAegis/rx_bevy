@@ -6,7 +6,7 @@ pub trait ObservablePipeExtensionMapError<'o>: 'o + Observable + Sized + Send + 
 	#[inline]
 	fn map_error<
 		NextOutError: Signal,
-		ErrorMapper: 'static + Fn(Self::OutError) -> NextOutError + Clone + Send + Sync,
+		ErrorMapper: 'static + FnOnce(Self::OutError) -> NextOutError + Clone + Send + Sync,
 	>(
 		self,
 		error_mapper: ErrorMapper,

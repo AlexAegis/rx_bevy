@@ -16,7 +16,7 @@ pub struct MergeAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Clone + Send + Sync,
 {
 	concurrency_limit: NonZero<usize>,
 	error_mapper: ErrorMapper,
@@ -27,7 +27,7 @@ impl<In, InError, ErrorMapper> MergeAllOperator<In, InError, ErrorMapper>
 where
 	In: Observable + Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Clone + Send + Sync,
 {
 	pub fn new(concurrency_limit: usize, error_mapper: ErrorMapper) -> Self {
 		Self {
@@ -42,7 +42,7 @@ impl<In, InError, ErrorMapper> ComposableOperator for MergeAllOperator<In, InErr
 where
 	In: Observable + Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
 		= HigherOrderAllSubscriber<In, InError, ConcurrentSubscriberProvider, ErrorMapper, Destination>

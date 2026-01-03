@@ -17,12 +17,12 @@ where
 	In: Signal + Observable,
 	InError: Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Send + Sync,
 	Destination: 'static + Subscriber<In = In::Out, InError = In::OutError>,
 {
 	#[destination]
 	destination: HigherOrderSubscriber::HigherOrderSubscriber<In, Destination>,
-	error_mapper: ErrorMapper,
+	error_mapper: Option<ErrorMapper>,
 	_phantom_data: PhantomData<InError>,
 }
 
@@ -32,7 +32,7 @@ where
 	In: Signal + Observable,
 	InError: Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Send + Sync,
 	Destination: 'static + Subscriber<In = In::Out, InError = In::OutError>,
 {
 	pub fn new(
@@ -41,12 +41,11 @@ where
 		concurrency_limit: NonZero<usize>,
 	) -> Self {
 		Self {
-			destination:
-				HigherOrderSubscriber::HigherOrderSubscriber::<In, Destination>::new_from_destination(
-					destination,
-					concurrency_limit
-				),
-				error_mapper,
+			destination: HigherOrderSubscriber::HigherOrderSubscriber::<In, Destination>::new_from_destination(
+				destination,
+				concurrency_limit
+			),
+			error_mapper: Some(error_mapper),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -58,7 +57,7 @@ where
 	In: Signal + Observable,
 	InError: Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
-	ErrorMapper: 'static + Fn(InError) -> In::OutError + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Send + Sync,
 	Destination: 'static + Subscriber<In = In::Out, InError = In::OutError>,
 {
 	#[inline]
@@ -69,7 +68,9 @@ where
 	/// For upstream errors
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error((self.error_mapper)(error));
+		if let Some(error_mapper) = self.error_mapper.take() {
+			self.destination.error((error_mapper)(error));
+		}
 	}
 
 	#[inline]

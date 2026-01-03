@@ -6,10 +6,10 @@ pub trait ObservablePipeExtensionFinalize<'o>: 'o + Observable + Sized + Send + 
 	#[inline]
 	fn finalize<Callback: 'static + Clone + FnOnce() + Send + Sync>(
 		self,
-		callback: Callback,
+		teardown: Callback,
 	) -> <FinalizeOperator<Self::Out, Self::OutError, Callback> as Operator<'o>>::OutObservable<Self>
 	{
-		FinalizeOperator::new(callback).operate(self)
+		FinalizeOperator::new(teardown).operate(self)
 	}
 }
 

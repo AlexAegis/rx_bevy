@@ -146,6 +146,9 @@ component_management:
     - component_id: rx_core_operator_buffer_count
       paths:
         - crates/rx_core_operator_buffer_count/**
+    - component_id: rx_core_operator_catch
+      paths:
+        - crates/rx_core_operator_catch/**
     - component_id: rx_core_operator_composite
       paths:
         - crates/rx_core_operator_composite/**

@@ -17,7 +17,7 @@ where
 	In: Signal,
 	InError: Signal,
 	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
-	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> InnerObservable::OutError + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	mapper: Mapper,
@@ -32,7 +32,7 @@ where
 	In: Signal,
 	InError: Signal,
 	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
-	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> InnerObservable::OutError + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	pub fn new(mapper: Mapper, error_mapper: ErrorMapper, concurrency_limit: usize) -> Self {
@@ -51,7 +51,7 @@ where
 	In: Signal,
 	InError: Signal,
 	Mapper: 'static + FnMut(In) -> InnerObservable + Clone + Send + Sync,
-	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> InnerObservable::OutError + Clone + Send + Sync,
 	InnerObservable: Observable + Signal,
 {
 	type Subscriber<Destination>

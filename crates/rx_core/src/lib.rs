@@ -76,6 +76,8 @@ pub mod operator {
 	pub use rx_core_operator_adsr::operator::*;
 	#[cfg(feature = "operator_buffer_count")]
 	pub use rx_core_operator_buffer_count::operator::*;
+	#[cfg(feature = "operator_catch")]
+	pub use rx_core_operator_catch::operator::*;
 	#[cfg(feature = "operator_composite")]
 	pub use rx_core_operator_composite::operator::*;
 	#[cfg(feature = "operator_concat_all")]
@@ -166,6 +168,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_adsr::extension_compose::*;
 	#[cfg(feature = "operator_buffer_count")]
 	pub use rx_core_operator_buffer_count::extension_compose::*;
+	#[cfg(feature = "operator_catch")]
+	pub use rx_core_operator_catch::extension_compose::*;
 	#[cfg(feature = "operator_composite")]
 	pub use rx_core_operator_composite::extension_compose::*;
 	#[cfg(feature = "operator_concat_all")]
@@ -250,6 +254,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_adsr::extension_pipe::*;
 	#[cfg(feature = "operator_buffer_count")]
 	pub use rx_core_operator_buffer_count::extension_pipe::*;
+	#[cfg(feature = "operator_catch")]
+	pub use rx_core_operator_catch::extension_pipe::*;
 	#[cfg(feature = "operator_concat_all")]
 	pub use rx_core_operator_concat_all::extension_pipe::*;
 	#[cfg(feature = "operator_concat_map")]

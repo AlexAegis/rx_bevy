@@ -7,7 +7,7 @@ pub trait ObservablePipeExtensionExhaustMap<'o>: 'o + Observable + Sized + Send 
 	fn exhaust_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + FnMut(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
-		ErrorMapper: 'static + Fn(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
+		ErrorMapper: 'static + FnOnce(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
 	>(
 		self,
 		mapper: Mapper,

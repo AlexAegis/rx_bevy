@@ -25,14 +25,14 @@ pub struct HigherOrderMapSubscriber<
 	Mapper: FnMut(In) -> InnerObservable,
 	InnerObservable: Observable + Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
-	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> InnerObservable::OutError + Send + Sync,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
 	#[destination]
 	destination: HigherOrderSubscriber::HigherOrderSubscriber<InnerObservable, Destination>,
 	mapper: Mapper,
-	error_mapper: ErrorMapper,
+	error_mapper: Option<ErrorMapper>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
@@ -52,7 +52,7 @@ where
 	Mapper: FnMut(In) -> InnerObservable,
 	InnerObservable: Observable + Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
-	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> InnerObservable::OutError + Send + Sync,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
@@ -68,7 +68,7 @@ where
 				Destination,
 			>::new_from_destination(destination, concurrency_limit),
 			mapper,
-			error_mapper,
+			error_mapper: Some(error_mapper),
 			_phantom_data: PhantomData,
 		}
 	}
@@ -90,7 +90,7 @@ where
 	Mapper: FnMut(In) -> InnerObservable,
 	InnerObservable: Observable + Signal,
 	HigherOrderSubscriber: HigherOrderSubscriberProvider,
-	ErrorMapper: 'static + Fn(InError) -> InnerObservable::OutError + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> InnerObservable::OutError + Send + Sync,
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
@@ -102,7 +102,9 @@ where
 	/// For upstream errors
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		self.destination.error((self.error_mapper)(error));
+		if let Some(error_mapper) = self.error_mapper.take() {
+			self.destination.error((error_mapper)(error));
+		}
 	}
 
 	#[inline]

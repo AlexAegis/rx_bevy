@@ -4,13 +4,13 @@ use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Observable, Subscriber, UpgradeableObserver};
 
 /// Defers the creation of its source [Observable] until subscribe
-#[derive(RxObservable, Clone)]
+#[derive(RxObservable)]
 #[rx_out(Source::Out)]
 #[rx_out_error(Source::OutError)]
 pub struct DeferredObservable<F, Source>
 where
 	Source: Observable,
-	F: Clone + FnMut() -> Source,
+	F: FnMut() -> Source,
 {
 	observable_creator: F,
 	_phantom_data: PhantomData<Source>,
@@ -19,7 +19,7 @@ where
 impl<F, Source> DeferredObservable<F, Source>
 where
 	Source: Observable,
-	F: Clone + FnMut() -> Source,
+	F: FnMut() -> Source,
 {
 	pub fn new(observable_creator: F) -> Self {
 		Self {
@@ -32,7 +32,7 @@ where
 impl<F, Source> Observable for DeferredObservable<F, Source>
 where
 	Source: Observable,
-	F: Clone + FnMut() -> Source,
+	F: FnMut() -> Source,
 {
 	type Subscription<Destination>
 		= Source::Subscription<Destination>

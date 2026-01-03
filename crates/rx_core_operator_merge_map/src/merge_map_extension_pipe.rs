@@ -7,7 +7,7 @@ pub trait ObservablePipeExtensionMergeMap<'o>: 'o + Observable + Sized + Send + 
 	fn merge_map<
 		NextInnerObservable: Observable + Signal,
 		Mapper: 'static + Fn(Self::Out) -> NextInnerObservable + Clone + Send + Sync,
-				ErrorMapper: 'static + Fn(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
+				ErrorMapper: 'static + FnOnce(Self::OutError) -> NextInnerObservable::OutError + Clone + Send + Sync,
 
 	>(
 		self,

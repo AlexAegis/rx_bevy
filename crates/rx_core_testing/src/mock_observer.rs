@@ -94,10 +94,6 @@ where
 {
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown) {
-		if !self.is_closed() {
-			self.teardown.add_teardown(teardown);
-		} else {
-			teardown.execute();
-		}
+		self.teardown.add_teardown(teardown);
 	}
 }

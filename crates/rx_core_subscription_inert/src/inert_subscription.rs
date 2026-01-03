@@ -15,7 +15,6 @@ impl InertSubscription {
 		if !destination.is_closed() {
 			destination.unsubscribe();
 		}
-
 		Self
 	}
 }

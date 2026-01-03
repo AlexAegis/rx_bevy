@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_traits::{
@@ -51,6 +51,10 @@ where
 			on_complete: Some(on_complete),
 			on_unsubscribe: Some(on_unsubscribe),
 		}
+	}
+
+	pub fn get_state_mut(&mut self) -> MutexGuard<'_, HigherOrderSubscriberState<State>> {
+		self.state.lock_ignore_poison()
 	}
 }
 

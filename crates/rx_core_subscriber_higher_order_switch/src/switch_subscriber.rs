@@ -21,10 +21,10 @@ where
 	Destination:
 		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
 {
-	outer_teardown: SharedSubscription,
 	shared_destination: SharedSubscriber<Destination>,
 	state: Arc<Mutex<HigherOrderSubscriberState<()>>>,
 	inner_subscription: Option<SubscriptionData>,
+	outer_teardown: SharedSubscription,
 	_phantom_data: PhantomData<InnerObservable>,
 }
 
@@ -115,6 +115,22 @@ where
 	}
 }
 
+impl<InnerObservable, Destination> TeardownCollection
+	for SwitchSubscriber<InnerObservable, Destination>
+where
+	InnerObservable: Observable + Signal,
+	Destination:
+		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
+{
+	fn add_teardown(&mut self, teardown: Teardown) {
+		if !self.is_closed() {
+			self.shared_destination.add_teardown(teardown);
+		} else {
+			teardown.execute();
+		}
+	}
+}
+
 impl<InnerObservable, Destination> SubscriptionLike
 	for SwitchSubscriber<InnerObservable, Destination>
 where
@@ -140,22 +156,6 @@ where
 
 			self.outer_teardown.unsubscribe();
 			self.shared_destination.unsubscribe();
-		}
-	}
-}
-
-impl<InnerObservable, Destination> TeardownCollection
-	for SwitchSubscriber<InnerObservable, Destination>
-where
-	InnerObservable: Observable + Signal,
-	Destination:
-		'static + Subscriber<In = InnerObservable::Out, InError = InnerObservable::OutError>,
-{
-	fn add_teardown(&mut self, teardown: Teardown) {
-		if !self.is_closed() {
-			self.shared_destination.add_teardown(teardown);
-		} else {
-			teardown.execute();
 		}
 	}
 }

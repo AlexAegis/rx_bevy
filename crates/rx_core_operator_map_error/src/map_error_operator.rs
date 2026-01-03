@@ -17,7 +17,7 @@ pub struct MapErrorOperator<In, InError, ErrorMapper, OutError = InError>
 where
 	In: Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> OutError + Clone + Send + Sync,
 	OutError: Signal,
 {
 	error_mapper: ErrorMapper,
@@ -28,7 +28,7 @@ impl<In, InError, ErrorMapper, OutError> MapErrorOperator<In, InError, ErrorMapp
 where
 	In: Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> OutError + Clone + Send + Sync,
 	OutError: Signal,
 {
 	pub fn new(error_mapper: ErrorMapper) -> Self {
@@ -44,7 +44,7 @@ impl<In, InError, ErrorMapper, OutError> ComposableOperator
 where
 	In: Signal,
 	InError: Signal,
-	ErrorMapper: 'static + Fn(InError) -> OutError + Clone + Send + Sync,
+	ErrorMapper: 'static + FnOnce(InError) -> OutError + Clone + Send + Sync,
 	OutError: Signal,
 {
 	type Subscriber<Destination>

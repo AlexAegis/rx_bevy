@@ -25,6 +25,7 @@ impl TrackTeardownExtension for Teardown {
 	}
 }
 
+#[derive(Clone)]
 pub struct TeardownTracker {
 	prefix: String,
 	was_torn_down: Arc<AtomicBool>,

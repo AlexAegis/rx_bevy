@@ -10,10 +10,7 @@ where
 	fn retry(
 		self,
 		max_retries: usize,
-	) -> <RetryOperator<Self::Out, Self::OutError> as Operator<'o>>::OutObservable<Self>
-	where
-		Self: Send + Sync + Clone,
-	{
+	) -> <RetryOperator<Self::Out, Self::OutError> as Operator<'o>>::OutObservable<Self> {
 		RetryOperator::<Self::Out, Self::OutError>::new(max_retries).operate(self)
 	}
 }

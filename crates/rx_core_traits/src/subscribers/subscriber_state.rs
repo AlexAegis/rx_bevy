@@ -129,6 +129,11 @@ impl SubscriberState {
 	}
 
 	#[inline]
+	pub fn is_closed_but_not_errored(&self) -> bool {
+		(self.is_unsubscribed() || self.is_completed()) && !self.is_errored()
+	}
+
+	#[inline]
 	pub fn is_closed_but_not_completed_and_primed(&self) -> bool {
 		self.is_closed_but_not_completed() && self.is_primed()
 	}
@@ -360,6 +365,7 @@ mod test {
 			let mut state = SubscriberState::default();
 			state.complete();
 			assert!(state.is_completed());
+			assert!(state.is_closed_but_not_errored());
 			assert!(!state.is_waiting());
 		}
 
@@ -402,6 +408,7 @@ mod test {
 			let mut state = SubscriberState::default();
 			state.error();
 			assert!(state.is_errored());
+			assert!(state.is_closed_but_not_completed());
 			assert!(!state.is_waiting());
 		}
 

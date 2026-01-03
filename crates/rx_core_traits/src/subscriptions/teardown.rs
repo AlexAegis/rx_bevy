@@ -41,18 +41,6 @@ impl Debug for Teardown {
 	}
 }
 
-/// Clone is implemented for Teardown for other API's (Cloning
-/// [SubscriberNotification][crate::SubscriberNotification]) but the actual
-/// teardown function is not cloned.
-///
-/// It most not be cloned as it owns resources and the uniquiness of that must
-/// be ensured.
-impl Clone for Teardown {
-	fn clone(&self) -> Self {
-		Self { teardown_fn: None }
-	}
-}
-
 impl Teardown {
 	pub fn new<F>(f: F) -> Self
 	where
