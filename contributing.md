@@ -359,6 +359,15 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
     [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_bevy_observable_foo)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_bevy_observable_foo)
     ```
 
+#### Observable Contract Testing
+
+Observables must adhere to some behavioral contracts laid out in
+[Runtime Contracts](https://alexaegis.github.io/rx_bevy/contracts.html).
+
+See [Writing Tests](https://alexaegis.github.io/rx_bevy/writing_tests.html)
+to learn how to write a comprehensive integration test suite that verifies that
+all contracts are met.
+
 ### Creating New Operators
 
 Operators usually have at least 4-5 files besides `lib.rs`:
@@ -551,7 +560,16 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
     [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_core_operator_foo)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_core_operator_foo)
     ```
 
-### Documentation
+#### Operator Contract Testing
+
+Operators must adhere to some behavioral contracts laid out in
+[Runtime Contracts](https://alexaegis.github.io/rx_bevy/contracts.html).
+
+See [Writing Tests](https://alexaegis.github.io/rx_bevy/writing_tests.html)
+to learn how to write a comprehensive integration test suite that verifies that
+all contracts are met.
+
+### Writing Documentation
 
 #### Doc Sync
 

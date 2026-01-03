@@ -1,7 +1,7 @@
-# Development Guidelines & Rules
+# Contracts
 
-These rules are intended for developers of `rx_bevy` / `rx_core` and people who
-want to write their own observables or operators to ensure correct operation.
+These contracts are intended for people who write observables or operators to
+ensure correct operation.
 
 This isn't a guide on how to create your own observables and operators, but
 additional rules to check, **after** you had made one.
@@ -14,23 +14,24 @@ additional rules to check, **after** you had made one.
 > does, with separate crates for every observable/operator and an aggregator
 > crate, see [`contributing.md`](https://github.com/AlexAegis/rx_bevy/?tab=contributing-ov-file).
 
-## Rules
+## Runtime Contracts
 
 Every observable and operator must uphold these invariants to ensure the
 expected runtime behavior. If they aren't met, it should be treated as a bug!
 
-It is highly advised to have at least one unit test for each rule defined here
+It is highly advised to have at least one test for each contract defined here
 wherever applicable!
 
 > If you're not writing custom observables and operators, it could still be
 > useful to know what their expected behavior is to notice potential bugs, or to
 > assure yourself that a certain behavior is intended or not.
 
-Rules are fitted with rule codes to identify them in tests, to easily verify
-that a test for a rule exists for any given implementation.
+Contracts are fitted with contract codes to identify them in tests, and easily
+verify that a test for a contract exists.
 
-> Note that observables and their subscriptions, and operators and their
-> subscribers are used interchangeably as one concept.
+> Note that for categorization, operators and their subscribers are used
+> interchangeably as a concept. An `RX_OP_*` contracts apply to subscribers,
+> and is tested on operators.
 
 ### `RX_OB_IMMEDIATE_COMPLETION`: Observables must immediately complete when they can no longer emit anything
 
