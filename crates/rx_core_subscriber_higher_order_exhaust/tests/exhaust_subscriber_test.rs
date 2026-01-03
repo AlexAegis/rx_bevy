@@ -137,3 +137,35 @@ fn should_immediately_error_by_an_upstream_error() {
 
 	assert!(exhaust_subscriber.is_closed())
 }
+
+#[test]
+fn should_also_run_teardowns_on_unsubscribe() {
+	let destination = MockObserver::<usize, &'static str>::default();
+
+	let mut exhaust_subscriber =
+		ExhaustSubscriber::<PublishSubject<usize, &'static str>, _>::new(destination);
+
+	let tracked_teardown = exhaust_subscriber.add_tracked_teardown("exhaust");
+
+	exhaust_subscriber.unsubscribe();
+
+	tracked_teardown.assert_was_torn_down();
+
+	assert!(exhaust_subscriber.is_closed())
+}
+
+#[test]
+fn should_also_run_teardowns_immediately_when_added_to_an_already_closed_subscriber() {
+	let destination = MockObserver::<usize, &'static str>::default();
+
+	let mut exhaust_subscriber =
+		ExhaustSubscriber::<PublishSubject<usize, &'static str>, _>::new(destination);
+
+	exhaust_subscriber.unsubscribe();
+
+	let tracked_teardown = exhaust_subscriber.add_tracked_teardown("exhaust");
+
+	tracked_teardown.assert_was_torn_down();
+
+	assert!(exhaust_subscriber.is_closed())
+}

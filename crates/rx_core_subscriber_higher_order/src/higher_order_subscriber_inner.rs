@@ -65,6 +65,10 @@ where
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
 			self.shared_destination.next(next);
+
+			if self.shared_destination.is_closed() {
+				self.unsubscribe();
+			}
 		}
 	}
 

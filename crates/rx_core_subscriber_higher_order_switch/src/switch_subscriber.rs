@@ -86,6 +86,10 @@ where
 				self.inner_subscription =
 					Some(SubscriptionData::new_with_teardown(subscription.into()));
 			}
+
+			if self.shared_destination.is_closed() {
+				self.unsubscribe();
+			}
 		}
 	}
 
@@ -130,7 +134,7 @@ where
 				.lock_ignore_poison()
 				.upstream_unsubscribe_can_downstream()
 		{
-			if let Some(subscription_handle) = &mut self.inner_subscription {
+			if let Some(subscription_handle) = &mut self.inner_subscription.take() {
 				subscription_handle.unsubscribe();
 			};
 

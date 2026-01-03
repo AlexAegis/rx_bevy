@@ -65,7 +65,7 @@ where
 			&& self.upstream_subscriber_state.is_unsubscribed()
 			&& !self.downstream_subscriber_state.is_unsubscribed())
 			|| self.upstream_subscriber_state.is_errored()
-			|| self.downstream_subscriber_state.is_errored()
+			|| self.downstream_subscriber_state.is_closed()
 	}
 
 	pub fn upstream_completed_can_downstream(&mut self) -> bool {
