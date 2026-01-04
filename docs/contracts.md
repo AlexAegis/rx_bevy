@@ -17,94 +17,153 @@ additional rules to check, **after** you had made one.
 Every observable and operator must uphold these invariants to ensure the
 expected runtime behavior. If they aren't met, it should be treated as a bug!
 
+Contracts are identified by their "contract code", always starting with
+`rx_contract_`.
+Each contract features one or more verifications identified by
+"verification codes", always starting with `rx_verify_`.
+
+## Tests
+
 It is highly advised to have at least one test for each contract defined here
-wherever applicable! A test that verifies everything the contracts asks to
-verify should be marked with the name of the contract on the test functions
-doc comment.
+wherever applicable!
+
+Each contract should have its own test with the same name as the contract.
+The test should feature individual assertions with the verification code
+as part of the failure message.
+
+> `rx_core_testing` contains test harnesses that can test for some of these
+> contracts, saving time implementing the tests, ensuring every verification
+> and extra assertion is made.
 
 <!-- TODO: Write a lint to verify all contract tests exist, then mention it here -->
 
-> If you're not writing custom observables and operators, it could still be
-> useful to know what their expected behavior is to notice potential bugs, or to
-> assure yourself that a certain behavior is intended or not.
+## `rx_contract_closed_after_error`
 
-Contracts use contract codes to identify them in tests, and easily
-verify that a test for a contract exists. They are lower-case specifically so
-they can be used as the name of the function. If you have more than one test
-for the same contract, you may extend the name, but it should start with it.
-You may also just put it in a different module to avoid name collision.
-
-> Note that for categorization, operators and their subscribers are used
-> interchangeably as a concept. An `rx_op_*` contracts apply to subscribers,
-> and is tested on operators.
-
-## Observable Contracts
-
-Observable contracts apply for observables only, including all sub-types of
-observables.
-
-### `rx_ob_immediate_completion`
-
-Observables that have finite values to emit, or know that further emissions are
-impossible, must immediately complete.
-
-> For example, knowing when an iterator is finished is trivial, after the last
-> `next`, a `complete` must immediately follow.
+> Applies to:
 >
-> But combination observables have to deduce their own completion based on the
-> Observables they combine:
->
-> - `CombineLatestObservable` when already [primed](./02_concepts.md#primed),
->   completes only when **all** of its inner observables complete or
->   unsubscribe! Before it's primed, it completes when *any* of its inner
->   observables complete or unsubscribe, as priming then becomes impossible.
-> - `ZipObservable` completes when **any** of its inner observables complete or
->   unsubscribe!
+> - Observables
+> - Operators
+> - Subscribers
+
+Once a subscriber emits an `Error` notification, it is considered "errored",
+and it should be closed, teardowns executed.
+
+> A subscriber is considered errored when it emits an error signal, not
+> when it receives once! Some operators are designed to handle errors.
 
 **Test must verify:**
 
-- After the last `next` signal, a `complete` signal should be observed immediately.
-- If the Observable is scheduled:
-  - The `complete` signal should not require an additional time to be emitted.
-- If the Observable is a Combination Observable:
-  - A combination observable must complete whenever an inner observable signal
-    that it's no longer possible to emit further values.
+- `rx_verify_errored`: An `Error` notification was observed.
+- `rx_verify_closed`: `is_closed` returns true after an `Error` notification
+  was observed.
+- If Observable or Operator:
+  - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
+    subscription are executed.
+  - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
+    downstream of the operator should also be executed.
+- If Operator:  
+  - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
+    upstream of the operator should also be executed.
+- If there are input observables:
+  - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
+    input observable (using `finalize`) must also be executed.
 
-### `rx_ob_do_not_terminate_when_cancelled`
+## `rx_contract_closed_after_complete`
+
+> Applies to:
+>
+> - Observables
+> - Operators
+> - Subscribers
+
+Once an observable or a subscriber emits an `Complete` notification, it is
+considered "completed", and it should be closed, teardowns executed.
+
+> A subscriber is considered completed when it emits an complete signal, not
+> when it receives once! Some operators complete later, for example: `delay`.
+
+**Test must verify:**
+
+- `rx_verify_completed`: A `Complete` notification was observed.
+- `rx_verify_closed`: `is_closed` returns true after a `Complete` notification
+  was observed.
+- If Observable or Operator:
+  - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
+    subscription are executed.
+  - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
+    downstream of the operator should also be executed.
+- If Operator:  
+  - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
+    upstream of the operator should also be executed.
+- If there are input observables:
+  - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
+    input observable (using `finalize`) must also be executed.n
+    input observable (using `finalize`) must also be executed.
+
+## `rx_contract_closed_after_unsubscribe`
+
+> Applies to:
+>
+> - Observables
+> - Operators
+> - Subscribers
 
 An observable is not considered completed or errored when its subscription is
 unsubscribed. It's a cancellation.
 
 **Test must verify:**
 
-- An observable must not trigger anything other than unsubscribe when
-  unsubscribed, unless it is explicitly desired.
+- `rx_verify_unsubscribed`: An `Unsubscribe` notification was observed.
+- `rx_verify_closed`: `is_closed` returns true after an `Unsubscribe`
+  notification was observed.
+- If Observable or Operator:
+  - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
+    subscription are executed.
+  - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
+    downstream of the operator should also be executed.
+- If Operator:  
+  - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
+    upstream of the operator should also be executed.
+- If there are input observables:
+  - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
+    input observable (using `finalize`) must also be executed.
 
-### `rx_ob_unsubscribed_after_complete`
+## `rx_contract_closed_if_downstream_closes_early`
 
-An observables subscription must always be unsubscribed after it had completed.
+> Applies to:
+>
+> - Observables
+> - Operators
+> - Subscribers
+
+A subscription must be closed if a downstream operator like `take` closes it
+early.
 
 **Test must verify:**
 
-- An unsubscribe notification was observed after the completion notification
-- `is_closed` must return true after a `complete` and `unsubscribe` notification
-  was observed.
-- Verify `rx_ob_unsubscribe_must_execute_teardowns`
+- `rx_verify_closed`: `is_closed` returns true after a `Unsubscribe`
+  notification was observed.
+- If Observable or Operator:
+  - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
+    subscription are executed.
+  - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
+    downstream of the operator should also be executed.
+- If Operator:  
+  - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
+    upstream of the operator should also be executed.
+- If there are input observables:
+  - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
+    input observable (using `finalize`) must also be executed.
 
-### `rx_ob_unsubscribed_after_error`
+## `rx_contract_whats_closed_stays_closed`
 
-An observables subscription must always be unsubscribed after it had errored.
+> Applies to:
+>
+> - Observables
+> - Operators
+> - Subscribers
 
-**Test must verify:**
-
-- An unsubscribe notification was observed after the error notification
-- `is_closed` must return true after a `error` and `unsubscribe` notification
-  was observed.
-- Verify `rx_ob_unsubscribe_must_execute_teardowns`
-
-### `rx_ob_whats_closed_stays_closed`
-
-A subscription that was unsubscribed and thus closed, must never be re-opened.
+A subscription that was unsubscribed and closed, must never be re-opened.
 
 > This can be easily ensured by not using a simple `bool` to track the closed
 > state but `SubscriptionClosedFlag` that ensures a `false` never turns back
@@ -121,71 +180,60 @@ be done in a single test, irrespective of order.
 
 **Test must verify:**
 
-- After closing, a new `next` call must not result in a new emission.
-- After closing, a new `error` call must not result in a new emission.
-- After closing, a new `complete` call must not result in a new emission.
-- After closing, a new `unsubscribe` call must not result in a new emission.
+- `rx_verify_closed`: `is_closed` returns true.
+- `rx_verify_no_new_notification_after_next`: After closing, a new `next` call
+  must not result in a new emission.
+- `rx_verify_no_new_notification_after_error`: After closing, a new `error`
+  call must not result in a new emission.
+- `rx_verify_no_new_notification_after_complete`: After closing, a new
+  `complete` call must not result in a new emission.
+- `rx_verify_no_new_notification_after_unsubscribe`: After closing, a new
+  `unsubscribe` call must not result in a new emission.
 
-## Combination Observable Contracts
+## `rx_contract_immediate_completion`
 
-> All [Observable Contracts](#observable-contracts) apply.
+> Applies to:
+>
+> - Observables
+> - Operators
+> - Subscribers
 
-Combination Observable contracts apply for combination observables only.
+Once known that further emissions are impossible, completion should be
+immediate.
 
-### `rx_cob_do_not_complete_until_necessary`
+> For example, knowing when an iterator is finished is trivial, after the last
+> `next`, a `complete` must immediately follow.
+>
+> But combination observables have to deduce their own completion based on the
+> Observables they combine:
+>
+> - `CombineLatestObservable` when already [primed](./02_concepts.md#primed),
+>   completes only when **all** of its inner observables have finished emitting
+>   values! Before it's primed, it completes when *any* of its inner
+>   observables complete or unsubscribe, as priming then becomes impossible.
+> - `ZipObservable` completes when **any** of its inner observables have
+>   finished emitting values!
 
 **Test must verify:**
 
-- If a single input observable unsubscribed, but another one could still
-  trigger emissions, the observable itself should not complete yet.
+- `rx_verify_immediately_completed`: After the last `next` signal, a `complete`
+  signal should be observed immediately.
+
+## `rx_contract_do_not_complete_until_necessary`
+
+> Applies to:
+>
+> - Combination Observables
+
+Combination observables should not complete until it becomes impossible to
+emit further values.
+
+**Test must verify:**
+
+- `rx_verify_not_closed`: If a single input observable unsubscribed, but
+  another one can still trigger emissions, the observable itself should not
+  complete yet.
   
-## Operator Contracts
-
-Operator contracts apply for operators only, including all sub-types of
-operators.
-
-### `rx_op_closed_after_completion`
-
-A subscriber once completed, must be closed, teardowns added to it executed.
-
-> A subscriber is considered completed when it emits a completion signal, not
-> when it receives once! Some operators do not immediately complete when
-> asked to complete as an inner subscription may still be alive!
-
-- An operator that just received a completion signal from upstream, does
-not need to also call unsubscribe, only when the completion was triggered by the
-operator itself or if there is something to dispose of, like an inner
-subscription, in which case it should call `self.unsubscribe()` even when
-completion came from upstream.
-- If a subscriber does not need to do anything on unsubscribe,
-and just delegates its subscription to its destination, it does not need to
-explicitly call unsubscribe on complete.
-
-  > For example, the `take` operator can complete early, when that happens it must
-  > also call `unsubscribe` on itself and close. But it does not need to do the
-  > same thing when completion comes from upstream. See
-  > [TakeSubscriber](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_operator_take/src/take_subscriber.rs#L35-L55).
-
-**Test must verify:**
-
-- `is_closed` returns true after a `Complete` notification was observed.
-- If completion was triggered from the inside:
-  - Verify `rx_op_unsubscribe_must_execute_teardowns`
-
-### `rx_op_unsubscribe_must_execute_teardowns`
-
-A subscriber once unsubscribed, must execute teardowns added to it. If it has
-internal resoruces to dispose of, like an inner subscription, that too must
-be unsubscribed.
-
-**Test must verify:**
-
-- The resulting subscription is closed.
-- Teardowns added to the subscription are executed.
-- If there are inner subscriptions from input observable:
-  teardowns added by
-  them (using `finalize`) must be executed.
-
 ## Additional Guidelines
 
 These are additional guidelines to better adhere to the contracts. Some of them

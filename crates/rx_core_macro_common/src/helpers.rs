@@ -77,7 +77,7 @@ pub(crate) enum FindFieldError {
 pub(crate) fn find_field_ident_with_attribute(
 	derive_input: &DeriveInput,
 	field_attribute_name: &'static str,
-	fallback_field_attribute_name: Option<&'static str>,
+	fallback_field_attribute_name: Option<&str>,
 	trigger_attribute_name: &'static str,
 	required_trait_on_field: &'static str,
 ) -> Result<Ident, FindFieldError> {

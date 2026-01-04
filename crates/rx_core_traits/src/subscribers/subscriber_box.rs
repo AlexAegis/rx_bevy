@@ -14,14 +14,17 @@ where
 	InError: Signal,
 	S: ?Sized + Subscriber<In = In, InError = InError> + Send + Sync,
 {
+	#[inline]
 	fn next(&mut self, next: Self::In) {
 		self.deref_mut().next(next);
 	}
 
+	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.deref_mut().error(error);
 	}
 
+	#[inline]
 	fn complete(&mut self) {
 		self.deref_mut().complete();
 	}

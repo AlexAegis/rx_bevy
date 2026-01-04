@@ -23,6 +23,9 @@ debug = ["rx_core_traits/debug"]
 rx_core_traits = { workspace = true }
 rx_core_macro_observer_derive = { workspace = true }
 rx_core_macro_executor_derive = { workspace = true }
+rx_core_macro_operator_derive = { workspace = true }
+rx_core_macro_subscription_derive = { workspace = true }
+rx_core_macro_subject_derive = { workspace = true }
 rx_core_scheduler_ticking = { workspace = true }
 derive-where = { workspace = true }
 

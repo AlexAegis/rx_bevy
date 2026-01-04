@@ -85,4 +85,3 @@ where each module **describes a scenario** like `when_option_is_false` or
 
 This helps keeping actual test function names short while still being readable
 in the test output:
-

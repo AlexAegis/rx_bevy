@@ -6,11 +6,11 @@ use std::sync::{
 use rx_core_traits::{SubscriptionWithTeardown, Teardown};
 
 pub trait TrackTeardownExtension {
-	fn tracked(prefix: &'static str) -> (Teardown, TeardownTracker);
+	fn tracked(prefix: &str) -> (Teardown, TeardownTracker);
 }
 
 impl TrackTeardownExtension for Teardown {
-	fn tracked(prefix: &'static str) -> (Teardown, TeardownTracker) {
+	fn tracked(prefix: &str) -> (Teardown, TeardownTracker) {
 		let was_torn_down = Arc::new(AtomicBool::new(false));
 		let was_torn_down_clone = was_torn_down.clone();
 		(
@@ -32,6 +32,7 @@ pub struct TeardownTracker {
 }
 
 impl TeardownTracker {
+	#[track_caller]
 	pub fn assert_was_torn_down(&self) {
 		assert!(
 			self.was_torn_down.load(Ordering::Relaxed),
@@ -40,6 +41,7 @@ impl TeardownTracker {
 		)
 	}
 
+	#[track_caller]
 	pub fn assert_yet_to_be_torn_down(&self) {
 		assert!(
 			!self.was_torn_down.load(Ordering::Relaxed),
@@ -50,14 +52,14 @@ impl TeardownTracker {
 }
 
 pub trait TrackedTeardownSubscriptionExtension {
-	fn add_tracked_teardown(&mut self, prefix: &'static str) -> TeardownTracker;
+	fn add_tracked_teardown(&mut self, prefix: &str) -> TeardownTracker;
 }
 
 impl<S> TrackedTeardownSubscriptionExtension for S
 where
 	S: SubscriptionWithTeardown,
 {
-	fn add_tracked_teardown(&mut self, prefix: &'static str) -> TeardownTracker {
+	fn add_tracked_teardown(&mut self, prefix: &str) -> TeardownTracker {
 		let (teardown, teardown_tracker) = Teardown::tracked(prefix);
 		self.add_teardown(teardown);
 		teardown_tracker

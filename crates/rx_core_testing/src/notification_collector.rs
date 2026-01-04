@@ -295,7 +295,7 @@ where
 
 	/// Asserts that no notifications were observed at all.
 	#[track_caller]
-	pub fn assert_is_empty(&self, assert_message_prefix: &'static str)
+	pub fn assert_is_empty(&self, assert_message_prefix: &str)
 	where
 		In: Debug,
 		InError: Debug,
@@ -319,7 +319,7 @@ where
 	#[track_caller]
 	pub fn assert_nth_notification_is_last(
 		&self,
-		assert_message_prefix: &'static str,
+		assert_message_prefix: &str,
 		last_notification_index: usize,
 	) where
 		In: Debug,
@@ -347,7 +347,7 @@ where
 	#[track_caller]
 	pub fn assert_notifications<const N: usize>(
 		&self,
-		assert_message_prefix: &'static str,
+		assert_message_prefix: &str,
 		offset: usize,
 		expected_notifications: [SubscriberNotification<In, InError>; N],
 		assert_that_there_is_no_more: bool,

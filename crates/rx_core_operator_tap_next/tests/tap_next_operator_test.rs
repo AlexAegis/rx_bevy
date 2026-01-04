@@ -2,128 +2,124 @@ use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 use rx_core_traits::{Observable, SubscriberNotification};
 
-#[test]
-fn should_forward_next_notifications_to_the_tap_fn_too() {
-	let destination = MockObserver::<usize, &'static str>::default();
-	let notification_collector = destination.get_notification_collector();
+mod tap_next {
+	use super::*;
 
-	let tap_notification_collector = NotificationCollector::<usize, &'static str>::default();
-	let tap_notification_collector_clone = tap_notification_collector.clone();
+	#[test]
+	fn forwards_next_notifications_to_the_tap_fn_too() {
+		let destination = MockObserver::<usize, &'static str>::default();
+		let notification_collector = destination.get_notification_collector();
 
-	let mut source = PublishSubject::<usize, &'static str>::default();
+		let tap_notification_collector = NotificationCollector::<usize, &'static str>::default();
+		let tap_notification_collector_clone = tap_notification_collector.clone();
 
-	let subscription = source
-		.clone()
-		.tap_next(move |next| {
-			tap_notification_collector_clone
-				.lock()
-				.push(SubscriberNotification::Next(*next))
-		})
-		.subscribe(destination);
+		let mut source = PublishSubject::<usize, &'static str>::default();
 
-	source.next(0);
-	source.next(1);
-	assert!(!subscription.is_closed());
-	source.complete();
+		let subscription = source
+			.clone()
+			.tap_next(move |next| {
+				tap_notification_collector_clone
+					.lock()
+					.push(SubscriberNotification::Next(*next))
+			})
+			.subscribe(destination);
 
-	notification_collector.lock().assert_notifications(
-		"tap_next",
-		0,
-		[
-			SubscriberNotification::Next(0),
-			SubscriberNotification::Next(1),
-			SubscriberNotification::Complete,
-		],
-		true,
-	);
+		source.next(0);
+		source.next(1);
+		assert!(!subscription.is_closed());
+		source.complete();
 
-	tap_notification_collector.lock().assert_notifications(
-		"tap_destination",
-		0,
-		[
-			SubscriberNotification::Next(0),
-			SubscriberNotification::Next(1),
-		],
-		true,
-	);
+		notification_collector.lock().assert_notifications(
+			"tap_next",
+			0,
+			[
+				SubscriberNotification::Next(0),
+				SubscriberNotification::Next(1),
+				SubscriberNotification::Complete,
+			],
+			true,
+		);
 
-	assert!(subscription.is_closed());
+		tap_notification_collector.lock().assert_notifications(
+			"tap_destination",
+			0,
+			[
+				SubscriberNotification::Next(0),
+				SubscriberNotification::Next(1),
+			],
+			true,
+		);
+
+		assert!(subscription.is_closed());
+	}
 }
 
-#[test]
-fn should_close_when_errored() {
-	let destination = MockObserver::<usize, &'static str>::default();
-	let notification_collector = destination.get_notification_collector();
+mod contracts {
 
-	let tap_notification_collector = NotificationCollector::<usize, &'static str>::default();
-	let tap_notification_collector_clone = tap_notification_collector.clone();
+	use super::*;
 
-	let mut source = PublishSubject::<usize, &'static str>::default();
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let tap_notification_collector = NotificationCollector::<usize>::default();
 
-	let mut subscription = source
-		.clone()
-		.tap_next(move |next| {
-			tap_notification_collector_clone
-				.lock()
-				.push(SubscriberNotification::Next(*next))
-		})
-		.subscribe(destination);
-	let teardown_tracker = subscription.add_tracked_teardown("tap_next");
+		let mut harness = OperatorTestHarness::<_, usize, TestError>::new("tap_next", |upstream| {
+			let tap_notification_collector_clone = tap_notification_collector.clone();
 
-	let error = "error";
-	source.error(error);
+			upstream.tap_next(move |next| {
+				tap_notification_collector_clone
+					.lock()
+					.push(SubscriberNotification::Next(*next))
+			})
+		});
 
-	notification_collector.lock().assert_notifications(
-		"tap_next",
-		0,
-		[SubscriberNotification::Error(error)],
-		true,
-	);
+		harness.assert_rx_contract_closed_after_error(TestError, TestError);
 
-	tap_notification_collector
-		.lock()
-		.assert_is_empty("tap_destination");
+		tap_notification_collector
+			.lock()
+			.assert_is_empty("tap_destination - should not have observed anything");
+	}
 
-	assert!(subscription.is_closed());
-	teardown_tracker.assert_was_torn_down();
-}
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let tap_notification_collector = NotificationCollector::<usize>::default();
 
-#[test]
-fn should_close_when_completed() {
-	let destination = MockObserver::<usize, &'static str>::default();
-	let notification_collector = destination.get_notification_collector();
+		let mut harness = OperatorTestHarness::<_, usize, TestError>::new("tap_next", |upstream| {
+			let tap_notification_collector_clone = tap_notification_collector.clone();
 
-	let tap_notification_collector = NotificationCollector::<usize, &'static str>::default();
-	let tap_notification_collector_clone = tap_notification_collector.clone();
+			upstream.tap_next(move |next| {
+				tap_notification_collector_clone
+					.lock()
+					.push(SubscriberNotification::Next(*next))
+			})
+		});
 
-	let mut source = PublishSubject::<usize, &'static str>::default();
+		harness.assert_rx_contract_closed_after_complete();
 
-	let mut subscription = source
-		.clone()
-		.tap_next(move |next| {
-			tap_notification_collector_clone
-				.lock()
-				.push(SubscriberNotification::Next(*next))
-		})
-		.subscribe(destination);
+		tap_notification_collector
+			.lock()
+			.assert_is_empty("tap_destination - should not have observed anything");
+	}
 
-	let teardown_tracker = subscription.add_tracked_teardown("tap_next");
+	#[test]
+	fn assert_rx_contract_closed_after_unsubscribe() {
+		let tap_notification_collector = NotificationCollector::<usize>::default();
 
-	source.complete();
+		let mut harness = OperatorTestHarness::<_, usize, TestError>::new("tap_next", |upstream| {
+			let tap_notification_collector_clone = tap_notification_collector.clone();
 
-	notification_collector.lock().assert_notifications(
-		"tap_next",
-		0,
-		[SubscriberNotification::Complete],
-		true,
-	);
+			upstream.tap_next(move |next| {
+				tap_notification_collector_clone
+					.lock()
+					.push(SubscriberNotification::Next(*next))
+			})
+		});
 
-	tap_notification_collector
-		.lock()
-		.assert_is_empty("tap_destination");
+		harness.assert_rx_contract_closed_after_unsubscribe();
 
-	assert!(subscription.is_closed());
-	teardown_tracker.assert_was_torn_down();
+		tap_notification_collector
+			.lock()
+			.assert_is_empty("tap_destination - should not have observed anything");
+	}
 }
 
 #[test]
