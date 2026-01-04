@@ -71,10 +71,11 @@ where
 				.operate(source.clone()),
 		);
 
-		let mut subscription =
+		let mut with_operator =
 			ErasedFinalizeOperator::new(move || tracker_subscription_downstream.unsubscribe())
-				.operate(output_observable)
-				.subscribe(destination);
+				.operate(output_observable);
+
+		let mut subscription = with_operator.subscribe(destination);
 
 		let tracked_teardown_subscription = subscription.add_tracked_teardown(&format!(
 			"{prefix} - rx_verify_subscription_teardowns_executed"

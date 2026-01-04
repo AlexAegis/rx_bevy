@@ -19,7 +19,7 @@ const EXPECT_ACTIVE_SUBSCRIPTION: &str = "Subscription to be active!";
 ///
 /// Used and made for testing only!
 #[derive_where(Default, Clone)]
-#[derive(RxSubject)]
+#[derive(RxSubject, Debug)]
 #[rx_in(Out)]
 #[rx_in_error(OutError)]
 #[rx_out(Out)]

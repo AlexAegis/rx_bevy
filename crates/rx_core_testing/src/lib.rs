@@ -1,4 +1,4 @@
-mod harnesses;
+mod harness;
 mod mock_executor;
 mod mock_observer;
 mod multi_round_notification_collector;
@@ -7,7 +7,7 @@ mod notification_collector;
 mod tracked_iterator;
 mod tracked_teardown;
 
-pub use harnesses::*;
+pub use harness::*;
 pub use mock_executor::*;
 pub use mock_observer::*;
 pub use multi_round_notification_collector::*;
@@ -17,7 +17,7 @@ pub use tracked_iterator::*;
 pub use tracked_teardown::*;
 
 pub mod prelude {
-	pub use super::harnesses::*;
+	pub use super::harness::*;
 	pub use super::mock_executor::*;
 	pub use super::mock_observer::*;
 	pub use super::multi_round_notification_collector::*;

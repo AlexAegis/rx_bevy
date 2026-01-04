@@ -3,8 +3,8 @@ use core::marker::PhantomData;
 use derive_where::derive_where;
 use rx_core_macro_observer_derive::RxObserver;
 use rx_core_traits::{
-	Never, Observer, Signal, SubscriberNotification, SubscriptionData, SubscriptionLike, Teardown,
-	TeardownCollection,
+	Never, Observer, SharedSubscription, Signal, SubscriberNotification, SubscriptionLike,
+	Teardown, TeardownCollection,
 };
 
 use crate::NotificationCollector;
@@ -22,7 +22,7 @@ where
 	InError: Signal,
 {
 	#[derive_where(skip(Clone))]
-	teardown: SubscriptionData,
+	teardown: SharedSubscription,
 	notification_collector: NotificationCollector<In, InError>,
 	_phantom_data: PhantomData<(In, InError)>,
 }
@@ -35,7 +35,7 @@ where
 	pub fn new(notification_collector: NotificationCollector<In, InError>) -> Self {
 		Self {
 			notification_collector,
-			teardown: SubscriptionData::default(),
+			teardown: SharedSubscription::default(),
 			_phantom_data: PhantomData,
 		}
 	}

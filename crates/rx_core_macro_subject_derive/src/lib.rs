@@ -2,8 +2,8 @@ use quote::quote;
 use rx_core_macro_common::{
 	derive_observable::impl_observable_output,
 	derive_observer::{
-		impl_does_not_upgrade_to_observer_subscriber, impl_observer_input,
-		impl_observer_upgrades_to,
+		impl_delegate_observer_to_destination, impl_does_not_upgrade_to_observer_subscriber,
+		impl_observer_input, impl_observer_upgrades_to,
 	},
 	derive_primary_category::impl_primary_category,
 	derive_subscription::impl_delegate_subscription_like_to_destination,
@@ -23,7 +23,7 @@ fn primary_category_subject() -> Type {
 /// ## Traits you still have to implement to get a subject
 ///
 /// - `Observable`
-/// - `Observer`
+/// - `Observer` unless using `#[rx_delegate_observer_to_destination]`)
 /// - `SubscriptionLike` (unless using
 ///   `#[rx_delegate_subscription_like_to_destination]`)
 ///
@@ -72,6 +72,9 @@ fn primary_category_subject() -> Type {
 /// - `#[rx_delegate_subscription_like_to_destination]` (optional): Opts into
 ///   the trivial implementation of `SubscriptionLike` where the traits methods
 ///   are just simply called on the field marked as `#[destination]`.
+/// - `#[rx_delegate_observer_to_destination]` (optional): Opts into
+///   the trivial implementation of `Observer` where the traits methods
+///   are just simply called on the field marked as `#[destination]`.
 #[proc_macro_derive(
 	RxSubject,
 	attributes(
@@ -82,6 +85,7 @@ fn primary_category_subject() -> Type {
 		rx_does_not_upgrade_to_observer_subscriber,
 		rx_upgrades_to,
 		rx_delegate_subscription_like_to_destination,
+		rx_delegate_observer_to_destination,
 		destination,
 		_rx_core_traits_crate
 	)
@@ -93,6 +97,8 @@ pub fn subject_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream
 	let observable_output_impl = impl_observable_output(&derive_input);
 	let observer_input_impl = impl_observer_input(&derive_input);
 	let observer_upgrades_to_impl = impl_observer_upgrades_to(&derive_input);
+	let delegate_observer_to_destination_impl =
+		impl_delegate_observer_to_destination(&derive_input);
 	let does_not_upgrade_to_observer_subscriber_impl =
 		impl_does_not_upgrade_to_observer_subscriber(&derive_input);
 	let delegate_subscription_like_to_destination_impl =
@@ -104,6 +110,8 @@ pub fn subject_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream
 		#observable_output_impl
 
 		#observer_input_impl
+
+		#delegate_observer_to_destination_impl
 
 		#observer_upgrades_to_impl
 
