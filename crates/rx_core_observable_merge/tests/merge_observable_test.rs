@@ -41,7 +41,6 @@ fn should_emit_from_all_sources_when_any_of_them_nexts() {
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Next(7),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -72,10 +71,7 @@ fn should_not_complete_until_all_completes() {
 	notification_collector.lock().assert_notifications(
 		"merge",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -103,10 +99,7 @@ fn should_error_when_any_errors() {
 	notification_collector.lock().assert_notifications(
 		"merge",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -188,10 +181,7 @@ mod concurrency_limit {
 		notification_collector.lock().assert_notifications(
 			"merge",
 			2,
-			[
-				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Complete],
 			true,
 		);
 	}
@@ -230,7 +220,6 @@ mod concurrency_limit {
 			[
 				SubscriberNotification::Next(4),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);

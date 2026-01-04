@@ -36,23 +36,28 @@ fn should_only_emit_after_both_observables_emitted_even_if_its_not_in_order() {
 mod before_primed {
 	use super::*;
 
-	#[test]
-	fn should_not_complete_when_only_one_of_the_observables_complete() {
-		let destination_1 = MockObserver::default();
-		let notification_collector_1 = destination_1.get_notification_collector();
+	mod when_one_input_observable_completes {
+		use super::*;
 
-		let mut subject_1 = PublishSubject::<usize>::default();
-		let subject_2 = PublishSubject::<&'static str>::default();
+		// TODO: This may aswell complete.
+		#[test]
+		fn should_just_unsubscribe() {
+			let destination_1 = MockObserver::default();
+			let notification_collector_1 = destination_1.get_notification_collector();
 
-		let _s = combine_latest(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+			let mut subject_1 = PublishSubject::<usize>::default();
+			let subject_2 = PublishSubject::<&'static str>::default();
 
-		subject_1.complete();
+			let _s = combine_latest(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Unsubscribe,
-			"did not unsubscribe"
-		);
+			subject_1.complete();
+
+			assert_eq!(
+				notification_collector_1.lock().nth_notification(0),
+				&SubscriberNotification::Unsubscribe,
+				"did not unsubscribe"
+			);
+		}
 	}
 
 	#[test]
@@ -203,10 +208,7 @@ mod after_primed {
 		notification_collector_1.lock().assert_notifications(
 			"publish_subject destination",
 			1,
-			[
-				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Complete],
 			true,
 		);
 	}
@@ -251,51 +253,41 @@ mod errors {
 
 	#[test]
 	fn should_error_downstream_when_the_first_observable_errors() {
-		let destination_1 = MockObserver::default();
-		let notification_collector_1 = destination_1.get_notification_collector();
+		let destination = MockObserver::default();
+		let notification_collector = destination.get_notification_collector();
 
 		let mut subject_1 = PublishSubject::<usize, &'static str>::default();
 		let subject_2 = PublishSubject::<&'static str, &'static str>::default();
 
-		let _s = combine_latest(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+		let _s = combine_latest(subject_1.clone(), subject_2.clone()).subscribe(destination);
 
 		subject_1.error("error");
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Error("error"),
-			"Did not receive the first emission"
-		);
-
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(1),
-			&SubscriberNotification::Unsubscribe,
-			"Did not unsubscribe"
+		notification_collector.lock().assert_notifications(
+			"combine_latest",
+			0,
+			[SubscriberNotification::Error("error")],
+			true,
 		);
 	}
 
 	#[test]
 	fn should_error_downstream_when_the_second_observable_errors() {
-		let destination_1 = MockObserver::default();
-		let notification_collector_1 = destination_1.get_notification_collector();
+		let destination = MockObserver::default();
+		let notification_collector = destination.get_notification_collector();
 
 		let subject_1 = PublishSubject::<usize, &'static str>::default();
 		let mut subject_2 = PublishSubject::<&'static str, &'static str>::default();
 
-		let _s = combine_latest(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+		let _s = combine_latest(subject_1.clone(), subject_2.clone()).subscribe(destination);
 
 		subject_2.error("error");
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Error("error"),
-			"Did not receive the first emission"
-		);
-
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(1),
-			&SubscriberNotification::Unsubscribe,
-			"Did not unsubscribe"
+		notification_collector.lock().assert_notifications(
+			"combine_latest",
+			0,
+			[SubscriberNotification::Error("error")],
+			true,
 		);
 	}
 }

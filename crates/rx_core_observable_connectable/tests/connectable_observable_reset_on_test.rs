@@ -202,7 +202,6 @@ mod reset_on_complete {
 				[
 					SubscriberNotification::Next(1),
 					SubscriberNotification::Complete,
-					SubscriberNotification::Unsubscribe,
 				],
 				true,
 			);
@@ -262,7 +261,6 @@ mod reset_on_complete {
 				[
 					SubscriberNotification::Next(1),
 					SubscriberNotification::Complete,
-					SubscriberNotification::Unsubscribe,
 				],
 				true,
 			);
@@ -280,7 +278,6 @@ mod reset_on_complete {
 				[
 					SubscriberNotification::Next(1),
 					SubscriberNotification::Complete,
-					SubscriberNotification::Unsubscribe,
 				],
 				true,
 			);
@@ -338,7 +335,6 @@ mod reset_on_error {
 				[
 					SubscriberNotification::Next(1),
 					SubscriberNotification::Error(error),
-					SubscriberNotification::Unsubscribe,
 				],
 				true,
 			);
@@ -401,7 +397,6 @@ mod reset_on_error {
 				[
 					SubscriberNotification::Next(1),
 					SubscriberNotification::Error(error),
-					SubscriberNotification::Unsubscribe,
 				],
 				true,
 			);
@@ -416,10 +411,7 @@ mod reset_on_error {
 			notification_collector_2.lock().assert_notifications(
 				"connectable - reset_on_error 2",
 				0,
-				[
-					SubscriberNotification::Error(error),
-					SubscriberNotification::Unsubscribe,
-				],
+				[SubscriberNotification::Error(error)],
 				true,
 			);
 

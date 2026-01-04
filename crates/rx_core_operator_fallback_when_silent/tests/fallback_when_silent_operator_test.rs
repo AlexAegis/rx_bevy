@@ -43,7 +43,6 @@ fn should_be_able_to_immediately_next_to_its_destination() {
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Next(11),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -74,10 +73,7 @@ fn should_close_when_errored() {
 	notification_collector.lock().assert_notifications(
 		"fallback_when_silent",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -107,10 +103,7 @@ fn should_close_when_completed() {
 	notification_collector.lock().assert_notifications(
 		"fallback_when_silent",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -173,7 +166,6 @@ fn should_compose() {
 			SubscriberNotification::Next(10),
 			SubscriberNotification::Next(10),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

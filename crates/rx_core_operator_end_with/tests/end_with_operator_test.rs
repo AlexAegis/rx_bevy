@@ -22,7 +22,6 @@ fn should_emit_the_end_with_value_right_before_completion() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(99),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -68,10 +67,7 @@ fn should_not_emit_the_end_with_value_when_errored() {
 	notification_collector.lock().assert_notifications(
 		"end_with",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -98,7 +94,6 @@ fn should_compose() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(99),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

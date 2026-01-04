@@ -177,7 +177,9 @@ where
 			.lock()
 			.unwrap_or_else(|poison_error| {
 				let mut destination = poison_error.into_inner();
-				destination.unsubscribe();
+				if !destination.is_closed() {
+					destination.unsubscribe();
+				}
 				destination
 			})
 	}
@@ -228,6 +230,7 @@ where
 			// information and immediately releases it to allow applied
 			// notifications to acquire it again
 			for notification in notifications.into_iter() {
+				// TODO: simplify is_closing
 				let is_complete = matches!(&notification, SubscriberNotification::Complete);
 
 				let is_error = matches!(&notification, SubscriberNotification::Error(_));
@@ -239,10 +242,6 @@ where
 				// Other notifications can be safely dropped when already closed
 				if !state.lock_clear_poison().is_closed_ignoring_deferred() {
 					subscriber.push(notification);
-				}
-
-				if is_terminal {
-					subscriber.push(SubscriberNotification::Unsubscribe);
 				}
 
 				if is_unsubscribe || is_terminal {
@@ -353,7 +352,6 @@ where
 			}
 		}
 		self.try_apply_deferred();
-		self.unsubscribe();
 	}
 
 	fn complete(&mut self) {
@@ -367,7 +365,6 @@ where
 			}
 		}
 		self.try_apply_deferred();
-		self.unsubscribe();
 	}
 }
 

@@ -16,6 +16,7 @@ use rx_core_traits::{
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection]
+#[rx_skip_unsubscribe_on_drop_impl]
 pub struct DelaySubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
@@ -90,14 +91,15 @@ where
 						&& previous_work_counter_before_sub == 1
 					{
 						destination.complete();
-						destination.unsubscribe();
 						scheduler_clone.lock().cancel(cancellation_id_copy);
 						return;
 					}
 
 					// try unsubscribe
 					if upstream_unsubscribed.load(Ordering::Relaxed) {
-						destination.unsubscribe();
+						if !destination.is_closed() {
+							destination.unsubscribe();
+						}
 						scheduler_clone.lock().cancel(cancellation_id_copy);
 					}
 				},
@@ -116,7 +118,6 @@ where
 		self.upstream_unsubscribed.store(true, Ordering::Relaxed);
 
 		self.destination.error(error);
-		self.destination.unsubscribe();
 		self.closed.close();
 		self.scheduler.lock().cancel(self.cancellation_id);
 	}
@@ -132,8 +133,42 @@ where
 			if self.scheduled_work_counter.load(Ordering::Relaxed) == 0 {
 				self.closed.close();
 				self.destination.complete();
-				self.destination.unsubscribe();
 				self.scheduler.lock().cancel(self.cancellation_id);
+			} else {
+				let destination = self.destination.clone();
+				let scheduled_work_counter = self.scheduled_work_counter.clone();
+				let scheduler_clone = self.scheduler.clone();
+				let upstream_completed = self.upstream_completed.clone();
+				let upstream_unsubscribed = self.upstream_unsubscribed.clone();
+				let cancellation_id_copy = self.cancellation_id;
+
+				self.scheduler.lock().schedule_delayed_work(
+					move |_, _| {
+						let mut destination = destination.lock();
+
+						let previous_work_counter_before_sub =
+							scheduled_work_counter.fetch_sub(1, Ordering::Relaxed);
+
+						// try complete
+						if upstream_completed.load(Ordering::Relaxed)
+							&& previous_work_counter_before_sub == 1
+						{
+							destination.complete();
+							scheduler_clone.lock().cancel(cancellation_id_copy);
+							return;
+						}
+
+						// try unsubscribe
+						if upstream_unsubscribed.load(Ordering::Relaxed) {
+							if !destination.is_closed() {
+								destination.unsubscribe();
+							}
+							scheduler_clone.lock().cancel(cancellation_id_copy);
+						}
+					},
+					self.duration,
+					self.cancellation_id,
+				);
 			}
 		}
 	}
@@ -161,5 +196,16 @@ where
 				self.scheduler.lock().cancel(self.cancellation_id);
 			}
 		}
+	}
+}
+
+impl<Destination, S> Drop for DelaySubscriber<Destination, S>
+where
+	Destination: 'static + Subscriber,
+	S: 'static + Scheduler + Send + Sync,
+{
+	fn drop(&mut self) {
+		self.unsubscribe();
+		self.closed.close();
 	}
 }

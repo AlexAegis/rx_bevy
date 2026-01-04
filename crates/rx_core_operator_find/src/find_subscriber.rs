@@ -54,7 +54,6 @@ where
 			self.match_observed = true;
 			self.destination.next(next);
 			self.destination.complete();
-			self.destination.unsubscribe();
 		}
 	}
 

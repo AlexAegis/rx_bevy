@@ -81,7 +81,6 @@ fn impl_unsubscribe_on_drop(derive_input: &DeriveInput) -> TokenStream {
 
 	quote! {
 		impl #impl_generics Drop for #ident #ty_generics #where_clause {
-			#[track_caller]
 			fn drop(&mut self) {
 				if !#_rx_core_traits_crate::SubscriptionLike::is_closed(self) {
 					#_rx_core_traits_crate::SubscriptionLike::unsubscribe(self);
@@ -220,7 +219,6 @@ mod test {
 		assert!(
 			s.contains(
 				&quote! {
-					#[track_caller]
 					fn drop(&mut self) {
 						if !rx_core_traits::SubscriptionLike::is_closed(self) {
 							rx_core_traits::SubscriptionLike::unsubscribe(self);

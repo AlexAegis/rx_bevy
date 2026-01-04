@@ -1,7 +1,7 @@
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
-mod main {
+mod feature {
 	use super::*;
 
 	#[test]
@@ -33,7 +33,6 @@ mod main {
 				SubscriberNotification::Next(3),
 				SubscriberNotification::Next(99),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -85,7 +84,6 @@ mod teardown {
 				SubscriberNotification::Next(3),
 				SubscriberNotification::Next(99),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);

@@ -22,7 +22,6 @@ fn should_emit_and_complete_on_the_first_next() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -43,10 +42,9 @@ fn should_error_if_no_emission_was_observed_before_completion() {
 	notification_collector.lock().assert_notifications(
 		"first",
 		0,
-		[
-			SubscriberNotification::Error(FirstOperatorError::NoNextObservedBeforeComplete),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(
+			FirstOperatorError::NoNextObservedBeforeComplete,
+		)],
 		true,
 	);
 }
@@ -67,10 +65,9 @@ fn should_forward_upstream_errors() {
 	notification_collector.lock().assert_notifications(
 		"first",
 		0,
-		[
-			SubscriberNotification::Error(FirstOperatorError::Upstream(error)),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(FirstOperatorError::Upstream(
+			error,
+		))],
 		true,
 	);
 }
@@ -116,7 +113,6 @@ fn should_be_composable() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

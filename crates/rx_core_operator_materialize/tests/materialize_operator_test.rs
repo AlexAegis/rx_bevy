@@ -40,10 +40,9 @@ fn should_turn_error_emissions_into_notifications_and_not_error() {
 	notification_collector.lock().assert_notifications(
 		"materialize",
 		0,
-		[
-			SubscriberNotification::Next(ObserverNotification::Error(error)),
-			SubscriberNotification::Unsubscribe, // From the subject
-		],
+		[SubscriberNotification::Next(ObserverNotification::Error(
+			error,
+		))],
 		true,
 	);
 }
@@ -62,10 +61,7 @@ fn should_turn_complete_emissions_into_notifications_and_not_complete() {
 	notification_collector.lock().assert_notifications(
 		"materialize",
 		0,
-		[
-			SubscriberNotification::Next(ObserverNotification::Complete),
-			SubscriberNotification::Unsubscribe, // From the subject
-		],
+		[SubscriberNotification::Next(ObserverNotification::Complete)],
 		true,
 	);
 }
@@ -111,7 +107,6 @@ fn should_be_composable() {
 		[
 			SubscriberNotification::Next(ObserverNotification::Next(1)),
 			SubscriberNotification::Next(ObserverNotification::Complete),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

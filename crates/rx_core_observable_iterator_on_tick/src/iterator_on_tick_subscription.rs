@@ -98,7 +98,6 @@ where
 						destination.next(value);
 						if state.peekable_iterator.peek().is_none() {
 							destination.complete();
-							destination.unsubscribe();
 							WorkResult::Done
 						} else {
 							WorkResult::Pending

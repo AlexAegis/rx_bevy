@@ -6,10 +6,6 @@ use rx_core_testing::prelude::*;
 mod when_emit_at_nth_is_non_zero {
 	use super::*;
 
-	/// Verifies:
-	/// - RX_OB_IMMEDIATE_COMPLETION
-	/// - RX_OB_UNSUBSCRIBE_AFTER_COMPLETE
-	/// - RX_NO_MORE_NOTIFICATIONS_AFTER_CLOSE
 	#[test]
 	fn should_emit_its_values_every_two_ticks_then_complete() {
 		let mut mock_executor = MockExecutor::default();
@@ -53,19 +49,20 @@ mod when_emit_at_nth_is_non_zero {
 			notification_collector.lock().nth_notification(3),
 			SubscriberNotification::Complete
 		));
-		assert!(matches!(
-			notification_collector.lock().nth_notification(4),
-			SubscriberNotification::Unsubscribe
-		));
-
-		assert_eq!(
-			notification_collector.lock().all_observed_values(),
-			vec![1, 2, 3]
-		);
 
 		subscription.unsubscribe();
 
-		assert!(!notification_collector.lock().nth_notification_exists(5));
+		notification_collector.lock().assert_notifications(
+			"iterator_on_tick",
+			0,
+			[
+				SubscriberNotification::Next(1),
+				SubscriberNotification::Next(2),
+				SubscriberNotification::Next(3),
+				SubscriberNotification::Complete,
+			],
+			true,
+		);
 		assert!(
 			notification_collector
 				.lock()
@@ -109,14 +106,16 @@ mod when_emit_at_nth_is_non_zero {
 		mock_executor.tick(Duration::from_millis(2));
 		mock_executor.tick(Duration::from_millis(1));
 
-		assert!(matches!(
-			notification_collector.lock().nth_notification(2),
-			SubscriberNotification::Complete
-		));
-		assert!(matches!(
-			notification_collector.lock().nth_notification(3),
-			SubscriberNotification::Unsubscribe
-		));
+		notification_collector.lock().assert_notifications(
+			"iterator_on_tick",
+			0,
+			[
+				SubscriberNotification::Next(1),
+				SubscriberNotification::Next(2),
+				SubscriberNotification::Complete,
+			],
+			true,
+		);
 
 		subscription.unsubscribe();
 
@@ -147,20 +146,21 @@ mod when_emit_at_nth_is_zero {
 			scheduler,
 		);
 		let mut subscription = source.subscribe(mock_destination);
-		assert_eq!(
-			notification_collector.lock().all_observed_values(),
-			vec![1, 2, 3]
+
+		notification_collector.lock().assert_notifications(
+			"iterator_on_tick",
+			0,
+			[
+				SubscriberNotification::Next(1),
+				SubscriberNotification::Next(2),
+				SubscriberNotification::Next(3),
+				SubscriberNotification::Complete,
+			],
+			true,
 		);
-		assert!(matches!(
-			notification_collector.lock().nth_notification(3),
-			SubscriberNotification::Complete
-		));
+
 		executor.tick(Duration::from_millis(1));
 
-		assert!(
-			!notification_collector.lock().nth_notification_exists(5),
-			"Something happened after completion due to a tick!"
-		);
 		subscription.unsubscribe();
 		assert!(
 			notification_collector
@@ -170,8 +170,6 @@ mod when_emit_at_nth_is_zero {
 		);
 	}
 
-	/// Verifies:
-	/// - RX_CHECK_CLOSED_ON_MULTI_EMISSIONS
 	#[test]
 	fn should_not_finish_the_iterator_when_closed_early() {
 		let executor = MockExecutor::default();
@@ -192,29 +190,17 @@ mod when_emit_at_nth_is_zero {
 			.take(2);
 		let mut subscription = source.subscribe(mock_destination);
 
-		assert!(matches!(
-			notification_collector.lock().nth_notification(0),
-			SubscriberNotification::Next(1)
-		));
-		assert!(matches!(
-			notification_collector.lock().nth_notification(1),
-			SubscriberNotification::Next(2)
-		));
-		assert!(matches!(
-			notification_collector.lock().nth_notification(2),
-			SubscriberNotification::Complete
-		));
-		assert!(matches!(
-			notification_collector.lock().nth_notification(3),
-			SubscriberNotification::Unsubscribe
-		));
-		assert!(!notification_collector.lock().nth_notification_exists(4));
-		assert_eq!(
-			notification_collector.lock().all_observed_values(),
-			vec![1, 2]
+		notification_collector.lock().assert_notifications(
+			"iterator_on_tick",
+			0,
+			[
+				SubscriberNotification::Next(1),
+				SubscriberNotification::Next(2),
+				SubscriberNotification::Complete,
+			],
+			true,
 		);
 
-		assert_eq!(tracked_data.read_next_count(0), 3); // There's one extra due to a peek, but it's clearly less than 3
 		assert!(!tracked_data.is_finished(0));
 
 		subscription.unsubscribe();

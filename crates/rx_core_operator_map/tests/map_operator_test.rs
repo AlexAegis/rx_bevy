@@ -53,7 +53,6 @@ fn should_close_when_errored() {
 		[
 			SubscriberNotification::Next("0".to_string()),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -81,10 +80,7 @@ fn should_close_when_completed() {
 	notification_collector.lock().assert_notifications(
 		"map",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 	assert!(subscription.is_closed());
@@ -108,10 +104,7 @@ fn should_compose() {
 	notification_collector.lock().assert_notifications(
 		"map",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }

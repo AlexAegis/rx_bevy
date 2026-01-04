@@ -47,7 +47,6 @@ fn should_merge_all_iterators() {
 			SubscriberNotification::Next(5),
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -124,7 +123,6 @@ fn should_subscribe_to_all_of_the_inner_observables_if_the_limit_allows_it() {
 			SubscriberNotification::Next(3),
 			SubscriberNotification::Next(4),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -167,10 +165,7 @@ fn should_immediately_complete_if_there_are_no_active_subscriptions() {
 	notification_collector.lock().assert_notifications(
 		"merge_map",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -222,7 +217,6 @@ fn should_immediately_error_by_an_inner_error() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -269,10 +263,7 @@ fn should_immediately_error_by_an_upstream_error() {
 	notification_collector.lock().assert_notifications(
 		"merge_map",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -349,7 +340,6 @@ fn should_subscribe_to_as_many_of_the_inner_observables_as_the_limit_allows_it()
 			SubscriberNotification::Next(3),
 			SubscriberNotification::Next(4),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -398,7 +388,6 @@ fn should_compose_and_merge_all_iterators() {
 			SubscriberNotification::Next(5),
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

@@ -50,7 +50,6 @@ where
 			Ok(next) => self.destination.next(next),
 			Err(error) => {
 				self.destination.error(error);
-				self.destination.unsubscribe();
 			}
 		}
 	}

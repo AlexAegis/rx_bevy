@@ -26,7 +26,6 @@ fn should_emit_partial_results() {
 			SubscriberNotification::Next(3),
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -48,10 +47,7 @@ fn should_complete_normally() {
 	notification_collector.lock().assert_notifications(
 		"scan",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -73,10 +69,7 @@ fn should_error_normally() {
 	notification_collector.lock().assert_notifications(
 		"scan",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -126,7 +119,6 @@ fn should_compose() {
 			SubscriberNotification::Next(3),
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

@@ -48,10 +48,7 @@ fn should_error_normally_without_emitting_anything_even_if_there_was_a_buffer() 
 	notification_collector.lock().assert_notifications(
 		"buffer_count",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -73,10 +70,7 @@ fn should_complete_normally_without_emitting_anything_if_there_is_no_buffer_yet(
 	notification_collector.lock().assert_notifications(
 		"buffer_count",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -106,7 +100,6 @@ fn should_complete_normally_without_emitting_anything_if_there_is_no_buffer_anym
 			SubscriberNotification::Next(vec![1, 2]),
 			SubscriberNotification::Next(vec![3, 4]),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -159,7 +152,6 @@ fn should_compose() {
 			SubscriberNotification::Next(vec![0, 1]),
 			SubscriberNotification::Next(vec![2]),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

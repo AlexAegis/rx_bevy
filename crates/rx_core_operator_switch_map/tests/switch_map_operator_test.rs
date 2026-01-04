@@ -51,7 +51,6 @@ fn should_switch_all_iterators() {
 			SubscriberNotification::Next(5),
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -125,7 +124,6 @@ fn should_subscribe_to_the_next_observable_immediately_and_unsubscribe_the_previ
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Next(3),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -167,10 +165,7 @@ fn should_immediately_complete_if_there_are_no_active_subscriptions() {
 	notification_collector.lock().assert_notifications(
 		"switch_map",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -218,10 +213,7 @@ fn should_immediately_error_by_an_inner_error() {
 	notification_collector.lock().assert_notifications(
 		"switch_map",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -263,10 +255,7 @@ fn should_immediately_error_by_an_upstream_error() {
 	notification_collector.lock().assert_notifications(
 		"switch_map",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -313,7 +302,6 @@ fn should_compose_and_switch_all_iterators() {
 			SubscriberNotification::Next(5),
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -379,7 +367,6 @@ fn should_be_able_to_subscribe_to_different_observables_if_they_are_erased() {
 			SubscriberNotification::Next(40),
 			SubscriberNotification::Next(5),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -475,7 +462,6 @@ fn should_be_able_to_execute_inner_teardown_on_switch() {
 			SubscriberNotification::Next(4),
 			SubscriberNotification::Next(5),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

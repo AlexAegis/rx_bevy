@@ -74,7 +74,6 @@ where
 		for (_, destination) in self.subscribers.iter_mut() {
 			if !destination.is_closed() {
 				destination.error(error.clone());
-				destination.unsubscribe();
 			}
 		}
 	}
@@ -83,7 +82,6 @@ where
 		for (_, destination) in self.subscribers.iter_mut() {
 			if !destination.is_closed() {
 				destination.complete();
-				destination.unsubscribe();
 			}
 		}
 	}

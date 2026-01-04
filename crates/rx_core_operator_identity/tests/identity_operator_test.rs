@@ -49,7 +49,6 @@ fn should_just_forward_complete_calls() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -80,7 +79,6 @@ fn should_just_forward_error_calls() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

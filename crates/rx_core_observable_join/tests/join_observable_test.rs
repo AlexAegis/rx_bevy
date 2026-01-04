@@ -21,10 +21,7 @@ mod before_primed {
 		notification_collector_1.lock().assert_notifications(
 			"join",
 			0,
-			[
-				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Complete],
 			true,
 		);
 	}
@@ -117,7 +114,6 @@ mod after_primed {
 			[
 				SubscriberNotification::Next((1, "hello")),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -144,7 +140,6 @@ mod after_primed {
 			[
 				SubscriberNotification::Next((1, "hello")),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -172,7 +167,6 @@ mod after_primed {
 			[
 				SubscriberNotification::Next((1, "hello")),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -184,51 +178,41 @@ mod errors {
 
 	#[test]
 	fn should_error_downstream_when_the_first_observable_errors() {
-		let destination_1 = MockObserver::default();
-		let notification_collector_1 = destination_1.get_notification_collector();
+		let destination = MockObserver::default();
+		let notification_collector = destination.get_notification_collector();
 
 		let mut subject_1 = PublishSubject::<usize, &'static str>::default();
 		let subject_2 = PublishSubject::<&'static str, &'static str>::default();
 
-		let _s = join(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+		let _s = join(subject_1.clone(), subject_2.clone()).subscribe(destination);
 
 		subject_1.error("error");
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Error("error"),
-			"Did not receive the first emission"
-		);
-
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(1),
-			&SubscriberNotification::Unsubscribe,
-			"Did not unsubscribe"
+		notification_collector.lock().assert_notifications(
+			"join",
+			0,
+			[SubscriberNotification::Error("error")],
+			true,
 		);
 	}
 
 	#[test]
 	fn should_error_downstream_when_the_second_observable_errors() {
-		let destination_1 = MockObserver::default();
-		let notification_collector_1 = destination_1.get_notification_collector();
+		let destination = MockObserver::default();
+		let notification_collector = destination.get_notification_collector();
 
 		let subject_1 = PublishSubject::<usize, &'static str>::default();
 		let mut subject_2 = PublishSubject::<&'static str, &'static str>::default();
 
-		let _s = join(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+		let _s = join(subject_1.clone(), subject_2.clone()).subscribe(destination);
 
 		subject_2.error("error");
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Error("error"),
-			"Did not receive the first emission"
-		);
-
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(1),
-			&SubscriberNotification::Unsubscribe,
-			"Did not unsubscribe"
+		notification_collector.lock().assert_notifications(
+			"join",
+			0,
+			[SubscriberNotification::Error("error")],
+			true,
 		);
 	}
 }

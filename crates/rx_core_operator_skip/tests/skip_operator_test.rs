@@ -45,10 +45,7 @@ fn should_close_when_errored() {
 	notification_collector.lock().assert_notifications(
 		"skip",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -72,10 +69,7 @@ fn should_close_when_completed() {
 	notification_collector.lock().assert_notifications(
 		"skip",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 	assert!(subscription.is_closed());
@@ -99,10 +93,7 @@ fn should_compose() {
 	notification_collector.lock().assert_notifications(
 		"skip",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }

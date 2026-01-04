@@ -30,7 +30,6 @@ fn should_emit_values_pairwise() {
 			SubscriberNotification::Next([4, 5]),
 			SubscriberNotification::Next([5, 6]),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -55,10 +54,7 @@ fn should_error_normally() {
 	notification_collector.lock().assert_notifications(
 		"pairwise",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -80,10 +76,7 @@ fn should_complete_normally() {
 	notification_collector.lock().assert_notifications(
 		"pairwise",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -135,7 +128,6 @@ fn should_compose() {
 			SubscriberNotification::Next([0, 1]),
 			SubscriberNotification::Next([1, 2]),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

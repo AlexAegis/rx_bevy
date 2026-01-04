@@ -15,7 +15,6 @@ fn should_emit_a_single_value_then_complete() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -45,7 +44,6 @@ mod teardown {
 			[
 				SubscriberNotification::Next(1),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);

@@ -20,7 +20,7 @@ where
 	Destination: Subscriber,
 {
 	pub fn new(mut destination: Destination, count: usize) -> Self {
-		if count == 0 {
+		if count == 0 && !destination.is_closed() {
 			destination.complete();
 		}
 		Self { destination, count }
@@ -31,7 +31,6 @@ impl<Destination> Observer for TakeSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	#[inline]
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() && self.count > 0 {
 			self.count -= 1;
@@ -45,17 +44,13 @@ where
 
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
-		if !self.is_closed() {
-			self.destination.error(error);
-			self.unsubscribe();
-		}
+		self.destination.error(error);
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		if !self.is_closed() {
 			self.destination.complete();
-			self.unsubscribe();
 		}
 	}
 }

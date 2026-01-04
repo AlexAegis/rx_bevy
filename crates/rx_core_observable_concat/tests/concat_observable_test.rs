@@ -38,28 +38,22 @@ fn should_complete_if_all_inputs_complete() {
 	subject_3.complete(); // This will never emit
 
 	subject_2.next(2);
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(1),
-		&SubscriberNotification::Next(2)
-	);
-
 	subject_2.next(3);
-
-	assert_eq!(
-		notification_collector.lock().nth_notification(2),
-		&SubscriberNotification::Next(3)
-	);
-
 	subject_2.complete();
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(3),
-		&SubscriberNotification::Complete,
-		"downstream should complete when all upstream observables complete"
-	);
-
 	subscription.unsubscribe();
+
+	notification_collector.lock().assert_notifications(
+		"concat",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Complete,
+		],
+		true,
+	);
 }
 
 #[test]
@@ -74,16 +68,12 @@ fn should_immediately_complete_all_inputs_immediately_complete() {
 
 	let mut subscription = concat((subject_1.clone(), subject_2.clone())).subscribe(destination);
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(0),
-		&SubscriberNotification::Complete,
-		"downstream should complete when all upstream observables complete"
-	);
-
 	subscription.unsubscribe();
-	assert_eq!(
-		notification_collector.lock().nth_notification(1),
-		&SubscriberNotification::Unsubscribe,
-		"downstream should unsubscribe when the subscription unsubscribes"
+
+	notification_collector.lock().assert_notifications(
+		"concat",
+		0,
+		[SubscriberNotification::Complete],
+		true,
 	);
 }

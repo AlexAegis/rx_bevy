@@ -35,7 +35,6 @@ fn should_retry_on_immediate_errors() {
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -84,7 +83,6 @@ fn should_retry_on_later_errors() {
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Next(3),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -129,7 +127,6 @@ fn should_retry_on_later_errors_but_stop_if_downstream_had_already_unsubscribed(
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -191,7 +188,6 @@ fn should_retry_on_mixed_immediate_and_later_errors() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -215,10 +211,7 @@ fn should_close_when_errored() {
 	notification_collector.lock().assert_notifications(
 		"retry - destination",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -244,7 +237,6 @@ fn should_close_when_completed() {
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -298,7 +290,6 @@ fn should_retry_on_later_replayable_errors() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -339,10 +330,7 @@ fn should_be_able_to_immediately_complete_if_an_immediate_error_was_retried() {
 	notification_collector.lock().assert_notifications(
 		"retry - deferred",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -388,7 +376,6 @@ fn should_be_able_to_later_complete_if_an_immediate_error_was_retried() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -435,7 +422,6 @@ fn should_be_able_to_later_error_if_an_immediate_error_was_retried() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

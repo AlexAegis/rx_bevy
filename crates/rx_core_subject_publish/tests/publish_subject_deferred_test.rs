@@ -36,7 +36,6 @@ fn should_be_able_to_tear_itself_down() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -94,7 +93,6 @@ fn should_be_able_to_subscribe_from_teardown() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe, // Because of `take`
 		],
 		true,
 	);
@@ -105,7 +103,6 @@ fn should_be_able_to_subscribe_from_teardown() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -164,7 +161,6 @@ fn should_be_able_to_subscribe_and_next_to_the_new_subscription_from_teardown() 
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe, // Because of take
 		],
 		true,
 	);
@@ -180,7 +176,6 @@ fn should_be_able_to_subscribe_and_next_to_the_new_subscription_from_teardown() 
 				SubscriberNotification::Next(1),
 				SubscriberNotification::Next(2),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -195,7 +190,6 @@ fn should_be_able_to_subscribe_and_next_to_the_new_subscription_from_teardown() 
 			[
 				SubscriberNotification::Next(2),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -250,7 +244,6 @@ fn should_be_able_to_defer_and_stop_at_an_error() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Error("error"),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -286,7 +279,6 @@ fn should_be_able_to_defer_and_stop_at_a_completion() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -334,7 +326,6 @@ fn should_be_able_to_defer_a_pre_closed_subscription_to_itself_without_adding_it
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -458,7 +449,6 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Error("error"),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -469,7 +459,6 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 		[
 			SubscriberNotification::Next(10),
 			SubscriberNotification::Error("error"),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -522,7 +511,6 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -533,7 +521,6 @@ fn should_be_able_to_defer_an_active_subscription_to_itself_without_adding_it_to
 		[
 			SubscriberNotification::Next(10),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -686,7 +673,6 @@ fn should_be_able_to_recursively_subscribe_to_itself() {
 			SubscriberNotification::Next("START".to_string()),
 			SubscriberNotification::Next("START 0".to_string()),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -702,7 +688,6 @@ fn should_be_able_to_recursively_subscribe_to_itself() {
 				SubscriberNotification::Next("START 0".to_string()),
 				SubscriberNotification::Next("START 0 1".to_string()),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -717,7 +702,6 @@ fn should_be_able_to_recursively_subscribe_to_itself() {
 			[
 				SubscriberNotification::Next("START 0 1".to_string()),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);

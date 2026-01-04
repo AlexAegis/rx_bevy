@@ -271,7 +271,6 @@ fn should_stop_emitting_when_downstream_is_closed() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete, // Came from `take`, not `interval`!
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

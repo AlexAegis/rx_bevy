@@ -38,7 +38,6 @@ where
 			ObserverNotification::Error(error) => {
 				if !self.is_closed() {
 					self.destination.error(error);
-					self.destination.unsubscribe();
 				}
 			}
 			ObserverNotification::Complete => self.complete(),
@@ -54,7 +53,6 @@ where
 	fn complete(&mut self) {
 		if !self.is_closed() {
 			self.destination.complete();
-			self.unsubscribe();
 		}
 	}
 }

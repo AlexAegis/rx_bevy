@@ -70,7 +70,6 @@ mod when_connected {
 			[
 				SubscriberNotification::Next(1),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -107,7 +106,6 @@ mod when_connected {
 			[
 				SubscriberNotification::Next(1),
 				SubscriberNotification::Error(error),
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);

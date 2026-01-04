@@ -128,7 +128,9 @@ where
 
 		if self.is_closed() {
 			// Subscribing to a closed subject could also cause a panic, but I prefer this
-			subscriber.unsubscribe();
+			if !subscriber.is_closed() {
+				subscriber.unsubscribe();
+			}
 			MulticastSubscription::new_closed(self.deferred_state.clone(), self.subscribers.clone())
 		} else {
 			let shared_subscriber = Arc::new(Mutex::new(subscriber));

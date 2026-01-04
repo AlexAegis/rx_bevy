@@ -53,8 +53,7 @@ where
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
-		let mapped = (self.mapper)(next);
-		self.destination.next(mapped);
+		self.destination.next((self.mapper)(next));
 	}
 
 	#[inline]

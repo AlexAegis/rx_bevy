@@ -3,60 +3,52 @@ use rx_core_testing::prelude::*;
 
 #[test]
 fn should_emit_the_last_value_after_completed_and_unsubscribe() {
-	let destination_1 = MockObserver::default();
-	let notification_collector_1 = destination_1.get_notification_collector();
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
 
 	let mut async_subject = AsyncSubject::<usize>::default();
 
 	async_subject.next(0); // An observed value, but not the last one
 
-	let _s = async_subject.clone().subscribe(destination_1);
+	let _s = async_subject.clone().subscribe(destination);
 
 	assert!(
-		notification_collector_1.lock().is_empty(),
+		notification_collector.lock().is_empty(),
 		"Nothing should've been replayed"
 	);
 
 	async_subject.next(1);
 
 	assert!(
-		notification_collector_1.lock().is_empty(),
+		notification_collector.lock().is_empty(),
 		"Nothing should've been sent before completion"
 	);
 
 	async_subject.next(2); // The last observed value
 	async_subject.complete();
 
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(0),
-		&SubscriberNotification::Next(2),
-		"destination did not receive the result emission"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(1),
-		&SubscriberNotification::Complete,
-		"destination did not receive the completion signal"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(2),
-		&SubscriberNotification::Unsubscribe,
-		"destination_1 did not receive the unsubscribe signal"
+	notification_collector.lock().assert_notifications(
+		"subject_async",
+		0,
+		[
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Complete,
+		],
+		true,
 	);
 
 	async_subject.unsubscribe();
 
 	assert!(
-		!notification_collector_1.lock().nth_notification_exists(3),
+		!notification_collector.lock().nth_notification_exists(3),
 		"destination should not have received another notification"
 	);
 }
 
 #[test]
 fn should_emit_the_last_value_after_completed_for_late_subscribers() {
-	let destination_1 = MockObserver::default();
-	let notification_collector_1 = destination_1.get_notification_collector();
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
 
 	let mut async_subject = AsyncSubject::<usize>::default();
 
@@ -65,24 +57,16 @@ fn should_emit_the_last_value_after_completed_for_late_subscribers() {
 	async_subject.next(2); // The last observed value
 	async_subject.complete();
 
-	let _s = async_subject.clone().subscribe(destination_1);
+	let _s = async_subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(0),
-		&SubscriberNotification::Next(2),
-		"destination did not receive the result emission"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(1),
-		&SubscriberNotification::Complete,
-		"destination did not receive the completion signal"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(2),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
+	notification_collector.lock().assert_notifications(
+		"subject_async",
+		0,
+		[
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Complete,
+		],
+		true,
 	);
 }
 
@@ -118,7 +102,7 @@ fn should_be_able_to_read_its_latest_value() {
 #[test]
 fn should_be_able_to_use_a_custom_reducer_to_accumulate_the_result() {
 	let destination = MockObserver::default();
-	let notifications = destination.get_notification_collector();
+	let notification_collector = destination.get_notification_collector();
 
 	let mut async_subject = AsyncSubject::<usize>::new(|acc, next| acc + next);
 
@@ -129,15 +113,13 @@ fn should_be_able_to_use_a_custom_reducer_to_accumulate_the_result() {
 	let _subscription = async_subject.clone().subscribe(destination);
 	async_subject.complete();
 
-	assert_eq!(
-		notifications.lock().nth_notification(0),
-		&SubscriberNotification::Next(6),
-		"destination did not receive the reduced emission",
-	);
-
-	assert_eq!(
-		notifications.lock().nth_notification(1),
-		&SubscriberNotification::Complete,
-		"destination did not receive the completion signal",
+	notification_collector.lock().assert_notifications(
+		"subject_async",
+		0,
+		[
+			SubscriberNotification::Next(6),
+			SubscriberNotification::Complete,
+		],
+		true,
 	);
 }

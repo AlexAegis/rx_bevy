@@ -79,7 +79,6 @@ where
 			}
 
 			self.destination.complete();
-			self.destination.unsubscribe();
 		}
 	}
 
@@ -123,7 +122,6 @@ where
 
 		if let Some(error) = self.take_either_error() {
 			self.destination.error(error);
-			self.destination.unsubscribe();
 			return;
 		}
 

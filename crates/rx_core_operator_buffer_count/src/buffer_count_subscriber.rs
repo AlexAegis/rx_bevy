@@ -66,13 +66,11 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error);
-		self.destination.unsubscribe();
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		self.eject_buffer();
 		self.destination.complete();
-		self.destination.unsubscribe();
 	}
 }

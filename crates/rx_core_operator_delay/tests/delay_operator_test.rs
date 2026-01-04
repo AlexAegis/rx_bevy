@@ -129,10 +129,7 @@ mod error {
 		notification_collector.lock().assert_notifications(
 			"delay",
 			0,
-			[
-				SubscriberNotification::Error(error),
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Error(error)],
 			true,
 		);
 
@@ -171,10 +168,7 @@ mod error {
 		notification_collector.lock().assert_notifications(
 			"delay",
 			0,
-			[
-				SubscriberNotification::Error(error),
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Error(error)],
 			true,
 		);
 
@@ -189,10 +183,7 @@ mod error {
 		notification_collector.lock().assert_notifications(
 			"delay",
 			0,
-			[
-				SubscriberNotification::Error(error),
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Error(error)],
 			true,
 		);
 
@@ -223,8 +214,9 @@ mod complete {
 		source.complete();
 
 		notification_collector.lock().assert_is_empty("delay");
-
-		executor.tick(Duration::from_millis(1000));
+		executor.tick(Duration::from_millis(1));
+		notification_collector.lock().assert_is_empty("delay");
+		executor.tick(Duration::from_millis(999));
 
 		notification_collector.lock().assert_notifications(
 			"delay",
@@ -232,7 +224,6 @@ mod complete {
 			[
 				SubscriberNotification::Next(1),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -263,10 +254,7 @@ mod complete {
 		notification_collector.lock().assert_notifications(
 			"delay",
 			0,
-			[
-				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Complete],
 			true,
 		);
 
@@ -305,7 +293,6 @@ mod complete {
 			[
 				SubscriberNotification::Next(1),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);

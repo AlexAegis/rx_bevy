@@ -27,10 +27,7 @@ fn should_be_able_to_forward_upstream_errors() {
 	notification_collector.lock().assert_notifications(
 		"concurrent_subscriber",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -51,10 +48,7 @@ fn should_be_able_to_complete_from_an_upstream_completion_if_there_are_no_inner_
 	notification_collector.lock().assert_notifications(
 		"concurrent_subscriber",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -83,10 +77,7 @@ fn should_not_complete_if_upstream_completes_when_there_are_active_inner_observa
 	notification_collector.lock().assert_notifications(
 		"concurrent_subscriber",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -124,7 +115,6 @@ fn should_move_to_the_next_observable_in_queue_if_the_previous_one_had_finished(
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

@@ -40,10 +40,7 @@ fn should_complete_normally() {
 	notification_collector.lock().assert_notifications(
 		"error_boundary",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }

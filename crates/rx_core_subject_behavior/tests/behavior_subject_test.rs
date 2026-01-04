@@ -78,8 +78,8 @@ fn should_continue_to_multicast() {
 
 #[test]
 fn should_emit_the_last_value_after_completed_for_late_subscribers() {
-	let destination_1 = MockObserver::default();
-	let notification_collector_1 = destination_1.get_notification_collector();
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
 
 	let mut behavior_subject = BehaviorSubject::<usize>::new(1);
 
@@ -88,26 +88,16 @@ fn should_emit_the_last_value_after_completed_for_late_subscribers() {
 	behavior_subject.next(2); // The last observed value
 	behavior_subject.complete();
 
-	let _s = behavior_subject.clone().subscribe(destination_1);
+	let _s = behavior_subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(0),
-		&SubscriberNotification::Next(2),
-		"destination did not receive the replay"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(1),
-		&SubscriberNotification::Complete,
-		"destination did not receive the completion signal"
-	);
-
-	behavior_subject.unsubscribe();
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(2),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
+	notification_collector.lock().assert_notifications(
+		"subject_behavior",
+		0,
+		[
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Complete,
+		],
+		true,
 	);
 }
 
@@ -124,16 +114,11 @@ fn should_not_emit_the_last_value_after_errored() {
 
 	let _s = behavior_subject.clone().subscribe(destination_1);
 
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(0),
-		&SubscriberNotification::Error(error),
-		"destination did not receive the error"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(1),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
+	notification_collector_1.lock().assert_notifications(
+		"subject_behavior",
+		0,
+		[SubscriberNotification::Error(error)],
+		true,
 	);
 }
 

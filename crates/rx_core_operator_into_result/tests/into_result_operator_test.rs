@@ -38,7 +38,10 @@ fn should_turn_error_emissions_into_results_and_not_error() {
 	let error = "error";
 	source.next(0);
 	source.error(error);
-	assert!(subscription.is_closed());
+	assert!(
+		!subscription.is_closed(),
+		"Should not close as the error turned into a next!"
+	);
 
 	notification_collector.lock().assert_notifications(
 		"into_result",
@@ -46,7 +49,6 @@ fn should_turn_error_emissions_into_results_and_not_error() {
 		[
 			SubscriberNotification::Next(Result::Ok(0)),
 			SubscriberNotification::Next(Result::Err(error)),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -67,10 +69,7 @@ fn should_complete_normally() {
 	notification_collector.lock().assert_notifications(
 		"into_result",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -92,10 +91,7 @@ fn should_compose() {
 	notification_collector.lock().assert_notifications(
 		"into_result",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }

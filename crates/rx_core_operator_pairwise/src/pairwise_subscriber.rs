@@ -1,7 +1,7 @@
 use derive_where::derive_where;
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Signal, Subscriber, SubscriptionLike};
+use rx_core_traits::{Observer, Signal, Subscriber};
 
 #[derive_where(Debug; In)]
 #[derive(RxSubscriber)]
@@ -48,12 +48,10 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error);
-		self.unsubscribe();
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		self.destination.complete();
-		self.unsubscribe();
 	}
 }

@@ -52,10 +52,7 @@ fn should_error_normally() {
 	notification_collector.lock().assert_notifications(
 		"map_into",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -75,10 +72,7 @@ fn should_complete_normally() {
 	notification_collector.lock().assert_notifications(
 		"map_into",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -104,7 +98,6 @@ fn should_compose() {
 		[
 			SubscriberNotification::Next(Bar),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

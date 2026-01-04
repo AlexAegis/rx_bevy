@@ -60,12 +60,18 @@ where
 		self.notification_collector
 			.lock()
 			.push(SubscriberNotification::Error(error));
+		// As an end destination, it must unsubscribe itself when observing a
+		// terminal signal, as expected by `rx_ob_unsubscribed_after_error`
+		self.teardown.unsubscribe();
 	}
 
 	fn complete(&mut self) {
 		self.notification_collector
 			.lock()
 			.push(SubscriberNotification::Complete);
+		// As an end destination, it must unsubscribe itself when observing a
+		// terminal signal, as expected by `rx_ob_unsubscribed_after_complete`
+		self.teardown.unsubscribe();
 	}
 }
 
@@ -80,6 +86,9 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
+		// Is intentionally not checked. Normal observers do check if they
+		// are closed to reject further upstream calls, but here it's desired
+		// to see everything that was attempted.
 		self.teardown.unsubscribe();
 		self.notification_collector
 			.lock()

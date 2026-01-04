@@ -24,7 +24,6 @@ fn should_emit_the_result_once_completed() {
 		[
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -49,7 +48,6 @@ fn should_emit_the_seed_once_completed_without_any_nexts() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -73,10 +71,7 @@ fn should_error_normally() {
 	notification_collector.lock().assert_notifications(
 		"reduce",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -124,7 +119,6 @@ fn should_compose() {
 		[
 			SubscriberNotification::Next(6),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

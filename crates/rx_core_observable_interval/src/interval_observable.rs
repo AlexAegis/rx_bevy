@@ -1,6 +1,6 @@
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{
-	Never, Observable, Observer, Scheduler, SchedulerHandle, Subscriber, UpgradeableObserver,
+	Never, Observable, Scheduler, SchedulerHandle, Subscriber, UpgradeableObserver,
 };
 
 use crate::{IntervalSubscription, observable::IntervalObservableOptions};
@@ -92,10 +92,10 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
-		let mut destination = observer.upgrade();
-		if self.options.start_on_subscribe {
-			destination.next(0);
-		}
-		IntervalSubscription::new(destination, self.options.clone(), self.scheduler.clone())
+		IntervalSubscription::new(
+			observer.upgrade(),
+			self.options.clone(),
+			self.scheduler.clone(),
+		)
 	}
 }

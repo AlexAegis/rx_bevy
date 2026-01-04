@@ -25,7 +25,6 @@ fn should_emit_the_found_value_and_complete() {
 		[
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -53,7 +52,6 @@ fn should_compose() {
 		[
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -78,10 +76,9 @@ fn should_forward_upstream_errors_wrapped() {
 	notification_collector.lock().assert_notifications(
 		"find",
 		0,
-		[
-			SubscriberNotification::Error(FindOperatorError::Upstream(error)),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(FindOperatorError::Upstream(
+			error,
+		))],
 		true,
 	);
 }
@@ -108,10 +105,9 @@ mod no_match_observed_error {
 		notification_collector.lock().assert_notifications(
 			"find",
 			0,
-			[
-				SubscriberNotification::Error(FindOperatorError::NoMatchObserved),
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Error(
+				FindOperatorError::NoMatchObserved,
+			)],
 			true,
 		);
 	}
@@ -138,10 +134,9 @@ mod no_next_observed_error {
 		notification_collector.lock().assert_notifications(
 			"find",
 			0,
-			[
-				SubscriberNotification::Error(FindOperatorError::NoNextObservedBeforeComplete),
-				SubscriberNotification::Unsubscribe,
-			],
+			[SubscriberNotification::Error(
+				FindOperatorError::NoNextObservedBeforeComplete,
+			)],
 			true,
 		);
 	}

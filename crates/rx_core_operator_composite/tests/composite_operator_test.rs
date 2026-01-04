@@ -55,7 +55,6 @@ fn should_create_a_new_operator_from_two_using_compose_with() {
 			SubscriberNotification::Next("0".to_string()),
 			SubscriberNotification::Next("2".to_string()),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -81,10 +80,7 @@ fn should_create_a_new_operator_from_two_and_error() {
 	notification_collector.lock().assert_notifications(
 		"composite",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -108,10 +104,7 @@ fn should_create_a_new_operator_from_two_and_complete() {
 	notification_collector.lock().assert_notifications(
 		"composite",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }

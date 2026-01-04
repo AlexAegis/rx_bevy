@@ -29,7 +29,6 @@ fn should_be_able_to_interact_with_the_destination_on_subscribe() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -61,7 +60,6 @@ fn should_close_when_errored() {
 		[
 			SubscriberNotification::Next(10),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -94,7 +92,6 @@ fn should_close_when_completed() {
 		[
 			SubscriberNotification::Next(10),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -124,7 +121,6 @@ fn should_compose() {
 		[
 			SubscriberNotification::Next(10),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

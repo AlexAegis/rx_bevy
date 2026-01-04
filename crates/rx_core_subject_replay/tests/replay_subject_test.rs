@@ -105,55 +105,42 @@ fn should_replay_multiple_values_to_new_subscribers_with_larger_capacity() {
 
 #[test]
 fn should_replay_its_last_value_to_new_subscribers_after_completed() {
-	let destination_1 = MockObserver::default();
-	let notification_collector_1 = destination_1.get_notification_collector();
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
 
 	let mut replay_subject = ReplaySubject::<1, usize>::default();
 	replay_subject.next(10);
 	replay_subject.complete();
-	let _s = replay_subject.clone().subscribe(destination_1);
+	let _s = replay_subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(0),
-		&SubscriberNotification::Next(10),
-		"destination did not receive the replay"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(1),
-		&SubscriberNotification::Complete,
-		"destination did not receive the completion"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(2),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe"
+	notification_collector.lock().assert_notifications(
+		"subject_replay",
+		0,
+		[
+			SubscriberNotification::Next(10),
+			SubscriberNotification::Complete,
+		],
+		true,
 	);
 }
 
 #[test]
 fn should_not_replay_its_last_value_to_new_subscribers_after_errored() {
-	let destination_1 = MockObserver::default();
-	let notification_collector_1 = destination_1.get_notification_collector();
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
 
 	let mut replay_subject = ReplaySubject::<1, usize, &'static str>::default();
 	replay_subject.next(10);
 	let error = "error";
 	replay_subject.error(error);
 
-	let _s = replay_subject.clone().subscribe(destination_1);
+	let _s = replay_subject.clone().subscribe(destination);
 
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(0),
-		&SubscriberNotification::Error(error),
-		"destination did not receive the error"
-	);
-
-	assert_eq!(
-		notification_collector_1.lock().nth_notification(1),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe"
+	notification_collector.lock().assert_notifications(
+		"subject_replay",
+		0,
+		[SubscriberNotification::Error(error)],
+		true,
 	);
 }
 

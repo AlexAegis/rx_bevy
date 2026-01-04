@@ -62,7 +62,6 @@ fn should_error_normally() {
 		[
 			SubscriberNotification::Next((1, TestProvenance::Foo)),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -86,7 +85,6 @@ fn should_complete_normally() {
 		[
 			SubscriberNotification::Next((1, TestProvenance::Foo)),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -159,7 +157,6 @@ mod initial_then_by_provenance {
 				SubscriberNotification::Next(2),
 				SubscriberNotification::Next(4),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);
@@ -195,7 +192,6 @@ mod only_by_provenance {
 				SubscriberNotification::Next(2),
 				SubscriberNotification::Next(4),
 				SubscriberNotification::Complete,
-				SubscriberNotification::Unsubscribe,
 			],
 			true,
 		);

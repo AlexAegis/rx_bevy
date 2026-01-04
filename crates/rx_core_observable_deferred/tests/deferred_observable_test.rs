@@ -43,10 +43,7 @@ fn should_be_able_to_error_normally() {
 	notification_collector.lock().assert_notifications(
 		"deferred_observable",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }
@@ -67,10 +64,7 @@ fn should_be_able_to_complete_normally() {
 	notification_collector.lock().assert_notifications(
 		"deferred_observable",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }

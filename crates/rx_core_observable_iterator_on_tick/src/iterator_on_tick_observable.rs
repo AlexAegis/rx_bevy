@@ -79,7 +79,7 @@ where
 				}
 				destination.next(item);
 			}
-			if completed {
+			if completed && !destination.is_closed() {
 				destination.complete();
 			}
 		}

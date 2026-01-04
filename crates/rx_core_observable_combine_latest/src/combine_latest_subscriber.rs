@@ -73,7 +73,6 @@ where
 				|| (self.o1_state.is_completed_but_not_primed() && self.o2_state.is_primed()))
 		{
 			self.destination.complete();
-			self.destination.unsubscribe();
 		}
 	}
 
@@ -114,7 +113,6 @@ where
 
 		if let Some(error) = self.take_either_error() {
 			self.destination.error(error);
-			self.destination.unsubscribe();
 			return;
 		}
 

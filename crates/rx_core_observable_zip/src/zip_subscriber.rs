@@ -79,7 +79,6 @@ where
 				|| (self.o1_queue.is_empty() && self.o2_queue.is_completed()))
 		{
 			self.destination.complete();
-			self.destination.unsubscribe();
 		}
 	}
 
@@ -120,7 +119,6 @@ where
 
 		if let Some(error) = self.take_either_error() {
 			self.destination.error(error);
-			self.destination.unsubscribe();
 			return;
 		}
 

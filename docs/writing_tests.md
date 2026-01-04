@@ -75,3 +75,14 @@ but for solo projects as well:
 - It forces you to write tests for every feature, eliminating the possibility
   of forgetting to test something! (Again, it does not mean you have covered
   all edge cases, only that it's at least tested!)
+
+## Integration Tests
+
+Each test file should organize tests in modules in a
+[BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) fashion,
+where each module **describes a scenario** like `when_option_is_false` or
+`when_already_unsubscribed` etc.
+
+This helps keeping actual test function names short while still being readable
+in the test output:
+

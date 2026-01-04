@@ -26,7 +26,6 @@ fn should_forward_all_notifications_to_the_tap_destination_too() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -64,10 +63,7 @@ fn should_close_when_errored() {
 	notification_collector.lock().assert_notifications(
 		"tap",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -101,10 +97,7 @@ fn should_close_when_completed() {
 	notification_collector.lock().assert_notifications(
 		"tap",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -138,10 +131,7 @@ fn should_compose() {
 	notification_collector.lock().assert_notifications(
 		"tap",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 

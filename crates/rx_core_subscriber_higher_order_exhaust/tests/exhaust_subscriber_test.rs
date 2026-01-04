@@ -47,7 +47,6 @@ fn should_only_allow_new_inner_observables_once_the_current_one_finished() {
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Next(3),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -68,10 +67,7 @@ fn should_immediately_complete_if_there_are_no_active_subscriptions() {
 	notification_collector.lock().assert_notifications(
 		"exhaust_subscriber",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -106,7 +102,6 @@ fn should_immediately_error_by_an_inner_error() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -128,10 +123,7 @@ fn should_immediately_error_by_an_upstream_error() {
 	notification_collector.lock().assert_notifications(
 		"exhaust_subscriber",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 

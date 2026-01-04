@@ -142,20 +142,14 @@ fn should_close_when_errored() {
 	notification_collector_1.lock().assert_notifications(
 		"share - destination_1",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
 	notification_collector_2.lock().assert_notifications(
 		"share - destination_2",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -190,20 +184,14 @@ fn should_close_when_completed() {
 	notification_collector_1.lock().assert_notifications(
 		"share - destination_1",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
 	notification_collector_2.lock().assert_notifications(
 		"share - destination_2",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -261,20 +249,14 @@ fn should_handle_manual_connections_and_disconnections_and_close_when_completed(
 	notification_collector_1.lock().assert_notifications(
 		"share - destination_1",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
 	notification_collector_2.lock().assert_notifications(
 		"share - destination_2",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 

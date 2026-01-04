@@ -34,7 +34,6 @@ where
 	/// ? for this ConnectableObservable as it is a low level component of other operators. (share)
 	/// ? if that's the case, revisit this and remove the arc
 	connector: Arc<Mutex<ConnectorState<Source, ConnectorProvider>>>,
-
 	connection: Arc<Mutex<Connection<ConnectionSubscription<Source, ConnectorProvider::Provided>>>>,
 	connection_state: Arc<Mutex<ConnectionState>>,
 }

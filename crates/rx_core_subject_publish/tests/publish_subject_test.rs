@@ -50,19 +50,13 @@ fn should_forward_values_to_multiple_active_listeners_after_completion() {
 	notification_collector_1.lock().assert_notifications(
 		"destination_1 did not receive the completion signal",
 		2,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 	notification_collector_2.lock().assert_notifications(
 		"destination_2 did not receive the completion signal",
 		1,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -85,10 +79,7 @@ fn should_immediately_complete_and_unsubscribe_new_subscribers_if_already_comple
 	notification_collector.lock().assert_notifications(
 		"publish_subject destination",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -119,10 +110,7 @@ fn should_immediately_error_new_subscribers_if_errored_before_the_subscription()
 	notification_collector.lock().assert_notifications(
 		"publish_subject",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -227,10 +215,7 @@ fn should_immediately_complete_and_unsubscribe_new_subscribers_if_already_comple
 	notification_collector.lock().assert_notifications(
 		"publish_subject destination",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 
@@ -261,10 +246,7 @@ fn should_immediately_error_and_unsubscribe_new_subscribers_if_errored_and_unsub
 	notification_collector.lock().assert_notifications(
 		"publish_subject destination",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -296,7 +278,7 @@ fn should_be_able_to_chain_subjects_as_destinations() {
 		"destination received a signal before subscribe!"
 	);
 
-	let mut downstream_subscription = relay_subject.subscribe(destination);
+	let downstream_subscription = relay_subject.subscribe(destination);
 
 	source_subject.next(1);
 
@@ -344,14 +326,12 @@ fn should_be_able_to_chain_subjects_as_destinations() {
 
 	source_subject.next(99); // Has no effect after completion/error
 
-	downstream_subscription.unsubscribe();
+	assert!(downstream_subscription.is_closed());
 
-	assert_eq!(
-		notification_collector.lock().nth_notification(3),
-		&SubscriberNotification::Unsubscribe,
-		"destination did not receive the unsubscribe signal"
+	assert!(
+		!upstream_subscription_2.is_closed(),
+		"should not be closed as it's detached!"
 	);
-
 	upstream_subscription_2.unsubscribe();
 }
 
@@ -369,10 +349,7 @@ fn should_complete_active_subscribers() {
 	notification_collector.lock().assert_notifications(
 		"publish_subject destination",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -392,10 +369,7 @@ fn should_error_active_subscribers_but_not_unsubscribe_them() {
 	notification_collector.lock().assert_notifications(
 		"publish_subject destination",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }

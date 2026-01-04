@@ -76,7 +76,6 @@ fn should_error_normally() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -97,10 +96,7 @@ fn should_complete_normally() {
 	notification_collector.lock().assert_notifications(
 		"lift_option",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -122,10 +118,7 @@ fn should_compose() {
 	notification_collector.lock().assert_notifications(
 		"lift_option",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }

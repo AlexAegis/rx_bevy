@@ -23,8 +23,24 @@ fn should_take_the_first_n_emissions_then_complete() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
+		true,
+	);
+}
+
+#[test]
+fn should_immediately_complete_and_unsubscribe_if_take_count_is_zero() {
+	let destination = MockObserver::<Never>::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let subscription = never().take(0).subscribe(destination);
+
+	assert!(subscription.is_closed());
+
+	notification_collector.lock().assert_notifications(
+		"take",
+		0,
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -45,10 +61,7 @@ fn should_close_when_errored() {
 	notification_collector.lock().assert_notifications(
 		"take",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 
@@ -72,10 +85,7 @@ fn should_close_when_completed() {
 	notification_collector.lock().assert_notifications(
 		"take",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 	assert!(subscription.is_closed());
@@ -99,10 +109,7 @@ fn should_compose() {
 	notification_collector.lock().assert_notifications(
 		"take",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 }

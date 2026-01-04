@@ -38,7 +38,6 @@ fn should_send_a_unit_value_after_the_specified_amount_of_time() {
 		[
 			SubscriberNotification::Next(()),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

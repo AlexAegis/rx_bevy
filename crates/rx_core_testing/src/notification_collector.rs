@@ -8,6 +8,7 @@ use std::{
 use derive_where::derive_where;
 use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriptionClosedFlag};
 
+// TODO: Consider renaming it to just Notifications, along with all the notification_collector variables.
 #[derive_where(Clone, Default)]
 #[derive(Debug)]
 pub struct NotificationCollector<In, InError = Never>
@@ -95,9 +96,13 @@ where
 	/// Returns the `n`th observed notification. Including from the notifications
 	/// observed after the first [SubscriberNotification::Unsubscribe] notification.
 	#[inline]
+	#[track_caller]
 	pub fn nth_notification(&self, n: usize) -> &SubscriberNotification<In, InError> {
-		self.try_nth_notification(n)
-			.unwrap_or_else(|| panic!("Notification not found at index {}!", n))
+		if let Some(nth_notification) = self.try_nth_notification(n) {
+			nth_notification
+		} else {
+			panic!("Notification not found at index {}!", n)
+		}
 	}
 
 	pub fn try_nth_notification(&self, n: usize) -> Option<&SubscriberNotification<In, InError>> {
@@ -289,6 +294,7 @@ where
 	}
 
 	/// Asserts that no notifications were observed at all.
+	#[track_caller]
 	pub fn assert_is_empty(&self, assert_message_prefix: &'static str)
 	where
 		In: Debug,
@@ -310,6 +316,7 @@ where
 	/// Remember, the first notification is of `index` `0`. If you want to
 	/// assert that no notifications were observed, use
 	/// [`assert_is_empty`][NotificationCollectorState::assert_is_empty].
+	#[track_caller]
 	pub fn assert_nth_notification_is_last(
 		&self,
 		assert_message_prefix: &'static str,
@@ -337,6 +344,7 @@ where
 	/// Asserts all notifications from the given offset are matching the
 	/// array of expected notifications, and optionally that there are no more
 	/// notifications after them.
+	#[track_caller]
 	pub fn assert_notifications<const N: usize>(
 		&self,
 		assert_message_prefix: &'static str,

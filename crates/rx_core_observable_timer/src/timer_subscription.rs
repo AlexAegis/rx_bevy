@@ -40,8 +40,9 @@ where
 				move |_, _| {
 					let mut destination = destination_clone.lock();
 					destination.next(());
-					destination.complete();
-					destination.unsubscribe();
+					if !destination.is_closed() {
+						destination.complete();
+					}
 				},
 				duration,
 				cancellation_id,

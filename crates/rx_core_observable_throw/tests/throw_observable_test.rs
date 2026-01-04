@@ -13,10 +13,7 @@ fn should_cause_an_error_on_subscribe() {
 	notification_collector.lock().assert_notifications(
 		"throw",
 		0,
-		[
-			SubscriberNotification::Error(error),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(error)],
 		true,
 	);
 }

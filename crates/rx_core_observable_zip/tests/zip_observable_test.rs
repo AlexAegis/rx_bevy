@@ -242,16 +242,10 @@ mod overflow {
 			"did not complete"
 		);
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(3),
-			&SubscriberNotification::Unsubscribe,
-			"did not unsubscribe"
-		);
-
 		subject_2.next("zed");
 
 		assert!(
-			!notification_collector_1.lock().nth_notification_exists(4),
+			!notification_collector_1.lock().nth_notification_exists(3),
 			"should not have emitted anything after it unsubscribed"
 		);
 	}
@@ -262,77 +256,62 @@ mod errors {
 
 	#[test]
 	fn should_error_downstream_when_the_first_observable_errors() {
-		let destination_1 = MockObserver::default();
-		let notification_collector_1 = destination_1.get_notification_collector();
+		let destination = MockObserver::default();
+		let notification_collector = destination.get_notification_collector();
 
 		let mut subject_1 = PublishSubject::<usize, &'static str>::default();
 		let subject_2 = PublishSubject::<&'static str, &'static str>::default();
 
-		let _s = zip(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+		let _s = zip(subject_1.clone(), subject_2.clone()).subscribe(destination);
 
 		subject_1.error("error");
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Error("error"),
-			"Did not receive the first emission"
-		);
-
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(1),
-			&SubscriberNotification::Unsubscribe,
-			"Did not unsubscribe"
+		notification_collector.lock().assert_notifications(
+			"zip",
+			0,
+			[SubscriberNotification::Error("error")],
+			true,
 		);
 	}
 
 	#[test]
 	fn should_error_downstream_when_the_second_observable_errors() {
-		let destination_1 = MockObserver::default();
-		let notification_collector_1 = destination_1.get_notification_collector();
+		let destination = MockObserver::default();
+		let notification_collector = destination.get_notification_collector();
 
 		let subject_1 = PublishSubject::<usize, &'static str>::default();
 		let mut subject_2 = PublishSubject::<&'static str, &'static str>::default();
 
-		let _s = zip(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+		let _s = zip(subject_1.clone(), subject_2.clone()).subscribe(destination);
 
 		subject_2.error("error");
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Error("error"),
-			"Did not receive the first emission"
-		);
-
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(1),
-			&SubscriberNotification::Unsubscribe,
-			"Did not unsubscribe"
+		notification_collector.lock().assert_notifications(
+			"zip",
+			0,
+			[SubscriberNotification::Error("error")],
+			true,
 		);
 	}
 
 	#[test]
 	fn should_error_downstream_when_the_first_observable_errors_after_seeing_a_value() {
-		let destination_1 = MockObserver::default();
-		let notification_collector_1 = destination_1.get_notification_collector();
+		let destination = MockObserver::default();
+		let notification_collector = destination.get_notification_collector();
 
 		let mut subject_1 = PublishSubject::<usize, &'static str>::default();
 		let subject_2 = PublishSubject::<&'static str, &'static str>::default();
 
-		let _s = zip(subject_1.clone(), subject_2.clone()).subscribe(destination_1);
+		let _s = zip(subject_1.clone(), subject_2.clone()).subscribe(destination);
 
 		subject_1.next(1);
 		subject_1.error("error");
 
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(0),
-			&SubscriberNotification::Error("error"),
-			"Did not receive the first emission"
-		);
-
-		assert_eq!(
-			notification_collector_1.lock().nth_notification(1),
-			&SubscriberNotification::Unsubscribe,
-			"Did not unsubscribe"
+		notification_collector.lock().assert_notifications(
+			"zip",
+			0,
+			[SubscriberNotification::Error("error")],
+			true,
 		);
 	}
 }

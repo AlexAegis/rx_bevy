@@ -15,7 +15,6 @@ fn iterator_observable_should_emit_its_values_then_complete() {
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -33,6 +32,8 @@ fn iterator_observable_should_stop_when_downstream_closes_during_iteration() {
 		.take(3)
 		.subscribe(mock_destination);
 
+	notification_collector.print();
+
 	notification_collector.lock().assert_notifications(
 		"iterator",
 		0,
@@ -41,7 +42,6 @@ fn iterator_observable_should_stop_when_downstream_closes_during_iteration() {
 			SubscriberNotification::Next(2),
 			SubscriberNotification::Next(3),
 			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);

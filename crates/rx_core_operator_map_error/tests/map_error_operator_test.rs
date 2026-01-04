@@ -28,7 +28,6 @@ fn should_map_error_next_emissions_using_the_error_mapper_provided() {
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Error(format!("mapped {error}")),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -57,7 +56,6 @@ fn should_close_when_errored() {
 		[
 			SubscriberNotification::Next(0),
 			SubscriberNotification::Error(format!("mapped {error}")),
-			SubscriberNotification::Unsubscribe,
 		],
 		true,
 	);
@@ -85,10 +83,7 @@ fn should_close_when_completed() {
 	notification_collector.lock().assert_notifications(
 		"map_error",
 		0,
-		[
-			SubscriberNotification::Complete,
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Complete],
 		true,
 	);
 	assert!(subscription.is_closed());
@@ -114,10 +109,7 @@ fn should_compose() {
 	notification_collector.lock().assert_notifications(
 		"map_error",
 		0,
-		[
-			SubscriberNotification::Error(format!("mapped {error}")),
-			SubscriberNotification::Unsubscribe,
-		],
+		[SubscriberNotification::Error(format!("mapped {error}"))],
 		true,
 	);
 }

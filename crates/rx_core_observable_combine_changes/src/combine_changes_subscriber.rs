@@ -63,20 +63,14 @@ where
 
 	fn try_complete(&mut self) {
 		if !self.destination.is_closed()
-			&& ((self.o1_state.is_completed() && self.o2_state.is_completed())
-				|| (self.o1_state.is_primed() && self.o2_state.is_completed_but_not_primed())
-				|| (self.o1_state.is_completed_but_not_primed() && self.o2_state.is_primed()))
+			&& (self.o1_state.is_completed() && self.o2_state.is_completed())
 		{
 			self.destination.complete();
-			self.destination.unsubscribe();
 		}
 	}
 
 	fn try_unsubscribe(&mut self) {
-		if !self.destination.is_closed()
-			&& ((self.o1_state.is_closed() && self.o2_state.is_closed())
-				|| (self.o1_state.is_waiting() && self.o2_state.is_closed_but_not_primed())
-				|| (self.o1_state.is_closed_but_not_primed() && self.o2_state.is_waiting()))
+		if !self.destination.is_closed() && (self.o1_state.is_closed() && self.o2_state.is_closed())
 		{
 			self.destination.unsubscribe();
 		}
@@ -109,7 +103,6 @@ where
 
 		if let Some(error) = self.take_either_error() {
 			self.destination.error(error);
-			self.destination.unsubscribe();
 			return;
 		}
 
