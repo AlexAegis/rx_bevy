@@ -14,10 +14,8 @@ fn should_retry_on_immediate_errors() {
 
 	let error = "error";
 	let mut retried = concat((
-		(0..=2)
-			.into_observable()
-			.map_error(Never::map_into::<&'static str>()),
-		throw(error).map(Never::map_into::<usize>()),
+		(0..=2).into_observable().map_never(),
+		throw(error).map_never(),
 	))
 	.retry(1);
 
@@ -145,9 +143,7 @@ fn should_retry_on_mixed_immediate_and_later_errors() {
 
 	let error = "error";
 	let mut retried = concat((
-		(0..=1)
-			.into_observable()
-			.map_error(Never::map_into::<&'static str>()),
+		(0..=1).into_observable().map_never(),
 		source.clone().on_next(|next, destination| {
 			if *next > 10 {
 				destination.error(error);
@@ -312,12 +308,9 @@ fn should_be_able_to_immediately_complete_if_an_immediate_error_was_retried() {
 	let mut retried = deferred_observable(move || {
 		let observable = if i % 2 == 0 {
 			was_retried_clone.store(true, Ordering::Relaxed);
-			throw(error).map(Never::map_into::<usize>()).erase()
+			throw(error).map_never().erase()
 		} else {
-			empty()
-				.map(Never::map_into::<usize>())
-				.map_error(Never::map_into::<&'static str>())
-				.erase()
+			empty().map_never_both().erase()
 		};
 		i += 1;
 		observable
@@ -355,7 +348,7 @@ fn should_be_able_to_later_complete_if_an_immediate_error_was_retried() {
 	let mut retried = deferred_observable(move || {
 		let observable = if i % 2 == 0 {
 			was_retried_clone.store(true, Ordering::Relaxed);
-			throw(error).map(Never::map_into::<usize>()).erase()
+			throw(error).map_never().erase()
 		} else {
 			second_source_clone.clone().erase()
 		};
@@ -401,7 +394,7 @@ fn should_be_able_to_later_error_if_an_immediate_error_was_retried() {
 	let mut retried = deferred_observable(move || {
 		let observable = if i % 2 == 0 {
 			was_retried_clone.store(true, Ordering::Relaxed);
-			throw(error).map(Never::map_into::<usize>()).erase()
+			throw(error).map_never().erase()
 		} else {
 			second_source_clone.clone().erase()
 		};
@@ -447,7 +440,7 @@ fn should_be_able_to_later_unsubscribe_if_an_immediate_error_was_retried() {
 	let mut retried = deferred_observable(move || {
 		let observable = if i % 2 == 0 {
 			was_retried_clone.store(true, Ordering::Relaxed);
-			throw(error).map(Never::map_into::<usize>()).erase()
+			throw(error).map_never().erase()
 		} else {
 			second_source_clone.clone().erase()
 		};
@@ -493,9 +486,7 @@ fn should_be_able_to_immediately_unsubscribe_if_an_immediate_error_was_retried()
 			was_retried_clone.store(true, Ordering::Relaxed);
 			throw(error).erase()
 		} else {
-			closed()
-				.map_error(Never::map_into::<&'static str>())
-				.erase()
+			closed().map_never_both().erase()
 		};
 		i += 1;
 		observable
