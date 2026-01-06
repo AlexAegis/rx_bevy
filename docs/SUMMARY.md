@@ -57,6 +57,7 @@
   - [map](operator/map.md)
   - [map_error](operator/map_error.md)
   - [map_into](operator/map_into.md)
+  - [map_never](operator/map_never.md)
   - [materialize](operator/materialize.md)
   - [merge_all](operator/merge_all.md)
   - [merge_map](operator/merge_map.md)

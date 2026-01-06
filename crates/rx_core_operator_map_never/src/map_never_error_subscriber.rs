@@ -1,0 +1,44 @@
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_traits::{Never, Observer, Subscriber};
+
+#[derive(RxSubscriber)]
+#[rx_in(Destination::In)]
+#[rx_in_error(Never)]
+#[rx_delegate_teardown_collection]
+#[rx_delegate_subscription_like_to_destination]
+pub struct MapNeverErrorSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	#[destination]
+	destination: Destination,
+}
+
+impl<Destination> MapNeverErrorSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	pub fn new(destination: Destination) -> Self {
+		Self { destination }
+	}
+}
+
+impl<Destination> Observer for MapNeverErrorSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	#[inline]
+	fn next(&mut self, next: Self::In) {
+		self.destination.next(next);
+	}
+
+	#[inline]
+	fn error(&mut self, _error: Self::InError) {
+		unreachable!("InError is Never");
+	}
+
+	#[inline]
+	fn complete(&mut self) {
+		self.destination.complete();
+	}
+}

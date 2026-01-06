@@ -68,6 +68,7 @@ debug = [
     "rx_core_operator_map?/debug",
     "rx_core_operator_map_error?/debug",
     "rx_core_operator_map_into?/debug",
+    "rx_core_operator_map_never?/debug",
     "rx_core_operator_materialize?/debug",
     "rx_core_operator_scan?/debug",
     "rx_core_operator_share?/debug",
@@ -174,6 +175,7 @@ all_operators = [
     "operator_map",
     "operator_map_error",
     "operator_map_into",
+    "operator_map_never",
     "operator_materialize",
     "operator_merge_all",
     "operator_merge_map",
@@ -219,6 +221,7 @@ operator_lift_result = ["dep:rx_core_operator_lift_result"]
 operator_map = ["dep:rx_core_operator_map"]
 operator_map_error = ["dep:rx_core_operator_map_error"]
 operator_map_into = ["dep:rx_core_operator_map_into"]
+operator_map_never = ["dep:rx_core_operator_map_never"]
 operator_materialize = ["dep:rx_core_operator_materialize"]
 operator_merge_all = ["dep:rx_core_operator_merge_all"]
 operator_merge_map = ["dep:rx_core_operator_merge_map"]
@@ -262,6 +265,7 @@ pipe = [
     "rx_core_operator_map?/pipe",
     "rx_core_operator_map_error?/pipe",
     "rx_core_operator_map_into?/pipe",
+    "rx_core_operator_map_never?/pipe",
     "rx_core_operator_materialize?/pipe",
     "rx_core_operator_merge_all?/pipe",
     "rx_core_operator_merge_map?/pipe",
@@ -307,6 +311,7 @@ compose = [
     "rx_core_operator_map?/compose",
     "rx_core_operator_map_error?/compose",
     "rx_core_operator_map_into?/compose",
+    "rx_core_operator_map_never?/compose",
     "rx_core_operator_materialize?/compose",
     "rx_core_operator_merge_all?/compose",
     "rx_core_operator_merge_map?/compose",
@@ -391,6 +396,7 @@ rx_core_operator_lift_result = { workspace = true, optional = true }
 rx_core_operator_map = { workspace = true, optional = true }
 rx_core_operator_map_error = { workspace = true, optional = true }
 rx_core_operator_map_into = { workspace = true, optional = true }
+rx_core_operator_map_never = { workspace = true, optional = true }
 rx_core_operator_materialize = { workspace = true, optional = true }
 rx_core_operator_merge_all = { workspace = true, optional = true }
 rx_core_operator_merge_map = { workspace = true, optional = true }

@@ -1,0 +1,37 @@
+[package]
+name = "rx_core_operator_map_never"
+description = "map_never operator for rx_core"
+version = "0.1.0"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = []
+debug = [
+    "rx_core_operator_composite?/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
+]
+compose = ["dep:rx_core_operator_composite"]
+pipe = ["rx_core_traits/pipe"]
+
+[dependencies]
+rx_core_traits = { workspace = true }
+rx_core_macro_operator_derive = { workspace = true }
+rx_core_macro_subscriber_derive = { workspace = true }
+rx_core_operator_composite = { workspace = true, optional = true }
+derive-where = { workspace = true }
+
+[dev-dependencies]
+rx_core = { workspace = true, default-features = true }
+rx_core_testing = { workspace = true }

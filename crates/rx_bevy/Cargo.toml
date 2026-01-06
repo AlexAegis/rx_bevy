@@ -153,6 +153,7 @@ all_core_operators = [
     "operator_map",
     "operator_map_error",
     "operator_map_into",
+    "operator_map_never",
     "operator_materialize",
     "operator_merge_all",
     "operator_merge_map",
@@ -198,6 +199,7 @@ operator_lift_result = ["rx_core/operator_lift_result"]
 operator_map = ["rx_core/operator_map"]
 operator_map_error = ["rx_core/operator_map_error"]
 operator_map_into = ["rx_core/operator_map_into"]
+operator_map_never = ["rx_core/operator_map_never"]
 operator_materialize = ["rx_core/operator_materialize"]
 operator_merge_all = ["rx_core/operator_merge_all"]
 operator_merge_map = ["rx_core/operator_merge_map"]

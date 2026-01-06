@@ -126,6 +126,8 @@ pub mod operator {
 	pub use rx_core_operator_map_error::operator::*;
 	#[cfg(feature = "operator_map_into")]
 	pub use rx_core_operator_map_into::operator::*;
+	#[cfg(feature = "operator_map_never")]
+	pub use rx_core_operator_map_never::operator::*;
 	#[cfg(feature = "operator_materialize")]
 	pub use rx_core_operator_materialize::operator::*;
 	#[cfg(feature = "operator_merge_all")]
@@ -216,6 +218,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_map_error::extension_compose::*;
 	#[cfg(feature = "operator_map_into")]
 	pub use rx_core_operator_map_into::extension_compose::*;
+	#[cfg(feature = "operator_map_never")]
+	pub use rx_core_operator_map_never::extension_compose::*;
 	#[cfg(feature = "operator_materialize")]
 	pub use rx_core_operator_materialize::extension_compose::*;
 	#[cfg(feature = "operator_merge_all")]
@@ -300,6 +304,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_map_error::extension_pipe::*;
 	#[cfg(feature = "operator_map_into")]
 	pub use rx_core_operator_map_into::extension_pipe::*;
+	#[cfg(feature = "operator_map_never")]
+	pub use rx_core_operator_map_never::extension_pipe::*;
 	#[cfg(feature = "operator_materialize")]
 	pub use rx_core_operator_materialize::extension_pipe::*;
 	#[cfg(feature = "operator_merge_all")]
