@@ -13,8 +13,8 @@ use rx_core_traits::{
 };
 
 use crate::{
-	MockObserver, NotificationCollector, NotificationCollectorState, SingleSubscriberSubject,
-	TeardownTracker, TestError, TrackedTeardownSubscriptionExtension,
+	MockObserver, NotificationCollector, NotificationCollectorState, TeardownTracker, TestError,
+	TestSubject, TrackedTeardownSubscriptionExtension,
 };
 
 const TEST_HARNESS_MISSING_TRACKER_UPSTREAM: &str =
@@ -32,7 +32,7 @@ where
 	FinalOutError: Signal + Clone,
 {
 	prefix: &'static str,
-	subject_source: SingleSubscriberSubject<Source::Out, Source::OutError>,
+	subject_source: TestSubject<Source::Out, Source::OutError>,
 	#[derive_where(skip(Debug))]
 	source: Option<Source>,
 	notification_collector: NotificationCollector<FinalOut, FinalOutError>,
@@ -45,7 +45,7 @@ where
 }
 
 impl<In, InError, FinalOut, FinalOutError>
-	TestHarness<SingleSubscriberSubject<In, InError>, FinalOut, FinalOutError>
+	TestHarness<TestSubject<In, InError>, FinalOut, FinalOutError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
@@ -53,7 +53,7 @@ where
 	FinalOutError: Signal + Clone + PartialEq + Debug,
 {
 	pub fn new_operator_harness(prefix: &'static str) -> Self {
-		let subject_source = SingleSubscriberSubject::<In, InError>::default();
+		let subject_source = TestSubject::<In, InError>::default();
 		Self {
 			prefix,
 			source: Some(subject_source.clone()),
@@ -67,16 +67,21 @@ where
 		}
 	}
 
-	pub fn source(&mut self) -> &mut SingleSubscriberSubject<In, InError> {
+	pub fn source(&mut self) -> &mut TestSubject<In, InError> {
 		&mut self.subject_source
 	}
 
 	#[track_caller]
-	pub fn assert_rx_contract_closed_after_error(
+	pub fn assert_rx_contract_closed_after_error<O>(
 		&mut self,
+		observable: O,
 		in_error: InError,
 		out_error: FinalOutError,
-	) {
+	) where
+		O: Observable<Out = FinalOut, OutError = FinalOutError>,
+	{
+		self.subscribe_to(observable);
+
 		let notification_index_so_far = self.notifications().len();
 
 		assert!(
@@ -119,7 +124,12 @@ where
 	}
 
 	#[track_caller]
-	pub fn assert_rx_contract_closed_after_complete(&mut self) {
+	pub fn assert_rx_contract_closed_after_complete<O>(&mut self, observable: O)
+	where
+		O: Observable<Out = FinalOut, OutError = FinalOutError>,
+	{
+		self.subscribe_to(observable);
+
 		let notification_index_so_far = self.notifications().len();
 
 		assert!(
@@ -162,7 +172,64 @@ where
 	}
 
 	#[track_caller]
-	pub fn assert_rx_contract_closed_after_unsubscribe(&mut self) {
+	pub fn assert_rx_contract_closed_after_unsubscribe<O>(&mut self, observable: O)
+	where
+		O: Observable<Out = FinalOut, OutError = FinalOutError>,
+	{
+		self.subscribe_to(observable);
+
+		let notification_index_so_far = self.notifications().len();
+
+		assert!(
+			!self.get_subscription().is_closed(),
+			"{} - should not have been closed before unsubscribe!",
+			self.prefix
+		);
+
+		self.subject_source.unsubscribe();
+
+		self.notifications().assert_notifications(
+			&format!(
+				"{} - rx_verify_unsubscribed - Did not observe an unsubscribe notification!",
+				self.prefix
+			),
+			notification_index_so_far,
+			[SubscriberNotification::Unsubscribe],
+			true,
+		);
+
+		assert!(
+			self.get_subscription().is_closed(),
+			"{} - rx_verify_closed - Subscription did not close after unsubscribe!",
+			self.prefix
+		);
+
+		self.tracked_teardown_upstream
+			.lock_ignore_poison()
+			.as_ref()
+			.expect(TEST_HARNESS_MISSING_TRACKER_UPSTREAM)
+			.assert_was_torn_down(); // rx_verify_upstream_teardowns_executed
+		self.tracked_teardown_downstream
+			.as_ref()
+			.expect(TEST_HARNESS_MISSING_TRACKER_DOWNSTREAM)
+			.assert_was_torn_down(); // rx_verify_downstream_teardowns_executed
+		self.tracked_teardown_subscription
+			.as_ref()
+			.expect(TEST_HARNESS_MISSING_TRACKER_SUBSCRIPTION)
+			.assert_was_torn_down(); // rx_verify_subscription_teardowns_executed
+	}
+
+	#[track_caller]
+	pub fn assert_rx_contract_closed_if_downstream_closes_early<O>(
+		&mut self,
+		mut observable: O,
+		take_count: usize,
+	) where
+		O: Observable<Out = FinalOut, OutError = FinalOutError>,
+	{
+		let destination = self.create_harness_destination(Some(take_count));
+		self.register_subscription(observable.subscribe(destination));
+
 		let notification_index_so_far = self.notifications().len();
 
 		assert!(
@@ -214,7 +281,7 @@ where
 	pub fn new_observable_harness(prefix: &'static str, source: Source) -> Self {
 		Self {
 			prefix,
-			subject_source: SingleSubscriberSubject::default(),
+			subject_source: TestSubject::default(),
 			notification_collector: NotificationCollector::default(),
 			source: Some(source),
 			tracked_teardown_upstream: Arc::new(Mutex::new(None)),
@@ -232,9 +299,12 @@ where
 		HarnessObservable::new(self.prefix, source, self.tracked_teardown_upstream.clone())
 	}
 
-	pub fn create_harness_destination(&mut self) -> HarnessDestination<FinalOut, FinalOutError> {
+	pub fn create_harness_destination(
+		&mut self,
+		take_count: Option<usize>,
+	) -> HarnessDestination<FinalOut, FinalOutError> {
 		let (destination, tracked_teardown_downstream) =
-			HarnessDestination::new(self.notification_collector.clone(), self.prefix);
+			HarnessDestination::new(self.notification_collector.clone(), self.prefix, take_count);
 		self.tracked_teardown_downstream = Some(tracked_teardown_downstream);
 		destination
 	}
@@ -243,7 +313,7 @@ where
 		&mut self,
 		mut observable: impl Observable<Out = FinalOut, OutError = FinalOutError>,
 	) {
-		let destination = self.create_harness_destination();
+		let destination = self.create_harness_destination(None);
 		self.register_subscription(observable.subscribe(destination));
 	}
 
@@ -324,7 +394,7 @@ where
 impl<Source, FinalOut, FinalOutError> Observable
 	for HarnessObservable<Source, FinalOut, FinalOutError>
 where
-	Source: 'static + Observable<Out = FinalOut, OutError = FinalOutError> + Send + Sync,
+	Source: 'static + Observable + Send + Sync,
 	FinalOut: Signal,
 	FinalOutError: Signal,
 {
@@ -357,7 +427,6 @@ where
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_upgrades_to(self)]
-#[rx_delegate_observer_to_destination]
 #[rx_delegate_teardown_collection]
 #[rx_delegate_subscription_like_to_destination]
 pub struct HarnessDestination<In, InError>
@@ -366,7 +435,8 @@ where
 	InError: Signal,
 {
 	#[destination]
-	mock_observer: MockObserver<In, InError>,
+	destination: MockObserver<In, InError>,
+	take_count: Option<usize>,
 	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
 }
 
@@ -378,18 +448,52 @@ where
 	fn new(
 		notification_collector: NotificationCollector<In, InError>,
 		prefix: &str,
+		take_count: Option<usize>,
 	) -> (Self, TeardownTracker) {
-		let mut mock_observer = MockObserver::new(notification_collector);
-		let tracked_teardown_downstream = mock_observer.add_tracked_teardown(&format!(
+		let mut destination = MockObserver::new(notification_collector);
+		let tracked_teardown_downstream = destination.add_tracked_teardown(&format!(
 			"{prefix} - rx_verify_downstream_teardowns_executed"
 		));
 
 		(
 			Self {
-				mock_observer,
+				destination,
+				take_count,
 				_phantom_data: PhantomData,
 			},
 			tracked_teardown_downstream,
 		)
+	}
+}
+
+impl<In, InError> Observer for HarnessDestination<In, InError>
+where
+	In: Signal,
+	InError: Signal,
+{
+	#[inline]
+	fn next(&mut self, next: Self::In) {
+		if let Some(count) = self.take_count.as_mut() {
+			if *count > 0 {
+				*count -= 1;
+				self.destination.next(next);
+
+				if *count == 0 && !self.is_closed() {
+					self.complete();
+				}
+			}
+		} else {
+			self.destination.next(next);
+		}
+	}
+
+	#[inline]
+	fn error(&mut self, error: Self::InError) {
+		self.destination.error(error);
+	}
+
+	#[inline]
+	fn complete(&mut self) {
+		self.destination.complete();
 	}
 }

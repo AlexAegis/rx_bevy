@@ -54,7 +54,7 @@ mod tap_next {
 	}
 }
 
-mod contracts_harness_v2 {
+mod contracts {
 	use super::*;
 
 	#[test]
@@ -62,41 +62,14 @@ mod contracts_harness_v2 {
 		let tap_notification_collector = NotificationCollector::<usize>::default();
 		let tap_notification_collector_clone = tap_notification_collector.clone();
 
-		let mut harness = TestHarness::new_operator_harness("tap_next");
+		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("tap_next");
 		let observable = harness.create_harness_observable().tap_next(move |next| {
 			tap_notification_collector_clone
 				.lock()
 				.push(SubscriberNotification::Next(*next))
 		});
-		harness.subscribe_to(observable);
 
-		harness.assert_rx_contract_closed_after_error(TestError, TestError);
-
-		tap_notification_collector
-			.lock()
-			.assert_is_empty("tap_destination - should not have observed anything");
-	}
-}
-
-mod contracts_harness_v1 {
-
-	use super::*;
-
-	#[test]
-	fn rx_contract_closed_after_error() {
-		let tap_notification_collector = NotificationCollector::<usize>::default();
-
-		let mut harness = OperatorTestHarness::<_, usize, TestError>::new("tap_next", |upstream| {
-			let tap_notification_collector_clone = tap_notification_collector.clone();
-
-			upstream.tap_next(move |next| {
-				tap_notification_collector_clone
-					.lock()
-					.push(SubscriberNotification::Next(*next))
-			})
-		});
-
-		harness.assert_rx_contract_closed_after_error(TestError, TestError);
+		harness.assert_rx_contract_closed_after_error(observable, TestError, TestError);
 
 		tap_notification_collector
 			.lock()
@@ -106,18 +79,16 @@ mod contracts_harness_v1 {
 	#[test]
 	fn rx_contract_closed_after_complete() {
 		let tap_notification_collector = NotificationCollector::<usize>::default();
+		let tap_notification_collector_clone = tap_notification_collector.clone();
 
-		let mut harness = OperatorTestHarness::<_, usize, TestError>::new("tap_next", |upstream| {
-			let tap_notification_collector_clone = tap_notification_collector.clone();
-
-			upstream.tap_next(move |next| {
-				tap_notification_collector_clone
-					.lock()
-					.push(SubscriberNotification::Next(*next))
-			})
+		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("tap_next");
+		let observable = harness.create_harness_observable().tap_next(move |next| {
+			tap_notification_collector_clone
+				.lock()
+				.push(SubscriberNotification::Next(*next))
 		});
 
-		harness.assert_rx_contract_closed_after_complete();
+		harness.assert_rx_contract_closed_after_complete(observable);
 
 		tap_notification_collector
 			.lock()
@@ -125,20 +96,18 @@ mod contracts_harness_v1 {
 	}
 
 	#[test]
-	fn assert_rx_contract_closed_after_unsubscribe() {
+	fn rx_contract_closed_after_unsubscribe() {
 		let tap_notification_collector = NotificationCollector::<usize>::default();
+		let tap_notification_collector_clone = tap_notification_collector.clone();
 
-		let mut harness = OperatorTestHarness::<_, usize, TestError>::new("tap_next", |upstream| {
-			let tap_notification_collector_clone = tap_notification_collector.clone();
-
-			upstream.tap_next(move |next| {
-				tap_notification_collector_clone
-					.lock()
-					.push(SubscriberNotification::Next(*next))
-			})
+		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("tap_next");
+		let observable = harness.create_harness_observable().tap_next(move |next| {
+			tap_notification_collector_clone
+				.lock()
+				.push(SubscriberNotification::Next(*next))
 		});
 
-		harness.assert_rx_contract_closed_after_unsubscribe();
+		harness.assert_rx_contract_closed_after_unsubscribe(observable);
 
 		tap_notification_collector
 			.lock()

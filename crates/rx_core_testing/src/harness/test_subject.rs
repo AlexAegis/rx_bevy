@@ -10,12 +10,12 @@ use rx_core_traits::{
 
 const EXPECT_ACTIVE_SUBSCRIPTION: &str = "Subscription to be active!";
 
-/// # [SingleSubscriberSubject]
+/// # [TestSubject]
 ///
-/// Kinda like a subject, but it does not do multicasting.
+/// It does not do multicasting, but does let you interact with the latest
+/// subscriber like a subject would.
 ///
-/// Values pushed into it will only reach the most recent subscription, and
-/// will panic if there is no active subscription!
+/// Will panic if there is no active subscription!
 ///
 /// Used and made for testing only!
 #[derive_where(Default, Clone)]
@@ -24,7 +24,7 @@ const EXPECT_ACTIVE_SUBSCRIPTION: &str = "Subscription to be active!";
 #[rx_in_error(OutError)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
-pub struct SingleSubscriberSubject<Out, OutError>
+pub struct TestSubject<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
@@ -32,7 +32,7 @@ where
 	subscriber: Arc<Mutex<Option<SharedSubscriber<ErasedSubscriber<Out, OutError>>>>>,
 }
 
-impl<Out, OutError> Observer for SingleSubscriberSubject<Out, OutError>
+impl<Out, OutError> Observer for TestSubject<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
@@ -66,7 +66,7 @@ where
 	}
 }
 
-impl<Out, OutError> SubscriptionLike for SingleSubscriberSubject<Out, OutError>
+impl<Out, OutError> SubscriptionLike for TestSubject<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
@@ -90,7 +90,7 @@ where
 	}
 }
 
-impl<Out, OutError> Observable for SingleSubscriberSubject<Out, OutError>
+impl<Out, OutError> Observable for TestSubject<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,

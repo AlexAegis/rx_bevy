@@ -195,8 +195,8 @@ be done in a single test, irrespective of order.
 > Applies to:
 >
 > - Observables
-> - Operators
-> - Subscribers
+> - Operators (If can complete on its own)
+> - Subscribers (If can complete on its own)
 
 Once known that further emissions are impossible, completion should be
 immediate.
@@ -261,19 +261,23 @@ fn complete(&mut self) {
 }
 ```
 
-### Non-producers should not do unnecessary checks
+### No unnecessary `.is_closed()` checks
 
-Only producers of signals should check if the the destination is still open
-before trying to send a signal. Simply transforming one should not!
+Only newly produced signals should check if the the destination is still open!
+
+> For an observable, this does mean every individual signal, as they originate
+> from there.
 
 For example `map` only transforms values. Upstream won't ever send anything
-after it's closed, and since `map` just forwards everything else that can
-close downstream, and just returns downstream's `is_closed` state, in case
-downstream unsubscribes early, an upstream producer will know about it and
-will stop sending more emissions!
+after it's closed. `map` only interacts with downstream once each time upstream
+interacts with it, and returns downstream's `is_closed` state, therefore in case
+downstream closes early, an upstream producer shouldn't even try interacting
+with it anyway.
+
+> The only exeptions are Subjects, where the Observer functions are exposed to
+> the user.
 
 ```rs
-#[inline]
 fn next(&mut self, next: Self::In) {
     if !self.destination.is_closed() { // Unnecessary
         self.destination.next((self.mapper)(next));
@@ -281,14 +285,26 @@ fn next(&mut self, next: Self::In) {
 }
 ```
 
-This only applies to one-to-one transformations! If there'd be an operator that
-sends every emission twice:
+This only applies to the first synchronous interaction with downstream as any
+interaction with downstream can potentially cause it to be closed:
+
+> Incorrect:
 
 ```rs
-#[inline]
 fn next(&mut self, next: Self::In) {
     self.destination.next(next.clone()); // Still not necessary to check!
     self.destination.next(next); // Should be checked if not closed!
+}
+```
+
+> Correct:
+
+```rs
+fn next(&mut self, next: Self::In) { // Wouldn't even be called if it's closed!
+    self.destination.next(next.clone());
+    if self.is_closed() { // The first next could cause downstream to close!
+        self.destination.next(next);
+    }
 }
 ```
 
@@ -306,6 +322,20 @@ for item in self.iterator.clone().into_iter() {
 }
 ```
 
+> As a rule of thumb, if a subscribers `is_closed` implementation already
+> respects the "closedness" of downstream, for the very first interaction with
+> it, it does not need to check if downstream is closed, as upstream already
+> did.
+
+#### What if I don't?
+
+If you do make extra checks, the penalty is just an extra `if`.
+
+If you do not check if the destination is closed before sending a new signal,
+then any work done by downstream operators is also unnecessary.
+
+Neither of these problems are "lethal", this is about optimization.
+
 ### Use `Never` as your signal type if that signal is never sent
 
 The `rx_core_traits` crate exposes the `Never` type which can't be
@@ -313,7 +343,7 @@ constructed since it's an enum with no variants.
 
 > Never is actually just a type alias for `core::convert::Infallible`. The
 > reason `Infallible` isn't used directly, because that name conveys that it's
-> an *error*, while here it should mean an event/signal that can *never* happen.
+> an *error*, while here it could mean any event/signal that can *never* happen.
 > And that event can be a valid output too, not just an error.
 
 This type **MUST** be used to denote signals that are never produced instead of
