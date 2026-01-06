@@ -28,6 +28,98 @@ fn should_take_the_first_n_emissions_then_complete() {
 	);
 }
 
+mod given_two_take_operators {
+	use super::*;
+
+	mod when_they_are_equal {
+		use super::*;
+
+		#[test]
+		fn should_complete_when_the_take_count_is_reached() {
+			let destination = MockObserver::<usize, &'static str>::default();
+			let notification_collector = destination.get_notification_collector();
+
+			let mut source = PublishSubject::<usize, &'static str>::default();
+
+			let subscription = source.clone().take(2).take(2).subscribe(destination);
+
+			source.next(0);
+			source.next(1);
+
+			assert!(subscription.is_closed());
+
+			notification_collector.lock().assert_notifications(
+				"take",
+				0,
+				[
+					SubscriberNotification::Next(0),
+					SubscriberNotification::Next(1),
+					SubscriberNotification::Complete,
+				],
+				true,
+			);
+		}
+	}
+
+	mod when_upstream_is_smaller {
+		use super::*;
+
+		#[test]
+		fn should_complete_when_the_smaller_take_count_is_reached() {
+			let destination = MockObserver::<usize, &'static str>::default();
+			let notification_collector = destination.get_notification_collector();
+
+			let mut source = PublishSubject::<usize, &'static str>::default();
+
+			let subscription = source.clone().take(1).take(2).subscribe(destination);
+
+			source.next(0);
+			source.next(1);
+
+			assert!(subscription.is_closed());
+
+			notification_collector.lock().assert_notifications(
+				"take",
+				0,
+				[
+					SubscriberNotification::Next(0),
+					SubscriberNotification::Complete,
+				],
+				true,
+			);
+		}
+	}
+
+	mod when_downstream_is_smaller {
+		use super::*;
+
+		#[test]
+		fn should_complete_when_the_smaller_take_count_is_reached() {
+			let destination = MockObserver::<usize, &'static str>::default();
+			let notification_collector = destination.get_notification_collector();
+
+			let mut source = PublishSubject::<usize, &'static str>::default();
+
+			let subscription = source.clone().take(2).take(1).subscribe(destination);
+
+			source.next(0);
+			source.next(1);
+
+			assert!(subscription.is_closed());
+
+			notification_collector.lock().assert_notifications(
+				"take",
+				0,
+				[
+					SubscriberNotification::Next(0),
+					SubscriberNotification::Complete,
+				],
+				true,
+			);
+		}
+	}
+}
+
 #[test]
 fn should_immediately_complete_and_unsubscribe_if_take_count_is_zero() {
 	let destination = MockObserver::<Never>::default();

@@ -51,7 +51,9 @@ where
 			destination.next(item);
 		}
 
-		destination.complete();
+		if !destination.is_closed() {
+			destination.complete();
+		}
 		InertSubscription::new(destination)
 	}
 }

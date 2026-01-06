@@ -32,11 +32,11 @@ where
 	Destination: Subscriber,
 {
 	fn next(&mut self, next: Self::In) {
-		if !self.is_closed() && self.count > 0 {
+		if self.count > 0 {
 			self.count -= 1;
 			self.destination.next(next);
 
-			if self.count == 0 {
+			if self.count == 0 && !self.is_closed() {
 				self.complete();
 			}
 		}
@@ -49,8 +49,6 @@ where
 
 	#[inline]
 	fn complete(&mut self) {
-		if !self.is_closed() {
-			self.destination.complete();
-		}
+		self.destination.complete();
 	}
 }
