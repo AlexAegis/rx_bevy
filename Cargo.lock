@@ -1020,14 +1020,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_mod_alternate_system_on_press"
-version = "0.1.0"
-dependencies = [
- "bevy_ecs",
- "bevy_input",
-]
-
-[[package]]
 name = "bevy_pbr"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2209,7 +2201,6 @@ name = "examples_common"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_mod_alternate_system_on_press",
  "disqualified",
  "rx_bevy_context",
  "rx_core_traits",
@@ -4225,7 +4216,6 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_egui",
- "bevy_mod_alternate_system_on_press",
  "disqualified",
  "examples_common",
  "rx_bevy_context",

@@ -8,12 +8,7 @@ use crate::{RxWorkspace, RxWorkspaceError, WorkspaceProblems};
 pub fn lint_codecov() -> Result<(), RxWorkspaceError> {
 	let rx_workspace = RxWorkspace::parse_workspace()?;
 
-	let ignored_packages = [
-		"xtask",
-		"feature_checker",
-		"examples_common",
-		"bevy_mod_alternate_system_on_press",
-	];
+	let ignored_packages = ["xtask", "feature_checker", "examples_common"];
 
 	let mut workspace_problems = WorkspaceProblems::default();
 

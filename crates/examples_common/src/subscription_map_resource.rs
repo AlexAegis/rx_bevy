@@ -8,9 +8,10 @@ use bevy::{
 	},
 	input::keyboard::KeyCode,
 };
-use bevy_mod_alternate_system_on_press::alternate_systems_on_press;
 use rx_bevy_context::{Clock, CommandSubscribeExtension, EntityDestination, RxSchedule};
 use rx_core_traits::prelude::*;
+
+use crate::alternate_systems_on_press;
 
 pub trait SubscriptionMapResource: Resource {
 	fn insert(&mut self, observable_destination_key: (Entity, Entity), subscription_entity: Entity);

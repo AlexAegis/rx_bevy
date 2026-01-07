@@ -23,4 +23,3 @@ bevy = { workspace = true, features = ["dynamic_linking"] }
 rx_core_traits = { workspace = true }
 rx_bevy_context = { workspace = true }
 disqualified = { workspace = true }
-bevy_mod_alternate_system_on_press = { workspace = true }

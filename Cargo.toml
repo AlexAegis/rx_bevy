@@ -149,7 +149,6 @@ rx_bevy_observable_message = { path = "crates/rx_bevy_observable_message" }
 rx_bevy_observable_proxy = { path = "crates/rx_bevy_observable_proxy" }
 rx_bevy_observable_resource = { path = "crates/rx_bevy_observable_resource" }
 # Misc
-bevy_mod_alternate_system_on_press = { path = "crates/bevy_mod_alternate_system_on_press" }
 examples_common = { path = "crates/examples_common" }
 feature_checker = { path = "crates/feature_checker" }
 xtask = { path = "crates/xtask" }

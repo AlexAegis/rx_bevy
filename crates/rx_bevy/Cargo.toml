@@ -249,7 +249,6 @@ examples_common = { workspace = true }
 bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
 bevy_egui = { workspace = true }
 disqualified = { workspace = true }
-bevy_mod_alternate_system_on_press = { workspace = true }
 
 [[example]]
 name = "observable_gallery"

@@ -1,9 +1,11 @@
-use bevy_ecs::{
-	error::BevyError,
-	schedule::{IntoScheduleConfigs, ScheduleConfigs},
-	system::{Res, ScheduleSystem, System},
+use bevy::{
+	ecs::{
+		error::BevyError,
+		schedule::{IntoScheduleConfigs, ScheduleConfigs},
+		system::{Res, ScheduleSystem, System},
+	},
+	input::{ButtonInput, keyboard::KeyCode},
 };
-use bevy_input::{ButtonInput, keyboard::KeyCode};
 use std::hash::Hash;
 
 pub fn input_just_toggled<T>(
