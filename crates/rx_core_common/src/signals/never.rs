@@ -20,7 +20,6 @@ impl NeverMapIntoExtension for Never {
 	/// Since Never cannot be created, nothing has to be actually converted.
 	///
 	/// The implementation is just: `|_| unreachable!()`.
-	#[inline]
 	fn map_into<T>() -> impl Fn(Never) -> T + Signal + Clone {
 		|_| unreachable!("Never cannot be created!")
 	}

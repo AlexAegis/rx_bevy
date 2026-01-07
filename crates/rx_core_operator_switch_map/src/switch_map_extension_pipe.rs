@@ -55,7 +55,7 @@ pub trait ObservablePipeExtensionSwitchMap<'o>: 'o + Observable + Sized + Send +
 	/// In a future major release, once `!` stabilizes, the ErrorMapper will be
 	/// removed, in favor of using `.into()` internally. Wherever actual error
 	/// mapping is required, an additional `map_error` operator can be used. Uses
-	/// of `Never::error_mapper()` (or manual definitions of `|_| unreachable!()`)
+	/// of `Never::map_into()` (or manual definitions of `|_| unreachable!()`)
 	/// can simply be removed.
 	#[inline]
 	fn switch_map<

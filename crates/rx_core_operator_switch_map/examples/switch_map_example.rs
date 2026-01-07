@@ -13,7 +13,7 @@ fn main() {
 					.finalize(|| println!("finalize: inner"))
 					.tap_next(|n| println!("emit (inner): '{n}'"))
 			},
-			|_| unreachable!(),
+			Never::map_into(),
 		)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("switch_map"));

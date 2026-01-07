@@ -30,7 +30,6 @@ rx_core_common = { workspace = true }
 rx_core_macro_operator_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_operator_composite = { workspace = true, optional = true }
-disqualified = { workspace = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]

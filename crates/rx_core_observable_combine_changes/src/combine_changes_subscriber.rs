@@ -162,7 +162,6 @@ where
 		self.destination.is_closed()
 	}
 
-	#[inline]
 	fn unsubscribe(&mut self) {
 		unreachable!("{} - Unsubscribe", UNREACHABLE_ERROR)
 	}

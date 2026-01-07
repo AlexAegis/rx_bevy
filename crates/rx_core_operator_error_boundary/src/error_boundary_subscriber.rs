@@ -1,4 +1,3 @@
-use disqualified::ShortName;
 use rx_core_common::{Never, Observer, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -34,16 +33,8 @@ where
 		self.destination.next(next);
 	}
 
-	#[inline]
 	fn error(&mut self, _error: Self::InError) {
-		// The operator only compiles if the upstream error is of type `Never`,
-		// which is impossible to construct as it's an enum with no variants.
-
-		// It'd be an interesting miracle if this panic was ever triggered.
-		unreachable!(
-			"An error was observed by {}, but it shouldn't have as `Never` is not a constructable type.",
-			ShortName::of::<Self>()
-		)
+		unreachable!("InError is Never")
 	}
 
 	#[inline]

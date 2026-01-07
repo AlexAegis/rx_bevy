@@ -54,9 +54,8 @@ where
 		}
 	}
 
-	#[inline]
 	fn error(&mut self, _error: Self::InError) {
-		unreachable!("InError is of type Never")
+		unreachable!("InError is Never")
 	}
 
 	#[inline]

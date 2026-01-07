@@ -27,12 +27,10 @@ impl<Destination> Observer for MapNeverNextSubscriber<Destination>
 where
 	Destination: Subscriber,
 {
-	#[inline]
 	fn next(&mut self, _next: Self::In) {
 		unreachable!("In is Never");
 	}
 
-	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error);
 	}

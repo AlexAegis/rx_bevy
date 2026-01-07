@@ -44,7 +44,6 @@ where
 		}
 	}
 
-	#[inline]
 	fn error(&mut self, _error: Self::InError) {
 		unreachable!("The input error type is locked to never!")
 	}

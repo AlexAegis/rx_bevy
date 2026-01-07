@@ -263,7 +263,7 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 							schedule_update_virtual.clone(),
 						)
 					},
-					|_| unreachable!(),
+					Never::map_into(),
 				)
 				.scan(|acc, _next| acc + 1, 0_usize)
 				.into_component(),

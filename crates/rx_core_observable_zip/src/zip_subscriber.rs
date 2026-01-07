@@ -139,7 +139,6 @@ where
 		unreachable!("{}", UNREACHABLE_ERROR)
 	}
 
-	#[inline]
 	fn complete(&mut self) {
 		unreachable!("{}", UNREACHABLE_ERROR)
 	}
@@ -160,7 +159,6 @@ where
 		self.destination.is_closed()
 	}
 
-	#[inline]
 	fn unsubscribe(&mut self) {
 		unreachable!("{}", UNREACHABLE_ERROR)
 	}

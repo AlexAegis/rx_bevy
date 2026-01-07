@@ -29,7 +29,7 @@ fn main() {
 					.map(|i| i * 10)
 					.erase(),
 			},
-			|_| unreachable!(),
+			Never::map_into(),
 		)
 		.finalize(|| println!("finalize: downstream"))
 		.subscribe(PrintObserver::new("switch_map"));
