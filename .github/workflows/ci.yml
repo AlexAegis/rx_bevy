@@ -46,34 +46,45 @@ jobs:
         run: cargo build --locked --workspace --all-targets --all-features
   test:
     runs-on: ubuntu-latest
-    environment:
-      name: codecov-io
-      url: https://app.codecov.io/github/${{ github.event.repository.full_name }}
     steps:
       - *checkout_depth_1
       - *install_rust
       - *cache
       - *install_alsa_and_udev
-      - &install_binstall
-        name: install cargo-binstall
-        uses: cargo-bins/cargo-binstall@main
-      - name: install tarpaulin
-        run: cargo binstall --no-confirm --force cargo-tarpaulin
-      - name: print tarpaulin rust flags
-        run: cargo tarpaulin --print-rust-flags
-      - name: test with coverage
-        run: cargo tarpaulin --workspace
+      - name: test
+        run: cargo test --locked --workspace --all-features
+  test-coverage:
+    runs-on: ubuntu-latest
+    environment:
+      name: codecov-io
+      url: https://app.codecov.io/github/${{ github.event.repository.full_name }}
+    steps:
+      - *checkout_depth_1
+      - name: rust toolchain - with llvm-tools
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - *cache
+      - *install_alsa_and_udev
+      - name: install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: install nextest
+        uses: taiki-e/install-action@nextest
+      - name: test with nextest and llvm-cov
+        run: cargo llvm-cov nextest --locked --workspace --all-targets --all-features --no-report --profile ci
+      - name: generate coverage report
+        run: cargo llvm-cov report --ignore-filename-regex "crates/(examples_common|bevy_mod_alternate_system_on_press|feature_checker|xtask)/.*" --codecov --output-path target/llvm-cov/codecov.json
       - name: upload coverage report to codecov.io
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: target/coverage
+          directory: target/llvm-cov
           fail_ci_if_error: true
   fmt:
     runs-on: ubuntu-latest
     steps:
       - *checkout_depth_1
-      - name: rust toolchain
+      - name: rust toolchain - with rustfmt
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -85,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - *checkout_depth_1
-      - name: rust toolchain
+      - name: rust toolchain - with clippy
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
@@ -103,7 +114,9 @@ jobs:
       - *install_rust
       - *cache
       - *install_alsa_and_udev
-      - *install_binstall
+      - &install_binstall
+        name: install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
       - name: install machete
         run: cargo binstall --no-confirm --force cargo-machete
       - name: check for unused dependencies

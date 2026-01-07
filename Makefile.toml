@@ -101,6 +101,13 @@ args = ["build", "--workspace", "--all-targets", "--all-features", "--timings"]
 ## Test
 
 
+[tasks.install-nextest]
+description = "Install the nextest test runner"
+workspace = false
+private = true
+install_crate = { crate_name = "cargo-nextest", binary = "cargo-nextest", test_arg = "--version" }
+install_crate_args = ["--locked"]
+
 [tasks.test-pre-build]
 description = "Pre builds the tests without running them"
 workspace = false
@@ -115,20 +122,73 @@ args = [
     "test",
 ]
 
-[tasks.test]
-description = "Tests the entire workspace"
+[tasks.test-cargo]
+description = "Test the entire workspace"
 workspace = false
 dependencies = ["setup"]
 command = "cargo"
 args = ["test", "--workspace", "--features", "test"]
 
+
+[tasks.nextest]
+description = "Running tests with nextest without llvm-cov"
+workspace = false
+dependencies = ["install-nextest"]
+command = "cargo"
+args = ["nextest", "run", "--all-features", "--workspace"]
+
+
 ### Test - Coverage
 
-[tasks.install-tarpaulin]
-description = "Install the tarpaulin crate to generate code coverage results"
+
+[tasks.install-llvm-cov]
+description = "Install llvm-cov"
 workspace = false
 private = true
-install_crate = { crate_name = "cargo-tarpaulin", binary = "cargo-tarpaulin", test_arg = "--version" }
+install_crate = { crate_name = "cargo-llvm-cov", binary = "cargo-llvm-cov", test_arg = [
+    "llvm-cov",
+    "--version",
+] }
+install_crate_args = ["--locked"]
+
+[tasks.test]
+description = "Running tests with nextest and llvm-cov"
+workspace = false
+dependencies = ["install-llvm-cov", "install-nextest"]
+command = "cargo"
+args = [
+    "llvm-cov",
+    "nextest",
+    "--all-features",
+    "--workspace",
+    "--no-report",
+] # Tip: Use either "--no-clean" or "--no-report" to prevent recompilation. See https://github.com/taiki-e/cargo-llvm-cov/pull/214
+
+# llvm-cov reference: https://crates.io/crates/cargo-llvm-cov
+#
+# Ignore rationale:
+# - Code coverage should indicate the coverage of what's being shipped, not
+#   local dev tools.
+[tasks.coverage]
+description = "Running tests with nextest and llvm-cov and generates reports"
+workspace = false
+dependencies = ["install-llvm-cov", "install-nextest", "test"]
+command = "cargo"
+args = [
+    "llvm-cov",
+    "report",
+    "--ignore-filename-regex",
+    "crates/(examples_common|bevy_mod_alternate_system_on_press|feature_checker|xtask)/.*",
+    "--html",
+    "--open",
+]
+
+[tasks.clean-llvm-cov]
+description = "Cleans coverage artifacts that may affect coverage results."
+workspace = false
+dependencies = ["install-llvm-cov"]
+command = "cargo"
+args = ["llvm-cov", "clean", "--workspace"]
 
 [tasks.validate-codecov-yml]
 description = "Validates the codecov yml file. Only needed if the codecov.yml file is changed."
@@ -141,20 +201,6 @@ args = [
     "@codecov.yml",
     "https://codecov.io/validate",
 ]
-
-[tasks.test-coverage-crate]
-description = "Tests a crate with tarpaulin for coverage"
-workspace = false
-dependencies = ["setup"]
-command = "cargo"
-args = ["tarpaulin", "--package"]
-
-[tasks.test-coverage]
-description = "Tests the entire workspace with tarpaulin for coverage"
-workspace = false
-dependencies = ["setup"]
-command = "cargo"
-args = ["tarpaulin", "--workspace"]
 
 
 ## Linting
@@ -213,6 +259,7 @@ description = "Install cargo-machete to check for unused crates"
 workspace = false
 private = true
 install_crate = { crate_name = "cargo-machete", binary = "cargo-machete", test_arg = "--version" }
+install_crate_args = ["--locked"]
 
 [tasks.machete]
 description = "Checks for unused dependencies"
@@ -228,6 +275,7 @@ description = "Install the cargo-audit crate"
 workspace = false
 private = true
 install_crate = { crate_name = "cargo-audit", binary = "cargo-audit", test_arg = "--version" }
+install_crate_args = ["--locked"]
 
 [tasks.audit]
 description = "Runs cargo audit"
@@ -323,6 +371,7 @@ description = "Install the cargo-expand crate for expanding and inspecting proc 
 workspace = false
 private = true
 install_crate = { crate_name = "cargo-expand", binary = "cargo-expand", test_arg = "--version" }
+install_crate_args = ["--locked"]
 
 [tasks.print-env]
 description = "Print the environment"
@@ -349,7 +398,8 @@ dependencies = [
     "install-koji",
     "install-web-support",
     "script-link-assets",
-    "install-tarpaulin",
+    "install-nextest",
+    "install-llvm-cov",
     "install-rustfmt",
     "install-clippy",
     "install-cargo-machete",
