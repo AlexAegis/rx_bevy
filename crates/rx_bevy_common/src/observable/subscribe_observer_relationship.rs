@@ -1,6 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{component::Component, entity::Entity};
-use rx_core_traits::{Observable, Signal};
+use rx_core_common::{Observable, Signal};
 
 use core::marker::PhantomData;
 #[cfg(feature = "debug")]

@@ -1,9 +1,9 @@
 use core::num::NonZero;
 
+use rx_core_common::{Observable, Signal, Subscriber};
 use rx_core_subscriber_higher_order::{
 	HigherOrderSubscriberFactory, HigherOrderSubscriberProvider,
 };
-use rx_core_traits::{Observable, Signal, Subscriber};
 
 use crate::SwitchSubscriber;
 

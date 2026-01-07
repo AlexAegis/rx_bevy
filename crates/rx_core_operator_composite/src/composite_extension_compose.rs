@@ -1,4 +1,4 @@
-use rx_core_traits::ComposableOperator;
+use rx_core_common::ComposableOperator;
 
 use crate::operator::CompositeOperator;
 

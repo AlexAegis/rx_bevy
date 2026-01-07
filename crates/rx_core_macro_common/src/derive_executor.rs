@@ -3,7 +3,7 @@ use quote::quote;
 use syn::DeriveInput;
 
 use crate::helpers::{
-	find_attribute, find_field_ident_with_attribute, get_rx_core_traits_crate, read_attribute_type,
+	find_attribute, find_field_ident_with_attribute, get_rx_core_common_crate, read_attribute_type,
 };
 
 pub fn impl_executor(derive_input: &DeriveInput) -> TokenStream {
@@ -23,14 +23,14 @@ pub fn impl_executor(derive_input: &DeriveInput) -> TokenStream {
 	)
 	.unwrap_or_else(|e| panic!("{}", e));
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::WorkExecutor for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::WorkExecutor for #ident #ty_generics #where_clause {
 			type Scheduler = #scheduler_type;
 
 			#[inline]
-			fn get_scheduler_handle(&self) -> #_rx_core_traits_crate::SchedulerHandle<Self::Scheduler> {
+			fn get_scheduler_handle(&self) -> #_rx_core_common_crate::SchedulerHandle<Self::Scheduler> {
 				self.#scheduler_field.get_scheduler_handle()
 			}
 		}
@@ -55,13 +55,13 @@ mod test {
 		};
 		let tokens = impl_executor(&input);
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl rx_core_traits::WorkExecutor for Foo }.to_string()));
+		assert!(s.contains(&quote! { impl rx_core_common::WorkExecutor for Foo }.to_string()));
 		assert!(s.contains(&quote! { type Scheduler = MyScheduler; }.to_string()));
 		assert!(
 			s.contains(
 				&quote! {
 					#[inline]
-					fn get_scheduler_handle(&self) -> rx_core_traits::SchedulerHandle<Self::Scheduler> {
+					fn get_scheduler_handle(&self) -> rx_core_common::SchedulerHandle<Self::Scheduler> {
 						self.handle.get_scheduler_handle()
 					}
 				}
@@ -74,7 +74,7 @@ mod test {
 	fn should_respect_the_custom_crate_name_and_generate_get_scheduler_handle() {
 		let input: DeriveInput = parse_quote! {
 			#[rx_scheduler(MyScheduler)]
-			#[_rx_core_traits_crate(crate)]
+			#[_rx_core_common_crate(crate)]
 			struct Foo {
 				#[scheduler_handle]
 				handle: Dummy,

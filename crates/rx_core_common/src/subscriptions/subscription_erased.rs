@@ -16,7 +16,7 @@ where
 }
 
 #[derive(RxSubscription)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 pub struct ErasedSubscription {
 	subscription: Box<dyn SubscriptionWithTeardown + Send + Sync + 'static>,
 }

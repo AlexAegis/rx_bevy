@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, Operator, Scheduler, SchedulerHandle, WorkContextProvider};
+use rx_core_common::{Observable, Operator, Scheduler, SchedulerHandle, WorkContextProvider};
 
 use crate::operator::FallbackWhenSilentOperator;
 

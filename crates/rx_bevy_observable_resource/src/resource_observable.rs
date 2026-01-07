@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use bevy_ecs::resource::Resource;
 use rx_bevy_common::RxBevyScheduler;
+use rx_core_common::{Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
 
 use crate::{ResourceSubscription, observable::ResourceObservableOptions};
 

@@ -1,8 +1,8 @@
-use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	Scheduler, SchedulerHandle, SubscriptionData, SubscriptionLike, WorkCancellationId,
 	WorkInvokeId,
 };
+use rx_core_macro_subscription_derive::RxSubscription;
 
 use crate::RxBevyScheduler;
 

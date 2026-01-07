@@ -1,6 +1,6 @@
 use rx_core::prelude::*;
+use rx_core_common::{Observable, SubscriberNotification};
 use rx_core_testing::prelude::*;
-use rx_core_traits::{Observable, SubscriberNotification};
 
 #[derive(Clone)]
 struct Foo;

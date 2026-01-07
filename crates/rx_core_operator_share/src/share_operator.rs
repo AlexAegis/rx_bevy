@@ -1,8 +1,8 @@
-use rx_core_macro_operator_derive::RxOperator;
-use rx_core_observable_connectable::observable::ConnectableOptions;
-use rx_core_traits::{
+use rx_core_common::{
 	Observable, ObservableOutput, ObserverInput, Operator, Provider, SubjectLike,
 };
+use rx_core_macro_operator_derive::RxOperator;
+use rx_core_observable_connectable::observable::ConnectableOptions;
 
 use crate::observable::ShareObservable;
 

@@ -9,7 +9,7 @@ use bevy_ecs::{
 use bevy_log::debug;
 use derive_where::derive_where;
 use disqualified::ShortName;
-use rx_core_traits::{Signal, UpgradeableObserver};
+use rx_core_common::{Signal, UpgradeableObserver};
 use thiserror::Error;
 
 use crate::{Subscribe, SubscribeObserverTypeMarker, SubscribesToRetry};

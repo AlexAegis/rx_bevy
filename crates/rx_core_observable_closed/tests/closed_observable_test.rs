@@ -1,6 +1,6 @@
 use rx_core::prelude::*;
+use rx_core_common::SubscriberNotification;
 use rx_core_testing::prelude::*;
-use rx_core_traits::SubscriberNotification;
 
 #[test]
 fn should_immediately_unsubscribe() {

@@ -9,7 +9,7 @@ use bevy::{
 	input::keyboard::KeyCode,
 };
 use rx_bevy_common::{Clock, CommandSubscribeExtension, EntityDestination, RxSchedule};
-use rx_core_traits::prelude::*;
+use rx_core_common::prelude::*;
 
 use crate::alternate_systems_on_press;
 

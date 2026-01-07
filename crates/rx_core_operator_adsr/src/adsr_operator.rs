@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
+use rx_core_common::{ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber};
 
 use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptions};
 

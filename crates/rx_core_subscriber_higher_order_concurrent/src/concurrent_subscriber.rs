@@ -4,13 +4,13 @@ use std::{
 	sync::{Arc, Mutex},
 };
 
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
 	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 	TeardownCollectionExtension,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 use slab::Slab;
 
 use crate::concurrent_subscriber_queue::ConcurrentSubscriberQueue;

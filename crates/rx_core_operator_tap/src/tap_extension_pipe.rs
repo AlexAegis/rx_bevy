@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, Observer, Operator};
+use rx_core_common::{Observable, Observer, Operator};
 
 use crate::operator::TapOperator;
 

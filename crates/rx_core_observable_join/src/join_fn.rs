@@ -1,4 +1,4 @@
-use rx_core_traits::Observable;
+use rx_core_common::Observable;
 
 use crate::observable::JoinObservable;
 

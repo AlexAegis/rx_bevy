@@ -128,7 +128,7 @@ mod all {
 }
 
 mod initial_then_by_provenance {
-	use rx_core_traits::SubscriberNotification;
+	use rx_core_common::SubscriberNotification;
 
 	use super::*;
 
@@ -164,7 +164,7 @@ mod initial_then_by_provenance {
 }
 
 mod only_by_provenance {
-	use rx_core_traits::SubscriberNotification;
+	use rx_core_common::SubscriberNotification;
 
 	use super::*;
 

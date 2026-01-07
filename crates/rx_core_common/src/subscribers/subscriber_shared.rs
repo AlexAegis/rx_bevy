@@ -144,7 +144,7 @@ where
 ///   and when the lock is released by the holder, the queue will clear itself,
 ///   applying all deferred notifications.
 #[derive(Debug, RxSubscriber)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection]

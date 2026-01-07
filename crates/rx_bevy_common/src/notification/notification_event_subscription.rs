@@ -3,7 +3,7 @@ use bevy_ecs::{
 	entity::{ContainsEntity, Entity},
 	event::Event,
 };
-use rx_core_traits::SubscriptionNotification;
+use rx_core_common::SubscriptionNotification;
 use thiserror::Error;
 
 // TODO(bevy-0.17): Use EntityEvent

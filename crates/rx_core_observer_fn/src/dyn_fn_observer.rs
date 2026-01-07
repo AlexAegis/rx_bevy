@@ -1,5 +1,5 @@
+use rx_core_common::{Observer, Signal};
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, Signal};
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 #[derive(RxObserver)]

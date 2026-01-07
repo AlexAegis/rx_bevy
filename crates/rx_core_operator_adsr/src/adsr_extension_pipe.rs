@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, Operator, Scheduler, SchedulerHandle};
+use rx_core_common::{Observable, Operator, Scheduler, SchedulerHandle};
 
 use crate::{
 	AdsrTrigger,

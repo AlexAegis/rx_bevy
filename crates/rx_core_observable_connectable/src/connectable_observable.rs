@@ -1,11 +1,11 @@
 use std::sync::{Arc, Mutex};
 
 use derive_where::derive_where;
-use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observable, ObservableOutput, Provider, SubjectLike, Subscriber,
 	SubscriptionLike, TeardownCollection, TeardownCollectionExtension, UpgradeableObserver,
 };
+use rx_core_macro_observable_derive::RxObservable;
 
 use crate::{
 	internal::{
@@ -157,8 +157,8 @@ mod test {
 		atomic::{AtomicBool, Ordering},
 	};
 
+	use rx_core_common::{LockWithPoisonBehavior, ProvideWithDefault, TeardownCollectionExtension};
 	use rx_core_subject_publish::subject::PublishSubject;
-	use rx_core_traits::{LockWithPoisonBehavior, ProvideWithDefault, TeardownCollectionExtension};
 
 	use crate::observable::{Connectable, ConnectableObservable, ConnectableOptions};
 

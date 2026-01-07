@@ -7,11 +7,11 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
-use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	SchedulerHandle, SubscriptionLike, SubscriptionNotification, SubscriptionWithTeardown,
 	Teardown, TeardownCollection,
 };
+use rx_core_macro_subscription_derive::RxSubscription;
 
 use crate::{
 	RxBevyScheduler, RxBevySchedulerDespawnEntityExtension, SubscriptionNotificationEvent,

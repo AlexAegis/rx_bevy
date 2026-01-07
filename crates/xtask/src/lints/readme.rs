@@ -9,7 +9,7 @@ pub fn lint_readme() -> Result<(), RxWorkspaceError> {
 	let mut workspace_problems = WorkspaceProblems::default();
 
 	for package in workspace.workspace_packages_by_id.values() {
-		if !(package.name.starts_with("rx_bevy") || package.name.starts_with("rx_core"))
+		if !(package.name.starts_with("rx_core") || package.name.starts_with("rx_bevy"))
 			|| package.name == "rx_bevy"
 		{
 			continue;
@@ -29,8 +29,9 @@ pub fn lint_readme() -> Result<(), RxWorkspaceError> {
 			continue;
 		};
 
-		let stripped_package_name = if (package.name.starts_with("rx_bevy_")
-			|| package.name.starts_with("rx_core_"))
+		let stripped_package_name = if (package.name.starts_with("rx_core_")
+			|| package.name.starts_with("rx_bevy_"))
+			&& package.name != "rx_core_common"
 			&& package.name != "rx_bevy_common"
 		{
 			package.name.split_at(8).1

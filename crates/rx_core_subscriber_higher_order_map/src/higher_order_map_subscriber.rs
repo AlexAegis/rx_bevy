@@ -1,10 +1,10 @@
 use core::{marker::PhantomData, num::NonZero};
 
+use rx_core_common::{Observable, Observer, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_higher_order::{
 	HigherOrderSubscriberFactory, HigherOrderSubscriberProvider,
 };
-use rx_core_traits::{Observable, Observer, Signal, Subscriber};
 
 #[derive(RxSubscriber)]
 #[rx_in(In)]

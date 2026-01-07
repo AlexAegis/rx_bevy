@@ -1,5 +1,5 @@
 use bevy_ecs::{entity::Entity, system::EntityCommands};
-use rx_core_traits::{SchedulerHandle, Signal, UpgradeableObserver};
+use rx_core_common::{SchedulerHandle, Signal, UpgradeableObserver};
 
 use crate::{CommandSubscribeExtension, EntityDestination, RxBevyScheduler};
 

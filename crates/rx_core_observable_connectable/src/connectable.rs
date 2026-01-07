@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, SubscriptionWithTeardown};
+use rx_core_common::{Observable, SubscriptionWithTeardown};
 
 use crate::observable::ConnectionHandle;
 

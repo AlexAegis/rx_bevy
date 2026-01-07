@@ -1,7 +1,7 @@
 use rx_core::prelude::*;
+use rx_core_common::{Observable, SubscriberNotification};
 use rx_core_operator_first::FirstOperatorError;
 use rx_core_testing::prelude::*;
-use rx_core_traits::{Observable, SubscriberNotification};
 
 #[test]
 fn should_emit_and_complete_on_the_first_next() {

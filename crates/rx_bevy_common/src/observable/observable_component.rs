@@ -10,8 +10,8 @@ use bevy_ecs::{
 };
 use bevy_log::error;
 use disqualified::ShortName;
+use rx_core_common::{Observable, SubscriptionLike};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, SubscriptionLike};
 use thiserror::Error;
 
 use crate::{
@@ -48,7 +48,7 @@ where
 	type Subscription<Destination>
 		= O::Subscription<Destination>
 	where
-		Destination: 'static + rx_core_traits::Subscriber<In = Self::Out, InError = Self::OutError>;
+		Destination: 'static + rx_core_common::Subscriber<In = Self::Out, InError = Self::OutError>;
 
 	fn subscribe<Destination>(
 		&mut self,
@@ -56,7 +56,7 @@ where
 	) -> Self::Subscription<Destination::Upgraded>
 	where
 		Destination: 'static
-			+ rx_core_traits::UpgradeableObserver<In = Self::Out, InError = Self::OutError>
+			+ rx_core_common::UpgradeableObserver<In = Self::Out, InError = Self::OutError>
 			+ Send
 			+ Sync,
 	{

@@ -1,7 +1,7 @@
 use bevy_input::keyboard::KeyCode;
 use rx_bevy_common::RxBevyScheduler;
+use rx_core_common::{Never, Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Never, Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 
 use crate::{KeyboardObservableOptions, KeyboardSubscription};
 

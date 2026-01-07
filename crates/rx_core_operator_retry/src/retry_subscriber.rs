@@ -1,10 +1,10 @@
 use std::sync::{Arc, Mutex};
 
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observable, Observer, ObserverTerminalNotification, SharedSubscriber,
 	SharedSubscription, Subscriber, SubscriptionLike, TeardownCollectionExtension,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
 pub(crate) const SOURCE_STEAL: &str = "Source should be present!";
 

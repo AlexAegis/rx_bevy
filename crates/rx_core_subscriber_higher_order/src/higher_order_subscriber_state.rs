@@ -1,4 +1,4 @@
-use rx_core_traits::SubscriberState;
+use rx_core_common::SubscriberState;
 
 pub trait HigherOrderSubscriberStateConditions {
 	fn can_downstream_complete(&self) -> bool;

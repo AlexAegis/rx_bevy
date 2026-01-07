@@ -2,8 +2,8 @@ use std::num::NonZero;
 
 use derive_where::derive_where;
 
+use rx_core_common::{Observer, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Signal, Subscriber};
 
 #[derive_where(Debug)]
 #[derive(RxSubscriber)]

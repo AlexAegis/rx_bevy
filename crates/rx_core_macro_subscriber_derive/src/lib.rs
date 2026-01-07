@@ -99,7 +99,7 @@ fn primary_category_subscriber() -> Type {
 		rx_skip_unsubscribe_on_drop_impl,
 		destination,
 		teardown,
-		_rx_core_traits_crate
+		_rx_core_common_crate
 	)
 )]
 pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

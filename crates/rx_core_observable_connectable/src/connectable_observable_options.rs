@@ -1,4 +1,4 @@
-use rx_core_traits::{Provider, SubjectLike};
+use rx_core_common::{Provider, SubjectLike};
 
 #[derive(Debug, Clone, Default)]
 pub struct ConnectableOptions<ConnectorProvider>
@@ -62,8 +62,8 @@ where
 
 #[cfg(test)]
 mod test {
+	use rx_core_common::{ProvideWithDefault, Provider};
 	use rx_core_subject_publish::subject::PublishSubject;
-	use rx_core_traits::{ProvideWithDefault, Provider};
 
 	use crate::observable::ConnectableOptions;
 

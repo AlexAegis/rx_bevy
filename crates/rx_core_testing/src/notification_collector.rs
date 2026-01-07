@@ -6,7 +6,7 @@ use std::{
 };
 
 use derive_where::derive_where;
-use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriptionClosedFlag};
+use rx_core_common::{Never, Signal, SubscriberNotification, SubscriptionClosedFlag};
 
 // TODO: Consider renaming it to just Notifications, along with all the notification_collector variables.
 #[derive_where(Clone, Default)]
@@ -406,7 +406,7 @@ mod test_notification_collector {
 	#[cfg(test)]
 	mod test_nothing_happened_after_closed {
 
-		use rx_core_traits::SubscriberNotification;
+		use rx_core_common::SubscriberNotification;
 
 		use crate::NotificationCollectorState;
 
@@ -438,7 +438,7 @@ mod test_notification_collector {
 	#[cfg(test)]
 	mod test_notification_counting {
 
-		use rx_core_traits::SubscriberNotification;
+		use rx_core_common::SubscriberNotification;
 
 		use crate::NotificationCollectorState;
 

@@ -9,12 +9,12 @@ use bevy_ecs::{
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
-use rx_core_macro_subject_derive::RxSubject;
-use rx_core_traits::{
+use rx_core_common::{
 	Observable, Observer as RxObserver, ObserverNotification,
 	ObserverPushObserverNotificationExtention, SubjectLike, Subscriber, SubscriptionLike,
 	UpgradeableObserver,
 };
+use rx_core_macro_subject_derive::RxSubject;
 
 use crate::{
 	ObservableSubscriptions, RxScheduleDespawn, RxSignal, Subscribe, SubscribeError,

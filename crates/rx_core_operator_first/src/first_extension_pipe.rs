@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, Operator};
+use rx_core_common::{Observable, Operator};
 
 use crate::operator::FirstOperator;
 

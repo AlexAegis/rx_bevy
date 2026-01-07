@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use rx_core::prelude::*;
+use rx_core_common::Observable;
 use rx_core_testing::prelude::*;
-use rx_core_traits::Observable;
 
 #[test]
 fn should_delay_a_next_emission_by_the_specified_amount_of_time() {

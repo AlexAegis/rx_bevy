@@ -1,10 +1,10 @@
+use rx_core_common::{
+	Observable, SharedSubscriber, Subscriber, SubscriptionData, TeardownCollection,
+	UpgradeableObserver,
+};
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_notification_variadics::{
 	EitherNotificationSelector1Of2, EitherNotificationSelector2Of2, EitherSubscriber2,
-};
-use rx_core_traits::{
-	Observable, SharedSubscriber, Subscriber, SubscriptionData, TeardownCollection,
-	UpgradeableObserver,
 };
 
 use crate::JoinSubscriber;

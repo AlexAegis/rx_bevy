@@ -9,7 +9,7 @@ use crate::{
 use rx_core_macro_observable_derive::RxObservable;
 
 #[derive(RxObservable)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 #[rx_out(Out)]
 #[rx_out_error(OutError)]
 pub struct ErasedObservable<Out, OutError>

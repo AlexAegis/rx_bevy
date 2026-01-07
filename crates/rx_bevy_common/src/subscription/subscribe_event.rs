@@ -4,7 +4,7 @@ use bevy_ecs::{
 use bevy_log::error;
 use core::marker::PhantomData;
 use disqualified::ShortName;
-use rx_core_traits::{Signal, Subscriber, UpgradeableObserver};
+use rx_core_common::{Signal, Subscriber, UpgradeableObserver};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;

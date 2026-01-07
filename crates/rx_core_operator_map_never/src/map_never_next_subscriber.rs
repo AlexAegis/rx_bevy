@@ -1,5 +1,5 @@
+use rx_core_common::{Never, Observer, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Never, Observer, Subscriber};
 
 #[derive(RxSubscriber)]
 #[rx_in(Never)]

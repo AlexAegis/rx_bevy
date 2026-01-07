@@ -4,11 +4,11 @@ use std::{
 	time::Duration,
 };
 
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
+use rx_core_common::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Signal,
 	Subscriber, SubscriptionLike, WorkCancellationId, WorkResult, WorkTick,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::{
 	AdsrEnvelopePhase, AdsrEnvelopeState, AdsrSignal, AdsrTrigger, operator::AdsrOperatorOptions,

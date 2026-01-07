@@ -1,8 +1,8 @@
 use std::collections::VecDeque;
 
 use derive_where::derive_where;
+use rx_core_common::Observable;
 use rx_core_subscriber_higher_order::HigherOrderSubscriberStateConditions;
-use rx_core_traits::Observable;
 
 #[derive_where(Default)]
 pub(crate) struct ConcurrentSubscriberQueue<InnerObservable>

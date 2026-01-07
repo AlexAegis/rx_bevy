@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
+use rx_core_common::{Observer, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Signal, Subscriber};
 
 #[derive(RxSubscriber, Debug)]
 #[rx_in(In)]

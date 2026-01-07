@@ -1,6 +1,6 @@
 use derive_where::derive_where;
+use rx_core_common::{Observer, SharedSubscriber, Subscriber, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, SharedSubscriber, Subscriber, SubscriptionLike};
 
 use crate::InnerRcSubscriber;
 

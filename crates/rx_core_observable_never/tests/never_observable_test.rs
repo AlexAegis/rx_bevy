@@ -1,6 +1,6 @@
 use rx_core::prelude::*;
+use rx_core_common::{SubscriberNotification, SubscriptionLike};
 use rx_core_testing::prelude::*;
-use rx_core_traits::{SubscriberNotification, SubscriptionLike};
 
 #[test]
 fn should_not_emit_anything() {

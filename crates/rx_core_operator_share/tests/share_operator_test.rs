@@ -1,6 +1,6 @@
 use rx_core::prelude::*;
+use rx_core_common::{Observable, SubscriberNotification};
 use rx_core_testing::prelude::*;
-use rx_core_traits::{Observable, SubscriberNotification};
 
 #[test]
 fn should_automatically_connect_on_subscribe_and_share_emissions_across_all_subscribers() {

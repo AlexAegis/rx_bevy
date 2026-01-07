@@ -1,7 +1,7 @@
 use bevy_ecs::system::EntityCommands;
 
 use rx_bevy_common::RxBevyScheduler;
-use rx_core_traits::{SchedulerHandle, Signal};
+use rx_core_common::{SchedulerHandle, Signal};
 
 use crate::observable::ProxyObservable;
 

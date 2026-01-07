@@ -3,12 +3,12 @@ use std::{
 	sync::{Arc, Mutex},
 };
 
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
 	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 
 /// A subscriber that only subscribes to an incoming observable, if there are
 /// no active inner subscriptions already. If there is one, the incoming

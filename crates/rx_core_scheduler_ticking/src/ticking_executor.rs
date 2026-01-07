@@ -4,11 +4,11 @@ use std::{
 };
 
 use indexmap::IndexMap;
-use rx_core_macro_executor_derive::RxExecutor;
-use rx_core_traits::{
+use rx_core_common::{
 	ScheduledWork, ScheduledWorkAction, Scheduler, SchedulerHandle, WorkCancellationId,
 	WorkContextProvider, WorkInvokeId, WorkResult, WorkTick,
 };
+use rx_core_macro_executor_derive::RxExecutor;
 
 use crate::{Tick, WorkId, WorkIdGenerator};
 

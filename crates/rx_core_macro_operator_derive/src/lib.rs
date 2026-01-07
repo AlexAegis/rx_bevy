@@ -45,7 +45,7 @@ fn primary_category_operator() -> Type {
 ///   error type of the operator; usually it's the same as the input error type
 #[proc_macro_derive(
 	RxOperator,
-	attributes(rx_in, rx_in_error, rx_out, rx_out_error, _rx_core_traits_crate)
+	attributes(rx_in, rx_in_error, rx_out, rx_out_error, _rx_core_common_crate)
 )]
 pub fn operator_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	let derive_input = parse_macro_input!(input as DeriveInput);

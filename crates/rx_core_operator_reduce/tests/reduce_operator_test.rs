@@ -1,6 +1,6 @@
 use rx_core::prelude::*;
+use rx_core_common::Observable;
 use rx_core_testing::prelude::*;
-use rx_core_traits::Observable;
 
 #[test]
 fn should_emit_the_result_once_completed() {

@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::DeriveInput;
 
-use crate::helpers::{find_attribute, get_rx_core_traits_crate, read_attribute_type, unit_type};
+use crate::helpers::{find_attribute, get_rx_core_common_crate, read_attribute_type, unit_type};
 
 pub fn impl_with_work_context_provider(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
@@ -12,10 +12,10 @@ pub fn impl_with_work_context_provider(derive_input: &DeriveInput) -> TokenStrea
 		.map(read_attribute_type)
 		.unwrap_or(unit_type());
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::WithWorkContextProvider for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::WithWorkContextProvider for #ident #ty_generics #where_clause {
 			type WorkContextProvider = #context_type;
 		}
 	}
@@ -35,7 +35,7 @@ mod test {
 		let tokens = impl_with_work_context_provider(&input);
 		let s = tokens.to_string();
 		assert!(s.contains(
-			&quote! { impl rx_core_traits::WithWorkContextProvider for Foo }.to_string()
+			&quote! { impl rx_core_common::WithWorkContextProvider for Foo }.to_string()
 		));
 		assert!(s.contains(&quote! { type WorkContextProvider = (); }.to_string()));
 	}

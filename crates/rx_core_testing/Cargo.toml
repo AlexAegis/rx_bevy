@@ -17,10 +17,10 @@ workspace = true
 
 [features]
 default = []
-debug = ["rx_core_scheduler_ticking/debug", "rx_core_traits/debug"]
+debug = ["rx_core_scheduler_ticking/debug", "rx_core_common/debug"]
 
 [dependencies]
-rx_core_traits = { workspace = true }
+rx_core_common = { workspace = true }
 rx_core_macro_observer_derive = { workspace = true }
 rx_core_macro_executor_derive = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }

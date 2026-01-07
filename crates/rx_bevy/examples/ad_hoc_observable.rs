@@ -5,7 +5,7 @@ use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::{print_notification_observer, send_message};
 use rx_bevy::prelude::*;
-use rx_core_traits::Never;
+use rx_core_common::Never;
 
 fn main() -> AppExit {
 	App::new()

@@ -1,4 +1,4 @@
-use rx_core_traits::{ErasedObservables, Signal};
+use rx_core_common::{ErasedObservables, Signal};
 
 use crate::observable::MergeObservable;
 

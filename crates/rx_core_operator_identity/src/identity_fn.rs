@@ -1,4 +1,4 @@
-use rx_core_traits::Signal;
+use rx_core_common::Signal;
 
 use crate::operator::IdentityOperator;
 

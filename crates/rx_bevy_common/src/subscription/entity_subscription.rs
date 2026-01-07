@@ -1,6 +1,6 @@
 use bevy_ecs::entity::{ContainsEntity, Entity};
+use rx_core_common::{SchedulerHandle, SubscriptionData, SubscriptionLike};
 use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{SchedulerHandle, SubscriptionData, SubscriptionLike};
 
 use crate::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
 

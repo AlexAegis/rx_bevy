@@ -3,9 +3,9 @@ use quote::quote;
 use syn::{Attribute, DeriveInput, Ident, Meta, Type, parse_quote, parse2};
 use thiserror::Error;
 
-pub(crate) fn get_rx_core_traits_crate(derive_input: &DeriveInput) -> TokenStream {
-	read_attribute_value(&derive_input.attrs, "_rx_core_traits_crate")
-		.unwrap_or(quote! { rx_core_traits })
+pub(crate) fn get_rx_core_common_crate(derive_input: &DeriveInput) -> TokenStream {
+	read_attribute_value(&derive_input.attrs, "_rx_core_common_crate")
+		.unwrap_or(quote! { rx_core_common })
 }
 
 pub fn find_attribute<'a>(attrs: &'a [Attribute], attribute_name: &str) -> Option<&'a Attribute> {
@@ -40,10 +40,10 @@ pub fn read_attribute_value(attrs: &[Attribute], attribute_name: &str) -> Option
 }
 
 pub fn never_type(derive_input: &DeriveInput) -> Type {
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	parse_quote! {
-		#_rx_core_traits_crate::Never
+		#_rx_core_common_crate::Never
 	}
 }
 
@@ -211,20 +211,20 @@ mod test {
 		use super::*;
 
 		#[test]
-		fn should_default_to_rx_core_traits() {
+		fn should_default_to_rx_core_common() {
 			let input: DeriveInput = parse_quote! { struct Foo; };
 			let ty = never_type(&input);
 
 			assert_eq!(
 				quote! {#ty}.to_string().replace(" ", ""),
-				"rx_core_traits::Never"
+				"rx_core_common::Never"
 			);
 		}
 
 		#[test]
 		fn should_respect_custom_traits_crate() {
 			let input: DeriveInput = parse_quote! {
-				#[_rx_core_traits_crate(custom_traits)]
+				#[_rx_core_common_crate(custom_traits)]
 				struct Foo;
 			};
 			let ty = never_type(&input);
@@ -238,7 +238,7 @@ mod test {
 		#[test]
 		fn should_respect_crate_override() {
 			let input: DeriveInput = parse_quote! {
-				#[_rx_core_traits_crate(crate)]
+				#[_rx_core_common_crate(crate)]
 				struct Foo;
 			};
 			let ty = never_type(&input);

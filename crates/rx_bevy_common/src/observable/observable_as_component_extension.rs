@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, PrimaryCategoryObservable};
+use rx_core_common::{Observable, PrimaryCategoryObservable};
 
 use crate::ObservableComponent;
 

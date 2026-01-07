@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
+use rx_core_common::{Observable, Operator, Signal};
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{Observable, Operator, Signal};
 
 use crate::observable::RetryObservable;
 

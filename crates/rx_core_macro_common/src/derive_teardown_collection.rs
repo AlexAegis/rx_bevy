@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::DeriveInput;
 
-use crate::helpers::{find_attribute, find_field_ident_with_attribute, get_rx_core_traits_crate};
+use crate::helpers::{find_attribute, find_field_ident_with_attribute, get_rx_core_common_crate};
 
 pub fn impl_delegate_teardown_collection(derive_input: &DeriveInput) -> Option<TokenStream> {
 	let rx_delegate_teardown_collection =
@@ -37,16 +37,16 @@ fn impl_delegate_teardown_collection_inner(derive_input: &DeriveInput) -> TokenS
 	})
 	.unwrap_or_else(|e| panic!("{}", e));
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::TeardownCollection for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::TeardownCollection for #ident #ty_generics #where_clause {
 			#[inline]
 			fn add_teardown(
 				&mut self,
-				teardown: #_rx_core_traits_crate::Teardown
+				teardown: #_rx_core_common_crate::Teardown
 			) {
-				#_rx_core_traits_crate::TeardownCollection::add_teardown(&mut self.#teardown_field, teardown);
+				#_rx_core_common_crate::TeardownCollection::add_teardown(&mut self.#teardown_field, teardown);
 			}
 		}
 	}
@@ -76,7 +76,7 @@ mod test {
 		let tokens = impl_delegate_teardown_collection(&input).unwrap();
 		let s = tokens.to_string();
 		assert!(
-			s.contains(&quote! { impl rx_core_traits::TeardownCollection for Foo }.to_string())
+			s.contains(&quote! { impl rx_core_common::TeardownCollection for Foo }.to_string())
 		);
 		assert!(
 			s.contains(
@@ -84,9 +84,9 @@ mod test {
 					#[inline]
 					fn add_teardown(
 						&mut self,
-						teardown: rx_core_traits::Teardown
+						teardown: rx_core_common::Teardown
 					) {
-						rx_core_traits::TeardownCollection::add_teardown(&mut self.teardown, teardown);
+						rx_core_common::TeardownCollection::add_teardown(&mut self.teardown, teardown);
 					}
 				}
 				.to_string()
@@ -111,9 +111,9 @@ mod test {
 					#[inline]
 					fn add_teardown(
 						&mut self,
-						teardown: rx_core_traits::Teardown
+						teardown: rx_core_common::Teardown
 					) {
-						rx_core_traits::TeardownCollection::add_teardown(&mut self.destination, teardown);
+						rx_core_common::TeardownCollection::add_teardown(&mut self.destination, teardown);
 					}
 				}
 				.to_string()

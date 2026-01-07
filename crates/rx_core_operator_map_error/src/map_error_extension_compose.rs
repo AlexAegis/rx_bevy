@@ -1,7 +1,7 @@
+use rx_core_common::{ComposableOperator, Signal};
 use rx_core_operator_composite::{
 	extension_compose::OperatorComposeExtension, operator::CompositeOperator,
 };
-use rx_core_traits::{ComposableOperator, Signal};
 
 use crate::operator::MapErrorOperator;
 

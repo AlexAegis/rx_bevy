@@ -1,9 +1,9 @@
 use derive_where::derive_where;
-use rx_core_macro_scheduler_derive::RxScheduler;
-use rx_core_traits::{
+use rx_core_common::{
 	ScheduledWork, ScheduledWorkAction, Scheduler, WorkCancellationId, WorkCancellationIdGenerator,
 	WorkContextProvider, WorkInvokeId, WorkInvokeIdGenerator,
 };
+use rx_core_macro_scheduler_derive::RxScheduler;
 
 use crate::{
 	SchedulerForTickingExecutor, Tick, TickedContinuousWorkFactory, TickedDelayedOnceWorkFactory,

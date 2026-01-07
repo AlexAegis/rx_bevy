@@ -1,10 +1,10 @@
 use std::{iter::Peekable, marker::PhantomData};
 
-use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	Never, Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
 	Signal, Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
 };
+use rx_core_macro_subscription_derive::RxSubscription;
 
 use crate::observable::OnTickObservableOptions;
 

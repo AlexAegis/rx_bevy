@@ -4,7 +4,7 @@ use std::{
 };
 
 use derive_where::derive_where;
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observer, Signal, Subscriber, SubscriberState, SubscriptionClosedFlag,
 	SubscriptionLike,
 };
@@ -392,8 +392,8 @@ where
 mod test {
 	use std::sync::{Arc, Mutex};
 
+	use rx_core_common::{LockWithPoisonBehavior, Never, SubscriptionLike};
 	use rx_core_testing::MockObserver;
-	use rx_core_traits::{LockWithPoisonBehavior, Never, SubscriptionLike};
 
 	use crate::internal::{
 		MulticastDeferredState, MulticastNotification, MulticastSubscriberIdGenerator,

@@ -87,7 +87,7 @@ impl Default for SubscriptionDeferredState {
 }
 
 #[derive(RxSubscription, Default, Clone, Debug)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 #[rx_delegate_teardown_collection]
 #[rx_skip_unsubscribe_on_drop_impl] // It's shared
 pub struct SharedSubscription {

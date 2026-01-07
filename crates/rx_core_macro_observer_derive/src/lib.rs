@@ -63,7 +63,7 @@ fn primary_category_observer() -> Type {
 		rx_in_error,
 		rx_does_not_upgrade_to_observer_subscriber,
 		rx_upgrades_to,
-		_rx_core_traits_crate
+		_rx_core_common_crate
 	)
 )]
 pub fn subscriber_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

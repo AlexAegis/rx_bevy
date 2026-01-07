@@ -1,10 +1,10 @@
 use std::{marker::PhantomData, time::Duration};
 
 use derive_where::derive_where;
+use rx_core_common::{DelayedWork, DelayedWorkFactory, ScheduledOnceWork, WorkContextProvider};
 use rx_core_macro_work_derive::RxWork;
-use rx_core_traits::{DelayedWork, DelayedWorkFactory, ScheduledOnceWork, WorkContextProvider};
 
-use rx_core_traits::{ScheduledWork, WorkResult};
+use rx_core_common::{ScheduledWork, WorkResult};
 
 use crate::Tick;
 

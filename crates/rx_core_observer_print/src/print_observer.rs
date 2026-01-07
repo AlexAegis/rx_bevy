@@ -1,9 +1,9 @@
 use std::{fmt::Debug, marker::PhantomData};
 
-use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{
+use rx_core_common::{
 	Never, Observer, Signal, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
+use rx_core_macro_observer_derive::RxObserver;
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
 #[derive(RxObserver)]

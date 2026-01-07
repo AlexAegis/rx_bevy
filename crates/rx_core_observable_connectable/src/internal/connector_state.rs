@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 
-use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observable, ObservableOutput, Provider, SubjectLike, TeardownCollection,
 };
+use rx_core_macro_observable_derive::RxObservable;
 
 use crate::{
 	internal::{Connection, ConnectionState, ConnectionSubscriber},

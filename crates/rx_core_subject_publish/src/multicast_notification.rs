@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use derive_where::derive_where;
-use rx_core_traits::{Signal, Subscriber};
+use rx_core_common::{Signal, Subscriber};
 
 use crate::internal::MulticastSubscriberId;
 

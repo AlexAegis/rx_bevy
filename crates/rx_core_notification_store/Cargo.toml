@@ -17,10 +17,10 @@ workspace = true
 
 [features]
 default = []
-debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
+debug = ["rx_core_testing/debug", "rx_core_common/debug"]
 
 [dependencies]
-rx_core_traits = { workspace = true }
+rx_core_common = { workspace = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]

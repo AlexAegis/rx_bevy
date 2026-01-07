@@ -1,8 +1,8 @@
 use std::{ops::Deref, time::Duration};
 
+use rx_core_common::{WorkContext, WorkContextProvider};
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_scheduler_ticking::{Tick, TickingScheduler, TickingSchedulerExecutor};
-use rx_core_traits::{WorkContext, WorkContextProvider};
 
 pub struct MockContextProvider;
 

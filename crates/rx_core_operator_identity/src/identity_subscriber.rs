@@ -1,5 +1,5 @@
+use rx_core_common::Subscriber;
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::Subscriber;
 
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]

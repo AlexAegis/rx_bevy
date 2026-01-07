@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
+use rx_core_common::{ComposableOperator, Signal, Subscriber, Teardown};
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{ComposableOperator, Signal, Subscriber, Teardown};
 
 #[derive_where(Clone, Debug)]
 #[derive(RxOperator)]

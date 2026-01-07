@@ -5,11 +5,11 @@ use std::{
 
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
-use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
 	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
+use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 
 /// A subscriber that switches to new inner observables, unsubscribing from the previous one.
 #[derive(RxSubscriber)]

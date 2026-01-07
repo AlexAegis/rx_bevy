@@ -1,6 +1,6 @@
 use rx_core::prelude::*;
+use rx_core_common::{Observable, SubscriberNotification};
 use rx_core_testing::prelude::*;
-use rx_core_traits::{Observable, SubscriberNotification};
 
 #[test]
 fn should_map_error_next_emissions_using_the_error_mapper_provided() {

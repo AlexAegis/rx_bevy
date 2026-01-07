@@ -1,7 +1,7 @@
 use core::ops::Deref;
 
 use derive_where::derive_where;
-use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriberState};
+use rx_core_common::{Never, Signal, SubscriberNotification, SubscriberState};
 
 /// Stores a single `next` emission from an observable to be used later,
 /// along with its state of being completed/unsubscribed or if it's still

@@ -101,7 +101,7 @@ mod test {
 
 		#[derive_where(Default)]
 		#[derive(RxSubscriber)]
-		#[_rx_core_traits_crate(crate)]
+		#[_rx_core_common_crate(crate)]
 		#[rx_in(In)]
 		#[rx_in_error(InError)]
 		struct MockSubscriber<In, InError>

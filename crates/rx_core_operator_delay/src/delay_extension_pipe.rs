@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use rx_core_traits::{Observable, Operator, Scheduler, SchedulerHandle, Signal};
+use rx_core_common::{Observable, Operator, Scheduler, SchedulerHandle, Signal};
 
 use crate::operator::DelayOperator;
 

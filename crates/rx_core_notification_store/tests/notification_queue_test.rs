@@ -1,5 +1,5 @@
+use rx_core_common::SubscriberNotification;
 use rx_core_notification_store::{NotificationQueue, QueueOverflowBehavior, QueueOverflowOptions};
-use rx_core_traits::SubscriberNotification;
 
 #[test]
 fn should_have_a_waiting_state_before_any_notification_is_received() {

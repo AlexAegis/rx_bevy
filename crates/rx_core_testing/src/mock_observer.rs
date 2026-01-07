@@ -1,11 +1,11 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{
+use rx_core_common::{
 	Never, Observer, SharedSubscription, Signal, SubscriberNotification, SubscriptionLike,
 	Teardown, TeardownCollection,
 };
+use rx_core_macro_observer_derive::RxObserver;
 
 use crate::NotificationCollector;
 

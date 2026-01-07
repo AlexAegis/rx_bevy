@@ -1,5 +1,5 @@
 use derive_where::derive_where;
-use rx_core_traits::{SubscriptionLike, SubscriptionWithTeardown};
+use rx_core_common::{SubscriptionLike, SubscriptionWithTeardown};
 
 use crate::observable::ConnectionHandle;
 

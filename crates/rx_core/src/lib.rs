@@ -1,6 +1,6 @@
 #![no_std]
 
-pub use rx_core_traits::*;
+pub use rx_core_common::*;
 
 pub mod observable {
 	#[cfg(feature = "observable_closed")]
@@ -370,7 +370,7 @@ pub mod subject {
 }
 
 pub mod prelude {
-	pub use rx_core_traits::prelude::*;
+	pub use rx_core_common::prelude::*;
 
 	pub use super::observable::*;
 	pub use super::observer::*;

@@ -1,4 +1,4 @@
-use rx_core_traits::{Never, Observable, Operator, Signal};
+use rx_core_common::{Never, Observable, Operator, Signal};
 
 use crate::operator::MapNeverBothOperator;
 

@@ -1,5 +1,5 @@
 use bevy_ecs::{event::Event, observer::Trigger};
-use rx_core_traits::Subscriber;
+use rx_core_common::Subscriber;
 
 /// Creates an `ObserverSystem` that owns a destination and forwards incoming
 /// events into it.

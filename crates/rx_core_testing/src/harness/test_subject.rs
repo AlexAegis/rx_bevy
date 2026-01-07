@@ -1,12 +1,12 @@
 use std::sync::{Arc, Mutex};
 
 use derive_where::derive_where;
-use rx_core_macro_subject_derive::RxSubject;
-use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	ErasedSubscriber, LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, Signal,
 	Subscriber, SubscriptionLike, UpgradeableObserver,
 };
+use rx_core_macro_subject_derive::RxSubject;
+use rx_core_macro_subscription_derive::RxSubscription;
 
 const EXPECT_ACTIVE_SUBSCRIPTION: &str = "Subscription to be active!";
 

@@ -1,7 +1,7 @@
 use bevy_ecs::entity::Entity;
+use rx_core_common::{ScheduledWork, Scheduler, WorkCancellationId, WorkInvokeId, WorkResult};
 use rx_core_macro_work_derive::RxWork;
 use rx_core_scheduler_ticking::Tick;
-use rx_core_traits::{ScheduledWork, Scheduler, WorkCancellationId, WorkInvokeId, WorkResult};
 
 use crate::{RxBevyContext, RxBevyScheduler};
 
@@ -24,8 +24,8 @@ impl ScheduledWork for ScheduledWorkDespawnEntity {
 	fn tick(
 		&mut self,
 		_input: Self::Tick,
-		context: &mut <Self::WorkContextProvider as rx_core_traits::WorkContextProvider>::Item<'_>,
-	) -> rx_core_traits::WorkResult {
+		context: &mut <Self::WorkContextProvider as rx_core_common::WorkContextProvider>::Item<'_>,
+	) -> rx_core_common::WorkResult {
 		context
 			.deferred_world
 			.commands()

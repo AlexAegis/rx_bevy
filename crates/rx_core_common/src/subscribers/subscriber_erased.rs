@@ -5,7 +5,7 @@ use crate::{Signal, Subscriber, subscribers::subscriber_box::BoxedSubscriber};
 
 #[derive_where(Debug)]
 #[derive(RxSubscriber)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
 #[rx_delegate_observer_to_destination]

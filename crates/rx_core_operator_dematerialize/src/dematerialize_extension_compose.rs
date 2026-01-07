@@ -1,5 +1,5 @@
+use rx_core_common::{ComposableOperator, Never, ObserverNotification, Signal};
 use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
-use rx_core_traits::{ComposableOperator, Never, ObserverNotification, Signal};
 
 use crate::operator::DematerializeOperator;
 

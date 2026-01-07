@@ -1,6 +1,6 @@
+use rx_core_common::{Never, Observable, Observer, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
-use rx_core_traits::{Never, Observable, Observer, Subscriber, UpgradeableObserver};
 
 /// # [EmptyObservable]
 ///

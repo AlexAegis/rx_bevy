@@ -1,6 +1,6 @@
 use rx_core::{SubscriberNotification, prelude::EmptyObservable};
+use rx_core_common::prelude::*;
 use rx_core_testing::MockObserver;
-use rx_core_traits::prelude::*;
 
 #[test]
 fn should_immediately_emit_complete() {

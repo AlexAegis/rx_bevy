@@ -1,4 +1,4 @@
-use rx_core_traits::Signal;
+use rx_core_common::Signal;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq, Eq, PartialOrd, Ord)]

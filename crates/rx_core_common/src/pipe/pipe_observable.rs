@@ -2,7 +2,7 @@ use crate::{ComposableOperator, Observable, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
 
 #[derive(RxObservable, Clone, Debug)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 #[rx_out(Op::Out)]
 #[rx_out_error(Op::OutError)]
 pub struct Pipe<Source, Op>

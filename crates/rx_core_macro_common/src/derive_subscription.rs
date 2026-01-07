@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::DeriveInput;
 
-use crate::helpers::{find_attribute, find_field_ident_with_attribute, get_rx_core_traits_crate};
+use crate::helpers::{find_attribute, find_field_ident_with_attribute, get_rx_core_common_crate};
 
 pub fn impl_delegate_subscription_like_to_destination(
 	derive_input: &DeriveInput,
@@ -55,10 +55,10 @@ fn impl_delegate_subscription_like_to_destination_inner(derive_input: &DeriveInp
 		}
 	};
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::SubscriptionLike for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::SubscriptionLike for #ident #ty_generics #where_clause {
 			#[inline]
 			fn is_closed(&self) -> bool {
 				self.#destination_field.is_closed()
@@ -77,13 +77,13 @@ fn impl_unsubscribe_on_drop(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
 		impl #impl_generics Drop for #ident #ty_generics #where_clause {
 			fn drop(&mut self) {
-				if !#_rx_core_traits_crate::SubscriptionLike::is_closed(self) {
-					#_rx_core_traits_crate::SubscriptionLike::unsubscribe(self);
+				if !#_rx_core_common_crate::SubscriptionLike::is_closed(self) {
+					#_rx_core_common_crate::SubscriptionLike::unsubscribe(self);
 				}
 			}
 		}
@@ -123,7 +123,7 @@ mod test {
 		};
 		let tokens = impl_delegate_subscription_like_to_destination(&input).unwrap();
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl rx_core_traits::SubscriptionLike for Foo }.to_string()));
+		assert!(s.contains(&quote! { impl rx_core_common::SubscriptionLike for Foo }.to_string()));
 		assert!(
 			s.contains(
 				&quote! {
@@ -155,7 +155,7 @@ mod test {
 		};
 		let tokens = impl_delegate_subscription_like_to_destination(&input).unwrap();
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl rx_core_traits::SubscriptionLike for Foo }.to_string()));
+		assert!(s.contains(&quote! { impl rx_core_common::SubscriptionLike for Foo }.to_string()));
 		assert!(
 			s.contains(
 				&quote! {
@@ -220,8 +220,8 @@ mod test {
 			s.contains(
 				&quote! {
 					fn drop(&mut self) {
-						if !rx_core_traits::SubscriptionLike::is_closed(self) {
-							rx_core_traits::SubscriptionLike::unsubscribe(self);
+						if !rx_core_common::SubscriptionLike::is_closed(self) {
+							rx_core_common::SubscriptionLike::unsubscribe(self);
 						}
 					}
 				}

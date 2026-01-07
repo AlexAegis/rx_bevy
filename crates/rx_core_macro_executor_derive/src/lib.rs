@@ -33,7 +33,7 @@ use syn::{DeriveInput, parse_macro_input};
 		rx_tick,
 		rx_scheduler,
 		scheduler_handle,
-		_rx_core_traits_crate
+		_rx_core_common_crate
 	)
 )]
 pub fn scheduler_executor_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

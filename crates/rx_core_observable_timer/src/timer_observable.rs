@@ -1,9 +1,9 @@
 use std::time::Duration;
 
-use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{
+use rx_core_common::{
 	Never, Observable, Scheduler, SchedulerHandle, Subscriber, UpgradeableObserver,
 };
+use rx_core_macro_observable_derive::RxObservable;
 
 use crate::TimerSubscription;
 

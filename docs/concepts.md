@@ -28,7 +28,7 @@ Bevy observers!
 > only one place where both are used in one file, across the entire repository!
 
 An (Rx)Observer is something that implements three functions for its 3 observer
-"channels" via the [Observer](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_traits/src/observer.rs) trait, with mutable access to itself.
+"channels" via the [Observer](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_common/src/observer.rs) trait, with mutable access to itself.
 
 - `next`
 - `error`
@@ -80,7 +80,7 @@ This is useful whenever you want to *materialize* all the different kinds of
 signals of something into one value, whichever signal that may have been. For
 example when sending them as an event, or serializing them.
 
-This could be an enum like the [ObserverNotification](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_traits/src/signals/notification_observer.rs)
+This could be an enum like the [ObserverNotification](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_common/src/signals/notification_observer.rs)
 
 ```rs
 pub enum ObserverNotification<In, InError>
@@ -288,7 +288,7 @@ This enables 2 things:
 
 ## Pipes & Operators
 
-[Pipe](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_traits/src/pipe.rs)
+[Pipe](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_common/src/pipe.rs)
 is an observable that takes another observable, and an [operator](#operators)
 to change its behavior and produce a new observable.
 
@@ -385,7 +385,7 @@ let _s = (1..=5)
 
 ### UpgradeableObserver
 
-> [UpgradeableObserver Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_traits/src/upgradeable_observer.rs)
+> [UpgradeableObserver Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_common/src/upgradeable_observer.rs)
 
 When subscribing to an Observable, sometimes we want the observable to
 be able to send an unsubscribe call to this destination, and sometimes it should

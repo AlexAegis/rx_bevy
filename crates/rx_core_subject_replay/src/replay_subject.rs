@@ -1,11 +1,11 @@
 use std::sync::{Arc, Mutex};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
-use rx_core_macro_subject_derive::RxSubject;
-use rx_core_subject_publish::{internal::MulticastSubscription, subject::PublishSubject};
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
 };
+use rx_core_macro_subject_derive::RxSubject;
+use rx_core_subject_publish::{internal::MulticastSubscription, subject::PublishSubject};
 
 /// A ReplaySubject - unlike a BehaviorSubject - doesn't always contain a value,
 /// but if it does, it immediately returns the last `N` of them upon subscription.

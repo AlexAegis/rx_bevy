@@ -1,8 +1,8 @@
-use rx_core_macro_observable_derive::RxObservable;
-use rx_core_subscription_inert::InertSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	Never, Observable, Observer, Signal, Subscriber, SubscriptionLike, UpgradeableObserver,
 };
+use rx_core_macro_observable_derive::RxObservable;
+use rx_core_subscription_inert::InertSubscription;
 
 /// Emits all values from an iterator then immediately completes.
 #[derive(RxObservable, Clone, Debug)]

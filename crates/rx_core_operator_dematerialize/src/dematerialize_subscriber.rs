@@ -1,5 +1,5 @@
+use rx_core_common::{Never, Observer, ObserverNotification, Subscriber, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Never, Observer, ObserverNotification, Subscriber, SubscriptionLike};
 
 #[derive(RxSubscriber)]
 #[rx_in(ObserverNotification<Destination::In, Destination::InError>)]

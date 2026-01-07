@@ -1,12 +1,12 @@
 use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
-use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{
+use rx_core_common::{
 	Never, Observer, ObserverNotification, Scheduler, SchedulerHandle,
 	SchedulerScheduleWorkExtension, Signal, TeardownCollectionExtension, UpgradeableObserver,
 	WorkCancellationId,
 };
+use rx_core_macro_observer_derive::RxObserver;
 
 use crate::{DetachedSubscriber, RxBevyScheduler};
 

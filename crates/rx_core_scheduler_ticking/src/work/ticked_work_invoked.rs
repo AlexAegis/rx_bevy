@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_macro_work_derive::RxWork;
-use rx_core_traits::{
+use rx_core_common::{
 	InvokedTaskFactory, ScheduledRepeatedWork, ScheduledWork, WorkContextProvider, WorkResult,
 };
+use rx_core_macro_work_derive::RxWork;
 
 use crate::Tick;
 

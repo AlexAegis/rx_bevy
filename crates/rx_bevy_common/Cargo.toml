@@ -21,12 +21,12 @@ debug = [
     "dep:bevy_input",
     "rx_core_scheduler_ticking/debug",
     "rx_core_testing/debug",
-    "rx_core_traits/debug",
+    "rx_core_common/debug",
 ]
 reflect = ["dep:bevy_reflect"]
 
 [dependencies]
-rx_core_traits = { workspace = true }
+rx_core_common = { workspace = true }
 rx_core_scheduler_ticking = { workspace = true }
 rx_core_macro_executor_derive = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }

@@ -3,8 +3,8 @@ use bevy_ecs::{
 	system::{Commands, Query, SystemParam},
 };
 use disqualified::ShortName;
+use rx_core_common::{Never, Signal, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Never, Signal, UpgradeableObserver};
 
 use crate::{CommandSubscribeExtension, ObservableOutputs, SubscribeError};
 

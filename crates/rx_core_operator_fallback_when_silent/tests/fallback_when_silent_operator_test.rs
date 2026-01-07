@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use rx_core::prelude::*;
+use rx_core_common::{Observable, SubscriberNotification};
 use rx_core_testing::prelude::*;
-use rx_core_traits::{Observable, SubscriberNotification};
 
 #[test]
 fn should_be_able_to_immediately_next_to_its_destination() {

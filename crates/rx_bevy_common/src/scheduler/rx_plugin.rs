@@ -9,7 +9,7 @@ use bevy_ecs::{
 use bevy_log::warn;
 use bevy_time::Virtual;
 use bevy_window::exit_on_all_closed;
-use rx_core_traits::SubscriptionLike;
+use rx_core_common::SubscriptionLike;
 
 use crate::{
 	RxSchedulerPlugin, SubscriptionComponent, UnfinishedSubscription, execute_pending_retries,

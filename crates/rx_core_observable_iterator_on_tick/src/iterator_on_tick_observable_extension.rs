@@ -1,4 +1,4 @@
-use rx_core_traits::{Scheduler, SchedulerHandle, Signal};
+use rx_core_common::{Scheduler, SchedulerHandle, Signal};
 
 use crate::observable::{IteratorOnTickObservable, OnTickObservableOptions};
 

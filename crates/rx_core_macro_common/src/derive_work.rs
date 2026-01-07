@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::DeriveInput;
 
-use crate::helpers::{find_attribute, get_rx_core_traits_crate, never_type, read_attribute_type};
+use crate::helpers::{find_attribute, get_rx_core_common_crate, never_type, read_attribute_type};
 
 pub fn impl_with_work_input_output(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
@@ -12,10 +12,10 @@ pub fn impl_with_work_input_output(derive_input: &DeriveInput) -> TokenStream {
 		.map(read_attribute_type)
 		.unwrap_or(never_type(derive_input));
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::WithWorkInputOutput for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::WithWorkInputOutput for #ident #ty_generics #where_clause {
 			type Tick = #tick_input_type;
 		}
 	}
@@ -35,9 +35,9 @@ mod test {
 		let tokens = impl_with_work_input_output(&input);
 		let s = tokens.to_string();
 		assert!(
-			s.contains(&quote! { impl rx_core_traits::WithWorkInputOutput for Foo }.to_string())
+			s.contains(&quote! { impl rx_core_common::WithWorkInputOutput for Foo }.to_string())
 		);
-		assert!(s.contains(&quote! { type Tick = rx_core_traits::Never; }.to_string()));
+		assert!(s.contains(&quote! { type Tick = rx_core_common::Never; }.to_string()));
 	}
 
 	#[test]

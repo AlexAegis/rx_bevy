@@ -1,6 +1,6 @@
 use rx_core::prelude::*;
+use rx_core_common::{Observable, SubscriberNotification};
 use rx_core_testing::prelude::*;
-use rx_core_traits::{Observable, SubscriberNotification};
 
 #[test]
 fn should_map_and_filter_next_emissions_using_the_mapper_provided_filtering_when_none() {

@@ -2203,7 +2203,7 @@ dependencies = [
  "bevy",
  "disqualified",
  "rx_bevy_common",
- "rx_core_traits",
+ "rx_core_common",
 ]
 
 [[package]]
@@ -4225,8 +4225,8 @@ dependencies = [
  "rx_bevy_observable_proxy",
  "rx_bevy_observable_resource",
  "rx_core",
+ "rx_core_common",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4245,6 +4245,7 @@ dependencies = [
  "derive-where",
  "disqualified",
  "rx_bevy",
+ "rx_core_common",
  "rx_core_macro_executor_derive",
  "rx_core_macro_observable_derive",
  "rx_core_macro_observer_derive",
@@ -4255,7 +4256,6 @@ dependencies = [
  "rx_core_macro_work_derive",
  "rx_core_scheduler_ticking",
  "rx_core_testing",
- "rx_core_traits",
  "thiserror 2.0.17",
 ]
 
@@ -4271,10 +4271,10 @@ dependencies = [
  "examples_common",
  "rx_bevy",
  "rx_bevy_common",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4288,10 +4288,10 @@ dependencies = [
  "examples_common",
  "rx_bevy",
  "rx_bevy_common",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4306,10 +4306,10 @@ dependencies = [
  "examples_common",
  "rx_bevy",
  "rx_bevy_common",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4323,10 +4323,10 @@ dependencies = [
  "examples_common",
  "rx_bevy",
  "rx_bevy_common",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4340,16 +4340,17 @@ dependencies = [
  "examples_common",
  "rx_bevy",
  "rx_bevy_common",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
 name = "rx_core"
 version = "0.1.0"
 dependencies = [
+ "rx_core_common",
  "rx_core_observable_closed",
  "rx_core_observable_combine_changes",
  "rx_core_observable_combine_latest",
@@ -4422,7 +4423,23 @@ dependencies = [
  "rx_core_subject_publish",
  "rx_core_subject_replay",
  "rx_core_testing",
- "rx_core_traits",
+]
+
+[[package]]
+name = "rx_core_common"
+version = "0.1.0"
+dependencies = [
+ "bitflags 2.10.0",
+ "derive-where",
+ "disqualified",
+ "rx_core",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_observer_derive",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_macro_subscription_derive",
+ "thiserror 2.0.17",
+ "variadics_please",
 ]
 
 [[package]]
@@ -4440,10 +4457,10 @@ name = "rx_core_macro_executor_derive"
 version = "0.1.0"
 dependencies = [
  "quote",
+ "rx_core_common",
  "rx_core_macro_common",
  "rx_core_macro_scheduler_derive",
  "rx_core_scheduler_ticking",
- "rx_core_traits",
  "syn",
 ]
 
@@ -4525,8 +4542,8 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4534,9 +4551,9 @@ name = "rx_core_notification_variadics"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscriber_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4544,10 +4561,10 @@ name = "rx_core_observable_closed"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4555,12 +4572,12 @@ name = "rx_core_observable_combine_changes"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_notification_store",
  "rx_core_notification_variadics",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4568,12 +4585,12 @@ name = "rx_core_observable_combine_latest"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_notification_store",
  "rx_core_notification_variadics",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4581,11 +4598,11 @@ name = "rx_core_observable_concat"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_subscriber_higher_order_all",
  "rx_core_subscriber_higher_order_concurrent",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4594,12 +4611,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_subject_publish",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4607,9 +4624,9 @@ name = "rx_core_observable_deferred"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4617,10 +4634,10 @@ name = "rx_core_observable_empty"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4628,10 +4645,10 @@ name = "rx_core_observable_interval"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4639,10 +4656,10 @@ name = "rx_core_observable_iterator"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4650,10 +4667,10 @@ name = "rx_core_observable_iterator_on_tick"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4661,12 +4678,12 @@ name = "rx_core_observable_join"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_notification_store",
  "rx_core_notification_variadics",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4674,11 +4691,11 @@ name = "rx_core_observable_merge"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_subscriber_higher_order_all",
  "rx_core_subscriber_higher_order_concurrent",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4686,9 +4703,9 @@ name = "rx_core_observable_never"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4696,10 +4713,10 @@ name = "rx_core_observable_of"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4707,10 +4724,10 @@ name = "rx_core_observable_throw"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_subscription_inert",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4718,10 +4735,10 @@ name = "rx_core_observable_timer"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4729,12 +4746,12 @@ name = "rx_core_observable_zip"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_notification_store",
  "rx_core_notification_variadics",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4742,9 +4759,9 @@ name = "rx_core_observer_fn"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observer_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4753,9 +4770,9 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observer_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4763,9 +4780,9 @@ name = "rx_core_observer_print"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observer_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4776,11 +4793,11 @@ dependencies = [
  "bevy_time",
  "bitflags 2.10.0",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4789,11 +4806,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4802,12 +4819,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4816,10 +4833,10 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4828,12 +4845,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_all",
  "rx_core_subscriber_higher_order_concurrent",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4842,12 +4859,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_concurrent",
  "rx_core_subscriber_higher_order_map",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4855,11 +4872,11 @@ name = "rx_core_operator_delay"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4868,11 +4885,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4881,11 +4898,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4894,11 +4911,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4908,11 +4925,11 @@ dependencies = [
  "derive-where",
  "disqualified",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4921,12 +4938,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_all",
  "rx_core_subscriber_higher_order_exhaust",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4935,12 +4952,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_exhaust",
  "rx_core_subscriber_higher_order_map",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4948,11 +4965,11 @@ name = "rx_core_operator_fallback_when_silent"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4961,11 +4978,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4974,12 +4991,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_operator_lift_option",
  "rx_core_operator_map",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -4988,10 +5005,10 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5000,11 +5017,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
  "thiserror 2.0.17",
 ]
 
@@ -5014,11 +5031,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
  "thiserror 2.0.17",
 ]
 
@@ -5028,11 +5045,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
  "thiserror 2.0.17",
 ]
 
@@ -5042,10 +5059,10 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5054,11 +5071,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5067,11 +5084,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5080,11 +5097,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5093,11 +5110,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5106,11 +5123,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5119,11 +5136,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5132,11 +5149,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5145,11 +5162,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5158,12 +5175,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_all",
  "rx_core_subscriber_higher_order_concurrent",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5172,12 +5189,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_concurrent",
  "rx_core_subscriber_higher_order_map",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5186,11 +5203,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5199,10 +5216,10 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5211,11 +5228,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5224,11 +5241,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5237,12 +5254,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_observable_connectable",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5251,11 +5268,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5264,11 +5281,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_operator_derive",
  "rx_core_observable_connectable",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5277,11 +5294,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5290,10 +5307,10 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5302,12 +5319,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_all",
  "rx_core_subscriber_higher_order_switch",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5316,12 +5333,12 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_map",
  "rx_core_subscriber_higher_order_switch",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5330,11 +5347,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5343,11 +5360,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5356,11 +5373,11 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5370,10 +5387,10 @@ dependencies = [
  "derive-where",
  "indexmap",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_executor_derive",
  "rx_core_macro_scheduler_derive",
  "rx_core_macro_work_derive",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5381,10 +5398,10 @@ name = "rx_core_subject_async"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subject_derive",
  "rx_core_subject_publish",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5392,10 +5409,10 @@ name = "rx_core_subject_behavior"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subject_derive",
  "rx_core_subject_publish",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5403,13 +5420,13 @@ name = "rx_core_subject_provenance"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subject_derive",
  "rx_core_operator_filter",
  "rx_core_operator_map",
  "rx_core_subject_behavior",
  "rx_core_subject_publish",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5418,10 +5435,10 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subject_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5430,10 +5447,10 @@ version = "0.1.0"
 dependencies = [
  "ringbuffer",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subject_derive",
  "rx_core_subject_publish",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5441,9 +5458,9 @@ name = "rx_core_subscriber_higher_order"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscriber_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5451,10 +5468,10 @@ name = "rx_core_subscriber_higher_order_all"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_higher_order",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5463,10 +5480,10 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_higher_order",
  "rx_core_testing",
- "rx_core_traits",
  "slab",
 ]
 
@@ -5475,10 +5492,10 @@ name = "rx_core_subscriber_higher_order_exhaust"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_higher_order",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5486,10 +5503,10 @@ name = "rx_core_subscriber_higher_order_map"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_higher_order",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5497,10 +5514,10 @@ name = "rx_core_subscriber_higher_order_switch"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscriber_derive",
  "rx_core_subscriber_higher_order",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5510,10 +5527,10 @@ dependencies = [
  "derive-where",
  "disqualified",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscriber_derive",
  "rx_core_observable_iterator",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5521,9 +5538,9 @@ name = "rx_core_subscription_inert"
 version = "0.1.0"
 dependencies = [
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
- "rx_core_traits",
 ]
 
 [[package]]
@@ -5532,6 +5549,7 @@ version = "0.1.0"
 dependencies = [
  "derive-where",
  "rx_core",
+ "rx_core_common",
  "rx_core_macro_executor_derive",
  "rx_core_macro_observable_derive",
  "rx_core_macro_observer_derive",
@@ -5540,24 +5558,6 @@ dependencies = [
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_scheduler_ticking",
- "rx_core_traits",
-]
-
-[[package]]
-name = "rx_core_traits"
-version = "0.1.0"
-dependencies = [
- "bitflags 2.10.0",
- "derive-where",
- "disqualified",
- "rx_core",
- "rx_core_macro_observable_derive",
- "rx_core_macro_observer_derive",
- "rx_core_macro_operator_derive",
- "rx_core_macro_subscriber_derive",
- "rx_core_macro_subscription_derive",
- "thiserror 2.0.17",
- "variadics_please",
 ]
 
 [[package]]

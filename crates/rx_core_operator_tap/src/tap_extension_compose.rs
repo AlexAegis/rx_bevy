@@ -1,5 +1,5 @@
+use rx_core_common::{ComposableOperator, Observer};
 use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
-use rx_core_traits::{ComposableOperator, Observer};
 
 use crate::operator::TapOperator;
 

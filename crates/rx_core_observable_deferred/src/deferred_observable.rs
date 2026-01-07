@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
+use rx_core_common::{Observable, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, Subscriber, UpgradeableObserver};
 
 /// Defers the creation of its source [Observable] until subscribe
 #[derive(RxObservable)]

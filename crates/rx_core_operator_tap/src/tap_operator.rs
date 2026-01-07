@@ -1,6 +1,6 @@
 use derive_where::derive_where;
+use rx_core_common::{ComposableOperator, Observer, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{ComposableOperator, Observer, Subscriber};
 
 use crate::TapSubscriber;
 

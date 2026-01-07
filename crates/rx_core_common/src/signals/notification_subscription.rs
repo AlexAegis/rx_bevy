@@ -76,7 +76,7 @@ mod test {
 		use super::*;
 
 		#[derive(RxSubscription, Default)]
-		#[_rx_core_traits_crate(crate)]
+		#[_rx_core_common_crate(crate)]
 		struct MockSubscription {
 			unsubscribed: bool,
 		}

@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, ObservableOutput, Operator};
+use rx_core_common::{Observable, ObservableOutput, Operator};
 
 use crate::operator::SwitchAllOperator;
 

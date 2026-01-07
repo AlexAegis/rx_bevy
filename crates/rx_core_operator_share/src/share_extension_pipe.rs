@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, Operator, Provider, SubjectLike};
+use rx_core_common::{Observable, Operator, Provider, SubjectLike};
 
 use crate::operator::{ConnectableOptions, ShareOperator};
 

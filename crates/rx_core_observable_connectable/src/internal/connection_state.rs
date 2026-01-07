@@ -1,4 +1,4 @@
-use rx_core_traits::{Provider, SubjectLike};
+use rx_core_common::{Provider, SubjectLike};
 
 use crate::observable::ConnectableOptions;
 

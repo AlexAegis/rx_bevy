@@ -2,11 +2,11 @@ use core::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
 use bevy_ecs::{resource::Resource, world::Mut};
-use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{
+use rx_core_common::{
 	Observer, ObserverNotification, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
 	Signal, UpgradeableObserver, WorkCancellationId,
 };
+use rx_core_macro_observer_derive::RxObserver;
 
 use crate::{DetachedSubscriber, RxBevyContext};
 

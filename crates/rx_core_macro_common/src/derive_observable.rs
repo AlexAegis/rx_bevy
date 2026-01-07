@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::DeriveInput;
 
-use crate::helpers::{find_attribute, get_rx_core_traits_crate, never_type, read_attribute_type};
+use crate::helpers::{find_attribute, get_rx_core_common_crate, never_type, read_attribute_type};
 
 pub fn impl_observable_output(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
@@ -15,10 +15,10 @@ pub fn impl_observable_output(derive_input: &DeriveInput) -> TokenStream {
 		.map(read_attribute_type)
 		.unwrap_or(never_type(derive_input));
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::ObservableOutput for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::ObservableOutput for #ident #ty_generics #where_clause {
 			type Out = #out_type;
 			type OutError = #out_error_type;
 		}
@@ -37,15 +37,15 @@ mod test {
 		let input: DeriveInput = parse_quote! { struct Foo; };
 		let tokens = impl_observable_output(&input);
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl rx_core_traits::ObservableOutput for Foo }.to_string()));
-		assert!(s.contains(&quote! { type Out = rx_core_traits::Never; }.to_string()));
-		assert!(s.contains(&quote! { type OutError = rx_core_traits::Never; }.to_string()));
+		assert!(s.contains(&quote! { impl rx_core_common::ObservableOutput for Foo }.to_string()));
+		assert!(s.contains(&quote! { type Out = rx_core_common::Never; }.to_string()));
+		assert!(s.contains(&quote! { type OutError = rx_core_common::Never; }.to_string()));
 	}
 
 	#[test]
 	fn should_respect_crate_override() {
 		let input: DeriveInput = parse_quote! {
-			#[_rx_core_traits_crate(crate)]
+			#[_rx_core_common_crate(crate)]
 			struct Foo;
 		};
 		let tokens = impl_observable_output(&input);
@@ -77,6 +77,6 @@ mod test {
 		let tokens = super::impl_observable_output(&input);
 		let s = tokens.to_string();
 		assert!(s.contains(&quote! { type Out = i32; }.to_string()));
-		assert!(s.contains(&quote! { type OutError = rx_core_traits::Never; }.to_string()));
+		assert!(s.contains(&quote! { type OutError = rx_core_common::Never; }.to_string()));
 	}
 }

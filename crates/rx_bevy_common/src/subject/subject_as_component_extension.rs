@@ -1,4 +1,4 @@
-use rx_core_traits::{PrimaryCategorySubject, SubjectLike};
+use rx_core_common::{PrimaryCategorySubject, SubjectLike};
 
 use crate::SubjectComponent;
 

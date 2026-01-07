@@ -338,7 +338,7 @@ Neither of these problems are "lethal", this is about optimization.
 
 ### Use `Never` as your signal type if that signal is never sent
 
-The `rx_core_traits` crate exposes the `Never` type which can't be
+The `rx_core_common` crate exposes the `Never` type which can't be
 constructed since it's an enum with no variants.
 
 > Never is actually just a type alias for `core::convert::Infallible`. The
@@ -364,6 +364,6 @@ denote that something won't ever produce said signal.
     as errors), it also **must** set its `Out` type to `Never`.
 
 > Note that in the future once Rust stabilizes the actual never type (`!`), the
-> `Never` type in `rx_core_traits` will be deprecated in favor of it.
+> `Never` type in `rx_core_common` will be deprecated in favor of it.
 >
 > Tracking issue: <https://github.com/AlexAegis/rx_bevy/issues/27>

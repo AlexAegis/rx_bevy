@@ -35,7 +35,7 @@ fn primary_category_observable() -> Type {
 ///   the observable
 /// - `#[rx_out_error(...)]` (optional, default: `Never`): Defines the output
 ///   error type of the observable
-#[proc_macro_derive(RxObservable, attributes(rx_out, rx_out_error, _rx_core_traits_crate))]
+#[proc_macro_derive(RxObservable, attributes(rx_out, rx_out_error, _rx_core_common_crate))]
 pub fn observable_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	let derive_input = parse_macro_input!(input as DeriveInput);
 

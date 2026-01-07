@@ -3,7 +3,7 @@ use bevy_ecs::{
 	entity::{ContainsEntity, Entity},
 	event::Event,
 };
-use rx_core_traits::{
+use rx_core_common::{
 	Never, ObserverNotification, Signal, SubscriberNotification,
 	SubscriberToObserverNotificationConversionError,
 };

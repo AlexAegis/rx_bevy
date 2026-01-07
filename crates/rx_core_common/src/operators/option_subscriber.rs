@@ -3,7 +3,7 @@ use rx_core_macro_subscriber_derive::RxSubscriber;
 use crate::{Observer, Subscriber, SubscriptionLike, Teardown, TeardownCollection};
 
 #[derive(RxSubscriber)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 #[rx_in(InnerSubscriber::In)]
 #[rx_in_error(InnerSubscriber::InError)]
 pub enum OptionSubscriber<InnerSubscriber, Destination>

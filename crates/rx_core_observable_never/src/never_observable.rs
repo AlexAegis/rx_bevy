@@ -1,5 +1,5 @@
+use rx_core_common::{Never, Observable, Subscriber, Subscription, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Never, Observable, Subscriber, Subscription, UpgradeableObserver};
 
 /// Never emits anything, never completes and most importantly, it
 /// Never unsubscribes!

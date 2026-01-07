@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
+use rx_core_common::{
 	Observable, ObservableOutput, Observer, Subscriber, SubscriberNotification, SubscriptionLike,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::{EitherNotificationSelector2, EitherObservableNotification2};
 

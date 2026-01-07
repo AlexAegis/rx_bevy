@@ -7,7 +7,7 @@ use crate::SubscriptionData;
 /// This subscriber acts as the subscriptions boundary by not forwarding
 /// `unsubscribe` calls downstream.
 #[derive(RxSubscriber, Debug)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
 pub struct ObserverSubscriber<Destination>

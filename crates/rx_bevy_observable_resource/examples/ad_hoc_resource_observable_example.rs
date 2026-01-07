@@ -9,7 +9,6 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::{print_notification_observer, send_message};
 use rx_bevy::prelude::*;
 use rx_bevy_observable_resource::observable::{ResourceObservable, ResourceObservableOptions};
-use rx_core_traits::Never;
 
 fn main() -> AppExit {
 	App::new()

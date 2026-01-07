@@ -4,7 +4,7 @@ use std::{
 };
 
 use derive_where::derive_where;
-use rx_core_traits::{Never, Signal};
+use rx_core_common::{Never, Signal};
 
 use crate::NotificationCollector;
 

@@ -1,10 +1,10 @@
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observer, SharedSubscriber, Subscriber, SubscriptionData,
 	SubscriptionLike, Teardown, TeardownCollection,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::{HigherOrderSubscriberState, HigherOrderSubscriberStateConditions};
 

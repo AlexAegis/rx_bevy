@@ -4,7 +4,7 @@ use bevy_ecs::{
 	system::{ResMut, SystemParam},
 };
 use bevy_time::Virtual;
-use rx_core_traits::{SchedulerHandle, WorkExecutor};
+use rx_core_common::{SchedulerHandle, WorkExecutor};
 
 use crate::{Clock, RxBevyExecutor, RxBevyScheduler};
 

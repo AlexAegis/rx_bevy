@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, Operator, Signal};
+use rx_core_common::{Observable, Operator, Signal};
 
 use crate::operator::ExhaustMapOperator;
 

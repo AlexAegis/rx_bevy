@@ -1,11 +1,11 @@
 use bevy_ecs::{entity::Entity, event::Event, name::Name, observer::Observer};
 use disqualified::ShortName;
 use rx_bevy_common::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
-use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Subscriber,
 	SubscriptionClosedFlag, SubscriptionLike, WorkInvokeId,
 };
+use rx_core_macro_subscription_derive::RxSubscription;
 
 use crate::create_event_forwarder_observer_for_destination;
 

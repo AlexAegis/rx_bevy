@@ -1,7 +1,7 @@
+use rx_core_common::{Observable, Observer, Subscriber, SubscriberNotification, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_notification_store::{NotificationQueue, QueueOverflowOptions};
 use rx_core_notification_variadics::EitherObservableNotification2;
-use rx_core_traits::{Observable, Observer, Subscriber, SubscriberNotification, SubscriptionLike};
 
 const UNREACHABLE_ERROR: &str = "The ZipSubscriber expects only materialized notifications through its `next` fn, from an EitherSubscriber.";
 

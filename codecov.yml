@@ -23,9 +23,6 @@ component_management:
     - component_id: rx_bevy_common
       paths:
         - crates/rx_bevy_common/**
-    - component_id: rx_bevy_context
-      paths:
-        - crates/rx_bevy_context/**
     - component_id: rx_bevy_observable_event
       paths:
         - crates/rx_bevy_observable_event/**
@@ -44,6 +41,9 @@ component_management:
     - component_id: rx_core
       paths:
         - crates/rx_core/**
+    - component_id: rx_core_common
+      paths:
+        - crates/rx_core_common/**
     - component_id: rx_core_notification_store
       paths:
         - crates/rx_core_notification_store/**
@@ -320,6 +320,3 @@ component_management:
     - component_id: rx_core_testing
       paths:
         - crates/rx_core_testing/**
-    - component_id: rx_core_traits
-      paths:
-        - crates/rx_core_traits/**

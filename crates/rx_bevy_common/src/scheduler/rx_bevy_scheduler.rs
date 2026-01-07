@@ -1,11 +1,11 @@
+use rx_core_common::{
+	ScheduledWork, ScheduledWorkAction, Scheduler, WorkCancellationId, WorkInvokeId,
+};
 use rx_core_macro_scheduler_derive::RxScheduler;
 use rx_core_scheduler_ticking::{
 	SchedulerForTickingExecutor, Tick, TickedContinuousWorkFactory, TickedDelayedOnceWorkFactory,
 	TickedImmediateOnceWorkFactory, TickedInvokedWorkFactory, TickedRepeatingWorkFactory,
 	TickingScheduler,
-};
-use rx_core_traits::{
-	ScheduledWork, ScheduledWorkAction, Scheduler, WorkCancellationId, WorkInvokeId,
 };
 
 use crate::RxBevyContext;

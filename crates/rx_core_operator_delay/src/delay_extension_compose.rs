@@ -1,7 +1,7 @@
 use std::time::Duration;
 
+use rx_core_common::{ComposableOperator, Scheduler, SchedulerHandle, Signal};
 use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
-use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle, Signal};
 
 use crate::operator::DelayOperator;
 

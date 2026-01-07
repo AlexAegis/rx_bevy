@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
+use rx_core_common::{Observer, Signal};
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, Signal};
 
 /// An [FnObserver] requires you to define a callback for all three notifications
 #[derive(RxObserver)]

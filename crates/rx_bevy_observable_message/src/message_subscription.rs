@@ -1,7 +1,7 @@
 use bevy_ecs::event::{Event, EventCursor, Events};
 use rx_bevy_common::RxBevyScheduler;
+use rx_core_common::prelude::*;
 use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::prelude::*;
 
 #[derive(RxSubscription)]
 #[rx_delegate_teardown_collection]

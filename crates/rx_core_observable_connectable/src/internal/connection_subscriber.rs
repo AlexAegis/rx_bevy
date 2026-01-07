@@ -1,7 +1,7 @@
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
+use rx_core_common::{
 	Observer, SubjectLike, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
 #[rx_in(Connector::In)]

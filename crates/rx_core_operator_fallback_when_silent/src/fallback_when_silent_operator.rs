@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
-use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{
+use rx_core_common::{
 	ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber, WorkContextProvider,
 };
+use rx_core_macro_operator_derive::RxOperator;
 
 use crate::FallbackWhenSilentSubscriber;
 

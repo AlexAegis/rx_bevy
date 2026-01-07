@@ -1,10 +1,10 @@
 use std::sync::{Arc, Mutex};
 
-use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Never, Signal, Subscriber, SubscriptionLike, Teardown,
 	TeardownCollection,
 };
+use rx_core_macro_subscription_derive::RxSubscription;
 
 use crate::internal::{
 	MulticastDeferredState, MulticastNotification, MulticastSubscriberId, SharedSubscribers,

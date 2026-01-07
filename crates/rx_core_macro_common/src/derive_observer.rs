@@ -6,7 +6,7 @@ use syn::{
 };
 
 use crate::helpers::{
-	find_attribute, find_field_ident_with_attribute, get_rx_core_traits_crate, never_type,
+	find_attribute, find_field_ident_with_attribute, get_rx_core_common_crate, never_type,
 	read_attribute_type,
 };
 
@@ -21,10 +21,10 @@ pub fn impl_observer_input(derive_input: &DeriveInput) -> TokenStream {
 		.map(read_attribute_type)
 		.unwrap_or(never_type(derive_input));
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::ObserverInput for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::ObserverInput for #ident #ty_generics #where_clause {
 			type In = #in_type;
 			type InError = #in_error_type;
 		}
@@ -35,10 +35,10 @@ fn impl_upgrades_to_self(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::ObserverUpgradesToSelf for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::ObserverUpgradesToSelf for #ident #ty_generics #where_clause {
 		}
 	}
 }
@@ -98,10 +98,10 @@ fn impl_delegate_observer_to_destination_inner(derive_input: &DeriveInput) -> To
 	)
 	.unwrap_or_else(|e| panic!("{}", e));
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::Observer for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::Observer for #ident #ty_generics #where_clause {
 			#[inline]
 			fn next(
 				&mut self,
@@ -169,14 +169,14 @@ fn impl_upgrades_to_detached(derive_input: &DeriveInput) -> TokenStream {
 	let ident = derive_input.ident.clone();
 	let (impl_generics, ty_generics, where_clause) = derive_input.generics.split_for_impl();
 
-	let _rx_core_traits_crate = get_rx_core_traits_crate(derive_input);
+	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_traits_crate::UpgradeableObserver for #ident #ty_generics #where_clause {
-			type Upgraded = #_rx_core_traits_crate::ObserverSubscriber<Self>;
+		impl #impl_generics #_rx_core_common_crate::UpgradeableObserver for #ident #ty_generics #where_clause {
+			type Upgraded = #_rx_core_common_crate::ObserverSubscriber<Self>;
 
 			fn upgrade(self) -> Self::Upgraded {
-				#_rx_core_traits_crate::ObserverSubscriber::new(self)
+				#_rx_core_common_crate::ObserverSubscriber::new(self)
 			}
 		}
 	}
@@ -201,15 +201,15 @@ mod test {
 		let input: DeriveInput = parse_quote! { struct Foo; };
 		let tokens = impl_observer_input(&input);
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl rx_core_traits::ObserverInput for Foo }.to_string()));
-		assert!(s.contains(&quote! { type In = rx_core_traits::Never; }.to_string()));
-		assert!(s.contains(&quote! { type InError = rx_core_traits::Never; }.to_string()));
+		assert!(s.contains(&quote! { impl rx_core_common::ObserverInput for Foo }.to_string()));
+		assert!(s.contains(&quote! { type In = rx_core_common::Never; }.to_string()));
+		assert!(s.contains(&quote! { type InError = rx_core_common::Never; }.to_string()));
 	}
 
 	#[test]
 	fn should_respect_crate_override() {
 		let input: DeriveInput = parse_quote! {
-			#[_rx_core_traits_crate(crate)]
+			#[_rx_core_common_crate(crate)]
 			struct Foo;
 		};
 		let tokens = impl_observer_input(&input);
@@ -243,7 +243,7 @@ mod test {
 		};
 		let tokens = impl_delegate_observer_to_destination(&input).unwrap();
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl rx_core_traits::Observer for Foo }.to_string()));
+		assert!(s.contains(&quote! { impl rx_core_common::Observer for Foo }.to_string()));
 		assert!(
 			s.contains(
 				&quote! {
@@ -302,10 +302,10 @@ mod test {
 			let tokens = impl_does_not_upgrade_to_observer_subscriber(&input).unwrap();
 			let s = tokens.to_string();
 			assert!(s.contains(
-				&quote! { impl rx_core_traits::UpgradeableObserver for Foo }.to_string()
+				&quote! { impl rx_core_common::UpgradeableObserver for Foo }.to_string()
 			));
 			assert!(
-				s.contains(&quote! { rx_core_traits::ObserverSubscriber::new(self) }.to_string())
+				s.contains(&quote! { rx_core_common::ObserverSubscriber::new(self) }.to_string())
 			);
 		}
 
@@ -327,7 +327,7 @@ mod test {
 			};
 			let tokens = impl_observer_upgrades_to(&input).unwrap();
 			assert!(tokens.to_string().contains(
-				&quote! { impl rx_core_traits::ObserverUpgradesToSelf for Foo }.to_string()
+				&quote! { impl rx_core_common::ObserverUpgradesToSelf for Foo }.to_string()
 			));
 		}
 
@@ -340,10 +340,10 @@ mod test {
 			let tokens = impl_observer_upgrades_to(&input).unwrap();
 			let s = tokens.to_string();
 			assert!(s.contains(
-				&quote! { impl rx_core_traits::UpgradeableObserver for Foo }.to_string()
+				&quote! { impl rx_core_common::UpgradeableObserver for Foo }.to_string()
 			));
 			assert!(
-				s.contains(&quote! { rx_core_traits::ObserverSubscriber::new(self) }.to_string())
+				s.contains(&quote! { rx_core_common::ObserverSubscriber::new(self) }.to_string())
 			);
 		}
 
@@ -353,7 +353,7 @@ mod test {
 			let tokens = impl_subscriber_does_not_upgrade_to_self(&input).unwrap();
 			let s = tokens.to_string();
 			assert!(s.contains(
-				&quote! { impl rx_core_traits::ObserverUpgradesToSelf for Foo }.to_string()
+				&quote! { impl rx_core_common::ObserverUpgradesToSelf for Foo }.to_string()
 			));
 		}
 

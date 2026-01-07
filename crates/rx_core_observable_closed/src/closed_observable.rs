@@ -1,6 +1,6 @@
+use rx_core_common::{Never, Observable, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
-use rx_core_traits::{Never, Observable, Subscriber, UpgradeableObserver};
 
 /// Closed does not emit anything, no complete, no error, similarly to Never,
 /// but unlike Never, it also immediately unsubscribes!

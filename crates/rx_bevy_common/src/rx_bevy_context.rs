@@ -5,7 +5,7 @@ use bevy_ecs::{
 	world::{DeferredWorld, Mut},
 };
 use disqualified::ShortName;
-use rx_core_traits::{
+use rx_core_common::{
 	ObserverNotification, Signal, SubscriberNotification, SubscriptionNotification, WorkContext,
 	WorkContextProvider,
 };

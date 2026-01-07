@@ -1,5 +1,5 @@
+use rx_core_common::{ComposableOperator, Scheduler, SchedulerHandle};
 use rx_core_operator_composite::operator::*;
-use rx_core_traits::{ComposableOperator, Scheduler, SchedulerHandle};
 
 use crate::{
 	AdsrTrigger,

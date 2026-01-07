@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use derive_where::derive_where;
+use rx_core_common::SubscriptionWithTeardown;
 use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::SubscriptionWithTeardown;
 
 /// Subscription that represents an active connection for a
 /// [ConnectableObservable][crate::ConnectableObservable].

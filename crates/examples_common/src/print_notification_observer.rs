@@ -11,7 +11,7 @@ use bevy::{
 };
 use disqualified::ShortName;
 use rx_bevy_common::{Clock, RxSignal};
-use rx_core_traits::Signal;
+use rx_core_common::Signal;
 
 pub fn print_notification_observer<In, InError, C>(
 	next: Trigger<RxSignal<In, InError>>,

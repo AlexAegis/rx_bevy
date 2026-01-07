@@ -5,12 +5,12 @@ use std::{
 };
 
 use derive_where::derive_where;
-use rx_core_macro_observable_derive::RxObservable;
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
+use rx_core_common::{
 	LockWithPoisonBehavior, Observable, Observer, Signal, Subscriber, SubscriberNotification,
 	SubscriptionLike, SubscriptionWithTeardown, UpgradeableObserver,
 };
+use rx_core_macro_observable_derive::RxObservable;
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::{
 	MockObserver, NotificationCollector, NotificationCollectorState, TeardownTracker, TestError,

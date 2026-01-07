@@ -1,5 +1,5 @@
+use rx_core_common::{ComposableOperator, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{ComposableOperator, Subscriber};
 
 use crate::CompositeSubscriber;
 

@@ -7,10 +7,10 @@ use std::{
 };
 
 use rx_core::prelude::*;
-use rx_core_testing::prelude::*;
-use rx_core_traits::{
+use rx_core_common::{
 	Observable, SubscriberNotification, SubscriptionLike, TeardownCollectionExtension,
 };
+use rx_core_testing::prelude::*;
 
 #[test]
 fn should_send_a_unit_value_after_the_specified_amount_of_time() {

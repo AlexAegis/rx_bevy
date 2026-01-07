@@ -1,9 +1,9 @@
 use derive_where::derive_where;
+use rx_core_common::prelude::*;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_observable_connectable::observable::{
 	Connectable, ConnectableObservable, ConnectableOptions, ConnectionHandle,
 };
-use rx_core_traits::prelude::*;
 
 #[derive_where(Clone)]
 #[derive(RxObservable)]

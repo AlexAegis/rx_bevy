@@ -1,10 +1,10 @@
 use std::sync::MutexGuard;
 
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
+use rx_core_common::{
 	Observer, SharedDestination, SharedSubscriber, Subscriber, SubscriptionData, SubscriptionLike,
 	Teardown, TeardownCollection,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::{InnerRcSubscriber, WeakRcSubscriber};
 
@@ -201,8 +201,8 @@ where
 #[cfg(test)]
 mod test {
 	use rx_core::prelude::*;
+	use rx_core_common::{SharedDestination, SubscriptionLike};
 	use rx_core_testing::{MockObserver, NotificationCollector};
-	use rx_core_traits::{SharedDestination, SubscriptionLike};
 
 	use crate::RcSubscriber;
 

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use rx_core_traits::{Scheduler, SchedulerHandle};
+use rx_core_common::{Scheduler, SchedulerHandle};
 
 use crate::observable::TimerObservable;
 

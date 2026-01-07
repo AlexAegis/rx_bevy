@@ -4,7 +4,7 @@ use rx_core_macro_operator_derive::RxOperator;
 use super::Pipe;
 
 #[derive(RxOperator, Clone, Debug)]
-#[_rx_core_traits_crate(crate)]
+#[_rx_core_common_crate(crate)]
 #[rx_in(Op::In)]
 #[rx_in_error(Op::InError)]
 #[rx_out(Op::Out)]

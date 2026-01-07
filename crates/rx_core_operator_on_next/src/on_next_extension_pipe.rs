@@ -1,4 +1,4 @@
-use rx_core_traits::{Observable, Operator, Subscriber};
+use rx_core_common::{Observable, Operator, Subscriber};
 
 use crate::operator::OnNextOperator;
 

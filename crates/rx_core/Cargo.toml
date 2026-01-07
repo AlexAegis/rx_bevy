@@ -99,7 +99,7 @@ debug = [
     "rx_core_subject_publish?/debug",
     "rx_core_subject_replay?/debug",
     "rx_core_testing/debug",
-    "rx_core_traits/debug",
+    "rx_core_common/debug",
 ]
 # Observables
 all_observables = [
@@ -360,7 +360,7 @@ subject_publish = ["dep:rx_core_subject_publish"]
 subject_replay = ["dep:rx_core_subject_replay"]
 
 [dependencies]
-rx_core_traits = { workspace = true }
+rx_core_common = { workspace = true }
 # Observables
 rx_core_observable_closed = { workspace = true, optional = true }
 rx_core_observable_combine_changes = { workspace = true, optional = true }

@@ -3,7 +3,7 @@ use std::sync::{
 	atomic::{AtomicBool, Ordering},
 };
 
-use rx_core_traits::{SubscriptionWithTeardown, Teardown};
+use rx_core_common::{SubscriptionWithTeardown, Teardown};
 
 pub trait TrackTeardownExtension {
 	fn tracked(prefix: &str) -> (Teardown, TeardownTracker);

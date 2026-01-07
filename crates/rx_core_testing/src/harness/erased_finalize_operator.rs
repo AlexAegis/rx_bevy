@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 use std::sync::Arc;
 
+use rx_core_common::{ComposableOperator, Signal, Subscriber, Teardown};
 use rx_core_macro_operator_derive::RxOperator;
-use rx_core_traits::{ComposableOperator, Signal, Subscriber, Teardown};
 
 #[derive(RxOperator)]
 #[rx_in(In)]

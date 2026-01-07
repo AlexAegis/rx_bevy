@@ -1,5 +1,5 @@
+use rx_core_common::{SubscriptionLike, Teardown, TeardownCollection};
 use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{SubscriptionLike, Teardown, TeardownCollection};
 
 /// A [InertSubscription] is a permanently closed [Subscription] that immediately
 /// runs any [Teardown] you may add into it.

@@ -1,12 +1,12 @@
+use rx_core_common::{
+	ScheduledWork, Scheduler, SchedulerHandle, WorkCancellationId, WorkContext,
+	WorkContextProvider, WorkInvokeId,
+};
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_macro_scheduler_derive::RxScheduler;
 use rx_core_scheduler_ticking::{
 	Tick, TickedContinuousWorkFactory, TickedDelayedOnceWorkFactory,
 	TickedImmediateOnceWorkFactory, TickedInvokedWorkFactory, TickedRepeatingWorkFactory,
-};
-use rx_core_traits::{
-	ScheduledWork, Scheduler, SchedulerHandle, WorkCancellationId, WorkContext,
-	WorkContextProvider, WorkInvokeId,
 };
 
 #[derive(RxScheduler)]

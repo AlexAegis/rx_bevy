@@ -9,7 +9,6 @@ use examples_common::{
 	SubscriptionMapResource, print_notification_observer, send_message, toggle_subscription_system,
 };
 use rx_bevy::prelude::*;
-use rx_core_traits::Never;
 
 fn main() -> AppExit {
 	App::new()

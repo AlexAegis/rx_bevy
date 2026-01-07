@@ -21,12 +21,12 @@ debug = [
     "rx_core_notification_store/debug",
     "rx_core_notification_variadics/debug",
     "rx_core_testing/debug",
-    "rx_core_traits/debug",
+    "rx_core_common/debug",
 ]
 observable_fn = []
 
 [dependencies]
-rx_core_traits = { workspace = true }
+rx_core_common = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_notification_variadics = { workspace = true }

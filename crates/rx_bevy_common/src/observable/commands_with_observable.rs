@@ -1,6 +1,6 @@
 use bevy_ecs::system::Commands;
+use rx_core_common::{Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
-use rx_core_traits::{Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 
 use crate::{EntitySubscription, RxBevyScheduler, SubscriptionComponent};
 

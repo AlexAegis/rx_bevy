@@ -69,7 +69,7 @@ fn primary_category_subscription() -> Type {
 		rx_delegate_subscription_like_to_destination,
 		destination,
 		teardown,
-		_rx_core_traits_crate
+		_rx_core_common_crate
 	)
 )]
 pub fn subscription_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

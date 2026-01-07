@@ -22,7 +22,7 @@ debug = [
     "examples_common/debug",
     "rx_bevy_common/debug",
     "rx_core_testing/debug",
-    "rx_core_traits/debug",
+    "rx_core_common/debug",
 ]
 example = [
     "bevy/dynamic_linking",
@@ -39,7 +39,7 @@ example = [
 ]
 
 [dependencies]
-rx_core_traits = { workspace = true }
+rx_core_common = { workspace = true }
 rx_bevy_common = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_subscription_derive = { workspace = true }

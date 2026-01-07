@@ -1,10 +1,10 @@
 use std::time::Duration;
 
-use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Subscriber,
 	SubscriptionLike, WorkCancellationId,
 };
+use rx_core_macro_subscription_derive::RxSubscription;
 
 #[derive(RxSubscription)]
 #[rx_delegate_teardown_collection]

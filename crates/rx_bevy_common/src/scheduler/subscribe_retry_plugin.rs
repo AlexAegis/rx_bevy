@@ -1,6 +1,6 @@
 use bevy_app::{First, Plugin};
 use bevy_ecs::{resource::Resource, world::World};
-use rx_core_traits::Signal;
+use rx_core_common::Signal;
 
 use crate::SubscribeCommand;
 

@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
+use rx_core_common::{Observer, Signal};
 use rx_core_macro_observer_derive::RxObserver;
-use rx_core_traits::{Observer, Signal};
 
 /// # NoopObserver
 ///

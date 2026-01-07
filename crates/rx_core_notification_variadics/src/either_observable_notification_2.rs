@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_traits::{ObservableOutput, SubscriberNotification};
+use rx_core_common::{ObservableOutput, SubscriberNotification};
 
 #[derive(Debug)]
 pub enum EitherObservableNotification2<O1, O2>

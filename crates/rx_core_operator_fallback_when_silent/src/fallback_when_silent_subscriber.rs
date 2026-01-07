@@ -1,11 +1,11 @@
 use core::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
-use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{
+use rx_core_common::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Signal,
 	Subscriber, SubscriptionLike, WorkCancellationId, WorkContextProvider, WorkResult,
 };
+use rx_core_macro_subscriber_derive::RxSubscriber;
 
 struct FallbackWhenSilentSubscriberState<In> {
 	next_observed_this_tick: Option<In>,

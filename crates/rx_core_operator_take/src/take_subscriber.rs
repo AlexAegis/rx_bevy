@@ -1,5 +1,5 @@
+use rx_core_common::{Observer, Subscriber, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Subscriber, SubscriptionLike};
 
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]

@@ -1,7 +1,7 @@
 use std::{collections::VecDeque, ops::Deref};
 
 use derive_where::derive_where;
-use rx_core_traits::{Never, Signal, SubscriberNotification, SubscriberState};
+use rx_core_common::{Never, Signal, SubscriberNotification, SubscriberState};
 
 use crate::{QueueOverflowBehavior, QueueOverflowOptions};
 

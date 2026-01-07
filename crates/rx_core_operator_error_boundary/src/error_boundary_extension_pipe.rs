@@ -1,4 +1,4 @@
-use rx_core_traits::{Never, Observable, Operator};
+use rx_core_common::{Never, Observable, Operator};
 
 use crate::operator::ErrorBoundaryOperator;
 

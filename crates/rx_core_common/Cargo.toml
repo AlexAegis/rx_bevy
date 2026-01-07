@@ -1,5 +1,5 @@
 [package]
-name = "rx_core_traits"
+name = "rx_core_common"
 version = "0.1.0"
 description = "rx_core's core traits and implementations"
 readme = "readme.md"

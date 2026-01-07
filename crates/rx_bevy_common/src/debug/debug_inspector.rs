@@ -12,7 +12,7 @@ use bevy_ecs::{
 use bevy_input::{common_conditions::input_just_pressed, keyboard::KeyCode};
 use bevy_log::debug;
 use disqualified::ShortName;
-use rx_core_traits::Observable;
+use rx_core_common::Observable;
 
 use crate::{ObservableComponent, ObservableSubscriptions, SubscriptionOf};
 

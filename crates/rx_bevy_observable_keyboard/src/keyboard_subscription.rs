@@ -1,7 +1,7 @@
 use bevy_input::{ButtonInput, keyboard::KeyCode};
 use rx_bevy_common::RxBevyScheduler;
+use rx_core_common::prelude::*;
 use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::prelude::*;
 
 use crate::{KeyboardObservableEmit, KeyboardObservableOptions};
 

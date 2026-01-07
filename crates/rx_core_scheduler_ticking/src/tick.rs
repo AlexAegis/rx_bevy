@@ -3,7 +3,7 @@ use std::{
 	time::Duration,
 };
 
-use rx_core_traits::WorkTick;
+use rx_core_common::WorkTick;
 
 /// Used for scheduling, subscriptions are ticked with this event
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]

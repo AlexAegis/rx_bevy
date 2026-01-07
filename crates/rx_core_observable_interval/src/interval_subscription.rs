@@ -1,8 +1,8 @@
-use rx_core_macro_subscription_derive::RxSubscription;
-use rx_core_traits::{
+use rx_core_common::{
 	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
 	Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
 };
+use rx_core_macro_subscription_derive::RxSubscription;
 
 use crate::observable::IntervalObservableOptions;
 

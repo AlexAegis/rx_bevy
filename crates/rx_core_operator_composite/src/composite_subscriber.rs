@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
+use rx_core_common::{Observer, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
-use rx_core_traits::{Observer, Subscriber};
 
 #[derive(RxSubscriber)]
 #[derive_where(Debug; Inner)]
