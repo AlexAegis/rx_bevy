@@ -21,6 +21,7 @@ env:
   RUST_BACKTRACE: short
   RUSTFLAGS: "-D warnings -W unreachable-pub -W rust-2024-compatibility"
   RUSTUP_MAX_RETRIES: 10
+  CARGO_LLVM_COV_TARGET_DIR: "target/llvm-cov"
 
 jobs:
   build:

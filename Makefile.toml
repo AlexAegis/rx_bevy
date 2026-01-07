@@ -169,7 +169,7 @@ args = [
 # Ignore rationale:
 # - Code coverage should indicate the coverage of what's being shipped, not
 #   local dev tools.
-[tasks.coverage]
+[tasks.test-coverage]
 description = "Running tests with nextest and llvm-cov and generates reports"
 workspace = false
 dependencies = ["install-llvm-cov", "install-nextest", "test"]
@@ -180,7 +180,6 @@ args = [
     "--ignore-filename-regex",
     "crates/(examples_common|bevy_mod_alternate_system_on_press|feature_checker|xtask)/.*",
     "--html",
-    "--open",
 ]
 
 [tasks.clean-llvm-cov]
@@ -411,4 +410,4 @@ dependencies = [
 [tasks.all]
 description = "Run every task"
 workspace = false
-dependencies = ["lint", "build", "test", "book-build"]
+dependencies = ["lint", "build", "test-coverage", "book-build"]
