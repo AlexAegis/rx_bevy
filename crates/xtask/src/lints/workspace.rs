@@ -81,7 +81,6 @@ impl RxWorkspace {
 
 		let utility_rx_crates = [
 			"rx_bevy_context",
-			"rx_bevy_common",
 			"rx_core_traits",
 			"rx_core_testing",
 			"rx_core_notification_store",

@@ -2211,7 +2211,6 @@ dependencies = [
  "bevy",
  "bevy_mod_alternate_system_on_press",
  "disqualified",
- "rx_bevy_common",
  "rx_bevy_context",
  "rx_core_traits",
 ]
@@ -4241,15 +4240,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_common"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "rx_core_testing",
- "serde",
-]
-
-[[package]]
 name = "rx_bevy_context"
 version = "0.1.0"
 dependencies = [
@@ -4265,7 +4255,6 @@ dependencies = [
  "derive-where",
  "disqualified",
  "rx_bevy",
- "rx_bevy_common",
  "rx_core_macro_executor_derive",
  "rx_core_macro_observable_derive",
  "rx_core_macro_observer_derive",

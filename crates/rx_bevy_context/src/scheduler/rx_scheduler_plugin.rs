@@ -7,10 +7,9 @@ use bevy_ecs::{
 };
 use bevy_time::Time;
 use derive_where::derive_where;
-use rx_bevy_common::Clock;
 use rx_core_scheduler_ticking::Tick;
 
-use crate::{RxBevyExecutor, SubscribeRetryPlugin};
+use crate::{Clock, RxBevyExecutor, SubscribeRetryPlugin};
 
 /// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
 /// values.

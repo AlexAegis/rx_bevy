@@ -4,10 +4,9 @@ use bevy_ecs::{
 	system::{ResMut, SystemParam},
 };
 use bevy_time::Virtual;
-use rx_bevy_common::Clock;
 use rx_core_traits::{SchedulerHandle, WorkExecutor};
 
-use crate::{RxBevyExecutor, RxBevyScheduler};
+use crate::{Clock, RxBevyExecutor, RxBevyScheduler};
 
 /// Used for cleanup, like despawning entities
 /// (`RxSchedule<'w, Last, Virtual>`)

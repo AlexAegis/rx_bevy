@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
 
-use crate::{RxBevyContext, RxBevyContextItem, RxBevyScheduler};
 use bevy_ecs::{resource::Resource, schedule::ScheduleLabel};
 use bevy_time::Virtual;
-use rx_bevy_common::Clock;
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_scheduler_ticking::{Tick, TickingSchedulerExecutor};
+
+use crate::{Clock, RxBevyContext, RxBevyContextItem, RxBevyScheduler};
 
 // TODO: SystemParam that is the scheduler directly, maybe use the builder pattern of sysparams
 #[derive(Resource, RxExecutor)]

@@ -1,3 +1,4 @@
+mod bounds;
 mod notification;
 mod observable;
 mod observer;
@@ -7,6 +8,7 @@ mod subject;
 mod subscription;
 mod subscription_component;
 
+pub use bounds::*;
 pub use notification::*;
 pub use observable::*;
 pub use observer::*;
