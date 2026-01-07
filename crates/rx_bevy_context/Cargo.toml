@@ -17,7 +17,12 @@ workspace = true
 
 [features]
 default = []
-debug = ["dep:bevy_input", "rx_core_testing/debug", "rx_core_traits/debug"]
+debug = [
+    "dep:bevy_input",
+    "rx_core_scheduler_ticking/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
+]
 reflect = ["dep:bevy_reflect"]
 
 [dependencies]

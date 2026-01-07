@@ -16,7 +16,7 @@ workspace = true
 
 [features]
 default = ["debug"]
-debug = []
+debug = ["rx_bevy_context/debug", "rx_core_traits/debug"]
 
 [dependencies]
 bevy = { workspace = true, features = ["dynamic_linking"] }

@@ -17,7 +17,11 @@ workspace = true
 
 [features]
 default = []
-debug = ["rx_core_testing/debug", "rx_core_traits/debug"]
+debug = [
+    "rx_core_subscription_inert/debug",
+    "rx_core_testing/debug",
+    "rx_core_traits/debug",
+]
 observable_fn = []
 
 [dependencies]

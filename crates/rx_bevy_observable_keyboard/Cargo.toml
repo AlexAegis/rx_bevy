@@ -19,6 +19,7 @@ workspace = true
 default = []
 debug = [
     "bevy/track_location",
+    "examples_common/debug",
     "rx_bevy_context/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",

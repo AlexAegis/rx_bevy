@@ -19,6 +19,7 @@ workspace = true
 default = []
 debug = [
     "rx_core_operator_composite?/debug",
+    "rx_core_subscriber_higher_order_all/debug",
     "rx_core_subscriber_higher_order_exhaust/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",

@@ -26,18 +26,20 @@ default = [
     "pipe",
 ]
 debug = [
+    "examples_common/debug",
     "rx_bevy_context/debug",
     "rx_bevy_observable_event?/debug",
     "rx_bevy_observable_keyboard?/debug",
     "rx_bevy_observable_message?/debug",
     "rx_bevy_observable_proxy?/debug",
+    "rx_bevy_observable_resource?/debug",
     "rx_core/debug",
     "rx_core_testing/debug",
     "rx_core_traits/debug",
 ]
 pipe = ["rx_core/pipe"]
 compose = ["rx_core/compose"]
-reflect = ["rx_bevy_context/reflect"]
+reflect = ["rx_bevy_context/reflect", "rx_bevy_observable_proxy?/reflect"]
 test = []
 example = [
     "bevy/dynamic_linking",
