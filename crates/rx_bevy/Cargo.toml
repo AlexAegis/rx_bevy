@@ -27,7 +27,7 @@ default = [
 ]
 debug = [
     "examples_common/debug",
-    "rx_bevy_context/debug",
+    "rx_bevy_common/debug",
     "rx_bevy_observable_event?/debug",
     "rx_bevy_observable_keyboard?/debug",
     "rx_bevy_observable_message?/debug",
@@ -39,7 +39,7 @@ debug = [
 ]
 pipe = ["rx_core/pipe"]
 compose = ["rx_core/compose"]
-reflect = ["rx_bevy_context/reflect", "rx_bevy_observable_proxy?/reflect"]
+reflect = ["rx_bevy_common/reflect", "rx_bevy_observable_proxy?/reflect"]
 test = []
 example = [
     "bevy/dynamic_linking",
@@ -236,7 +236,7 @@ subject_replay = ["rx_core/subject_replay"]
 [dependencies]
 rx_core = { workspace = true }
 rx_core_traits = { workspace = true }
-rx_bevy_context = { workspace = true }
+rx_bevy_common = { workspace = true }
 # Observables
 rx_bevy_observable_event = { workspace = true, optional = true }
 rx_bevy_observable_keyboard = { workspace = true, optional = true }

@@ -2202,7 +2202,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "disqualified",
- "rx_bevy_context",
+ "rx_bevy_common",
  "rx_core_traits",
 ]
 
@@ -4218,7 +4218,7 @@ dependencies = [
  "bevy_egui",
  "disqualified",
  "examples_common",
- "rx_bevy_context",
+ "rx_bevy_common",
  "rx_bevy_observable_event",
  "rx_bevy_observable_keyboard",
  "rx_bevy_observable_message",
@@ -4230,7 +4230,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_bevy_context"
+name = "rx_bevy_common"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -4270,7 +4270,7 @@ dependencies = [
  "disqualified",
  "examples_common",
  "rx_bevy",
- "rx_bevy_context",
+ "rx_bevy_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
@@ -4287,7 +4287,7 @@ dependencies = [
  "bevy_input",
  "examples_common",
  "rx_bevy",
- "rx_bevy_context",
+ "rx_bevy_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
@@ -4305,7 +4305,7 @@ dependencies = [
  "derive-where",
  "examples_common",
  "rx_bevy",
- "rx_bevy_context",
+ "rx_bevy_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
@@ -4322,7 +4322,7 @@ dependencies = [
  "bevy_egui",
  "examples_common",
  "rx_bevy",
- "rx_bevy_context",
+ "rx_bevy_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",
@@ -4339,7 +4339,7 @@ dependencies = [
  "bevy_egui",
  "examples_common",
  "rx_bevy",
- "rx_bevy_context",
+ "rx_bevy_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_testing",

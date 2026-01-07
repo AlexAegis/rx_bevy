@@ -29,12 +29,14 @@ pub fn lint_readme() -> Result<(), RxWorkspaceError> {
 			continue;
 		};
 
-		let stripped_package_name =
-			if package.name.starts_with("rx_bevy_") || package.name.starts_with("rx_core_") {
-				package.name.split_at(8).1
-			} else {
-				&package.name
-			};
+		let stripped_package_name = if (package.name.starts_with("rx_bevy_")
+			|| package.name.starts_with("rx_core_"))
+			&& package.name != "rx_bevy_common"
+		{
+			package.name.split_at(8).1
+		} else {
+			&package.name
+		};
 
 		let title = format!(
 			"# [{stripped_package_name}](https://github.com/AlexAegis/rx_bevy/tree/master/crates/{package_name})",

@@ -1,5 +1,5 @@
 [package]
-name = "rx_bevy_context"
+name = "rx_bevy_common"
 description = "rx_bevy allocation context"
 version = "0.1.0"
 readme = "readme.md"

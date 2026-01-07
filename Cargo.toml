@@ -141,7 +141,7 @@ rx_core_subject_replay = { path = "crates/rx_core_subject_replay" }
 rx_core_scheduler_ticking = { path = "crates/rx_core_scheduler_ticking" }
 # Bevy
 rx_bevy = { path = "crates/rx_bevy" }
-rx_bevy_context = { path = "crates/rx_bevy_context" }
+rx_bevy_common = { path = "crates/rx_bevy_common" }
 # Bevy Observables
 rx_bevy_observable_event = { path = "crates/rx_bevy_observable_event" }
 rx_bevy_observable_keyboard = { path = "crates/rx_bevy_observable_keyboard" }

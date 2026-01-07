@@ -94,7 +94,7 @@ where
 }
 ```
 
-Or as an event used in Bevy like the [SubscriberNotificationEvent](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_bevy_context/src/notification/notification_event_subscriber.rs)
+Or as an event used in Bevy like the [SubscriberNotificationEvent](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_bevy_common/src/notification/notification_event_subscriber.rs)
   
 ## Observable
 

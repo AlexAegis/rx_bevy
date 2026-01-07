@@ -43,7 +43,7 @@ pub mod subject {
 }
 
 pub mod context {
-	pub use rx_bevy_context::*;
+	pub use rx_bevy_common::*;
 }
 
 pub mod prelude {

@@ -10,7 +10,7 @@ use bevy::{
 	time::Time,
 };
 use disqualified::ShortName;
-use rx_bevy_context::{Clock, RxSignal};
+use rx_bevy_common::{Clock, RxSignal};
 use rx_core_traits::Signal;
 
 pub fn print_notification_observer<In, InError, C>(

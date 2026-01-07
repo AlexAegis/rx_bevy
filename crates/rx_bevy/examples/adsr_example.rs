@@ -8,7 +8,6 @@ use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::{SubscriptionMapResource, send_message, toggle_subscription_system};
 use rx_bevy::prelude::*;
-use rx_bevy_context::RxSignal;
 
 /// Press K to start the subscription, then Space to trigger the envelope
 fn main() -> AppExit {

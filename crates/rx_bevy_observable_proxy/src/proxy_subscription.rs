@@ -2,7 +2,7 @@ use bevy_ecs::entity::Entity;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::prelude::*;
 
-use rx_bevy_context::{
+use rx_bevy_common::{
 	CommandSubscribeExtension, RxBevyScheduler, RxBevySchedulerDespawnEntityExtension,
 };
 

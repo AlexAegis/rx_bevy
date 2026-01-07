@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::event::Event;
 use derive_where::derive_where;
-use rx_bevy_context::RxBevyScheduler;
+use rx_bevy_common::RxBevyScheduler;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Never, Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 

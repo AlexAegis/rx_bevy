@@ -1,6 +1,6 @@
 use bevy_ecs::{entity::Entity, event::Event, name::Name, observer::Observer};
 use disqualified::ShortName;
-use rx_bevy_context::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
+use rx_bevy_common::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::{
 	Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Subscriber,

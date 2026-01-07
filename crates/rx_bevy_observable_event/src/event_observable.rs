@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::{entity::Entity, event::Event};
-use rx_bevy_context::RxBevyScheduler;
+use rx_bevy_common::RxBevyScheduler;
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_traits::{Never, Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
 

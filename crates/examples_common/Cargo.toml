@@ -16,10 +16,10 @@ workspace = true
 
 [features]
 default = ["debug"]
-debug = ["rx_bevy_context/debug", "rx_core_traits/debug"]
+debug = ["rx_bevy_common/debug", "rx_core_traits/debug"]
 
 [dependencies]
 bevy = { workspace = true, features = ["dynamic_linking"] }
 rx_core_traits = { workspace = true }
-rx_bevy_context = { workspace = true }
+rx_bevy_common = { workspace = true }
 disqualified = { workspace = true }

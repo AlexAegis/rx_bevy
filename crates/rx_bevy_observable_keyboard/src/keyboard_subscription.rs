@@ -1,5 +1,5 @@
 use bevy_input::{ButtonInput, keyboard::KeyCode};
-use rx_bevy_context::RxBevyScheduler;
+use rx_bevy_common::RxBevyScheduler;
 use rx_core_macro_subscription_derive::RxSubscription;
 use rx_core_traits::prelude::*;
 
