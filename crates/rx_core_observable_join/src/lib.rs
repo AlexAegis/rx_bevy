@@ -1,5 +1,3 @@
-// #![cfg_attr(not(test), no_std)]
-
 mod join_observable;
 mod join_subscriber;
 
