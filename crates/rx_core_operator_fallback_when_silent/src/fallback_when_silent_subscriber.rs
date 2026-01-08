@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
 use rx_core_common::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike, WorkCancellationId, WorkContextProvider, WorkResult,
+	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
+	Signal, Subscriber, SubscriptionLike, WorkCancellationId, WorkContextProvider, WorkResult,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -90,7 +90,7 @@ where
 	}
 }
 
-impl<In, InError, Fallback, Destination, S> Observer
+impl<In, InError, Fallback, Destination, S> RxObserver
 	for FallbackWhenSilentSubscriber<In, InError, Fallback, Destination, S>
 where
 	In: Signal,

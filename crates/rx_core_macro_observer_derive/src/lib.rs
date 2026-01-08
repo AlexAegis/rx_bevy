@@ -20,7 +20,7 @@ fn primary_category_observer() -> Type {
 ///
 /// ## Traits you still have to implement to get a observer
 ///
-/// - `Observer`
+/// - `RxObserver`
 ///
 /// ## Traits Implemented
 ///

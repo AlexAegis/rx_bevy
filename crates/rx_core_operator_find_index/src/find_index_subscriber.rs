@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 
-use rx_core_common::{Observer, Signal, Subscriber};
+use rx_core_common::{RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::operator::FindIndexOperatorError;
@@ -47,7 +47,7 @@ where
 	}
 }
 
-impl<In, InError, P, Destination> Observer for FindIndexSubscriber<In, InError, P, Destination>
+impl<In, InError, P, Destination> RxObserver for FindIndexSubscriber<In, InError, P, Destination>
 where
 	In: Signal,
 	InError: Signal,

@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
+	LockWithPoisonBehavior, Never, Observable, RxObserver, Signal, Subscriber, UpgradeableObserver,
 };
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject_publish::{internal::MulticastSubscription, subject::PublishSubject};
@@ -56,7 +56,7 @@ where
 	}
 }
 
-impl<In, InError> Observer for BehaviorSubject<In, InError>
+impl<In, InError> RxObserver for BehaviorSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,

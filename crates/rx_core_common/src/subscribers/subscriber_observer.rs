@@ -1,6 +1,6 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
-use crate::{Observer, SubscriptionLike, Teardown, TeardownCollection};
+use crate::{RxObserver, SubscriptionLike, Teardown, TeardownCollection};
 
 use crate::SubscriptionData;
 
@@ -12,7 +12,7 @@ use crate::SubscriptionData;
 #[rx_in_error(Destination::InError)]
 pub struct ObserverSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	#[teardown]
 	teardown: SubscriptionData,
@@ -22,7 +22,7 @@ where
 
 impl<Destination> ObserverSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	pub fn new(destination: Destination) -> Self {
 		Self {
@@ -32,9 +32,9 @@ where
 	}
 }
 
-impl<Destination> Observer for ObserverSubscriber<Destination>
+impl<Destination> RxObserver for ObserverSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -60,7 +60,7 @@ where
 
 impl<Destination> SubscriptionLike for ObserverSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -75,7 +75,7 @@ where
 
 impl<Destination> TeardownCollection for ObserverSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown) {

@@ -1,6 +1,6 @@
 use rx_core_common::{
-	Never, Observable, Observer, Scheduler, SchedulerHandle, Signal, Subscriber, SubscriptionLike,
-	UpgradeableObserver,
+	Never, Observable, RxObserver, Scheduler, SchedulerHandle, Signal, Subscriber,
+	SubscriptionLike, UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;
 

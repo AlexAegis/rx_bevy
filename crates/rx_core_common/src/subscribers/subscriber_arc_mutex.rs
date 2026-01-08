@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 
 use crate::{
-	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, SharedDestination, Subscriber, SubscriptionLike, Teardown,
-	TeardownCollection, WithPrimaryCategory,
+	Observable, ObservableOutput, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	RxObserver, SharedDestination, Subscriber, SubscriptionLike, Teardown, TeardownCollection,
+	WithPrimaryCategory,
 };
 
 impl<Destination> WithPrimaryCategory for Arc<Mutex<Destination>>
@@ -49,9 +49,9 @@ where
 	}
 }
 
-impl<Destination> Observer for Arc<Mutex<Destination>>
+impl<Destination> RxObserver for Arc<Mutex<Destination>>
 where
-	Destination: ?Sized + Observer + SubscriptionLike,
+	Destination: ?Sized + RxObserver + SubscriptionLike,
 {
 	fn next(&mut self, next: Self::In) {
 		if self.is_closed() {

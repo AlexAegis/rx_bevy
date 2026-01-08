@@ -1,4 +1,4 @@
-use rx_core_common::{Never, Observer, Subscriber};
+use rx_core_common::{Never, RxObserver, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -23,7 +23,7 @@ where
 	}
 }
 
-impl<Destination> Observer for MapNeverErrorSubscriber<Destination>
+impl<Destination> RxObserver for MapNeverErrorSubscriber<Destination>
 where
 	Destination: Subscriber,
 {

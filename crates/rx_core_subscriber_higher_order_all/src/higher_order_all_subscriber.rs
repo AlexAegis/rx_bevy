@@ -1,6 +1,6 @@
 use core::{marker::PhantomData, num::NonZero};
 
-use rx_core_common::{Observable, Observer, Signal, Subscriber};
+use rx_core_common::{Observable, RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_higher_order::{
 	HigherOrderSubscriberFactory, HigherOrderSubscriberProvider,
@@ -51,7 +51,7 @@ where
 	}
 }
 
-impl<In, InError, HigherOrderSubscriber, ErrorMapper, Destination> Observer
+impl<In, InError, HigherOrderSubscriber, ErrorMapper, Destination> RxObserver
 	for HigherOrderAllSubscriber<In, InError, HigherOrderSubscriber, ErrorMapper, Destination>
 where
 	In: Signal + Observable,

@@ -1,4 +1,4 @@
-use rx_core_common::{ComposableOperator, Observer};
+use rx_core_common::{ComposableOperator, RxObserver};
 use rx_core_operator_composite::{OperatorComposeExtension, operator::CompositeOperator};
 
 use crate::operator::TapOperator;
@@ -11,7 +11,7 @@ pub trait OperatorComposeExtensionTap: ComposableOperator + Sized {
 	) -> CompositeOperator<Self, TapOperator<TapDestination>>
 	where
 		TapDestination:
-			'static + Observer<In = Self::Out, InError = Self::OutError> + Clone + Send + Sync,
+			'static + RxObserver<In = Self::Out, InError = Self::OutError> + Clone + Send + Sync,
 		Self::Out: Clone,
 		Self::OutError: Clone,
 	{

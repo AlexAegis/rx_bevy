@@ -5,8 +5,8 @@ use std::{
 
 use derive_where::derive_where;
 use rx_core_common::{
-	LockWithPoisonBehavior, Observer, Signal, Subscriber, SubscriberState, SubscriptionClosedFlag,
-	SubscriptionLike,
+	LockWithPoisonBehavior, RxObserver, Signal, Subscriber, SubscriberState,
+	SubscriptionClosedFlag, SubscriptionLike,
 };
 
 use crate::internal::{

@@ -4,7 +4,7 @@ use std::{
 };
 
 use derive_where::derive_where;
-use rx_core_common::prelude::*;
+use rx_core_common::*;
 use rx_core_macro_observable_derive::RxObservable;
 
 use crate::internal::{RetrySubscriber, SOURCE_STEAL};

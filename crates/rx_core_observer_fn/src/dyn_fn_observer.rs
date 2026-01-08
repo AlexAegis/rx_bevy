@@ -1,4 +1,4 @@
-use rx_core_common::{Observer, Signal};
+use rx_core_common::{RxObserver, Signal};
 use rx_core_macro_observer_derive::RxObserver;
 
 /// A simple observer that prints out received values using [std::fmt::Debug]
@@ -42,7 +42,7 @@ where
 	}
 }
 
-impl<In, InError> Observer for DynFnObserver<In, InError>
+impl<In, InError> RxObserver for DynFnObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,

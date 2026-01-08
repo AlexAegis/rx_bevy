@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_common::{
-	Never, Observer, ObserverNotification, Scheduler, SchedulerHandle,
+	Never, ObserverNotification, RxObserver, Scheduler, SchedulerHandle,
 	SchedulerScheduleWorkExtension, Signal, TeardownCollectionExtension, UpgradeableObserver,
 	WorkCancellationId,
 };
@@ -70,7 +70,7 @@ where
 	}
 }
 
-impl<In, InError> Observer for EntityDestination<In, InError>
+impl<In, InError> RxObserver for EntityDestination<In, InError>
 where
 	In: Signal,
 	InError: Signal,

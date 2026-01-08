@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observer, SharedSubscriber, Subscriber, SubscriptionData,
+	LockWithPoisonBehavior, RxObserver, SharedSubscriber, Subscriber, SubscriptionData,
 	SubscriptionLike, Teardown, TeardownCollection,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
@@ -58,7 +58,7 @@ where
 	}
 }
 
-impl<State, OnComplete, OnUnsubscribe, Destination> Observer
+impl<State, OnComplete, OnUnsubscribe, Destination> RxObserver
 	for HigherOrderInnerSubscriber<State, OnComplete, OnUnsubscribe, Destination>
 where
 	State: HigherOrderSubscriberStateConditions,

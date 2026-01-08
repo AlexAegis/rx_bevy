@@ -1,5 +1,5 @@
 use derive_where::derive_where;
-use rx_core_common::{Observer, SharedSubscriber, Subscriber, SubscriptionLike};
+use rx_core_common::{RxObserver, SharedSubscriber, Subscriber, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::InnerRcSubscriber;
@@ -19,7 +19,7 @@ where
 	pub(crate) shared_destination: SharedSubscriber<InnerRcSubscriber<Destination>>,
 }
 
-impl<Destination> Observer for WeakRcSubscriber<Destination>
+impl<Destination> RxObserver for WeakRcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {

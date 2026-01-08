@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{Observer, Signal};
+use rx_core_common::{RxObserver, Signal};
 use rx_core_macro_observer_derive::RxObserver;
 
 /// # NoopObserver
@@ -19,7 +19,7 @@ where
 	_phantom_data: PhantomData<(In, InError)>,
 }
 
-impl<In, InError> Observer for NoopObserver<In, InError>
+impl<In, InError> RxObserver for NoopObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,

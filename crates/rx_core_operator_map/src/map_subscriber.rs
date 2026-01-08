@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{Observer, Signal, Subscriber};
+use rx_core_common::{RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive_where(Debug)]
@@ -42,7 +42,7 @@ where
 	}
 }
 
-impl<In, InError, Mapper, Out, Destination> Observer
+impl<In, InError, Mapper, Out, Destination> RxObserver
 	for MapSubscriber<In, InError, Mapper, Out, Destination>
 where
 	In: Signal,

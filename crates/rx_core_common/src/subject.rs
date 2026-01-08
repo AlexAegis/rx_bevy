@@ -1,5 +1,5 @@
 use crate::{
-	Observable, Observer, ObserverInput, PrimaryCategorySubject, SubscriptionLike,
+	Observable, ObserverInput, PrimaryCategorySubject, RxObserver, SubscriptionLike,
 	UpgradeableObserver,
 };
 
@@ -17,7 +17,7 @@ use crate::{
 /// unsubscribe every subscription made from the subjects.
 pub trait SubjectLike:
 	Observable<PrimaryCategory = PrimaryCategorySubject>
-	+ Observer
+	+ RxObserver
 	+ SubscriptionLike
 	+ UpgradeableObserver
 {
@@ -26,7 +26,7 @@ pub trait SubjectLike:
 impl<T> SubjectLike for T
 where
 	T: Observable<PrimaryCategory = PrimaryCategorySubject>
-		+ Observer
+		+ RxObserver
 		+ SubscriptionLike
 		+ UpgradeableObserver,
 	<T as ObserverInput>::In: Clone,

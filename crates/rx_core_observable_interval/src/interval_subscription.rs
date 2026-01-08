@@ -1,5 +1,5 @@
 use rx_core_common::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
+	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
 	Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
 };
 use rx_core_macro_subscription_derive::RxSubscription;

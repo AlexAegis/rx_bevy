@@ -1,4 +1,6 @@
-use rx_core_common::{Never, Observable, Observer, Pipe, Signal, Subscriber, UpgradeableObserver};
+use rx_core_common::{
+	Never, Observable, Pipe, RxObserver, Signal, Subscriber, UpgradeableObserver,
+};
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_operator_filter::operator::FilterOperator;
 use rx_core_operator_map::operator::MapOperator;
@@ -145,7 +147,7 @@ where
 	}
 }
 
-impl<Provenance, In, InError> Observer for ProvenanceSubject<Provenance, In, InError>
+impl<Provenance, In, InError> RxObserver for ProvenanceSubject<Provenance, In, InError>
 where
 	Provenance: Signal + Clone + PartialEq,
 	In: Signal + Clone,

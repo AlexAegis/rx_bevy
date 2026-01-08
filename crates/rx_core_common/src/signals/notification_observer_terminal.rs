@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::{Never, Observer, ObserverNotification, Signal, SubscriberNotification};
+use crate::{Never, ObserverNotification, RxObserver, Signal, SubscriberNotification};
 
 /// # [ObserverTerminalNotification]
 ///
@@ -81,13 +81,13 @@ where
 	}
 }
 
-pub trait ObserverPushObserverTerminalNotificationExtention: Observer {
+pub trait ObserverPushObserverTerminalNotificationExtention: RxObserver {
 	fn push(&mut self, notification: impl Into<ObserverTerminalNotification<Self::InError>>);
 }
 
 impl<T> ObserverPushObserverTerminalNotificationExtention for T
 where
-	T: Observer,
+	T: RxObserver,
 {
 	fn push(&mut self, notification: impl Into<ObserverTerminalNotification<Self::InError>>) {
 		match notification.into() {
@@ -107,7 +107,7 @@ mod test {
 		use derive_where::derive_where;
 		use rx_core_macro_observer_derive::RxObserver;
 
-		use crate::Observer;
+		use crate::RxObserver;
 
 		use super::*;
 
@@ -126,7 +126,7 @@ mod test {
 			_phantom_data: PhantomData<In>,
 		}
 
-		impl<In, InError> Observer for MockObserver<In, InError>
+		impl<In, InError> RxObserver for MockObserver<In, InError>
 		where
 			In: Signal,
 			InError: Signal,

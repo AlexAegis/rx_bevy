@@ -1,14 +1,14 @@
 use std::ops::{Deref, DerefMut};
 
 use crate::{
-	Observer, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, Signal, Subscriber,
-	SubscriptionLike, Teardown, TeardownCollection, WithPrimaryCategory,
+	ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber, RxObserver, Signal,
+	Subscriber, SubscriptionLike, Teardown, TeardownCollection, WithPrimaryCategory,
 };
 
 pub type BoxedSubscriber<In, InError> =
 	Box<dyn 'static + Subscriber<In = In, InError = InError> + Send + Sync>;
 
-impl<In, InError, S> Observer for Box<S>
+impl<In, InError, S> RxObserver for Box<S>
 where
 	In: Signal,
 	InError: Signal,

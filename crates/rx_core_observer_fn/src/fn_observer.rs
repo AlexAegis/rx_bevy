@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{Observer, Signal};
+use rx_core_common::{RxObserver, Signal};
 use rx_core_macro_observer_derive::RxObserver;
 
 /// An [FnObserver] requires you to define a callback for all three notifications
@@ -39,7 +39,7 @@ where
 	}
 }
 
-impl<In, InError, OnNext, OnError, OnComplete> Observer
+impl<In, InError, OnNext, OnError, OnComplete> RxObserver
 	for FnObserver<In, InError, OnNext, OnError, OnComplete>
 where
 	In: Signal,

@@ -94,7 +94,7 @@ mod test {
 		use rx_core_macro_subscriber_derive::RxSubscriber;
 
 		use crate::{
-			Observer, SubscriberPushNotificationExtention, SubscriptionLike, TeardownCollection,
+			RxObserver, SubscriberPushNotificationExtention, SubscriptionLike, TeardownCollection,
 		};
 
 		use super::*;
@@ -115,7 +115,7 @@ mod test {
 			unsubscribed: bool,
 		}
 
-		impl<In, InError> Observer for MockSubscriber<In, InError>
+		impl<In, InError> RxObserver for MockSubscriber<In, InError>
 		where
 			In: Signal,
 			InError: Signal,

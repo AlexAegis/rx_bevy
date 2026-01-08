@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_common::{
-	Never, Observer, SharedSubscription, Signal, SubscriberNotification, SubscriptionLike,
+	Never, RxObserver, SharedSubscription, Signal, SubscriberNotification, SubscriptionLike,
 	Teardown, TeardownCollection,
 };
 use rx_core_macro_observer_derive::RxObserver;
@@ -45,7 +45,7 @@ where
 	}
 }
 
-impl<In, InError> Observer for MockObserver<In, InError>
+impl<In, InError> RxObserver for MockObserver<In, InError>
 where
 	In: Signal,
 	InError: Signal,

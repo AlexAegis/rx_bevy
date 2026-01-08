@@ -1,5 +1,5 @@
 use bevy_ecs::entity::Entity;
-use rx_core_common::prelude::*;
+use rx_core_common::*;
 use rx_core_macro_subscription_derive::RxSubscription;
 
 use rx_bevy_common::{

@@ -1,4 +1,4 @@
-use rx_core_common::{Observer, Subscriber};
+use rx_core_common::{RxObserver, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -24,7 +24,7 @@ where
 	}
 }
 
-impl<Destination> Observer for SkipSubscriber<Destination>
+impl<Destination> RxObserver for SkipSubscriber<Destination>
 where
 	Destination: Subscriber,
 {

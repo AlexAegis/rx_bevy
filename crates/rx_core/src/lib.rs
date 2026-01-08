@@ -370,7 +370,7 @@ pub mod subject {
 }
 
 pub mod prelude {
-	pub use rx_core_common::prelude::*;
+	pub use rx_core_common::*;
 
 	pub use super::observable::*;
 	pub use super::observer::*;

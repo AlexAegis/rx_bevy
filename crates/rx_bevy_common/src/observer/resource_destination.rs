@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 
 use bevy_ecs::{resource::Resource, world::Mut};
 use rx_core_common::{
-	Observer, ObserverNotification, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
+	ObserverNotification, RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
 	Signal, UpgradeableObserver, WorkCancellationId,
 };
 use rx_core_macro_observer_derive::RxObserver;
@@ -63,7 +63,7 @@ where
 	}
 }
 
-impl<In, InError, R, ResourceWriter, S> Observer
+impl<In, InError, R, ResourceWriter, S> RxObserver
 	for ResourceDestination<In, InError, R, ResourceWriter, S>
 where
 	In: Signal,

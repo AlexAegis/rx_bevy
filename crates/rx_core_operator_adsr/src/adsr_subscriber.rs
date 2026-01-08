@@ -5,8 +5,8 @@ use std::{
 };
 
 use rx_core_common::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike, WorkCancellationId, WorkResult, WorkTick,
+	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
+	Signal, Subscriber, SubscriptionLike, WorkCancellationId, WorkResult, WorkTick,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -125,7 +125,7 @@ where
 	}
 }
 
-impl<InError, Destination, S> Observer for AdsrSubscriber<InError, Destination, S>
+impl<InError, Destination, S> RxObserver for AdsrSubscriber<InError, Destination, S>
 where
 	InError: Signal,
 	Destination: Subscriber<In = AdsrSignal, InError = InError>,

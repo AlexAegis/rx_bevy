@@ -2,7 +2,7 @@ use std::num::NonZero;
 
 use derive_where::derive_where;
 
-use rx_core_common::{Observer, Signal, Subscriber};
+use rx_core_common::{RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive_where(Debug)]
@@ -45,7 +45,7 @@ where
 	}
 }
 
-impl<In, Destination> Observer for BufferCountSubscriber<In, Destination>
+impl<In, Destination> RxObserver for BufferCountSubscriber<In, Destination>
 where
 	In: Signal,
 	Destination: Subscriber<In = Vec<In>>,

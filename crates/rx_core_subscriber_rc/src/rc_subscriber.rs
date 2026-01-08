@@ -1,8 +1,8 @@
 use std::sync::MutexGuard;
 
 use rx_core_common::{
-	Observer, SharedDestination, SharedSubscriber, Subscriber, SubscriptionData, SubscriptionLike,
-	Teardown, TeardownCollection,
+	RxObserver, SharedDestination, SharedSubscriber, Subscriber, SubscriptionData,
+	SubscriptionLike, Teardown, TeardownCollection,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -92,7 +92,7 @@ where
 	}
 }
 
-impl<Destination> Observer for RcSubscriber<Destination>
+impl<Destination> RxObserver for RcSubscriber<Destination>
 where
 	Destination: 'static + Subscriber,
 {
@@ -230,7 +230,7 @@ mod test {
 	fn rc_subscriber_unsubscribes() {
 		let (mut rc_subscriber, notification_collector) = setup();
 
-		Observer::next(&mut rc_subscriber, 1);
+		RxObserver::next(&mut rc_subscriber, 1);
 		rc_subscriber.unsubscribe();
 
 		assert_eq!(

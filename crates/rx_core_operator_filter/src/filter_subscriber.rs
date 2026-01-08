@@ -1,4 +1,4 @@
-use rx_core_common::{Observer, Subscriber};
+use rx_core_common::{RxObserver, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -31,7 +31,7 @@ where
 	}
 }
 
-impl<Filter, Destination> Observer for FilterSubscriber<Filter, Destination>
+impl<Filter, Destination> RxObserver for FilterSubscriber<Filter, Destination>
 where
 	Filter: for<'a> Fn(&'a Destination::In, usize) -> bool + Send + Sync,
 	Destination: Subscriber,

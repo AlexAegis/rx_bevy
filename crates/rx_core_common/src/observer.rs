@@ -5,11 +5,11 @@ pub trait ObserverInput {
 	type InError: Signal;
 }
 
-/// # Observer
+/// # [RxObserver]
 ///
 /// ## Signals & Channels
 ///
-/// An Observer has three *signal channels*:
+/// An RxObserver has three *signal channels*:
 ///
 /// - `next`: carries **value** signals (`Self::In`)
 /// - `error`: carries the **terminal error** signal (`Self::InError`)
@@ -35,7 +35,7 @@ pub trait ObserverInput {
 /// //     type InError = String;
 /// // }
 ///
-/// impl Observer for Print {
+/// impl RxObserver for Print {
 ///     fn next(&mut self, next: Self::In) {
 ///         println!("next: {next}");
 ///     }
@@ -48,7 +48,7 @@ pub trait ObserverInput {
 /// }
 /// ```
 /// TODO: Consider making all these fallible, NextError::Closed, NextError::Full, NextError::Blocked, CompleteError::Closed etc, including unsubscribe on SubscriptionLike
-pub trait Observer: ObserverInput {
+pub trait RxObserver: ObserverInput {
 	/// Signals the next value.
 	fn next(&mut self, next: Self::In);
 

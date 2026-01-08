@@ -94,14 +94,14 @@ fn impl_delegate_observer_to_destination_inner(derive_input: &DeriveInput) -> To
 		"destination",
 		None,
 		"rx_delegate_observer_to_destination",
-		"Observer",
+		"RxObserver",
 	)
 	.unwrap_or_else(|e| panic!("{}", e));
 
 	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
 
 	quote! {
-		impl #impl_generics #_rx_core_common_crate::Observer for #ident #ty_generics #where_clause {
+		impl #impl_generics #_rx_core_common_crate::RxObserver for #ident #ty_generics #where_clause {
 			#[inline]
 			fn next(
 				&mut self,
@@ -243,7 +243,7 @@ mod test {
 		};
 		let tokens = impl_delegate_observer_to_destination(&input).unwrap();
 		let s = tokens.to_string();
-		assert!(s.contains(&quote! { impl rx_core_common::Observer for Foo }.to_string()));
+		assert!(s.contains(&quote! { impl rx_core_common::RxObserver for Foo }.to_string()));
 		assert!(
 			s.contains(
 				&quote! {

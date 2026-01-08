@@ -1,7 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use disqualified::ShortName;
-use rx_core_common::{Observer, Subscriber, SubscriptionClosedFlag, SubscriptionLike};
+use rx_core_common::{RxObserver, Subscriber, SubscriptionClosedFlag, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 /// Internal to [RcSubscriber]
@@ -113,7 +113,7 @@ where
 	}
 }
 
-impl<Destination> Observer for InnerRcSubscriber<Destination>
+impl<Destination> RxObserver for InnerRcSubscriber<Destination>
 where
 	Destination: Subscriber,
 {

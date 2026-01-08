@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rx_core_common::{
-	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver,
+	LockWithPoisonBehavior, Never, Observable, RxObserver, Signal, Subscriber, UpgradeableObserver,
 };
 use rx_core_macro_subject_derive::RxSubject;
 use rx_core_subject_publish::{internal::MulticastSubscription, subject::PublishSubject};
@@ -56,7 +56,7 @@ where
 	}
 }
 
-impl<const CAPACITY: usize, In, InError> Observer for ReplaySubject<CAPACITY, In, InError>
+impl<const CAPACITY: usize, In, InError> RxObserver for ReplaySubject<CAPACITY, In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,

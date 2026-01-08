@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex, MutexGuard, Weak};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::{
-	LockWithPoisonBehavior, Observer, SharedDestination, Signal, Subscriber,
+	LockWithPoisonBehavior, RxObserver, SharedDestination, Signal, Subscriber,
 	SubscriberNotification, SubscriberPushNotificationExtention, SubscriptionClosedFlag,
 	SubscriptionLike, UpgradeableObserver,
 };
@@ -325,7 +325,7 @@ where
 	}
 }
 
-impl<Destination> Observer for SharedSubscriber<Destination>
+impl<Destination> RxObserver for SharedSubscriber<Destination>
 where
 	Destination: 'static + Subscriber + Send + Sync,
 {

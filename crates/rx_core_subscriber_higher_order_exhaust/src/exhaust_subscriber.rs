@@ -4,7 +4,7 @@ use std::{
 };
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
+	LockWithPoisonBehavior, Observable, RxObserver, SharedSubscriber, SharedSubscription, Signal,
 	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
@@ -46,7 +46,7 @@ where
 	}
 }
 
-impl<InnerObservable, Destination> Observer for ExhaustSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination> RxObserver for ExhaustSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable + Signal,
 	Destination:

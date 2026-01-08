@@ -1,4 +1,4 @@
-use rx_core_common::{Never, Observer, ObserverNotification, Signal, Subscriber};
+use rx_core_common::{Never, ObserverNotification, RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -27,7 +27,7 @@ where
 	}
 }
 
-impl<In, InError, Destination> Observer for MaterializeSubscriber<In, InError, Destination>
+impl<In, InError, Destination> RxObserver for MaterializeSubscriber<In, InError, Destination>
 where
 	In: Signal,
 	InError: Signal,

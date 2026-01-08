@@ -1,5 +1,5 @@
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Observer, Subscriber};
+use rx_core_common::{ComposableOperator, RxObserver, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::TapSubscriber;
@@ -12,7 +12,7 @@ use crate::TapSubscriber;
 #[rx_out_error(TapDestination::InError)]
 pub struct TapOperator<TapDestination>
 where
-	TapDestination: 'static + Clone + Observer + Send + Sync,
+	TapDestination: 'static + Clone + RxObserver + Send + Sync,
 	TapDestination::In: Clone,
 	TapDestination::InError: Clone,
 {
@@ -22,7 +22,7 @@ where
 
 impl<TapDestination> TapOperator<TapDestination>
 where
-	TapDestination: 'static + Clone + Observer + Send + Sync,
+	TapDestination: 'static + Clone + RxObserver + Send + Sync,
 	TapDestination::In: Clone,
 	TapDestination::InError: Clone,
 {
@@ -33,7 +33,7 @@ where
 
 impl<TapDestination> ComposableOperator for TapOperator<TapDestination>
 where
-	TapDestination: 'static + Clone + Observer + Send + Sync,
+	TapDestination: 'static + Clone + RxObserver + Send + Sync,
 	TapDestination::In: Clone,
 	TapDestination::InError: Clone,
 {

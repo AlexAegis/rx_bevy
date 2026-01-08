@@ -1,6 +1,6 @@
 use derive_where::derive_where;
 
-use rx_core_common::{Observer, Signal, Subscriber};
+use rx_core_common::{RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::operator::FindOperatorError;
@@ -41,7 +41,7 @@ where
 	}
 }
 
-impl<InError, P, Destination> Observer for FindSubscriber<InError, P, Destination>
+impl<InError, P, Destination> RxObserver for FindSubscriber<InError, P, Destination>
 where
 	InError: Signal,
 	P: Fn(&Destination::In) -> bool,

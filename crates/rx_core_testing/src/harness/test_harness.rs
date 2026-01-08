@@ -6,7 +6,7 @@ use std::{
 
 use derive_where::derive_where;
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, Observer, Signal, Subscriber, SubscriberNotification,
+	LockWithPoisonBehavior, Observable, RxObserver, Signal, Subscriber, SubscriberNotification,
 	SubscriptionLike, SubscriptionWithTeardown, UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;
@@ -466,7 +466,7 @@ where
 	}
 }
 
-impl<In, InError> Observer for HarnessDestination<In, InError>
+impl<In, InError> RxObserver for HarnessDestination<In, InError>
 where
 	In: Signal,
 	InError: Signal,

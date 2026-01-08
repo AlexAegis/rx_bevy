@@ -7,7 +7,7 @@ use std::{
 };
 
 use rx_core_common::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
+	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
 	Subscriber, SubscriptionClosedFlag, SubscriptionLike, WorkCancellationId,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
@@ -58,7 +58,7 @@ where
 	}
 }
 
-impl<Destination, S> Observer for DelaySubscriber<Destination, S>
+impl<Destination, S> RxObserver for DelaySubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler + Send + Sync,

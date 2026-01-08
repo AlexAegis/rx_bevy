@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy_ecs::resource::Resource;
 use rx_bevy_common::RxBevyScheduler;
 use rx_core_common::{
-	Observer, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
+	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
 	Subscriber, SubscriptionData, SubscriptionLike, WorkCancellationId, WorkResult,
 };
 use rx_core_macro_subscription_derive::RxSubscription;

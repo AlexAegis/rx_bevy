@@ -1,4 +1,4 @@
-use rx_core_common::{Observer, Subscriber, SubscriptionLike};
+use rx_core_common::{RxObserver, Subscriber, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -27,7 +27,7 @@ where
 	}
 }
 
-impl<Destination> Observer for TakeSubscriber<Destination>
+impl<Destination> RxObserver for TakeSubscriber<Destination>
 where
 	Destination: Subscriber,
 {

@@ -1,5 +1,5 @@
 use rx_core::prelude::*;
-use rx_core_common::{Observer, SubscriptionLike};
+use rx_core_common::{RxObserver, SubscriptionLike};
 use rx_core_testing::prelude::*;
 
 #[test]

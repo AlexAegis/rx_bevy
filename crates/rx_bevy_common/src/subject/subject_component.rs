@@ -10,9 +10,8 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_common::{
-	Observable, Observer as RxObserver, ObserverNotification,
-	ObserverPushObserverNotificationExtention, SubjectLike, Subscriber, SubscriptionLike,
-	UpgradeableObserver,
+	Observable, ObserverNotification, ObserverPushObserverNotificationExtention, RxObserver,
+	SubjectLike, Subscriber, SubscriptionLike, UpgradeableObserver,
 };
 use rx_core_macro_subject_derive::RxSubject;
 

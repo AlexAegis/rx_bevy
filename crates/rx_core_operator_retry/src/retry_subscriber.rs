@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, Observer, ObserverTerminalNotification, SharedSubscriber,
+	LockWithPoisonBehavior, Observable, ObserverTerminalNotification, RxObserver, SharedSubscriber,
 	SharedSubscription, Subscriber, SubscriptionLike, TeardownCollectionExtension,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
@@ -78,7 +78,7 @@ where
 	}
 }
 
-impl<Source, Destination> Observer for RetrySubscriber<Source, Destination>
+impl<Source, Destination> RxObserver for RetrySubscriber<Source, Destination>
 where
 	Source: 'static + Observable + Send + Sync,
 	Destination: 'static + Subscriber<In = Source::Out, InError = Source::OutError>,

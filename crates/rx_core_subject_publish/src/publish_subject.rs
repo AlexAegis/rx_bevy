@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use derive_where::derive_where;
 use rx_core_common::{
-	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, SubscriptionLike,
+	LockWithPoisonBehavior, Never, Observable, RxObserver, Signal, Subscriber, SubscriptionLike,
 	UpgradeableObserver,
 };
 use rx_core_macro_subject_derive::RxSubject;
@@ -164,7 +164,7 @@ where
 	}
 }
 
-impl<In, InError> Observer for PublishSubject<In, InError>
+impl<In, InError> RxObserver for PublishSubject<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,

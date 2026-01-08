@@ -1,5 +1,5 @@
 use rx_core_common::{
-	Observer, SubscriptionClosedFlag, SubscriptionData, SubscriptionLike, Teardown,
+	RxObserver, SubscriptionClosedFlag, SubscriptionData, SubscriptionLike, Teardown,
 	TeardownCollection,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
@@ -10,7 +10,7 @@ use rx_core_macro_subscriber_derive::RxSubscriber;
 #[rx_skip_unsubscribe_on_drop_impl]
 pub struct DetachedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	#[destination]
 	destination: Destination,
@@ -20,7 +20,7 @@ where
 
 impl<Destination> DetachedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	pub(crate) fn new(destination: Destination) -> Self {
 		Self {
@@ -31,9 +31,9 @@ where
 	}
 }
 
-impl<Destination> Observer for DetachedSubscriber<Destination>
+impl<Destination> RxObserver for DetachedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	fn next(&mut self, next: Self::In) {
 		if !self.is_closed() {
@@ -58,7 +58,7 @@ where
 
 impl<Destination> SubscriptionLike for DetachedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
@@ -77,7 +77,7 @@ where
 
 impl<Destination> TeardownCollection for DetachedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	fn add_teardown(&mut self, teardown: Teardown) {
 		if !self.is_closed() {
@@ -90,7 +90,7 @@ where
 
 impl<Destination> Drop for DetachedSubscriber<Destination>
 where
-	Destination: Observer,
+	Destination: RxObserver,
 {
 	/// When you make a subscription in rx_bevy, the Subscribe event stores
 	/// the destination you want to subscribe to, this way you're not limited

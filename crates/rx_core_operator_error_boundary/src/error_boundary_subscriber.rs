@@ -1,4 +1,4 @@
-use rx_core_common::{Never, Observer, Subscriber};
+use rx_core_common::{Never, RxObserver, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber, Debug)]
@@ -24,7 +24,7 @@ where
 	}
 }
 
-impl<Destination> Observer for ErrorBoundarySubscriber<Destination>
+impl<Destination> RxObserver for ErrorBoundarySubscriber<Destination>
 where
 	Destination: Subscriber<InError = Never>,
 {

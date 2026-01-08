@@ -1,4 +1,4 @@
-use rx_core_common::{Observable, Observer, Operator};
+use rx_core_common::{Observable, Operator, RxObserver};
 
 use crate::operator::TapOperator;
 
@@ -10,7 +10,7 @@ pub trait ObservablePipeExtensionTap<'o>: 'o + Observable + Sized + Send + Sync 
 	) -> <TapOperator<TapDestination> as Operator<'o>>::OutObservable<Self>
 	where
 		TapDestination:
-			'static + Observer<In = Self::Out, InError = Self::OutError> + Clone + Send + Sync,
+			'static + RxObserver<In = Self::Out, InError = Self::OutError> + Clone + Send + Sync,
 		Self::Out: Clone,
 		Self::OutError: Clone,
 	{

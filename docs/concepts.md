@@ -23,12 +23,8 @@ The simplest concept and the one that needs an immediate clarification is the
 observer as this - in the context of `rx_bevy` - is not the same thing as
 Bevy observers!
 
-> Rest assured that the two names are **not** in conflict when you use
-> `rx_bevy`, or even when you develop new things for it! Even internally there's
-> only one place where both are used in one file, across the entire repository!
-
-An (Rx)Observer is something that implements three functions for its 3 observer
-"channels" via the [Observer](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_common/src/observer.rs) trait, with mutable access to itself.
+An RxObserver is something that implements three functions for its 3 observer
+"channels" via the [RxObserver](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_common/src/observer.rs) trait:
 
 - `next`
 - `error`

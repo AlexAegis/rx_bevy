@@ -1,6 +1,6 @@
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
-use crate::{Observer, Subscriber, SubscriptionLike, Teardown, TeardownCollection};
+use crate::{RxObserver, Subscriber, SubscriptionLike, Teardown, TeardownCollection};
 
 #[derive(RxSubscriber)]
 #[_rx_core_common_crate(crate)]
@@ -15,7 +15,7 @@ where
 	None(Destination),
 }
 
-impl<InnerSubscriber, Destination> Observer for OptionSubscriber<InnerSubscriber, Destination>
+impl<InnerSubscriber, Destination> RxObserver for OptionSubscriber<InnerSubscriber, Destination>
 where
 	InnerSubscriber: Subscriber,
 	Destination: Subscriber<In = InnerSubscriber::In, InError = InnerSubscriber::InError>,

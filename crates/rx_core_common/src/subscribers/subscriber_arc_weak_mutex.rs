@@ -3,9 +3,9 @@ use std::sync::{Mutex, Weak};
 use disqualified::ShortName;
 
 use crate::{
-	Observable, ObservableOutput, Observer, ObserverInput, ObserverUpgradesToSelf,
-	PrimaryCategorySubscriber, SharedDestination, Subscriber, SubscriptionLike, Teardown,
-	TeardownCollection, WithPrimaryCategory,
+	Observable, ObservableOutput, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
+	RxObserver, SharedDestination, Subscriber, SubscriptionLike, Teardown, TeardownCollection,
+	WithPrimaryCategory,
 };
 
 impl<Destination> WithPrimaryCategory for Weak<Mutex<Destination>>
@@ -55,9 +55,9 @@ where
 	}
 }
 
-impl<Destination> Observer for Weak<Mutex<Destination>>
+impl<Destination> RxObserver for Weak<Mutex<Destination>>
 where
-	Destination: ?Sized + Observer + SubscriptionLike,
+	Destination: ?Sized + RxObserver + SubscriptionLike,
 {
 	fn next(&mut self, next: Self::In) {
 		if self.is_closed() {

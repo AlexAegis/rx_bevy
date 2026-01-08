@@ -6,7 +6,7 @@ use std::{
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
+	LockWithPoisonBehavior, Observable, RxObserver, SharedSubscriber, SharedSubscription, Signal,
 	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
 use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
@@ -45,7 +45,7 @@ where
 	}
 }
 
-impl<InnerObservable, Destination> Observer for SwitchSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination> RxObserver for SwitchSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable + Signal,
 	Destination:

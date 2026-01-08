@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{Observer, Signal, Subscriber};
+use rx_core_common::{RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber, Debug)]
@@ -37,7 +37,7 @@ where
 	}
 }
 
-impl<In, InError, OnNext, Destination> Observer
+impl<In, InError, OnNext, Destination> RxObserver
 	for TapNextSubscriber<In, InError, OnNext, Destination>
 where
 	OnNext: 'static + FnMut(&In) + Send + Sync,

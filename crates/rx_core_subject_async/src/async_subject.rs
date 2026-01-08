@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Never, Observable, Observer, Signal, Subscriber, SubscriptionLike,
+	LockWithPoisonBehavior, Never, Observable, RxObserver, Signal, Subscriber, SubscriptionLike,
 	UpgradeableObserver,
 };
 use rx_core_macro_subject_derive::RxSubject;
@@ -78,7 +78,7 @@ where
 	}
 }
 
-impl<In, InError, Reducer> Observer for AsyncSubject<In, InError, Reducer>
+impl<In, InError, Reducer> RxObserver for AsyncSubject<In, InError, Reducer>
 where
 	Reducer: 'static + FnMut(In, In) -> In + Send + Sync,
 	In: Signal + Clone,

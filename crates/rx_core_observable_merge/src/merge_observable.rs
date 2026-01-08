@@ -1,7 +1,7 @@
 use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_common::{
-	ErasedObservable, ErasedObservables, Never, NeverMapIntoExtension, Observable, Observer,
+	ErasedObservable, ErasedObservables, Never, NeverMapIntoExtension, Observable, RxObserver,
 	Signal, Subscriber, SubscriptionData, TeardownCollection, UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;

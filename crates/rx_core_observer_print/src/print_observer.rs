@@ -1,7 +1,7 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_common::{
-	Never, Observer, Signal, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
+	Never, RxObserver, Signal, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
 use rx_core_macro_observer_derive::RxObserver;
 
@@ -68,7 +68,7 @@ where
 	}
 }
 
-impl<In, InError> Observer for PrintObserver<In, InError>
+impl<In, InError> RxObserver for PrintObserver<In, InError>
 where
 	In: Signal + Debug,
 	InError: Signal + Debug,

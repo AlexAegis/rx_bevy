@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
+	LockWithPoisonBehavior, Observable, RxObserver, SharedSubscriber, SharedSubscription, Signal,
 	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
@@ -49,7 +49,7 @@ where
 	}
 }
 
-impl<In, InError, InnerObservable, ErrorMapper, Destination> Observer
+impl<In, InError, InnerObservable, ErrorMapper, Destination> RxObserver
 	for CatchSubscriber<In, InError, InnerObservable, ErrorMapper, Destination>
 where
 	In: Signal,

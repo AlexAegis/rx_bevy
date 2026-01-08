@@ -1,4 +1,4 @@
-use rx_core_common::{Observer, Subscriber};
+use rx_core_common::{RxObserver, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber, Debug)]
@@ -8,7 +8,7 @@ use rx_core_macro_subscriber_derive::RxSubscriber;
 #[rx_delegate_subscription_like_to_destination]
 pub struct TapSubscriber<TapDestination, Destination>
 where
-	TapDestination: Observer<In = Destination::In, InError = Destination::InError>,
+	TapDestination: RxObserver<In = Destination::In, InError = Destination::InError>,
 	Destination: Subscriber,
 {
 	#[destination]
@@ -18,7 +18,7 @@ where
 
 impl<TapDestination, Destination> TapSubscriber<TapDestination, Destination>
 where
-	TapDestination: Observer<In = Destination::In, InError = Destination::InError>,
+	TapDestination: RxObserver<In = Destination::In, InError = Destination::InError>,
 	Destination: Subscriber,
 {
 	pub fn new(destination: Destination, tap_destination: TapDestination) -> Self {
@@ -29,9 +29,9 @@ where
 	}
 }
 
-impl<TapDestination, Destination> Observer for TapSubscriber<TapDestination, Destination>
+impl<TapDestination, Destination> RxObserver for TapSubscriber<TapDestination, Destination>
 where
-	TapDestination: Observer<In = Destination::In, InError = Destination::InError>,
+	TapDestination: RxObserver<In = Destination::In, InError = Destination::InError>,
 	Destination: Subscriber,
 	Destination::In: Clone,
 	Destination::InError: Clone,

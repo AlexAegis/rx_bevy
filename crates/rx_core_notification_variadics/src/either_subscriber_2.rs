@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use rx_core_common::{
-	Observable, ObservableOutput, Observer, Subscriber, SubscriberNotification, SubscriptionLike,
+	Observable, ObservableOutput, RxObserver, Subscriber, SubscriberNotification, SubscriptionLike,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -42,7 +42,7 @@ where
 	}
 }
 
-impl<VariantSelector, Destination, O1, O2> Observer
+impl<VariantSelector, Destination, O1, O2> RxObserver
 	for EitherSubscriber2<VariantSelector, Destination, O1, O2>
 where
 	VariantSelector: EitherNotificationSelector2<O1, O2>,

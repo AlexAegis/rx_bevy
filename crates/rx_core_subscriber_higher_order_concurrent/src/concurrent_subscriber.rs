@@ -5,7 +5,7 @@ use std::{
 };
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, SharedSubscription, Signal,
+	LockWithPoisonBehavior, Observable, RxObserver, SharedSubscriber, SharedSubscription, Signal,
 	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 	TeardownCollectionExtension,
 };
@@ -171,7 +171,7 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 	}
 }
 
-impl<InnerObservable, Destination> Observer for ConcurrentSubscriber<InnerObservable, Destination>
+impl<InnerObservable, Destination> RxObserver for ConcurrentSubscriber<InnerObservable, Destination>
 where
 	InnerObservable: Observable<Out = Destination::In, OutError = Destination::InError> + Signal,
 	Destination: 'static + Subscriber,

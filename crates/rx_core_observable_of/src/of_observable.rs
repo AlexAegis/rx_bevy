@@ -1,4 +1,4 @@
-use rx_core_common::{Never, Observable, Observer, Signal, Subscriber, UpgradeableObserver};
+use rx_core_common::{Never, Observable, RxObserver, Signal, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 

@@ -1,6 +1,6 @@
 use derive_where::derive_where;
 
-use rx_core_common::{Observer, Signal, Subscriber};
+use rx_core_common::{RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive_where(Debug; In)]
@@ -33,7 +33,7 @@ where
 	}
 }
 
-impl<In, Destination> Observer for PairwiseSubscriber<In, Destination>
+impl<In, Destination> RxObserver for PairwiseSubscriber<In, Destination>
 where
 	In: Signal + Clone,
 	Destination: Subscriber<In = [In; 2]>,

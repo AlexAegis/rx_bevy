@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use derive_where::derive_where;
 use rx_core_common::{
-	ErasedSubscriber, LockWithPoisonBehavior, Observable, Observer, SharedSubscriber, Signal,
+	ErasedSubscriber, LockWithPoisonBehavior, Observable, RxObserver, SharedSubscriber, Signal,
 	Subscriber, SubscriptionLike, UpgradeableObserver,
 };
 use rx_core_macro_subject_derive::RxSubject;
@@ -32,7 +32,7 @@ where
 	subscriber: Arc<Mutex<Option<SharedSubscriber<ErasedSubscriber<Out, OutError>>>>>,
 }
 
-impl<Out, OutError> Observer for TestSubject<Out, OutError>
+impl<Out, OutError> RxObserver for TestSubject<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,

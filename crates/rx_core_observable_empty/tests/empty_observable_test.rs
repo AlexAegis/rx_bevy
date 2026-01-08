@@ -1,5 +1,5 @@
 use rx_core::{SubscriberNotification, prelude::EmptyObservable};
-use rx_core_common::prelude::*;
+use rx_core_common::*;
 use rx_core_testing::MockObserver;
 
 #[test]

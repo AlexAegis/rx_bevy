@@ -1,5 +1,5 @@
 use derive_where::derive_where;
-use rx_core_common::{Observer, Subscriber};
+use rx_core_common::{RxObserver, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive_where(Debug)]
@@ -30,7 +30,7 @@ where
 	}
 }
 
-impl<Destination> Observer for EndWithSubscriber<Destination>
+impl<Destination> RxObserver for EndWithSubscriber<Destination>
 where
 	Destination: Subscriber,
 {

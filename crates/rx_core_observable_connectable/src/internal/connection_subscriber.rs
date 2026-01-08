@@ -1,5 +1,5 @@
 use rx_core_common::{
-	Observer, SubjectLike, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
+	RxObserver, SubjectLike, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -37,7 +37,7 @@ where
 	}
 }
 
-impl<Connector> Observer for ConnectionSubscriber<Connector>
+impl<Connector> RxObserver for ConnectionSubscriber<Connector>
 where
 	Connector: 'static + SubjectLike,
 {

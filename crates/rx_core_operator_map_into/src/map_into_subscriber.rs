@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{Observer, Signal, Subscriber};
+use rx_core_common::{RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -38,7 +38,7 @@ where
 	}
 }
 
-impl<In, InError, Out, OutError, Destination> Observer
+impl<In, InError, Out, OutError, Destination> RxObserver
 	for MapIntoSubscriber<In, InError, Out, OutError, Destination>
 where
 	In: Signal + Into<Out>,

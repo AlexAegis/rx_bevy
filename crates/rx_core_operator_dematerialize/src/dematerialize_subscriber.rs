@@ -1,4 +1,4 @@
-use rx_core_common::{Never, Observer, ObserverNotification, Subscriber, SubscriptionLike};
+use rx_core_common::{Never, ObserverNotification, RxObserver, Subscriber, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -23,7 +23,7 @@ where
 	}
 }
 
-impl<Destination> Observer for DematerializeSubscriber<Destination>
+impl<Destination> RxObserver for DematerializeSubscriber<Destination>
 where
 	Destination: Subscriber,
 {

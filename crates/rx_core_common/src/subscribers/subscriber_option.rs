@@ -1,4 +1,4 @@
-use crate::{Observer, ObserverInput, SubscriptionLike, TeardownCollection};
+use crate::{ObserverInput, RxObserver, SubscriptionLike, TeardownCollection};
 
 impl<O> ObserverInput for Option<O>
 where
@@ -8,9 +8,9 @@ where
 	type InError = O::InError;
 }
 
-impl<O> Observer for Option<O>
+impl<O> RxObserver for Option<O>
 where
-	O: Observer,
+	O: RxObserver,
 {
 	fn next(&mut self, next: Self::In) {
 		if let Some(destination) = self {

@@ -1,5 +1,5 @@
 use derive_where::derive_where;
-use rx_core_common::{Observer, Subscriber};
+use rx_core_common::{RxObserver, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive_where(Debug)]
@@ -44,7 +44,7 @@ where
 	}
 }
 
-impl<OnNext, Destination> Observer for OnNextSubscriber<OnNext, Destination>
+impl<OnNext, Destination> RxObserver for OnNextSubscriber<OnNext, Destination>
 where
 	OnNext: 'static
 		+ FnMut(

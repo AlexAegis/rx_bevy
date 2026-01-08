@@ -1,4 +1,4 @@
-use rx_core_common::{Observable, Observer, Subscriber, SubscriptionLike};
+use rx_core_common::{Observable, RxObserver, Subscriber, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_notification_store::NotificationState;
 use rx_core_notification_variadics::EitherObservableNotification2;
@@ -90,7 +90,7 @@ where
 	}
 }
 
-impl<Destination, O1, O2> Observer for JoinSubscriber<Destination, O1, O2>
+impl<Destination, O1, O2> RxObserver for JoinSubscriber<Destination, O1, O2>
 where
 	Destination: Subscriber<In = (O1::Out, O2::Out)>,
 	O1: 'static + Observable,
