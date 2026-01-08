@@ -1,8 +1,6 @@
 use crate::{Observable, Operator};
 
-pub trait ObservablePipeExtensionPipe:
-	'static + Observable + Sized + Send + Sync + Send + Sync
-{
+pub trait ObservablePipeExtensionPipe: Observable + Sized + Send + Sync {
 	fn pipe<'o, Op>(self, operator: Op) -> <Op as Operator<'o>>::OutObservable<Self>
 	where
 		Self: Sized,
@@ -12,4 +10,4 @@ pub trait ObservablePipeExtensionPipe:
 	}
 }
 
-impl<O> ObservablePipeExtensionPipe for O where O: 'static + Observable + Send + Sync {}
+impl<O> ObservablePipeExtensionPipe for O where O: Observable + Send + Sync {}

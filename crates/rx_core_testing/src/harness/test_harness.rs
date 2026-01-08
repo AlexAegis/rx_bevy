@@ -27,7 +27,7 @@ const TEST_HARNESS_MISSING_TRACKER_SUBSCRIPTION: &str =
 #[derive_where(Debug; Source::Out, Source::OutError, FinalOut, FinalOutError)]
 pub struct TestHarness<Source, FinalOut = usize, FinalOutError = TestError>
 where
-	Source: 'static + Observable + Send + Sync,
+	Source: Observable,
 	FinalOut: Signal + Clone,
 	FinalOutError: Signal + Clone,
 {
@@ -274,7 +274,7 @@ where
 
 impl<Source, FinalOut, FinalOutError> TestHarness<Source, FinalOut, FinalOutError>
 where
-	Source: 'static + Observable + Send + Sync,
+	Source: Observable,
 	FinalOut: Signal + Clone,
 	FinalOutError: Signal + Clone,
 {
@@ -373,7 +373,7 @@ where
 
 impl<Source, FinalOut, FinalOutError> HarnessObservable<Source, FinalOut, FinalOutError>
 where
-	Source: 'static + Observable + Send + Sync,
+	Source: Observable,
 	FinalOut: Signal,
 	FinalOutError: Signal,
 {
@@ -394,7 +394,7 @@ where
 impl<Source, FinalOut, FinalOutError> Observable
 	for HarnessObservable<Source, FinalOut, FinalOutError>
 where
-	Source: 'static + Observable + Send + Sync,
+	Source: Observable,
 	FinalOut: Signal,
 	FinalOutError: Signal,
 {

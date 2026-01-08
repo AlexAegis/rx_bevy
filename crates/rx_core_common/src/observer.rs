@@ -22,7 +22,7 @@ pub trait ObserverInput {
 ///
 /// ```rust
 /// # use rx_core_macro_observer_derive::RxObserver;
-/// # use rx_core_common::Observer;
+/// # use rx_core_common::RxObserver;
 ///
 /// #[derive(RxObserver)]
 /// #[rx_in(i32)]
