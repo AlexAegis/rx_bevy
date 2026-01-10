@@ -36,22 +36,21 @@ where
 		let mut shared_destination_clone = shared_destination.clone();
 		scheduler_lock.schedule_continuous_work(
 			move |_tick, context| {
-				let key_codes = {
-					let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
-					match options.emit {
-						KeyboardObservableEmit::JustPressed => {
-							button_input.get_just_pressed().cloned().collect::<Vec<_>>()
-						}
-						KeyboardObservableEmit::JustReleased => button_input
-							.get_just_released()
-							.cloned()
-							.collect::<Vec<_>>(),
-						KeyboardObservableEmit::WhilePressed => {
-							button_input.get_pressed().cloned().collect::<Vec<_>>()
-						}
+				let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
+
+				let key_code_iterator: &mut dyn Iterator<Item = KeyCode> = match options.emit {
+					KeyboardObservableEmit::JustPressed => {
+						&mut button_input.get_just_pressed().copied()
+					}
+					KeyboardObservableEmit::JustReleased => {
+						&mut button_input.get_just_released().copied()
+					}
+					KeyboardObservableEmit::WhilePressed => {
+						&mut button_input.get_pressed().copied()
 					}
 				};
-				for key_code in key_codes {
+
+				for key_code in key_code_iterator {
 					if !shared_destination_clone.is_closed() {
 						shared_destination_clone.next(key_code);
 					} else {
