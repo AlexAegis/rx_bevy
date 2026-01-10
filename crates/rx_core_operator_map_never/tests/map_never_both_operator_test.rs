@@ -13,7 +13,9 @@ mod contracts {
 				"map_never (both)",
 			);
 		let observable = harness.create_harness_observable().map_never_both();
-		harness.assert_rx_contract_closed_after_complete(observable);
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
 	}
 
 	#[test]
@@ -23,7 +25,9 @@ mod contracts {
 				"map_never (both)",
 			);
 		let observable = harness.create_harness_observable().map_never_both();
-		harness.assert_rx_contract_closed_after_unsubscribe(observable);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
 	}
 }
 
@@ -38,6 +42,8 @@ mod compose {
 			);
 		let composed = compose_operator::<Never, Never>().map_never_both::<usize, TestError>();
 		let observable = harness.create_harness_observable().pipe(composed);
-		harness.assert_rx_contract_closed_after_unsubscribe(observable);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
 	}
 }

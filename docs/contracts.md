@@ -250,12 +250,9 @@ Downstream operators depend on signals too, don't forget to forward them!
 > `error`, `complete` and `unsubscribe`, so it must call the same function on
 > its destination.
 
-Subscriber functions that only do forwarding should be marked as `#[inline]`.
-
 For example:
 
 ```rs
-#[inline]
 fn complete(&mut self) {
     self.destination.complete(context);
 }

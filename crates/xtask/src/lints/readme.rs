@@ -33,6 +33,7 @@ pub fn lint_readme() -> Result<(), RxWorkspaceError> {
 			|| package.name.starts_with("rx_bevy_"))
 			&& package.name != "rx_core_common"
 			&& package.name != "rx_bevy_common"
+			&& package.name != "rx_core_testing"
 		{
 			package.name.split_at(8).1
 		} else {

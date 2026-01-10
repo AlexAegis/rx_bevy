@@ -284,6 +284,8 @@ This enables 2 things:
 
 ## Pipes & Operators
 
+<!-- TODO: Rewrite -->
+
 [Pipe](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_common/src/pipe.rs)
 is an observable that takes another observable, and an [operator](#operators)
 to change its behavior and produce a new observable.
@@ -356,14 +358,12 @@ the caller of the `next`, `error` and `complete` functions.
 For example, looking at the `map` operators `next` implementation:
 
 ```rs
-#[inline]
 fn next(
     &mut self,
     next: Self::In, // This is coming from upstream
-    context: &mut <Self::Context as SubscriptionContext>::Item<'_, '_>,
 ) {
     let mapped = (self.mapper)(next);
-    self.destination.next(mapped, context); // And this is sending it downstream
+    self.destination.next(mapped); // And this is sending it downstream
 }
 ```
 

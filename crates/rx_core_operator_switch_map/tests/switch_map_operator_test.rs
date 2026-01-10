@@ -1,10 +1,123 @@
-use std::sync::{
-	Arc,
-	atomic::{AtomicBool, Ordering},
+use std::{
+	sync::{
+		Arc,
+		atomic::{AtomicBool, AtomicUsize, Ordering},
+	},
+	time::Duration,
 };
 
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let inner_was_unsubscribed = Arc::new(AtomicUsize::default());
+		let inner_was_unsubscribed_clone = inner_was_unsubscribed.clone();
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("switch_map");
+		let observable = harness.create_harness_observable().switch_map(
+			move |_next: usize| {
+				let inner_was_unsubscribed = inner_was_unsubscribed_clone.clone();
+				interval(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(200),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: false,
+					},
+					scheduler.clone(),
+				)
+				.finalize(move || {
+					inner_was_unsubscribed.fetch_add(1, Ordering::Relaxed);
+				})
+				.map_never()
+			},
+			|error| error,
+		);
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+
+		assert_eq!(inner_was_unsubscribed.load(Ordering::Relaxed), 1);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let inner_was_unsubscribed = Arc::new(AtomicUsize::default());
+		let inner_was_unsubscribed_clone = inner_was_unsubscribed.clone();
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("switch_map");
+		let observable = harness.create_harness_observable().switch_map(
+			move |_next: usize| {
+				let inner_was_unsubscribed = inner_was_unsubscribed_clone.clone();
+				interval(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(200),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: true,
+					},
+					scheduler.clone(),
+				)
+				.take(1)
+				.finalize(move || {
+					inner_was_unsubscribed.fetch_add(1, Ordering::Relaxed);
+				})
+				.map_never()
+			},
+			|error| error,
+		);
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		assert_eq!(inner_was_unsubscribed.load(Ordering::Relaxed), 1);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let inner_was_unsubscribed = Arc::new(AtomicUsize::default());
+		let inner_was_unsubscribed_clone = inner_was_unsubscribed.clone();
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("switch_map");
+		let observable = harness.create_harness_observable().switch_map(
+			move |_next: usize| {
+				let inner_was_unsubscribed = inner_was_unsubscribed_clone.clone();
+				interval(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(200),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: false,
+					},
+					scheduler.clone(),
+				)
+				.finalize(move || {
+					inner_was_unsubscribed.fetch_add(1, Ordering::Relaxed);
+				})
+				.map_never()
+			},
+			|error| error,
+		);
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		assert_eq!(inner_was_unsubscribed.load(Ordering::Relaxed), 1);
+	}
+}
 
 #[derive(Clone)]
 enum Either {
@@ -88,7 +201,7 @@ fn should_subscribe_to_the_next_observable_immediately_and_unsubscribe_the_previ
 		.subscribe(destination);
 
 	source.next(Either::O1);
-	notification_collector.lock().assert_is_empty("switch_all");
+	notification_collector.lock().assert_is_empty("switch_map");
 
 	inner_2.next(0);
 
@@ -339,7 +452,7 @@ fn should_be_able_to_subscribe_to_different_observables_if_they_are_erased() {
 		.subscribe(destination);
 
 	source.next(Either::O1);
-	notification_collector.lock().assert_is_empty("switch_all");
+	notification_collector.lock().assert_is_empty("switch_map");
 
 	inner_1.next(1);
 	inner_1.next(2); // take 2 completes!
@@ -426,7 +539,7 @@ fn should_be_able_to_execute_inner_teardown_on_switch() {
 		.subscribe(destination);
 
 	source.next(Either::O1);
-	notification_collector.lock().assert_is_empty("switch_all");
+	notification_collector.lock().assert_is_empty("switch_map");
 
 	inner_1.next(1);
 	inner_1.next(2);
@@ -466,6 +579,75 @@ fn should_be_able_to_execute_inner_teardown_on_switch() {
 		true,
 	);
 
+	assert!(
+		subscription.is_closed(),
+		"subscription should be closed after completion"
+	);
+}
+
+#[test]
+fn should_be_able_to_work_with_an_interval_as_the_inner_subscription() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut executor = MockExecutor::default();
+	let scheduler = executor.get_scheduler_handle();
+
+	let mut source = PublishSubject::<usize>::default();
+
+	let inner_was_unsubscribed = Arc::new(AtomicUsize::default());
+	let inner_was_unsubscribed_clone = inner_was_unsubscribed.clone();
+	let mut subscription = source
+		.clone()
+		.enumerate()
+		.switch_map(
+			move |_| {
+				let inner_was_unsubscribed = inner_was_unsubscribed_clone.clone();
+				interval(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(200),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: false,
+					},
+					scheduler.clone(),
+				)
+				.finalize(move || {
+					inner_was_unsubscribed.fetch_add(1, Ordering::Relaxed);
+				})
+			},
+			Never::map_into(),
+		)
+		.subscribe(destination);
+
+	source.next(0);
+
+	assert_eq!(inner_was_unsubscribed.load(Ordering::Relaxed), 0);
+
+	notification_collector.lock().assert_is_empty("switch_map");
+
+	executor.tick(Duration::from_millis(400));
+
+	notification_collector.lock().assert_notifications(
+		"switch_map",
+		0,
+		[
+			SubscriberNotification::Next(0),
+			SubscriberNotification::Next(1),
+		],
+		true,
+	);
+
+	source.complete();
+
+	executor.tick(Duration::from_millis(400));
+
+	subscription.unsubscribe();
+
+	assert_eq!(inner_was_unsubscribed.load(Ordering::Relaxed), 1);
+
+	executor.tick(Duration::from_millis(400));
+
+	notification_collector.print();
 	assert!(
 		subscription.is_closed(),
 		"subscription should be closed after completion"

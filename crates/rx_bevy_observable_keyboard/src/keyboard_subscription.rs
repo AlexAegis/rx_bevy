@@ -36,25 +36,26 @@ where
 		let mut shared_destination_clone = shared_destination.clone();
 		scheduler_lock.schedule_continuous_work(
 			move |_tick, context| {
-				if !shared_destination_clone.is_closed() {
-					let key_codes = {
-						let button_input =
-							context.deferred_world.resource::<ButtonInput<KeyCode>>();
-						match options.emit {
-							KeyboardObservableEmit::JustPressed => {
-								button_input.get_just_pressed().cloned().collect::<Vec<_>>()
-							}
-							KeyboardObservableEmit::JustReleased => button_input
-								.get_just_released()
-								.cloned()
-								.collect::<Vec<_>>(),
-							KeyboardObservableEmit::WhilePressed => {
-								button_input.get_pressed().cloned().collect::<Vec<_>>()
-							}
+				let key_codes = {
+					let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
+					match options.emit {
+						KeyboardObservableEmit::JustPressed => {
+							button_input.get_just_pressed().cloned().collect::<Vec<_>>()
 						}
-					};
-					for key_code in key_codes {
+						KeyboardObservableEmit::JustReleased => button_input
+							.get_just_released()
+							.cloned()
+							.collect::<Vec<_>>(),
+						KeyboardObservableEmit::WhilePressed => {
+							button_input.get_pressed().cloned().collect::<Vec<_>>()
+						}
+					}
+				};
+				for key_code in key_codes {
+					if !shared_destination_clone.is_closed() {
 						shared_destination_clone.next(key_code);
+					} else {
+						return WorkResult::Done;
 					}
 				}
 				WorkResult::Pending

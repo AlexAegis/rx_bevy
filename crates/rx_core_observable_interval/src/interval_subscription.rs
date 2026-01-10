@@ -1,6 +1,6 @@
 use rx_core_common::{
 	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
-	Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
+	Subscriber, SubscriptionLike, TeardownCollectionExtension, WorkCancellationId, WorkResult,
 };
 use rx_core_macro_subscription_derive::RxSubscription;
 
@@ -22,7 +22,7 @@ where
 impl<Destination, S> IntervalSubscription<Destination, S>
 where
 	Destination: 'static + Subscriber<In = usize>,
-	S: Scheduler,
+	S: 'static + Scheduler,
 {
 	pub fn new(
 		destination: Destination,
@@ -67,6 +67,11 @@ where
 
 			cancellation_id
 		};
+
+		let scheduler_clone = scheduler.clone();
+		destination.add_fn(move || {
+			scheduler_clone.lock().cancel(cancellation_id);
+		});
 
 		IntervalSubscription {
 			destination,

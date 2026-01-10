@@ -68,8 +68,9 @@ mod contracts {
 				.lock()
 				.push(SubscriberNotification::Next(*next))
 		});
-
-		harness.assert_rx_contract_closed_after_error(observable, TestError, TestError);
+		harness.subscribe_to(observable);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
 
 		tap_notification_collector
 			.lock()
@@ -87,8 +88,9 @@ mod contracts {
 				.lock()
 				.push(SubscriberNotification::Next(*next))
 		});
-
-		harness.assert_rx_contract_closed_after_complete(observable);
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
 
 		tap_notification_collector
 			.lock()
@@ -106,8 +108,9 @@ mod contracts {
 				.lock()
 				.push(SubscriberNotification::Next(*next))
 		});
-
-		harness.assert_rx_contract_closed_after_unsubscribe(observable);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
 
 		tap_notification_collector
 			.lock()

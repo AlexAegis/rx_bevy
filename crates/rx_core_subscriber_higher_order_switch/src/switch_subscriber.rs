@@ -144,18 +144,12 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if !self.is_closed()
-			&& self
-				.state
-				.lock_ignore_poison()
-				.upstream_unsubscribe_can_downstream()
-		{
+		if !self.is_closed() {
+			self.outer_teardown.unsubscribe();
+			self.shared_destination.unsubscribe();
 			if let Some(subscription_handle) = &mut self.inner_subscription.take() {
 				subscription_handle.unsubscribe();
 			};
-
-			self.outer_teardown.unsubscribe();
-			self.shared_destination.unsubscribe();
 		}
 	}
 }

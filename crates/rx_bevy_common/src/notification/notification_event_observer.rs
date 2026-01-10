@@ -14,7 +14,7 @@ where
 	InError: Signal,
 {
 	// TODO(bevy-0.17): #[event_target]
-	target: Entity,
+	destination: Entity,
 	notification: ObserverNotification<In, InError>,
 }
 
@@ -24,7 +24,7 @@ where
 	InError: Signal,
 {
 	fn entity(&self) -> Entity {
-		self.target
+		self.destination
 	}
 }
 
@@ -33,16 +33,37 @@ where
 	In: Signal,
 	InError: Signal,
 {
+	pub fn new_next(next: In, destination: Entity) -> Self {
+		Self {
+			destination,
+			notification: ObserverNotification::Next(next),
+		}
+	}
+
+	pub fn new_error(error: InError, destination: Entity) -> Self {
+		Self {
+			destination,
+			notification: ObserverNotification::Error(error),
+		}
+	}
+
+	pub fn new_complete(destination: Entity) -> Self {
+		Self {
+			destination,
+			notification: ObserverNotification::Complete,
+		}
+	}
+
 	pub fn signal(&self) -> &ObserverNotification<In, InError> {
 		&self.notification
 	}
 
 	pub fn from_notification(
 		notification: ObserverNotification<In, InError>,
-		target: Entity,
+		destination: Entity,
 	) -> Self {
 		Self {
-			target,
+			destination,
 			notification,
 		}
 	}

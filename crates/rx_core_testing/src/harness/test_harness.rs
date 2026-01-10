@@ -71,188 +71,39 @@ where
 		&mut self.subject_source
 	}
 
+	/// Verifies:
+	/// - rx_verify_upstream_teardowns_executed
+	/// - rx_verify_downstream_teardowns_executed
+	/// - rx_verify_subscription_teardowns_executed
 	#[track_caller]
-	pub fn assert_rx_contract_closed_after_error<O>(
+	pub fn assert_terminal_notification(
 		&mut self,
-		observable: O,
-		in_error: InError,
-		out_error: FinalOutError,
-	) where
-		O: Observable<Out = FinalOut, OutError = FinalOutError>,
-	{
-		self.subscribe_to(observable);
-
-		let notification_index_so_far = self.notifications().len();
-
-		assert!(
-			!self.get_subscription().is_closed(),
-			"{} - should not have been closed before error!",
-			self.prefix
-		);
-
-		self.subject_source.error(in_error);
+		terminal_notification: SubscriberNotification<FinalOut, FinalOutError>,
+	) {
+		let last_notification_index =
+			self.notifications()
+				.len()
+				.checked_sub(1)
+				.unwrap_or_else(|| {
+					panic!(
+						"{} - rx_verify_closed - at least one notification should've happen!",
+						self.prefix
+					)
+				});
 
 		self.notifications().assert_notifications(
 			&format!(
-				"{} - rx_verify_errored - Did not observe an error notification!",
+				"{} - rx_verify_closed - Did not observe expected last notification!",
 				self.prefix
 			),
-			notification_index_so_far,
-			[SubscriberNotification::Error(out_error)],
+			last_notification_index,
+			[terminal_notification],
 			true,
 		);
 
 		assert!(
 			self.get_subscription().is_closed(),
-			"{} - rx_verify_closed - Subscription did not close after error!",
-			self.prefix
-		);
-
-		self.tracked_teardown_upstream
-			.lock_ignore_poison()
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_UPSTREAM)
-			.assert_was_torn_down(); // rx_verify_upstream_teardowns_executed
-		self.tracked_teardown_downstream
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_DOWNSTREAM)
-			.assert_was_torn_down(); // rx_verify_downstream_teardowns_executed
-		self.tracked_teardown_subscription
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_SUBSCRIPTION)
-			.assert_was_torn_down(); // rx_verify_subscription_teardowns_executed
-	}
-
-	#[track_caller]
-	pub fn assert_rx_contract_closed_after_complete<O>(&mut self, observable: O)
-	where
-		O: Observable<Out = FinalOut, OutError = FinalOutError>,
-	{
-		self.subscribe_to(observable);
-
-		let notification_index_so_far = self.notifications().len();
-
-		assert!(
-			!self.get_subscription().is_closed(),
-			"{} - should not have been closed before complete!",
-			self.prefix
-		);
-
-		self.subject_source.complete();
-
-		self.notifications().assert_notifications(
-			&format!(
-				"{} - rx_verify_completed - Did not observe a complete notification!",
-				self.prefix
-			),
-			notification_index_so_far,
-			[SubscriberNotification::Complete],
-			true,
-		);
-
-		assert!(
-			self.get_subscription().is_closed(),
-			"{} - rx_verify_closed - Subscription did not close after complete!",
-			self.prefix
-		);
-
-		self.tracked_teardown_upstream
-			.lock_ignore_poison()
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_UPSTREAM)
-			.assert_was_torn_down(); // rx_verify_upstream_teardowns_executed
-		self.tracked_teardown_downstream
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_DOWNSTREAM)
-			.assert_was_torn_down(); // rx_verify_downstream_teardowns_executed
-		self.tracked_teardown_subscription
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_SUBSCRIPTION)
-			.assert_was_torn_down(); // rx_verify_subscription_teardowns_executed
-	}
-
-	#[track_caller]
-	pub fn assert_rx_contract_closed_after_unsubscribe<O>(&mut self, observable: O)
-	where
-		O: Observable<Out = FinalOut, OutError = FinalOutError>,
-	{
-		self.subscribe_to(observable);
-
-		let notification_index_so_far = self.notifications().len();
-
-		assert!(
-			!self.get_subscription().is_closed(),
-			"{} - should not have been closed before unsubscribe!",
-			self.prefix
-		);
-
-		self.subject_source.unsubscribe();
-
-		self.notifications().assert_notifications(
-			&format!(
-				"{} - rx_verify_unsubscribed - Did not observe an unsubscribe notification!",
-				self.prefix
-			),
-			notification_index_so_far,
-			[SubscriberNotification::Unsubscribe],
-			true,
-		);
-
-		assert!(
-			self.get_subscription().is_closed(),
-			"{} - rx_verify_closed - Subscription did not close after unsubscribe!",
-			self.prefix
-		);
-
-		self.tracked_teardown_upstream
-			.lock_ignore_poison()
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_UPSTREAM)
-			.assert_was_torn_down(); // rx_verify_upstream_teardowns_executed
-		self.tracked_teardown_downstream
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_DOWNSTREAM)
-			.assert_was_torn_down(); // rx_verify_downstream_teardowns_executed
-		self.tracked_teardown_subscription
-			.as_ref()
-			.expect(TEST_HARNESS_MISSING_TRACKER_SUBSCRIPTION)
-			.assert_was_torn_down(); // rx_verify_subscription_teardowns_executed
-	}
-
-	#[track_caller]
-	pub fn assert_rx_contract_closed_if_downstream_closes_early<O>(
-		&mut self,
-		mut observable: O,
-		take_count: usize,
-	) where
-		O: Observable<Out = FinalOut, OutError = FinalOutError>,
-	{
-		let destination = self.create_harness_destination(Some(take_count));
-		self.register_subscription(observable.subscribe(destination));
-
-		let notification_index_so_far = self.notifications().len();
-
-		assert!(
-			!self.get_subscription().is_closed(),
-			"{} - should not have been closed before unsubscribe!",
-			self.prefix
-		);
-
-		self.subject_source.unsubscribe();
-
-		self.notifications().assert_notifications(
-			&format!(
-				"{} - rx_verify_unsubscribed - Did not observe an unsubscribe notification!",
-				self.prefix
-			),
-			notification_index_so_far,
-			[SubscriberNotification::Unsubscribe],
-			true,
-		);
-
-		assert!(
-			self.get_subscription().is_closed(),
-			"{} - rx_verify_closed - Subscription did not close after unsubscribe!",
+			"{} - rx_verify_closed - Subscription did not close after last notification!",
 			self.prefix
 		);
 

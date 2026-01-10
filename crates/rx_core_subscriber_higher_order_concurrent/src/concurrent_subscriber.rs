@@ -233,12 +233,7 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if !self.is_closed()
-			&& self
-				.state
-				.lock_ignore_poison()
-				.upstream_unsubscribe_can_downstream()
-		{
+		if !self.is_closed() {
 			self.outer_teardown.unsubscribe();
 
 			let inner_subscriptions = self

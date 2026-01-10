@@ -170,12 +170,7 @@ where
 	}
 
 	fn unsubscribe(&mut self) {
-		if !self.is_closed()
-			&& self
-				.state
-				.lock_ignore_poison()
-				.upstream_unsubscribe_can_downstream()
-		{
+		if !self.is_closed() {
 			if let Some(subscription_handle) = &mut self.inner_subscription.take() {
 				subscription_handle.unsubscribe();
 			};

@@ -8,8 +8,8 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_common::{
-	SchedulerHandle, SubscriptionLike, SubscriptionNotification, SubscriptionWithTeardown,
-	Teardown, TeardownCollection,
+	SchedulerHandle, SharedSubscription, SubscriptionLike, SubscriptionNotification,
+	SubscriptionWithTeardown, Teardown, TeardownCollection,
 };
 use rx_core_macro_subscription_derive::RxSubscription;
 
@@ -18,13 +18,13 @@ use crate::{
 };
 
 // TODO(bevy-0.18+): This component does not need to be erased, it's only erased to facilitate mass unsubscribe on exit, which currently can't be done using commands as there is no teardown schedule in bevy similar to the startup schedule. https://github.com/AlexAegis/rx_bevy/issues/2 https://github.com/bevyengine/bevy/issues/7067
-#[derive(Component, RxSubscription)]
+#[derive(Component, RxSubscription, Clone)]
 #[component(on_insert=subscription_add_notification_observer_on_insert, on_remove=subscription_unsubscribe_on_remove)]
 #[require(Name::new(format!("{}", ShortName::of::<Self>())))]
 pub struct SubscriptionComponent {
 	this_entity: Entity,
 	self_despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
-	subscription: Box<dyn SubscriptionWithTeardown + Send + Sync>,
+	subscription: SharedSubscription,
 }
 
 impl SubscriptionComponent {
@@ -37,7 +37,7 @@ impl SubscriptionComponent {
 		Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
 	{
 		Self {
-			subscription: Box::new(subscription),
+			subscription: SharedSubscription::new(subscription),
 			self_despawn_scheduler: despawn_scheduler,
 			this_entity,
 		}
@@ -96,9 +96,13 @@ impl SubscriptionLike for SubscriptionComponent {
 	}
 
 	fn unsubscribe(&mut self) {
-		self.subscription.unsubscribe();
-		let mut scheduler = self.self_despawn_scheduler.lock();
-		scheduler.schedule_despawn_entity(self.this_entity, None);
+		if !self.subscription.is_closed() {
+			self.subscription.unsubscribe();
+		}
+
+		self.self_despawn_scheduler
+			.lock()
+			.schedule_despawn_entity(self.this_entity, None);
 	}
 }
 

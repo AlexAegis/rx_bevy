@@ -35,7 +35,9 @@ mod contracts {
 				"map_never (error)",
 			);
 		let observable = harness.create_harness_observable().map_never();
-		harness.assert_rx_contract_closed_after_complete(observable);
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
 	}
 
 	#[test]
@@ -45,7 +47,9 @@ mod contracts {
 				"map_never (error)",
 			);
 		let observable = harness.create_harness_observable().map_never();
-		harness.assert_rx_contract_closed_after_unsubscribe(observable);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
 	}
 }
 
@@ -57,6 +61,8 @@ mod compose {
 		let mut harness = TestHarness::<_, usize, Never>::new_operator_harness("map_never (error)");
 		let composed = compose_operator::<usize, Never>().map_never();
 		let observable = harness.create_harness_observable().pipe(composed);
-		harness.assert_rx_contract_closed_after_unsubscribe(observable);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
 	}
 }

@@ -109,35 +109,13 @@ where
 		!was_downstream_already_unsubscribed
 	}
 
-	pub fn upstream_unsubscribe_can_downstream(&mut self) -> bool {
-		self.upstream_subscriber_state.unsubscribe_if_not_already();
-
-		self.can_downstream_unsubscribe()
-	}
-
 	pub fn upstream_error(&mut self) {
 		self.state.on_upstream_error();
 		self.upstream_subscriber_state.error();
-
-		// if !self.upstream_subscriber_state.is_unsubscribed() {
-		// 	self.upstream_subscriber_state.unsubscribe();
-		// }
-		//
-		// if !self.downstream_subscriber_state.is_unsubscribed() {
-		// 	self.downstream_subscriber_state.unsubscribe();
-		// }
 	}
 
 	pub fn downstream_error(&mut self) {
 		self.state.on_downstream_error();
 		self.downstream_subscriber_state.error();
-
-		//if !self.upstream_subscriber_state.is_unsubscribed() {
-		//	self.upstream_subscriber_state.unsubscribe();
-		//}
-		//
-		//if !self.downstream_subscriber_state.is_unsubscribed() {
-		//	self.downstream_subscriber_state.unsubscribe();
-		//}
 	}
 }
