@@ -117,3 +117,69 @@ fn should_be_composable() {
 		true,
 	);
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let destination = MockObserver::<usize, FirstOperatorError<&'static str>>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut source = PublishSubject::<usize, &'static str>::default();
+		let subscription = source.clone().first().subscribe(destination);
+
+		let error = "error";
+		source.error(error);
+
+		notification_collector.lock().assert_notifications(
+			"first - error",
+			0,
+			[SubscriberNotification::Error(FirstOperatorError::Upstream(
+				error,
+			))],
+			true,
+		);
+		assert!(subscription.is_closed());
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let destination = MockObserver::<usize, FirstOperatorError<&'static str>>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut source = PublishSubject::<usize, &'static str>::default();
+		let subscription = source.clone().first().subscribe(destination);
+
+		source.complete();
+
+		notification_collector.lock().assert_notifications(
+			"first - complete",
+			0,
+			[SubscriberNotification::Error(
+				FirstOperatorError::NoNextObservedBeforeComplete,
+			)],
+			true,
+		);
+		assert!(subscription.is_closed());
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let destination = MockObserver::<usize, FirstOperatorError<&'static str>>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let source = PublishSubject::<usize, &'static str>::default();
+		let mut subscription = source.clone().first().subscribe(destination);
+
+		subscription.unsubscribe();
+
+		notification_collector.lock().assert_notifications(
+			"first - unsubscribe",
+			0,
+			[SubscriberNotification::Unsubscribe],
+			true,
+		);
+		assert!(subscription.is_closed());
+	}
+}

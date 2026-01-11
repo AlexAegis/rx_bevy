@@ -108,3 +108,47 @@ fn should_be_composable() {
 		true,
 	);
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness = TestHarness::<
+			TestSubject<ObserverNotification<usize, &'static str>, Never>,
+			usize,
+			&'static str,
+		>::new("dematerialize");
+		let observable = harness.create_harness_observable().dematerialize();
+		harness.subscribe_to(observable);
+		harness.source().next(ObserverNotification::Next(1));
+		harness.source().next(ObserverNotification::Error("error"));
+		harness.assert_terminal_notification(SubscriberNotification::Error("error"));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness = TestHarness::<
+			TestSubject<ObserverNotification<usize, &'static str>, Never>,
+			usize,
+			&'static str,
+		>::new("dematerialize");
+		let observable = harness.create_harness_observable().dematerialize();
+		harness.subscribe_to(observable);
+		harness.source().next(ObserverNotification::Complete);
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness = TestHarness::<
+			TestSubject<ObserverNotification<usize, &'static str>, Never>,
+			usize,
+			&'static str,
+		>::new("dematerialize");
+		let observable = harness.create_harness_observable().dematerialize();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

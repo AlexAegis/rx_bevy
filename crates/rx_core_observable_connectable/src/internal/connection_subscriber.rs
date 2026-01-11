@@ -56,6 +56,7 @@ where
 			}
 			self.connector.error(error);
 			self.on_complete.take(); // Once errored, can't complete
+			self.teardown.unsubscribe();
 		}
 	}
 
@@ -67,6 +68,7 @@ where
 			}
 			self.connector.complete();
 			self.on_error.take(); // Once completed, can't error
+			self.teardown.unsubscribe();
 		}
 	}
 }

@@ -266,3 +266,51 @@ fn should_handle_manual_connections_and_disconnections_and_close_when_completed(
 	teardown_tracker_1.assert_was_torn_down();
 	teardown_tracker_2.assert_was_torn_down();
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("share");
+		let observable = harness
+			.create_harness_observable()
+			.share(ConnectableOptions::<
+				ProvideWithDefault<PublishSubject<usize, &'static str>>,
+			>::default());
+		harness.subscribe_to(observable);
+
+		let error = "error";
+		harness.source().error(error);
+		harness.assert_terminal_notification(SubscriberNotification::Error(error));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("share");
+		let observable = harness
+			.create_harness_observable()
+			.share(ConnectableOptions::<
+				ProvideWithDefault<PublishSubject<usize, &'static str>>,
+			>::default());
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("share");
+		let observable = harness
+			.create_harness_observable()
+			.share(ConnectableOptions::<
+				ProvideWithDefault<PublishSubject<usize, &'static str>>,
+			>::default());
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

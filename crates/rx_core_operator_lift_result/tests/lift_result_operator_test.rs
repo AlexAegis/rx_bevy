@@ -92,3 +92,47 @@ fn should_compose() {
 		true,
 	);
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness = TestHarness::<
+			TestSubject<Result<usize, &'static str>, Never>,
+			usize,
+			&'static str,
+		>::new("lift_result");
+		let observable = harness.create_harness_observable().lift_result();
+		harness.subscribe_to(observable);
+		harness.source().next(Ok(1));
+		harness.source().next(Err("error"));
+		harness.assert_terminal_notification(SubscriberNotification::Error("error"));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness = TestHarness::<
+			TestSubject<Result<usize, &'static str>, Never>,
+			usize,
+			&'static str,
+		>::new("lift_result");
+		let observable = harness.create_harness_observable().lift_result();
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness = TestHarness::<
+			TestSubject<Result<usize, &'static str>, Never>,
+			usize,
+			&'static str,
+		>::new("lift_result");
+		let observable = harness.create_harness_observable().lift_result();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

@@ -97,3 +97,38 @@ mod teardown {
 		);
 	}
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, Never>::new("catch");
+		let observable = harness.create_harness_observable().catch(|_error| of(99));
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().error("error");
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, Never>::new("catch");
+		let observable = harness.create_harness_observable().catch(|_error| of(99));
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, Never>::new("catch");
+		let observable = harness.create_harness_observable().catch(|_error| of(99));
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

@@ -468,3 +468,64 @@ fn should_compose() {
 
 	subscription.unsubscribe();
 }
+
+mod contracts {
+	use super::*;
+
+	/// Errors are instantenous and not delayed, hence the missing tick call.
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("delay");
+
+		let observable = harness
+			.create_harness_observable()
+			.delay(Duration::from_millis(10), scheduler.clone());
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().error("error");
+		harness.assert_terminal_notification(SubscriberNotification::Error("error"));
+
+		assert!(executor.is_empty());
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("delay");
+
+		let observable = harness
+			.create_harness_observable()
+			.delay(Duration::from_millis(10), scheduler.clone());
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().complete();
+		executor.tick(Duration::from_millis(20));
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		assert!(executor.is_empty());
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("delay");
+
+		let observable = harness
+			.create_harness_observable()
+			.delay(Duration::from_millis(10), scheduler.clone());
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.get_subscription_mut().unsubscribe();
+		executor.tick(Duration::from_millis(20));
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		assert!(executor.is_empty());
+	}
+}

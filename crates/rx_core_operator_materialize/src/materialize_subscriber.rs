@@ -41,10 +41,12 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.next(ObserverNotification::Error(error));
+		self.destination.complete();
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		self.destination.next(ObserverNotification::Complete);
+		self.destination.complete();
 	}
 }

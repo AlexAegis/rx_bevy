@@ -40,9 +40,10 @@ fn should_turn_error_emissions_into_notifications_and_not_error() {
 	notification_collector.lock().assert_notifications(
 		"materialize",
 		0,
-		[SubscriberNotification::Next(ObserverNotification::Error(
-			error,
-		))],
+		[
+			SubscriberNotification::Next(ObserverNotification::Error(error)),
+			SubscriberNotification::Complete,
+		],
 		true,
 	);
 }
@@ -61,7 +62,10 @@ fn should_turn_complete_emissions_into_notifications_and_not_complete() {
 	notification_collector.lock().assert_notifications(
 		"materialize",
 		0,
-		[SubscriberNotification::Next(ObserverNotification::Complete)],
+		[
+			SubscriberNotification::Next(ObserverNotification::Complete),
+			SubscriberNotification::Complete,
+		],
 		true,
 	);
 }
@@ -107,7 +111,52 @@ fn should_be_composable() {
 		[
 			SubscriberNotification::Next(ObserverNotification::Next(1)),
 			SubscriberNotification::Next(ObserverNotification::Complete),
+			SubscriberNotification::Complete,
 		],
 		true,
 	);
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness = TestHarness::<
+			TestSubject<usize, TestError>,
+			ObserverNotification<usize, TestError>,
+			Never,
+		>::new("materialize");
+		let observable = harness.create_harness_observable().materialize();
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness = TestHarness::<
+			TestSubject<usize, &'static str>,
+			ObserverNotification<usize, &'static str>,
+			Never,
+		>::new("materialize");
+		let observable = harness.create_harness_observable().materialize();
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness = TestHarness::<
+			TestSubject<usize, &'static str>,
+			ObserverNotification<usize, &'static str>,
+			Never,
+		>::new("materialize");
+		let observable = harness.create_harness_observable().materialize();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
 }

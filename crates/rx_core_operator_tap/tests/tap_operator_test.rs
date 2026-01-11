@@ -144,3 +144,43 @@ fn should_compose() {
 
 	assert!(subscription.is_closed());
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("tap");
+		let observable = harness
+			.create_harness_observable()
+			.tap(MockObserver::default());
+		harness.subscribe_to(observable);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("tap");
+		let observable = harness
+			.create_harness_observable()
+			.tap(MockObserver::default());
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("tap");
+		let observable = harness
+			.create_harness_observable()
+			.tap(MockObserver::default());
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

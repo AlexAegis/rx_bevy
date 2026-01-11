@@ -1,6 +1,9 @@
-use std::sync::{
-	Arc,
-	atomic::{AtomicBool, Ordering},
+use std::{
+	sync::{
+		Arc,
+		atomic::{AtomicBool, AtomicUsize, Ordering},
+	},
+	time::Duration,
 };
 
 use rx_core::prelude::*;
@@ -404,4 +407,132 @@ fn should_execute_all_active_inner_teardowns_when_one_errors() {
 		subscription.is_closed(),
 		"subscription should be closed after completion"
 	);
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let inner_unsubscribed = Arc::new(AtomicUsize::default());
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness = TestHarness::<
+			TestSubject<ErasedObservable<usize, TestError>, TestError>,
+			usize,
+			TestError,
+		>::new("merge_all");
+
+		let observable = harness
+			.create_harness_observable()
+			.merge_all(usize::MAX, |error| error);
+
+		harness.subscribe_to(observable);
+
+		let source_scheduler = scheduler.clone();
+		let source_unsub = inner_unsubscribed.clone();
+		harness.source().next(
+			interval(
+				IntervalObservableOptions {
+					duration: Duration::from_millis(200),
+					max_emissions_per_tick: 10,
+					start_on_subscribe: false,
+				},
+				source_scheduler,
+			)
+			.finalize(move || {
+				source_unsub.fetch_add(1, Ordering::Relaxed);
+			})
+			.map_error(|_never| TestError)
+			.erase(),
+		);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+
+		assert_eq!(inner_unsubscribed.load(Ordering::Relaxed), 1);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let inner_unsubscribed = Arc::new(AtomicUsize::default());
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness = TestHarness::<
+			TestSubject<ErasedObservable<usize, TestError>, TestError>,
+			usize,
+			TestError,
+		>::new("merge_all");
+
+		let observable = harness
+			.create_harness_observable()
+			.merge_all(usize::MAX, |error| error);
+
+		harness.subscribe_to(observable);
+
+		let source_scheduler = scheduler.clone();
+		let source_unsub = inner_unsubscribed.clone();
+		harness.source().next(
+			interval(
+				IntervalObservableOptions {
+					duration: Duration::from_millis(10),
+					max_emissions_per_tick: 10,
+					start_on_subscribe: true,
+				},
+				source_scheduler,
+			)
+			.take(1)
+			.finalize(move || {
+				source_unsub.fetch_add(1, Ordering::Relaxed);
+			})
+			.map_error(|_never| TestError)
+			.erase(),
+		);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		assert_eq!(inner_unsubscribed.load(Ordering::Relaxed), 1);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let inner_unsubscribed = Arc::new(AtomicUsize::default());
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness = TestHarness::<
+			TestSubject<ErasedObservable<usize, TestError>, TestError>,
+			usize,
+			TestError,
+		>::new("merge_all");
+
+		let observable = harness
+			.create_harness_observable()
+			.merge_all(usize::MAX, |error| error);
+
+		harness.subscribe_to(observable);
+
+		let source_scheduler = scheduler.clone();
+		let source_unsub = inner_unsubscribed.clone();
+		harness.source().next(
+			interval(
+				IntervalObservableOptions {
+					duration: Duration::from_millis(200),
+					max_emissions_per_tick: 10,
+					start_on_subscribe: false,
+				},
+				source_scheduler,
+			)
+			.finalize(move || {
+				source_unsub.fetch_add(1, Ordering::Relaxed);
+			})
+			.map_error(|_never| TestError)
+			.erase(),
+		);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		assert_eq!(inner_unsubscribed.load(Ordering::Relaxed), 1);
+	}
 }

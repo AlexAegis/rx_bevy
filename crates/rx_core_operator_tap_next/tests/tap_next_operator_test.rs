@@ -54,70 +54,6 @@ mod tap_next {
 	}
 }
 
-mod contracts {
-	use super::*;
-
-	#[test]
-	fn rx_contract_closed_after_error() {
-		let tap_notification_collector = NotificationCollector::<usize>::default();
-		let tap_notification_collector_clone = tap_notification_collector.clone();
-
-		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("tap_next");
-		let observable = harness.create_harness_observable().tap_next(move |next| {
-			tap_notification_collector_clone
-				.lock()
-				.push(SubscriberNotification::Next(*next))
-		});
-		harness.subscribe_to(observable);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
-
-		tap_notification_collector
-			.lock()
-			.assert_is_empty("tap_destination - should not have observed anything");
-	}
-
-	#[test]
-	fn rx_contract_closed_after_complete() {
-		let tap_notification_collector = NotificationCollector::<usize>::default();
-		let tap_notification_collector_clone = tap_notification_collector.clone();
-
-		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("tap_next");
-		let observable = harness.create_harness_observable().tap_next(move |next| {
-			tap_notification_collector_clone
-				.lock()
-				.push(SubscriberNotification::Next(*next))
-		});
-		harness.subscribe_to(observable);
-		harness.source().complete();
-		harness.assert_terminal_notification(SubscriberNotification::Complete);
-
-		tap_notification_collector
-			.lock()
-			.assert_is_empty("tap_destination - should not have observed anything");
-	}
-
-	#[test]
-	fn rx_contract_closed_after_unsubscribe() {
-		let tap_notification_collector = NotificationCollector::<usize>::default();
-		let tap_notification_collector_clone = tap_notification_collector.clone();
-
-		let mut harness = TestHarness::<_, usize, TestError>::new_operator_harness("tap_next");
-		let observable = harness.create_harness_observable().tap_next(move |next| {
-			tap_notification_collector_clone
-				.lock()
-				.push(SubscriberNotification::Next(*next))
-		});
-		harness.subscribe_to(observable);
-		harness.get_subscription_mut().unsubscribe();
-		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
-
-		tap_notification_collector
-			.lock()
-			.assert_is_empty("tap_destination - should not have observed anything");
-	}
-}
-
 mod compose {
 	use super::*;
 
@@ -153,5 +89,69 @@ mod compose {
 			.assert_is_empty("tap_destination");
 
 		assert!(subscription.is_closed());
+	}
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let tap_notification_collector = NotificationCollector::<usize>::default();
+		let tap_notification_collector_clone = tap_notification_collector.clone();
+
+		let mut harness = TestHarness::<_, usize, TestError>::new("tap_next");
+		let observable = harness.create_harness_observable().tap_next(move |next| {
+			tap_notification_collector_clone
+				.lock()
+				.push(SubscriberNotification::Next(*next))
+		});
+		harness.subscribe_to(observable);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+
+		tap_notification_collector
+			.lock()
+			.assert_is_empty("tap_destination - should not have observed anything");
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let tap_notification_collector = NotificationCollector::<usize>::default();
+		let tap_notification_collector_clone = tap_notification_collector.clone();
+
+		let mut harness = TestHarness::<_, usize, TestError>::new("tap_next");
+		let observable = harness.create_harness_observable().tap_next(move |next| {
+			tap_notification_collector_clone
+				.lock()
+				.push(SubscriberNotification::Next(*next))
+		});
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		tap_notification_collector
+			.lock()
+			.assert_is_empty("tap_destination - should not have observed anything");
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let tap_notification_collector = NotificationCollector::<usize>::default();
+		let tap_notification_collector_clone = tap_notification_collector.clone();
+
+		let mut harness = TestHarness::<_, usize, TestError>::new("tap_next");
+		let observable = harness.create_harness_observable().tap_next(move |next| {
+			tap_notification_collector_clone
+				.lock()
+				.push(SubscriberNotification::Next(*next))
+		});
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		tap_notification_collector
+			.lock()
+			.assert_is_empty("tap_destination - should not have observed anything");
 	}
 }

@@ -152,3 +152,52 @@ fn should_compose() {
 		true,
 	);
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let finalizer_called = Arc::new(AtomicBool::new(false));
+		let finalizer_called_clone = finalizer_called.clone();
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("finalize");
+		let observable = harness
+			.create_harness_observable()
+			.finalize(move || finalizer_called_clone.store(true, Ordering::Relaxed));
+		harness.subscribe_to(observable);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		assert!(finalizer_called.load(Ordering::Relaxed));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let finalizer_called = Arc::new(AtomicBool::new(false));
+		let finalizer_called_clone = finalizer_called.clone();
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("finalize");
+		let observable = harness
+			.create_harness_observable()
+			.finalize(move || finalizer_called_clone.store(true, Ordering::Relaxed));
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+		assert!(finalizer_called.load(Ordering::Relaxed));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let finalizer_called = Arc::new(AtomicBool::new(false));
+		let finalizer_called_clone = finalizer_called.clone();
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("finalize");
+		let observable = harness
+			.create_harness_observable()
+			.finalize(move || finalizer_called_clone.store(true, Ordering::Relaxed));
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+		assert!(finalizer_called.load(Ordering::Relaxed));
+	}
+}

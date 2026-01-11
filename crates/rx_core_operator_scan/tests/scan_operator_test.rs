@@ -123,3 +123,44 @@ fn should_compose() {
 		true,
 	);
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("scan");
+		let observable = harness
+			.create_harness_observable()
+			.scan(|acc, next| acc + next, 0);
+		harness.subscribe_to(observable);
+		let error = "error";
+		harness.source().error(error);
+		harness.assert_terminal_notification(SubscriberNotification::Error(error));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("scan");
+		let observable = harness
+			.create_harness_observable()
+			.scan(|acc, next| acc + next, 0);
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("scan");
+		let observable = harness
+			.create_harness_observable()
+			.scan(|acc, next| acc + next, 0);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

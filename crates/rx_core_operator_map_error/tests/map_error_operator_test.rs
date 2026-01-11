@@ -113,3 +113,46 @@ fn should_compose() {
 		true,
 	);
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, String>::new("map_error");
+		let observable = harness
+			.create_harness_observable()
+			.map_error(|error| format!("mapped {error}"));
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().error("error");
+		harness.assert_terminal_notification(SubscriberNotification::Error(
+			"mapped error".to_string(),
+		));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, String>::new("map_error");
+		let observable = harness
+			.create_harness_observable()
+			.map_error(|error| format!("mapped {error}"));
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, String>::new("map_error");
+		let observable = harness
+			.create_harness_observable()
+			.map_error(|error| format!("mapped {error}"));
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

@@ -4,9 +4,7 @@ use rx_core_testing::prelude::*;
 #[test]
 fn should_just_forward_nexts() {
 	let mut harness =
-		TestHarness::<TestSubject<usize, Never>, usize, TestError>::new_operator_harness(
-			"map_never (error)",
-		);
+		TestHarness::<TestSubject<usize, Never>, usize, TestError>::new("map_never (error)");
 	let observable = harness.create_harness_observable().map_never();
 	harness.subscribe_to(observable);
 
@@ -24,6 +22,20 @@ fn should_just_forward_nexts() {
 	);
 }
 
+mod compose {
+	use super::*;
+
+	#[test]
+	fn should_compose() {
+		let mut harness = TestHarness::<_, usize, Never>::new("map_never (error)");
+		let composed = compose_operator::<usize, Never>().map_never();
+		let observable = harness.create_harness_observable().pipe(composed);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}
+
 /// rx_contract_closed_after_error - impossible, error type is never
 mod contracts {
 	use super::*;
@@ -31,9 +43,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_complete() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, Never>, usize, TestError>::new_operator_harness(
-				"map_never (error)",
-			);
+			TestHarness::<TestSubject<usize, Never>, usize, TestError>::new("map_never (error)");
 		let observable = harness.create_harness_observable().map_never();
 		harness.subscribe_to(observable);
 		harness.source().complete();
@@ -43,24 +53,8 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, Never>, usize, TestError>::new_operator_harness(
-				"map_never (error)",
-			);
+			TestHarness::<TestSubject<usize, Never>, usize, TestError>::new("map_never (error)");
 		let observable = harness.create_harness_observable().map_never();
-		harness.subscribe_to(observable);
-		harness.get_subscription_mut().unsubscribe();
-		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
-	}
-}
-
-mod compose {
-	use super::*;
-
-	#[test]
-	fn should_compose() {
-		let mut harness = TestHarness::<_, usize, Never>::new_operator_harness("map_never (error)");
-		let composed = compose_operator::<usize, Never>().map_never();
-		let observable = harness.create_harness_observable().pipe(composed);
 		harness.subscribe_to(observable);
 		harness.get_subscription_mut().unsubscribe();
 		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);

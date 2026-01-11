@@ -1,3 +1,11 @@
+use std::{
+	sync::{
+		Arc,
+		atomic::{AtomicUsize, Ordering},
+	},
+	time::Duration,
+};
+
 use rx_core::prelude::*;
 use rx_core_testing::prelude::*;
 
@@ -309,4 +317,117 @@ fn should_compose_and_concat_all_iterators() {
 		subscription.is_closed(),
 		"subscription should be closed after completion"
 	);
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let inner_unsubscribed = Arc::new(AtomicUsize::default());
+		let inner_unsubscribed_clone = inner_unsubscribed.clone();
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("concat_map");
+		let observable = harness.create_harness_observable().concat_map(
+			move |_next: usize| {
+				let counter = inner_unsubscribed_clone.clone();
+				interval(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(200),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: false,
+					},
+					scheduler.clone(),
+				)
+				.finalize(move || {
+					counter.fetch_add(1, Ordering::Relaxed);
+				})
+				.map_never()
+			},
+			|error| error,
+		);
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+
+		assert_eq!(inner_unsubscribed.load(Ordering::Relaxed), 1);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let inner_unsubscribed = Arc::new(AtomicUsize::default());
+		let inner_unsubscribed_clone = inner_unsubscribed.clone();
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("concat_map");
+		let observable = harness.create_harness_observable().concat_map(
+			move |_next: usize| {
+				let counter = inner_unsubscribed_clone.clone();
+				interval(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(10),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: true,
+					},
+					scheduler.clone(),
+				)
+				.take(1)
+				.finalize(move || {
+					counter.fetch_add(1, Ordering::Relaxed);
+				})
+				.map_never()
+			},
+			|error| error,
+		);
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		assert_eq!(inner_unsubscribed.load(Ordering::Relaxed), 1);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let inner_unsubscribed = Arc::new(AtomicUsize::default());
+		let inner_unsubscribed_clone = inner_unsubscribed.clone();
+
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("concat_map");
+		let observable = harness.create_harness_observable().concat_map(
+			move |_next: usize| {
+				let counter = inner_unsubscribed_clone.clone();
+				interval(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(200),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: false,
+					},
+					scheduler.clone(),
+				)
+				.finalize(move || {
+					counter.fetch_add(1, Ordering::Relaxed);
+				})
+				.map_never()
+			},
+			|error| error,
+		);
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		assert_eq!(inner_unsubscribed.load(Ordering::Relaxed), 1);
+	}
 }

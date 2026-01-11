@@ -508,3 +508,37 @@ fn should_be_able_to_immediately_unsubscribe_if_an_immediate_error_was_retried()
 
 	teardown_tracker.assert_was_torn_down();
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let error = "error";
+		let mut harness =
+			TestHarness::<_, Never, &'static str>::new_with_source("retry", throw(error));
+		let observable = harness.create_harness_observable().retry(1);
+		harness.subscribe_to(observable);
+		harness.assert_terminal_notification(SubscriberNotification::Error(error));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("retry");
+		let observable = harness.create_harness_observable().retry(1);
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("retry");
+		let observable = harness.create_harness_observable().retry(1);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}
