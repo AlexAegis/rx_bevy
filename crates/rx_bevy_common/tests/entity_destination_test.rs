@@ -32,7 +32,7 @@ fn signals_should_reach_the_destination_and_close_on_error() {
 	};
 
 	let mut destination =
-		EntityDestination::<usize, TestError>::new(destination_entity, scheduler_handle);
+		EntityDestination::<usize, TestError>::new(destination_entity, scheduler_handle).upgrade();
 	let tracked_teardown = destination.add_tracked_teardown("entity_destination");
 	destination.next(1);
 	destination.next(2);
@@ -78,7 +78,8 @@ fn signals_should_reach_the_destination_and_close_on_complete() {
 		scheduler.handle()
 	};
 
-	let mut destination = EntityDestination::<usize>::new(destination_entity, scheduler_handle);
+	let mut destination =
+		EntityDestination::<usize>::new(destination_entity, scheduler_handle).upgrade();
 	let tracked_teardown = destination.add_tracked_teardown("entity_destination");
 	destination.next(1);
 	destination.next(2);
@@ -123,7 +124,8 @@ fn signals_should_reach_the_destination_and_close_on_unsubscribe() {
 		scheduler.handle()
 	};
 
-	let mut destination = EntityDestination::<usize>::new(destination_entity, scheduler_handle);
+	let mut destination =
+		EntityDestination::<usize>::new(destination_entity, scheduler_handle).upgrade();
 	let tracked_teardown = destination.add_tracked_teardown("entity_destination");
 	destination.next(1);
 	destination.next(2);

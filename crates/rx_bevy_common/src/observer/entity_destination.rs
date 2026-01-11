@@ -3,10 +3,9 @@ use core::marker::PhantomData;
 use bevy_ecs::entity::Entity;
 use rx_core_common::{
 	Never, ObserverNotification, RxObserver, Scheduler, SchedulerHandle,
-	SchedulerScheduleWorkExtension, SharedSubscription, Signal, SubscriptionLike,
-	WorkCancellationId,
+	SchedulerScheduleWorkExtension, Signal, WorkCancellationId,
 };
-use rx_core_macro_subscriber_derive::RxSubscriber;
+use rx_core_macro_observer_derive::RxObserver;
 
 use crate::RxBevyScheduler;
 
@@ -20,18 +19,15 @@ use crate::RxBevyScheduler;
 ///
 /// > Technically this is an Observer in Rx terms and should be called
 /// > `EntityObserver` but that would be very confusing in Bevy.
-#[derive(RxSubscriber, Debug)]
+#[derive(RxObserver, Debug)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
-#[rx_delegate_teardown_collection]
 pub struct EntityDestination<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
 {
 	destination: Entity,
-	#[teardown]
-	teardown: SharedSubscription,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	cancellation_id: WorkCancellationId,
 	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
@@ -47,7 +43,6 @@ where
 		Self {
 			destination,
 			scheduler,
-			teardown: SharedSubscription::default(),
 			cancellation_id,
 			_phantom_data: PhantomData,
 		}
@@ -61,7 +56,6 @@ where
 {
 	fn next(&mut self, next: Self::In) {
 		let destination = self.destination;
-		let mut teardown = self.teardown.clone();
 		self.scheduler.lock().schedule_immediate_work(
 			move |_, context| {
 				if context.deferred_world.get_entity(destination).is_ok() {
@@ -69,8 +63,6 @@ where
 						destination,
 						ObserverNotification::<In, InError>::Next(next),
 					);
-				} else {
-					teardown.unsubscribe();
 				}
 			},
 			self.cancellation_id,
@@ -91,8 +83,6 @@ where
 			},
 			self.cancellation_id,
 		);
-
-		self.unsubscribe();
 	}
 
 	fn complete(&mut self) {
@@ -109,25 +99,5 @@ where
 			},
 			self.cancellation_id,
 		);
-
-		self.unsubscribe();
-	}
-}
-
-impl<In, InError> SubscriptionLike for EntityDestination<In, InError>
-where
-	In: Signal,
-	InError: Signal,
-{
-	#[inline]
-	fn is_closed(&self) -> bool {
-		self.teardown.is_closed()
-	}
-
-	#[inline]
-	fn unsubscribe(&mut self) {
-		if !self.is_closed() {
-			self.teardown.unsubscribe();
-		}
 	}
 }

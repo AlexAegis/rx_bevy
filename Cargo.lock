@@ -4251,7 +4251,6 @@ dependencies = [
  "rx_core_macro_observer_derive",
  "rx_core_macro_scheduler_derive",
  "rx_core_macro_subject_derive",
- "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_macro_work_derive",
  "rx_core_scheduler_ticking",

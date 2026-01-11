@@ -318,6 +318,11 @@ fn should_be_able_to_chain_subjects_as_destinations() {
 
 	source_subject.complete();
 
+	assert!(
+		upstream_subscription_2.is_closed(),
+		"should close after completion!"
+	);
+
 	assert_eq!(
 		notification_collector.lock().nth_notification(2),
 		&SubscriberNotification::Complete,
@@ -328,10 +333,6 @@ fn should_be_able_to_chain_subjects_as_destinations() {
 
 	assert!(downstream_subscription.is_closed());
 
-	assert!(
-		!upstream_subscription_2.is_closed(),
-		"should not be closed as it's detached!"
-	);
 	upstream_subscription_2.unsubscribe();
 }
 

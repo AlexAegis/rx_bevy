@@ -32,7 +32,6 @@ rx_core_macro_executor_derive = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_observer_derive = { workspace = true }
 rx_core_macro_scheduler_derive = { workspace = true }
-rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_macro_subject_derive = { workspace = true }
 rx_core_macro_subscription_derive = { workspace = true }
 rx_core_macro_work_derive = { workspace = true }

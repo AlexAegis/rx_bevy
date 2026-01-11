@@ -3,7 +3,15 @@ use rx_bevy::RxSignal;
 use rx_core_common::{Signal, SubscriberNotification};
 use rx_core_testing::NotificationCollector;
 
-pub fn collect_notifications_into<In, InError>(
+/// #[allow(dead_code)]: Imported using module paths:
+///
+/// ```
+/// #[path = "./utilities.rs"]
+/// mod utilities;
+/// use utilities::*;
+/// ```
+#[allow(dead_code)]
+pub(crate) fn collect_notifications_into<In, InError>(
 	notifications: NotificationCollector<In, InError>,
 ) -> impl FnMut(Trigger<RxSignal<In, InError>>)
 where

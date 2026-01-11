@@ -12,6 +12,10 @@ use rx_core_common::{
 /// can levarage the fact that these events are sent only once, and only to
 /// one destination and let the `In` and `InError` signals be taken out of the
 /// event.
+///
+/// > This event is actually unused! It's here for the sake of completeness as
+/// > other notification types have a corresponding event type, and third party
+/// > implementations might want to leverage it.
 // TODO(bevy-0.17): Use EntityEvent
 #[derive(Event, Clone, Deref, DerefMut)]
 pub struct SubscriberNotificationEvent<In, InError = Never>

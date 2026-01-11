@@ -50,7 +50,7 @@ fn it_should_be_possible_to_unsubscribe_a_subscription_entity_with_an_event() {
 		.id();
 
 	let mut destination =
-		EntityDestination::<usize, Never>::new(destination_entity, scheduler_handle);
+		EntityDestination::<usize, Never>::new(destination_entity, scheduler_handle).upgrade();
 	let tracked_teardown = destination.add_tracked_teardown("interval_destination");
 
 	app.update();

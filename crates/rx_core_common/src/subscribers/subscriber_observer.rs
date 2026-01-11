@@ -47,6 +47,7 @@ where
 	fn error(&mut self, error: Self::InError) {
 		if !self.is_closed() {
 			self.destination.error(error);
+			self.unsubscribe();
 		}
 	}
 
@@ -54,6 +55,7 @@ where
 	fn complete(&mut self) {
 		if !self.is_closed() {
 			self.destination.complete();
+			self.unsubscribe();
 		}
 	}
 }

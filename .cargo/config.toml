@@ -1,3 +1,6 @@
 [env]
 CARGO_MANIFEST_DIR = "."
 RUST_LOG = "debug,wgpu=warn,wgpu_hal=error,naga=warn,bevy_render=warn,bevy_app=warn,winit=warn,bevy_winit=warn,bevy_input=warn,gilrs=warn,gilrs_core=warn,bevy_egui=warn,offset_allocator=warn"
+
+[build]
+rustflags = "-D warnings -W unreachable-pub -W rust-2024-compatibility"

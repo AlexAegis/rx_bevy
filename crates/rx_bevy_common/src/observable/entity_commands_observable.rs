@@ -39,7 +39,7 @@ pub trait EntityCommandsAsObservableExtension {
 	///
 	/// ## Implementation Details
 	///
-	/// ### Observable spawn and subscribe Race Conditions
+	/// ### Observable Spawn and Subscribe Race Conditions
 	///
 	/// > This only concerns cases where you spawn/insert the observable, and
 	/// > subscribe to it in the very same system! It will always work, but in
