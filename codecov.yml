@@ -15,7 +15,10 @@ component_management:
     statuses:
       - type: project
         target: auto
+        threshold: 1
       - type: patch
+        target: auto
+        threshold: 1
   individual_components:
     - component_id: rx_bevy
       paths:
