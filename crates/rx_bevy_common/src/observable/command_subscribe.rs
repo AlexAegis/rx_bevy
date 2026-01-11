@@ -94,7 +94,7 @@ where
 		if has_matching_subscribe_observer {
 			// TODO(bevy-0.17): world.trigger(self.event);
 			world.trigger_targets(self.event, observable_entity);
-		} else if let (Ok(command_to_retry), Some(mut subscries_to_retry)) =
+		} else if let (Ok(command_to_retry), Some(mut subscribes_to_retry)) =
 			(self.retry(), world.get_resource_mut::<SubscribesToRetry>())
 		{
 			debug!(
@@ -102,7 +102,7 @@ where
 				ShortName::of::<Self>(),
 				remaining_retries
 			);
-			subscries_to_retry.push(command_to_retry);
+			subscribes_to_retry.push(command_to_retry);
 		}
 
 		Ok(())

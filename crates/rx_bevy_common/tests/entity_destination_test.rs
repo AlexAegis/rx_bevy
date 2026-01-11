@@ -53,6 +53,7 @@ fn signals_should_reach_the_destination_and_close_on_error() {
 	);
 
 	tracked_teardown.assert_was_torn_down();
+	assert!(destination.is_closed(), "rx_verify_closed");
 }
 
 #[test]
@@ -97,6 +98,51 @@ fn signals_should_reach_the_destination_and_close_on_complete() {
 	);
 
 	tracked_teardown.assert_was_torn_down();
+	assert!(destination.is_closed(), "rx_verify_closed");
+}
+
+#[test]
+fn signals_should_reach_the_destination_and_close_on_unsubscribe() {
+	let mut app = App::new();
+	app.init_resource::<Time<Virtual>>();
+	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+	let notifications = NotificationCollector::default();
+
+	let destination_entity = app
+		.world_mut()
+		.spawn_empty()
+		.observe(collect_notifications_into::<usize, Never>(
+			notifications.clone(),
+		))
+		.id();
+
+	let scheduler_handle = {
+		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+			.get_mut(app.world_mut());
+		scheduler.handle()
+	};
+
+	let mut destination = EntityDestination::<usize>::new(destination_entity, scheduler_handle);
+	let tracked_teardown = destination.add_tracked_teardown("entity_destination");
+	destination.next(1);
+	destination.next(2);
+	destination.unsubscribe();
+	app.update();
+
+	// Note that these were converted from ObserverNotifications, Unsubscribe can't show up here.
+	notifications.lock().assert_notifications(
+		"entity_destination_complete",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+		],
+		true,
+	);
+
+	tracked_teardown.assert_was_torn_down();
+	assert!(destination.is_closed(), "rx_verify_closed");
 }
 
 #[test]

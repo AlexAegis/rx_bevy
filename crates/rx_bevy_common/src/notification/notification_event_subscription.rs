@@ -39,13 +39,6 @@ impl SubscriptionNotificationEvent {
 			.take()
 			.ok_or(SubscriptionNotificationEventConsumeError)
 	}
-
-	pub fn retarget(
-		&mut self,
-		entity: Entity,
-	) -> Result<Self, SubscriptionNotificationEventConsumeError> {
-		Ok(Self::from_notification(self.consume()?, entity))
-	}
 }
 
 #[derive(Error, Debug)]
