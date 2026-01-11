@@ -1,14 +1,13 @@
 use bevy_ecs::{
 	component::{Component, HookContext},
 	entity::Entity,
-	error::{BevyError, ErrorContext},
+	error::BevyError,
 	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
-use bevy_log::error;
 use disqualified::ShortName;
 use rx_core_common::{Observable, SubscriptionLike};
 use rx_core_macro_observable_derive::RxObservable;
@@ -84,9 +83,7 @@ where
 				ShortName::of::<O::OutError>(),
 				ShortName::of::<O>()
 			)),
-			Observer::new(subscribe_event_observer::<O>)
-				.with_entity(hook_context.entity)
-				.with_error_handler(default_on_subscribe_error_handler),
+			Observer::new(subscribe_event_observer::<O>).with_entity(hook_context.entity),
 		))
 		.id();
 }
@@ -161,20 +158,7 @@ pub enum SubscribeError {
 	#[error("Tried to subscribe to {0}. But it does not exist on entity {1}.")]
 	NotAnObservable(String, Entity),
 	#[error(
-		"Tried to subscribe to {0} on {1}. But the Subscribe event already had it's destination consumed!"
+		"Tried to subscribe to {0} on {1}. But the Subscribe event already had its destination consumed!"
 	)]
 	EventAlreadyConsumed(String, Entity),
-}
-
-/// The default error handler just prints out the error as warning
-pub(crate) fn default_on_subscribe_error_handler(error: BevyError, error_context: ErrorContext) {
-	if let Some(subscribe_error) = error.downcast_ref::<SubscribeError>() {
-		error!("{}", subscribe_error);
-	} else {
-		panic!(
-			"Unknown error happened during subscribe. Kind: {}\tName: {}",
-			error_context.kind(),
-			error_context.name()
-		);
-	}
 }

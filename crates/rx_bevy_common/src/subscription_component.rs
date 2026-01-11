@@ -56,7 +56,7 @@ pub(crate) fn subscription_add_notification_observer_on_insert(
 }
 
 pub(crate) fn subscription_notification_observer(
-	mut subscription_notification: Trigger<SubscriptionNotificationEvent>,
+	subscription_notification: Trigger<SubscriptionNotificationEvent>,
 	mut deferred_world: DeferredWorld,
 ) -> Result<(), BevyError> {
 	let subscription_entity = subscription_notification.entity();
@@ -64,7 +64,7 @@ pub(crate) fn subscription_notification_observer(
 	if let Some(mut subscription_component) =
 		deferred_world.get_mut::<SubscriptionComponent>(subscription_entity)
 	{
-		match subscription_notification.event_mut().consume()? {
+		match **subscription_notification.event() {
 			SubscriptionNotification::Unsubscribe => {
 				subscription_component.unsubscribe();
 				deferred_world

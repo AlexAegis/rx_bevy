@@ -26,18 +26,6 @@ where
 	_phantom_data: PhantomData<O>,
 }
 
-impl<O> SubscribeObserverRef<O>
-where
-	O: 'static + Observable + Send + Sync,
-{
-	pub fn new(subscribe_observer_entity: Entity) -> Self {
-		Self {
-			subscribe_observer_entity,
-			_phantom_data: PhantomData,
-		}
-	}
-}
-
 #[derive(Component, Deref, DerefMut)]
 #[relationship(relationship_target=SubscribeObserverRef::<O>)]
 #[cfg_attr(feature = "debug", derive(Debug))]

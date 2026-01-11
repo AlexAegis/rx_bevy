@@ -14,6 +14,8 @@ use thiserror::Error;
 
 use crate::{Subscribe, SubscribeObserverTypeMarker, SubscribesToRetry};
 
+pub const SUBSCRIBE_COMMAND_MAX_RETRIES: usize = 3;
+
 pub struct SubscribeCommand<Out, OutError>
 where
 	Out: Signal,
@@ -31,7 +33,7 @@ where
 	pub(crate) fn new(event: Subscribe<Out, OutError>) -> Self {
 		Self {
 			event,
-			retries_remaining: 3,
+			retries_remaining: SUBSCRIBE_COMMAND_MAX_RETRIES,
 		}
 	}
 

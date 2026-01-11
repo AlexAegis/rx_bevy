@@ -11,12 +11,12 @@ use crate::{Signal, SubscriberNotification, SubscriptionLike};
 /// - Can be converted into [SubscriberNotification]
 /// - Can try to convert from [SubscriberNotification]
 ///
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SubscriptionNotification {
 	Unsubscribe,
 }
 
-#[derive(Error, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Error, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SubscriberToSubscriptionNotificationConversionError {
 	#[error("Subscriptions are unable to receive 'Next' notifications!")]
 	CannotReceiveNext,

@@ -1,10 +1,7 @@
 use bevy_ecs::{
-	component::{Component, Mutable},
 	entity::{ContainsEntity, Entity},
-	error::BevyError,
-	world::{DeferredWorld, Mut},
+	world::DeferredWorld,
 };
-use disqualified::ShortName;
 use rx_core_common::{
 	ObserverNotification, Signal, SubscriberNotification, SubscriptionNotification, WorkContext,
 	WorkContextProvider,
@@ -41,54 +38,6 @@ impl<'w> RxBevyContextItem<'w> {
 	pub fn reborrow(&mut self) -> RxBevyContextItem<'_> {
 		RxBevyContextItem {
 			deferred_world: self.deferred_world.reborrow(),
-		}
-	}
-
-	pub fn get_expected_component<Comp>(&mut self, destination_entity: Entity) -> &Comp
-	where
-		Comp: Component,
-	{
-		let Some(subscriber_component) = self.deferred_world.get::<Comp>(destination_entity) else {
-			panic!(
-				"{} is missing an expected component: {}!",
-				destination_entity,
-				ShortName::of::<Comp>(),
-			);
-		};
-
-		subscriber_component
-	}
-
-	pub fn get_expected_component_mut<Comp>(&mut self, destination_entity: Entity) -> Mut<'_, Comp>
-	where
-		Comp: Component<Mutability = Mutable>,
-	{
-		let Some(subscriber_component) = self.deferred_world.get_mut::<Comp>(destination_entity)
-		else {
-			panic!(
-				"{} is missing an expected component: {}!",
-				destination_entity,
-				ShortName::of::<Comp>(),
-			);
-		};
-
-		subscriber_component
-	}
-
-	pub fn try_get_component_mut<Comp>(
-		&mut self,
-		entity: Entity,
-	) -> Result<Mut<'_, Comp>, BevyError>
-	where
-		Comp: Component<Mutability = Mutable>,
-	{
-		if let Some(observable_ref) = self.deferred_world.get_mut::<Comp>(entity) {
-			Ok(observable_ref)
-		} else {
-			Err(
-				ContextAccessError::NotAnObservable(format!("{}", ShortName::of::<Comp>()), entity)
-					.into(),
-			)
 		}
 	}
 
@@ -152,5 +101,138 @@ pub enum ContextAccessError {
 impl<'w> From<DeferredWorld<'w>> for RxBevyContextItem<'w> {
 	fn from(deferred_world: DeferredWorld<'w>) -> Self {
 		RxBevyContextItem { deferred_world }
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use super::*;
+	use bevy_app::App;
+	use bevy_ecs::{observer::Trigger, world::DeferredWorld};
+	use rx_core_testing::NotificationCollector;
+
+	#[test]
+	fn it_should_be_reborrowable() {
+		let mut app = App::new();
+		let entity = {
+			let deferred_world = DeferredWorld::from(app.world_mut());
+			let mut rx_context = RxBevyContextItem::from(deferred_world);
+			rx_context.deferred_world.commands().spawn_empty().id()
+		};
+		app.update();
+		let deferred_world = DeferredWorld::from(app.world_mut());
+		let mut rx_context = RxBevyContextItem::from(deferred_world);
+		let rx_context_reborrowed = rx_context.reborrow();
+		assert!(
+			rx_context_reborrowed
+				.deferred_world
+				.get_entity(entity)
+				.is_ok()
+		);
+	}
+
+	mod notifications {
+		use super::*;
+
+		#[test]
+		fn it_should_be_able_to_send_observer_notifications() {
+			let mut app = App::new();
+
+			let observed_events = NotificationCollector::<usize>::default();
+			let observed_events_clone = observed_events.clone();
+			let target_entity = app
+				.world_mut()
+				.spawn_empty()
+				.observe(move |observer_event: Trigger<RxSignal<usize>>| {
+					observed_events_clone
+						.lock()
+						.push(observer_event.signal().clone().into());
+				})
+				.id();
+
+			app.update();
+			let deferred_world = DeferredWorld::from(app.world_mut());
+			let mut rx_context = RxBevyContextItem::from(deferred_world);
+			rx_context
+				.send_observer_notification(target_entity, ObserverNotification::<usize>::Complete);
+			app.update();
+
+			observed_events.lock().assert_notifications(
+				"rx_bevy_context - observer notification (rx_signal)",
+				0,
+				[SubscriberNotification::Complete],
+				true,
+			);
+		}
+
+		#[test]
+		fn it_should_be_able_to_send_subscriber_notifications() {
+			let mut app = App::new();
+
+			let observed_events = NotificationCollector::<usize>::default();
+			let observed_events_clone = observed_events.clone();
+			let target_entity = app
+				.world_mut()
+				.spawn_empty()
+				.observe(
+					move |observer_event: Trigger<SubscriberNotificationEvent<usize>>| {
+						observed_events_clone
+							.lock()
+							.push(observer_event.signal().clone());
+					},
+				)
+				.id();
+
+			app.update();
+			let deferred_world = DeferredWorld::from(app.world_mut());
+			let mut rx_context = RxBevyContextItem::from(deferred_world);
+			rx_context.send_subscriber_notification(
+				target_entity,
+				SubscriberNotification::<usize>::Complete,
+			);
+			app.update();
+
+			observed_events.lock().assert_notifications(
+				"rx_bevy_context - subscriber notification",
+				0,
+				[SubscriberNotification::Complete],
+				true,
+			);
+		}
+
+		#[test]
+		fn it_should_be_able_to_send_subscription_notifications() {
+			let mut app = App::new();
+
+			let observed_events = NotificationCollector::<usize>::default();
+			let observed_events_clone = observed_events.clone();
+			let target_entity = app
+				.world_mut()
+				.spawn_empty()
+				.observe(
+					move |observer_event: Trigger<SubscriptionNotificationEvent>| {
+						observed_events_clone
+							.lock()
+							.push((*observer_event.signal()).into());
+					},
+				)
+				.id();
+
+			app.update();
+			let deferred_world = DeferredWorld::from(app.world_mut());
+			let mut rx_context = RxBevyContextItem::from(deferred_world);
+			rx_context.send_subscription_notification(
+				target_entity,
+				SubscriptionNotification::Unsubscribe,
+			);
+			app.update();
+
+			observed_events.lock().assert_notifications(
+				"rx_bevy_context - subscriber notification",
+				0,
+				[SubscriberNotification::Unsubscribe],
+				true,
+			);
+		}
 	}
 }

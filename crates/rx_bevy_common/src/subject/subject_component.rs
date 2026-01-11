@@ -18,7 +18,7 @@ use rx_core_macro_subject_derive::RxSubject;
 use crate::{
 	ObservableSubscriptions, RxScheduleDespawn, RxSignal, Subscribe, SubscribeError,
 	SubscribeObserverOf, SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionComponent,
-	SubscriptionOf, UnfinishedSubscription, default_on_subscribe_error_handler,
+	SubscriptionOf, UnfinishedSubscription,
 };
 
 /// Note that if you accidentally subscribe to a subject entity with itself,
@@ -119,9 +119,7 @@ where
 			SubscribeObserverOf::<Subject>::new(hook_context.entity),
 			SubscribeObserverTypeMarker::<Subject::Out, Subject::OutError>::default(),
 			Name::new(format!("Subscribe Observer {}", ShortName::of::<Subject>())),
-			Observer::new(subscribe_event_observer::<Subject>)
-				.with_entity(hook_context.entity)
-				.with_error_handler(default_on_subscribe_error_handler),
+			Observer::new(subscribe_event_observer::<Subject>).with_entity(hook_context.entity),
 		))
 		.id();
 
