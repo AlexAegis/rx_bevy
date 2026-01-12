@@ -129,8 +129,8 @@ observer_print = ["rx_core/observer_print"]
 # Core Operators
 all_core_operators = [
     "operator_adsr",
-    "operator_catch",
     "operator_buffer_count",
+    "operator_catch",
     "operator_composite",
     "operator_concat_all",
     "operator_concat_map",
@@ -173,10 +173,11 @@ all_core_operators = [
     "operator_take",
     "operator_tap",
     "operator_tap_next",
+    "operator_with_latest_from",
 ]
 operator_adsr = ["rx_core/operator_adsr"]
-operator_catch = ["rx_core/operator_catch"]
 operator_buffer_count = ["rx_core/operator_buffer_count"]
+operator_catch = ["rx_core/operator_catch"]
 operator_composite = ["rx_core/operator_composite"]
 operator_concat_all = ["rx_core/operator_concat_all"]
 operator_concat_map = ["rx_core/operator_concat_map"]
@@ -219,6 +220,7 @@ operator_switch_map = ["rx_core/operator_switch_map"]
 operator_take = ["rx_core/operator_take"]
 operator_tap = ["rx_core/operator_tap"]
 operator_tap_next = ["rx_core/operator_tap_next"]
+operator_with_latest_from = ["rx_core/operator_with_latest_from"]
 # Core Subjects
 all_core_subjects = [
     "subject_async",

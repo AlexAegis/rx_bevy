@@ -92,6 +92,7 @@ debug = [
     "rx_core_operator_take?/debug",
     "rx_core_operator_tap?/debug",
     "rx_core_operator_tap_next?/debug",
+    "rx_core_operator_with_latest_from?/debug",
     "rx_core_scheduler_ticking?/debug",
     "rx_core_subject_async?/debug",
     "rx_core_subject_behavior?/debug",
@@ -144,9 +145,9 @@ observable_fn = [
     "rx_core_observable_combine_changes?/observable_fn",
     "rx_core_observable_combine_latest?/observable_fn",
     "rx_core_observable_concat?/observable_fn",
+    "rx_core_observable_deferred?/observable_fn",
     "rx_core_observable_empty?/observable_fn",
     "rx_core_observable_interval?/observable_fn",
-    "rx_core_observable_deferred?/observable_fn",
     "rx_core_observable_join?/observable_fn",
     "rx_core_observable_merge?/observable_fn",
     "rx_core_observable_never?/observable_fn",
@@ -163,8 +164,8 @@ observer_print = ["dep:rx_core_observer_print"]
 # Operators
 all_operators = [
     "operator_adsr",
-    "operator_catch",
     "operator_buffer_count",
+    "operator_catch",
     "operator_composite",
     "operator_concat_all",
     "operator_concat_map",
@@ -207,10 +208,11 @@ all_operators = [
     "operator_take",
     "operator_tap",
     "operator_tap_next",
+    "operator_with_latest_from",
 ]
 operator_adsr = ["dep:rx_core_operator_adsr"]
-operator_catch = ["dep:rx_core_operator_catch"]
 operator_buffer_count = ["dep:rx_core_operator_buffer_count"]
+operator_catch = ["dep:rx_core_operator_catch"]
 operator_composite = ["dep:rx_core_operator_composite"]
 operator_concat_all = ["dep:rx_core_operator_concat_all"]
 operator_concat_map = ["dep:rx_core_operator_concat_map"]
@@ -253,10 +255,11 @@ operator_switch_map = ["dep:rx_core_operator_switch_map"]
 operator_take = ["dep:rx_core_operator_take"]
 operator_tap = ["dep:rx_core_operator_tap"]
 operator_tap_next = ["dep:rx_core_operator_tap_next"]
+operator_with_latest_from = ["dep:rx_core_operator_with_latest_from"]
 pipe = [
     "rx_core_operator_adsr?/pipe",
-    "rx_core_operator_catch?/pipe",
     "rx_core_operator_buffer_count?/pipe",
+    "rx_core_operator_catch?/pipe",
     "rx_core_operator_concat_all?/pipe",
     "rx_core_operator_concat_map?/pipe",
     "rx_core_operator_delay?/pipe",
@@ -297,12 +300,13 @@ pipe = [
     "rx_core_operator_take?/pipe",
     "rx_core_operator_tap?/pipe",
     "rx_core_operator_tap_next?/pipe",
+    "rx_core_operator_with_latest_from?/pipe",
 ]
 compose = [
     "operator_composite",
     "rx_core_operator_adsr?/compose",
-    "rx_core_operator_catch?/compose",
     "rx_core_operator_buffer_count?/compose",
+    "rx_core_operator_catch?/compose",
     "rx_core_operator_concat_all?/compose",
     "rx_core_operator_concat_map?/compose",
     "rx_core_operator_delay?/compose",
@@ -341,6 +345,7 @@ compose = [
     "rx_core_operator_take?/compose",
     "rx_core_operator_tap?/compose",
     "rx_core_operator_tap_next?/compose",
+    "rx_core_operator_with_latest_from?/compose",
 ]
 # Schedulers
 all_schedulers = ["scheduler_ticking"]
@@ -367,8 +372,8 @@ rx_core_observable_combine_changes = { workspace = true, optional = true }
 rx_core_observable_combine_latest = { workspace = true, optional = true }
 rx_core_observable_concat = { workspace = true, optional = true }
 rx_core_observable_connectable = { workspace = true, optional = true }
-rx_core_observable_empty = { workspace = true, optional = true }
 rx_core_observable_deferred = { workspace = true, optional = true }
+rx_core_observable_empty = { workspace = true, optional = true }
 rx_core_observable_interval = { workspace = true, optional = true }
 rx_core_observable_iterator = { workspace = true, optional = true }
 rx_core_observable_iterator_on_tick = { workspace = true, optional = true }
@@ -385,8 +390,8 @@ rx_core_observer_noop = { workspace = true, optional = true }
 rx_core_observer_print = { workspace = true, optional = true }
 # Operators
 rx_core_operator_adsr = { workspace = true, optional = true }
-rx_core_operator_catch = { workspace = true, optional = true }
 rx_core_operator_buffer_count = { workspace = true, optional = true }
+rx_core_operator_catch = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 rx_core_operator_concat_all = { workspace = true, optional = true }
 rx_core_operator_concat_map = { workspace = true, optional = true }
@@ -405,6 +410,7 @@ rx_core_operator_find = { workspace = true, optional = true }
 rx_core_operator_find_index = { workspace = true, optional = true }
 rx_core_operator_first = { workspace = true, optional = true }
 rx_core_operator_identity = { workspace = true, optional = true }
+rx_core_operator_into_result = { workspace = true, optional = true }
 rx_core_operator_lift_option = { workspace = true, optional = true }
 rx_core_operator_lift_result = { workspace = true, optional = true }
 rx_core_operator_map = { workspace = true, optional = true }
@@ -428,7 +434,7 @@ rx_core_operator_switch_map = { workspace = true, optional = true }
 rx_core_operator_take = { workspace = true, optional = true }
 rx_core_operator_tap = { workspace = true, optional = true }
 rx_core_operator_tap_next = { workspace = true, optional = true }
-rx_core_operator_into_result = { workspace = true, optional = true }
+rx_core_operator_with_latest_from = { workspace = true, optional = true }
 # Schedulers
 rx_core_scheduler_ticking = { workspace = true, optional = true }
 # Subjects

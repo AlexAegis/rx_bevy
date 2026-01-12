@@ -4415,6 +4415,7 @@ dependencies = [
  "rx_core_operator_take",
  "rx_core_operator_tap",
  "rx_core_operator_tap_next",
+ "rx_core_operator_with_latest_from",
  "rx_core_scheduler_ticking",
  "rx_core_subject_async",
  "rx_core_subject_behavior",
@@ -5372,6 +5373,20 @@ dependencies = [
  "derive-where",
  "rx_core",
  "rx_core_common",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_operator_composite",
+ "rx_core_testing",
+]
+
+[[package]]
+name = "rx_core_operator_with_latest_from"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core",
+ "rx_core_common",
+ "rx_core_macro_observer_derive",
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_operator_composite",

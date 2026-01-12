@@ -75,6 +75,7 @@
   - [take](operator/take.md)
   - [tap](operator/tap.md)
   - [tap_next](operator/tap_next.md)
+  - [with_latest_from](operator/with_latest_from.md)
 - [Operators (Bevy)](operators_bevy.md)
 - [Schedulers](schedulers.md)
   - [ticking](scheduler/ticking.md)

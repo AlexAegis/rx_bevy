@@ -129,6 +129,7 @@ rx_core_operator_switch_map = { path = "crates/rx_core_operator_switch_map" }
 rx_core_operator_take = { path = "crates/rx_core_operator_take" }
 rx_core_operator_tap = { path = "crates/rx_core_operator_tap" }
 rx_core_operator_tap_next = { path = "crates/rx_core_operator_tap_next" }
+rx_core_operator_with_latest_from = { path = "crates/rx_core_operator_with_latest_from" }
 # Subscriptions
 rx_core_subscription_inert = { path = "crates/rx_core_subscription_inert" }
 # Subjects
