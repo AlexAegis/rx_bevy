@@ -105,7 +105,7 @@ where
 
 	/// Returns `true` when there is no active work in the executor.
 	pub fn is_empty(&self) -> bool {
-		self.active_work.is_empty()
+		self.active_work.is_empty() && self.invokable_work.is_empty()
 	}
 
 	pub fn get_current_tick(&self) -> Tick {

@@ -110,6 +110,12 @@ fn signals_should_reach_the_destination_and_close_on_unsubscribe() {
 
 	let notifications = NotificationCollector::default();
 
+	let scheduler_handle = {
+		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+			.get_mut(app.world_mut());
+		scheduler.handle()
+	};
+
 	let destination_entity = app
 		.world_mut()
 		.spawn_empty()
@@ -117,12 +123,6 @@ fn signals_should_reach_the_destination_and_close_on_unsubscribe() {
 			notifications.clone(),
 		))
 		.id();
-
-	let scheduler_handle = {
-		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
-		scheduler.handle()
-	};
 
 	let mut destination =
 		EntityDestination::<usize>::new(destination_entity, scheduler_handle).upgrade();

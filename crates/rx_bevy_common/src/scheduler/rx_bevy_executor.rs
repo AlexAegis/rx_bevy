@@ -12,7 +12,7 @@ use crate::{Clock, RxBevyContext, RxBevyContextItem, RxBevyScheduler};
 #[rx_context(RxBevyContext)]
 #[rx_tick(Tick)]
 #[rx_scheduler(RxBevyScheduler)]
-pub(crate) struct RxBevyExecutor<S, C = Virtual>
+pub struct RxBevyExecutor<S, C = Virtual>
 where
 	S: ScheduleLabel,
 	C: Clock,
@@ -20,6 +20,17 @@ where
 	#[scheduler_handle]
 	ticking_executor: TickingSchedulerExecutor<RxBevyScheduler, RxBevyContext>,
 	_phantom_data: PhantomData<(S, C)>,
+}
+
+impl<S, C> RxBevyExecutor<S, C>
+where
+	S: ScheduleLabel,
+	C: Clock,
+{
+	#[inline]
+	pub fn is_empty(&self) -> bool {
+		self.ticking_executor.is_empty()
+	}
 }
 
 impl<S, C> Default for RxBevyExecutor<S, C>
@@ -40,7 +51,7 @@ where
 	S: ScheduleLabel,
 	C: Clock,
 {
-	pub(crate) fn tick_to<'a>(&mut self, tick: Tick, context: &mut RxBevyContextItem<'a>) {
+	pub fn tick_to<'a>(&mut self, tick: Tick, context: &mut RxBevyContextItem<'a>) {
 		self.ticking_executor.tick_to(tick, context);
 	}
 }
