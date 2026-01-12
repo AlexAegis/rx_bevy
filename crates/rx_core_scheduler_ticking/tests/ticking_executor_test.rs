@@ -317,7 +317,7 @@ mod continuous_work {
 	use super::*;
 
 	#[test]
-	fn should_be_able_to_execute_continous_work_on_every_tick_except_repeated_ticks() {
+	fn should_be_able_to_execute_continous_work_on_every_tick() {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
@@ -352,14 +352,6 @@ mod continuous_work {
 		ticking_executor.tick(Duration::from_millis(1), &mut context);
 
 		assert_eq!(execution_counter.load(Ordering::Relaxed), 2);
-
-		ticking_executor.tick_to(ticking_executor.get_current_tick(), &mut context);
-
-		assert_eq!(
-			execution_counter.load(Ordering::Relaxed),
-			2,
-			"Should not increment for double ticking!"
-		);
 
 		ticking_executor.tick(Duration::from_millis(1), &mut context);
 

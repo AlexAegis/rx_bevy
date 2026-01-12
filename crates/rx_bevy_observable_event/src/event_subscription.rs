@@ -3,7 +3,7 @@ use disqualified::ShortName;
 use rx_bevy_common::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
 use rx_core_common::{
 	Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber, Subscriber,
-	TeardownCollectionExtension,
+	Teardown, TeardownCollectionExtension,
 };
 use rx_core_macro_subscription_derive::RxSubscription;
 
@@ -65,12 +65,11 @@ where
 			(cancellation_id, despawn_invoke_id)
 		};
 
-		let scheduler_teardown_clone = scheduler.clone();
-		shared_destination.add_fn(move || {
-			let mut scheduler = scheduler_teardown_clone.lock();
-			scheduler.invoke(despawn_invoke_id);
-			scheduler.cancel(cancellation_id);
-		});
+		shared_destination.add(Teardown::new_work_invokation_and_cancellation(
+			despawn_invoke_id,
+			cancellation_id,
+			scheduler.clone(),
+		));
 
 		Self { shared_destination }
 	}

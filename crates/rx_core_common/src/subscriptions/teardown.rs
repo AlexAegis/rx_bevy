@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use disqualified::ShortName;
 
-use crate::SubscriptionLike;
+use crate::{Scheduler, SchedulerHandle, SubscriptionLike, WorkCancellationId, WorkInvokeId};
 
 /// A teardown is a closure which owns resources, by the nature of them being
 /// moved into said closure. The closure itself is responsible for releasing
@@ -55,6 +55,44 @@ impl Teardown {
 		Self {
 			teardown_fn: Some(f),
 		}
+	}
+
+	#[inline]
+	pub fn new_work_cancellation<S: 'static + Scheduler>(
+		cancellation_id: WorkCancellationId,
+		scheduler: SchedulerHandle<S>,
+	) -> Self {
+		Teardown::new(move || scheduler.lock().cancel(cancellation_id))
+	}
+
+	#[inline]
+	pub fn new_work_invokation<S: 'static + Scheduler>(
+		invoke_id: WorkInvokeId,
+		scheduler: SchedulerHandle<S>,
+	) -> Self {
+		Teardown::new(move || scheduler.lock().invoke(invoke_id))
+	}
+
+	#[inline]
+	pub fn new_invoked_work_cancellation<S: 'static + Scheduler>(
+		invoke_id: WorkInvokeId,
+		scheduler: SchedulerHandle<S>,
+	) -> Self {
+		Teardown::new(move || scheduler.lock().cancel_invoked(invoke_id))
+	}
+
+	/// Invokes one work and cancels another in a single teardown.
+	#[inline]
+	pub fn new_work_invokation_and_cancellation<S: 'static + Scheduler>(
+		invoke_id: WorkInvokeId,
+		cancellation_id: WorkCancellationId,
+		scheduler: SchedulerHandle<S>,
+	) -> Self {
+		Teardown::new(move || {
+			let mut scheduler = scheduler.lock();
+			scheduler.invoke(invoke_id);
+			scheduler.cancel(cancellation_id);
+		})
 	}
 
 	/// Consumes the [Teardown] without executing it, returning the stored

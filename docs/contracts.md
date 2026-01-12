@@ -56,6 +56,8 @@ and it should be closed, teardowns executed.
 - `rx_verify_errored`: An `Error` notification was observed.
 - `rx_verify_closed`: `is_closed` returns true after an `Error` notification
   was observed.
+- `rx_verify_no_new_notification_after_closed`: After closing, a new `next`,
+  `error`, `complete` or `unsubscribe` event must not result in a new emission.
 - If Observable or Operator:
   - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
     subscription are executed.
@@ -67,6 +69,10 @@ and it should be closed, teardowns executed.
 - If there are input observables:
   - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
     input observable (using `finalize`) must also be executed.
+- If Scheduled:
+  - `rx_verify_scheduler_is_empty`: No work should remain in the schedulers
+    executor once the subscription is unsubscribed. Both normal and invoked
+    work should be cancelled.
 
 ## `rx_contract_closed_after_complete`
 
@@ -87,6 +93,8 @@ considered "completed", and it should be closed, teardowns executed.
 - `rx_verify_completed`: A `Complete` notification was observed.
 - `rx_verify_closed`: `is_closed` returns true after a `Complete` notification
   was observed.
+- `rx_verify_no_new_notification_after_closed`: After closing, a new `next`,
+  `error`, `complete` or `unsubscribe` event must not result in a new emission.
 - If Observable or Operator:
   - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
     subscription are executed.
@@ -99,6 +107,10 @@ considered "completed", and it should be closed, teardowns executed.
   - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
     input observable (using `finalize`) must also be executed.n
     input observable (using `finalize`) must also be executed.
+- If Scheduled:
+  - `rx_verify_scheduler_is_empty`: No work should remain in the schedulers
+    executor once the subscription is unsubscribed. Both normal and invoked
+    work should be cancelled.
 
 ## `rx_contract_closed_after_unsubscribe`
 
@@ -116,6 +128,8 @@ unsubscribed. It's a cancellation.
 - `rx_verify_unsubscribed`: An `Unsubscribe` notification was observed.
 - `rx_verify_closed`: `is_closed` returns true after an `Unsubscribe`
   notification was observed.
+- `rx_verify_no_new_notification_after_closed`: After closing, a new `next`,
+  `error`, `complete` or `unsubscribe` event must not result in a new emission.
 - If Observable or Operator:
   - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
     subscription are executed.
@@ -127,6 +141,10 @@ unsubscribed. It's a cancellation.
 - If there are input observables:
   - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
     input observable (using `finalize`) must also be executed.
+- If Scheduled:
+  - `rx_verify_scheduler_is_empty`: No work should remain in the schedulers
+    executor once the subscription is unsubscribed. Both normal and invoked
+    work should be cancelled.
 
 ## `rx_contract_closed_if_downstream_closes_early`
 
@@ -136,13 +154,15 @@ unsubscribed. It's a cancellation.
 > - Operators
 > - Subscribers
 
-A subscription must be closed if a downstream operator like `take` closes it
-early.
+A subscription must be closed if a downstream operator like `take(1+)` closes
+it early.
 
 **Test must verify:**
 
 - `rx_verify_closed`: `is_closed` returns true after a `Unsubscribe`
   notification was observed.
+- `rx_verify_no_new_notification_after_closed`: After closing, a new `next`,
+  `error`, `complete` or `unsubscribe` event must not result in a new emission.
 - If Observable or Operator:
   - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
     subscription are executed.
@@ -154,8 +174,12 @@ early.
 - If there are input observables:
   - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
     input observable (using `finalize`) must also be executed.
+- If Scheduled:
+  - `rx_verify_scheduler_is_empty`: No work should remain in the schedulers
+    executor once the subscription is unsubscribed. Both normal and invoked
+    work should be cancelled.
 
-## `rx_contract_whats_closed_stays_closed`
+## `rx_contract_closed_if_downstream_closes_immediately`
 
 > Applies to:
 >
@@ -163,32 +187,30 @@ early.
 > - Operators
 > - Subscribers
 
-A subscription that was unsubscribed and closed, must never be re-opened.
-
-> This can be easily ensured by not using a simple `bool` to track the closed
-> state but `SubscriptionClosedFlag` that ensures a `false` never turns back
-> into a `true`. Types that use this struct for their `is_closed()`
-> implementation automatically complies with this rule.
->
-> Note that in debug mode, `SubscriptionClosedFlag` panics when dropped without
-> closing first! This is there to indicate something isn't disposed of
-> correctly. Although there are cases where it's okay to just simply close it
-> on drop when it wasn't.
-
-Since the expected behavior is doing nothing, all of these verifications can
-be done in a single test, irrespective of order.
+A subscription must be closed if a downstream operator like `take(0)` closes it
+immediately.
 
 **Test must verify:**
 
-- `rx_verify_closed`: `is_closed` returns true.
-- `rx_verify_no_new_notification_after_next`: After closing, a new `next` call
-  must not result in a new emission.
-- `rx_verify_no_new_notification_after_error`: After closing, a new `error`
-  call must not result in a new emission.
-- `rx_verify_no_new_notification_after_complete`: After closing, a new
-  `complete` call must not result in a new emission.
-- `rx_verify_no_new_notification_after_unsubscribe`: After closing, a new
-  `unsubscribe` call must not result in a new emission.
+- `rx_verify_closed`: `is_closed` returns true after a `Unsubscribe`
+  notification was observed.
+- `rx_verify_no_new_notification_after_closed`: After closing, a new `next`,
+  `error`, `complete` or `unsubscribe` event must not result in a new emission.
+- If Observable or Operator:
+  - `rx_verify_subscription_teardowns_executed`: Teardowns added to the
+    subscription are executed.
+  - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
+    downstream of the operator should also be executed.
+- If Operator:  
+  - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
+    upstream of the operator should also be executed.
+- If there are input observables:
+  - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
+    input observable (using `finalize`) must also be executed.
+- If Scheduled:
+  - `rx_verify_scheduler_is_empty`: No work should remain in the schedulers
+    executor once the subscription is unsubscribed. Both normal and invoked
+    work should be cancelled.
 
 ## `rx_contract_immediate_completion`
 

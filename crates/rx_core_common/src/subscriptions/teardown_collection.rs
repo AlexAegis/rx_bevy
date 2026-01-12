@@ -19,21 +19,21 @@ pub trait TeardownCollection {
 }
 
 pub trait TeardownCollectionExtension: TeardownCollection {
-	fn add<T>(&mut self, subscription: T)
+	#[inline]
+	fn add<T>(&mut self, teardown: T)
 	where
 		T: Into<Teardown>,
 	{
-		let teardown: Teardown = subscription.into();
-		self.add_teardown(teardown);
+		self.add_teardown(teardown.into());
 	}
 
+	#[inline]
 	fn add_fn<F>(&mut self, f: F)
 	where
 		F: 'static + FnOnce() + Send + Sync,
 		Self: Sized,
 	{
-		let teardown = Teardown::new(f);
-		self.add(teardown);
+		self.add(Teardown::new(f));
 	}
 }
 
