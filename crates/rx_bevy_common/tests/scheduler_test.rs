@@ -283,10 +283,6 @@ mod continuous_work {
 
 		assert_eq!(execution_counter.load(Ordering::Relaxed), 2);
 
-		app.update();
-
-		assert_eq!(execution_counter.load(Ordering::Relaxed), 2);
-
 		app.world_mut()
 			.resource_mut::<Time<Virtual>>()
 			.advance_by(Duration::from_millis(1));

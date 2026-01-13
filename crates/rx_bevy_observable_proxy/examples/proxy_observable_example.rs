@@ -12,6 +12,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
+			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()

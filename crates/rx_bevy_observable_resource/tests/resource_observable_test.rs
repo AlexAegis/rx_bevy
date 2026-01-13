@@ -347,6 +347,7 @@ mod when_used_directly {
 
 /// Non Applicable:
 /// - rx_contract_closed_after_complete - Can't Complete
+/// - rx_contract_closed_after_error - Can't Error
 mod contracts {
 	use super::*;
 
