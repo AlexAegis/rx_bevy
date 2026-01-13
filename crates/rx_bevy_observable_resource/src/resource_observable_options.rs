@@ -7,8 +7,8 @@ pub struct ResourceObservableOptions {
 	///
 	/// Default: true
 	pub trigger_on_is_added: bool,
-	/// Emit on each tick where the resource was accessed mutably.
-	/// Adds don't count here.
+	/// Emit on each tick where the resource was accessed mutably, except when
+	/// the resource was just added.
 	///
 	/// Default: true
 	pub trigger_on_is_changed: bool,

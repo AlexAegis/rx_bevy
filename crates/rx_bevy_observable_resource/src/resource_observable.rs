@@ -2,20 +2,19 @@ use std::marker::PhantomData;
 
 use bevy_ecs::resource::Resource;
 use rx_bevy_common::RxBevyScheduler;
-use rx_core_common::{Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
+use rx_core_common::{Never, Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
 
 use crate::{ResourceSubscription, observable::ResourceObservableOptions};
 
 #[derive(RxObservable)]
 #[rx_out(Out)]
-#[rx_out_error(OutError)]
-pub struct ResourceObservable<R, Reader, Out, OutError>
+#[rx_out_error(Never)]
+pub struct ResourceObservable<R, Reader, Out>
 where
 	R: Resource,
-	Reader: 'static + Fn(&R) -> Result<Out, OutError> + Clone + Send + Sync,
+	Reader: 'static + Fn(&R) -> Out + Clone + Send + Sync,
 	Out: Signal,
-	OutError: Signal,
 {
 	reader: Reader,
 	options: ResourceObservableOptions,
@@ -23,12 +22,11 @@ where
 	_phantom_data: PhantomData<R>,
 }
 
-impl<R, Reader, Out, OutError> ResourceObservable<R, Reader, Out, OutError>
+impl<R, Reader, Out> ResourceObservable<R, Reader, Out>
 where
 	R: Resource,
-	Reader: 'static + Fn(&R) -> Result<Out, OutError> + Clone + Send + Sync,
+	Reader: 'static + Fn(&R) -> Out + Clone + Send + Sync,
 	Out: Signal,
-	OutError: Signal,
 {
 	pub fn new(
 		reader: Reader,
@@ -44,12 +42,11 @@ where
 	}
 }
 
-impl<R, Reader, Out, OutError> Observable for ResourceObservable<R, Reader, Out, OutError>
+impl<R, Reader, Out> Observable for ResourceObservable<R, Reader, Out>
 where
 	R: Resource,
-	Reader: 'static + Fn(&R) -> Result<Out, OutError> + Clone + Send + Sync,
+	Reader: 'static + Fn(&R) -> Out + Clone + Send + Sync,
 	Out: Signal,
-	OutError: Signal,
 {
 	type Subscription<Destination>
 		= ResourceSubscription<R, Reader, Destination>

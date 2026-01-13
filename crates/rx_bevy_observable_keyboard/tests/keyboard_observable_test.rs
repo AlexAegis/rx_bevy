@@ -19,16 +19,19 @@ mod when_used_as_a_component {
 			scheduler.handle()
 		};
 
-		let event_target = app.world_mut().commands().spawn_empty().id();
-		app.world_mut().commands().entity(event_target).insert(
-			KeyboardObservable::new(
-				KeyboardObservableOptions {
-					emit: KeyboardObservableEmit::JustPressed,
-				},
-				scheduler_handle.clone(),
+		let observable_entity = app
+			.world_mut()
+			.commands()
+			.spawn(
+				KeyboardObservable::new(
+					KeyboardObservableOptions {
+						emit: KeyboardObservableEmit::JustPressed,
+					},
+					scheduler_handle.clone(),
+				)
+				.into_component(),
 			)
-			.into_component(),
-		);
+			.id();
 
 		let destination = MockObserver::<KeyCode, Never>::default();
 		let notification_collector = destination.get_notification_collector();
@@ -36,7 +39,7 @@ mod when_used_as_a_component {
 		let mut subscription = app
 			.world_mut()
 			.commands()
-			.entity(event_target)
+			.entity(observable_entity)
 			.as_observable::<KeyCode, Never>(scheduler_handle)
 			.subscribe(destination);
 		let tracked_teardown = subscription.add_tracked_teardown("keyboard_observable");
@@ -84,16 +87,19 @@ mod when_used_as_a_component {
 			scheduler.handle()
 		};
 
-		let event_target = app.world_mut().commands().spawn_empty().id();
-		app.world_mut().commands().entity(event_target).insert(
-			KeyboardObservable::new(
-				KeyboardObservableOptions {
-					emit: KeyboardObservableEmit::JustReleased,
-				},
-				scheduler_handle.clone(),
+		let observable_entity = app
+			.world_mut()
+			.commands()
+			.spawn(
+				KeyboardObservable::new(
+					KeyboardObservableOptions {
+						emit: KeyboardObservableEmit::JustReleased,
+					},
+					scheduler_handle.clone(),
+				)
+				.into_component(),
 			)
-			.into_component(),
-		);
+			.id();
 
 		let destination = MockObserver::<KeyCode, Never>::default();
 		let notification_collector = destination.get_notification_collector();
@@ -101,7 +107,7 @@ mod when_used_as_a_component {
 		let mut subscription = app
 			.world_mut()
 			.commands()
-			.entity(event_target)
+			.entity(observable_entity)
 			.as_observable::<KeyCode, Never>(scheduler_handle)
 			.subscribe(destination);
 		let tracked_teardown = subscription.add_tracked_teardown("keyboard_observable");
@@ -152,16 +158,19 @@ mod when_used_as_a_component {
 			scheduler.handle()
 		};
 
-		let event_target = app.world_mut().commands().spawn_empty().id();
-		app.world_mut().commands().entity(event_target).insert(
-			KeyboardObservable::new(
-				KeyboardObservableOptions {
-					emit: KeyboardObservableEmit::WhilePressed,
-				},
-				scheduler_handle.clone(),
+		let observable_entity = app
+			.world_mut()
+			.commands()
+			.spawn(
+				KeyboardObservable::new(
+					KeyboardObservableOptions {
+						emit: KeyboardObservableEmit::WhilePressed,
+					},
+					scheduler_handle.clone(),
+				)
+				.into_component(),
 			)
-			.into_component(),
-		);
+			.id();
 
 		let destination = MockObserver::<KeyCode, Never>::default();
 		let notification_collector = destination.get_notification_collector();
@@ -169,7 +178,7 @@ mod when_used_as_a_component {
 		let mut subscription = app
 			.world_mut()
 			.commands()
-			.entity(event_target)
+			.entity(observable_entity)
 			.as_observable::<KeyCode, Never>(scheduler_handle)
 			.subscribe(destination);
 		let tracked_teardown = subscription.add_tracked_teardown("keyboard_observable");
@@ -214,7 +223,7 @@ mod when_used_directly {
 	use super::*;
 
 	#[test]
-	fn should_observe_bevy_events_and_emit_them_as_signals() {
+	fn should_observe_key_presses_and_emit_them_as_signals() {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
 		app.init_resource::<ButtonInput<KeyCode>>();

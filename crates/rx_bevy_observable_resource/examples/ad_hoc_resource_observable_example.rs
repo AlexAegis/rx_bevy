@@ -72,21 +72,20 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 
 	// Store this somewhere, or mark it with a component, or you won't be able
 	// to stop it!
-	let ad_hoc_resource_subscription: Entity =
-		ResourceObservable::<DummyResource, _, usize, Never>::new(
-			|res| Ok(res.count),
-			ResourceObservableOptions {
-				trigger_on_is_added: true, // If false, the first signal will be 1
-				trigger_on_is_changed: true,
-			},
-			rx_schedule_update_virtual.handle(),
-		)
-		.with_commands(commands.reborrow(), rx_schedule_update_virtual.handle())
-		.subscribe(EntityDestination::new(
-			dummy_message_destination,
-			rx_schedule_update_virtual.handle(),
-		))
-		.entity();
+	let ad_hoc_resource_subscription: Entity = ResourceObservable::<DummyResource, _, usize>::new(
+		|res| res.count,
+		ResourceObservableOptions {
+			trigger_on_is_added: true, // If false, the first signal will be 1
+			trigger_on_is_changed: true,
+		},
+		rx_schedule_update_virtual.handle(),
+	)
+	.with_commands(commands.reborrow(), rx_schedule_update_virtual.handle())
+	.subscribe(EntityDestination::new(
+		dummy_message_destination,
+		rx_schedule_update_virtual.handle(),
+	))
+	.entity();
 
 	commands.insert_resource(ExampleEntities {
 		subscriptions: HashMap::new(),

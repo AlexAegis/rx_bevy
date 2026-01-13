@@ -97,8 +97,8 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 	let message_observable = commands
 		.spawn((
 			Name::new("ResourceObservable"),
-			ResourceObservable::<DummyResource, _, usize, Never>::new(
-				|res| Ok(res.count),
+			ResourceObservable::<DummyResource, _, usize>::new(
+				|res| res.count,
 				ResourceObservableOptions {
 					trigger_on_is_added: true, // If false, the first signal will be 1
 					trigger_on_is_changed: true,
