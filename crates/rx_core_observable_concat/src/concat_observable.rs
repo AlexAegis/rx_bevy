@@ -2,7 +2,8 @@ use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_common::{
 	ErasedObservable, ErasedObservables, Never, NeverMapIntoExtension, Observable, RxObserver,
-	Signal, Subscriber, SubscriptionData, TeardownCollection, UpgradeableObserver,
+	SharedSubscription, Signal, Subscriber, TeardownCollection, TeardownCollectionExtension,
+	UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
@@ -39,7 +40,7 @@ where
 	OutError: Signal,
 {
 	type Subscription<Destination>
-		= SubscriptionData
+		= SharedSubscription
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
@@ -65,7 +66,8 @@ where
 		}
 		concat_subscriber.complete();
 
-		let mut subscription = SubscriptionData::default();
+		let mut subscription = SharedSubscription::default();
+		concat_subscriber.add(subscription.clone());
 		subscription.add_teardown(concat_subscriber.into());
 		subscription
 	}

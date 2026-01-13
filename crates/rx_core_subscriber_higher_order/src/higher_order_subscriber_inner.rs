@@ -71,6 +71,10 @@ where
 			self.shared_destination.next(next);
 
 			if self.shared_destination.is_closed() {
+				self.state
+					.lock_ignore_poison()
+					.downstream_subscriber_state
+					.unsubscribe_if_not_already();
 				self.unsubscribe();
 			}
 		}

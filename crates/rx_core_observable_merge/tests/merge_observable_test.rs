@@ -1,4 +1,5 @@
 use rx_core::prelude::*;
+use rx_core_common::SubscriberNotification;
 use rx_core_testing::prelude::*;
 
 #[test]
@@ -42,6 +43,84 @@ fn should_emit_from_all_sources_when_any_of_them_nexts() {
 			SubscriberNotification::Next(7),
 			SubscriberNotification::Complete,
 		],
+		true,
+	);
+}
+
+#[test]
+fn should_complete_if_all_inputs_complete() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source_1 = PublishSubject::<usize>::default();
+	let mut source_2 = PublishSubject::<usize>::default();
+	let mut source_3 = PublishSubject::<usize>::default();
+
+	let mut subscription = merge(
+		(source_1.clone(), source_2.clone(), source_3.clone()),
+		usize::MAX,
+	)
+	.subscribe(destination);
+
+	assert!(
+		notification_collector.lock().is_empty(),
+		"no emissions before nexts"
+	);
+
+	source_1.next(1);
+
+	assert_eq!(
+		notification_collector.lock().nth_notification(0),
+		&SubscriberNotification::Next(1)
+	);
+
+	source_2.next(2);
+
+	assert_eq!(
+		notification_collector.lock().nth_notification(1),
+		&SubscriberNotification::Next(2)
+	);
+
+	source_1.complete();
+	source_3.complete(); // This source never emitted
+
+	source_2.next(3);
+	source_2.complete();
+
+	subscription.unsubscribe();
+
+	notification_collector.lock().assert_notifications(
+		"merge",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Next(3),
+			SubscriberNotification::Complete,
+		],
+		true,
+	);
+}
+
+#[test]
+fn should_complete_when_inputs_immediately_complete() {
+	let destination = MockObserver::default();
+	let notification_collector = destination.get_notification_collector();
+
+	let mut source_1 = PublishSubject::<usize>::default();
+	source_1.complete();
+	let mut source_2 = PublishSubject::<usize>::default();
+	source_2.complete();
+
+	let mut subscription =
+		merge((source_1.clone(), source_2.clone()), usize::MAX).subscribe(destination);
+
+	subscription.unsubscribe();
+
+	notification_collector.lock().assert_notifications(
+		"merge",
+		0,
+		[SubscriberNotification::Complete],
 		true,
 	);
 }
@@ -223,5 +302,185 @@ mod concurrency_limit {
 			],
 			true,
 		);
+	}
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1_finalized = SharedSubscription::default();
+		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
+
+		let source_2 = PublishSubject::<usize, TestError>::default();
+		let mut source_2_finalized = SharedSubscription::default();
+		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
+
+		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+			"merge",
+			merge(
+				(
+					source_1
+						.clone()
+						.finalize(move || source_1_finalized.unsubscribe()),
+					source_2
+						.clone()
+						.finalize(move || source_2_finalized.unsubscribe()),
+				),
+				usize::MAX,
+			),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+
+		source_1.error(TestError);
+
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+
+		source_1_tracked_teardown.assert_was_torn_down();
+		source_2_tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1_finalized = SharedSubscription::default();
+		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
+
+		let mut source_2 = PublishSubject::<usize, TestError>::default();
+		let mut source_2_finalized = SharedSubscription::default();
+		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
+
+		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+			"merge",
+			merge(
+				(
+					source_1
+						.clone()
+						.finalize(move || source_1_finalized.unsubscribe()),
+					source_2
+						.clone()
+						.finalize(move || source_2_finalized.unsubscribe()),
+				),
+				usize::MAX,
+			),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+
+		source_1.complete();
+		source_2.complete();
+
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		source_1_tracked_teardown.assert_was_torn_down();
+		source_2_tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1_finalized = SharedSubscription::default();
+		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
+
+		let source_2 = PublishSubject::<usize, TestError>::default();
+		let mut source_2_finalized = SharedSubscription::default();
+		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
+
+		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+			"merge",
+			merge(
+				(
+					source_1
+						.clone()
+						.finalize(move || source_1_finalized.unsubscribe()),
+					source_2
+						.clone()
+						.finalize(move || source_2_finalized.unsubscribe()),
+				),
+				usize::MAX,
+			),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+
+		harness.get_subscription_mut().unsubscribe();
+
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		source_1_tracked_teardown.assert_was_torn_down();
+		source_2_tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_if_downstream_closes_early() {
+		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1_finalized = SharedSubscription::default();
+		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
+
+		let mut source_2 = PublishSubject::<usize, TestError>::default();
+		let mut source_2_finalized = SharedSubscription::default();
+		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
+
+		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+			"merge",
+			merge(
+				(
+					source_1
+						.clone()
+						.finalize(move || source_1_finalized.unsubscribe()),
+					source_2
+						.clone()
+						.finalize(move || source_2_finalized.unsubscribe()),
+				),
+				usize::MAX,
+			),
+		);
+		let observable = harness.create_harness_observable().take(2);
+		harness.subscribe_to(observable);
+
+		source_1.next(1);
+		source_2.next(2);
+
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		source_1_tracked_teardown.assert_was_torn_down();
+		source_2_tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_if_downstream_closes_immediately() {
+		let source_1 = PublishSubject::<usize, TestError>::default();
+		let source_2 = PublishSubject::<usize, TestError>::default();
+
+		let mut source_1_finalized = SharedSubscription::default();
+		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
+
+		let mut source_2_finalized = SharedSubscription::default();
+		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
+
+		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+			"merge",
+			merge(
+				(
+					source_1
+						.finalize(move || source_1_finalized.unsubscribe())
+						.clone(),
+					source_2
+						.finalize(move || source_2_finalized.unsubscribe())
+						.clone(),
+				),
+				usize::MAX,
+			),
+		);
+		let observable = harness.create_harness_observable().take(0);
+		harness.subscribe_to(observable);
+
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		source_1_tracked_teardown.assert_was_torn_down();
+		source_2_tracked_teardown.assert_was_torn_down();
 	}
 }
