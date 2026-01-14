@@ -1,6 +1,5 @@
-use rx_core::{SubscriberNotification, prelude::EmptyObservable};
-use rx_core_common::*;
-use rx_core_testing::MockObserver;
+use rx_core::prelude::*;
+use rx_core_testing::prelude::*;
 
 #[test]
 fn should_immediately_emit_complete() {
@@ -33,5 +32,32 @@ mod observable_fn {
 			notification_collector.lock().nth_notification(0),
 			SubscriberNotification::Complete
 		));
+	}
+}
+
+/// rx_contract_closed_after_error - does not error
+mod contracts {
+	use rx_core::prelude::empty;
+
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<EmptyObservable, Never, Never>::new_with_source("empty", empty());
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<EmptyObservable, Never, Never>::new_with_source("empty", empty());
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		// Empty emits Complete immediately on subscribe; unsubscribe is a no-op on an already closed subscription.
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
 	}
 }

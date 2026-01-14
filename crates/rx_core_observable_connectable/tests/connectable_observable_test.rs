@@ -251,3 +251,101 @@ mod connectable_options {
 		assert!(!subject.is_closed());
 	}
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut source = PublishSubject::<usize, TestError>::default();
+		let mut source_finalized = SharedSubscription::default();
+		let source_tracked_teardown = source_finalized.add_tracked_teardown("connectable - source");
+
+		let mut connectable = ConnectableObservable::new(
+			source
+				.clone()
+				.finalize(move || source_finalized.unsubscribe()),
+			ConnectableOptions {
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
+				disconnect_when_ref_count_zero: false,
+				reset_connector_on_disconnect: false,
+				reset_connector_on_complete: false,
+				reset_connector_on_error: false,
+			},
+		);
+		connectable.connect();
+
+		let mut harness =
+			TestHarness::<_, usize, TestError>::new_with_source("connectable", connectable);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+
+		source.error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+
+		source_tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut source = PublishSubject::<usize, TestError>::default();
+		let mut source_finalized = SharedSubscription::default();
+		let source_tracked_teardown = source_finalized.add_tracked_teardown("connectable - source");
+
+		let mut connectable = ConnectableObservable::new(
+			source
+				.clone()
+				.finalize(move || source_finalized.unsubscribe()),
+			ConnectableOptions {
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
+				disconnect_when_ref_count_zero: false,
+				reset_connector_on_disconnect: false,
+				reset_connector_on_complete: false,
+				reset_connector_on_error: false,
+			},
+		);
+		connectable.connect();
+
+		let mut harness =
+			TestHarness::<_, usize, TestError>::new_with_source("connectable", connectable);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+
+		source.next(1);
+		source.complete();
+
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		source_tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let source = PublishSubject::<usize, TestError>::default();
+		let mut source_finalized = SharedSubscription::default();
+		let source_tracked_teardown = source_finalized.add_tracked_teardown("connectable - source");
+
+		let mut connectable = ConnectableObservable::new(
+			source
+				.clone()
+				.finalize(move || source_finalized.unsubscribe()),
+			ConnectableOptions {
+				connector_provider: ProvideWithDefault::<PublishSubject<_, _>>::default(),
+				disconnect_when_ref_count_zero: false,
+				reset_connector_on_disconnect: false,
+				reset_connector_on_complete: false,
+				reset_connector_on_error: false,
+			},
+		);
+		connectable.connect();
+
+		let mut harness =
+			TestHarness::<_, usize, TestError>::new_with_source("connectable", connectable);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		source_tracked_teardown.assert_was_torn_down();
+	}
+}

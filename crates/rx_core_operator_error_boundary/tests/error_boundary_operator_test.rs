@@ -71,3 +71,28 @@ fn should_compose() {
 		true,
 	);
 }
+
+/// rx_contract_closed_after_error - does not error
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, Never>, usize, Never>::new("error_boundary");
+		let observable = harness.create_harness_observable().error_boundary();
+		harness.subscribe_to(observable);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, Never>, usize, Never>::new("error_boundary");
+		let observable = harness.create_harness_observable().error_boundary();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

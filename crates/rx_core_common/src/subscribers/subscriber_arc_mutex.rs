@@ -54,10 +54,6 @@ where
 	Destination: ?Sized + RxObserver + SubscriptionLike,
 {
 	fn next(&mut self, next: Self::In) {
-		if self.is_closed() {
-			return;
-		}
-
 		match self.lock() {
 			Ok(mut lock) => lock.next(next),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(),
@@ -65,10 +61,6 @@ where
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		if self.is_closed() {
-			return;
-		}
-
 		match self.lock() {
 			Ok(mut lock) => lock.error(error),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(),
@@ -76,10 +68,6 @@ where
 	}
 
 	fn complete(&mut self) {
-		if self.is_closed() {
-			return;
-		}
-
 		match self.lock() {
 			Ok(mut lock) => lock.complete(),
 			Err(poison_error) => poison_error.into_inner().unsubscribe(),
@@ -103,10 +91,6 @@ where
 	// it. They already log poison errors and unsubscribe instead, which would
 	// otherwise double print.
 	fn unsubscribe(&mut self) {
-		if self.is_closed() {
-			return;
-		}
-
 		self.lock()
 			.unwrap_or_else(|err| err.into_inner())
 			.unsubscribe()

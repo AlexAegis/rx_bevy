@@ -206,3 +206,64 @@ mod when_emit_at_nth_is_zero {
 		subscription.unsubscribe();
 	}
 }
+
+// rx_contract_closed_after_error - does not error
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut finalized = SharedSubscription::default();
+		let tracked_teardown = finalized.add_tracked_teardown("iterator_on_tick - source");
+
+		let mut harness = TestHarness::<_, i32, Never>::new_with_source(
+			"iterator_on_tick",
+			(1..=3)
+				.into_observable_on_every_nth_tick(
+					OnTickObservableOptions {
+						emit_at_every_nth_tick: 0,
+						start_on_subscribe: false,
+					},
+					scheduler,
+				)
+				.finalize(move || finalized.unsubscribe()),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut finalized = SharedSubscription::default();
+		let tracked_teardown = finalized.add_tracked_teardown("iterator_on_tick - source");
+
+		let mut harness = TestHarness::<_, i32, Never>::new_with_source(
+			"iterator_on_tick",
+			(1..=3)
+				.into_observable_on_every_nth_tick(
+					OnTickObservableOptions {
+						emit_at_every_nth_tick: 2,
+						start_on_subscribe: true,
+					},
+					scheduler,
+				)
+				.finalize(move || finalized.unsubscribe()),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		tracked_teardown.assert_was_torn_down();
+	}
+}

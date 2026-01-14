@@ -108,3 +108,44 @@ fn should_create_a_new_operator_from_two_and_complete() {
 		true,
 	);
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, String, TestError>::new("composite");
+		let observable = harness
+			.create_harness_observable()
+			.pipe(MapOperator::new(|i| i * 2).compose_with(MapOperator::new(|i| format!("{i}"))));
+		harness.subscribe_to(observable);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, String, TestError>::new("composite");
+		let observable = harness
+			.create_harness_observable()
+			.pipe(MapOperator::new(|i| i * 2).compose_with(MapOperator::new(|i| format!("{i}"))));
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, String, TestError>::new("composite");
+		let observable = harness
+			.create_harness_observable()
+			.pipe(MapOperator::new(|i| i * 2).compose_with(MapOperator::new(|i| format!("{i}"))));
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

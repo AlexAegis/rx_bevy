@@ -140,3 +140,45 @@ mod no_next_observed_error {
 		);
 	}
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, FindOperatorError<TestError>>::new(
+				"find",
+			);
+		let observable = harness.create_harness_observable().find(|next| next == &1);
+		harness.subscribe_to(observable);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(
+			FindOperatorError::Upstream(TestError),
+		));
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, FindOperatorError<TestError>>::new(
+				"find",
+			);
+		let observable = harness.create_harness_observable().find(|next| next == &1);
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, usize, FindOperatorError<TestError>>::new(
+				"find",
+			);
+		let observable = harness.create_harness_observable().find(|next| next == &1);
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
+}

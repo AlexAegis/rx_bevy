@@ -128,9 +128,6 @@ where
 			self.destination.error(error);
 			// An error immediately unsubscribes.
 			self.closed_flag.close();
-			self.ref_count = 0;
-			self.completion_count = 0;
-			self.unsubscribe_count = 0;
 			self.destination.unsubscribe();
 		}
 	}

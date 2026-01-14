@@ -1,5 +1,4 @@
 use rx_core::prelude::*;
-use rx_core_common::{Observable, SubscriberNotification};
 use rx_core_testing::prelude::*;
 
 #[test]
@@ -94,4 +93,34 @@ fn should_compose() {
 		[SubscriberNotification::Complete],
 		true,
 	);
+}
+
+/// rx_contract_closed_after_error - does not error
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, Result<usize, TestError>, Never>::new(
+				"into_result",
+			);
+		let observable = harness.create_harness_observable().into_result();
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().complete();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<TestSubject<usize, TestError>, Result<usize, TestError>, Never>::new(
+				"into_result",
+			);
+		let observable = harness.create_harness_observable().into_result();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+	}
 }

@@ -54,3 +54,26 @@ mod teardown {
 		assert!(subscription.is_closed())
 	}
 }
+
+/// rx_contract_closed_after_error - does not error
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness = TestHarness::<_, usize, Never>::new_with_source("of", of(1));
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness = TestHarness::<_, usize, Never>::new_with_source("of", of(1));
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		// `of` emits synchronously (next + complete); unsubscribe after that is a no-op on a closed subscription.
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+}

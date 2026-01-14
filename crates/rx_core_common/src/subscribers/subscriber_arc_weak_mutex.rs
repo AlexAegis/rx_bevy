@@ -60,10 +60,6 @@ where
 	Destination: ?Sized + RxObserver + SubscriptionLike,
 {
 	fn next(&mut self, next: Self::In) {
-		if self.is_closed() {
-			return;
-		}
-
 		let Some(upgraded) = self.upgrade() else {
 			return;
 		};
@@ -75,10 +71,6 @@ where
 	}
 
 	fn error(&mut self, error: Self::InError) {
-		if self.is_closed() {
-			return;
-		}
-
 		let Some(upgraded) = self.upgrade() else {
 			return;
 		};
@@ -90,10 +82,6 @@ where
 	}
 
 	fn complete(&mut self) {
-		if self.is_closed() {
-			return;
-		}
-
 		let Some(upgraded) = self.upgrade() else {
 			return;
 		};
@@ -126,10 +114,6 @@ where
 	// it. They already log poison errors and unsubscribe instead, which would
 	// otherwise double print.
 	fn unsubscribe(&mut self) {
-		if self.is_closed() {
-			return;
-		}
-
 		let Some(upgraded) = self.upgrade() else {
 			return;
 		};

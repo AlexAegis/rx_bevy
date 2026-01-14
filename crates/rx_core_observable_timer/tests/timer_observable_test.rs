@@ -105,3 +105,39 @@ fn should_execute_teardowns_when_unsubscribed() {
 
 	assert!(subscription.is_closed(), "the subscription was not closed");
 }
+
+/// rx_contract_closed_after_error - does not error
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness = TestHarness::<_, (), Never>::new_with_source(
+			"timer",
+			timer(Duration::from_millis(10), scheduler.clone()),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		executor.tick(Duration::from_millis(20));
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+		assert!(executor.is_empty(), "rx_verify_scheduler_is_empty");
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness = TestHarness::<_, (), Never>::new_with_source(
+			"timer",
+			timer(Duration::from_millis(10), scheduler.clone()),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		executor.tick(Duration::from_millis(20));
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+		assert!(executor.is_empty(), "rx_verify_scheduler_is_empty");
+	}
+}

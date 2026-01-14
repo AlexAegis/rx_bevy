@@ -48,3 +48,28 @@ fn iterator_observable_should_stop_when_downstream_closes_during_iteration() {
 
 	assert!(subscription.is_closed());
 }
+
+/// rx_contract_closed_after_error - does not error
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut harness =
+			TestHarness::<_, usize, Never>::new_with_source("iterator", (1..=2).into_observable());
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut harness =
+			TestHarness::<_, usize, Never>::new_with_source("iterator", (1..=2).into_observable());
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		// Iterator emits and completes synchronously on subscribe; unsubscribe after that is a no-op.
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+	}
+}

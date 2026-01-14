@@ -216,3 +216,103 @@ mod errors {
 		);
 	}
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1_finalized = SharedSubscription::default();
+		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("join - source_1");
+
+		let source_2 = PublishSubject::<&'static str, TestError>::default();
+		let mut source_2_finalized = SharedSubscription::default();
+		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("join - source_2");
+
+		let mut harness = TestHarness::<_, (usize, &'static str), TestError>::new_with_source(
+			"join",
+			join(
+				source_1
+					.clone()
+					.finalize(move || source_1_finalized.unsubscribe()),
+				source_2
+					.clone()
+					.finalize(move || source_2_finalized.unsubscribe()),
+			),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+
+		source_1.error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+
+		source_1_tracked_teardown.assert_was_torn_down();
+		source_2_tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1_finalized = SharedSubscription::default();
+		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("join - source_1");
+
+		let mut source_2 = PublishSubject::<&'static str, TestError>::default();
+		let mut source_2_finalized = SharedSubscription::default();
+		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("join - source_2");
+
+		let mut harness = TestHarness::<_, (usize, &'static str), TestError>::new_with_source(
+			"join",
+			join(
+				source_1
+					.clone()
+					.finalize(move || source_1_finalized.unsubscribe()),
+				source_2
+					.clone()
+					.finalize(move || source_2_finalized.unsubscribe()),
+			),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+
+		source_1.next(1);
+		source_2.next("a");
+		source_1.complete();
+		source_2.complete();
+
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		source_1_tracked_teardown.assert_was_torn_down();
+		source_2_tracked_teardown.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1_finalized = SharedSubscription::default();
+		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("join - source_1");
+
+		let source_2 = PublishSubject::<&'static str, TestError>::default();
+		let mut source_2_finalized = SharedSubscription::default();
+		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("join - source_2");
+
+		let mut harness = TestHarness::<_, (usize, &'static str), TestError>::new_with_source(
+			"join",
+			join(
+				source_1
+					.clone()
+					.finalize(move || source_1_finalized.unsubscribe()),
+				source_2
+					.clone()
+					.finalize(move || source_2_finalized.unsubscribe()),
+			),
+		);
+		let observable = harness.create_harness_observable();
+		harness.subscribe_to(observable);
+		harness.get_subscription_mut().unsubscribe();
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		source_1_tracked_teardown.assert_was_torn_down();
+		source_2_tracked_teardown.assert_was_torn_down();
+	}
+}

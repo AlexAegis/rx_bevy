@@ -16,8 +16,8 @@ mod compose {
 	}
 }
 
-/// rx_contract_closed_after_next - impossible, in type is never
-/// rx_contract_closed_after_error - impossible, error type is never
+/// rx_contract_closed_after_next - does not next
+/// rx_contract_closed_after_error - does not error
 mod contracts {
 	use super::*;
 

@@ -172,3 +172,69 @@ fn should_compose() {
 
 	assert!(subscription.is_closed());
 }
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+			"fallback_when_silent",
+		);
+
+		let observable = harness
+			.create_harness_observable()
+			.fallback_when_silent(|_, _, value| value, scheduler.clone());
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		harness.source().error(TestError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+
+		executor.tick(Duration::from_millis(100));
+		assert!(executor.is_empty(), "rx_verify_scheduler_is_empty");
+	}
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+			"fallback_when_silent",
+		);
+
+		let observable = harness
+			.create_harness_observable()
+			.fallback_when_silent(|_, _, value| value, scheduler.clone());
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		executor.tick(Duration::from_millis(32));
+		harness.source().complete();
+		executor.tick(Duration::from_millis(100));
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+
+		assert!(executor.is_empty(), "rx_verify_scheduler_is_empty");
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+			"fallback_when_silent",
+		);
+
+		let observable = harness
+			.create_harness_observable()
+			.fallback_when_silent(|_, _, value| value, scheduler.clone());
+		harness.subscribe_to(observable);
+		harness.source().next(1);
+		executor.tick(Duration::from_millis(32));
+		harness.get_subscription_mut().unsubscribe();
+		executor.tick(Duration::from_millis(100));
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+
+		assert!(executor.is_empty(), "rx_verify_scheduler_is_empty");
+	}
+}

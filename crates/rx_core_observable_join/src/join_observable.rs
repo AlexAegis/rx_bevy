@@ -1,6 +1,6 @@
 use rx_core_common::{
-	Observable, SharedSubscriber, Subscriber, SubscriptionData, TeardownCollection,
-	UpgradeableObserver,
+	Observable, SharedSubscriber, SharedSubscription, Subscriber, TeardownCollection,
+	TeardownCollectionExtension, UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_notification_variadics::{
@@ -60,7 +60,7 @@ where
 	O2::OutError: Into<O1::OutError>,
 {
 	type Subscription<Destination>
-		= SubscriptionData
+		= SharedSubscription
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
@@ -72,7 +72,8 @@ where
 		Destination: 'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError>,
 	{
 		let destination = observer.upgrade();
-		let shared_subscriber =
+		let mut subscription = SharedSubscription::default();
+		let mut shared_subscriber =
 			SharedSubscriber::new(JoinSubscriber::<_, O1, O2>::new(destination));
 
 		let s1 = self.observable_1.subscribe(EitherSubscriber2::<
@@ -89,7 +90,7 @@ where
 			O2,
 		>::new(shared_subscriber.clone()));
 
-		let mut subscription = SubscriptionData::default();
+		shared_subscriber.add(subscription.clone());
 		subscription.add_teardown(s1.into());
 		subscription.add_teardown(s2.into());
 		subscription
