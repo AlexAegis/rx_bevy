@@ -69,6 +69,7 @@ debug = [
     "rx_core_operator_first?/debug",
     "rx_core_operator_identity?/debug",
     "rx_core_operator_into_result?/debug",
+    "rx_core_operator_is_empty?/debug",
     "rx_core_operator_lift_option?/debug",
     "rx_core_operator_lift_result?/debug",
     "rx_core_operator_map?/debug",
@@ -185,6 +186,7 @@ all_operators = [
     "operator_first",
     "operator_identity",
     "operator_into_result",
+    "operator_is_empty",
     "operator_lift_option",
     "operator_lift_result",
     "operator_map",
@@ -232,6 +234,7 @@ operator_find_index = ["dep:rx_core_operator_find_index"]
 operator_first = ["dep:rx_core_operator_first"]
 operator_identity = ["dep:rx_core_operator_identity"]
 operator_into_result = ["dep:rx_core_operator_into_result"]
+operator_is_empty = ["dep:rx_core_operator_is_empty"]
 operator_lift_option = ["dep:rx_core_operator_lift_option"]
 operator_lift_result = ["dep:rx_core_operator_lift_result"]
 operator_map = ["dep:rx_core_operator_map"]
@@ -277,6 +280,7 @@ pipe = [
     "rx_core_operator_find_index?/pipe",
     "rx_core_operator_first?/pipe",
     "rx_core_operator_into_result?/pipe",
+    "rx_core_operator_is_empty?/pipe",
     "rx_core_operator_lift_option?/pipe",
     "rx_core_operator_lift_result?/pipe",
     "rx_core_operator_map?/pipe",
@@ -324,6 +328,7 @@ compose = [
     "rx_core_operator_find_index?/compose",
     "rx_core_operator_first?/compose",
     "rx_core_operator_into_result?/compose",
+    "rx_core_operator_is_empty?/compose",
     "rx_core_operator_lift_option?/compose",
     "rx_core_operator_lift_result?/compose",
     "rx_core_operator_map?/compose",
@@ -411,6 +416,7 @@ rx_core_operator_find_index = { workspace = true, optional = true }
 rx_core_operator_first = { workspace = true, optional = true }
 rx_core_operator_identity = { workspace = true, optional = true }
 rx_core_operator_into_result = { workspace = true, optional = true }
+rx_core_operator_is_empty = { workspace = true, optional = true }
 rx_core_operator_lift_option = { workspace = true, optional = true }
 rx_core_operator_lift_result = { workspace = true, optional = true }
 rx_core_operator_map = { workspace = true, optional = true }

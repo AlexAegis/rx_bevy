@@ -209,6 +209,9 @@ component_management:
     - component_id: rx_core_operator_into_result
       paths:
         - crates/rx_core_operator_into_result/**
+    - component_id: rx_core_operator_is_empty
+      paths:
+        - crates/rx_core_operator_is_empty/**
     - component_id: rx_core_operator_lift_option
       paths:
         - crates/rx_core_operator_lift_option/**

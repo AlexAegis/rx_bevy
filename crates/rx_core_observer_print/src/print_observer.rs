@@ -81,11 +81,13 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		println!("{}error: {:?}", self.get_prefix(), error);
+		self.unsubscribe();
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		println!("{}completed", self.get_prefix());
+		self.unsubscribe();
 	}
 }
 

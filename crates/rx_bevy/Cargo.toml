@@ -150,6 +150,7 @@ all_core_operators = [
     "operator_first",
     "operator_identity",
     "operator_into_result",
+    "operator_is_empty",
     "operator_lift_option",
     "operator_lift_result",
     "operator_map",
@@ -197,6 +198,7 @@ operator_find_index = ["rx_core/operator_find_index"]
 operator_first = ["rx_core/operator_first"]
 operator_identity = ["rx_core/operator_identity"]
 operator_into_result = ["rx_core/operator_into_result"]
+operator_is_empty = ["rx_core/operator_is_empty"]
 operator_lift_option = ["rx_core/operator_lift_option"]
 operator_lift_result = ["rx_core/operator_lift_result"]
 operator_map = ["rx_core/operator_map"]

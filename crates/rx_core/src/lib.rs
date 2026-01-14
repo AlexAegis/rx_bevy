@@ -116,6 +116,8 @@ pub mod operator {
 	pub use rx_core_operator_identity::operator::*;
 	#[cfg(feature = "operator_into_result")]
 	pub use rx_core_operator_into_result::operator::*;
+	#[cfg(feature = "operator_is_empty")]
+	pub use rx_core_operator_is_empty::operator::*;
 	#[cfg(feature = "operator_lift_option")]
 	pub use rx_core_operator_lift_option::operator::*;
 	#[cfg(feature = "operator_lift_result")]
@@ -210,6 +212,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_first::extension_compose::*;
 	#[cfg(feature = "operator_into_result")]
 	pub use rx_core_operator_into_result::extension_compose::*;
+	#[cfg(feature = "operator_is_empty")]
+	pub use rx_core_operator_is_empty::extension_compose::*;
 	#[cfg(feature = "operator_lift_option")]
 	pub use rx_core_operator_lift_option::extension_compose::*;
 	#[cfg(feature = "operator_lift_result")]
@@ -298,6 +302,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_first::extension_pipe::*;
 	#[cfg(feature = "operator_into_result")]
 	pub use rx_core_operator_into_result::extension_pipe::*;
+	#[cfg(feature = "operator_is_empty")]
+	pub use rx_core_operator_is_empty::extension_pipe::*;
 	#[cfg(feature = "operator_lift_option")]
 	pub use rx_core_operator_lift_option::extension_pipe::*;
 	#[cfg(feature = "operator_lift_result")]

@@ -52,6 +52,7 @@
   - [first](operator/first.md)
   - [identity](operator/identity.md)
   - [into_result](operator/into_result.md)
+  - [is_empty](operator/is_empty.md)
   - [lift_option](operator/lift_option.md)
   - [lift_result](operator/lift_result.md)
   - [map](operator/map.md)

@@ -106,6 +106,7 @@ rx_core_operator_find_index = { path = "crates/rx_core_operator_find_index" }
 rx_core_operator_first = { path = "crates/rx_core_operator_first" }
 rx_core_operator_identity = { path = "crates/rx_core_operator_identity" }
 rx_core_operator_into_result = { path = "crates/rx_core_operator_into_result" }
+rx_core_operator_is_empty = { path = "crates/rx_core_operator_is_empty" }
 rx_core_operator_lift_option = { path = "crates/rx_core_operator_lift_option" }
 rx_core_operator_lift_result = { path = "crates/rx_core_operator_lift_result" }
 rx_core_operator_map = { path = "crates/rx_core_operator_map" }
