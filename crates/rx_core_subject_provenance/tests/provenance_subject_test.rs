@@ -141,7 +141,7 @@ mod initial_then_by_provenance {
 			ProvenanceSubject::<TestProvenance, usize>::new(1, TestProvenance::Foo);
 
 		let _s = provenance_subject
-			.initial_then_by_provenance(TestProvenance::Bar)
+			.replay_then_by_provenance(TestProvenance::Bar)
 			.subscribe(destination);
 
 		provenance_subject.next((2, TestProvenance::Bar));

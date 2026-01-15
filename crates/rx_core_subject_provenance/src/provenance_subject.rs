@@ -87,7 +87,7 @@ where
 
 	/// Always replays the stored value regardless of provenance, but then
 	/// only emit values of matching provenance.
-	pub fn initial_then_by_provenance(
+	pub fn replay_then_by_provenance(
 		&self,
 		by_provenance: Provenance,
 	) -> Pipe<

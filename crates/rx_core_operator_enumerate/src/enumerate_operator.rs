@@ -19,7 +19,7 @@ where
 	In: Signal,
 	InError: Signal,
 {
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
 }
 
 impl<In, InError> ComposableOperator for EnumerateOperator<In, InError>
