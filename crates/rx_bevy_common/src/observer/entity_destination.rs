@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use bevy_ecs::entity::Entity;
 use rx_core_common::{
-	Never, ObserverNotification, RxObserver, Scheduler, SchedulerHandle,
+	Never, ObserverNotification, PhantomInvariant, RxObserver, Scheduler, SchedulerHandle,
 	SchedulerScheduleWorkExtension, Signal, WorkCancellationId,
 };
 use rx_core_macro_observer_derive::RxObserver;
@@ -30,7 +30,7 @@ where
 	destination: Entity,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	cancellation_id: WorkCancellationId,
-	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> EntityDestination<In, InError>

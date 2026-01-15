@@ -1,7 +1,9 @@
 use core::marker::PhantomData;
 use std::time::Duration;
 
-use rx_core_common::{ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber};
+use rx_core_common::{
+	ComposableOperator, PhantomInvariant, Scheduler, SchedulerHandle, Signal, Subscriber,
+};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::DelaySubscriber;
@@ -19,7 +21,7 @@ where
 {
 	duration: Duration,
 	scheduler: SchedulerHandle<S>,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, S> DelayOperator<In, InError, S>

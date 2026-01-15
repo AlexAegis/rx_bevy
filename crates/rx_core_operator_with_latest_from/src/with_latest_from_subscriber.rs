@@ -4,8 +4,8 @@ use std::{
 };
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, ObserverSubscriber, RxObserver, SharedSubscriber, Signal,
-	Subscriber, SubscriptionLike,
+	LockWithPoisonBehavior, Observable, ObserverSubscriber, PhantomInvariant, RxObserver,
+	SharedSubscriber, Signal, Subscriber, SubscriptionLike,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -29,7 +29,7 @@ where
 		ObserverSubscriber<WithLatestFromInnerDestination<InnerObservable::Out, Destination>>,
 	>,
 	state: Arc<Mutex<WithLatestFromInnerDestinationState<InnerObservable::Out>>>,
-	_phantom_data: PhantomData<fn(InnerObservable) -> InnerObservable>,
+	_phantom_data: PhantomInvariant<InnerObservable>,
 }
 
 impl<In, InnerObservable, Destination> WithLatestFromSubscriber<In, InnerObservable, Destination>

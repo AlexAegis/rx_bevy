@@ -4,7 +4,9 @@ use bevy_ecs::entity::Entity;
 use rx_bevy_common::RxBevyScheduler;
 use rx_core_macro_observable_derive::RxObservable;
 
-use rx_core_common::{Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
+use rx_core_common::{
+	Observable, PhantomInvariant, SchedulerHandle, Signal, Subscriber, UpgradeableObserver,
+};
 
 use super::proxy_subscription::ProxySubscription;
 
@@ -20,7 +22,7 @@ where
 {
 	target_observable_entity: Entity,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> ProxyObservable<In, InError>

@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{Never, RxObserver, Signal, Subscriber};
+use rx_core_common::{Never, PhantomInvariant, RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -17,7 +17,7 @@ where
 {
 	#[destination]
 	destination: Destination,
-	_phantom_data: PhantomData<(ResultIn, ResultInError, InError)>,
+	_phantom_data: PhantomInvariant<(ResultIn, ResultInError, InError)>,
 }
 
 impl<ResultIn, ResultInError, InError, Destination>

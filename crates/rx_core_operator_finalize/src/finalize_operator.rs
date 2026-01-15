@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Signal, Subscriber, Teardown};
+use rx_core_common::{ComposableOperator, PhantomInvariant, Signal, Subscriber, Teardown};
 use rx_core_macro_operator_derive::RxOperator;
 
 #[derive_where(Clone, Debug)]
@@ -18,7 +18,7 @@ where
 {
 	#[derive_where(skip(Debug))]
 	teardown: Callback,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, Callback> FinalizeOperator<In, InError, Callback>

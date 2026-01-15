@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::FilterSubscriber;
@@ -19,7 +19,7 @@ where
 	Filter: 'static + for<'a> Fn(&'a In, usize) -> bool + Clone + Send + Sync,
 {
 	filter: Filter,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, Filter> FilterOperator<In, InError, Filter>

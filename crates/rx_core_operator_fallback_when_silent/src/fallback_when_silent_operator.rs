@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_common::{
-	ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber, WorkContextProvider,
+	ComposableOperator, PhantomInvariant, Scheduler, SchedulerHandle, Signal, Subscriber,
+	WorkContextProvider,
 };
 use rx_core_macro_operator_derive::RxOperator;
 
@@ -29,7 +30,7 @@ where
 {
 	fallback: Fallback,
 	scheduler: SchedulerHandle<S>,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, Fallback, S> FallbackWhenSilentOperator<In, InError, Fallback, S>

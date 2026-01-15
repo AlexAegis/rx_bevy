@@ -3,8 +3,8 @@ use std::sync::{Arc, Mutex};
 
 use bevy_ecs::{resource::Resource, world::Mut};
 use rx_core_common::{
-	ObserverNotification, RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
-	Signal, WorkCancellationId,
+	ObserverNotification, PhantomInvariant, RxObserver, Scheduler, SchedulerHandle,
+	SchedulerScheduleWorkExtension, Signal, WorkCancellationId,
 };
 use rx_core_macro_observer_derive::RxObserver;
 
@@ -24,7 +24,7 @@ where
 	writer: Arc<Mutex<ResourceWriter>>,
 	owner_id: WorkCancellationId,
 	scheduler: SchedulerHandle<S>,
-	_phantom_data: PhantomData<(In, InError, R)>,
+	_phantom_data: PhantomInvariant<(In, InError, R)>,
 }
 
 impl<In, InError, R, ResourceWriter, S> ResourceDestination<In, InError, R, ResourceWriter, S>

@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{RxObserver, Signal, Subscriber};
+use rx_core_common::{PhantomInvariant, RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber, Debug)]
@@ -18,7 +18,7 @@ where
 	#[destination]
 	destination: Destination,
 	callback: OnNext,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, OnNext, Destination> TapNextSubscriber<In, InError, OnNext, Destination>

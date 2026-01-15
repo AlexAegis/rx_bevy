@@ -1,7 +1,7 @@
 use core::{marker::PhantomData, num::NonZero};
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Observable, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, Observable, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_subscriber_higher_order_exhaust::ExhaustSubscriberProvider;
@@ -19,7 +19,7 @@ where
 	InError: Signal,
 {
 	error_mapper: ErrorMapper,
-	_phantom_data: PhantomData<fn(In, InError, ErrorMapper) -> (In, InError, ErrorMapper)>,
+	_phantom_data: PhantomInvariant<(In, InError, ErrorMapper)>,
 }
 
 impl<In, InError, ErrorMapper> ExhaustAllOperator<In, InError, ErrorMapper>

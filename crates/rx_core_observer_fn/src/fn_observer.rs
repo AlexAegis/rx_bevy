@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{RxObserver, Signal};
+use rx_core_common::{PhantomInvariant, RxObserver, Signal};
 use rx_core_macro_observer_derive::RxObserver;
 
 /// An [FnObserver] requires you to define a callback for all three notifications
@@ -18,7 +18,7 @@ where
 	on_next: OnNext,
 	on_error: Option<OnError>,
 	on_complete: Option<OnComplete>,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, OnNext, OnError, OnComplete> FnObserver<In, InError, OnNext, OnError, OnComplete>

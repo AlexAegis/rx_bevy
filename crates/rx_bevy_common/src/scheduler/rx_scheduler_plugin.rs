@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 use bevy_app::{App, Plugin};
 use bevy_ecs::{
 	schedule::ScheduleLabel,
@@ -7,6 +5,7 @@ use bevy_ecs::{
 };
 use bevy_time::Time;
 use derive_where::derive_where;
+use rx_core_common::PhantomInvariant;
 use rx_core_scheduler_ticking::Tick;
 
 use crate::{Clock, RxBevyExecutor, SubscribeRetryPlugin};
@@ -30,7 +29,7 @@ where
 	S: ScheduleLabel + Default + Clone,
 	C: Clock,
 {
-	_phantom_data: PhantomData<(S, C)>,
+	_phantom_data: PhantomInvariant<(S, C)>,
 }
 
 impl<S, C> Plugin for RxSchedulerPlugin<S, C>

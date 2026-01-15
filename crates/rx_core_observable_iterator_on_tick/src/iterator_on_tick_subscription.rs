@@ -1,8 +1,9 @@
 use std::{iter::Peekable, marker::PhantomData};
 
 use rx_core_common::{
-	Never, RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
-	SharedSubscriber, Signal, Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
+	Never, PhantomInvariant, RxObserver, Scheduler, SchedulerHandle,
+	SchedulerScheduleWorkExtension, SharedSubscriber, Signal, Subscriber, SubscriptionLike,
+	WorkCancellationId, WorkResult,
 };
 use rx_core_macro_subscription_derive::RxSubscription;
 
@@ -33,7 +34,7 @@ where
 	#[destination]
 	destination: SharedSubscriber<Destination>,
 	owner_id: Option<WorkCancellationId>,
-	_phantom_data: PhantomData<fn(Iterator) -> Iterator>,
+	_phantom_data: PhantomInvariant<Iterator>,
 }
 
 impl<Destination, Iterator, S> OnTickIteratorSubscription<Destination, Iterator, S>

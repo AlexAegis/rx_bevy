@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Never, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, Never, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 #[derive_where(Debug)]
@@ -17,7 +17,7 @@ where
 	InError: Signal,
 {
 	start_with: In,
-	_phantom_data: PhantomData<InError>,
+	_phantom_data: PhantomInvariant<InError>,
 }
 
 impl<In, InError> StartWithOperator<In, InError>

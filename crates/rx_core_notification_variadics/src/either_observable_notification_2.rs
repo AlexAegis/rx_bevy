@@ -1,6 +1,4 @@
-use core::marker::PhantomData;
-
-use rx_core_common::{ObservableOutput, SubscriberNotification};
+use rx_core_common::{ObservableOutput, PhantomInvariant, SubscriberNotification};
 
 #[derive(Debug)]
 pub enum EitherObservableNotification2<O1, O2>
@@ -28,7 +26,7 @@ where
 }
 
 pub struct EitherNotificationSelector1Of2<O1, O2> {
-	_phantom_data: PhantomData<fn((O1, O2)) -> (O1, O2)>,
+	_phantom_data: PhantomInvariant<(O1, O2)>,
 }
 
 impl<O1, O2> EitherNotificationSelector2<O1, O2> for EitherNotificationSelector1Of2<O1, O2>
@@ -49,7 +47,7 @@ where
 }
 
 pub struct EitherNotificationSelector2Of2<O1, O2> {
-	_phantom_data: PhantomData<fn((O1, O2)) -> (O1, O2)>,
+	_phantom_data: PhantomInvariant<(O1, O2)>,
 }
 
 impl<O1, O2> EitherNotificationSelector2<O1, O2> for EitherNotificationSelector2Of2<O1, O2>

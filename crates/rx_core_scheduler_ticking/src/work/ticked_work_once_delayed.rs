@@ -1,7 +1,9 @@
 use std::{marker::PhantomData, time::Duration};
 
 use derive_where::derive_where;
-use rx_core_common::{DelayedWork, DelayedWorkFactory, ScheduledOnceWork, WorkContextProvider};
+use rx_core_common::{
+	DelayedWork, DelayedWorkFactory, PhantomInvariant, ScheduledOnceWork, WorkContextProvider,
+};
 use rx_core_macro_work_derive::RxWork;
 
 use rx_core_common::{ScheduledWork, WorkResult};
@@ -12,7 +14,7 @@ pub struct TickedDelayedOnceWorkFactory<C>
 where
 	C: WorkContextProvider,
 {
-	_phantom_data: PhantomData<fn(C) -> C>,
+	_phantom_data: PhantomInvariant<C>,
 }
 
 impl<C> DelayedWorkFactory<Tick, C> for TickedDelayedOnceWorkFactory<C>
@@ -53,7 +55,7 @@ where
 	#[derive_where(skip(Debug))]
 	work: Option<Work>,
 
-	_phantom_data: PhantomData<fn(C) -> C>,
+	_phantom_data: PhantomInvariant<C>,
 }
 
 impl<Work, C> DelayedWork<Work, Tick, C> for TickedDelayedOnceWork<Work, C>

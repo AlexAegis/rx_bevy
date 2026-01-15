@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::MapSubscriber;
@@ -21,7 +21,7 @@ where
 	Out: Signal,
 {
 	mapper: Mapper,
-	_phantom_data: PhantomData<(In, InError, Out)>,
+	_phantom_data: PhantomInvariant<(In, InError, Out)>,
 }
 
 impl<In, InError, Mapper, Out> MapOperator<In, InError, Mapper, Out>

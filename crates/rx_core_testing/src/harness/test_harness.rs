@@ -6,8 +6,8 @@ use std::{
 
 use derive_where::derive_where;
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, RxObserver, Signal, Subscriber, SubscriberNotification,
-	SubscriptionLike, SubscriptionWithTeardown, UpgradeableObserver,
+	LockWithPoisonBehavior, Observable, PhantomInvariant, RxObserver, Signal, Subscriber,
+	SubscriberNotification, SubscriptionLike, SubscriptionWithTeardown, UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_macro_subscriber_derive::RxSubscriber;
@@ -41,7 +41,7 @@ where
 	tracked_teardown_subscription: Option<TeardownTracker>,
 	#[derive_where(skip(Debug))]
 	subscription: Option<Box<dyn SubscriptionWithTeardown + Send + Sync>>,
-	_phantom_data: PhantomData<fn(FinalOut, FinalOutError) -> (FinalOut, FinalOutError)>,
+	_phantom_data: PhantomInvariant<(FinalOut, FinalOutError)>,
 }
 
 impl<In, InError, FinalOut, FinalOutError>
@@ -226,7 +226,7 @@ where
 	prefix: &'static str,
 	source: Source,
 	tracked_teardown_upstream: Arc<Mutex<Option<TeardownTracker>>>,
-	_phantom_data: PhantomData<fn(FinalOut, FinalOutError) -> (FinalOut, FinalOutError)>,
+	_phantom_data: PhantomInvariant<(FinalOut, FinalOutError)>,
 }
 
 impl<Source, FinalOut, FinalOutError> HarnessObservable<Source, FinalOut, FinalOutError>
@@ -295,7 +295,7 @@ where
 	#[destination]
 	destination: MockObserver<In, InError>,
 	take_count: Option<usize>,
-	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> HarnessDestination<In, InError>

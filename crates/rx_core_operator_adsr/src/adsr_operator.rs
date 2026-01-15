@@ -1,6 +1,8 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{ComposableOperator, Scheduler, SchedulerHandle, Signal, Subscriber};
+use rx_core_common::{
+	ComposableOperator, PhantomInvariant, Scheduler, SchedulerHandle, Signal, Subscriber,
+};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptions};
@@ -19,7 +21,7 @@ where
 {
 	options: AdsrOperatorOptions,
 	scheduler: SchedulerHandle<S>,
-	_phantom_data: PhantomData<InError>,
+	_phantom_data: PhantomInvariant<InError>,
 }
 
 impl<InError, S> AdsrOperator<InError, S>

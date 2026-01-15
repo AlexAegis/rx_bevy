@@ -19,7 +19,7 @@ where
 {
 	source: Arc<Mutex<Option<Source>>>,
 	max_retries: usize,
-	_phantom_data: PhantomData<&'o Source>,
+	_phantom_data: PhantomInvariant<&'o Source>,
 }
 
 impl<'o, Source> RetryObservable<'o, Source>

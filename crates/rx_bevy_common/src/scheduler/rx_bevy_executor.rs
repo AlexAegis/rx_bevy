@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_ecs::{resource::Resource, schedule::ScheduleLabel};
 use bevy_time::Virtual;
+use rx_core_common::PhantomInvariant;
 use rx_core_macro_executor_derive::RxExecutor;
 use rx_core_scheduler_ticking::{Tick, TickingSchedulerExecutor};
 
@@ -19,7 +20,7 @@ where
 {
 	#[scheduler_handle]
 	ticking_executor: TickingSchedulerExecutor<RxBevyScheduler, RxBevyContext>,
-	_phantom_data: PhantomData<(S, C)>,
+	_phantom_data: PhantomInvariant<(S, C)>,
 }
 
 impl<S, C> RxBevyExecutor<S, C>

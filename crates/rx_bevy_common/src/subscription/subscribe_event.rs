@@ -4,7 +4,7 @@ use bevy_ecs::{
 use bevy_log::error;
 use core::marker::PhantomData;
 use disqualified::ShortName;
-use rx_core_common::{Signal, Subscriber, UpgradeableObserver};
+use rx_core_common::{PhantomInvariant, Signal, Subscriber, UpgradeableObserver};
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -31,7 +31,7 @@ where
 	/// This entity can only be spawned from this events constructors
 	pub(crate) subscription_entity: Entity,
 
-	_phantom_data: PhantomData<(Out, OutError)>,
+	_phantom_data: PhantomInvariant<(Out, OutError)>,
 }
 
 #[derive(Component)]

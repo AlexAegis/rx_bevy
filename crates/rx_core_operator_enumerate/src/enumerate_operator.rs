@@ -1,7 +1,5 @@
-use core::marker::PhantomData;
-
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Never, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, Never, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::EnumerateSubscriber;
@@ -19,7 +17,7 @@ where
 	In: Signal,
 	InError: Signal,
 {
-	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> ComposableOperator for EnumerateOperator<In, InError>

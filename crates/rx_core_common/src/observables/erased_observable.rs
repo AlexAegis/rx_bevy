@@ -4,7 +4,8 @@ use std::{
 };
 
 use crate::{
-	ErasedSubscriber, Observable, Signal, Subscriber, SubscriptionData, UpgradeableObserver,
+	ErasedSubscriber, Observable, PhantomInvariant, Signal, Subscriber, SubscriptionData,
+	UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;
 
@@ -19,7 +20,7 @@ where
 {
 	subscribe:
 		Arc<Mutex<dyn FnMut(ErasedSubscriber<Out, OutError>) -> SubscriptionData + Send + Sync>>,
-	_phantom_data: PhantomData<fn((Out, OutError)) -> (Out, OutError)>,
+	_phantom_data: PhantomInvariant<(Out, OutError)>,
 }
 
 impl<Out, OutError> ErasedObservable<Out, OutError>

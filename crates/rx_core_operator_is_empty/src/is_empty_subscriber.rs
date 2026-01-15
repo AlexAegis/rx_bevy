@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_core_common::{RxObserver, Signal, Subscriber};
+use rx_core_common::{PhantomInvariant, RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -15,7 +15,7 @@ where
 {
 	#[destination]
 	destination: Destination,
-	_phantom_data: PhantomData<In>,
+	_phantom_data: PhantomInvariant<In>,
 }
 
 impl<In, Destination> IsEmptySubscriber<In, Destination>

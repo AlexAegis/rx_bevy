@@ -1,7 +1,7 @@
 use core::{marker::PhantomData, num::NonZero};
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Observable, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, Observable, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_higher_order_concurrent::ConcurrentSubscriberProvider;
 use rx_core_subscriber_higher_order_map::HigherOrderMapSubscriber;
@@ -22,7 +22,7 @@ where
 {
 	mapper: Mapper,
 	error_mapper: ErrorMapper,
-	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
+	_phantom_data: PhantomInvariant<(In, InError, InnerObservable)>,
 }
 
 impl<In, InError, Mapper, ErrorMapper, InnerObservable>

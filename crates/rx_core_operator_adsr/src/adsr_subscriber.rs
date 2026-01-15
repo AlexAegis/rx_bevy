@@ -5,8 +5,9 @@ use std::{
 };
 
 use rx_core_common::{
-	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
-	Signal, Subscriber, SubscriptionLike, WorkCancellationId, WorkResult, WorkTick,
+	PhantomInvariant, RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
+	SharedSubscriber, Signal, Subscriber, SubscriptionLike, WorkCancellationId, WorkResult,
+	WorkTick,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -36,7 +37,7 @@ where
 	shared_state: Arc<Mutex<AdsrEnvelopeSharedState>>,
 	scheduler: SchedulerHandle<S>,
 	cancellation_id: WorkCancellationId,
-	_phantom_data: PhantomData<InError>,
+	_phantom_data: PhantomInvariant<InError>,
 }
 
 impl<InError, Destination, S> AdsrSubscriber<InError, Destination, S>

@@ -1,9 +1,9 @@
 use core::{marker::PhantomData, num::NonZero};
 
 use rx_core_common::{
-	ErasedObservable, ErasedObservables, Never, NeverMapIntoExtension, Observable, RxObserver,
-	SharedSubscription, Signal, Subscriber, TeardownCollection, TeardownCollectionExtension,
-	UpgradeableObserver,
+	ErasedObservable, ErasedObservables, Never, NeverMapIntoExtension, Observable,
+	PhantomInvariant, RxObserver, SharedSubscription, Signal, Subscriber, TeardownCollection,
+	TeardownCollectionExtension, UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
@@ -18,7 +18,7 @@ where
 	OutError: Signal,
 {
 	observables: ErasedObservables<Out, OutError, SIZE>,
-	_phantom_data: PhantomData<(Out, OutError)>,
+	_phantom_data: PhantomInvariant<(Out, OutError)>,
 }
 
 impl<Out, OutError, const SIZE: usize> ConcatObservable<Out, OutError, SIZE>

@@ -1,7 +1,8 @@
 use std::{fmt::Debug, marker::PhantomData};
 
 use rx_core_common::{
-	Never, RxObserver, Signal, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
+	Never, PhantomInvariant, RxObserver, Signal, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection,
 };
 use rx_core_macro_observer_derive::RxObserver;
 
@@ -17,7 +18,7 @@ where
 {
 	prefix: Option<&'static str>,
 	teardown: SubscriptionData,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> Clone for PrintObserver<In, InError>

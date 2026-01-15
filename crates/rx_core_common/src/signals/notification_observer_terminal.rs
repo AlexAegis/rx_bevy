@@ -102,12 +102,10 @@ mod test {
 	use super::*;
 
 	mod push {
-		use std::marker::PhantomData;
-
 		use derive_where::derive_where;
 		use rx_core_macro_observer_derive::RxObserver;
 
-		use crate::RxObserver;
+		use crate::{PhantomInvariant, RxObserver};
 
 		use super::*;
 
@@ -123,7 +121,7 @@ mod test {
 		{
 			error: Option<InError>,
 			complete: bool,
-			_phantom_data: PhantomData<In>,
+			_phantom_data: PhantomInvariant<In>,
 		}
 
 		impl<In, InError> RxObserver for MockObserver<In, InError>

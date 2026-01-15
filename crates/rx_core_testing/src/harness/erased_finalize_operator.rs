@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 use std::sync::Arc;
 
-use rx_core_common::{ComposableOperator, Signal, Subscriber, Teardown};
+use rx_core_common::{ComposableOperator, PhantomInvariant, Signal, Subscriber, Teardown};
 use rx_core_macro_operator_derive::RxOperator;
 
 #[derive(RxOperator)]
@@ -15,7 +15,7 @@ where
 	InError: Signal,
 {
 	teardown_factory: Arc<dyn Fn() -> Box<dyn FnOnce() + Send + Sync> + Send + Sync>,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> ErasedFinalizeOperator<In, InError>

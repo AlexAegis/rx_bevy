@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{RxObserver, Signal, Subscriber};
+use rx_core_common::{PhantomInvariant, RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive_where(Debug)]
@@ -23,7 +23,7 @@ where
 	destination: Destination,
 	accumulator: Out,
 	reducer: Reducer,
-	_phantom_data: PhantomData<(In, InError, Out)>,
+	_phantom_data: PhantomInvariant<(In, InError, Out)>,
 }
 
 impl<In, InError, Reducer, Out, Destination>

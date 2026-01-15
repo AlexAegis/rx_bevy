@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{ComposableOperator, Never, Observable, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, Never, Observable, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::WithLatestFromSubscriber;
@@ -18,7 +18,7 @@ where
 	InError: Signal,
 {
 	inner_observable: InnerObservable,
-	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<InnerObservable, In, InError> WithLatestFromOperator<InnerObservable, In, InError>

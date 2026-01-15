@@ -1,6 +1,6 @@
 use core::{marker::PhantomData, num::NonZero};
 
-use rx_core_common::{Observable, RxObserver, Signal, Subscriber};
+use rx_core_common::{Observable, PhantomInvariant, RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_higher_order::{
 	HigherOrderSubscriberFactory, HigherOrderSubscriberProvider,
@@ -23,7 +23,7 @@ where
 	#[destination]
 	destination: HigherOrderSubscriber::HigherOrderSubscriber<In, Destination>,
 	error_mapper: Option<ErrorMapper>,
-	_phantom_data: PhantomData<InError>,
+	_phantom_data: PhantomInvariant<InError>,
 }
 
 impl<In, InError, HigherOrderSubscriber, ErrorMapper, Destination>

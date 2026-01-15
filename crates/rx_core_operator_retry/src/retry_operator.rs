@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use rx_core_common::{Observable, Operator, Signal};
+use rx_core_common::{Observable, Operator, PhantomInvariant, Signal};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::observable::RetryObservable;
@@ -16,7 +16,7 @@ where
 	InError: Signal,
 {
 	max_retries: usize,
-	_phantom_data: PhantomData<fn(In, InError) -> (In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> RetryOperator<In, InError>

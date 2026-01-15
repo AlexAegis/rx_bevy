@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::ReduceSubscriber;
@@ -22,7 +22,7 @@ where
 {
 	reducer: Reducer,
 	seed: Out,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, Reducer, Out> ReduceOperator<In, InError, Reducer, Out>

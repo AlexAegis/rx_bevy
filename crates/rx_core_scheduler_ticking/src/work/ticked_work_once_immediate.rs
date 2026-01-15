@@ -2,7 +2,8 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_common::{
-	ImmediateTaskFactory, ScheduledOnceWork, ScheduledWork, WorkContextProvider, WorkResult,
+	ImmediateTaskFactory, PhantomInvariant, ScheduledOnceWork, ScheduledWork, WorkContextProvider,
+	WorkResult,
 };
 use rx_core_macro_work_derive::RxWork;
 
@@ -12,7 +13,7 @@ pub struct TickedImmediateOnceWorkFactory<C>
 where
 	C: WorkContextProvider,
 {
-	_phantom_data: PhantomData<fn(C) -> C>,
+	_phantom_data: PhantomInvariant<C>,
 }
 
 impl<C> ImmediateTaskFactory<Tick, C> for TickedImmediateOnceWorkFactory<C>
@@ -46,7 +47,7 @@ where
 {
 	#[derive_where(skip(Debug))]
 	work: Option<Work>,
-	_phantom_data: PhantomData<fn(C) -> C>,
+	_phantom_data: PhantomInvariant<C>,
 }
 
 impl<Work, C> ScheduledWork for TickedImmediateOnceWork<Work, C>

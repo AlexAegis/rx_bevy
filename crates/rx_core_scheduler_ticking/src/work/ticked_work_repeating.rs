@@ -2,7 +2,8 @@ use core::{marker::PhantomData, num::NonZero, time::Duration};
 
 use derive_where::derive_where;
 use rx_core_common::{
-	RepeatedTaskFactory, ScheduledRepeatedWork, ScheduledWork, WorkContextProvider, WorkResult,
+	PhantomInvariant, RepeatedTaskFactory, ScheduledRepeatedWork, ScheduledWork,
+	WorkContextProvider, WorkResult,
 };
 use rx_core_macro_work_derive::RxWork;
 
@@ -12,7 +13,7 @@ pub struct TickedRepeatingWorkFactory<C>
 where
 	C: WorkContextProvider,
 {
-	_phantom_data: PhantomData<fn(C) -> C>,
+	_phantom_data: PhantomInvariant<C>,
 }
 
 impl<C> RepeatedTaskFactory<Tick, C> for TickedRepeatingWorkFactory<C>
@@ -63,7 +64,7 @@ where
 	max_work_per_tick: NonZero<usize>,
 	#[derive_where(skip(Debug))]
 	work: Work,
-	_phantom_data: PhantomData<fn(C) -> C>,
+	_phantom_data: PhantomInvariant<C>,
 }
 
 impl<Work, C> ScheduledWork for TickedRepeatingWork<Work, C>

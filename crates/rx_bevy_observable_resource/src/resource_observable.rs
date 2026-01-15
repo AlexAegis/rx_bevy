@@ -2,7 +2,9 @@ use std::marker::PhantomData;
 
 use bevy_ecs::resource::Resource;
 use rx_bevy_common::RxBevyScheduler;
-use rx_core_common::{Never, Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
+use rx_core_common::{
+	Never, Observable, PhantomInvariant, SchedulerHandle, Signal, Subscriber, UpgradeableObserver,
+};
 use rx_core_macro_observable_derive::RxObservable;
 
 use crate::{ResourceSubscription, observable::ResourceObservableOptions};
@@ -19,7 +21,7 @@ where
 	reader: Reader,
 	options: ResourceObservableOptions,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
-	_phantom_data: PhantomData<R>,
+	_phantom_data: PhantomInvariant<R>,
 }
 
 impl<R, Reader, Out> ResourceObservable<R, Reader, Out>

@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
 use rx_core_common::{
-	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
-	Signal, Subscriber, SubscriptionLike, WorkCancellationId, WorkContextProvider, WorkResult,
+	PhantomInvariant, RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
+	SharedSubscriber, Signal, Subscriber, SubscriptionLike, WorkCancellationId,
+	WorkContextProvider, WorkResult,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -31,7 +32,7 @@ where
 	state: Arc<Mutex<FallbackWhenSilentSubscriberState<In>>>,
 	scheduler_handle: SchedulerHandle<S>,
 	cancellation_id: WorkCancellationId,
-	_phantom_data: PhantomData<(In, InError, Fallback)>,
+	_phantom_data: PhantomInvariant<(In, InError, Fallback)>,
 }
 
 impl<In, InError, Fallback, Destination, S>

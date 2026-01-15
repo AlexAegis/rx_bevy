@@ -2,8 +2,9 @@ use core::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, RxObserver, SharedSubscriber, SharedSubscription, Signal,
-	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
+	LockWithPoisonBehavior, Observable, PhantomInvariant, RxObserver, SharedSubscriber,
+	SharedSubscription, Signal, Subscriber, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
@@ -25,7 +26,7 @@ where
 	error_mapper: Option<ErrorMapper>,
 	inner_subscription: Option<SubscriptionData>,
 	outer_teardown: SharedSubscription,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, InnerObservable, ErrorMapper, Destination>

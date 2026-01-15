@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Observable, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, Observable, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::internal::CatchSubscriber;
@@ -24,7 +24,7 @@ where
 	InnerObservable: Observable<Out = In> + Signal,
 {
 	error_mapper: ErrorMapper,
-	_phantom_data: PhantomData<(In, InError, InnerObservable)>,
+	_phantom_data: PhantomInvariant<(In, InError, InnerObservable)>,
 }
 
 impl<In, InError, ErrorMapper, InnerObservable>

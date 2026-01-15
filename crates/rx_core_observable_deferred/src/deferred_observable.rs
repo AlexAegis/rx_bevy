@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use rx_core_common::{Observable, Subscriber, UpgradeableObserver};
+use rx_core_common::{Observable, PhantomInvariant, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
 
 /// Defers the creation of its source [Observable] until subscribe
@@ -13,7 +13,7 @@ where
 	F: FnMut() -> Source,
 {
 	observable_creator: F,
-	_phantom_data: PhantomData<Source>,
+	_phantom_data: PhantomInvariant<Source>,
 }
 
 impl<F, Source> DeferredObservable<F, Source>

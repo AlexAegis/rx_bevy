@@ -1,13 +1,11 @@
-use std::marker::PhantomData;
-
 use derive_where::derive_where;
 
-use crate::{Provider, ProviderMut};
+use crate::{PhantomInvariant, Provider, ProviderMut};
 
 #[derive_where(Clone, Copy)]
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ProvideWithDefault<T> {
-	_phantom_data: PhantomData<T>,
+	_phantom_data: PhantomInvariant<T>,
 }
 
 impl<T> Provider for ProvideWithDefault<T>

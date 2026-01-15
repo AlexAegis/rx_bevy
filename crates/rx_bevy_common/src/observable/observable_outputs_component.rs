@@ -1,8 +1,6 @@
-use std::marker::PhantomData;
-
 use bevy_ecs::component::Component;
 use derive_where::derive_where;
-use rx_core_common::Signal;
+use rx_core_common::{PhantomInvariant, Signal};
 
 #[derive_where(Default)]
 #[derive(Component, Debug)]
@@ -11,5 +9,5 @@ where
 	Out: Signal,
 	OutError: Signal,
 {
-	_phantom_data: PhantomData<fn() -> (Out, OutError)>,
+	_phantom_data: PhantomInvariant<(Out, OutError)>,
 }

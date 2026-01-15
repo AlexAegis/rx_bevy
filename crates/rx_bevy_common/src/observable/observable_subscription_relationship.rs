@@ -1,6 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{component::Component, entity::Entity};
-use rx_core_common::Observable;
+use rx_core_common::{Observable, PhantomInvariant};
 
 use core::marker::PhantomData;
 #[cfg(feature = "debug")]
@@ -23,7 +23,7 @@ where
 	#[deref]
 	subscriptions: Vec<Entity>,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data: PhantomData<O>,
+	_phantom_data: PhantomInvariant<O>,
 }
 
 impl<O> ObservableSubscriptions<O>
@@ -59,7 +59,7 @@ where
 	#[deref]
 	observable_entity: Entity,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data: PhantomData<O>,
+	_phantom_data: PhantomInvariant<O>,
 }
 
 impl<O> SubscriptionOf<O>

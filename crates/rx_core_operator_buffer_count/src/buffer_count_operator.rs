@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 use std::num::NonZero;
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Never, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, Never, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::BufferCountSubscriber;
@@ -20,7 +20,7 @@ where
 	InError: Signal,
 {
 	buffer_size: NonZero<usize>,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> BufferCountOperator<In, InError>

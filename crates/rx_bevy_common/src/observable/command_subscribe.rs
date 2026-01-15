@@ -9,7 +9,7 @@ use bevy_ecs::{
 use bevy_log::debug;
 use derive_where::derive_where;
 use disqualified::ShortName;
-use rx_core_common::{Signal, UpgradeableObserver};
+use rx_core_common::{PhantomInvariant, Signal, UpgradeableObserver};
 use thiserror::Error;
 
 use crate::{Subscribe, SubscribeObserverTypeMarker, SubscribesToRetry};
@@ -61,7 +61,7 @@ where
 )]
 pub struct SubscribeCommandMissed<Out, OutError> {
 	observable_entity: Entity,
-	_phantom_data: PhantomData<(Out, OutError)>,
+	_phantom_data: PhantomInvariant<(Out, OutError)>,
 }
 
 impl<Out, OutError> SubscribeCommandMissed<Out, OutError> {

@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use derive_where::derive_where;
-use rx_core_common::{RxObserver, Subscriber};
+use rx_core_common::{PhantomInvariant, RxObserver, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
@@ -18,7 +18,7 @@ where
 {
 	#[destination]
 	subscriber: Inner,
-	_phantom_data: PhantomData<Destination>,
+	_phantom_data: PhantomInvariant<Destination>,
 }
 
 impl<Inner, Destination> CompositeSubscriber<Inner, Destination>

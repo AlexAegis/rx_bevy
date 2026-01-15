@@ -1,7 +1,8 @@
 use core::marker::PhantomData;
 
 use rx_core_common::{
-	Observable, ObservableOutput, RxObserver, Subscriber, SubscriberNotification, SubscriptionLike,
+	Observable, ObservableOutput, PhantomInvariant, RxObserver, Subscriber, SubscriberNotification,
+	SubscriptionLike,
 };
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
@@ -22,7 +23,7 @@ where
 {
 	#[destination]
 	destination: Destination,
-	_phantom_data: PhantomData<fn((O1, O2, VariantSelector)) -> (O1, O2, VariantSelector)>,
+	_phantom_data: PhantomInvariant<(O1, O2, VariantSelector)>,
 }
 
 impl<VariantSelector, Destination, O1, O2> EitherSubscriber2<VariantSelector, Destination, O1, O2>

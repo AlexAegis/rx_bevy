@@ -1,7 +1,9 @@
 use std::marker::PhantomData;
 
 use bevy_ecs::system::EntityCommands;
-use rx_core_common::{Observable, SchedulerHandle, Signal, Subscriber, UpgradeableObserver};
+use rx_core_common::{
+	Observable, PhantomInvariant, SchedulerHandle, Signal, Subscriber, UpgradeableObserver,
+};
 use rx_core_macro_observable_derive::RxObservable;
 
 use crate::{CommandSubscribeExtension, EntitySubscription, RxBevyScheduler};
@@ -96,7 +98,7 @@ where
 {
 	observable_entity_commands: EntityCommands<'w>,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
-	phantom_data: PhantomData<(Out, OutError)>,
+	phantom_data: PhantomInvariant<(Out, OutError)>,
 }
 
 impl<'w, Out, OutError> Observable for EntityCommandsObservable<'w, Out, OutError>

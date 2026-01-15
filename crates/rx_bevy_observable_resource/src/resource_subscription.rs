@@ -3,8 +3,9 @@ use std::marker::PhantomData;
 use bevy_ecs::resource::Resource;
 use rx_bevy_common::RxBevyScheduler;
 use rx_core_common::{
-	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
-	Subscriber, SubscriptionLike, Teardown, TeardownCollectionExtension, WorkResult,
+	PhantomInvariant, RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension,
+	SharedSubscriber, Subscriber, SubscriptionLike, Teardown, TeardownCollectionExtension,
+	WorkResult,
 };
 use rx_core_macro_subscription_derive::RxSubscription;
 
@@ -21,7 +22,7 @@ where
 {
 	#[destination]
 	shared_destination: SharedSubscriber<Destination>,
-	_phantom_data: PhantomData<(R, Reader)>,
+	_phantom_data: PhantomInvariant<(R, Reader)>,
 }
 
 impl<R, Reader, Destination> ResourceSubscription<R, Reader, Destination>

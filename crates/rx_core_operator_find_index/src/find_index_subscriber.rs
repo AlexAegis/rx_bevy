@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use derive_where::derive_where;
 
-use rx_core_common::{RxObserver, Signal, Subscriber};
+use rx_core_common::{PhantomInvariant, RxObserver, Signal, Subscriber};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::operator::FindIndexOperatorError;
@@ -26,7 +26,7 @@ where
 	predicate: P,
 	match_observed: bool,
 	nexts_observed: usize,
-	_phantom_data: PhantomData<In>,
+	_phantom_data: PhantomInvariant<In>,
 }
 
 impl<In, InError, P, Destination> FindIndexSubscriber<In, InError, P, Destination>

@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use derive_where::derive_where;
 use rx_core_common::{
-	Never, RxObserver, SharedSubscription, Signal, SubscriberNotification, SubscriptionLike,
-	Teardown, TeardownCollection,
+	Never, PhantomInvariant, RxObserver, SharedSubscription, Signal, SubscriberNotification,
+	SubscriptionLike, Teardown, TeardownCollection,
 };
 use rx_core_macro_observer_derive::RxObserver;
 
@@ -24,7 +24,7 @@ where
 	#[derive_where(skip(Clone))]
 	teardown: SharedSubscription,
 	notification_collector: NotificationCollector<In, InError>,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError> MockObserver<In, InError>

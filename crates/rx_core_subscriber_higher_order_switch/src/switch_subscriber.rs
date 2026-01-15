@@ -6,8 +6,9 @@ use std::{
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use rx_core_common::{
-	LockWithPoisonBehavior, Observable, RxObserver, SharedSubscriber, SharedSubscription, Signal,
-	Subscriber, SubscriptionData, SubscriptionLike, Teardown, TeardownCollection,
+	LockWithPoisonBehavior, Observable, PhantomInvariant, RxObserver, SharedSubscriber,
+	SharedSubscription, Signal, Subscriber, SubscriptionData, SubscriptionLike, Teardown,
+	TeardownCollection,
 };
 use rx_core_subscriber_higher_order::{HigherOrderInnerSubscriber, HigherOrderSubscriberState};
 
@@ -25,7 +26,7 @@ where
 	state: Arc<Mutex<HigherOrderSubscriberState<()>>>,
 	inner_subscription: Option<SubscriptionData>,
 	outer_teardown: SharedSubscription,
-	_phantom_data: PhantomData<InnerObservable>,
+	_phantom_data: PhantomInvariant<InnerObservable>,
 }
 
 impl<InnerObservable, Destination> SwitchSubscriber<InnerObservable, Destination>

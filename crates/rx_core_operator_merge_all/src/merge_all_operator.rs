@@ -1,7 +1,7 @@
 use core::{marker::PhantomData, num::NonZero};
 
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, Observable, Signal, Subscriber};
+use rx_core_common::{ComposableOperator, Observable, PhantomInvariant, Signal, Subscriber};
 use rx_core_macro_operator_derive::RxOperator;
 use rx_core_subscriber_higher_order_all::HigherOrderAllSubscriber;
 use rx_core_subscriber_higher_order_concurrent::ConcurrentSubscriberProvider;
@@ -20,7 +20,7 @@ where
 {
 	concurrency_limit: NonZero<usize>,
 	error_mapper: ErrorMapper,
-	_phantom_data: PhantomData<(In, InError)>,
+	_phantom_data: PhantomInvariant<(In, InError)>,
 }
 
 impl<In, InError, ErrorMapper> MergeAllOperator<In, InError, ErrorMapper>
