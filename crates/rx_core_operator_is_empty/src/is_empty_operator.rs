@@ -6,8 +6,15 @@ use rx_core_macro_operator_derive::RxOperator;
 
 use crate::IsEmptySubscriber;
 
-/// The [IsEmptyOperator] is used to is_empty the first `n` emissions of an observable,
-/// after which it does nothing.
+/// # [IsEmptyOperator]
+///
+/// The `is_empty` operator will emit a single boolean value indicating whether
+/// upstream emitted any items before completing:
+///
+/// - If the upstream completes without emitting any items, `is_empty` will emit
+///  `true` and then complete.
+/// - If the upstream emits any items, `is_empty` will immediately emit `false`
+///  and complete.
 #[derive(RxOperator)]
 #[derive_where(Debug, Clone, Default)]
 #[rx_in(In)]
