@@ -2,7 +2,8 @@ use std::marker::PhantomData;
 
 use bevy_ecs::system::EntityCommands;
 use rx_core_common::{
-	Observable, PhantomInvariant, SchedulerHandle, Signal, Subscriber, UpgradeableObserver,
+	Observable, PhantomInvariant, SchedulerHandle, SharedSubscriber, Signal, Subscriber,
+	UpgradeableObserver,
 };
 use rx_core_macro_observable_derive::RxObservable;
 
@@ -121,11 +122,17 @@ where
 	{
 		let observable_entity = self.observable_entity_commands.id();
 
+		let shared_destination = SharedSubscriber::new(destination.upgrade());
+
 		let subscription_entity = self
 			.observable_entity_commands
 			.commands()
-			.subscribe(observable_entity, destination);
+			.subscribe(observable_entity, shared_destination.clone());
 
-		EntitySubscription::new(subscription_entity, self.scheduler.clone())
+		EntitySubscription::new(
+			subscription_entity,
+			shared_destination,
+			self.scheduler.clone(),
+		)
 	}
 }

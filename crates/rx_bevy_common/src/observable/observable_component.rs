@@ -2,20 +2,19 @@ use bevy_ecs::{
 	component::{Component, HookContext},
 	entity::Entity,
 	error::BevyError,
-	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
 	system::{Commands, Query},
 	world::DeferredWorld,
 };
 use disqualified::ShortName;
-use rx_core_common::{Observable, SubscriptionLike};
+use rx_core_common::{Observable, SubscriptionLike, SubscriptionLikeExtensionIntoShared};
 use rx_core_macro_observable_derive::RxObservable;
 use thiserror::Error;
 
 use crate::{
-	ObservableOutputs, ObservableSubscriptions, RxScheduleDespawn, Subscribe, SubscribeObserverOf,
-	SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionComponent, SubscriptionOf,
+	ErasedSubscribeObserverOf, ObservableOutputs, ObservableSubscriptions, RxScheduleDespawn,
+	Subscribe, SubscribeObserverOf, SubscribeObserverRef, SubscriptionComponent, SubscriptionOf,
 	UnfinishedSubscription,
 };
 
@@ -49,6 +48,7 @@ where
 	where
 		Destination: 'static + rx_core_common::Subscriber<In = Self::Out, InError = Self::OutError>;
 
+	#[inline]
 	fn subscribe<Destination>(
 		&mut self,
 		destination: Destination,
@@ -73,10 +73,8 @@ where
 	let _subscribe_event_observer_id = deferred_world
 		.commands()
 		.spawn((
-			// TODO(bevy-0.17): This is actually not needed, it's only here to not let these observes occupy the top level in the worldentityinspector. reconsider to only use either this or the other relationship if it's still producing warnings on despawn in 0.17
-			ChildOf(hook_context.entity),
 			SubscribeObserverOf::<O>::new(hook_context.entity),
-			SubscribeObserverTypeMarker::<O::Out, O::OutError>::default(),
+			ErasedSubscribeObserverOf::<O::Out, O::OutError>::new(hook_context.entity),
 			Name::new(format!(
 				"Subscribe Observer <Out = {}, OutError = {}> ({})",
 				ShortName::of::<O::Out>(),
@@ -122,7 +120,7 @@ where
 
 		subscription_entity_commands.insert((
 			SubscriptionComponent::new(
-				subscription,
+				subscription.into_shared(),
 				event.subscription_entity,
 				rx_schedule_despawn.handle(),
 			),

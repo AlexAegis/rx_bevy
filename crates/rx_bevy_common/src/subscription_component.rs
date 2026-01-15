@@ -8,8 +8,8 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_common::{
-	SchedulerHandle, SharedSubscription, SubscriptionLike, SubscriptionNotification,
-	SubscriptionWithTeardown, Teardown, TeardownCollection,
+	SchedulerHandle, SharedSubscription, SubscriptionLike, SubscriptionNotification, Teardown,
+	TeardownCollection,
 };
 use rx_core_macro_subscription_derive::RxSubscription;
 
@@ -17,7 +17,6 @@ use crate::{
 	RxBevyScheduler, RxBevySchedulerDespawnEntityExtension, SubscriptionNotificationEvent,
 };
 
-// TODO(bevy-0.18+): This component does not need to be erased, it's only erased to facilitate mass unsubscribe on exit, which currently can't be done using commands as there is no teardown schedule in bevy similar to the startup schedule. https://github.com/AlexAegis/rx_bevy/issues/2 https://github.com/bevyengine/bevy/issues/7067
 #[derive(Component, RxSubscription, Clone)]
 #[component(on_insert=subscription_add_notification_observer_on_insert, on_remove=subscription_unsubscribe_on_remove)]
 #[require(Name::new(format!("{}", ShortName::of::<Self>())))]
@@ -28,16 +27,13 @@ pub struct SubscriptionComponent {
 }
 
 impl SubscriptionComponent {
-	pub fn new<Subscription>(
-		subscription: Subscription,
+	pub fn new(
+		subscription: SharedSubscription,
 		this_entity: Entity,
 		despawn_scheduler: SchedulerHandle<RxBevyScheduler>,
-	) -> Self
-	where
-		Subscription: 'static + SubscriptionWithTeardown + Send + Sync,
-	{
+	) -> Self {
 		Self {
-			subscription: SharedSubscription::new(subscription),
+			subscription,
 			self_despawn_scheduler: despawn_scheduler,
 			this_entity,
 		}

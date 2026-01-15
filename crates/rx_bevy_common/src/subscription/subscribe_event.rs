@@ -1,6 +1,4 @@
-use bevy_ecs::{
-	component::Component, entity::Entity, event::Event, hierarchy::ChildOf, system::Commands,
-};
+use bevy_ecs::{component::Component, entity::Entity, event::Event, system::Commands};
 use bevy_log::error;
 use core::marker::PhantomData;
 use disqualified::ShortName;
@@ -34,6 +32,11 @@ where
 	_phantom_data: PhantomInvariant<(Out, OutError)>,
 }
 
+/// Marker Component to despawn unfinished subscriptions at the end of a frame.
+/// Every subscription created through commands will create one, and when
+/// successful, remove this component. A subscription entity can end up being
+/// "unfinished" if an entity is targeted where there are no matching
+/// observables of matching output types.
 #[derive(Component)]
 pub struct UnfinishedSubscription;
 
@@ -50,9 +53,7 @@ where
 	where
 		Destination: 'static + UpgradeableObserver<In = Out, InError = OutError>,
 	{
-		let subscription_entity = commands
-			.spawn((ChildOf(observable_entity), UnfinishedSubscription))
-			.id();
+		let subscription_entity = commands.spawn(UnfinishedSubscription).id();
 
 		(
 			Self {

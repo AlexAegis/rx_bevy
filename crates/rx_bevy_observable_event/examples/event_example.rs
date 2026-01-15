@@ -18,6 +18,7 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
+			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
@@ -32,6 +33,7 @@ fn main() -> AppExit {
 				),
 				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
 				dummy_event_producer,
+				despawn_dummy_event_target.run_if(input_just_pressed(KeyCode::KeyC)),
 			),
 		)
 		.run()
@@ -39,10 +41,10 @@ fn main() -> AppExit {
 
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
+	watched_entity: Entity,
+	event_observable: Entity,
 	destination_entity: Entity,
 	subscriptions: HashMap<(Entity, Entity), Entity>,
-	event_observable: Entity,
-	dummy_event_sink: Entity,
 }
 
 // TODO(bevy-0.17): Use EntityEvent
@@ -58,6 +60,12 @@ impl ContainsEntity for DummyEvent {
 	}
 }
 
+fn despawn_dummy_event_target(mut commands: Commands, example_entities: Res<ExampleEntities>) {
+	commands
+		.entity(example_entities.watched_entity)
+		.try_despawn();
+}
+
 fn dummy_event_producer(
 	mut commands: Commands,
 	example_entities: Res<ExampleEntities>,
@@ -70,7 +78,16 @@ fn dummy_event_producer(
 		timer.set_duration(Duration::from_millis(500));
 		timer.set_mode(TimerMode::Repeating);
 		timer.reset();
+		println!("Press Space to Subscribe/Unsubscribe!");
+		println!("Press C to Despawn the event producer!");
 		*setup = true;
+	}
+
+	if commands
+		.get_entity(example_entities.watched_entity)
+		.is_err()
+	{
+		return;
 	}
 
 	timer.tick(time.delta());
@@ -78,12 +95,12 @@ fn dummy_event_producer(
 	if timer.just_finished() {
 		let dummy_event = DummyEvent {
 			count: *count,
-			target: example_entities.dummy_event_sink,
+			target: example_entities.watched_entity,
 		};
 
 		println!(
 			"Producer is sending {:?} to {}!",
-			dummy_event, example_entities.dummy_event_sink
+			dummy_event, example_entities.watched_entity
 		);
 		// TODO(bevy-0.17): commands.trigger(dummy_event);
 		let target = dummy_event.target;
@@ -119,16 +136,13 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 		.observe(print_notification_observer::<DummyEvent, Never, Virtual>)
 		.id();
 
-	let dummy_event_sink = commands.spawn(Name::new("They are watching me")).id();
+	let watched_entity = commands.spawn(Name::new("They are watching me")).id();
 
 	let event_observable = commands
 		.spawn((
 			Name::new("EventObservable"),
-			EventObservable::<DummyEvent>::new(
-				dummy_event_sink,
-				rx_schedule_update_virtual.handle(),
-			)
-			.into_component(),
+			EventObservable::<DummyEvent>::new(watched_entity, rx_schedule_update_virtual.handle())
+				.into_component(),
 		))
 		.id();
 
@@ -136,6 +150,6 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 		subscriptions: HashMap::new(),
 		destination_entity,
 		event_observable,
-		dummy_event_sink,
+		watched_entity,
 	});
 }

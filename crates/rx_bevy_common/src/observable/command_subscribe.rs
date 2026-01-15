@@ -3,7 +3,6 @@ use std::marker::PhantomData;
 use bevy_ecs::{
 	entity::Entity,
 	error::BevyError,
-	hierarchy::Children,
 	system::{Command, Commands},
 };
 use bevy_log::debug;
@@ -12,7 +11,7 @@ use disqualified::ShortName;
 use rx_core_common::{PhantomInvariant, Signal, UpgradeableObserver};
 use thiserror::Error;
 
-use crate::{Subscribe, SubscribeObserverTypeMarker, SubscribesToRetry};
+use crate::{ErasedSubscribeObservers, Subscribe, SubscribesToRetry};
 
 pub const SUBSCRIBE_COMMAND_MAX_RETRIES: usize = 3;
 
@@ -82,14 +81,8 @@ where
 		let observable_entity = self.event.observable_entity;
 
 		let has_matching_subscribe_observer = world
-			.get::<Children>(observable_entity)
-			.iter()
-			.flat_map(|observable_entity_children| observable_entity_children.into_iter())
-			.any(|observable_entity_child| {
-				world
-					.get::<SubscribeObserverTypeMarker<Out, OutError>>(*observable_entity_child)
-					.is_some()
-			});
+			.get::<ErasedSubscribeObservers<Out, OutError>>(observable_entity)
+			.is_some();
 
 		let remaining_retries = self.retries_remaining;
 

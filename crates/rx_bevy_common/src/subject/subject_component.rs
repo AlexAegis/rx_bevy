@@ -11,13 +11,14 @@ use bevy_ecs::{
 use disqualified::ShortName;
 use rx_core_common::{
 	Observable, ObserverNotification, ObserverPushObserverNotificationExtention, RxObserver,
-	SubjectLike, Subscriber, SubscriptionLike, UpgradeableObserver,
+	SubjectLike, Subscriber, SubscriptionLike, SubscriptionLikeExtensionIntoShared,
+	UpgradeableObserver,
 };
 use rx_core_macro_subject_derive::RxSubject;
 
 use crate::{
-	ObservableSubscriptions, RxScheduleDespawn, RxSignal, Subscribe, SubscribeError,
-	SubscribeObserverOf, SubscribeObserverRef, SubscribeObserverTypeMarker, SubscriptionComponent,
+	ErasedSubscribeObserverOf, ObservableSubscriptions, RxScheduleDespawn, RxSignal, Subscribe,
+	SubscribeError, SubscribeObserverOf, SubscribeObserverRef, SubscriptionComponent,
 	SubscriptionOf, UnfinishedSubscription,
 };
 
@@ -114,17 +115,15 @@ where
 	let mut commands = deferred_world.commands();
 	let _subscribe_event_observer_id = commands
 		.spawn((
-			// TODO(bevy-0.17): This is actually not needed, it's only here to not let these observes occupy the top level in the worldentityinspector. reconsider to only use either this or the other relationship if it's still producing warnings on despawn in 0.17
-			ChildOf(hook_context.entity),
 			SubscribeObserverOf::<Subject>::new(hook_context.entity),
-			SubscribeObserverTypeMarker::<Subject::Out, Subject::OutError>::default(),
+			ErasedSubscribeObserverOf::<Subject::Out, Subject::OutError>::new(hook_context.entity),
 			Name::new(format!("Subscribe Observer {}", ShortName::of::<Subject>())),
 			Observer::new(subscribe_event_observer::<Subject>).with_entity(hook_context.entity),
 		))
 		.id();
 
 	commands.spawn((
-		ChildOf(hook_context.entity),
+		ChildOf(hook_context.entity), // TODO: Use a dedicated relationship
 		Name::new(format!(
 			"Notification Observer {}",
 			ShortName::of::<Subject>()
@@ -183,7 +182,7 @@ where
 		// It also already contains the [SubscriptionSchedule] component.
 		subscription_entity_commands.insert((
 			SubscriptionComponent::new(
-				subscription,
+				subscription.into_shared(),
 				event.subscription_entity,
 				rx_schedule_despawn.handle(),
 			),

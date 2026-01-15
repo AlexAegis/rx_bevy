@@ -1,5 +1,8 @@
 use bevy_ecs::system::Commands;
-use rx_core_common::{Observable, SchedulerHandle, Subscriber, UpgradeableObserver};
+use rx_core_common::{
+	Observable, SchedulerHandle, Subscriber, SubscriptionLikeExtensionIntoShared,
+	UpgradeableObserver,
+};
 use rx_core_macro_observable_derive::RxObservable;
 
 use crate::{EntitySubscription, RxBevyScheduler, SubscriptionComponent};
@@ -89,15 +92,20 @@ where
 			'static + UpgradeableObserver<In = Self::Out, InError = Self::OutError> + Send + Sync,
 	{
 		let mut subscription_entity = self.commands.spawn_empty();
+		let subscription_entity_id = subscription_entity.id();
 
-		let subscription = self.observable.subscribe(destination);
+		let subscription = self.observable.subscribe(destination).into_shared();
 
 		subscription_entity.insert(SubscriptionComponent::new(
-			subscription,
-			subscription_entity.id(),
+			subscription.clone(),
+			subscription_entity_id,
 			self.despawn_scheduler.clone(),
 		));
 
-		EntitySubscription::new(subscription_entity.id(), self.despawn_scheduler.clone())
+		EntitySubscription::new(
+			subscription_entity_id,
+			subscription,
+			self.despawn_scheduler.clone(),
+		)
 	}
 }

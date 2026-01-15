@@ -1,4 +1,4 @@
-use bevy_derive::{Deref, DerefMut};
+use bevy_derive::Deref;
 use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_common::{Observable, PhantomInvariant};
 
@@ -11,8 +11,8 @@ use bevy_reflect::Reflect;
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
-#[derive(Component, Deref, DerefMut)]
-#[relationship_target(relationship=SubscriptionOf::<O>, linked_spawn)]
+#[derive(Component, Deref)]
+#[relationship_target(relationship=SubscriptionOf::<O>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct ObservableSubscriptions<O>
@@ -47,7 +47,7 @@ where
 	}
 }
 
-#[derive(Component, Deref, DerefMut)]
+#[derive(Component, Deref)]
 #[relationship(relationship_target=ObservableSubscriptions::<O>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]

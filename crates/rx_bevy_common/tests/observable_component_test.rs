@@ -218,7 +218,7 @@ mod component_remove {
 	}
 
 	#[test]
-	fn is_should_unsubscribe_a_shared_observable_as_the_internal_connector_is_dropped() {
+	fn it_should_not_unsubscribe_a_shared_observable_when_dropped_either() {
 		let destination = MockObserver::<usize>::default();
 		let notification_collector = destination.get_notification_collector();
 
@@ -252,7 +252,7 @@ mod component_remove {
 
 		let mut commands = app.world_mut().commands();
 
-		let _subscription_entity = commands.subscribe(observable_entity, destination);
+		let subscription_entity = commands.subscribe(observable_entity, destination);
 
 		app.world_mut()
 			.resource_mut::<Time<Virtual>>()
@@ -275,16 +275,28 @@ mod component_remove {
 			.entity(observable_entity)
 			.despawn();
 
+		app.update();
+
 		app.world_mut()
 			.resource_mut::<Time<Virtual>>()
 			.advance_by(Duration::from_secs(2));
 
 		app.update();
 
+		app.world_mut()
+			.commands()
+			.entity(subscription_entity)
+			.despawn();
+		app.update();
+
 		notification_collector.lock().assert_notifications(
 			"observable_component - shared interval 2",
 			2,
-			[SubscriberNotification::Unsubscribe],
+			[
+				SubscriberNotification::Next(2),
+				SubscriberNotification::Next(3),
+				SubscriberNotification::Unsubscribe,
+			],
 			true,
 		);
 	}

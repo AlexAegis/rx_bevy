@@ -1,6 +1,6 @@
-use bevy_derive::Deref;
+use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{component::Component, entity::Entity};
-use rx_core_common::{Observable, PhantomInvariant};
+use rx_core_common::{PhantomInvariant, Signal};
 
 use core::marker::PhantomData;
 #[cfg(feature = "debug")]
@@ -11,39 +11,42 @@ use bevy_reflect::Reflect;
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
-#[derive(Component, Deref)]
-#[relationship_target(relationship=SubscribeObserverOf::<O>, linked_spawn)]
+#[derive(Component, Deref, DerefMut)]
+#[relationship_target(relationship=ErasedSubscribeObserverOf::<Out, OutError>, linked_spawn)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscribeObserverRef<O>
+pub struct ErasedSubscribeObservers<Out, OutError>
 where
-	O: 'static + Observable + Send + Sync,
+	Out: Signal,
+	OutError: Signal,
 {
 	#[relationship]
 	#[deref]
-	subscribe_observer_entity: Entity,
+	subscribe_observer_entity: Vec<Entity>,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data: PhantomInvariant<O>,
+	_phantom_data: PhantomInvariant<(Out, OutError)>,
 }
 
 #[derive(Component, Deref)]
-#[relationship(relationship_target=SubscribeObserverRef::<O>)]
+#[relationship(relationship_target=ErasedSubscribeObservers::<Out, OutError>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscribeObserverOf<O>
+pub struct ErasedSubscribeObserverOf<Out, OutError>
 where
-	O: 'static + Observable + Send + Sync,
+	Out: Signal,
+	OutError: Signal,
 {
 	#[relationship]
 	#[deref]
 	observable_entity: Entity,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
-	_phantom_data: PhantomInvariant<O>,
+	_phantom_data: PhantomInvariant<(Out, OutError)>,
 }
 
-impl<O> SubscribeObserverOf<O>
+impl<Out, OutError> ErasedSubscribeObserverOf<Out, OutError>
 where
-	O: 'static + Observable + Send + Sync,
+	Out: Signal,
+	OutError: Signal,
 {
 	pub fn new(observable_entity: Entity) -> Self {
 		Self {

@@ -8,7 +8,7 @@ struct TestEvent {
 	pub value: usize,
 }
 
-mod when_used_as_a_component {
+mod when_used_as_a_component_that_observes_itself {
 	use super::*;
 
 	#[test]
@@ -69,6 +69,65 @@ mod when_used_as_a_component {
 		tracked_teardown.assert_was_torn_down();
 		assert!(subscription.is_closed());
 	}
+
+	#[test]
+	fn should_complete_when_the_observed_entity_despawns() {
+		let mut app = App::new();
+		app.init_resource::<Time<Virtual>>();
+		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+		app.add_event::<TestEvent>();
+
+		let scheduler_handle = {
+			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+				.get_mut(app.world_mut());
+			scheduler.handle()
+		};
+
+		let event_target = app.world_mut().commands().spawn_empty().id();
+		app.world_mut().commands().entity(event_target).insert(
+			EventObservable::<TestEvent>::new(event_target, scheduler_handle.clone())
+				.into_component(),
+		);
+
+		let destination = MockObserver::<TestEvent, Never>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut subscription = app
+			.world_mut()
+			.commands()
+			.entity(event_target)
+			.as_observable::<TestEvent, Never>(scheduler_handle)
+			.subscribe(destination);
+		let tracked_teardown = subscription.add_tracked_teardown("event_observable");
+
+		app.update();
+
+		app.world_mut()
+			.trigger_targets(TestEvent { value: 0 }, event_target);
+
+		app.world_mut()
+			.trigger_targets(TestEvent { value: 1 }, event_target);
+
+		app.update();
+
+		app.world_mut().commands().entity(event_target).despawn();
+
+		app.update();
+
+		notification_collector.lock().assert_notifications(
+			"event_observable",
+			0,
+			[
+				SubscriberNotification::Next(TestEvent { value: 0 }),
+				SubscriberNotification::Next(TestEvent { value: 1 }),
+				SubscriberNotification::Complete,
+			],
+			true,
+		);
+
+		tracked_teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+	}
 }
 
 mod when_used_directly {
@@ -117,6 +176,55 @@ mod when_used_directly {
 				SubscriberNotification::Next(TestEvent { value: 0 }),
 				SubscriberNotification::Next(TestEvent { value: 1 }),
 				SubscriberNotification::Unsubscribe,
+			],
+			true,
+		);
+
+		tracked_teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+	}
+
+	#[test]
+	fn should_complete_when_the_observed_entity_despawns() {
+		let mut app = App::new();
+		app.init_resource::<Time<Virtual>>();
+		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+		app.add_event::<TestEvent>();
+
+		let scheduler_handle = {
+			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+				.get_mut(app.world_mut());
+			scheduler.handle()
+		};
+
+		let event_target = app.world_mut().commands().spawn_empty().id();
+
+		let mut event_observable =
+			EventObservable::<TestEvent>::new(event_target, scheduler_handle.clone());
+
+		let destination = MockObserver::<TestEvent, Never>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut subscription = event_observable.subscribe(destination);
+		let tracked_teardown = subscription.add_tracked_teardown("event_observable");
+
+		app.update();
+
+		app.world_mut()
+			.trigger_targets(TestEvent { value: 0 }, event_target);
+		app.world_mut()
+			.trigger_targets(TestEvent { value: 1 }, event_target);
+		app.world_mut().commands().entity(event_target).despawn();
+
+		app.update();
+
+		notification_collector.lock().assert_notifications(
+			"event_observable",
+			0,
+			[
+				SubscriberNotification::Next(TestEvent { value: 0 }),
+				SubscriberNotification::Next(TestEvent { value: 1 }),
+				SubscriberNotification::Complete,
 			],
 			true,
 		);

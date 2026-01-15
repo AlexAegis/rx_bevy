@@ -44,9 +44,9 @@ mod when_used_as_a_component {
 		app.update();
 		app.world_mut().send_event(TestMessage { value: 0 });
 
-		subscription.unsubscribe();
-
 		app.update();
+
+		subscription.unsubscribe();
 
 		notification_collector.lock().assert_notifications(
 			"message_observable",
