@@ -6,8 +6,10 @@ use rx_core_macro_operator_derive::RxOperator;
 
 use crate::IntoResultSubscriber;
 
-/// The [IntoResultOperator] is used to pack incoming values and errors into a
-/// Result. When used, upstream errors are guaranteed to not reach downstream.
+/// [IntoResultOperator]
+///
+/// Error handling operator. Captures upstream values and errors, and forwards
+/// them downstream as a `Result`.
 #[derive_where(Clone)]
 #[derive(RxOperator)]
 #[rx_in(In)]
