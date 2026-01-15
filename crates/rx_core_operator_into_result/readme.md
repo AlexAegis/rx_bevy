@@ -9,14 +9,14 @@ downstream as a `Result`.
 
 ## See Also
 
-- [`throw`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_throw):
-  errors immediately on subscribe.
-- [`catch_error`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_catch_error):
-  handle errors by switching to another observable.
-- [`lift_result`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_lift_result):
-  to unpack a result back into a `next` and `error` signal.
-- [`materialize`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_materialize):
-  similar to `into_result` but also captures the `complete` signal.
+- [`throw`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_throw) -
+  Error immediately.
+- [`catch_error`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_catch_error) -
+  Handle errors by switching to another observable.
+- [`lift_result`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_lift_result) -
+  To unpack a result back into a `next` and `error` signal.
+- [`materialize`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_materialize) -
+  Similar to `into_result` but also captures the `complete` signal.
 
 ## Example
 

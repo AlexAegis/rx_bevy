@@ -2,8 +2,15 @@ use rx_core_common::{Never, Observable, Subscriber, UpgradeableObserver};
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 
-/// Closed does not emit anything, no complete, no error, similarly to Never,
-/// but unlike Never, it also immediately unsubscribes!
+/// # [ClosedObservable]
+///
+/// An observable that immediately closes without completing or emitting any
+/// values.
+///
+/// ## See also:
+///
+/// - [`empty`]: Completes immediately without emitting any values.
+/// - [`never`]: Never emits anything, never closes!
 #[derive(RxObservable, Clone, Debug, Default)]
 #[rx_out(Never)]
 #[rx_out_error(Never)]

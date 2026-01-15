@@ -12,9 +12,9 @@ use crate::IsEmptySubscriber;
 /// upstream emitted any items before completing:
 ///
 /// - If the upstream completes without emitting any items, `is_empty` will emit
-///  `true` and then complete.
+///   `true` and then complete.
 /// - If the upstream emits any items, `is_empty` will immediately emit `false`
-///  and complete.
+///   and complete.
 #[derive(RxOperator)]
 #[derive_where(Debug, Clone, Default)]
 #[rx_in(In)]

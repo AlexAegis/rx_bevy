@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_observable_closed"
-description = "closed observable for rx_core"
+description = "closed observable for rx_core; immediately unsubscribes"
 version = "0.1.0"
 readme = "readme.md"
 publish = false
@@ -11,6 +11,14 @@ repository.workspace = true
 documentation.workspace = true
 authors.workspace = true
 license.workspace = true
+keywords = [
+    "rx",
+    "reactivex",
+    "rx_core",
+    "rx_core_observable",
+    "rx_bevy",
+    "rx_bevy_observable",
+]
 
 [lints]
 workspace = true
