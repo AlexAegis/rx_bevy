@@ -19,6 +19,7 @@ keywords = [
     "rx_bevy",
     "rx_bevy_operator",
 ]
+
 [lints]
 workspace = true
 

@@ -11,6 +11,7 @@ repository.workspace = true
 documentation.workspace = true
 authors.workspace = true
 license.workspace = true
+keywords = ["devtools"]
 
 [lints]
 workspace = true

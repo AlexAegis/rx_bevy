@@ -10,6 +10,7 @@ repository.workspace = true
 documentation.workspace = true
 authors.workspace = true
 license.workspace = true
+keywords = ["examples"]
 
 [lints]
 workspace = true
