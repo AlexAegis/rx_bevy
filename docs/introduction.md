@@ -1,3 +1,6 @@
+<!-- markdownlint-disable-next-line MD041 -->
+[![rx_bevy](./assets/rx_bevy_logo.png)](https://github.com/AlexAegis/rx_bevy)
+
 # Introduction
 
 Reactive Extensions for Bevy!
