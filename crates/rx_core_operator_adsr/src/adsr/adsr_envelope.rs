@@ -250,3 +250,30 @@ impl Default for ThresholdActivationRule {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use std::time::Duration;
+
+	use crate::{AdsrEnvelope, AdsrEnvelopeChange};
+
+	#[test]
+	fn adsr_envelope_apply_change_overrides_config() {
+		let mut envelope = AdsrEnvelope::default();
+
+		envelope.apply_change(AdsrEnvelopeChange {
+			attack_time: Some(Duration::from_millis(10)),
+			attack_easing: None,
+			decay_time: Some(Duration::from_millis(20)),
+			decay_easing: None,
+			sustain_volume: Some(0.75),
+			release_time: Some(Duration::from_millis(30)),
+			release_easing: None,
+		});
+
+		assert_eq!(envelope.attack_time, Duration::from_millis(10));
+		assert_eq!(envelope.decay_time, Duration::from_millis(20));
+		assert_eq!(envelope.release_time, Duration::from_millis(30));
+		assert_eq!(envelope.sustain_volume, 0.75);
+	}
+}
