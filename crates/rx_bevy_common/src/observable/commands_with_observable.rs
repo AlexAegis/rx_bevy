@@ -96,7 +96,7 @@ where
 
 		let subscription = self.observable.subscribe(destination).into_shared();
 
-		subscription_entity.insert(SubscriptionComponent::new(
+		subscription_entity.insert(SubscriptionComponent::new_despawn_on_unsubscribe(
 			subscription.clone(),
 			subscription_entity_id,
 			self.despawn_scheduler.clone(),

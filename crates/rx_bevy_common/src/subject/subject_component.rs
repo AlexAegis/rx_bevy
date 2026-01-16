@@ -1,34 +1,44 @@
 use bevy_ecs::{
-	component::{Component, HookContext, Mutable},
-	entity::ContainsEntity,
-	error::BevyError,
-	name::Name,
-	observer::{Observer, Trigger},
-	system::{Commands, Query},
+	component::{Component, HookContext},
 	world::DeferredWorld,
 };
-use disqualified::ShortName;
 use rx_core_common::{
-	Observable, ObserverNotification, ObserverPushObserverNotificationExtention, RxObserver,
-	SubjectLike, Subscriber, SubscriptionLike, SubscriptionLikeExtensionIntoShared,
-	UpgradeableObserver,
+	Observable, RxObserver, SubjectLike, Subscriber, SubscriptionLike, UpgradeableObserver,
 };
 use rx_core_macro_subject_derive::RxSubject;
 
 use crate::{
-	ErasedSubscribeObserverOf, ObservableSubscriptions, RxScheduleDespawn, RxSignal, Subscribe,
-	SubscribeError, SubscribeObserverOf, SubscribeObserverRef, SubscriptionComponent,
-	SubscriptionOf, UnfinishedSubscription,
-	subject::signal_observer_relationship::SignalObserverOf,
+	ObservableSubscriptions, SignalObserverSatelliteBundle, SubscribeEventObserverSatelliteBundle,
+	SubscribeObserverRef,
 };
 
-/// Note that if you accidentally subscribe to a subject entity with itself,
-/// then that will result in an infinite loop! With a regular Subject it's
-/// easy and self evident that this would happen, but since it's possible
-/// to subscribe to stuff by only knowing it's output types, it's harder to
-/// know when is it a subject or just an observable. Although it should be
-/// rare that even a regular observable would send events to the same entity
-/// it's defined on.
+/// # [SubjectComponent]
+///
+/// On top of acting like an [ObservableComponent][crate::ObservableComponent]
+/// it also automatically pushes all observed [RxSignal][crate::RxSignal]
+/// events into the subject contained in it. Can be used to broadcast events
+/// from the ECS.
+///
+/// It can act as the destination of a subscription!
+///
+/// ## See Also
+///
+/// - [`PublishSubject`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_publish) -
+///   The basic multicasting primitive, signals pushed into it will be received
+///   by all active subscribers!
+/// - [`BehaviorSubject`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_behavior) -
+///   A subject that always has a stored value that is instantly replayed for
+///   new subscribers.
+/// - [`ReplaySubject`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_replay) -
+///   A subject that can replay the `n` last observed values back to new
+///   subscribers.
+/// - [`AsyncSubject`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_async) -
+///   A subject that only emits one value, once it's completed. All observed
+///   values are reduced into a single value until a completion is triggered.
+/// - [`ProvenanceSubject`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_provenance) -
+///   A BehaviorSubject that tracks where the stores an additional "Provenance"
+///   value signaling where the value originated from. It offers filters to
+///   only receive events from certain origins, or from all.
 #[derive(Component, RxSubject)]
 #[rx_in(Subject::In)]
 #[rx_in_error(Subject::InError)]
@@ -113,94 +123,16 @@ where
 	crate::register_observable_debug_systems::<Subject>(&mut deferred_world);
 
 	let mut commands = deferred_world.commands();
-	let _subscribe_event_observer_id = commands
-		.spawn((
-			SubscribeObserverOf::<Subject>::new(hook_context.entity),
-			ErasedSubscribeObserverOf::<Subject::Out, Subject::OutError>::new(hook_context.entity),
-			Name::new(format!("Subscribe Observer {}", ShortName::of::<Subject>())),
-			Observer::new(subscribe_event_observer::<Subject>).with_entity(hook_context.entity),
-		))
-		.id();
+	commands.spawn(SubscribeEventObserverSatelliteBundle::<Subject>::new::<
+		SubjectComponent<Subject>,
+	>(hook_context.entity));
 
-	commands.spawn((
-		SignalObserverOf::<Subject>::new(hook_context.entity),
-		Name::new(format!(
-			"Notification Observer {}",
-			ShortName::of::<Subject>()
-		)),
-		Observer::new(push_signal_observer::<SubjectComponent<Subject>>)
-			.with_entity(hook_context.entity),
-	));
+	commands.spawn(SignalObserverSatelliteBundle::<Subject>::new::<
+		SubjectComponent<Subject>,
+	>(hook_context.entity));
 }
 
-fn push_signal_observer<ObserverComponent>(
-	on_notification: Trigger<RxSignal<ObserverComponent::In, ObserverComponent::InError>>,
-	mut subject_query: Query<&mut ObserverComponent>,
-) where
-	ObserverComponent: 'static + RxObserver + Component<Mutability = Mutable> + Send + Sync,
-	ObserverComponent::In: Clone,
-	ObserverComponent::InError: Clone,
-{
-	let subject_entity = on_notification.entity();
-	if let Ok(mut subject) = subject_query.get_mut(subject_entity) {
-		let notification: ObserverNotification<ObserverComponent::In, ObserverComponent::InError> =
-			on_notification.event().signal().clone();
-		subject.push(notification);
-	}
-}
-
-fn subscribe_event_observer<Subject>(
-	mut on_subscribe: Trigger<Subscribe<Subject::Out, Subject::OutError>>,
-	mut subject_query: Query<&mut SubjectComponent<Subject>>,
-	mut commands: Commands,
-	rx_schedule_despawn: RxScheduleDespawn,
-) -> Result<(), BevyError>
-where
-	Subject: 'static + SubjectLike + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
-{
-	let event = on_subscribe.event_mut();
-
-	let Some(destination) = event.try_consume_destination() else {
-		return Err(SubscribeError::EventAlreadyConsumed(
-			ShortName::of::<Subject>().to_string(),
-			event.observable_entity,
-		)
-		.into());
-	};
-
-	let subscription = {
-		let mut subject_component = subject_query.get_mut(event.observable_entity).unwrap();
-		subject_component.subscribe(destination)
-	};
-
-	let mut subscription_entity_commands = commands.entity(event.subscription_entity);
-
-	if !subscription.is_closed() {
-		// Instead of spawning a new entity here, a pre-spawned one is used that the user
-		// already has access to.
-		// It also already contains the [SubscriptionSchedule] component.
-		subscription_entity_commands.insert((
-			SubscriptionComponent::new(
-				subscription.into_shared(),
-				event.subscription_entity,
-				rx_schedule_despawn.handle(),
-			),
-			SubscriptionOf::<Subject>::new(event.observable_entity),
-		));
-	} else {
-		subscription_entity_commands.try_despawn();
-	}
-
-	// Marks the subscription entity as "finished".
-	// An "unfinished" subscription entity would be immediately despawned.
-	subscription_entity_commands.try_remove::<UnfinishedSubscription>();
-
-	Ok(())
-}
-
-/// Remove related components along with the observable
+/// Remove related components along with the subject
 fn subject_on_remove<Subject>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	Subject: 'static + SubjectLike + Send + Sync,

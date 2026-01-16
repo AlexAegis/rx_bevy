@@ -1,98 +1,73 @@
-use std::time::Duration;
-
 use bevy::prelude::*;
 use bevy_ecs::system::SystemState;
 use rx_bevy::prelude::*;
-use rx_core_common::SubscriberNotification;
-use rx_core_testing::prelude::*;
-
-#[path = "./utilities.rs"]
-mod utilities;
-
-use utilities::*;
+use rx_core_common::SharedSubscription;
 
 #[test]
-fn it_should_be_possible_to_unsubscribe_a_subscription_entity_with_an_event() {
+fn subscription_component_new_unsubscribes_when_entity_despawns() {
 	let mut app = App::new();
 	app.init_resource::<Time<Virtual>>();
 	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
 
-	let destination = MockObserver::<usize, Never>::default();
-	let notifications = destination.get_notification_collector();
+	let subscription = SharedSubscription::default();
+	let subscription_clone = subscription.clone();
 
-	let destination_entity = app
+	let entity = app
 		.world_mut()
-		.spawn_empty()
-		.observe(collect_notifications_into::<usize, Never>(
-			notifications.clone(),
-		))
+		.spawn(SubscriptionComponent::new(subscription))
 		.id();
 
-	let scheduler_handle = {
-		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
-		scheduler.handle()
-	};
+	app.update();
 
-	let interval_observable_entity = app
-		.world_mut()
-		.spawn(
-			IntervalObservable::new(
-				IntervalObservableOptions {
-					duration: Duration::from_millis(500),
-					start_on_subscribe: false,
-					max_emissions_per_tick: 10,
-				},
-				scheduler_handle.clone(),
-			)
-			.into_component(),
-		)
-		.id();
-
-	let mut destination =
-		EntityDestination::<usize, Never>::new(destination_entity, scheduler_handle).upgrade();
-	let tracked_teardown = destination.add_tracked_teardown("interval_destination");
+	app.world_mut().commands().entity(entity).despawn();
 
 	app.update();
 
-	let subscription_entity = app
-		.world_mut()
-		.commands()
-		.subscribe(interval_observable_entity, destination);
-
-	app.update();
-
-	app.world_mut()
-		.resource_mut::<Time<Virtual>>()
-		.advance_by(Duration::from_millis(1000));
-	app.update();
-
-	notifications.lock().assert_notifications(
-		"inveral_observable",
-		0,
-		[
-			SubscriberNotification::Next(0),
-			SubscriberNotification::Next(1),
-		],
-		true,
+	assert!(
+		subscription_clone.is_closed(),
+		"subscription should be unsubscribed when its entity is despawned"
 	);
+}
 
-	app.world_mut()
-		.commands()
-		.entity(subscription_entity)
-		.trigger(SubscriptionNotificationEvent::from_notification(
-			SubscriptionNotification::Unsubscribe,
-			subscription_entity,
-		));
+mod new_despawn_on_unsubscribe {
+	use super::*;
 
-	app.world_mut()
-		.resource_mut::<Time<Virtual>>()
-		.advance_by(Duration::from_millis(2000));
-	app.update();
+	#[test]
+	fn subscription_component_new_despawn_on_unsubscribe_despawns_entity_when_subscription_closes()
+	{
+		let mut app = App::new();
+		app.init_resource::<Time<Virtual>>();
+		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
 
-	notifications
-		.lock()
-		.assert_nth_notification_is_last("interval_observable", 1);
+		let scheduler_handle = {
+			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+				.get_mut(app.world_mut());
+			scheduler.handle()
+		};
 
-	tracked_teardown.assert_was_torn_down();
+		let subscription = SharedSubscription::default();
+		let subscription_clone = subscription.clone();
+
+		let entity = app.world_mut().spawn_empty().id();
+		app.world_mut().entity_mut(entity).insert(
+			SubscriptionComponent::new_despawn_on_unsubscribe(
+				subscription,
+				entity,
+				scheduler_handle.clone(),
+			),
+		);
+
+		app.update();
+
+		// Unsubscribe from a clone of the internal SharedSubscription
+		let mut subscription_clone = subscription_clone;
+		subscription_clone.unsubscribe();
+
+		app.update();
+
+		assert!(
+			!app.world().entities().contains(entity),
+			"entity should be despawned when subscription unsubscribes"
+		);
+	}
 }

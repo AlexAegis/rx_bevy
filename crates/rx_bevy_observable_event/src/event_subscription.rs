@@ -1,7 +1,7 @@
 use bevy_ecs::{entity::Entity, event::Event, name::Name, observer::Observer};
 use disqualified::ShortName;
 use rx_bevy_common::{
-	RxBevyScheduler, RxBevySchedulerDespawnEntityExtension, SubscriptionSatelliteOf,
+	RxBevyScheduler, RxBevySchedulerDespawnEntityExtension, SubscriptionSatellite,
 };
 use rx_core_common::{
 	RxObserver, Scheduler, SchedulerHandle, SchedulerScheduleWorkExtension, SharedSubscriber,
@@ -52,8 +52,9 @@ where
 						Observer::new(create_event_forwarder_observer_for_destination(
 							shared_destination_clone,
 						))
-						.with_entity(observed_event_source_entity),
-						SubscriptionSatelliteOf::new(
+						.with_entity(observed_event_source_entity)
+						.with_error_handler(bevy_ecs::error::default_error_handler()),
+						SubscriptionSatellite::new_with_teardown(
 							observed_event_source_entity,
 							Teardown::new(move || {
 								shared_destination_despawn_clone.complete();

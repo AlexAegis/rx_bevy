@@ -7,8 +7,8 @@ mod observable_component;
 mod observable_outputs_component;
 mod observable_subscription_relationship;
 mod observable_system_param;
-mod subscribe_observer_relationship;
 mod subscribe_observer_relationship_erased;
+mod subscribe_observer_satellite;
 
 pub use command_subscribe::*;
 pub use commands_with_observable::*;
@@ -19,5 +19,5 @@ pub use observable_component::*;
 pub use observable_outputs_component::*;
 pub use observable_subscription_relationship::*;
 pub use observable_system_param::*;
-pub use subscribe_observer_relationship::*;
 pub use subscribe_observer_relationship_erased::*;
+pub use subscribe_observer_satellite::*;
