@@ -80,6 +80,37 @@ mod using_subject_component {
 			true,
 		);
 	}
+
+	#[test]
+	fn observable_query_rejects_mismatched_output_types() {
+		let mut app = App::new();
+		app.init_resource::<Time<Virtual>>();
+		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+		let observable_entity = app
+			.world_mut()
+			.spawn(PublishSubject::<usize>::default().into_component())
+			.id();
+
+		app.update();
+
+		let mut system_state =
+			SystemState::<ObservableQuery<'_, '_, u32, Never>>::new(app.world_mut());
+		let mut observable_query = system_state.get_mut(app.world_mut());
+
+		let result =
+			observable_query.try_subscribe_to(observable_entity, MockObserver::<u32>::default());
+
+		system_state.apply(app.world_mut());
+
+		assert!(
+			matches!(
+				result,
+				Err(SubscribeError::NotAnObservable(_, entity)) if entity == observable_entity
+			),
+			"expected NotAnObservable for mismatched output types, got {result:?}",
+		);
+	}
 }
 
 mod using_observable_component {
