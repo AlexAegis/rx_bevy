@@ -57,6 +57,32 @@ mod subscribe {
 		}
 
 		#[test]
+		fn should_despawn_reserved_subscription_when_no_observable_is_present() {
+			let destination = MockObserver::<usize>::default();
+
+			let mut app = App::new();
+			app.init_resource::<Time<Virtual>>();
+			app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+			let not_an_observable = app.world_mut().spawn_empty().id();
+
+			let mut commands = app.world_mut().commands();
+			let subscription_entity = commands.subscribe(not_an_observable, destination);
+
+			app.update();
+
+			assert!(
+				app.world().get_entity(subscription_entity).is_err(),
+				"unfinished subscription should be cleaned up in the same frame when it cannot attach",
+			);
+
+			assert!(
+				app.world().get_entity(not_an_observable).is_ok(),
+				"The not_an_observable entity should still exist!"
+			);
+		}
+
+		#[test]
 		fn should_not_spawn_a_subscription_entity_for_an_immediately_closed_subscription() {
 			let destination = MockObserver::<usize>::default();
 			let notification_collector = destination.get_notification_collector();
