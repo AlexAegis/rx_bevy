@@ -61,9 +61,6 @@ fn observable_on_insert<O>(mut deferred_world: DeferredWorld, hook_context: Hook
 where
 	O: 'static + Observable + Send + Sync,
 {
-	#[cfg(feature = "debug")]
-	crate::register_observable_debug_systems::<O>(&mut deferred_world);
-
 	deferred_world
 		.commands()
 		.spawn(SubscribeEventObserverSatelliteBundle::<O>::new::<

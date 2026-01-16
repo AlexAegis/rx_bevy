@@ -19,7 +19,6 @@ workspace = true
 [features]
 default = []
 debug = [
-    "dep:bevy_input",
     "rx_core_scheduler_ticking/debug",
     "rx_core_testing/debug",
     "rx_core_common/debug",
@@ -41,7 +40,6 @@ bevy_app = { workspace = true }
 bevy_log = { workspace = true }
 bevy_time = { workspace = true }
 bevy_derive = { workspace = true }
-bevy_input = { workspace = true, optional = true }
 bevy_reflect = { workspace = true, optional = true }
 bevy_window = { workspace = true }
 disqualified = { workspace = true }

@@ -14,8 +14,6 @@ use rx_core_common::{
 };
 
 use core::marker::PhantomData;
-#[cfg(feature = "debug")]
-use std::fmt::Debug;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
@@ -118,9 +116,8 @@ where
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
-#[derive(Component, Deref)]
+#[derive(Component, Deref, Debug)]
 #[relationship_target(relationship=SubscribeObserverOf::<O>)]
-#[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscribeObserverRef<O>
 where
@@ -135,7 +132,6 @@ where
 
 #[derive(Component, Deref)]
 #[relationship(relationship_target=SubscribeObserverRef::<O>)]
-#[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscribeObserverOf<O>
 where

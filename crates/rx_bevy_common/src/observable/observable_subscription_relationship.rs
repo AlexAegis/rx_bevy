@@ -3,17 +3,14 @@ use bevy_ecs::{component::Component, entity::Entity};
 use rx_core_common::{Observable, PhantomInvariant};
 
 use core::marker::PhantomData;
-#[cfg(feature = "debug")]
-use std::fmt::Debug;
 
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
-#[derive(Component, Deref)]
+#[derive(Component, Debug, Deref)]
 #[relationship_target(relationship=SubscriptionOf::<O>)]
-#[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct ObservableSubscriptions<O>
 where
@@ -47,9 +44,8 @@ where
 	}
 }
 
-#[derive(Component, Deref)]
+#[derive(Component, Deref, Debug)]
 #[relationship(relationship_target=ObservableSubscriptions::<O>)]
-#[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscriptionOf<O>
 where

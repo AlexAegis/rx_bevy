@@ -119,9 +119,6 @@ where
 	Subject::In: Clone,
 	Subject::InError: Clone,
 {
-	#[cfg(feature = "debug")]
-	crate::register_observable_debug_systems::<Subject>(&mut deferred_world);
-
 	let mut commands = deferred_world.commands();
 	commands.spawn(SubscribeEventObserverSatelliteBundle::<Subject>::new::<
 		SubjectComponent<Subject>,

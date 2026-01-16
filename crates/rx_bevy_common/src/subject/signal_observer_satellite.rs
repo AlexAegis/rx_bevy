@@ -14,9 +14,6 @@ use rx_core_common::{
 
 use core::marker::PhantomData;
 
-#[cfg(feature = "debug")]
-use std::fmt::Debug;
-
 #[cfg(feature = "reflect")]
 use bevy_reflect::Reflect;
 
@@ -75,9 +72,8 @@ fn push_signal_observer<C>(
 
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
-#[derive(Component, Deref)]
+#[derive(Component, Deref, Debug)]
 #[relationship_target(relationship=SignalObserverOf::<O>)]
-#[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SignalObserverRef<O>
 where
@@ -90,9 +86,8 @@ where
 	_phantom_data: PhantomInvariant<O>,
 }
 
-#[derive(Component, Deref)]
+#[derive(Component, Deref, Debug)]
 #[relationship(relationship_target=SignalObserverRef::<O>)]
-#[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SignalObserverOf<O>
 where
