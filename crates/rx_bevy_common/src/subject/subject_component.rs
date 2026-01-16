@@ -8,8 +8,8 @@ use rx_core_common::{
 use rx_core_macro_subject_derive::RxSubject;
 
 use crate::{
-	ObservableSubscriptions, SignalObserverSatelliteBundle, SubscribeEventObserverSatelliteBundle,
-	SubscribeObserverRef,
+	ObservableOutputs, ObservableSubscriptions, SignalObserverSatelliteBundle,
+	SubscribeEventObserverSatelliteBundle, SubscribeObserverRef,
 };
 
 /// # [SubjectComponent]
@@ -46,7 +46,7 @@ use crate::{
 #[rx_out_error(Subject::OutError)]
 #[rx_delegate_subscription_like_to_destination]
 #[component(on_insert=subject_on_insert::<Subject>, on_remove=subject_on_remove::<Subject>)]
-#[require(ObservableSubscriptions::<Subject>)]
+#[require(ObservableSubscriptions::<Subject>, ObservableOutputs::<Subject::Out, Subject::OutError>)]
 pub struct SubjectComponent<Subject>
 where
 	Subject: SubjectLike + Send + Sync,
