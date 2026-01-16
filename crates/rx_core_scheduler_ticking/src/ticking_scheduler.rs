@@ -66,8 +66,7 @@ where
 			Box::new(work),
 		)));
 
-		//	let mut s = SubscriptionData::<ContextProvider>::default();
-		// TODO: Try returning subscriptions instead of ownerids
+		// TODO: Try returning subscriptions instead of ownerids, move back some now existing subscriber impl-s into the scheduler crate. but keep the id based functions exposed
 	}
 
 	fn schedule_invoked_work<W>(&mut self, mut work: W, invoke_id: WorkInvokeId)

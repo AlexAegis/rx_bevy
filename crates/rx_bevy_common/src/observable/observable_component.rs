@@ -63,6 +63,7 @@ where
 	}
 }
 
+// TODO: impl over the component, and re-use for subjects
 fn observable_on_insert<O>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	O: 'static + Observable + Send + Sync,
@@ -81,12 +82,13 @@ where
 				ShortName::of::<O::OutError>(),
 				ShortName::of::<O>()
 			)),
-			Observer::new(subscribe_event_observer::<O>).with_entity(hook_context.entity),
+			Observer::new(observable_subscribe_event_observer::<O>)
+				.with_entity(hook_context.entity),
 		))
 		.id();
 }
 
-fn subscribe_event_observer<O>(
+fn observable_subscribe_event_observer<O>(
 	mut on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
 	mut commands: Commands,
 	mut observable_query: Query<&mut ObservableComponent<O>>,

@@ -18,6 +18,10 @@ pub trait ObserverInput {
 /// Exactly one of `error` or `complete` may occur, and it may occur at
 /// most once.
 ///
+/// It's also possible that an observer observes no terminal signals if its
+/// subscription was cancelled before it could. Some infinitely producing
+/// observables (like `interval`) do not complete at all.
+///
 /// ## Example
 ///
 /// ```rust
@@ -47,7 +51,6 @@ pub trait ObserverInput {
 ///     }
 /// }
 /// ```
-/// TODO: Consider making all these fallible, NextError::Closed, NextError::Full, NextError::Blocked, CompleteError::Closed etc, including unsubscribe on SubscriptionLike
 pub trait RxObserver: ObserverInput {
 	/// Signals the next value.
 	fn next(&mut self, next: Self::In);

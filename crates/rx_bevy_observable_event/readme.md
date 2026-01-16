@@ -8,6 +8,9 @@ The `EventObservable` turns Bevy events triggered on an entity into signals,
 allowing you to use any event as an observable source, and construct reactive
 pipelines from them using operators.
 
+Subscribers will observe events targeted at the specified entity, and a
+completion signal once the entity is despawned.
+
 ## Example
 
 ```sh

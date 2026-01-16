@@ -1,8 +1,7 @@
 use bevy_ecs::{
-	component::{Component, HookContext},
+	component::{Component, HookContext, Mutable},
 	entity::ContainsEntity,
 	error::BevyError,
-	hierarchy::ChildOf,
 	name::Name,
 	observer::{Observer, Trigger},
 	system::{Commands, Query},
@@ -20,6 +19,7 @@ use crate::{
 	ErasedSubscribeObserverOf, ObservableSubscriptions, RxScheduleDespawn, RxSignal, Subscribe,
 	SubscribeError, SubscribeObserverOf, SubscribeObserverRef, SubscriptionComponent,
 	SubscriptionOf, UnfinishedSubscription,
+	subject::signal_observer_relationship::SignalObserverOf,
 };
 
 /// Note that if you accidentally subscribe to a subject entity with itself,
@@ -123,27 +123,28 @@ where
 		.id();
 
 	commands.spawn((
-		ChildOf(hook_context.entity), // TODO: Use a dedicated relationship
+		SignalObserverOf::<Subject>::new(hook_context.entity),
 		Name::new(format!(
 			"Notification Observer {}",
 			ShortName::of::<Subject>()
 		)),
-		Observer::new(subject_notification_observer::<Subject>).with_entity(hook_context.entity),
+		Observer::new(push_signal_observer::<SubjectComponent<Subject>>)
+			.with_entity(hook_context.entity),
 	));
 }
 
-fn subject_notification_observer<Subject>(
-	on_notification: Trigger<RxSignal<Subject::In, Subject::InError>>,
-	mut subject_query: Query<&mut SubjectComponent<Subject>>,
+fn push_signal_observer<ObserverComponent>(
+	on_notification: Trigger<RxSignal<ObserverComponent::In, ObserverComponent::InError>>,
+	mut subject_query: Query<&mut ObserverComponent>,
 ) where
-	Subject: 'static + SubjectLike + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
+	ObserverComponent: 'static + RxObserver + Component<Mutability = Mutable> + Send + Sync,
+	ObserverComponent::In: Clone,
+	ObserverComponent::InError: Clone,
 {
 	let subject_entity = on_notification.entity();
 	if let Ok(mut subject) = subject_query.get_mut(subject_entity) {
-		let notification: ObserverNotification<Subject::In, Subject::InError> =
-			on_notification.event().clone().into();
+		let notification: ObserverNotification<ObserverComponent::In, ObserverComponent::InError> =
+			on_notification.event().signal().clone();
 		subject.push(notification);
 	}
 }

@@ -12,7 +12,7 @@ use bevy_reflect::Reflect;
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref, DerefMut)]
-#[relationship_target(relationship=ErasedSubscribeObserverOf::<Out, OutError>, linked_spawn)]
+#[relationship_target(relationship=ErasedSubscribeObserverOf::<Out, OutError>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct ErasedSubscribeObservers<Out, OutError>

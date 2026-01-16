@@ -1,6 +1,6 @@
 use bevy_derive::Deref;
 use bevy_ecs::{component::Component, entity::Entity};
-use rx_core_common::{Observable, PhantomInvariant};
+use rx_core_common::{PhantomInvariant, RxObserver};
 
 use core::marker::PhantomData;
 #[cfg(feature = "debug")]
@@ -12,42 +12,42 @@ use bevy_reflect::Reflect;
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref)]
-#[relationship_target(relationship=SubscribeObserverOf::<O>)]
+#[relationship_target(relationship=SignalObserverOf::<O>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscribeObserverRef<O>
+pub struct SignalObserverRef<O>
 where
-	O: 'static + Observable + Send + Sync,
+	O: 'static + RxObserver + Send + Sync,
 {
 	#[relationship]
 	#[deref]
-	subscribe_observer_entity: Entity,
+	signal_observer_entity: Entity,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomInvariant<O>,
 }
 
 #[derive(Component, Deref)]
-#[relationship(relationship_target=SubscribeObserverRef::<O>)]
+#[relationship(relationship_target=SignalObserverRef::<O>)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[cfg_attr(feature = "reflect", derive(Reflect))]
-pub struct SubscribeObserverOf<O>
+pub struct SignalObserverOf<O>
 where
-	O: 'static + Observable + Send + Sync,
+	O: 'static + RxObserver + Send + Sync,
 {
 	#[relationship]
 	#[deref]
-	observable_entity: Entity,
+	signal_observer_entity: Entity,
 	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomInvariant<O>,
 }
 
-impl<O> SubscribeObserverOf<O>
+impl<O> SignalObserverOf<O>
 where
-	O: 'static + Observable + Send + Sync,
+	O: 'static + RxObserver + Send + Sync,
 {
 	pub fn new(observable_entity: Entity) -> Self {
 		Self {
-			observable_entity,
+			signal_observer_entity: observable_entity,
 			_phantom_data: PhantomData,
 		}
 	}
