@@ -152,7 +152,6 @@ rx_bevy_observable_proxy = { path = "crates/rx_bevy_observable_proxy" }
 rx_bevy_observable_resource = { path = "crates/rx_bevy_observable_resource" }
 # Misc
 examples_common = { path = "crates/examples_common" }
-feature_checker = { path = "crates/feature_checker" }
 xtask = { path = "crates/xtask" }
 
 ## External Crates

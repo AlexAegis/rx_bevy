@@ -74,7 +74,7 @@ jobs:
       - name: test with nextest and llvm-cov
         run: cargo llvm-cov nextest --locked --workspace --all-targets --all-features --no-report --profile ci
       - name: generate coverage report
-        run: cargo llvm-cov report --ignore-filename-regex "crates/(examples_common|feature_checker|xtask)/.*" --codecov --output-path target/codecov.json
+        run: cargo llvm-cov report --ignore-filename-regex "crates/(examples_common|xtask)/.*" --codecov --output-path target/codecov.json
       - name: upload coverage report to codecov.io
         uses: codecov/codecov-action@v5
         with:

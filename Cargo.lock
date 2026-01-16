@@ -2257,13 +2257,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "feature_checker"
-version = "0.1.0"
-dependencies = [
- "cargo_metadata",
-]
-
-[[package]]
 name = "file-id"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
