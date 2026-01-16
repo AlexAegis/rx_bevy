@@ -98,6 +98,9 @@ component_management:
     - component_id: rx_core_observable_connectable
       paths:
         - crates/rx_core_observable_connectable/**
+    - component_id: rx_core_observable_create
+      paths:
+        - crates/rx_core_observable_create/**
     - component_id: rx_core_observable_deferred
       paths:
         - crates/rx_core_observable_deferred/**

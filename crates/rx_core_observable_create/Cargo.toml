@@ -1,0 +1,36 @@
+[package]
+name = "rx_core_observable_create"
+description = "create observable for rx_core"
+version = "0.1.0"
+readme = "readme.md"
+publish = false
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license.workspace = true
+keywords = [
+    "rx",
+    "reactivex",
+    "rx_core",
+    "rx_core_observable",
+    "rx_bevy",
+    "rx_bevy_observable",
+]
+
+[lints]
+workspace = true
+
+[features]
+default = []
+observable_fn = []
+
+[dependencies]
+rx_core_common = { workspace = true }
+rx_core_macro_observable_derive = { workspace = true }
+
+[dev-dependencies]
+rx_core = { workspace = true, default-features = true }
+rx_core_testing = { workspace = true }

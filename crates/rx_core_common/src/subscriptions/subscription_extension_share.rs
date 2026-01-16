@@ -1,8 +1,8 @@
-use crate::{SharedSubscription, SubscriptionLike};
+use crate::{SharedSubscription, SubscriptionWithTeardown};
 
 pub trait SubscriptionLikeExtensionIntoShared
 where
-	Self: 'static + SubscriptionLike + Sized + Send + Sync,
+	Self: 'static + SubscriptionWithTeardown + Sized + Send + Sync,
 {
 	/// Wrap this subscription into a [SharedSubscription], erasing it and
 	/// allowing you to freely clone it, to unsubscribe it from multiple places.
@@ -12,6 +12,6 @@ where
 }
 
 impl<Subscription> SubscriptionLikeExtensionIntoShared for Subscription where
-	Subscription: 'static + SubscriptionLike + Sized + Send + Sync
+	Subscription: 'static + SubscriptionWithTeardown + Sized + Send + Sync
 {
 }

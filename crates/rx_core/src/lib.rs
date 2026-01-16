@@ -13,6 +13,8 @@ pub mod observable {
 	pub use rx_core_observable_concat::observable::*;
 	#[cfg(feature = "observable_connectable")]
 	pub use rx_core_observable_connectable::observable::*;
+	#[cfg(feature = "observable_create")]
+	pub use rx_core_observable_create::observable::*;
 	#[cfg(feature = "observable_deferred")]
 	pub use rx_core_observable_deferred::observable::*;
 	#[cfg(feature = "observable_empty")]
@@ -49,6 +51,8 @@ pub mod observable_fn {
 	pub use rx_core_observable_combine_latest::observable_fn::*;
 	#[cfg(feature = "observable_concat")]
 	pub use rx_core_observable_concat::observable_fn::*;
+	#[cfg(feature = "observable_create")]
+	pub use rx_core_observable_create::observable_fn::*;
 	#[cfg(feature = "observable_deferred")]
 	pub use rx_core_observable_deferred::observable_fn::*;
 	#[cfg(feature = "observable_empty")]

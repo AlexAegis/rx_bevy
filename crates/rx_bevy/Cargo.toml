@@ -80,6 +80,7 @@ all_core_observables = [
     "observable_combine_latest",
     "observable_concat",
     "observable_connectable",
+    "observable_create",
     "observable_deferred",
     "observable_empty",
     "observable_interval",
@@ -98,6 +99,7 @@ observable_combine_changes = ["rx_core/observable_combine_changes"]
 observable_combine_latest = ["rx_core/observable_combine_latest"]
 observable_concat = ["rx_core/observable_concat"]
 observable_connectable = ["rx_core/observable_connectable"]
+observable_create = ["rx_core/observable_create"]
 observable_deferred = ["rx_core/observable_deferred"]
 observable_empty = ["rx_core/observable_empty"]
 observable_interval = ["rx_core/observable_interval"]

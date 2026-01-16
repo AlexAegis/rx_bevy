@@ -4,7 +4,7 @@ use rx_core_macro_subscription_derive::RxSubscription;
 
 use crate::{
 	LockWithPoisonBehavior, SubscriptionClosedFlag, SubscriptionData, SubscriptionLike,
-	SubscriptionLikePushNotificationExtention, SubscriptionNotification,
+	SubscriptionLikePushNotificationExtention, SubscriptionNotification, SubscriptionWithTeardown,
 	TeardownCollectionExtension,
 };
 
@@ -97,13 +97,14 @@ pub struct SharedSubscription {
 }
 
 impl SharedSubscription {
-	pub fn new<S>(subscription: S) -> Self
+	pub fn new<S>(mut subscription: S) -> Self
 	where
-		S: 'static + SubscriptionLike + Send + Sync,
+		S: 'static + SubscriptionWithTeardown + Send + Sync,
 	{
-		let mut default = Self::default();
-		default.add(subscription);
-		default
+		let mut shared_subscription = Self::default();
+		subscription.add(shared_subscription.clone());
+		shared_subscription.add(subscription);
+		shared_subscription
 	}
 
 	fn try_apply_deferred(&mut self) {

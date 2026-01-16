@@ -11,6 +11,7 @@
   - [combine_latest](observable/combine_latest.md)
   - [concat](observable/concat.md)
   - [connectable](observable/connectable.md)
+  - [create](observable/create.md)
   - [deferred](observable/deferred.md)
   - [empty](observable/empty.md)
   - [interval](observable/interval.md)

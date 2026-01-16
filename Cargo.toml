@@ -59,6 +59,7 @@ rx_core_observable_combine_changes = { path = "crates/rx_core_observable_combine
 rx_core_observable_combine_latest = { path = "crates/rx_core_observable_combine_latest" }
 rx_core_observable_concat = { path = "crates/rx_core_observable_concat" }
 rx_core_observable_connectable = { path = "crates/rx_core_observable_connectable" }
+rx_core_observable_create = { path = "crates/rx_core_observable_create" }
 rx_core_observable_deferred = { path = "crates/rx_core_observable_deferred" }
 rx_core_observable_empty = { path = "crates/rx_core_observable_empty" }
 rx_core_observable_interval = { path = "crates/rx_core_observable_interval" }

@@ -53,7 +53,7 @@ pub trait SubscriptionLikePushNotificationExtention: SubscriptionLike {
 	fn push(&mut self, notification: impl Into<SubscriptionNotification>);
 }
 
-impl<T> SubscriptionLikePushNotificationExtention for T
+impl<T: ?Sized> SubscriptionLikePushNotificationExtention for T
 where
 	T: SubscriptionLike,
 {
