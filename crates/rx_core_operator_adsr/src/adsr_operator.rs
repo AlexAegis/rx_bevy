@@ -7,9 +7,7 @@ use rx_core_macro_operator_derive::RxOperator;
 
 use crate::{AdsrSignal, AdsrSubscriber, AdsrTrigger, operator::AdsrOperatorOptions};
 
-#[derive(Clone)]
-#[cfg_attr(feature = "debug", derive(Debug))]
-#[derive(RxOperator)]
+#[derive(Clone, Debug, RxOperator)]
 #[rx_in(AdsrTrigger)]
 #[rx_in_error(InError)]
 #[rx_out(AdsrSignal)]

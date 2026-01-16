@@ -16,8 +16,7 @@ keywords = ["examples"]
 workspace = true
 
 [features]
-default = ["debug"]
-debug = ["rx_bevy_common/debug", "rx_core_common/debug"]
+default = []
 
 [dependencies]
 bevy = { workspace = true, features = ["dynamic_linking"] }

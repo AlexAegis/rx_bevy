@@ -25,14 +25,6 @@ workspace = true
 
 [features]
 default = []
-debug = [
-    "rx_core_operator_filter/debug",
-    "rx_core_operator_map/debug",
-    "rx_core_subject_behavior/debug",
-    "rx_core_subject_publish/debug",
-    "rx_core_testing/debug",
-    "rx_core_common/debug",
-]
 
 [dependencies]
 rx_core_subject_behavior = { workspace = true }

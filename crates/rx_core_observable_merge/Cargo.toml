@@ -25,12 +25,6 @@ workspace = true
 
 [features]
 default = []
-debug = [
-    "rx_core_subscriber_higher_order_all/debug",
-    "rx_core_subscriber_higher_order_concurrent/debug",
-    "rx_core_testing/debug",
-    "rx_core_common/debug",
-]
 observable_fn = []
 
 [dependencies]

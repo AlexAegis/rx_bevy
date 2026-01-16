@@ -24,12 +24,6 @@ keywords = [
 workspace = true
 
 [features]
-debug = [
-    "rx_core_subscriber_higher_order_all/debug",
-    "rx_core_subscriber_higher_order_concurrent/debug",
-    "rx_core_testing/debug",
-    "rx_core_common/debug",
-]
 observable_fn = []
 
 default = []

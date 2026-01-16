@@ -25,13 +25,6 @@ workspace = true
 
 [features]
 default = []
-debug = [
-    "bevy/track_location",
-    "examples_common/debug",
-    "rx_bevy_common/debug",
-    "rx_core_testing/debug",
-    "rx_core_common/debug",
-]
 example = [
     "bevy/dynamic_linking",
     "bevy/bevy_asset",

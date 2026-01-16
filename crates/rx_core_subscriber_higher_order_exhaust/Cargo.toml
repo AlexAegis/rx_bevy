@@ -18,11 +18,6 @@ workspace = true
 
 [features]
 default = []
-debug = [
-    "rx_core_subscriber_higher_order/debug",
-    "rx_core_testing/debug",
-    "rx_core_common/debug",
-]
 
 [dependencies]
 rx_core_macro_subscriber_derive = { workspace = true }

@@ -25,11 +25,6 @@ workspace = true
 
 [features]
 default = []
-debug = [
-    "rx_core_operator_composite?/debug",
-    "rx_core_testing/debug",
-    "rx_core_common/debug",
-]
 pipe = ["rx_core_common/pipe"]
 compose = ["dep:rx_core_operator_composite"]
 

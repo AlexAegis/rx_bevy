@@ -18,11 +18,6 @@ workspace = true
 
 [features]
 default = []
-debug = [
-    "rx_core_observable_iterator/debug",
-    "rx_core_testing/debug",
-    "rx_core_common/debug",
-]
 
 [dependencies]
 rx_core_common = { workspace = true }

@@ -25,12 +25,6 @@ workspace = true
 
 [features]
 default = []
-debug = [
-    "rx_core_notification_store/debug",
-    "rx_core_notification_variadics/debug",
-    "rx_core_testing/debug",
-    "rx_core_common/debug",
-]
 observable_fn = []
 
 [dependencies]
