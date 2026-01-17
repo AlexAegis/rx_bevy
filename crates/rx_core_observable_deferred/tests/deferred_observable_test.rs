@@ -103,11 +103,11 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let mut source = PublishSubject::<usize, TestError>::default();
+		let mut source = PublishSubject::<usize, MockError>::default();
 		let mut source_finalized = SharedSubscription::default();
 		let source_tracked_teardown = source_finalized.add_tracked_teardown("deferred - source");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"deferred",
 			deferred_observable({
 				let source = source.clone();
@@ -122,19 +122,19 @@ mod contracts {
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
 
-		source.error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		source.error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		source_tracked_teardown.assert_was_torn_down();
 	}
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let mut source = PublishSubject::<usize, TestError>::default();
+		let mut source = PublishSubject::<usize, MockError>::default();
 		let mut source_finalized = SharedSubscription::default();
 		let source_tracked_teardown = source_finalized.add_tracked_teardown("deferred - source");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"deferred",
 			deferred_observable({
 				let source = source.clone();
@@ -159,11 +159,11 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let source = PublishSubject::<usize, TestError>::default();
+		let source = PublishSubject::<usize, MockError>::default();
 		let mut source_finalized = SharedSubscription::default();
 		let source_tracked_teardown = source_finalized.add_tracked_teardown("deferred - source");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"deferred",
 			deferred_observable({
 				let source = source.clone();

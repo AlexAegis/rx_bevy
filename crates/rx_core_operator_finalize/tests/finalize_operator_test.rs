@@ -161,13 +161,13 @@ mod contracts {
 		let finalizer_called = Arc::new(AtomicBool::new(false));
 		let finalizer_called_clone = finalizer_called.clone();
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("finalize");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("finalize");
 		let observable = harness
 			.create_harness_observable()
 			.finalize(move || finalizer_called_clone.store(true, Ordering::Relaxed));
 		harness.subscribe_to(observable);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 		assert!(finalizer_called.load(Ordering::Relaxed));
 	}
 
@@ -176,7 +176,7 @@ mod contracts {
 		let finalizer_called = Arc::new(AtomicBool::new(false));
 		let finalizer_called_clone = finalizer_called.clone();
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("finalize");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("finalize");
 		let observable = harness
 			.create_harness_observable()
 			.finalize(move || finalizer_called_clone.store(true, Ordering::Relaxed));
@@ -191,7 +191,7 @@ mod contracts {
 		let finalizer_called = Arc::new(AtomicBool::new(false));
 		let finalizer_called_clone = finalizer_called.clone();
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("finalize");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("finalize");
 		let observable = harness
 			.create_harness_observable()
 			.finalize(move || finalizer_called_clone.store(true, Ordering::Relaxed));

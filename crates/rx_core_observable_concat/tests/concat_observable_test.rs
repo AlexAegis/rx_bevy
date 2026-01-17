@@ -83,15 +83,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let mut subject_1 = PublishSubject::<usize, TestError>::default();
+		let mut subject_1 = PublishSubject::<usize, MockError>::default();
 		let mut subject_1_finalize = SharedSubscription::default();
 		let subject_1_tracked_teardown = subject_1_finalize.add_tracked_teardown("subject_1");
 
-		let subject_2 = PublishSubject::<usize, TestError>::default();
+		let subject_2 = PublishSubject::<usize, MockError>::default();
 		let mut subject_2_finalize = SharedSubscription::default();
 		let subject_2_tracked_teardown = subject_2_finalize.add_tracked_teardown("subject_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"concat",
 			concat((
 				subject_1
@@ -105,9 +105,9 @@ mod contracts {
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
 
-		subject_1.error(TestError);
+		subject_1.error(MockError);
 
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		subject_1_tracked_teardown.assert_was_torn_down();
 		subject_2_tracked_teardown.assert_was_torn_down();
@@ -115,15 +115,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let mut subject_1 = PublishSubject::<usize, TestError>::default();
+		let mut subject_1 = PublishSubject::<usize, MockError>::default();
 		let mut subject_1_finalize = SharedSubscription::default();
 		let subject_1_tracked_teardown = subject_1_finalize.add_tracked_teardown("subject_1");
 
-		let mut subject_2 = PublishSubject::<usize, TestError>::default();
+		let mut subject_2 = PublishSubject::<usize, MockError>::default();
 		let mut subject_2_finalize = SharedSubscription::default();
 		let subject_2_tracked_teardown = subject_2_finalize.add_tracked_teardown("subject_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"concat",
 			concat((
 				subject_1
@@ -161,13 +161,13 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let subject_1 = PublishSubject::<usize, TestError>::default();
+		let subject_1 = PublishSubject::<usize, MockError>::default();
 		let mut subject_1_finalize = SharedSubscription::default();
 		let subject_1_tracked_teardown = subject_1_finalize.add_tracked_teardown("subject_1");
 
-		let subject_2 = PublishSubject::<usize, TestError>::default();
+		let subject_2 = PublishSubject::<usize, MockError>::default();
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"concat",
 			concat((
 				subject_1
@@ -188,15 +188,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_if_downstream_closes_early() {
-		let mut subject_1 = PublishSubject::<usize, TestError>::default();
+		let mut subject_1 = PublishSubject::<usize, MockError>::default();
 		let mut subject_1_finalize = SharedSubscription::default();
 		let subject_1_tracked_teardown = subject_1_finalize.add_tracked_teardown("subject_1");
 
-		let subject_2 = PublishSubject::<usize, TestError>::default();
+		let subject_2 = PublishSubject::<usize, MockError>::default();
 		let mut subject_2_finalize = SharedSubscription::default();
 		let subject_2_tracked_teardown = subject_2_finalize.add_tracked_teardown("subject_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"concat",
 			concat((
 				subject_1
@@ -220,15 +220,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_if_downstream_closes_immediately() {
-		let subject_1 = PublishSubject::<usize, TestError>::default();
+		let subject_1 = PublishSubject::<usize, MockError>::default();
 		let mut subject_1_finalize = SharedSubscription::default();
 		let subject_1_tracked_teardown = subject_1_finalize.add_tracked_teardown("subject_1");
 
-		let subject_2 = PublishSubject::<usize, TestError>::default();
+		let subject_2 = PublishSubject::<usize, MockError>::default();
 		let mut subject_2_finalize = SharedSubscription::default();
 		let subject_2_tracked_teardown = subject_2_finalize.add_tracked_teardown("subject_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"concat",
 			concat((
 				subject_1

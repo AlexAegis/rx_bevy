@@ -166,10 +166,10 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let inner = PublishSubject::<&'static str, TestError>::default();
+		let inner = PublishSubject::<&'static str, MockError>::default();
 
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, (usize, &'static str), TestError>::new(
+			TestHarness::<TestSubject<usize, MockError>, (usize, &'static str), MockError>::new(
 				"with_latest_from",
 			);
 		let observable = harness
@@ -177,16 +177,16 @@ mod contracts {
 			.with_latest_from(inner.clone());
 		harness.subscribe_to(observable);
 		harness.source().next(1);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let inner = PublishSubject::<&'static str, TestError>::default();
+		let inner = PublishSubject::<&'static str, MockError>::default();
 
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, (usize, &'static str), TestError>::new(
+			TestHarness::<TestSubject<usize, MockError>, (usize, &'static str), MockError>::new(
 				"with_latest_from",
 			);
 		let observable = harness
@@ -199,10 +199,10 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let inner = PublishSubject::<&'static str, TestError>::default();
+		let inner = PublishSubject::<&'static str, MockError>::default();
 
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, (usize, &'static str), TestError>::new(
+			TestHarness::<TestSubject<usize, MockError>, (usize, &'static str), MockError>::new(
 				"with_latest_from",
 			);
 		let observable = harness

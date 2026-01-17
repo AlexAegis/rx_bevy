@@ -4,7 +4,7 @@ use rx_core_testing::prelude::*;
 #[test]
 fn should_just_forward_nexts() {
 	let mut harness =
-		TestHarness::<TestSubject<usize, Never>, usize, TestError>::new("map_never (error)");
+		TestHarness::<TestSubject<usize, Never>, usize, MockError>::new("map_never (error)");
 	let observable = harness.create_harness_observable().map_never();
 	harness.subscribe_to(observable);
 
@@ -43,7 +43,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_complete() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, Never>, usize, TestError>::new("map_never (error)");
+			TestHarness::<TestSubject<usize, Never>, usize, MockError>::new("map_never (error)");
 		let observable = harness.create_harness_observable().map_never();
 		harness.subscribe_to(observable);
 		harness.source().complete();
@@ -53,7 +53,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, Never>, usize, TestError>::new("map_never (error)");
+			TestHarness::<TestSubject<usize, Never>, usize, MockError>::new("map_never (error)");
 		let observable = harness.create_harness_observable().map_never();
 		harness.subscribe_to(observable);
 		harness.get_subscription_mut().unsubscribe();

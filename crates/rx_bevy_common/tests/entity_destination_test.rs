@@ -20,7 +20,7 @@ fn signals_should_reach_the_destination_and_close_on_error() {
 	let destination_entity = app
 		.world_mut()
 		.spawn_empty()
-		.observe(collect_notifications_into::<usize, TestError>(
+		.observe(collect_notifications_into::<usize, MockError>(
 			notifications.clone(),
 		))
 		.id();
@@ -32,11 +32,11 @@ fn signals_should_reach_the_destination_and_close_on_error() {
 	};
 
 	let mut destination =
-		EntityDestination::<usize, TestError>::new(destination_entity, scheduler_handle).upgrade();
+		EntityDestination::<usize, MockError>::new(destination_entity, scheduler_handle).upgrade();
 	let tracked_teardown = destination.add_tracked_teardown("entity_destination");
 	destination.next(1);
 	destination.next(2);
-	destination.error(TestError);
+	destination.error(MockError);
 
 	app.update();
 
@@ -47,7 +47,7 @@ fn signals_should_reach_the_destination_and_close_on_error() {
 		[
 			SubscriberNotification::Next(1),
 			SubscriberNotification::Next(2),
-			SubscriberNotification::Error(TestError),
+			SubscriberNotification::Error(MockError),
 		],
 		true,
 	);

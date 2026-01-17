@@ -555,7 +555,7 @@ mod contracts {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
-		let mut harness = TestHarness::<_, usize, TestError>::new("switch_map");
+		let mut harness = TestHarness::<_, usize, MockError>::new("switch_map");
 		let observable = harness.create_harness_observable().switch_map(
 			move |_next: usize| {
 				let inner_was_unsubscribed = inner_was_unsubscribed_clone.clone();
@@ -576,8 +576,8 @@ mod contracts {
 		);
 		harness.subscribe_to(observable);
 		harness.source().next(1);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		assert_eq!(inner_was_unsubscribed.load(Ordering::Relaxed), 1);
 	}
@@ -590,7 +590,7 @@ mod contracts {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
-		let mut harness = TestHarness::<_, usize, TestError>::new("switch_map");
+		let mut harness = TestHarness::<_, usize, MockError>::new("switch_map");
 		let observable = harness.create_harness_observable().switch_map(
 			move |_next: usize| {
 				let inner_was_unsubscribed = inner_was_unsubscribed_clone.clone();
@@ -626,7 +626,7 @@ mod contracts {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
-		let mut harness = TestHarness::<_, usize, TestError>::new("switch_map");
+		let mut harness = TestHarness::<_, usize, MockError>::new("switch_map");
 		let observable = harness.create_harness_observable().switch_map(
 			move |_next: usize| {
 				let inner_was_unsubscribed = inner_was_unsubscribed_clone.clone();

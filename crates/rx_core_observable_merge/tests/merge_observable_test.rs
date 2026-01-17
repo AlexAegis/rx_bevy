@@ -310,15 +310,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1 = PublishSubject::<usize, MockError>::default();
 		let mut source_1_finalized = SharedSubscription::default();
 		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
 
-		let source_2 = PublishSubject::<usize, TestError>::default();
+		let source_2 = PublishSubject::<usize, MockError>::default();
 		let mut source_2_finalized = SharedSubscription::default();
 		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"merge",
 			merge(
 				(
@@ -335,9 +335,9 @@ mod contracts {
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
 
-		source_1.error(TestError);
+		source_1.error(MockError);
 
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		source_1_tracked_teardown.assert_was_torn_down();
 		source_2_tracked_teardown.assert_was_torn_down();
@@ -345,15 +345,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1 = PublishSubject::<usize, MockError>::default();
 		let mut source_1_finalized = SharedSubscription::default();
 		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
 
-		let mut source_2 = PublishSubject::<usize, TestError>::default();
+		let mut source_2 = PublishSubject::<usize, MockError>::default();
 		let mut source_2_finalized = SharedSubscription::default();
 		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"merge",
 			merge(
 				(
@@ -381,15 +381,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let source_1 = PublishSubject::<usize, TestError>::default();
+		let source_1 = PublishSubject::<usize, MockError>::default();
 		let mut source_1_finalized = SharedSubscription::default();
 		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
 
-		let source_2 = PublishSubject::<usize, TestError>::default();
+		let source_2 = PublishSubject::<usize, MockError>::default();
 		let mut source_2_finalized = SharedSubscription::default();
 		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"merge",
 			merge(
 				(
@@ -416,15 +416,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_if_downstream_closes_early() {
-		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1 = PublishSubject::<usize, MockError>::default();
 		let mut source_1_finalized = SharedSubscription::default();
 		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
 
-		let mut source_2 = PublishSubject::<usize, TestError>::default();
+		let mut source_2 = PublishSubject::<usize, MockError>::default();
 		let mut source_2_finalized = SharedSubscription::default();
 		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"merge",
 			merge(
 				(
@@ -452,8 +452,8 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_if_downstream_closes_immediately() {
-		let source_1 = PublishSubject::<usize, TestError>::default();
-		let source_2 = PublishSubject::<usize, TestError>::default();
+		let source_1 = PublishSubject::<usize, MockError>::default();
+		let source_2 = PublishSubject::<usize, MockError>::default();
 
 		let mut source_1_finalized = SharedSubscription::default();
 		let source_1_tracked_teardown = source_1_finalized.add_tracked_teardown("source_1");
@@ -461,7 +461,7 @@ mod contracts {
 		let mut source_2_finalized = SharedSubscription::default();
 		let source_2_tracked_teardown = source_2_finalized.add_tracked_teardown("source_2");
 
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"merge",
 			merge(
 				(

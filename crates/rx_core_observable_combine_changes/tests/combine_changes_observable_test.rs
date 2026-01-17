@@ -305,18 +305,18 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1 = PublishSubject::<usize, MockError>::default();
 		let mut source_1_finalized = SharedSubscription::default();
 		let source_1_tracked_teardown =
 			source_1_finalized.add_tracked_teardown("combine_changes - source_1");
 
-		let source_2 = PublishSubject::<&'static str, TestError>::default();
+		let source_2 = PublishSubject::<&'static str, MockError>::default();
 		let mut source_2_finalized = SharedSubscription::default();
 		let source_2_tracked_teardown =
 			source_2_finalized.add_tracked_teardown("combine_changes - source_2");
 
 		let mut harness =
-			TestHarness::<_, (Change<usize>, Change<&'static str>), TestError>::new_with_source(
+			TestHarness::<_, (Change<usize>, Change<&'static str>), MockError>::new_with_source(
 				"combine_changes",
 				combine_changes(
 					source_1
@@ -330,8 +330,8 @@ mod contracts {
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
 
-		source_1.error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		source_1.error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		source_1_tracked_teardown.assert_was_torn_down();
 		source_2_tracked_teardown.assert_was_torn_down();
@@ -339,18 +339,18 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let mut source_1 = PublishSubject::<usize, TestError>::default();
+		let mut source_1 = PublishSubject::<usize, MockError>::default();
 		let mut source_1_finalized = SharedSubscription::default();
 		let source_1_tracked_teardown =
 			source_1_finalized.add_tracked_teardown("combine_changes - source_1");
 
-		let mut source_2 = PublishSubject::<&'static str, TestError>::default();
+		let mut source_2 = PublishSubject::<&'static str, MockError>::default();
 		let mut source_2_finalized = SharedSubscription::default();
 		let source_2_tracked_teardown =
 			source_2_finalized.add_tracked_teardown("combine_changes - source_2");
 
 		let mut harness =
-			TestHarness::<_, (Change<usize>, Change<&'static str>), TestError>::new_with_source(
+			TestHarness::<_, (Change<usize>, Change<&'static str>), MockError>::new_with_source(
 				"combine_changes",
 				combine_changes(
 					source_1
@@ -377,18 +377,18 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let source_1 = PublishSubject::<usize, TestError>::default();
+		let source_1 = PublishSubject::<usize, MockError>::default();
 		let mut source_1_finalized = SharedSubscription::default();
 		let source_1_tracked_teardown =
 			source_1_finalized.add_tracked_teardown("combine_changes - source_1");
 
-		let source_2 = PublishSubject::<&'static str, TestError>::default();
+		let source_2 = PublishSubject::<&'static str, MockError>::default();
 		let mut source_2_finalized = SharedSubscription::default();
 		let source_2_tracked_teardown =
 			source_2_finalized.add_tracked_teardown("combine_changes - source_2");
 
 		let mut harness =
-			TestHarness::<_, (Change<usize>, Change<&'static str>), TestError>::new_with_source(
+			TestHarness::<_, (Change<usize>, Change<&'static str>), MockError>::new_with_source(
 				"combine_changes",
 				combine_changes(
 					source_1

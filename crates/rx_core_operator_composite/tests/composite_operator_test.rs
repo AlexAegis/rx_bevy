@@ -115,19 +115,19 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_error() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, String, TestError>::new("composite");
+			TestHarness::<TestSubject<usize, MockError>, String, MockError>::new("composite");
 		let observable = harness
 			.create_harness_observable()
 			.pipe(MapOperator::new(|i| i * 2).compose_with(MapOperator::new(|i| format!("{i}"))));
 		harness.subscribe_to(observable);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, String, TestError>::new("composite");
+			TestHarness::<TestSubject<usize, MockError>, String, MockError>::new("composite");
 		let observable = harness
 			.create_harness_observable()
 			.pipe(MapOperator::new(|i| i * 2).compose_with(MapOperator::new(|i| format!("{i}"))));
@@ -140,7 +140,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, String, TestError>::new("composite");
+			TestHarness::<TestSubject<usize, MockError>, String, MockError>::new("composite");
 		let observable = harness
 			.create_harness_observable()
 			.pipe(MapOperator::new(|i| i * 2).compose_with(MapOperator::new(|i| format!("{i}"))));

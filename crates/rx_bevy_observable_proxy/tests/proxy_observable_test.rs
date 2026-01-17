@@ -198,7 +198,7 @@ mod contracts {
 			scheduler.handle()
 		};
 
-		let mut subject = PublishSubject::<usize, TestError>::default();
+		let mut subject = PublishSubject::<usize, MockError>::default();
 
 		let observable_entity = app
 			.world_mut()
@@ -207,9 +207,9 @@ mod contracts {
 			.id();
 
 		let mut proxy_observable =
-			ProxyObservable::<usize, TestError>::new(observable_entity, scheduler_handle.clone());
+			ProxyObservable::<usize, MockError>::new(observable_entity, scheduler_handle.clone());
 
-		let destination = MockObserver::<usize, TestError>::default();
+		let destination = MockObserver::<usize, MockError>::default();
 		let notification_collector = destination.get_notification_collector();
 
 		let mut subscription = proxy_observable.subscribe(destination);
@@ -218,7 +218,7 @@ mod contracts {
 		app.update();
 
 		subject.next(1);
-		subject.error(TestError);
+		subject.error(MockError);
 
 		subscription.unsubscribe();
 
@@ -227,7 +227,7 @@ mod contracts {
 			0,
 			[
 				SubscriberNotification::Next(1),
-				SubscriberNotification::Error(TestError),
+				SubscriberNotification::Error(MockError),
 			],
 			true,
 		);

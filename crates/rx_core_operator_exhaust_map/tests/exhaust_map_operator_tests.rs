@@ -333,7 +333,7 @@ mod contracts {
 		let scheduler = executor.get_scheduler_handle();
 
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("exhaust_map");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("exhaust_map");
 		let observable = harness.create_harness_observable().exhaust_map(
 			move |_next: usize| {
 				let counter = inner_unsubscribed_clone.clone();
@@ -354,8 +354,8 @@ mod contracts {
 		);
 		harness.subscribe_to(observable);
 		harness.source().next(1);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		assert_eq!(inner_unsubscribed.load(Ordering::Relaxed), 1);
 	}
@@ -369,7 +369,7 @@ mod contracts {
 		let scheduler = executor.get_scheduler_handle();
 
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("exhaust_map");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("exhaust_map");
 		let observable = harness.create_harness_observable().exhaust_map(
 			move |_next: usize| {
 				let counter = inner_unsubscribed_clone.clone();
@@ -406,7 +406,7 @@ mod contracts {
 		let scheduler = executor.get_scheduler_handle();
 
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("exhaust_map");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("exhaust_map");
 		let observable = harness.create_harness_observable().exhaust_map(
 			move |_next: usize| {
 				let counter = inner_unsubscribed_clone.clone();

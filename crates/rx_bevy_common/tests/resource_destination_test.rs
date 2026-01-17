@@ -18,7 +18,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_error() {
 	let mut app = App::new();
 	app.init_resource::<Time<Virtual>>();
 	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-	app.init_resource::<MockResource<usize, TestError>>();
+	app.init_resource::<MockResource<usize, MockError>>();
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -27,7 +27,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_error() {
 	};
 
 	let mut destination =
-		ResourceDestination::<usize, TestError, MockResource<usize, TestError>, _, _>::new(
+		ResourceDestination::<usize, MockError, MockResource<usize, MockError>, _, _>::new(
 			|mock_resource, notification| {
 				mock_resource.notifications.lock().push(notification.into())
 			},
@@ -37,13 +37,13 @@ fn signals_should_reach_the_resource_destination_and_close_on_error() {
 	let tracked_teardown = destination.add_tracked_teardown("entity_destination");
 	destination.next(1);
 	destination.next(2);
-	destination.error(TestError);
+	destination.error(MockError);
 
 	app.update();
 
 	// Note that these were converted from ObserverNotifications, Unsubscribe can't show up here.
 	app.world()
-		.resource::<MockResource<usize, TestError>>()
+		.resource::<MockResource<usize, MockError>>()
 		.notifications
 		.lock()
 		.assert_notifications(
@@ -52,7 +52,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_error() {
 			[
 				SubscriberNotification::Next(1),
 				SubscriberNotification::Next(2),
-				SubscriberNotification::Error(TestError),
+				SubscriberNotification::Error(MockError),
 			],
 			true,
 		);
@@ -66,7 +66,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_complete() {
 	let mut app = App::new();
 	app.init_resource::<Time<Virtual>>();
 	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-	app.init_resource::<MockResource<usize, TestError>>();
+	app.init_resource::<MockResource<usize, MockError>>();
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -75,7 +75,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_complete() {
 	};
 
 	let mut destination =
-		ResourceDestination::<usize, TestError, MockResource<usize, TestError>, _, _>::new(
+		ResourceDestination::<usize, MockError, MockResource<usize, MockError>, _, _>::new(
 			|mock_resource, notification| {
 				mock_resource.notifications.lock().push(notification.into())
 			},
@@ -91,7 +91,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_complete() {
 
 	// Note that these were converted from ObserverNotifications, Unsubscribe can't show up here.
 	app.world()
-		.resource::<MockResource<usize, TestError>>()
+		.resource::<MockResource<usize, MockError>>()
 		.notifications
 		.lock()
 		.assert_notifications(
@@ -114,7 +114,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_unsubscribe() {
 	let mut app = App::new();
 	app.init_resource::<Time<Virtual>>();
 	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-	app.init_resource::<MockResource<usize, TestError>>();
+	app.init_resource::<MockResource<usize, MockError>>();
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -123,7 +123,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_unsubscribe() {
 	};
 
 	let mut destination =
-		ResourceDestination::<usize, TestError, MockResource<usize, TestError>, _, _>::new(
+		ResourceDestination::<usize, MockError, MockResource<usize, MockError>, _, _>::new(
 			|mock_resource, notification| {
 				mock_resource.notifications.lock().push(notification.into())
 			},
@@ -139,7 +139,7 @@ fn signals_should_reach_the_resource_destination_and_close_on_unsubscribe() {
 
 	// Note that these were converted from ObserverNotifications, Unsubscribe can't show up here.
 	app.world()
-		.resource::<MockResource<usize, TestError>>()
+		.resource::<MockResource<usize, MockError>>()
 		.notifications
 		.lock()
 		.assert_notifications(

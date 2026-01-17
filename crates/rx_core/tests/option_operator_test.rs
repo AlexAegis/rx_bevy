@@ -2,7 +2,7 @@ use rx_core::prelude::*;
 use rx_core_common::{ComposeOperator, SubscriberNotification};
 use rx_core_testing::prelude::*;
 
-type MapComposable = ComposeOperator<MapOperator<usize, TestError, fn(usize) -> usize, usize>>;
+type MapComposable = ComposeOperator<MapOperator<usize, MockError, fn(usize) -> usize, usize>>;
 
 fn add_10(v: usize) -> usize {
 	v + 10
@@ -10,9 +10,9 @@ fn add_10(v: usize) -> usize {
 
 #[test]
 fn should_apply_inner_operator_when_some() {
-	let destination = MockObserver::<usize, TestError>::default();
+	let destination = MockObserver::<usize, MockError>::default();
 	let notifications = destination.get_notification_collector();
-	let mut source = PublishSubject::<usize, TestError>::default();
+	let mut source = PublishSubject::<usize, MockError>::default();
 
 	let composable = Some(ComposeOperator::from(MapOperator::new(
 		add_10 as fn(usize) -> usize,
@@ -41,9 +41,9 @@ fn should_apply_inner_operator_when_some() {
 
 #[test]
 fn should_passthrough_when_none() {
-	let destination = MockObserver::<usize, TestError>::default();
+	let destination = MockObserver::<usize, MockError>::default();
 	let notifications = destination.get_notification_collector();
-	let mut source = PublishSubject::<usize, TestError>::default();
+	let mut source = PublishSubject::<usize, MockError>::default();
 
 	let composable: Option<MapComposable> = None;
 	let mut subscription = source.clone().pipe(composable).subscribe(destination);
@@ -71,7 +71,7 @@ mod contracts_none {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"option_operator_some",
 		);
 		let composable: Option<MapComposable> = None;
@@ -79,14 +79,14 @@ mod contracts_none {
 		harness.subscribe_to(observable);
 
 		harness.source().next(1);
-		harness.source().error(TestError);
+		harness.source().error(MockError);
 
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"option_operator_some",
 		);
 		let composable: Option<MapComposable> = None;
@@ -100,7 +100,7 @@ mod contracts_none {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"option_operator_some",
 		);
 		let composable: Option<MapComposable> = None;
@@ -118,7 +118,7 @@ mod contracts_some {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"option_operator_none",
 		);
 		let composable = Some(ComposeOperator::from(MapOperator::new(
@@ -128,14 +128,14 @@ mod contracts_some {
 		harness.subscribe_to(observable);
 
 		harness.source().next(1);
-		harness.source().error(TestError);
+		harness.source().error(MockError);
 
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"option_operator_none",
 		);
 		let composable = Some(ComposeOperator::from(MapOperator::new(
@@ -151,7 +151,7 @@ mod contracts_some {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"option_operator_none",
 		);
 		let composable = Some(ComposeOperator::from(MapOperator::new(

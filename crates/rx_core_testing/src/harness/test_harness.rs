@@ -13,7 +13,7 @@ use rx_core_macro_observable_derive::RxObservable;
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 use crate::{
-	MockObserver, NotificationCollector, NotificationCollectorState, TeardownTracker, TestError,
+	MockError, MockObserver, NotificationCollector, NotificationCollectorState, TeardownTracker,
 	TestSubject, TrackedTeardownSubscriptionExtension,
 };
 
@@ -25,7 +25,7 @@ const TEST_HARNESS_MISSING_TRACKER_SUBSCRIPTION: &str =
 	"subscription teardown tracker does not exist, forgot to";
 
 #[derive_where(Debug; Source::Out, Source::OutError, FinalOut, FinalOutError)]
-pub struct TestHarness<Source, FinalOut = usize, FinalOutError = TestError>
+pub struct TestHarness<Source, FinalOut = usize, FinalOutError = MockError>
 where
 	Source: Observable,
 	FinalOut: Signal + Clone,

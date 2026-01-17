@@ -86,10 +86,10 @@ mod contracts {
 	fn rx_contract_closed_after_error() {
 		let (teardown_error, tracker_error) =
 			Teardown::tracked("fn_observer_contract_error_callback");
-		let mut subscription = throw(TestError).subscribe(FnObserver::new(
+		let mut subscription = throw(MockError).subscribe(FnObserver::new(
 			|_next: Never| {},
-			move |error: TestError| {
-				assert_eq!(error, TestError);
+			move |error: MockError| {
+				assert_eq!(error, MockError);
 				teardown_error.execute();
 			},
 			|| {},

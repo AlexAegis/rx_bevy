@@ -41,7 +41,7 @@ mod contracts {
 	#[should_panic]
 	fn rx_contract_closed_after_error() {
 		mute_panic(move || {
-			let mut subscription = throw(TestError).subscribe(NoopObserver::default());
+			let mut subscription = throw(MockError).subscribe(NoopObserver::default());
 			let teardown = subscription.add_tracked_teardown("noop_contract_error");
 
 			teardown.assert_was_torn_down();

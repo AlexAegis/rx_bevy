@@ -180,7 +180,7 @@ mod contracts {
 	fn rx_contract_closed_after_error() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"fallback_when_silent",
 		);
 
@@ -189,8 +189,8 @@ mod contracts {
 			.fallback_when_silent(|_, _, value| value, scheduler.clone());
 		harness.subscribe_to(observable);
 		harness.source().next(1);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		executor.tick(Duration::from_millis(100));
 		assert!(executor.is_empty(), "rx_verify_scheduler_is_empty");
@@ -200,7 +200,7 @@ mod contracts {
 	fn rx_contract_closed_after_complete() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"fallback_when_silent",
 		);
 
@@ -221,7 +221,7 @@ mod contracts {
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
-		let mut harness = TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new(
+		let mut harness = TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new(
 			"fallback_when_silent",
 		);
 

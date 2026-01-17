@@ -134,19 +134,19 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_error() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("on_subscribe");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("on_subscribe");
 		let observable = harness
 			.create_harness_observable()
 			.on_subscribe(|dest| dest.next(1));
 		harness.subscribe_to(observable);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("on_subscribe");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("on_subscribe");
 		let observable = harness
 			.create_harness_observable()
 			.on_subscribe(|dest| dest.next(1));
@@ -158,7 +158,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("on_subscribe");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("on_subscribe");
 		let observable = harness
 			.create_harness_observable()
 			.on_subscribe(|dest| dest.next(1));

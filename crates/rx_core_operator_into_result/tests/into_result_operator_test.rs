@@ -102,7 +102,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_complete() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, Result<usize, TestError>, Never>::new(
+			TestHarness::<TestSubject<usize, MockError>, Result<usize, MockError>, Never>::new(
 				"into_result",
 			);
 		let observable = harness.create_harness_observable().into_result();
@@ -115,7 +115,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, Result<usize, TestError>, Never>::new(
+			TestHarness::<TestSubject<usize, MockError>, Result<usize, MockError>, Never>::new(
 				"into_result",
 			);
 		let observable = harness.create_harness_observable().into_result();

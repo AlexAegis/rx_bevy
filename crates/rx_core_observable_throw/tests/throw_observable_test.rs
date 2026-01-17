@@ -24,20 +24,20 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_error() {
 		let mut harness =
-			TestHarness::<_, Never, TestError>::new_with_source("throw", throw(TestError));
+			TestHarness::<_, Never, MockError>::new_with_source("throw", throw(MockError));
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
-			TestHarness::<_, Never, TestError>::new_with_source("throw", throw(TestError));
+			TestHarness::<_, Never, MockError>::new_with_source("throw", throw(MockError));
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
 		// `throw` errors immediately on subscribe; unsubscribe after is a no-op on a closed subscription.
 		harness.get_subscription_mut().unsubscribe();
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 }

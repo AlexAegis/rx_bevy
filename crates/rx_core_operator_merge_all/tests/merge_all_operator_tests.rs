@@ -419,9 +419,9 @@ mod contracts {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 		let mut harness = TestHarness::<
-			TestSubject<ErasedObservable<usize, TestError>, TestError>,
+			TestSubject<ErasedObservable<usize, MockError>, MockError>,
 			usize,
-			TestError,
+			MockError,
 		>::new("merge_all");
 
 		let observable = harness
@@ -444,11 +444,11 @@ mod contracts {
 			.finalize(move || {
 				source_unsub.fetch_add(1, Ordering::Relaxed);
 			})
-			.map_error(|_never| TestError)
+			.map_error(|_never| MockError)
 			.erase(),
 		);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		assert_eq!(inner_unsubscribed.load(Ordering::Relaxed), 1);
 	}
@@ -460,9 +460,9 @@ mod contracts {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 		let mut harness = TestHarness::<
-			TestSubject<ErasedObservable<usize, TestError>, TestError>,
+			TestSubject<ErasedObservable<usize, MockError>, MockError>,
 			usize,
-			TestError,
+			MockError,
 		>::new("merge_all");
 
 		let observable = harness
@@ -486,7 +486,7 @@ mod contracts {
 			.finalize(move || {
 				source_unsub.fetch_add(1, Ordering::Relaxed);
 			})
-			.map_error(|_never| TestError)
+			.map_error(|_never| MockError)
 			.erase(),
 		);
 		harness.source().complete();
@@ -502,9 +502,9 @@ mod contracts {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 		let mut harness = TestHarness::<
-			TestSubject<ErasedObservable<usize, TestError>, TestError>,
+			TestSubject<ErasedObservable<usize, MockError>, MockError>,
 			usize,
-			TestError,
+			MockError,
 		>::new("merge_all");
 
 		let observable = harness
@@ -527,7 +527,7 @@ mod contracts {
 			.finalize(move || {
 				source_unsub.fetch_add(1, Ordering::Relaxed);
 			})
-			.map_error(|_never| TestError)
+			.map_error(|_never| MockError)
 			.erase(),
 		);
 		harness.get_subscription_mut().unsubscribe();

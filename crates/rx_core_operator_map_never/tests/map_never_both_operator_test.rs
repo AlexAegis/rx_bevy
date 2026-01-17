@@ -7,8 +7,8 @@ mod compose {
 	#[test]
 	fn should_compose() {
 		let mut harness =
-			TestHarness::<TestSubject<Never, Never>, usize, TestError>::new("map_never (both)");
-		let composed = compose_operator::<Never, Never>().map_never_both::<usize, TestError>();
+			TestHarness::<TestSubject<Never, Never>, usize, MockError>::new("map_never (both)");
+		let composed = compose_operator::<Never, Never>().map_never_both::<usize, MockError>();
 		let observable = harness.create_harness_observable().pipe(composed);
 		harness.subscribe_to(observable);
 		harness.get_subscription_mut().unsubscribe();
@@ -24,7 +24,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_complete() {
 		let mut harness =
-			TestHarness::<TestSubject<Never, Never>, usize, TestError>::new("map_never (both)");
+			TestHarness::<TestSubject<Never, Never>, usize, MockError>::new("map_never (both)");
 		let observable = harness.create_harness_observable().map_never_both();
 		harness.subscribe_to(observable);
 		harness.source().complete();
@@ -34,7 +34,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
-			TestHarness::<TestSubject<Never, Never>, usize, TestError>::new("map_never (both)");
+			TestHarness::<TestSubject<Never, Never>, usize, MockError>::new("map_never (both)");
 		let observable = harness.create_harness_observable().map_never_both();
 		harness.subscribe_to(observable);
 		harness.get_subscription_mut().unsubscribe();

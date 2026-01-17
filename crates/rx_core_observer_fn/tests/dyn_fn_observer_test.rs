@@ -135,13 +135,13 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_error() {
 		let (teardown, tracker) = Teardown::tracked("dyn_fn_observer_contract_error_callback");
-		let dyn_fn_observer = DynFnObserver::<Never, TestError>::default()
+		let dyn_fn_observer = DynFnObserver::<Never, MockError>::default()
 			.with_next(|_next| {})
 			.with_error(move |error| {
-				assert_eq!(error, TestError);
+				assert_eq!(error, MockError);
 				teardown.execute();
 			});
-		let mut subscription = throw(TestError).subscribe(dyn_fn_observer);
+		let mut subscription = throw(MockError).subscribe(dyn_fn_observer);
 		let teardown = subscription.add_tracked_teardown("dyn_fn_observer_contract_error");
 
 		teardown.assert_was_torn_down();

@@ -32,7 +32,7 @@ mod contracts {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 		let mut harness =
-			TestHarness::<TestSubject<AdsrTrigger, TestError>, AdsrSignal, TestError>::new("adsr");
+			TestHarness::<TestSubject<AdsrTrigger, MockError>, AdsrSignal, MockError>::new("adsr");
 
 		let observable = harness
 			.create_harness_observable()
@@ -43,9 +43,9 @@ mod contracts {
 			activated: true,
 			envelope_changes: None,
 		});
-		harness.source().error(TestError);
+		harness.source().error(MockError);
 
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 		assert!(executor.is_empty());
 	}
 

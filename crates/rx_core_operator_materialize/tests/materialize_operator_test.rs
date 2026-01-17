@@ -123,14 +123,14 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_error() {
 		let mut harness = TestHarness::<
-			TestSubject<usize, TestError>,
-			ObserverNotification<usize, TestError>,
+			TestSubject<usize, MockError>,
+			ObserverNotification<usize, MockError>,
 			Never,
 		>::new("materialize");
 		let observable = harness.create_harness_observable().materialize();
 		harness.subscribe_to(observable);
 		harness.source().next(1);
-		harness.source().error(TestError);
+		harness.source().error(MockError);
 		harness.assert_terminal_notification(SubscriberNotification::Complete);
 	}
 

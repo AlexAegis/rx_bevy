@@ -100,15 +100,15 @@ mod contracts {
 		let tap_notification_collector = NotificationCollector::<usize>::default();
 		let tap_notification_collector_clone = tap_notification_collector.clone();
 
-		let mut harness = TestHarness::<_, usize, TestError>::new("tap_next");
+		let mut harness = TestHarness::<_, usize, MockError>::new("tap_next");
 		let observable = harness.create_harness_observable().tap_next(move |next| {
 			tap_notification_collector_clone
 				.lock()
 				.push(SubscriberNotification::Next(*next))
 		});
 		harness.subscribe_to(observable);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 
 		tap_notification_collector
 			.lock()
@@ -120,7 +120,7 @@ mod contracts {
 		let tap_notification_collector = NotificationCollector::<usize>::default();
 		let tap_notification_collector_clone = tap_notification_collector.clone();
 
-		let mut harness = TestHarness::<_, usize, TestError>::new("tap_next");
+		let mut harness = TestHarness::<_, usize, MockError>::new("tap_next");
 		let observable = harness.create_harness_observable().tap_next(move |next| {
 			tap_notification_collector_clone
 				.lock()
@@ -140,7 +140,7 @@ mod contracts {
 		let tap_notification_collector = NotificationCollector::<usize>::default();
 		let tap_notification_collector_clone = tap_notification_collector.clone();
 
-		let mut harness = TestHarness::<_, usize, TestError>::new("tap_next");
+		let mut harness = TestHarness::<_, usize, MockError>::new("tap_next");
 		let observable = harness.create_harness_observable().tap_next(move |next| {
 			tap_notification_collector_clone
 				.lock()

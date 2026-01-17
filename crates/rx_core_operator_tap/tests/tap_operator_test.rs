@@ -151,19 +151,19 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_error() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("tap");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("tap");
 		let observable = harness
 			.create_harness_observable()
 			.tap(MockObserver::default());
 		harness.subscribe_to(observable);
-		harness.source().error(TestError);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.source().error(MockError);
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("tap");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("tap");
 		let observable = harness
 			.create_harness_observable()
 			.tap(MockObserver::default());
@@ -175,7 +175,7 @@ mod contracts {
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
-			TestHarness::<TestSubject<usize, TestError>, usize, TestError>::new("tap");
+			TestHarness::<TestSubject<usize, MockError>, usize, MockError>::new("tap");
 		let observable = harness
 			.create_harness_observable()
 			.tap(MockObserver::default());

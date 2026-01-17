@@ -41,15 +41,15 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let mut harness = TestHarness::<_, usize, TestError>::new_with_source(
+		let mut harness = TestHarness::<_, usize, MockError>::new_with_source(
 			"create",
-			create_observable::<_, TestError, _>(|destination| {
-				destination.error(TestError);
+			create_observable::<_, MockError, _>(|destination| {
+				destination.error(MockError);
 			}),
 		);
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
-		harness.assert_terminal_notification(SubscriberNotification::Error(TestError));
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
 	}
 
 	#[test]

@@ -24,7 +24,7 @@ fn should_complete_with_just() {
 #[test]
 fn should_error_with_throw() {
 	let mut subscription =
-		throw(TestError).subscribe(PrintObserver::<Never, TestError>::new("print"));
+		throw(MockError).subscribe(PrintObserver::<Never, MockError>::new("print"));
 	let teardown = subscription.add_tracked_teardown("print");
 
 	teardown.assert_was_torn_down();
@@ -45,7 +45,7 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_error() {
-		let mut subscription = throw(TestError).subscribe(PrintObserver::new("print"));
+		let mut subscription = throw(MockError).subscribe(PrintObserver::new("print"));
 		let teardown = subscription.add_tracked_teardown("print");
 
 		teardown.assert_was_torn_down();
