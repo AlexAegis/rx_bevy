@@ -4,7 +4,7 @@ use std::sync::{
 };
 
 use rx_core::prelude::*;
-use rx_core_testing::mute_panic;
+use rx_core_testing::{mute_panic, prelude::*};
 
 fn setup() -> (
 	DynFnObserver<usize, &'static str>,
@@ -113,4 +113,53 @@ fn should_call_the_complete_fn_when_completed() {
 	assert!(!completion_buffer.load(Ordering::Relaxed));
 	dyn_fn_observer.complete();
 	assert!(completion_buffer.load(Ordering::Relaxed))
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let (teardown, tracker) = Teardown::tracked("dyn_fn_observer_contract_complete_callback");
+		let dyn_fn_observer = DynFnObserver::<usize, Never>::default()
+			.with_next(|_next| {})
+			.with_complete(move || teardown.execute());
+		let mut subscription = of(1usize).subscribe(dyn_fn_observer);
+		let teardown = subscription.add_tracked_teardown("dyn_fn_observer_contract_complete");
+
+		teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+		tracker.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let (teardown, tracker) = Teardown::tracked("dyn_fn_observer_contract_error_callback");
+		let dyn_fn_observer = DynFnObserver::<Never, TestError>::default()
+			.with_next(|_next| {})
+			.with_error(move |error| {
+				assert_eq!(error, TestError);
+				teardown.execute();
+			});
+		let mut subscription = throw(TestError).subscribe(dyn_fn_observer);
+		let teardown = subscription.add_tracked_teardown("dyn_fn_observer_contract_error");
+
+		teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+		tracker.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let dyn_fn_observer = DynFnObserver::<usize, Never>::default()
+			.with_next(|_next| {})
+			.with_complete(|| {});
+		let mut subscription = of(1usize).subscribe(dyn_fn_observer);
+		let teardown = subscription.add_tracked_teardown("dyn_fn_observer_contract_unsubscribe");
+
+		subscription.unsubscribe();
+
+		teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+	}
 }

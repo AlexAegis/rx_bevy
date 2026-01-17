@@ -4,6 +4,7 @@ use std::sync::{
 };
 
 use rx_core::prelude::*;
+use rx_core_testing::prelude::*;
 
 fn setup() -> (
 	FnObserver<usize, &'static str, impl FnMut(usize), impl FnOnce(&'static str), impl FnOnce()>,
@@ -58,4 +59,60 @@ fn should_call_the_complete_fn_when_completed() {
 	assert!(!completion_buffer.load(Ordering::Relaxed));
 	fn_observer.complete();
 	assert!(completion_buffer.load(Ordering::Relaxed))
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let (teardown_complete, tracker_complete) =
+			Teardown::tracked("fn_observer_contract_complete_callback");
+		let mut subscription = of(1usize).subscribe(FnObserver::new(
+			|_next: usize| {},
+			|_error: Never| {},
+			move || {
+				teardown_complete.execute();
+			},
+		));
+		let teardown = subscription.add_tracked_teardown("fn_observer_contract_complete");
+
+		teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+		tracker_complete.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let (teardown_error, tracker_error) =
+			Teardown::tracked("fn_observer_contract_error_callback");
+		let mut subscription = throw(TestError).subscribe(FnObserver::new(
+			|_next: Never| {},
+			move |error: TestError| {
+				assert_eq!(error, TestError);
+				teardown_error.execute();
+			},
+			|| {},
+		));
+		let teardown = subscription.add_tracked_teardown("fn_observer_contract_error");
+
+		teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+		tracker_error.assert_was_torn_down();
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut subscription = never().subscribe(FnObserver::new(
+			|_next: Never| {},
+			|_error: Never| {},
+			move || {},
+		));
+		let teardown = subscription.add_tracked_teardown("fn_observer_contract_unsubscribe");
+
+		subscription.unsubscribe();
+
+		teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+	}
 }
