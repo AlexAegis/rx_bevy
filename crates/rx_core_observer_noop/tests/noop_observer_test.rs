@@ -1,4 +1,5 @@
 use rx_core::prelude::*;
+use rx_core_testing::prelude::*;
 
 #[test]
 fn nothing_should_happen_when_nexted() {
@@ -22,4 +23,40 @@ fn should_panic_when_errored_in_dev_mode() {
 	let mut noop_observer = NoopObserver::<usize, &'static str>::default();
 
 	mute_panic(|| noop_observer.error("error"));
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let mut subscription = of(1usize).subscribe(NoopObserver::default());
+		let teardown = subscription.add_tracked_teardown("noop_contract_complete");
+
+		teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+	}
+
+	#[test]
+	#[should_panic]
+	fn rx_contract_closed_after_error() {
+		mute_panic(move || {
+			let mut subscription = throw(TestError).subscribe(NoopObserver::default());
+			let teardown = subscription.add_tracked_teardown("noop_contract_error");
+
+			teardown.assert_was_torn_down();
+			assert!(subscription.is_closed());
+		});
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let mut subscription = of(1usize).subscribe(NoopObserver::default());
+		let teardown = subscription.add_tracked_teardown("noop_contract_unsubscribe");
+
+		subscription.unsubscribe();
+
+		teardown.assert_was_torn_down();
+		assert!(subscription.is_closed());
+	}
 }
