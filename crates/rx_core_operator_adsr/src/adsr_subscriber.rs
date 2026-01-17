@@ -72,7 +72,10 @@ where
 				}
 
 				let next = {
-					let mut state = shared_state_clone.lock().unwrap_or_else(|p| p.into_inner());
+					let Ok(mut state) = shared_state_clone.lock() else {
+						return WorkResult::Done;
+					};
+
 					let now = tick.now();
 					let delta = now - last_now;
 					last_now = now;
@@ -108,7 +111,9 @@ where
 
 				if let Some(next) = next {
 					destination_lock.next(next);
-					destination_lock.complete();
+					if destination_lock.is_closed() {
+						return WorkResult::Done;
+					}
 				}
 
 				WorkResult::Pending

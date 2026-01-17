@@ -105,6 +105,16 @@ where
 		}
 	}
 
+	/// Returns the `n`th notification, asserting it is a `Next` and yielding its value.
+	#[inline]
+	#[track_caller]
+	pub fn nth_notification_as_next(&self, n: usize) -> &In {
+		match self.nth_notification(n) {
+			SubscriberNotification::Next(next) => next,
+			_ => panic!("Notification at index {n} is not Next"),
+		}
+	}
+
 	pub fn try_nth_notification(&self, n: usize) -> Option<&SubscriberNotification<In, InError>> {
 		if n < self.observed_notifications.len() {
 			self.observed_notifications.get(n)
@@ -341,6 +351,53 @@ where
 		);
 	}
 
+	#[track_caller]
+	pub fn assert_nth_notification(
+		&self,
+		assert_message_prefix: &str,
+		index: usize,
+		expected_notification: SubscriberNotification<In, InError>,
+	) where
+		In: PartialEq + Debug,
+		InError: PartialEq + Debug,
+	{
+		let Some(actual) = self.try_nth_notification(index) else {
+			panic!("{assert_message_prefix} - Notification at index {index} does not exist!");
+		};
+
+		assert_eq!(
+			actual, &expected_notification,
+			"{assert_message_prefix} - Notification at index {index} is not correct! (left is actual, right is the expected)"
+		);
+	}
+
+	/// Asserts that the final observed notification equals the expected value and that
+	/// no additional notifications follow it.
+	#[track_caller]
+	pub fn assert_last_notification(
+		&self,
+		assert_message_prefix: &str,
+		expected_notification: SubscriberNotification<In, InError>,
+	) where
+		In: PartialEq + Debug,
+		InError: PartialEq + Debug,
+	{
+		let len = self.len();
+		assert!(
+			len > 0,
+			"{assert_message_prefix} - No notifications were observed!"
+		);
+
+		let last_index = len - 1;
+		self.assert_nth_notification(assert_message_prefix, last_index, expected_notification);
+
+		let extra_notification = self.try_nth_notification(len);
+		assert!(
+			extra_notification.is_none(),
+			"{assert_message_prefix} - Expected no notification after index {last_index}, found: {extra_notification:?}"
+		);
+	}
+
 	/// Asserts all notifications from the given offset are matching the
 	/// array of expected notifications, and optionally that there are no more
 	/// notifications after them.
@@ -357,11 +414,7 @@ where
 	{
 		let mut index = offset;
 		for expected_notification in expected_notifications {
-			assert_eq!(
-				self.try_nth_notification(index),
-				Some(&expected_notification),
-				"{assert_message_prefix} - Notification is not correct at index {index} (left is actual, right is the expected)"
-			);
+			self.assert_nth_notification(assert_message_prefix, index, expected_notification);
 			index += 1;
 		}
 
