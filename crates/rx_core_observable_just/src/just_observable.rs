@@ -5,7 +5,7 @@ use rx_core_subscription_inert::InertSubscription;
 /// # [JustObservable]
 ///
 /// Emits a single value then immediately completes
-#[derive(RxObservable, Clone, Debug)]
+#[derive(RxObservable, Clone, Debug, Default)]
 #[rx_out(Out)]
 #[rx_out_error(Never)]
 pub struct JustObservable<Out>

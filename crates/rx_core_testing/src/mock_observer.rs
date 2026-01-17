@@ -106,3 +106,15 @@ where
 		self.teardown.add_teardown(teardown);
 	}
 }
+
+impl<In, InError> Drop for MockObserver<In, InError>
+where
+	In: Signal,
+	InError: Signal,
+{
+	fn drop(&mut self) {
+		if !self.is_closed() {
+			self.unsubscribe();
+		}
+	}
+}

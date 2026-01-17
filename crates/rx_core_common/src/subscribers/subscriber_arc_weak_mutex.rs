@@ -1,11 +1,9 @@
 use std::sync::{Mutex, Weak};
 
-use disqualified::ShortName;
-
 use crate::{
-	Observable, ObservableOutput, ObserverInput, ObserverUpgradesToSelf, PrimaryCategorySubscriber,
-	RxObserver, SharedDestination, Subscriber, SubscriptionLike, Teardown, TeardownCollection,
-	WithPrimaryCategory,
+	Observable, ObservableOutput, ObserverInput, ObserverUpgradesToSelf, OptionSubscription,
+	PrimaryCategorySubscriber, RxObserver, SharedDestination, Subscriber, SubscriptionLike,
+	Teardown, TeardownCollection, WithPrimaryCategory,
 };
 
 impl<Destination> WithPrimaryCategory for Weak<Mutex<Destination>>
@@ -160,7 +158,7 @@ where
 	O: Observable,
 {
 	type Subscription<Destination>
-		= O::Subscription<Destination>
+		= OptionSubscription<O::Subscription<Destination>>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 
@@ -177,19 +175,16 @@ where
 		let destination = destination.upgrade();
 
 		let Some(upgraded) = self.upgrade() else {
-			panic!(
-				"Tried to subscribe to a weak reference of observabe {}. But it was dropped!",
-				ShortName::of::<O>()
-			)
+			return OptionSubscription::new(None);
 		};
 
-		match upgraded.lock() {
+		OptionSubscription::new(Some(match upgraded.lock() {
 			Ok(mut lock) => lock.subscribe(destination),
 			Err(poison_error) => {
 				let mut subscription = poison_error.into_inner().subscribe(destination);
 				subscription.unsubscribe();
 				subscription
 			}
-		}
+		}))
 	}
 }

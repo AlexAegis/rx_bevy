@@ -1,5 +1,7 @@
 use derive_where::derive_where;
-use rx_core_common::{ComposableOperator, RxObserver, Subscriber};
+use rx_core_common::{
+	ComposableOperator, ObserverSubscriber, RxObserver, SharedSubscriber, Subscriber,
+};
 use rx_core_macro_operator_derive::RxOperator;
 
 use crate::TapSubscriber;
@@ -12,28 +14,30 @@ use crate::TapSubscriber;
 #[rx_out_error(TapDestination::InError)]
 pub struct TapOperator<TapDestination>
 where
-	TapDestination: 'static + Clone + RxObserver + Send + Sync,
+	TapDestination: 'static + RxObserver + Send + Sync,
 	TapDestination::In: Clone,
 	TapDestination::InError: Clone,
 {
 	#[derive_where(skip(Debug))]
-	tap_destination: TapDestination,
+	tap_destination: SharedSubscriber<ObserverSubscriber<TapDestination>>,
 }
 
 impl<TapDestination> TapOperator<TapDestination>
 where
-	TapDestination: 'static + Clone + RxObserver + Send + Sync,
+	TapDestination: 'static + RxObserver + Send + Sync,
 	TapDestination::In: Clone,
 	TapDestination::InError: Clone,
 {
 	pub fn new(tap_destination: TapDestination) -> Self {
-		Self { tap_destination }
+		Self {
+			tap_destination: SharedSubscriber::new(ObserverSubscriber::new(tap_destination)),
+		}
 	}
 }
 
 impl<TapDestination> ComposableOperator for TapOperator<TapDestination>
 where
-	TapDestination: 'static + Clone + RxObserver + Send + Sync,
+	TapDestination: 'static + RxObserver + Send + Sync,
 	TapDestination::In: Clone,
 	TapDestination::InError: Clone,
 {
