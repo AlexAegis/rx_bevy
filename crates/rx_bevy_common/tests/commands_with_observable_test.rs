@@ -45,6 +45,58 @@ fn commands_with_observable_spawns_and_despawns_subscription_entity() {
 }
 
 #[test]
+fn observable_with_commands_spawns_and_despawns_subscription_entity() {
+	let mut app = App::new();
+	app.init_resource::<Time<Virtual>>();
+	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+	let scheduler_handle = {
+		let schedule = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+			.get_mut(app.world_mut());
+		schedule.handle()
+	};
+
+	let destination = MockObserver::<usize>::default();
+	let notifications = destination.get_notification_collector();
+	let mut subject = PublishSubject::<usize>::default();
+
+	let commands = app.world_mut().commands();
+	let mut observable_with_commands = subject.clone().with_commands(commands, scheduler_handle);
+
+	let mut subscription = observable_with_commands.subscribe(destination);
+	let (teardown, tracker) = Teardown::tracked("observable_with_commands_teardown_on_complete");
+	subscription.add(teardown);
+	let subscription_entity = subscription.entity();
+
+	subject.next(42);
+	app.update();
+
+	assert!(
+		app.world().get_entity(subscription_entity).is_ok(),
+		"subscription entity should exist while the observable is active",
+	);
+
+	subject.complete();
+	app.update();
+
+	tracker.assert_was_torn_down();
+	assert!(
+		app.world().get_entity(subscription_entity).is_err(),
+		"subscription entity should despawn after the observable completes",
+	);
+
+	notifications.lock().assert_notifications(
+		"observable_with_commands - completion",
+		0,
+		[
+			SubscriberNotification::Next(42),
+			SubscriberNotification::Complete,
+		],
+		true,
+	);
+}
+
+#[test]
 fn commands_with_observable_despawns_after_manual_unsubscribe() {
 	let mut app = App::new();
 	app.init_resource::<Time<Virtual>>();
