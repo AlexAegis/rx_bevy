@@ -162,3 +162,114 @@ fn entity_commands_can_subscribe_destination_directly() {
 		true,
 	);
 }
+
+#[test]
+fn observable_entity_commands_can_subscribe_to_destination_entity() {
+	let mut app = App::new();
+	app.init_resource::<Time<Virtual>>();
+	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+	let notifications = NotificationCollector::default();
+
+	let mut subject = PublishSubject::<usize>::default();
+	let observable_entity = app.world_mut().spawn(subject.clone().into_component()).id();
+
+	let destination_entity = app
+		.world_mut()
+		.spawn_empty()
+		.observe(collect_notifications_into::<usize, Never>(
+			notifications.clone(),
+		))
+		.id();
+
+	let scheduler_handle = {
+		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+			.get_mut(app.world_mut());
+		scheduler.handle()
+	};
+
+	let subscription_entity = app
+		.world_mut()
+		.commands()
+		.entity(observable_entity)
+		.subscribe::<usize, Never>(destination_entity, scheduler_handle);
+
+	app.update();
+
+	assert!(
+		app.world().get_entity(subscription_entity).is_ok(),
+		"subscription entity should be spawned when subscribing with destination entity",
+	);
+
+	subject.next(1);
+	app.update();
+	subject.next(2);
+	app.update();
+
+	app.world_mut().despawn(subscription_entity);
+	app.update();
+
+	subject.next(99);
+	app.update();
+
+	notifications.lock().assert_notifications(
+		"observable_entity_commands_subscribe",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+		],
+		true,
+	);
+}
+
+#[test]
+fn observable_entity_commands_handle_immediate_completion() {
+	let mut app = App::new();
+	app.init_resource::<Time<Virtual>>();
+	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+	let notifications = NotificationCollector::default();
+
+	let observable_entity = app
+		.world_mut()
+		.spawn(JustObservable::new(7_usize).into_component())
+		.id();
+
+	let destination_entity = app
+		.world_mut()
+		.spawn_empty()
+		.observe(collect_notifications_into::<usize, Never>(
+			notifications.clone(),
+		))
+		.id();
+
+	let scheduler_handle = {
+		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+			.get_mut(app.world_mut());
+		scheduler.handle()
+	};
+
+	let subscription_entity = app
+		.world_mut()
+		.commands()
+		.entity(observable_entity)
+		.subscribe::<usize, Never>(destination_entity, scheduler_handle);
+
+	app.update();
+
+	assert!(
+		app.world().get_entity(subscription_entity).is_err(),
+		"subscription entity should despawn after immediate completion",
+	);
+
+	notifications.lock().assert_notifications(
+		"observable_entity_commands_immediate_completion",
+		0,
+		[
+			SubscriberNotification::Next(7),
+			SubscriberNotification::Complete,
+		],
+		true,
+	);
+}
