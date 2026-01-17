@@ -6,6 +6,7 @@ use std::{
 use rx_core::prelude::*;
 use rx_core_common::SubscriberNotification;
 use rx_core_testing::prelude::*;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 #[test]
 fn forwards_next_through_rw_lock() {
@@ -16,7 +17,7 @@ fn forwards_next_through_rw_lock() {
 	subscriber.next(1);
 
 	notifications.lock().assert_notifications(
-		"arc_rw_lock_next",
+		"arc_rw_lock",
 		0,
 		[SubscriberNotification::Next(1)],
 		true,
@@ -32,7 +33,7 @@ fn forwards_error_through_rw_lock() {
 	subscriber.error(MockError);
 
 	notifications.lock().assert_notifications(
-		"arc_rw_lock_error",
+		"arc_rw_lock",
 		0,
 		[SubscriberNotification::Error(MockError)],
 		true,
@@ -48,7 +49,7 @@ fn forwards_complete_through_rw_lock() {
 	subscriber.complete();
 
 	notifications.lock().assert_notifications(
-		"arc_rw_lock_complete",
+		"arc_rw_lock",
 		0,
 		[SubscriberNotification::Complete],
 		true,
@@ -64,7 +65,7 @@ fn forwards_unsubscribe_through_rw_lock() {
 	subscriber.unsubscribe();
 
 	notifications.lock().assert_notifications(
-		"arc_rw_lock_unsubscribe",
+		"arc_rw_lock",
 		0,
 		[SubscriberNotification::Unsubscribe],
 		true,
@@ -81,7 +82,7 @@ fn forwards_subscription_calls() {
 	let subscription = shared_subject.subscribe(destination);
 
 	notifications.lock().assert_notifications(
-		"arc_rw_lock_subscribe",
+		"arc_rw_lock",
 		0,
 		[
 			SubscriberNotification::Next(0),
@@ -115,7 +116,7 @@ mod when_poisoned {
 		poisoned.next(99);
 
 		notifications.lock().assert_notifications(
-			"arc_rw_lock_poison",
+			"arc_rw_lock",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -144,7 +145,7 @@ mod when_poisoned {
 		poisoned.error(MockError);
 
 		notifications.lock().assert_notifications(
-			"arc_rw_lock_poison_error",
+			"arc_rw_lock",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -173,7 +174,7 @@ mod when_poisoned {
 		poisoned.complete();
 
 		notifications.lock().assert_notifications(
-			"arc_rw_lock_poison_complete",
+			"arc_rw_lock",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -202,7 +203,7 @@ mod when_poisoned {
 		poisoned.unsubscribe();
 
 		notifications.lock().assert_notifications(
-			"arc_rw_lock_poison_unsubscribe",
+			"arc_rw_lock",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -210,5 +211,70 @@ mod when_poisoned {
 			],
 			true,
 		);
+	}
+}
+
+mod shared_destination {
+	use super::*;
+
+	#[test]
+	fn access_invokes_closure() {
+		let reported_closed = Arc::new(AtomicBool::new(false));
+		let arc_destination = Arc::new(RwLock::new(MockObserver::<usize, MockError>::default()));
+
+		let mut shared = arc_destination.clone();
+		shared.access(|destination| {
+			reported_closed.store(destination.is_closed(), Ordering::Relaxed);
+		});
+
+		assert_eq!(reported_closed.load(Ordering::Relaxed), shared.is_closed());
+	}
+
+	#[test]
+	fn access_mut_invokes_closure() {
+		let arc_destination = Arc::new(RwLock::new(MockObserver::<usize, MockError>::default()));
+
+		let mut shared = arc_destination.clone();
+		shared.access_mut(|destination| {
+			destination.unsubscribe();
+		});
+
+		assert!(arc_destination.read().unwrap().is_closed());
+	}
+
+	#[test]
+	fn add_teardown_executes_on_unsubscribe() {
+		let arc_destination = Arc::new(RwLock::new(MockObserver::<usize, MockError>::default()));
+		let mut shared = arc_destination.clone();
+		let (teardown, tracker) = Teardown::tracked("arc_rw_lock");
+
+		shared.add_teardown(teardown);
+		tracker.assert_yet_to_be_torn_down();
+
+		shared.unsubscribe();
+
+		tracker.assert_was_torn_down();
+		assert!(shared.is_closed());
+	}
+
+	#[test]
+	fn add_teardown_executes_when_poisoned() {
+		let arc_destination = Arc::new(RwLock::new(MockObserver::<usize, MockError>::default()));
+		{
+			let poisoned = arc_destination.clone();
+			let _ = panic::catch_unwind(|| {
+				let mut guard = poisoned.write().unwrap();
+				guard.next(1);
+				mute_panic(|| panic!("poison"));
+			});
+		}
+
+		let mut shared = arc_destination.clone();
+		let (teardown, tracker) = Teardown::tracked("arc_rw_lock");
+
+		shared.add_teardown(teardown);
+
+		tracker.assert_was_torn_down();
+		assert!(shared.is_closed());
 	}
 }

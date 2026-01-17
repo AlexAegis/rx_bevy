@@ -20,7 +20,7 @@ mod before_dropped {
 		weak.next(1);
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_next",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Next(1)],
 			true,
@@ -37,7 +37,7 @@ mod before_dropped {
 		weak.error(MockError);
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_error",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Error(MockError)],
 			true,
@@ -54,7 +54,7 @@ mod before_dropped {
 		weak.complete();
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_complete",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Complete],
 			true,
@@ -71,7 +71,7 @@ mod before_dropped {
 		weak.unsubscribe();
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_unsubscribe",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Unsubscribe],
 			true,
@@ -80,7 +80,7 @@ mod before_dropped {
 
 	#[test]
 	fn does_not_run_teardowns_immediately() {
-		let (teardown, tracker) = Teardown::tracked("arc_weak_mutex_teardown_while_alive");
+		let (teardown, tracker) = Teardown::tracked("arc_weak_mutex");
 		let strong = Arc::new(Mutex::new(MockObserver::<usize, MockError>::default()));
 		let mut weak = Arc::downgrade(&strong);
 
@@ -93,7 +93,7 @@ mod before_dropped {
 	fn runs_teardowns_after_drop_and_closes() {
 		let destination = MockObserver::<usize, MockError>::default();
 		let notifications = destination.get_notification_collector();
-		let (teardown, tracker) = Teardown::tracked("arc_weak_mutex_teardown_after_drop");
+		let (teardown, tracker) = Teardown::tracked("arc_weak_mutex");
 
 		let weak = {
 			let strong = Arc::new(Mutex::new(destination));
@@ -110,7 +110,7 @@ mod before_dropped {
 		assert!(weak.is_closed());
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_after_drop",
+			"arc_weak_mutex",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -144,7 +144,7 @@ mod when_poisoned {
 		weak.next(99);
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_poison_next",
+			"arc_weak_mutex",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -173,7 +173,7 @@ mod when_poisoned {
 		weak.error(MockError);
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_poison_error",
+			"arc_weak_mutex",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -202,7 +202,7 @@ mod when_poisoned {
 		weak.complete();
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_poison_complete",
+			"arc_weak_mutex",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -231,7 +231,7 @@ mod when_poisoned {
 		weak.unsubscribe();
 
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_poison_unsubscribe",
+			"arc_weak_mutex",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -258,7 +258,7 @@ mod after_dropped {
 
 		assert!(weak.is_closed());
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_after_drop_next",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Unsubscribe],
 			true,
@@ -278,7 +278,7 @@ mod after_dropped {
 
 		assert!(weak.is_closed());
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_after_drop_error",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Unsubscribe],
 			true,
@@ -298,7 +298,7 @@ mod after_dropped {
 
 		assert!(weak.is_closed());
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_after_drop_complete",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Unsubscribe],
 			true,
@@ -318,7 +318,7 @@ mod after_dropped {
 
 		assert!(weak.is_closed());
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_after_drop_unsubscribe",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Unsubscribe],
 			true,
@@ -355,10 +355,75 @@ mod after_dropped {
 
 		assert!(subscription.is_closed());
 		notifications.lock().assert_notifications(
-			"arc_weak_mutex_subscribe_missing",
+			"arc_weak_mutex",
 			0,
 			[SubscriberNotification::Unsubscribe],
 			true,
 		);
+	}
+}
+
+mod shared_destination {
+	use super::*;
+
+	#[test]
+	fn access_invokes_closure() {
+		let reported_closed = Arc::new(AtomicBool::new(false));
+		let arc_destination = Arc::new(Mutex::new(MockObserver::<usize, MockError>::default()));
+		let mut weak = Arc::downgrade(&arc_destination);
+
+		weak.access(|destination| {
+			reported_closed.store(destination.is_closed(), Ordering::Relaxed);
+		});
+
+		assert_eq!(reported_closed.load(Ordering::Relaxed), weak.is_closed());
+	}
+
+	#[test]
+	fn access_mut_invokes_closure() {
+		let arc_destination = Arc::new(Mutex::new(MockObserver::<usize, MockError>::default()));
+		let mut weak = Arc::downgrade(&arc_destination);
+
+		weak.access_mut(|destination| {
+			destination.unsubscribe();
+		});
+
+		assert!(arc_destination.lock().unwrap().is_closed());
+	}
+
+	#[test]
+	fn add_teardown_executes_on_unsubscribe() {
+		let arc_destination = Arc::new(Mutex::new(MockObserver::<usize, MockError>::default()));
+		let mut weak = Arc::downgrade(&arc_destination);
+		let (teardown, tracker) = Teardown::tracked("arc_weak_mutex");
+
+		weak.add_teardown(teardown);
+		tracker.assert_yet_to_be_torn_down();
+
+		weak.unsubscribe();
+
+		tracker.assert_was_torn_down();
+		assert!(weak.is_closed());
+	}
+
+	#[test]
+	fn add_teardown_executes_when_poisoned() {
+		let arc_destination = Arc::new(Mutex::new(MockObserver::<usize, MockError>::default()));
+		{
+			let poisoned = arc_destination.clone();
+			let _ = std::panic::catch_unwind(|| {
+				let mut guard = poisoned.lock().unwrap();
+				guard.next(1);
+				mute_panic(|| panic!("poison"));
+			});
+		}
+
+		let mut weak = Arc::downgrade(&arc_destination);
+		let (teardown, tracker) = Teardown::tracked("arc_weak_mutex");
+
+		weak.add_teardown(teardown);
+
+		tracker.assert_was_torn_down();
+		assert!(weak.is_closed());
 	}
 }
