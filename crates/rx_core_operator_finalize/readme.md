@@ -14,21 +14,15 @@ cargo run -p rx_core_operator_finalize --features example --example finalize_ope
 cargo run -p rx_core_operator_finalize --features example --example finalize_operator_unsubscribe_example
 ```
 
-````rs
-use rx_core::prelude::*;
-
-/// The finalize operators closure will only be called once per subscription!
-///
-/// Output:
-///
-/// ```sh
-/// finalize_example - next: 12
-/// finally!
-/// finalize_example - completed
-/// ```
-fn main() {
- of(12)
+```rs
+just(12)
   .finalize(|| println!("finally!"))
-  .subscribe(PrintObserver::new("finalize_example"));
-}
-````
+  .subscribe(PrintObserver::new("finalize_operator"));
+```
+
+```text
+finalize_operator - next: 12
+finalize_operator - completed
+finally!
+finalize_operator - unsubscribed
+```

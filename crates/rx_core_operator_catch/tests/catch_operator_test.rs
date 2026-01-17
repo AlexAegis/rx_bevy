@@ -13,7 +13,7 @@ mod feature {
 
 		let subscription = source
 			.clone()
-			.catch(move |_error| of(99))
+			.catch(move |_error| just(99))
 			.subscribe(destination);
 
 		notification_collector.lock().assert_is_empty("catch");
@@ -60,7 +60,7 @@ mod teardown {
 		let mut subscription = source
 			.clone()
 			.catch(move |_error| {
-				of(99).finalize(move || {
+				just(99).finalize(move || {
 					tracked_subscription.unsubscribe();
 				})
 			})
@@ -105,7 +105,7 @@ mod contracts {
 	fn rx_contract_closed_after_error() {
 		let mut harness =
 			TestHarness::<TestSubject<usize, &'static str>, usize, Never>::new("catch");
-		let observable = harness.create_harness_observable().catch(|_error| of(99));
+		let observable = harness.create_harness_observable().catch(|_error| just(99));
 		harness.subscribe_to(observable);
 		harness.source().next(1);
 		harness.source().error("error");
@@ -116,7 +116,7 @@ mod contracts {
 	fn rx_contract_closed_after_complete() {
 		let mut harness =
 			TestHarness::<TestSubject<usize, &'static str>, usize, Never>::new("catch");
-		let observable = harness.create_harness_observable().catch(|_error| of(99));
+		let observable = harness.create_harness_observable().catch(|_error| just(99));
 		harness.subscribe_to(observable);
 		harness.source().complete();
 		harness.assert_terminal_notification(SubscriberNotification::Complete);
@@ -126,7 +126,7 @@ mod contracts {
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut harness =
 			TestHarness::<TestSubject<usize, &'static str>, usize, Never>::new("catch");
-		let observable = harness.create_harness_observable().catch(|_error| of(99));
+		let observable = harness.create_harness_observable().catch(|_error| just(99));
 		harness.subscribe_to(observable);
 		harness.get_subscription_mut().unsubscribe();
 		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);

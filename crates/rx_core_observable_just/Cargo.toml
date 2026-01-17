@@ -1,6 +1,6 @@
 [package]
-name = "rx_core_observable_of"
-description = "of observable for rx_core"
+name = "rx_core_observable_just"
+description = "just observable for rx_core; emits a single value"
 version = "0.1.0"
 readme = "readme.md"
 publish = false

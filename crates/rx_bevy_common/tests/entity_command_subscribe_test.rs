@@ -74,7 +74,7 @@ fn entity_commands_can_subscribe_to_immediately_completing_observable() {
 
 	let observable_entity = app
 		.world_mut()
-		.spawn(OfObservable::new(5_usize).into_component())
+		.spawn(JustObservable::new(5_usize).into_component())
 		.id();
 
 	let destination_entity = app

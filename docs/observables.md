@@ -6,16 +6,16 @@
 
 | Observable     | Status |
 | -------------- | ------ |
-| combine_latest | ✔     |
+| combine_latest | ✔      |
 | concat         | ❌     |
-| connectable    | ✔     |
-| deferred       | ✔     |
+| connectable    | ✔      |
+| deferred       | ✔      |
 | fork_join      | ❌     |
-| interval       | ✔     |
-| iterator       | ✔     |
-| merge          | ✔     |
-| of             | ✔     |
+| interval       | ✔      |
+| iterator       | ✔      |
+| merge          | ✔      |
+| just           | ✔      |
 | partition      | ❌     |
-| pipe           | ✔     |
-| throw          | ✔     |
-| zip            | ✔     |
+| pipe           | ✔      |
+| throw          | ✔      |
+| zip            | ✔      |

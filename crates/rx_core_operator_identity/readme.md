@@ -23,9 +23,9 @@ cargo run -p rx_core_operator_identity --example identity_operator_example
 ```
 
 ```rs
-// If it would exist, this would be the same as: `of(1).identity().subscribe(...)`
+// If it would exist, this would be the same as: `just(1).identity().subscribe(...)`
 let _s = IdentityOperator::default()
-    .operate(of(1))
+    .operate(just(1))
     .subscribe(PrintObserver::new("identity_operator"));
 ```
 

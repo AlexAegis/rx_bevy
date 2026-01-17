@@ -124,7 +124,7 @@ mod contracts {
 		let dyn_fn_observer = DynFnObserver::<usize, Never>::default()
 			.with_next(|_next| {})
 			.with_complete(move || teardown.execute());
-		let mut subscription = of(1usize).subscribe(dyn_fn_observer);
+		let mut subscription = just(1usize).subscribe(dyn_fn_observer);
 		let teardown = subscription.add_tracked_teardown("dyn_fn_observer_contract_complete");
 
 		teardown.assert_was_torn_down();
@@ -154,7 +154,7 @@ mod contracts {
 		let dyn_fn_observer = DynFnObserver::<usize, Never>::default()
 			.with_next(|_next| {})
 			.with_complete(|| {});
-		let mut subscription = of(1usize).subscribe(dyn_fn_observer);
+		let mut subscription = just(1usize).subscribe(dyn_fn_observer);
 		let teardown = subscription.add_tracked_teardown("dyn_fn_observer_contract_unsubscribe");
 
 		subscription.unsubscribe();

@@ -21,7 +21,7 @@ fn commands_with_observable_spawns_and_despawns_subscription_entity() {
 
 	let mut commands = app.world_mut().commands();
 	let mut observable_with_commands =
-		commands.with_observable(OfObservable::new(3_usize), scheduler_handle);
+		commands.with_observable(JustObservable::new(3_usize), scheduler_handle);
 
 	let subscription_entity = observable_with_commands.subscribe(destination).entity();
 

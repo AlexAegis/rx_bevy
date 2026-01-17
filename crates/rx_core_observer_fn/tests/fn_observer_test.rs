@@ -68,7 +68,7 @@ mod contracts {
 	fn rx_contract_closed_after_complete() {
 		let (teardown_complete, tracker_complete) =
 			Teardown::tracked("fn_observer_contract_complete_callback");
-		let mut subscription = of(1usize).subscribe(FnObserver::new(
+		let mut subscription = just(1usize).subscribe(FnObserver::new(
 			|_next: usize| {},
 			|_error: Never| {},
 			move || {

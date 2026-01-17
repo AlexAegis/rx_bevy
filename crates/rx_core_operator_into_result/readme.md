@@ -29,15 +29,15 @@ let _s = throw("error!".to_string())
     .into_result()
     .subscribe(PrintObserver::new("into_result_operator - throw"));
 
-let _s = of(1)
+let _s = just(1)
     .into_result()
-    .subscribe(PrintObserver::new("into_result_operator - of"));
+    .subscribe(PrintObserver::new("into_result_operator - just"));
 ```
 
 ```txt
 into_result_operator - throw - next: Err("error!")
 into_result_operator - throw - unsubscribed
-into_result_operator - of - next: Ok(1)
-into_result_operator - of - completed
-into_result_operator - of - unsubscribed
+into_result_operator - just - next: Ok(1)
+into_result_operator - just - completed
+into_result_operator - just - unsubscribed
 ```

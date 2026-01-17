@@ -5,7 +5,7 @@ fn main() {
 		.map_never()
 		.subscribe(PrintObserver::<i32, &'static str>::new("map_never (next)"));
 
-	let _s = of(1)
+	let _s = just(1)
 		.map_never()
 		.subscribe(PrintObserver::<i32, &'static str>::new("map_never (error)"));
 

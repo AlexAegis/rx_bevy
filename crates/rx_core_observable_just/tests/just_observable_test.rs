@@ -6,11 +6,11 @@ fn should_emit_a_single_value_then_complete() {
 	let mock_observer = MockObserver::default();
 	let notification_collector = mock_observer.get_notification_collector();
 
-	let mut subscription = of(1).subscribe(mock_observer);
+	let mut subscription = just(1).subscribe(mock_observer);
 	subscription.unsubscribe();
 
 	notification_collector.lock().assert_notifications(
-		"of",
+		"just",
 		0,
 		[
 			SubscriberNotification::Next(1),
@@ -29,17 +29,17 @@ mod teardown {
 		let notification_collector = mock_observer.get_notification_collector();
 
 		let mut tracked_subscription = SharedSubscription::default();
-		let inner_teardown_tracker = tracked_subscription.add_tracked_teardown("of - inner");
+		let inner_teardown_tracker = tracked_subscription.add_tracked_teardown("just - inner");
 
-		let mut subscription = of(1)
+		let mut subscription = just(1)
 			.finalize(move || {
 				tracked_subscription.unsubscribe();
 			})
 			.subscribe(mock_observer);
-		let tracked_teardown = subscription.add_tracked_teardown("of - outer");
+		let tracked_teardown = subscription.add_tracked_teardown("just - outer");
 
 		notification_collector.lock().assert_notifications(
-			"of",
+			"just",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -61,7 +61,7 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let mut harness = TestHarness::<_, usize, Never>::new_with_source("of", of(1));
+		let mut harness = TestHarness::<_, usize, Never>::new_with_source("just", just(1));
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
 		harness.assert_terminal_notification(SubscriberNotification::Complete);
@@ -69,10 +69,10 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let mut harness = TestHarness::<_, usize, Never>::new_with_source("of", of(1));
+		let mut harness = TestHarness::<_, usize, Never>::new_with_source("just", just(1));
 		let observable = harness.create_harness_observable();
 		harness.subscribe_to(observable);
-		// `of` emits synchronously (next + complete); unsubscribe after that is a no-op on a closed subscription.
+		// `just` emits immediately (next + complete); unsubscribe after that is a no-op on a closed subscription.
 		harness.get_subscription_mut().unsubscribe();
 		harness.assert_terminal_notification(SubscriberNotification::Complete);
 	}

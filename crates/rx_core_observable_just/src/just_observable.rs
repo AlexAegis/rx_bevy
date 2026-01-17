@@ -2,20 +2,20 @@ use rx_core_common::{Never, Observable, RxObserver, Signal, Subscriber, Upgradea
 use rx_core_macro_observable_derive::RxObservable;
 use rx_core_subscription_inert::InertSubscription;
 
-/// # OfObservable
+/// # [JustObservable]
 ///
 /// Emits a single value then immediately completes
 #[derive(RxObservable, Clone, Debug)]
 #[rx_out(Out)]
 #[rx_out_error(Never)]
-pub struct OfObservable<Out>
+pub struct JustObservable<Out>
 where
 	Out: Signal + Clone,
 {
 	value: Out,
 }
 
-impl<Out> OfObservable<Out>
+impl<Out> JustObservable<Out>
 where
 	Out: Signal + Clone,
 {
@@ -24,7 +24,7 @@ where
 	}
 }
 
-impl<Out> Observable for OfObservable<Out>
+impl<Out> Observable for JustObservable<Out>
 where
 	Out: Signal + Clone,
 {

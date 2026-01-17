@@ -72,7 +72,7 @@ pub trait ObserverInput {
 In some places you may encounter signals referred to as notifications. The
 distinction is that notifications are the materialized form of signals.
 
-This is useful whenever you want to *materialize* all the different kinds of
+This is useful whenever you want to _materialize_ all the different kinds of
 signals of something into one value, whichever signal that may have been. For
 example when sending them as an event, or serializing them.
 
@@ -91,7 +91,7 @@ where
 ```
 
 Or as an event used in Bevy like the [SubscriberNotificationEvent](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_bevy_common/src/notification/notification_event_subscriber.rs)
-  
+
 ## Observable
 
 You may already think of Observables as things that emit signals, but that's
@@ -101,13 +101,13 @@ Observables are things that you can **subscribe** to with an **observer** as
 the **destination** of the resulting **subscription**! This resulting
 subscription is the source of signals!
 
-Therefore, an observable is more like a piece of *configuration* based on which
+Therefore, an observable is more like a piece of _configuration_ based on which
 actual subscriptions can be created.
 
 > Some observables emit their values immediately and they only return an
 > already closed "inert" subscription. For them, technically speaking, it was
 > the observer that emitted those signals. For example the
-> [`of`](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_observable_of/src/of_observable.rs)
+> [`of`](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_observable_just/src/of_observable.rs)
 > and the
 > [`iterator`](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_observable_iterator/src/iterator_observable.rs)
 > observables both complete immediately on subscription.
@@ -225,7 +225,7 @@ of it's duration.
 For example, some combination observables like `combine_latest` and `zip`
 emit values taken from **all** of their input observables, so it's impossible
 for them to emit anything until this condition is met. Once it is met, the
-subscription to them can be considered *primed*, and expected to emit values.
+subscription to them can be considered _primed_, and expected to emit values.
 
 Where priming matters is completion. If an upstream completion prevents
 priming, downstream should immediately complete too. Once primed, the condition
@@ -234,7 +234,7 @@ to complete will depend on the observable.
 ## Operators
 
 Operators themselves are similar to observables in the sense that they are
-*configurations* based on which new **observables** can be created. So they
+_configurations_ based on which new **observables** can be created. So they
 too always come in pairs, an Operator, storing the configuration, which takes
 in a source Observable through their `operate` fn and wrap them in a new
 observable!
@@ -250,7 +250,7 @@ They simply subscribe to the source once, and all they do is:
 
 - Wrap the destination into a subscriber on subscribe
 - And/Or Interact with the destination on subscribe
-  
+
   > The `start_with` and `finalize` operators don't create anything new on
   > subscribe, they only interact with the destination subscriber.
 
@@ -564,7 +564,7 @@ They do not replay however when they errored!
 
 > Not every type of value can have a sensible default, or even if they do,
 > sometimes it doesn't make sense to use it in the context! In that case, use a
-> [ReplaySubject<1, _>](#replaysubject)!
+> [ReplaySubject<1, \_>](#replaysubject)!
 
 Example:
 

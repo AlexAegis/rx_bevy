@@ -27,12 +27,12 @@ pub mod observable {
 	pub use rx_core_observable_iterator_on_tick::observable::*;
 	#[cfg(feature = "observable_join")]
 	pub use rx_core_observable_join::observable::*;
+	#[cfg(feature = "observable_just")]
+	pub use rx_core_observable_just::observable::*;
 	#[cfg(feature = "observable_merge")]
 	pub use rx_core_observable_merge::observable::*;
 	#[cfg(feature = "observable_never")]
 	pub use rx_core_observable_never::observable::*;
-	#[cfg(feature = "observable_of")]
-	pub use rx_core_observable_of::observable::*;
 	#[cfg(feature = "observable_throw")]
 	pub use rx_core_observable_throw::observable::*;
 	#[cfg(feature = "observable_timer")]
@@ -61,12 +61,12 @@ pub mod observable_fn {
 	pub use rx_core_observable_interval::observable_fn::*;
 	#[cfg(feature = "observable_join")]
 	pub use rx_core_observable_join::observable_fn::*;
+	#[cfg(feature = "observable_just")]
+	pub use rx_core_observable_just::observable_fn::*;
 	#[cfg(feature = "observable_merge")]
 	pub use rx_core_observable_merge::observable_fn::*;
 	#[cfg(feature = "observable_never")]
 	pub use rx_core_observable_never::observable_fn::*;
-	#[cfg(feature = "observable_of")]
-	pub use rx_core_observable_of::observable_fn::*;
 	#[cfg(feature = "observable_throw")]
 	pub use rx_core_observable_throw::observable_fn::*;
 	#[cfg(feature = "observable_timer")]

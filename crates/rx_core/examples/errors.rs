@@ -2,7 +2,7 @@ use rx_core::prelude::*;
 
 /// Generic operators can be passed into the pipe function
 fn main() {
-	let observable = OfObservable::<i32>::new(12);
+	let observable = JustObservable::<i32>::new(12);
 	let mut pipe = observable
 		.pipe(MapOperator::new(|n: i32| -> i32 { n * 2 }))
 		.pipe(MapOperator::new(|n: i32| -> String { n.to_string() }));

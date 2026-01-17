@@ -41,9 +41,9 @@ all_observables = [
     "observable_iterator",
     "observable_iterator_on_tick",
     "observable_join",
+    "observable_just",
     "observable_merge",
     "observable_never",
-    "observable_of",
     "observable_throw",
     "observable_timer",
     "observable_zip",
@@ -60,9 +60,9 @@ observable_interval = ["dep:rx_core_observable_interval"]
 observable_iterator = ["dep:rx_core_observable_iterator"]
 observable_iterator_on_tick = ["dep:rx_core_observable_iterator_on_tick"]
 observable_join = ["dep:rx_core_observable_join"]
+observable_just = ["dep:rx_core_observable_just"]
 observable_merge = ["dep:rx_core_observable_merge"]
 observable_never = ["dep:rx_core_observable_never"]
-observable_of = ["dep:rx_core_observable_of"]
 observable_throw = ["dep:rx_core_observable_throw"]
 observable_timer = ["dep:rx_core_observable_timer"]
 observable_zip = ["dep:rx_core_observable_zip"]
@@ -77,9 +77,9 @@ observable_fn = [
     "rx_core_observable_empty?/observable_fn",
     "rx_core_observable_interval?/observable_fn",
     "rx_core_observable_join?/observable_fn",
+    "rx_core_observable_just?/observable_fn",
     "rx_core_observable_merge?/observable_fn",
     "rx_core_observable_never?/observable_fn",
-    "rx_core_observable_of?/observable_fn",
     "rx_core_observable_throw?/observable_fn",
     "rx_core_observable_timer?/observable_fn",
     "rx_core_observable_zip?/observable_fn",
@@ -311,9 +311,9 @@ rx_core_observable_interval = { workspace = true, optional = true }
 rx_core_observable_iterator = { workspace = true, optional = true }
 rx_core_observable_iterator_on_tick = { workspace = true, optional = true }
 rx_core_observable_join = { workspace = true, optional = true }
+rx_core_observable_just = { workspace = true, optional = true }
 rx_core_observable_merge = { workspace = true, optional = true }
 rx_core_observable_never = { workspace = true, optional = true }
-rx_core_observable_of = { workspace = true, optional = true }
 rx_core_observable_throw = { workspace = true, optional = true }
 rx_core_observable_timer = { workspace = true, optional = true }
 rx_core_observable_zip = { workspace = true, optional = true }

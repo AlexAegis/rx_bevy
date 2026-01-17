@@ -30,7 +30,7 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_complete() {
-		let mut subscription = of(1usize).subscribe(NoopObserver::default());
+		let mut subscription = just(1usize).subscribe(NoopObserver::default());
 		let teardown = subscription.add_tracked_teardown("noop_contract_complete");
 
 		teardown.assert_was_torn_down();
@@ -51,7 +51,7 @@ mod contracts {
 
 	#[test]
 	fn rx_contract_closed_after_unsubscribe() {
-		let mut subscription = of(1usize).subscribe(NoopObserver::default());
+		let mut subscription = just(1usize).subscribe(NoopObserver::default());
 		let teardown = subscription.add_tracked_teardown("noop_contract_unsubscribe");
 
 		subscription.unsubscribe();

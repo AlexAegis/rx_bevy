@@ -5,7 +5,7 @@ fn main() {
 		.into_result()
 		.subscribe(PrintObserver::new("into_result_operator - throw"));
 
-	let _s = of(1)
+	let _s = just(1)
 		.into_result()
-		.subscribe(PrintObserver::new("into_result_operator - of"));
+		.subscribe(PrintObserver::new("into_result_operator - just"));
 }

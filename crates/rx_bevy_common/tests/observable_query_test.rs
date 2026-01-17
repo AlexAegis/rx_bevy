@@ -127,7 +127,7 @@ mod using_observable_component {
 
 		let observable_entity = app
 			.world_mut()
-			.spawn(OfObservable::new(7_usize).into_component())
+			.spawn(JustObservable::new(7_usize).into_component())
 			.id();
 
 		app.update();

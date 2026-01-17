@@ -96,7 +96,7 @@ mod subscribe {
 
 			let observable_entity = app
 				.world_mut()
-				.spawn(OfObservable::new(1_usize).into_component())
+				.spawn(JustObservable::new(1_usize).into_component())
 				.id();
 
 			let mut commands = app.world_mut().commands();
@@ -420,19 +420,19 @@ mod when_observable_component_is_removed {
 
 		let observable_entity = app
 			.world_mut()
-			.spawn(OfObservable::new(1_usize).into_component())
+			.spawn(JustObservable::new(1_usize).into_component())
 			.id();
 
 		app.update();
 
 		let subscribe_event_observer_satellite = **app
 			.world()
-			.get::<SubscribeObserverRef<OfObservable<usize>>>(observable_entity)
+			.get::<SubscribeObserverRef<JustObservable<usize>>>(observable_entity)
 			.expect("observable component should register its subscribe observer satellite");
 
 		app.world_mut()
 			.entity_mut(observable_entity)
-			.remove::<ObservableComponent<OfObservable<usize>>>();
+			.remove::<ObservableComponent<JustObservable<usize>>>();
 
 		app.update();
 
@@ -447,14 +447,14 @@ mod when_observable_component_is_removed {
 
 		assert!(
 			world
-				.get::<ObservableSubscriptions<OfObservable<usize>>>(observable_entity)
+				.get::<ObservableSubscriptions<JustObservable<usize>>>(observable_entity)
 				.is_none(),
 			"observable subscriptions component should be removed along with the observable",
 		);
 
 		assert!(
 			world
-				.get::<SubscribeObserverRef<OfObservable<usize>>>(observable_entity)
+				.get::<SubscribeObserverRef<JustObservable<usize>>>(observable_entity)
 				.is_none(),
 			"subscribe observer reference should be removed along with the observable",
 		);
