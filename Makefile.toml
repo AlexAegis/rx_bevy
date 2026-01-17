@@ -118,8 +118,7 @@ args = [
     "--locked",
     "--workspace",
     "--all-targets",
-    "--features",
-    "test",
+    "--all-features",
 ]
 
 [tasks.test-cargo]
@@ -127,7 +126,7 @@ description = "Test the entire workspace"
 workspace = false
 dependencies = ["setup"]
 command = "cargo"
-args = ["test", "--workspace", "--features", "test"]
+args = ["test", "--workspace", "--all-targets", "--all-features"]
 
 
 [tasks.nextest]
@@ -135,7 +134,7 @@ description = "Running tests with nextest without llvm-cov"
 workspace = false
 dependencies = ["install-nextest"]
 command = "cargo"
-args = ["nextest", "run", "--all-features", "--workspace"]
+args = ["nextest", "run", "--workspace", "--all-targets", "--all-features"]
 
 
 ### Test - Coverage
@@ -159,8 +158,9 @@ command = "cargo"
 args = [
     "llvm-cov",
     "nextest",
-    "--all-features",
     "--workspace",
+    "--all-targets",
+    "--all-features",
     "--no-report",
 ] # Tip: Use either "--no-clean" or "--no-report" to prevent recompilation. See https://github.com/taiki-e/cargo-llvm-cov/pull/214
 
