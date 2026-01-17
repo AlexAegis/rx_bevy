@@ -61,3 +61,58 @@ where
 		(self)()
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	mod provide {
+		use crate::{ProvideWithFactory, providers::Provider};
+
+		#[test]
+		fn it_should_provide_by_call_unit_struct() {
+			let factory = ProvideWithFactory(|| 7);
+
+			assert_eq!(factory.provide(), 7);
+		}
+
+		#[test]
+		fn it_should_provide_by_call_into_unit_struct() {
+			let factory = ProvideWithFactory::from(|| 7);
+
+			assert_eq!(factory.provide(), 7);
+		}
+
+		#[test]
+		fn it_should_provide_by_call_fn_impl() {
+			let factory = || 5usize;
+			assert_eq!(factory.provide(), 5);
+		}
+	}
+
+	mod provide_mut {
+		use crate::{ProvideWithFactory, providers::ProviderMut};
+
+		#[test]
+		fn it_should_provide_by_call_unit_struct() {
+			let mut counter = 0usize;
+			let mut factory = ProvideWithFactory(|| {
+				counter += 1;
+				counter * 2
+			});
+
+			assert_eq!(factory.provide(), 2);
+			assert_eq!(factory.provide(), 4);
+		}
+
+		#[test]
+		fn it_should_provide_by_call_fn_mut_impl() {
+			let mut counter = 0usize;
+			let mut factory = || {
+				counter += 1;
+				counter * 2
+			};
+
+			assert_eq!(factory.provide(), 2);
+			assert_eq!(factory.provide(), 4);
+		}
+	}
+}

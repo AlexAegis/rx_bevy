@@ -28,3 +28,28 @@ impl<T: Clone> ProviderMut for ProvideWithCloneOf<T> {
 		self.0.clone()
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	mod provider {
+		use super::*;
+
+		#[test]
+		fn it_should_provide_by_clone() {
+			let provider = ProvideWithCloneOf(42usize);
+			assert_eq!(provider.provide(), 42);
+		}
+	}
+
+	mod provider_mut {
+		use super::*;
+
+		#[test]
+		fn it_should_provide_by_clone() {
+			let mut provider = ProvideWithCloneOf(String::from("hello"));
+			assert_eq!(ProviderMut::provide(&mut provider), "hello");
+		}
+	}
+}

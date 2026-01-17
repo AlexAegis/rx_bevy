@@ -31,3 +31,40 @@ where
 		T::default()
 	}
 }
+
+#[cfg(test)]
+mod test {
+	use crate::{
+		ProvideWithDefault,
+		providers::{Provider, ProviderMut},
+	};
+
+	#[derive(Debug, PartialEq, Eq)]
+	struct Foo(&'static str);
+
+	impl Default for Foo {
+		fn default() -> Self {
+			Self("foo")
+		}
+	}
+
+	mod provider {
+		use super::*;
+
+		#[test]
+		fn it_should_provide_with_default() {
+			let provider = ProvideWithDefault::<usize>::default();
+			assert_eq!(provider.provide(), 0);
+		}
+	}
+
+	mod provider_mut {
+		use super::*;
+
+		#[test]
+		fn it_should_provide_with_default() {
+			let mut provider = ProvideWithDefault::<Foo>::default();
+			assert_eq!(ProviderMut::provide(&mut provider), Foo("foo"));
+		}
+	}
+}
