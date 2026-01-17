@@ -50,12 +50,11 @@ pub fn alternate_systems_on_press<M1, M2>(
 	toggle_key_code: KeyCode,
 	system_a: impl IntoScheduleConfigs<ScheduleSystem, M1>,
 	system_b: impl IntoScheduleConfigs<ScheduleSystem, M2>,
-) -> (
-	ScheduleConfigs<Box<dyn System<In = (), Out = Result<(), BevyError>> + 'static>>, // TODO(bevy-0.17): Out = ()
-	ScheduleConfigs<Box<dyn System<In = (), Out = Result<(), BevyError>> + 'static>>, // TODO(bevy-0.17): Out = ()
-) {
+) -> ScheduleConfigs<Box<dyn System<In = (), Out = Result<(), BevyError>> + 'static>> // TODO(bevy-0.17): Out = ()
+{
 	(
 		system_a.run_if(input_just_toggled(true, toggle_key_code)),
 		system_b.run_if(input_just_toggled(false, toggle_key_code)),
 	)
+		.into_configs()
 }

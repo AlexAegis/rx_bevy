@@ -149,3 +149,76 @@ mod given_a_subject_component {
 		}
 	}
 }
+
+mod when_subject_component_is_removed {
+	use super::*;
+
+	#[test]
+	fn it_should_cleanup_satellites_and_required_components() {
+		let mut app = App::new();
+		app.init_resource::<Time<Virtual>>();
+		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+		let subject_entity = app
+			.world_mut()
+			.spawn(PublishSubject::<usize>::default().into_component())
+			.id();
+
+		app.update();
+
+		let subscribe_satellite = **app
+			.world()
+			.get::<SubscribeObserverRef<PublishSubject<usize>>>(subject_entity)
+			.expect("subject component should register a subscribe observer satellite");
+
+		let signal_satellite = **app
+			.world()
+			.get::<SignalObserverRef<PublishSubject<usize>>>(subject_entity)
+			.expect("subject component should register a signal observer satellite");
+
+		app.world_mut()
+			.entity_mut(subject_entity)
+			.remove::<SubjectComponent<PublishSubject<usize>>>();
+
+		app.update();
+
+		let world = app.world();
+		assert!(
+			world.get_entity(subscribe_satellite).is_err(),
+			"subscribe observer satellite should be despawned when the subject component is removed",
+		);
+
+		assert!(
+			world.get_entity(signal_satellite).is_err(),
+			"signal observer satellite should be despawned when the subject component is removed",
+		);
+
+		assert!(
+			world
+				.get::<ObservableSubscriptions<PublishSubject<usize>>>(subject_entity)
+				.is_none(),
+			"observable subscriptions component should be removed along with the subject",
+		);
+
+		assert!(
+			world
+				.get::<SubscribeObserverRef<PublishSubject<usize>>>(subject_entity)
+				.is_none(),
+			"subscribe observer reference should be removed along with the subject",
+		);
+
+		assert!(
+			world
+				.get::<SignalObserverRef<PublishSubject<usize>>>(subject_entity)
+				.is_none(),
+			"signal observer reference should be removed along with the subject",
+		);
+
+		assert!(
+			world
+				.get::<ObservableOutputs<usize, Never>>(subject_entity)
+				.is_none(),
+			"observable outputs component should be removed along with the subject",
+		);
+	}
+}

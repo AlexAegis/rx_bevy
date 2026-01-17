@@ -42,7 +42,7 @@ fn clean_unfinished_subscriptions(
 			"The subscription {} was not populated and does not contain a subscription! It is now being despawned! (This despawn is being issued in the Last schedule!)",
 			unfinished_subscription_query
 		);
-		commands.entity(unfinished_subscription_query).despawn();
+		commands.entity(unfinished_subscription_query).try_despawn();
 	}
 }
 

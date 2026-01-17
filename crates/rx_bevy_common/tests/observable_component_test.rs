@@ -5,6 +5,9 @@ use bevy_ecs::system::SystemState;
 use rx_bevy::prelude::*;
 use rx_core_testing::prelude::*;
 
+#[path = "./utilities.rs"]
+mod utilities;
+
 mod subscribe {
 	use super::*;
 
@@ -324,6 +327,143 @@ mod component_remove {
 				SubscriberNotification::Unsubscribe,
 			],
 			true,
+		);
+	}
+
+	#[test]
+	fn it_should_not_unsubscribe_a_non_shared_observables_subscriptions_when_despawned() {
+		let destination = MockObserver::<usize>::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut app = App::new();
+		app.init_resource::<Time<Virtual>>();
+		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+		let scheduler = {
+			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+				.get_mut(app.world_mut());
+			scheduler.handle()
+		};
+
+		let observable_entity = app
+			.world_mut()
+			.spawn(
+				IntervalObservable::new(
+					IntervalObservableOptions {
+						duration: Duration::from_millis(1000),
+						max_emissions_per_tick: 10,
+						start_on_subscribe: false,
+					},
+					scheduler,
+				)
+				.into_component(),
+			)
+			.id();
+
+		let mut commands = app.world_mut().commands();
+
+		let subscription_entity = commands.subscribe(observable_entity, destination);
+
+		app.world_mut()
+			.resource_mut::<Time<Virtual>>()
+			.advance_by(Duration::from_secs(2));
+
+		app.update();
+
+		app.world_mut()
+			.commands()
+			.entity(observable_entity)
+			.despawn();
+
+		app.update();
+
+		app.world_mut()
+			.resource_mut::<Time<Virtual>>()
+			.advance_by(Duration::from_secs(2));
+
+		app.update();
+
+		assert!(
+			app.world().get_entity(subscription_entity).is_ok(),
+			"subscription entity should remain alive even after the observable component is removed",
+		);
+
+		app.world_mut()
+			.commands()
+			.entity(subscription_entity)
+			.despawn();
+		app.update();
+
+		notification_collector.lock().assert_notifications(
+			"observable_component - active after observable removal",
+			0,
+			[
+				SubscriberNotification::Next(0),
+				SubscriberNotification::Next(1),
+				SubscriberNotification::Next(2),
+				SubscriberNotification::Next(3),
+				SubscriberNotification::Unsubscribe,
+			],
+			true,
+		);
+	}
+}
+
+mod when_observable_component_is_removed {
+	use super::*;
+
+	#[test]
+	fn it_should_cleanup_satellites_and_required_components() {
+		let mut app = App::new();
+		app.init_resource::<Time<Virtual>>();
+		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+		let observable_entity = app
+			.world_mut()
+			.spawn(OfObservable::new(1_usize).into_component())
+			.id();
+
+		app.update();
+
+		let subscribe_event_observer_satellite = **app
+			.world()
+			.get::<SubscribeObserverRef<OfObservable<usize>>>(observable_entity)
+			.expect("observable component should register its subscribe observer satellite");
+
+		app.world_mut()
+			.entity_mut(observable_entity)
+			.remove::<ObservableComponent<OfObservable<usize>>>();
+
+		app.update();
+
+		let world = app.world();
+
+		assert!(
+			world
+				.get_entity(subscribe_event_observer_satellite)
+				.is_err(),
+			"subscribe observer satellite should be despawned when the observable component is removed",
+		);
+
+		assert!(
+			world
+				.get::<ObservableSubscriptions<OfObservable<usize>>>(observable_entity)
+				.is_none(),
+			"observable subscriptions component should be removed along with the observable",
+		);
+
+		assert!(
+			world
+				.get::<SubscribeObserverRef<OfObservable<usize>>>(observable_entity)
+				.is_none(),
+			"subscribe observer reference should be removed along with the observable",
+		);
+
+		assert!(
+			world
+				.get::<ObservableOutputs<usize, Never>>(observable_entity)
+				.is_none(),
+			"observable outputs component should be removed along with the observable",
 		);
 	}
 }

@@ -73,11 +73,21 @@ fn observable_on_remove<O>(mut deferred_world: DeferredWorld, hook_context: Hook
 where
 	O: 'static + Observable + Send + Sync,
 {
-	deferred_world
-		.commands()
+	let subscribe_observer_ref = deferred_world
+		.get::<SubscribeObserverRef<O>>(hook_context.entity)
+		.map(|observer_ref| **observer_ref);
+
+	let mut commands = deferred_world.commands();
+
+	if let Some(subscribe_observer_entity) = subscribe_observer_ref {
+		commands.entity(subscribe_observer_entity).try_despawn();
+	}
+
+	commands
 		.entity(hook_context.entity)
-		.remove::<ObservableSubscriptions<O>>()
-		.remove::<SubscribeObserverRef<O>>();
+		.try_remove::<ObservableSubscriptions<O>>()
+		.try_remove::<SubscribeObserverRef<O>>()
+		.try_remove::<ObservableOutputs<O::Out, O::OutError>>();
 }
 
 /// Errors that can happen during a [Subscribe] event.

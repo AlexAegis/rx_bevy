@@ -1,4 +1,4 @@
-use bevy_ecs::observer::Trigger;
+use bevy_ecs::{entity::Entity, observer::Trigger, world::World};
 use rx_bevy::RxSignal;
 use rx_core_common::{Signal, SubscriberNotification};
 use rx_core_testing::NotificationCollector;
@@ -23,4 +23,24 @@ where
 			.lock()
 			.push(SubscriberNotification::from(trigger.event().clone()));
 	}
+}
+
+#[allow(dead_code)]
+pub(crate) fn component_count(world: &World, entity: Entity) -> usize {
+	world.entity(entity).archetype().components().count()
+}
+
+#[allow(dead_code)]
+pub(crate) fn component_names(world: &World, entity: Entity) -> Vec<String> {
+	world
+		.entity(entity)
+		.archetype()
+		.components()
+		.filter_map(|component_id| {
+			world
+				.components()
+				.get_info(component_id)
+				.map(|info| info.name().to_string())
+		})
+		.collect()
 }

@@ -8,7 +8,7 @@ use rx_core_common::{
 use rx_core_macro_subject_derive::RxSubject;
 
 use crate::{
-	ObservableOutputs, ObservableSubscriptions, SignalObserverSatelliteBundle,
+	ObservableOutputs, ObservableSubscriptions, SignalObserverRef, SignalObserverSatelliteBundle,
 	SubscribeEventObserverSatelliteBundle, SubscribeObserverRef,
 };
 
@@ -136,11 +136,30 @@ where
 	Subject::In: Clone,
 	Subject::InError: Clone,
 {
-	deferred_world
-		.commands()
+	let subscribe_observer_ref = deferred_world
+		.get::<SubscribeObserverRef<Subject>>(hook_context.entity)
+		.map(|observer_ref| **observer_ref);
+
+	let signal_observer_ref = deferred_world
+		.get::<SignalObserverRef<Subject>>(hook_context.entity)
+		.map(|observer_ref| **observer_ref);
+
+	let mut commands = deferred_world.commands();
+
+	if let Some(subscribe_observer_entity) = subscribe_observer_ref {
+		commands.entity(subscribe_observer_entity).try_despawn();
+	}
+
+	if let Some(signal_observer_entity) = signal_observer_ref {
+		commands.entity(signal_observer_entity).try_despawn();
+	}
+
+	commands
 		.entity(hook_context.entity)
-		.remove::<ObservableSubscriptions<Subject>>()
-		.remove::<SubscribeObserverRef<Subject>>();
+		.try_remove::<ObservableSubscriptions<Subject>>()
+		.try_remove::<SubscribeObserverRef<Subject>>()
+		.try_remove::<SignalObserverRef<Subject>>()
+		.try_remove::<ObservableOutputs<Subject::Out, Subject::OutError>>();
 
 	let mut subject_component = deferred_world
 		.get_mut::<SubjectComponent<Subject>>(hook_context.entity)
