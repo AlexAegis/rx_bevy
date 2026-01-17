@@ -42,6 +42,27 @@ fn entity_commands_can_subscribe_to_another_entity_observable() {
 
 	app.update();
 
+	let subscription_of = app
+		.world()
+		.get::<SubscriptionOf<SubjectComponent<PublishSubject<usize>>>>(subscription_entity)
+		.expect("should exist on a subscription entity");
+	assert_eq!(
+		observable_entity,
+		subscription_of.get_observable_entity(),
+		"subscription should reference the observable entity via get_observable_entity",
+	);
+
+	let subscriptions = app
+		.world()
+		.get::<ObservableSubscriptions<SubjectComponent<PublishSubject<usize>>>>(observable_entity)
+		.expect("observable entity should track its subscriptions");
+	assert!(
+		subscriptions
+			.get_subscription_entities()
+			.contains(&subscription_entity),
+		"observable should list the subscription entity via get_subscription_entities",
+	);
+
 	subject.next(1);
 	app.update();
 	subject.next(2);
@@ -49,6 +70,15 @@ fn entity_commands_can_subscribe_to_another_entity_observable() {
 
 	app.world_mut().despawn(subscription_entity);
 	app.update();
+
+	assert!(
+		app.world()
+			.get::<ObservableSubscriptions<SubjectComponent<PublishSubject<usize>>>>(
+				observable_entity
+			)
+			.is_none(),
+		"observable subscriptions should no longer reference a despawned subscription",
+	);
 
 	subject.next(3);
 	app.update();
