@@ -9,6 +9,7 @@ use std::{
 use bevy::prelude::*;
 use bevy_ecs::system::SystemState;
 use rx_bevy::prelude::*;
+use rx_core_common::SharedSubscription;
 
 mod immediate_work {
 	use super::*;
@@ -374,5 +375,34 @@ mod invoked {
 		app.update();
 
 		assert!(!invoked_work_was_called.load(Ordering::Relaxed));
+	}
+}
+
+mod cleanup_on_exit {
+	use super::*;
+
+	#[test]
+	fn rx_plugin_unsubscribes_all_subscriptions_on_app_exit() {
+		let mut app = App::new();
+		app.init_resource::<Time<Virtual>>();
+		app.add_plugins(RxPlugin);
+
+		let subscription = SharedSubscription::default();
+		let subscription_clone = subscription.clone();
+		assert!(!subscription_clone.is_closed());
+
+		app.world_mut()
+			.spawn(SubscriptionComponent::new(subscription));
+
+		app.update();
+
+		app.world_mut().send_event(AppExit::Success);
+
+		app.update();
+
+		assert!(
+			subscription_clone.is_closed(),
+			"subscription should be unsubscribed when the app exits"
+		);
 	}
 }
