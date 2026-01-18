@@ -49,6 +49,32 @@ fn iterator_observable_should_stop_when_downstream_closes_during_iteration() {
 	assert!(subscription.is_closed());
 }
 
+#[test]
+fn should_not_finish_the_iterator_when_closed_early() {
+	let mock_destination = MockObserver::<i32>::default();
+	let notification_collector = mock_destination.get_notification_collector();
+
+	let tracked_iterator = TrackedIterator::new(1..=5);
+	let tracked_data = tracked_iterator.get_tracking_data_ref();
+	let mut source = tracked_iterator.into_observable().take(2);
+	let mut subscription = source.subscribe(mock_destination);
+
+	notification_collector.lock().assert_notifications(
+		"iterator",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Complete,
+		],
+		true,
+	);
+
+	assert!(!tracked_data.is_finished(0));
+
+	subscription.unsubscribe();
+}
+
 /// rx_contract_closed_after_error - does not error
 mod contracts {
 	use super::*;

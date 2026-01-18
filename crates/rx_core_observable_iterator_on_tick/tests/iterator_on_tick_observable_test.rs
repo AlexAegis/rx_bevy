@@ -140,7 +140,7 @@ mod when_emit_at_nth_is_zero {
 
 		let mut source = (1..=3).into_observable_on_every_nth_tick(
 			OnTickObservableOptions {
-				emit_at_every_nth_tick: 0,
+				emit_at_every_nth_tick: 0, // This causes all values to be emitted immediately like a regular iterator
 				start_on_subscribe: false,
 			},
 			scheduler,
@@ -182,7 +182,7 @@ mod when_emit_at_nth_is_zero {
 		let mut source = tracked_iterator
 			.into_observable_on_every_nth_tick(
 				OnTickObservableOptions {
-					emit_at_every_nth_tick: 0,
+					emit_at_every_nth_tick: 0, // This causes all values to be emitted immediately like a regular iterator
 					start_on_subscribe: false,
 				},
 				scheduler,
