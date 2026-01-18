@@ -33,5 +33,5 @@ rx_core_macro_observable_derive = { version = "0.1.0", path = "../rx_core_macro_
 rx_core_subscription_inert = { version = "0.1.0", path = "../rx_core_subscription_inert" }
 
 [dev-dependencies]
-rx_core = { workspace = true, default-features = true }
+rx_core = { version = "0.1.0", path = "../rx_core" }
 rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

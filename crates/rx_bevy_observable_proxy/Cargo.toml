@@ -48,7 +48,7 @@ bevy_ecs = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
-rx_bevy = { workspace = true, default-features = true }
+rx_bevy = { version = "0.1.0", path = "../rx_bevy" }
 rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }
 examples_common = { workspace = true }
 bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }

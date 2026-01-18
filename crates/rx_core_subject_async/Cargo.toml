@@ -32,5 +32,5 @@ rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
 rx_core_macro_subject_derive = { version = "0.1.0", path = "../rx_core_macro_subject_derive" }
 
 [dev-dependencies]
-rx_core = { workspace = true, default-features = true }
+rx_core = { version = "0.1.0", path = "../rx_core" }
 rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

@@ -27,5 +27,5 @@ slab = { workspace = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]
-rx_core = { workspace = true, default-features = true }
+rx_core = { version = "0.1.0", path = "../rx_core" }
 rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

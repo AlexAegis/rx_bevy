@@ -34,5 +34,5 @@ rx_core_subscriber_higher_order_all = { version = "0.1.0", path = "../rx_core_su
 rx_core_subscriber_higher_order_concurrent = { version = "0.1.0", path = "../rx_core_subscriber_higher_order_concurrent" }
 
 [dev-dependencies]
-rx_core = { workspace = true, default-features = true }
+rx_core = { version = "0.1.0", path = "../rx_core" }
 rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

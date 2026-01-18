@@ -35,5 +35,5 @@ rx_core_notification_variadics = { version = "0.1.0", path = "../rx_core_notific
 rx_core_notification_store = { version = "0.1.0", path = "../rx_core_notification_store" }
 
 [dev-dependencies]
-rx_core = { workspace = true, default-features = true }
+rx_core = { version = "0.1.0", path = "../rx_core" }
 rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }
