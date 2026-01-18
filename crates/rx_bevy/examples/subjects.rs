@@ -10,6 +10,7 @@ use examples_common::{
 };
 use rx_bevy::prelude::*;
 
+/// This example showcases the behavior of different subjects.
 fn main() -> AppExit {
 	App::new()
 		.add_plugins((
