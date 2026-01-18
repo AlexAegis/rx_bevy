@@ -5596,7 +5596,6 @@ dependencies = [
  "rx_core_macro_executor_derive",
  "rx_core_macro_observable_derive",
  "rx_core_macro_observer_derive",
- "rx_core_macro_operator_derive",
  "rx_core_macro_subject_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
