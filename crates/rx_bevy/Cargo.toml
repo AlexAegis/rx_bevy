@@ -28,7 +28,6 @@ default = [
 ]
 pipe = ["rx_core/pipe"]
 compose = ["rx_core/compose"]
-reflect = ["rx_bevy_common/reflect", "rx_bevy_observable_proxy?/reflect"]
 test = []
 example = [
     "bevy/dynamic_linking",

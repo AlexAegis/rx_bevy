@@ -15,9 +15,6 @@ use rx_core_common::{
 
 use core::marker::PhantomData;
 
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
-
 use crate::{
 	ErasedSubscribeObserverOf, RxScheduleDespawn, Subscribe, SubscribeError, SubscriptionComponent,
 	SubscriptionOf, UnfinishedSubscription,
@@ -118,7 +115,6 @@ where
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref, Debug)]
 #[relationship_target(relationship=SubscribeObserverOf::<O>)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscribeObserverRef<O>
 where
 	O: 'static + Observable + Send + Sync,
@@ -126,13 +122,11 @@ where
 	#[relationship]
 	#[deref]
 	subscribe_observer_entity: Entity,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomInvariant<O>,
 }
 
 #[derive(Component, Deref)]
 #[relationship(relationship_target=SubscribeObserverRef::<O>)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscribeObserverOf<O>
 where
 	O: 'static + Observable + Send + Sync,
@@ -140,7 +134,6 @@ where
 	#[relationship]
 	#[deref]
 	observable_entity: Entity,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomInvariant<O>,
 }
 

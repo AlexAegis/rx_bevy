@@ -4,14 +4,10 @@ use core::marker::PhantomData;
 use disqualified::ShortName;
 use rx_core_common::{PhantomInvariant, Signal, Subscriber, UpgradeableObserver};
 
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
-
 /// The destination is erased so observers can listen to this event based on
 /// the observables output types only.
 /// TODO(bevy-0.17): Use EntityEvent
 #[derive(Event)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub(crate) struct Subscribe<Out, OutError>
 where
 	Out: Signal,

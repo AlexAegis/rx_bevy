@@ -18,7 +18,6 @@ workspace = true
 
 [features]
 default = []
-reflect = ["dep:bevy_reflect"]
 
 [dependencies]
 rx_core_common = { workspace = true }
@@ -35,7 +34,6 @@ bevy_app = { workspace = true }
 bevy_log = { workspace = true }
 bevy_time = { workspace = true }
 bevy_derive = { workspace = true }
-bevy_reflect = { workspace = true, optional = true }
 bevy_window = { workspace = true }
 disqualified = { workspace = true }
 derive-where = { workspace = true }

@@ -14,9 +14,6 @@ use rx_core_common::{
 
 use core::marker::PhantomData;
 
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
-
 use crate::RxSignal;
 
 #[derive(Bundle)]
@@ -74,7 +71,6 @@ fn push_signal_observer<C>(
 /// for an `ObservableComponent` entity
 #[derive(Component, Deref, Debug)]
 #[relationship_target(relationship=SignalObserverOf::<O>)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SignalObserverRef<O>
 where
 	O: 'static + RxObserver + Send + Sync,
@@ -82,13 +78,11 @@ where
 	#[relationship]
 	#[deref]
 	signal_observer_entity: Entity,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomInvariant<O>,
 }
 
 #[derive(Component, Deref, Debug)]
 #[relationship(relationship_target=SignalObserverRef::<O>)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SignalObserverOf<O>
 where
 	O: 'static + RxObserver + Send + Sync,
@@ -96,7 +90,6 @@ where
 	#[relationship]
 	#[deref]
 	signal_observer_entity: Entity,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomInvariant<O>,
 }
 

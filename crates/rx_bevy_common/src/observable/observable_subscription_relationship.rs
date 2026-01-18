@@ -4,14 +4,10 @@ use rx_core_common::{Observable, PhantomInvariant};
 
 use core::marker::PhantomData;
 
-#[cfg(feature = "reflect")]
-use bevy_reflect::Reflect;
-
 /// Stores the reference to the observer entity handling `Subscribe` events
 /// for an `ObservableComponent` entity
 #[derive(Component, Debug, Deref)]
 #[relationship_target(relationship=SubscriptionOf::<O>)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct ObservableSubscriptions<O>
 where
 	O: 'static + Observable + Send + Sync,
@@ -19,7 +15,6 @@ where
 	#[relationship]
 	#[deref]
 	subscriptions: Vec<Entity>,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomInvariant<O>,
 }
 
@@ -46,7 +41,6 @@ where
 
 #[derive(Component, Deref, Debug)]
 #[relationship(relationship_target=ObservableSubscriptions::<O>)]
-#[cfg_attr(feature = "reflect", derive(Reflect))]
 pub struct SubscriptionOf<O>
 where
 	O: 'static + Observable + Send + Sync,
@@ -54,7 +48,6 @@ where
 	#[relationship]
 	#[deref]
 	observable_entity: Entity,
-	#[cfg_attr(feature = "reflect", reflect(ignore))]
 	_phantom_data: PhantomInvariant<O>,
 }
 
