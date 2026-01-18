@@ -266,7 +266,7 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 
    ```toml
    # Observables
-   rx_bevy_observable_foo = { workspace = true, optional = true }
+   rx_bevy_observable_foo = { version = "0.1.0", path = "../rx_bevy_observable_foo", optional = true }
    ```
 
 3. Create a new feature for the observable.
@@ -450,7 +450,7 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
 
    ```toml
    # Operators
-   rx_core_operator_foo = { workspace = true, optional = true }
+   rx_core_operator_foo = { version = "0.1.0", path = "../rx_core_operator_foo", optional = true }
    ```
 
 3. Create a new feature for the operator.

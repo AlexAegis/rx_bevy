@@ -297,86 +297,86 @@ subject_publish = ["dep:rx_core_subject_publish"]
 subject_replay = ["dep:rx_core_subject_replay"]
 
 [dependencies]
-rx_core_common = { workspace = true }
+rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
 # Observables
-rx_core_observable_closed = { workspace = true, optional = true }
-rx_core_observable_combine_changes = { workspace = true, optional = true }
-rx_core_observable_combine_latest = { workspace = true, optional = true }
-rx_core_observable_concat = { workspace = true, optional = true }
-rx_core_observable_connectable = { workspace = true, optional = true }
-rx_core_observable_create = { workspace = true, optional = true }
-rx_core_observable_deferred = { workspace = true, optional = true }
-rx_core_observable_empty = { workspace = true, optional = true }
-rx_core_observable_interval = { workspace = true, optional = true }
-rx_core_observable_iterator = { workspace = true, optional = true }
-rx_core_observable_iterator_on_tick = { workspace = true, optional = true }
-rx_core_observable_join = { workspace = true, optional = true }
-rx_core_observable_just = { workspace = true, optional = true }
-rx_core_observable_merge = { workspace = true, optional = true }
-rx_core_observable_never = { workspace = true, optional = true }
-rx_core_observable_throw = { workspace = true, optional = true }
-rx_core_observable_timer = { workspace = true, optional = true }
-rx_core_observable_zip = { workspace = true, optional = true }
+rx_core_observable_closed = { version = "0.1.0", path = "../rx_core_observable_closed", optional = true }
+rx_core_observable_combine_changes = { version = "0.1.0", path = "../rx_core_observable_combine_changes", optional = true }
+rx_core_observable_combine_latest = { version = "0.1.0", path = "../rx_core_observable_combine_latest", optional = true }
+rx_core_observable_concat = { version = "0.1.0", path = "../rx_core_observable_concat", optional = true }
+rx_core_observable_connectable = { version = "0.1.0", path = "../rx_core_observable_connectable", optional = true }
+rx_core_observable_create = { version = "0.1.0", path = "../rx_core_observable_create", optional = true }
+rx_core_observable_deferred = { version = "0.1.0", path = "../rx_core_observable_deferred", optional = true }
+rx_core_observable_empty = { version = "0.1.0", path = "../rx_core_observable_empty", optional = true }
+rx_core_observable_interval = { version = "0.1.0", path = "../rx_core_observable_interval", optional = true }
+rx_core_observable_iterator = { version = "0.1.0", path = "../rx_core_observable_iterator", optional = true }
+rx_core_observable_iterator_on_tick = { version = "0.1.0", path = "../rx_core_observable_iterator_on_tick", optional = true }
+rx_core_observable_join = { version = "0.1.0", path = "../rx_core_observable_join", optional = true }
+rx_core_observable_just = { version = "0.1.0", path = "../rx_core_observable_just", optional = true }
+rx_core_observable_merge = { version = "0.1.0", path = "../rx_core_observable_merge", optional = true }
+rx_core_observable_never = { version = "0.1.0", path = "../rx_core_observable_never", optional = true }
+rx_core_observable_throw = { version = "0.1.0", path = "../rx_core_observable_throw", optional = true }
+rx_core_observable_timer = { version = "0.1.0", path = "../rx_core_observable_timer", optional = true }
+rx_core_observable_zip = { version = "0.1.0", path = "../rx_core_observable_zip", optional = true }
 # Observers
-rx_core_observer_fn = { workspace = true, optional = true }
-rx_core_observer_noop = { workspace = true, optional = true }
-rx_core_observer_print = { workspace = true, optional = true }
+rx_core_observer_fn = { version = "0.1.0", path = "../rx_core_observer_fn", optional = true }
+rx_core_observer_noop = { version = "0.1.0", path = "../rx_core_observer_noop", optional = true }
+rx_core_observer_print = { version = "0.1.0", path = "../rx_core_observer_print", optional = true }
 # Operators
-rx_core_operator_adsr = { workspace = true, optional = true }
-rx_core_operator_buffer_count = { workspace = true, optional = true }
-rx_core_operator_catch = { workspace = true, optional = true }
-rx_core_operator_composite = { workspace = true, optional = true }
-rx_core_operator_concat_all = { workspace = true, optional = true }
-rx_core_operator_concat_map = { workspace = true, optional = true }
-rx_core_operator_delay = { workspace = true, optional = true }
-rx_core_operator_dematerialize = { workspace = true, optional = true }
-rx_core_operator_end_with = { workspace = true, optional = true }
-rx_core_operator_enumerate = { workspace = true, optional = true }
-rx_core_operator_error_boundary = { workspace = true, optional = true }
-rx_core_operator_exhaust_all = { workspace = true, optional = true }
-rx_core_operator_exhaust_map = { workspace = true, optional = true }
-rx_core_operator_fallback_when_silent = { workspace = true, optional = true }
-rx_core_operator_filter = { workspace = true, optional = true }
-rx_core_operator_filter_map = { workspace = true, optional = true }
-rx_core_operator_finalize = { workspace = true, optional = true }
-rx_core_operator_find = { workspace = true, optional = true }
-rx_core_operator_find_index = { workspace = true, optional = true }
-rx_core_operator_first = { workspace = true, optional = true }
-rx_core_operator_identity = { workspace = true, optional = true }
-rx_core_operator_into_result = { workspace = true, optional = true }
-rx_core_operator_is_empty = { workspace = true, optional = true }
-rx_core_operator_lift_option = { workspace = true, optional = true }
-rx_core_operator_lift_result = { workspace = true, optional = true }
-rx_core_operator_map = { workspace = true, optional = true }
-rx_core_operator_map_error = { workspace = true, optional = true }
-rx_core_operator_map_into = { workspace = true, optional = true }
-rx_core_operator_map_never = { workspace = true, optional = true }
-rx_core_operator_materialize = { workspace = true, optional = true }
-rx_core_operator_merge_all = { workspace = true, optional = true }
-rx_core_operator_merge_map = { workspace = true, optional = true }
-rx_core_operator_on_next = { workspace = true, optional = true }
-rx_core_operator_on_subscribe = { workspace = true, optional = true }
-rx_core_operator_pairwise = { workspace = true, optional = true }
-rx_core_operator_reduce = { workspace = true, optional = true }
-rx_core_operator_retry = { workspace = true, optional = true }
-rx_core_operator_scan = { workspace = true, optional = true }
-rx_core_operator_share = { workspace = true, optional = true }
-rx_core_operator_skip = { workspace = true, optional = true }
-rx_core_operator_start_with = { workspace = true, optional = true }
-rx_core_operator_switch_all = { workspace = true, optional = true }
-rx_core_operator_switch_map = { workspace = true, optional = true }
-rx_core_operator_take = { workspace = true, optional = true }
-rx_core_operator_tap = { workspace = true, optional = true }
-rx_core_operator_tap_next = { workspace = true, optional = true }
-rx_core_operator_with_latest_from = { workspace = true, optional = true }
+rx_core_operator_adsr = { version = "0.1.0", path = "../rx_core_operator_adsr", optional = true }
+rx_core_operator_buffer_count = { version = "0.1.0", path = "../rx_core_operator_buffer_count", optional = true }
+rx_core_operator_catch = { version = "0.1.0", path = "../rx_core_operator_catch", optional = true }
+rx_core_operator_composite = { version = "0.1.0", path = "../rx_core_operator_composite", optional = true }
+rx_core_operator_concat_all = { version = "0.1.0", path = "../rx_core_operator_concat_all", optional = true }
+rx_core_operator_concat_map = { version = "0.1.0", path = "../rx_core_operator_concat_map", optional = true }
+rx_core_operator_delay = { version = "0.1.0", path = "../rx_core_operator_delay", optional = true }
+rx_core_operator_dematerialize = { version = "0.1.0", path = "../rx_core_operator_dematerialize", optional = true }
+rx_core_operator_end_with = { version = "0.1.0", path = "../rx_core_operator_end_with", optional = true }
+rx_core_operator_enumerate = { version = "0.1.0", path = "../rx_core_operator_enumerate", optional = true }
+rx_core_operator_error_boundary = { version = "0.1.0", path = "../rx_core_operator_error_boundary", optional = true }
+rx_core_operator_exhaust_all = { version = "0.1.0", path = "../rx_core_operator_exhaust_all", optional = true }
+rx_core_operator_exhaust_map = { version = "0.1.0", path = "../rx_core_operator_exhaust_map", optional = true }
+rx_core_operator_fallback_when_silent = { version = "0.1.0", path = "../rx_core_operator_fallback_when_silent", optional = true }
+rx_core_operator_filter = { version = "0.1.0", path = "../rx_core_operator_filter", optional = true }
+rx_core_operator_filter_map = { version = "0.1.0", path = "../rx_core_operator_filter_map", optional = true }
+rx_core_operator_finalize = { version = "0.1.0", path = "../rx_core_operator_finalize", optional = true }
+rx_core_operator_find = { version = "0.1.0", path = "../rx_core_operator_find", optional = true }
+rx_core_operator_find_index = { version = "0.1.0", path = "../rx_core_operator_find_index", optional = true }
+rx_core_operator_first = { version = "0.1.0", path = "../rx_core_operator_first", optional = true }
+rx_core_operator_identity = { version = "0.1.0", path = "../rx_core_operator_identity", optional = true }
+rx_core_operator_into_result = { version = "0.1.0", path = "../rx_core_operator_into_result", optional = true }
+rx_core_operator_is_empty = { version = "0.1.0", path = "../rx_core_operator_is_empty", optional = true }
+rx_core_operator_lift_option = { version = "0.1.0", path = "../rx_core_operator_lift_option", optional = true }
+rx_core_operator_lift_result = { version = "0.1.0", path = "../rx_core_operator_lift_result", optional = true }
+rx_core_operator_map = { version = "0.1.0", path = "../rx_core_operator_map", optional = true }
+rx_core_operator_map_error = { version = "0.1.0", path = "../rx_core_operator_map_error", optional = true }
+rx_core_operator_map_into = { version = "0.1.0", path = "../rx_core_operator_map_into", optional = true }
+rx_core_operator_map_never = { version = "0.1.0", path = "../rx_core_operator_map_never", optional = true }
+rx_core_operator_materialize = { version = "0.1.0", path = "../rx_core_operator_materialize", optional = true }
+rx_core_operator_merge_all = { version = "0.1.0", path = "../rx_core_operator_merge_all", optional = true }
+rx_core_operator_merge_map = { version = "0.1.0", path = "../rx_core_operator_merge_map", optional = true }
+rx_core_operator_on_next = { version = "0.1.0", path = "../rx_core_operator_on_next", optional = true }
+rx_core_operator_on_subscribe = { version = "0.1.0", path = "../rx_core_operator_on_subscribe", optional = true }
+rx_core_operator_pairwise = { version = "0.1.0", path = "../rx_core_operator_pairwise", optional = true }
+rx_core_operator_reduce = { version = "0.1.0", path = "../rx_core_operator_reduce", optional = true }
+rx_core_operator_retry = { version = "0.1.0", path = "../rx_core_operator_retry", optional = true }
+rx_core_operator_scan = { version = "0.1.0", path = "../rx_core_operator_scan", optional = true }
+rx_core_operator_share = { version = "0.1.0", path = "../rx_core_operator_share", optional = true }
+rx_core_operator_skip = { version = "0.1.0", path = "../rx_core_operator_skip", optional = true }
+rx_core_operator_start_with = { version = "0.1.0", path = "../rx_core_operator_start_with", optional = true }
+rx_core_operator_switch_all = { version = "0.1.0", path = "../rx_core_operator_switch_all", optional = true }
+rx_core_operator_switch_map = { version = "0.1.0", path = "../rx_core_operator_switch_map", optional = true }
+rx_core_operator_take = { version = "0.1.0", path = "../rx_core_operator_take", optional = true }
+rx_core_operator_tap = { version = "0.1.0", path = "../rx_core_operator_tap", optional = true }
+rx_core_operator_tap_next = { version = "0.1.0", path = "../rx_core_operator_tap_next", optional = true }
+rx_core_operator_with_latest_from = { version = "0.1.0", path = "../rx_core_operator_with_latest_from", optional = true }
 # Schedulers
-rx_core_scheduler_ticking = { workspace = true, optional = true }
+rx_core_scheduler_ticking = { version = "0.1.0", path = "../rx_core_scheduler_ticking", optional = true }
 # Subjects
-rx_core_subject_async = { workspace = true, optional = true }
-rx_core_subject_behavior = { workspace = true, optional = true }
-rx_core_subject_provenance = { workspace = true, optional = true }
-rx_core_subject_publish = { workspace = true, optional = true }
-rx_core_subject_replay = { workspace = true, optional = true }
+rx_core_subject_async = { version = "0.1.0", path = "../rx_core_subject_async", optional = true }
+rx_core_subject_behavior = { version = "0.1.0", path = "../rx_core_subject_behavior", optional = true }
+rx_core_subject_provenance = { version = "0.1.0", path = "../rx_core_subject_provenance", optional = true }
+rx_core_subject_publish = { version = "0.1.0", path = "../rx_core_subject_publish", optional = true }
+rx_core_subject_replay = { version = "0.1.0", path = "../rx_core_subject_replay", optional = true }
 
 [dev-dependencies]
-rx_core_testing = { workspace = true }
+rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

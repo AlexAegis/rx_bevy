@@ -28,12 +28,12 @@ default = []
 pipe = ["rx_core_common/pipe"]
 
 [dependencies]
-rx_core_common = { workspace = true }
-rx_core_macro_operator_derive = { workspace = true }
-rx_core_macro_observable_derive = { workspace = true }
-rx_core_observable_connectable = { workspace = true }
+rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
+rx_core_macro_operator_derive = { version = "0.1.0", path = "../rx_core_macro_operator_derive" }
+rx_core_macro_observable_derive = { version = "0.1.0", path = "../rx_core_macro_observable_derive" }
+rx_core_observable_connectable = { version = "0.1.0", path = "../rx_core_observable_connectable" }
 derive-where = { workspace = true }
 
 [dev-dependencies]
 rx_core = { workspace = true, default-features = true }
-rx_core_testing = { workspace = true }
+rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

@@ -20,15 +20,15 @@ workspace = true
 default = []
 
 [dependencies]
-rx_core_common = { workspace = true }
-rx_core_macro_observer_derive = { workspace = true }
-rx_core_macro_executor_derive = { workspace = true }
-rx_core_macro_observable_derive = { workspace = true }
-rx_core_macro_subscription_derive = { workspace = true }
-rx_core_macro_subscriber_derive = { workspace = true }
-rx_core_macro_subject_derive = { workspace = true }
-rx_core_scheduler_ticking = { workspace = true }
+rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
+rx_core_macro_observer_derive = { version = "0.1.0", path = "../rx_core_macro_observer_derive" }
+rx_core_macro_executor_derive = { version = "0.1.0", path = "../rx_core_macro_executor_derive" }
+rx_core_macro_observable_derive = { version = "0.1.0", path = "../rx_core_macro_observable_derive" }
+rx_core_macro_subscription_derive = { version = "0.1.0", path = "../rx_core_macro_subscription_derive" }
+rx_core_macro_subscriber_derive = { version = "0.1.0", path = "../rx_core_macro_subscriber_derive" }
+rx_core_macro_subject_derive = { version = "0.1.0", path = "../rx_core_macro_subject_derive" }
+rx_core_scheduler_ticking = { version = "0.1.0", path = "../rx_core_scheduler_ticking" }
 derive-where = { workspace = true }
 
 [dev-dependencies]
-rx_core = { workspace = true }
+rx_core = { version = "0.1.0", path = "../rx_core" }

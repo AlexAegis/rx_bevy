@@ -40,17 +40,17 @@ example = [
 ]
 
 [dependencies]
-rx_core_common = { workspace = true }
-rx_bevy_common = { workspace = true }
-rx_core_macro_observable_derive = { workspace = true }
-rx_core_macro_subscription_derive = { workspace = true }
+rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
+rx_bevy_common = { version = "0.1.0", path = "../rx_bevy_common" }
+rx_core_macro_observable_derive = { version = "0.1.0", path = "../rx_core_macro_observable_derive" }
+rx_core_macro_subscription_derive = { version = "0.1.0", path = "../rx_core_macro_subscription_derive" }
 bevy_ecs = { workspace = true }
 disqualified = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
 rx_bevy = { workspace = true, default-features = true }
-rx_core_testing = { workspace = true }
+rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }
 examples_common = { workspace = true }
 bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
 bevy_egui = { workspace = true }
