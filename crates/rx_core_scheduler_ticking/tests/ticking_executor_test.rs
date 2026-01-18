@@ -114,6 +114,38 @@ mod immediate_work {
 	}
 
 	#[test]
+	fn should_not_execute_immediate_work_when_cancelled_before_tick() {
+		let mut ticking_executor = TickingSchedulerExecutor::<
+			TickingScheduler<TestContextProvider>,
+			TestContextProvider,
+		>::new(TickingScheduler::<TestContextProvider>::default());
+
+		let mut context = TestContext;
+
+		let immediate_work_executed = Arc::new(AtomicBool::default());
+		let immediate_work_executed_work = immediate_work_executed.clone();
+		let scheduler = ticking_executor.get_scheduler_handle();
+		{
+			let mut scheduler = scheduler.lock();
+
+			let cancellation_id = scheduler.generate_cancellation_id();
+			scheduler.schedule_immediate_work(
+				move |_, _| {
+					immediate_work_executed_work.store(true, Ordering::Relaxed);
+				},
+				cancellation_id,
+			);
+			scheduler.cancel(cancellation_id);
+		};
+
+		assert!(!immediate_work_executed.load(Ordering::Relaxed));
+
+		ticking_executor.tick(Duration::from_millis(1), &mut context);
+
+		assert!(!immediate_work_executed.load(Ordering::Relaxed));
+	}
+
+	#[test]
 	#[should_panic]
 	fn should_panic_when_a_work_recursively_schedules_too_much_work() {
 		let mut ticking_executor = TickingSchedulerExecutor::<

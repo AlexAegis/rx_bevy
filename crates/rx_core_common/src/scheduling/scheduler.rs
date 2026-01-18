@@ -132,7 +132,6 @@ pub trait SchedulerScheduleWorkExtension: Scheduler {
 	/// The cancellation_id allows the work not to be executed when it's
 	/// immediately cancelled. Preventing running work for an already closed
 	/// destination for example.
-	/// TODO: Add a test for immediately cancelling an immediate work and assert it did not run
 	fn schedule_immediate_work<Work>(&mut self, work: Work, cancellation_id: WorkCancellationId)
 	where
 		Work: ScheduledOnceWork<Self::Tick, Self::WorkContextProvider>,

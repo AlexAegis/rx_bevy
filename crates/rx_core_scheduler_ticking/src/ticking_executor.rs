@@ -38,12 +38,10 @@ where
 	scheduler: SchedulerHandle<S>,
 	current_tick: Tick,
 	work_id_generator: WorkIdGenerator,
-	// TODO: ADD FROM THE BEVY SIDE SOME NEW TASK TYPES LIKE SEND EVENT, THAT NEEDS NO CALLBACKS
 	active_work: IndexMap<
 		WorkId,
 		Box<dyn ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync>,
 	>,
-	// TODO: Use ManyMap once done to make sure CancellationIds can't grow infinitely, they probably don't already as subscriptions always use the cancellationId, but I want to make it sure.
 	cancellation_map: HashMap<WorkCancellationId, Vec<WorkId>>,
 	invokable_work: HashMap<
 		WorkInvokeId,

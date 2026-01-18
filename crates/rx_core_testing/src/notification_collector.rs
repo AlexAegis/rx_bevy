@@ -8,7 +8,6 @@ use std::{
 use derive_where::derive_where;
 use rx_core_common::{Never, Signal, SubscriberNotification, SubscriptionClosedFlag};
 
-// TODO: Consider renaming it to just Notifications, along with all the notification_collector variables.
 #[derive_where(Clone, Default)]
 #[derive(Debug)]
 pub struct NotificationCollector<In, InError = Never>
