@@ -7,7 +7,6 @@ use bevy_math::{
 	curve::{EaseFunction, EasingCurve},
 };
 
-// TODO: Maybe this could actually be a DAHDSR (delay, attack, hold, decay, sustain, release) envelope. (But keep the name Adsr, it's more known)
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AdsrEnvelope {
 	pub attack_time: Duration,
@@ -21,7 +20,6 @@ pub struct AdsrEnvelope {
 	/// Default: Linear mapping
 	pub decay_easing: Option<EaseFunction>,
 	/// What value should be reached by decay. Should be between 0.0 and 1.0,
-	/// TODO: If there is any behavior regarding values outside of this range, mention it here
 	pub sustain_volume: f32,
 
 	/// How long after release the action still be alive

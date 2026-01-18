@@ -28,13 +28,11 @@ where
 		HashMap<MulticastSubscriberId, Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>>,
 }
 
-// TODO: This could be real subscriber impls
 impl<In, InError> Subscribers<In, InError>
 where
 	In: Signal + Clone,
 	InError: Signal + Clone,
 {
-	// TODO: Reintroduce this in a safe place where individual subscribers are safe to lock, it should be okay just at the end of next/error etc fns
 	#[inline]
 	pub(crate) fn clean(&mut self) {
 		self.subscribers
@@ -131,7 +129,6 @@ where
 		}
 	}
 
-	// TODO: Too similar fn to other apply_notification_queue's
 	pub(crate) fn apply_notification_queue(
 		state: Arc<Mutex<MulticastDeferredState<In, InError>>>,
 		subscribers: &mut MutexGuard<'_, Subscribers<In, InError>>,

@@ -233,11 +233,8 @@ to complete will depend on the observable.
 
 ## Operators
 
-Operators themselves are similar to observables in the sense that they are
-_configurations_ based on which new **observables** can be created. So they
-too always come in pairs, an Operator, storing the configuration, which takes
-in a source Observable through their `operate` fn and wrap them in a new
-observable!
+Operators take an observable as input and return a new observable as output,
+enhancing the original observable with new behavior.
 
 ### Composable Operators
 
@@ -246,10 +243,10 @@ example - the `retry` operator, that (as the name suggests) retries
 subscription to the source, many other operators do not interact with their
 source observable beyond just subscribing to them once.
 
-They simply subscribe to the source once, and all they do is:
+All composable operators do is either, or both:
 
 - Wrap the destination into a subscriber on subscribe
-- And/Or Interact with the destination on subscribe
+- Interact with the destination on subscribe
 
   > The `start_with` and `finalize` operators don't create anything new on
   > subscribe, they only interact with the destination subscriber.
@@ -281,59 +278,6 @@ This enables 2 things:
    actually having to implement one from scratch. The obvious limitation here is
    that it can only use the composable subset of operators. So no `retry`, no
    `share`.
-
-## Pipes & Operators
-
-<!-- TODO: Rewrite -->
-
-[Pipe](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_common/src/pipe.rs)
-is an observable that takes another observable, and an [operator](#operators)
-to change its behavior and produce a new observable.
-
-> This is arguably the most interesting and versatile way to craft unique
-> behavior for events!
-
-There's a great variety of operators the pipe can take, and to make them
-easier to use, each of them have a chainable extension on the Observable trait,
-so you don't need to nest manually.
-
-For example, combining the `IteratorObservable` with a `MapOperator`, we can
-create an observable that emits a formatted string made from the upstream
-numbers:
-
-```rs
-let iterator_observable = IteratorObservable::new(1..=4);
-let subscription = iterator_observable
-    .map(|i| format!("(number: {i})"))
-    .subscribe(PrintObserver::new("mapped_iterator_observable"));
-```
-
-Output:
-
-```sh
-mapped_iterator_observable - next: "(number: 1)"
-mapped_iterator_observable - next: "(number: 2)"
-mapped_iterator_observable - next: "(number: 3)"
-mapped_iterator_observable - next: "(number: 4)"
-mapped_iterator_observable - completed
-mapped_iterator_observable - unsubscribed
-```
-
-If we take a look at that `.map` function, we can see that it really is just
-the Pipe observable and the `MapOperator` combined.
-
-```rs
-pub trait ObservablePipeExtensionMap: 'static + Observable + Sized + Send + Sync {
-    fn map<NextOut: Signal, Mapper: 'static + Fn(Self::Out) -> NextOut + Clone + Send + Sync>(
-        self,
-        mapper: Mapper,
-    ) -> ComposeOperator<MapOperator<Self::Out, Self::OutError, Mapper, NextOut, Self::Context>> {
-        MapOperator::new(mapper)
-    }
-}
-
-impl<O> ObservablePipeExtensionMap for O where O: 'static + Observable + Send + Sync {}
-```
 
 ### Subscribers
 

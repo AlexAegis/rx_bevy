@@ -39,7 +39,6 @@ mod before_primed {
 	mod when_one_input_observable_completes {
 		use super::*;
 
-		// TODO: This may aswell complete.
 		#[test]
 		fn should_just_unsubscribe() {
 			let destination_1 = MockObserver::default();

@@ -8,7 +8,6 @@ use rx_core_scheduler_ticking::{Tick, TickingSchedulerExecutor};
 
 use crate::{Clock, RxBevyContext, RxBevyContextItem, RxBevyScheduler};
 
-// TODO: SystemParam that is the scheduler directly, maybe use the builder pattern of sysparams
 #[derive(Resource, RxExecutor)]
 #[rx_context(RxBevyContext)]
 #[rx_tick(Tick)]

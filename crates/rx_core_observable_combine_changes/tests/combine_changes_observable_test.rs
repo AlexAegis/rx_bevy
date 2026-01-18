@@ -84,8 +84,6 @@ mod before_primed {
 
 		// Since not all input observables have completed, but one cancelled,
 		// there is no completion signal.
-		// TODO: This is the behavior for CombineLatest in rxjs, but since cancelling just one input observable does not cancel the entire combineLatest, it should not prevent a later completion either, as the last observed value can still be replayed when other observables emit. So this behavior might change later.
-
 		notification_collector.lock().assert_notifications(
 			"combine_changes",
 			0,

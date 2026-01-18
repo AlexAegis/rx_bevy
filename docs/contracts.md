@@ -35,8 +35,6 @@ as part of the failure message.
 > contracts, saving time implementing the tests, ensuring every verification
 > and extra assertion is made.
 
-<!-- TODO: Write a lint to verify all contract tests exist, then mention it here -->
-
 ## `rx_contract_closed_after_error`
 
 > Applies to:
@@ -63,7 +61,7 @@ and it should be closed, teardowns executed.
     subscription are executed.
   - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
     downstream of the operator should also be executed.
-- If Operator:  
+- If Operator:
   - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
     upstream of the operator should also be executed.
 - If there are input observables:
@@ -100,7 +98,7 @@ considered "completed", and it should be closed, teardowns executed.
     subscription are executed.
   - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
     downstream of the operator should also be executed.
-- If Operator:  
+- If Operator:
   - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
     upstream of the operator should also be executed.
 - If there are input observables:
@@ -135,7 +133,7 @@ unsubscribed. It's a cancellation.
     subscription are executed.
   - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
     downstream of the operator should also be executed.
-- If Operator:  
+- If Operator:
   - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
     upstream of the operator should also be executed.
 - If there are input observables:
@@ -168,7 +166,7 @@ it early.
     subscription are executed.
   - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
     downstream of the operator should also be executed.
-- If Operator:  
+- If Operator:
   - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
     upstream of the operator should also be executed.
 - If there are input observables:
@@ -201,7 +199,7 @@ immediately.
     subscription are executed.
   - `rx_verify_downstream_teardowns_executed`: Teardowns added by a `finalize`
     downstream of the operator should also be executed.
-- If Operator:  
+- If Operator:
   - `rx_verify_upstream_teardowns_executed`: Teardowns added by a `finalize`
     upstream of the operator should also be executed.
 - If there are input observables:
@@ -231,7 +229,7 @@ immediate.
 >
 > - `CombineLatestObservable` when already [primed](./02_concepts.md#primed),
 >   completes only when **all** of its inner observables have finished emitting
->   values! Before it's primed, it completes when *any* of its inner
+>   values! Before it's primed, it completes when _any_ of its inner
 >   observables complete or unsubscribe, as priming then becomes impossible.
 > - `ZipObservable` completes when **any** of its inner observables have
 >   finished emitting values!
@@ -255,7 +253,7 @@ emit further values.
 - `rx_verify_not_closed`: If a single input observable unsubscribed, but
   another one can still trigger emissions, the observable itself should not
   complete yet.
-  
+
 ## Additional Guidelines
 
 These are additional guidelines to better adhere to the contracts. Some of them
@@ -362,7 +360,7 @@ constructed since it's an enum with no variants.
 
 > Never is actually just a type alias for `core::convert::Infallible`. The
 > reason `Infallible` isn't used directly, because that name conveys that it's
-> an *error*, while here it could mean any event/signal that can *never* happen.
+> an _error_, while here it could mean any event/signal that can _never_ happen.
 > And that event can be a valid output too, not just an error.
 
 This type **MUST** be used to denote signals that are never produced instead of
@@ -374,13 +372,13 @@ denote that something won't ever produce said signal.
 - If an Observable never produces a value, its `Out` type **must** be set to
   `Never`.
   - For example the `ThrowObservable` only produces a single error, therefore
-        its `Out` type is `Never`
+    its `Out` type is `Never`
   - And the `NeverObservable` never produces anything so both `Out` and
-        `OutError` is `Never`.
+    `OutError` is `Never`.
 - If a Subscriber never sends errors downstream (for example it catches
-    errors), it also **must** set its `OutError` type to `Never`.
+  errors), it also **must** set its `OutError` type to `Never`.
 - If a Subscriber never sends values downstream (for example it re-throws them
-    as errors), it also **must** set its `Out` type to `Never`.
+  as errors), it also **must** set its `Out` type to `Never`.
 
 > Note that in the future once Rust stabilizes the actual never type (`!`), the
 > `Never` type in `rx_core_common` will be deprecated in favor of it.
