@@ -27,6 +27,25 @@ where
 	Unsubscribe,
 }
 
+impl<In, InError> SubscriberNotification<In, InError>
+where
+	In: Signal,
+	InError: Signal,
+{
+	#[inline]
+	pub fn is_terminal(&self) -> bool {
+		matches!(
+			self,
+			SubscriberNotification::Complete | SubscriberNotification::Error(_)
+		)
+	}
+
+	#[inline]
+	pub fn is_closing(&self) -> bool {
+		self.is_terminal() || matches!(self, SubscriberNotification::Unsubscribe)
+	}
+}
+
 impl<In, InError> From<ObserverNotification<In, InError>> for SubscriberNotification<In, InError>
 where
 	In: Signal,
@@ -246,6 +265,30 @@ mod test {
 			let subscriber_notification: SubscriberNotification<usize> =
 				SubscriptionNotification::Unsubscribe.into();
 			assert_eq!(subscriber_notification, SubscriberNotification::Unsubscribe);
+		}
+	}
+
+	mod is_terminal {
+		use super::*;
+
+		#[test]
+		fn it_should_identify_terminal_notifications() {
+			assert!(SubscriberNotification::<usize, &'static str>::Error("error").is_terminal());
+			assert!(SubscriberNotification::<usize>::Complete.is_terminal());
+			assert!(!SubscriberNotification::<usize>::Next(1).is_terminal());
+			assert!(!SubscriberNotification::<usize>::Unsubscribe.is_terminal());
+		}
+	}
+
+	mod is_closing {
+		use super::*;
+
+		#[test]
+		fn it_should_identify_closing_notifications() {
+			assert!(SubscriberNotification::<usize, &'static str>::Error("error").is_closing());
+			assert!(SubscriberNotification::<usize>::Complete.is_closing());
+			assert!(SubscriberNotification::<usize>::Unsubscribe.is_closing());
+			assert!(!SubscriberNotification::<usize>::Next(1).is_closing());
 		}
 	}
 }

@@ -230,21 +230,14 @@ where
 			// information and immediately releases it to allow applied
 			// notifications to acquire it again
 			for notification in notifications.into_iter() {
-				// TODO: simplify is_closing
-				let is_complete = matches!(&notification, SubscriberNotification::Complete);
-
-				let is_error = matches!(&notification, SubscriberNotification::Error(_));
-
-				let is_terminal = is_complete || is_error;
-
-				let is_unsubscribe = matches!(&notification, SubscriberNotification::Unsubscribe);
+				let is_closing = notification.is_closing();
 
 				// Other notifications can be safely dropped when already closed
 				if !state.lock_clear_poison().is_closed_ignoring_deferred() {
 					subscriber.push(notification);
 				}
 
-				if is_unsubscribe || is_terminal {
+				if is_closing {
 					state.lock_ignore_poison().closed_flag.close();
 				}
 			}
