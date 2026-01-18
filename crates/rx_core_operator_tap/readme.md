@@ -4,7 +4,7 @@
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_core_operator_tap)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_core_operator_tap)
 
-> [Book Page](https://alexaegis.github.io/rx_bevy/12_operators_core/tap.html) -
+> [Book Page](https://alexaegis.github.io/rx_bevy/operator/tap.html) -
 > [Operator Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_operator_tap/src/tap_operator.rs) -
 > [Subscriber Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_operator_tap/src/tap_subscriber.rs)
 
@@ -58,4 +58,4 @@ tap_operator - completed
 tap_operator - unsubscribed
 ```
 
-[^1]: Documentation on [UpgradeableObserver](https://alexaegis.github.io/rx_bevy/02_concepts.html#upgradeableobserver)
+[^1]: Documentation on [UpgradeableObserver](https://alexaegis.github.io/rx_bevy/concepts.html#upgradeableobserver)
