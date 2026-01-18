@@ -9,13 +9,8 @@ pub trait ScheduledWork: WithWorkInputOutput + WithWorkContextProvider {
 		context: &mut <Self::WorkContextProvider as WorkContextProvider>::Item<'_>,
 	) -> WorkResult;
 
-	/// The scheduler should call this immediately when you pass the work into
-	/// it, which happens before the first tick can.
-	///
-	/// TODO: VErify if it even makes sense or just defer to the next first tick
-	/// on drain to act as initialize
-	///
-	/// TODO: ADD A RETURN VALUE AND RETURN IT TO THE USER, BUT ONLY MAKES SENSE WITH THE CONTEXT, BUT THAT CAN'T BE CALLED??
+	/// This hook is called once when the work enters the executor during the
+	/// first tick after being scheduled.
 	fn on_scheduled_hook(&mut self, tick_input: Self::Tick);
 }
 

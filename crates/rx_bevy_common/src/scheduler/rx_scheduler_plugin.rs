@@ -10,19 +10,47 @@ use rx_core_scheduler_ticking::Tick;
 
 use crate::{Clock, RxBevyExecutor, SubscribeRetryPlugin};
 
-/// An RxScheduler is responsible to keep active, scheduled Subscriptions emitting
-/// values.
+/// # [RxSchedulerPlugin]
 ///
-/// > For example, an interval observable needs to re-emit events again and again
-/// > in set intervals, and the scheduler is responsible for "ticking" these,
-/// > and at each tick it can do something, it will do something.
+/// Executes scheduled work issued by subscriptions.
+/// You need to add this plugin for every `S` bevy schedule (`Update`,
+/// `PostUpdate`) and `C` clock (`Virtual`, `Real`) combination you're using
+/// for [`RxSchedule`][crate::RxSchedule]s within your app.
 ///
-/// > On the contrary, a simple, non-scheduled observable - like one that provides
-/// > keyboard presses as observable events - does not need any scheduling. These
-/// > events propagate through subscriptions as they happen.
+/// Don't forget to add the base [`RxPlugin`][crate::RxPlugin] too!
 ///
-/// An RxScheduler is tied to a regular bevy Schedule, and all it does is call
-/// `tick` on [SubscriptionComponent]s at the schedule they are implemented for.
+/// The executor system that ticks scheduler work is simply added to the
+/// generic `S` bevy schedule!
+///
+/// In case you have other systems relying on scheduled work already being
+/// executed, consider creating a custom bevy schedule for the rx scheduler.
+/// Only do this if you know you need it! It's perfectly fine to just use
+/// the `Update` schedule for the rx scheduler, you still have `PreUpdate`
+/// and `PostUpdate` as schedules where you know you're before/after the
+/// subscriptions being ticked.
+///
+/// ## When do signals happen?
+///
+/// When exactly an observable emits depends on its implementation:
+/// - Immediately when the subscription happens
+///   
+///   > Observables like `just` emits instantly, which means if you subscribe
+///   > to one directly, it happens exactly when you call subscribe on it.
+///   > If you subscribe to it using a command, then it happens when the
+///   > command is executed.
+///   > ("directly" here means using the observables `subscribe` method, and
+///   > not through `Commands`).
+/// - Or if it uses a scheduler (you know which one uses a scheduler because
+///   you have to give it a `SchedulerHandle`), then it can also emit
+///   signals whenever that scheduler gets "ticked". Which happens
+///   here in the `rx_executor` system defined by this plugin.
+///
+///   > For example, let's say you subscribe directly to an `interval`
+///   > observable from a system running once under the `PreUpdate` schedule,
+///   > and the interval has the option `start_on_subscribe: true`. Then, the
+///   > first emission happens immediately in that system in `PreUpdate`, but
+///   > the following emissions, since they are all sheduled, will happen in
+///   > the schedule of the handler you gave it. Which could be anything!
 #[derive_where(Default)]
 pub struct RxSchedulerPlugin<S, C>
 where
@@ -40,8 +68,7 @@ where
 	fn build(&self, app: &mut App) {
 		app.init_resource::<RxBevyExecutor<S, C>>();
 
-		// TODO: This has to run at the very end of this schedule, or offer a label so users can make sure it's scheduled before the executor
-		app.add_systems(S::default(), tick_executor::<S, C>);
+		app.add_systems(S::default(), rx_executor::<S, C>);
 
 		if !app.is_plugin_added::<SubscribeRetryPlugin>() {
 			app.add_plugins(SubscribeRetryPlugin);
@@ -49,7 +76,12 @@ where
 	}
 }
 
-fn tick_executor<S, C>(world: &mut World)
+/// This system executes scheduled work for the `S` bevy schedule using the `C`
+/// clock.
+///
+/// You may refer to this system for ordering purposes but also consider using
+/// a custom schedule too.
+pub fn rx_executor<S, C>(world: &mut World)
 where
 	S: ScheduleLabel,
 	C: Clock,
