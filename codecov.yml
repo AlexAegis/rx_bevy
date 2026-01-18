@@ -320,9 +320,6 @@ component_management:
     - component_id: rx_core_subscriber_higher_order_map
       paths:
         - crates/rx_core_subscriber_higher_order_map/**
-    - component_id: rx_core_subscriber_rc
-      paths:
-        - crates/rx_core_subscriber_rc/**
     - component_id: rx_core_subscriber_higher_order_switch
       paths:
         - crates/rx_core_subscriber_higher_order_switch/**

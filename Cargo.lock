@@ -5577,19 +5577,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rx_core_subscriber_rc"
-version = "0.1.0"
-dependencies = [
- "derive-where",
- "disqualified",
- "rx_core",
- "rx_core_common",
- "rx_core_macro_subscriber_derive",
- "rx_core_observable_iterator",
- "rx_core_testing",
-]
-
-[[package]]
 name = "rx_core_subscription_inert"
 version = "0.1.0"
 dependencies = [

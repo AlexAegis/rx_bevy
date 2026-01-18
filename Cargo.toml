@@ -83,7 +83,6 @@ rx_core_subscriber_higher_order_concurrent = { path = "crates/rx_core_subscriber
 rx_core_subscriber_higher_order_exhaust = { path = "crates/rx_core_subscriber_higher_order_exhaust" }
 rx_core_subscriber_higher_order_map = { path = "crates/rx_core_subscriber_higher_order_map" }
 rx_core_subscriber_higher_order_switch = { path = "crates/rx_core_subscriber_higher_order_switch" }
-rx_core_subscriber_rc = { path = "crates/rx_core_subscriber_rc" }
 # Operators
 rx_core_operator_adsr = { path = "crates/rx_core_operator_adsr" }
 rx_core_operator_buffer_count = { path = "crates/rx_core_operator_buffer_count" }
