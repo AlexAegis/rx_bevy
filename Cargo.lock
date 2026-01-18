@@ -4451,7 +4451,6 @@ dependencies = [
  "bitflags 2.10.0",
  "derive-where",
  "disqualified",
- "rx_core",
  "rx_core_macro_observable_derive",
  "rx_core_macro_observer_derive",
  "rx_core_macro_operator_derive",
