@@ -39,3 +39,22 @@ pub struct AdsrEnvelopeChange {
 	/// Default: Linear mapping
 	pub release_easing: Option<EaseFunction>,
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn from_true() {
+		let trigger_true: AdsrTrigger = true.into();
+		assert!(trigger_true.activated);
+		assert!(trigger_true.envelope_changes.is_none());
+	}
+
+	#[test]
+	fn from_false() {
+		let trigger_false: AdsrTrigger = false.into();
+		assert!(!trigger_false.activated);
+		assert!(trigger_false.envelope_changes.is_none());
+	}
+}
