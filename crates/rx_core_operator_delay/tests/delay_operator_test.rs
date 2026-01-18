@@ -58,6 +58,57 @@ fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
 	subscription.unsubscribe();
 }
 
+// This actually tests the `is_closed` function of `delay` whould should
+// immediately give feedback to upstream that it is closed, which is used
+// for things like stopping an iterator early.
+#[test]
+fn should_not_finish_the_iterator_when_closed_early_and_downstream_is_delayed() {
+	let mut executor = MockExecutor::default();
+	let scheduler = executor.get_scheduler_handle();
+
+	let mock_destination = MockObserver::<i32>::default();
+	let notification_collector = mock_destination.get_notification_collector();
+
+	let tracked_iterator = TrackedIterator::new(1..=5);
+	let tracked_data = tracked_iterator.get_tracking_data_ref();
+
+	let mut upstream_teardown_tracker_subscription = SharedSubscription::default();
+	let upstream_teardown_tracker =
+		upstream_teardown_tracker_subscription.add_tracked_teardown("iterator - take(2) - delay");
+	let mut source = tracked_iterator
+		.into_observable()
+		.finalize(move || upstream_teardown_tracker_subscription.unsubscribe())
+		.take(2)
+		.delay(Duration::from_millis(1000), scheduler);
+	let subscription = source.subscribe(mock_destination);
+	notification_collector.print();
+
+	assert!(!tracked_data.is_finished(0), "Should not reach its end!");
+	executor.tick(Duration::from_millis(500));
+	notification_collector.print();
+
+	assert!(!tracked_data.is_finished(0));
+
+	assert!(subscription.is_closed());
+	upstream_teardown_tracker.assert_yet_to_be_torn_down();
+
+	executor.tick(Duration::from_millis(500));
+	upstream_teardown_tracker.assert_was_torn_down();
+	notification_collector.print();
+	notification_collector.lock().assert_notifications(
+		"iterator - take(2) - delay",
+		0,
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+			SubscriberNotification::Complete,
+		],
+		true,
+	);
+
+	assert!(subscription.is_closed());
+}
+
 #[test]
 fn should_delay_multiple_next_emissions_by_the_specified_amount_of_time() {
 	let mut executor = MockExecutor::default();

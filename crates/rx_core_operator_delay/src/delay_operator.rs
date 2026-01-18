@@ -8,6 +8,17 @@ use rx_core_macro_operator_derive::RxOperator;
 
 use crate::DelaySubscriber;
 
+/// # [DelayOperator]
+///
+/// The `delay` operator shifts upstream values forward in time by a specified
+/// duration.
+///
+/// Upstream completion and cancellation can happen instantly if there are no
+/// pending delayed values, otherwise it will complete or cancel once all
+/// delayed values have been emitted.
+///
+/// Upstream errors are immediately propagated downstream, cancelling any
+/// pending delayed values.
 #[derive(RxOperator)]
 #[rx_in(In)]
 #[rx_in_error(InError)]
