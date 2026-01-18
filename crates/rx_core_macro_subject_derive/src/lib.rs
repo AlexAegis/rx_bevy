@@ -23,7 +23,7 @@ fn primary_category_subject() -> Type {
 /// ## Traits you still have to implement to get a subject
 ///
 /// - `Observable`
-/// - `Observer` unless using `#[rx_delegate_observer_to_destination]`)
+/// - `Observer` (unless using `#[rx_delegate_observer_to_destination]`)
 /// - `SubscriptionLike` (unless using
 ///   `#[rx_delegate_subscription_like_to_destination]`)
 ///

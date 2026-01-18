@@ -9,10 +9,6 @@ use syn::{DeriveInput, parse_macro_input};
 ///
 /// Helper macro to implement a few traits required for an executor.
 ///
-/// ## Traits you still have to implement to get an executor
-///
-/// - .
-///
 /// ## Traits Implemented
 ///
 /// - `WorkContextProvider`: Using the type provided with `#[rx_context]`

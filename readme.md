@@ -3,6 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/rx_bevy.svg)](https://crates.io/crates/rx_bevy)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn)](https://codecov.io/github/AlexAegis/rx_bevy)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AlexAegis/rx_bevy?tab=MIT-1-ov-file)
 
 [![rx_bevy](https://github.com/AlexAegis/rx_bevy/blob/master/docs/assets/rx_bevy_logo.png)](https://github.com/AlexAegis/rx_bevy)
 
@@ -64,7 +65,7 @@ Observables define a stream of emissions that is instantiated upon subscription.
       Immediately unsubscribes!
   - Miscellaneous Observables:
     - [NeverObservable](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_just) -
-      Never emits, never unsubscribes!
+      Never emits, never unsubscribes! Only once dropped!
       > Warning: you need to handle subscriptions made to this yourself!
 - Combination (Multi-Signal):
   - [CombineChangesObservable](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_combine_changes) -
@@ -72,9 +73,9 @@ Observables define a stream of emissions that is instantiated upon subscription.
     values when either of them emits. It denotes which one had changed, and it
     emits even when one on them haven't emitted yet.
   - [CombineLatestObservable](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_combine_latest) -
-    Subscribes to two different observables, and emit the latest of both both
-    values when either of them emits. It only starts emitting once both have
-    emitted at least once.
+    Subscribes to two observables, and emits the latest of both values when
+    either of them emits. It only starts emitting once both have emitted at
+    least once.
   - [ZipObservable](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_zip) -
     Subscribes to two different observables, and emit both values when both
     of them emits, pairing up emissions by the order they happened.
@@ -276,13 +277,24 @@ is applicable.
 
 See the individual macros for more information:
 
-- [`RxExecutor`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_executor_derive)
-- [`RxObservable`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_observable_derive)
-- [`RxObserver`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_observer_derive)
-- [`RxScheduler`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_scheduler_derive)
-- [`RxSubject`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_subject_derive)
-- [`RxSubscriber`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_subscriber_derive)
-- [`RxSubscription`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_subscription_derive)
+- [`RxExecutor`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_executor_derive) -
+  Derive macro for Executors.
+- [`RxObservable`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_observable_derive) -
+  Derive macro for Observables.
+- [`RxObserver`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_observer_derive) -
+  Derive macro for RxObservers.
+- [`RxOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_operator_derive) -
+  Derive macro for Operators.
+- [`RxScheduler`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_scheduler_derive) -
+  Derive macro for Schedulers.
+- [`RxSubject`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_subject_derive) -
+  Derive macro for Subjects.
+- [`RxSubscriber`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_subscriber_derive) -
+  Derive macro for Subscribers.
+- [`RxSubscription`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_subscription_derive) -
+  Derive macro for Subscriptions.
+- [`RxWork`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_work_derive) -
+  Derive macro for schedulable work.
 
 ### Testing
 

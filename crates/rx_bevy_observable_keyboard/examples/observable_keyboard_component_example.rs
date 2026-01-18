@@ -27,60 +27,64 @@ fn main() -> AppExit {
 		.run()
 }
 
+fn next_number_observer(
+	next: Trigger<RxSignal<String>>,
+	name_query: Query<&Name>,
+	time: Res<Time>,
+) {
+	println!(
+		"value: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
+		next.signal(),
+		next.entity(),
+		name_query.get(next.entity()).unwrap(),
+		time.elapsed_secs()
+	);
+}
+
 fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
-	commands.entity(example_entities.subscription).try_despawn();
+	println!("Unsubscribe subscription!");
+	commands.entity(example_entities.subscription).despawn();
 }
 
 #[derive(Resource, Reflect)]
 struct ExampleEntities {
-	proxy_keyboard_observable_entity: Entity,
+	keyboard_observable_entity: Entity,
+	keyboard_event_observer: Entity,
 	subscription: Entity,
 }
 
 fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, Virtual>) {
-	println!("Start pressing keys! Space unsubscribes!");
-	commands.spawn((
-		Camera3d::default(),
-		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
-	));
-
-	let destination_entity = commands
-		.spawn((Name::new("Destination"),))
-		.observe(|next: Trigger<RxSignal<String, Never>>| {
-			println!("{:?}", next.signal());
-		})
-		.id();
-
 	let keyboard_observable_entity = commands
 		.spawn((
 			Name::new("KeyboardObservable"),
 			KeyboardObservable::new(default(), rx_schedule_update_virtual.handle())
+				// .filter(|key_code, _| { // Try filtering to only WASD keys!
+				// 	matches!(
+				// 		key_code,
+				// 		KeyCode::KeyW | KeyCode::KeyA | KeyCode::KeyS | KeyCode::KeyD
+				// 	)
+				// })
+				.map(|key_code| format!("KEYCODE {:?}", key_code))
 				.into_component(),
 		))
 		.id();
 
-	let proxy_keyboard_observable_entity = commands
-		.spawn((
-			Name::new("Proxy"),
-			ProxyObservable::<KeyCode, Never>::new(
-				keyboard_observable_entity,
-				rx_schedule_update_virtual.handle(),
-			)
-			.map(|key_code| format!("KEYCODE {:?}", key_code))
-			.into_component(),
-		))
+	let keyboard_event_observer = commands
+		.spawn((Name::new("KeyboardObserver"),))
+		.observe(next_number_observer)
 		.id();
 
 	let subscription = commands.subscribe(
-		proxy_keyboard_observable_entity,
+		keyboard_observable_entity,
 		EntityDestination::<String, Never>::new(
-			destination_entity,
+			keyboard_event_observer,
 			rx_schedule_update_virtual.handle(),
 		),
 	);
 
 	commands.insert_resource(ExampleEntities {
 		subscription,
-		proxy_keyboard_observable_entity,
+		keyboard_event_observer,
+		keyboard_observable_entity,
 	});
 }

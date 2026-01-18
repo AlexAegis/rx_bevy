@@ -9,6 +9,18 @@ use rx_core_macro_observable_derive::RxObservable;
 
 use crate::{ResourceSubscription, observable::ResourceObservableOptions};
 
+/// # [ResourceObservable]
+///
+/// The `ResourceObservable` call a "reader" function on an observable every
+/// time it is added or mutated, emitting the result to subscribers.
+///
+/// ## Options
+///
+/// - `trigger_on_is_added`: Emit also when the resource was just added.
+///   (Default: true)
+/// - `trigger_on_is_changed`: Emit on each tick where the resource was accessed
+///   mutably, except when the resource was just added.
+///   (Default: true)
 #[derive(RxObservable)]
 #[rx_out(Out)]
 #[rx_out_error(Never)]

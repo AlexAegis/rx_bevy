@@ -1,12 +1,27 @@
 use rx_core::prelude::*;
 
-/// The [CombineLatestObserver] combines the latest values from multiple observables
-/// Notice that in the output, 1, and 2 is not present, that's because
-/// the first observable emits all of its values immediately upon subscription,
-/// before the second one could even start listening.
+/// The [CombineLatestObserver] combines the latest values from multiple other
+/// observables.
 fn main() {
-	let observable_1 = (1..=3).into_observable();
-	let observable_2 = (4..=6).into_observable();
-	let _s =
-		combine_latest(observable_1, observable_2).subscribe(PrintObserver::new("combine_latest"));
+	let mut greetings_subject = PublishSubject::<&'static str>::default();
+	let mut count_subject = PublishSubject::<usize>::default();
+
+	let mut subscription = combine_latest(
+		greetings_subject
+			.clone()
+			.tap(PrintObserver::new("greetings_subject")),
+		count_subject
+			.clone()
+			.tap(PrintObserver::new("count_subject")),
+	)
+	.subscribe(PrintObserver::new("combine_latest"));
+
+	greetings_subject.next("Hello!");
+	count_subject.next(10);
+	count_subject.next(20);
+	greetings_subject.next("Szia!");
+	greetings_subject.complete();
+	count_subject.next(30);
+	count_subject.complete();
+	subscription.unsubscribe();
 }

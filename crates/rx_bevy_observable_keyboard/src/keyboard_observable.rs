@@ -5,8 +5,18 @@ use rx_core_macro_observable_derive::RxObservable;
 
 use crate::{KeyboardObservableOptions, KeyboardSubscription};
 
-/// A simplistic observable to demonstrate accessing world state from within a
-/// subscription
+/// # [KeyboardObservable]
+///
+/// The `KeyboardObservable` turns Bevy keyboard input events into signals. The
+/// events are sourced from the `ButtonInput<KeyCode>` resource.
+///
+/// ## Options
+///
+/// `KeyCode` signals can be observed in multiple modes:
+///
+/// - `KeyboardObservableEmit::JustPressed` - emits once when the key is pressed down.
+/// - `KeyboardObservableEmit::JustReleased` - emits once when the key is released.
+/// - `KeyboardObservableEmit::WhilePressed` - emits continuously while the key is held down.
 #[derive(RxObservable)]
 #[rx_out(KeyCode)]
 #[rx_out_error(Never)]

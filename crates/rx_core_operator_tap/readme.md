@@ -3,6 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/rx_core_operator_tap.svg)](https://crates.io/crates/rx_core_operator_tap)
 [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_core_operator_tap)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_core_operator_tap)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AlexAegis/rx_bevy?tab=MIT-1-ov-file)
 
 > [Book Page](https://alexaegis.github.io/rx_bevy/operator/tap.html) -
 > [Operator Source](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_core_operator_tap/src/tap_operator.rs) -
@@ -28,13 +29,19 @@ pipeline.
 
 ## See Also
 
-- [`tap_next`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_tap_next): If you only want to observe the upstream values using a
-  function.
+- [TapNextOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_tap_next) -
+  Run a callback for each `next` value while letting signals pass through.
+- [OnNextOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_on_next) -
+  Invoke a callback for each value that can also decide whether to forward it.
+- [OnSubscribeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_on_subscribe) -
+  Run a callback when a subscription is established.
+- [FinalizeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_finalize) -
+  Execute cleanup when the observable finishes or unsubscribes.
 
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_tap --features example --example tap_operator_example
+cargo run -p rx_core_operator_tap --example tap_operator_example
 ```
 
 ```rs
@@ -46,7 +53,7 @@ cargo run -p rx_core_operator_tap --features example --example tap_operator_exam
 
 Output:
 
-```sh
+```txt
 tap_destination - next: 1
 tap_operator - next: 1
 tap_destination - next: 2

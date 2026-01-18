@@ -9,7 +9,14 @@ use rx_core_macro_observable_derive::RxObservable;
 
 use crate::EntityEventSubscription;
 
-/// A simplistic observable to demonstrate accessing world state from within a subscription
+/// # [EventObservable]
+///
+/// The `EventObservable` turns Bevy events triggered on an entity into signals,
+/// allowing you to use any event as an observable source, and construct reactive
+/// pipelines from them using operators.
+///
+/// Subscribers will observe events targeted at the specified entity, and a
+/// completion signal once the entity is despawned.
 #[derive(RxObservable)]
 #[rx_out(E)]
 #[rx_out_error(Never)]

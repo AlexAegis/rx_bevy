@@ -12,9 +12,9 @@ fn main() -> AppExit {
 				enable_multipass_for_primary_context: true,
 			},
 			WorldInspectorPlugin::new(),
+			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
-		.register_type::<ExampleEntities>()
 		.add_systems(Startup, setup)
 		.add_systems(
 			Update,
@@ -26,69 +26,20 @@ fn main() -> AppExit {
 		.run()
 }
 
-fn next_number_observer(
-	next: Trigger<RxSignal<String>>,
-	name_query: Query<&Name>,
-	time: Res<Time>,
-) {
-	println!(
-		"value: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
-		next.signal(),
-		next.entity(),
-		name_query.get(next.entity()).unwrap(),
-		time.elapsed_secs()
-	);
+fn unsubscribe(mut example_entities: ResMut<MySubscriptions>) {
+	example_entities.subscription.unsubscribe();
 }
 
-fn unsubscribe(mut commands: Commands, example_entities: Res<ExampleEntities>) {
-	println!("Unsubscribe subscription!");
-	commands.entity(example_entities.subscription).despawn();
-}
-
-#[derive(Resource, Reflect)]
-struct ExampleEntities {
-	keyboard_observable_entity: Entity,
-	keyboard_event_observer: Entity,
-	subscription: Entity,
+#[derive(Resource)]
+struct MySubscriptions {
+	subscription: SharedSubscription,
 }
 
 fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, Virtual>) {
-	commands.spawn((
-		Camera3d::default(),
-		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),
-	));
+	let subscription = KeyboardObservable::new(default(), rx_schedule_update_virtual.handle())
+		.subscribe(PrintObserver::new("keyboard"));
 
-	let keyboard_observable_entity = commands
-		.spawn((
-			Name::new("KeyboardObservable"),
-			KeyboardObservable::new(default(), rx_schedule_update_virtual.handle())
-				.filter(|key_code, _| {
-					matches!(
-						key_code,
-						KeyCode::KeyW | KeyCode::KeyA | KeyCode::KeyS | KeyCode::KeyD
-					)
-				})
-				.map(|key_code| format!("KEYCODE {:?}", key_code))
-				.into_component(),
-		))
-		.id();
-
-	let keyboard_event_observer = commands
-		.spawn((Name::new("KeyboardObserver"),))
-		.observe(next_number_observer)
-		.id();
-
-	let subscription = commands.subscribe(
-		keyboard_observable_entity,
-		EntityDestination::<String, Never>::new(
-			keyboard_event_observer,
-			rx_schedule_update_virtual.handle(),
-		),
-	);
-
-	commands.insert_resource(ExampleEntities {
-		subscription,
-		keyboard_event_observer,
-		keyboard_observable_entity,
+	commands.insert_resource(MySubscriptions {
+		subscription: SharedSubscription::new(subscription),
 	});
 }

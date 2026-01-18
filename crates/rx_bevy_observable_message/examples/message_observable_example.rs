@@ -34,9 +34,9 @@ fn main() -> AppExit {
 					|res| res.dummy_message_destination,
 				),
 				send_message(AppExit::Success).run_if(input_just_pressed(KeyCode::Escape)),
-				dummy_message_producer,
 			),
 		)
+		.add_systems(Update, dummy_message_producer) // Try changing this to a PostUpdate, it will still observe all messages, but one frame later!
 		.run()
 }
 
@@ -95,6 +95,8 @@ impl SubscriptionMapResource for ExampleEntities {
 }
 
 fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, Virtual>) {
+	println!("Press Space!");
+
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),

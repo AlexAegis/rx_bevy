@@ -84,6 +84,8 @@ impl SubscriptionMapResource for ExampleEntities {
 }
 
 fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, Virtual>) {
+	println!("Press R to start mutating the resource!");
+	println!("Press Space to subscribe!");
 	commands.spawn((
 		Camera3d::default(),
 		Transform::from_xyz(2., 6., 8.).looking_at(Vec3::ZERO, Vec3::Y),

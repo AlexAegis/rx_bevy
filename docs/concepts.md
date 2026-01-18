@@ -356,8 +356,8 @@ mappers would need to do an inner map:
 
 ```rs
 fallible_observable
-  .map(|i_result| i_result.map(|i| * 2))
-  .subscribe(...);
+    .map(|i_result| i_result.map(|i| * 2))
+    .subscribe(...);
 ```
 
 > In case you do want to move errors between the `error` and `next` channels,
@@ -520,15 +520,15 @@ let mut subject = BehaviorSubject::<i32>::new(10);
 
 // Immediately prints "hello 10"
 let mut hello_subscription = subject
-  .clone()
-  .subscribe(PrintObserver::<i32>::new("hello"));
+    .clone()
+    .subscribe(PrintObserver::<i32>::new("hello"));
 
 subject.next(11);
 
 let _s1 = subject
-  .clone()
-  .map(|next| next * 2)
-  .subscribe(PrintObserver::<i32>::new("hi double"));
+    .clone()
+    .map(|next| next * 2)
+    .subscribe(PrintObserver::<i32>::new("hi double"));
 
 subject.next(12);
 hello_subscription.unsubscribe();
@@ -536,8 +536,8 @@ subject.next(13);
 subject.complete();
 
 let mut _compelted_subscription = subject
-  .clone()
-  .subscribe(PrintObserver::<i32>::new("hello_completed"));
+    .clone()
+    .subscribe(PrintObserver::<i32>::new("hello_completed"));
 ```
 
 Output:
@@ -654,22 +654,22 @@ Example:
 let mut subject = AsyncSubject::<i32>::default();
 
 let mut _subscription_1 = subject
-  .clone()
-  .subscribe(PrintObserver::<i32>::new("async_subject sub_1"));
+    .clone()
+    .subscribe(PrintObserver::<i32>::new("async_subject sub_1"));
 
 subject.next(1);
 subject.next(2);
 
 let mut _subscription_2 = subject
-  .clone()
-  .subscribe(PrintObserver::<i32>::new("async_subject sub_2"));
+    .clone()
+    .subscribe(PrintObserver::<i32>::new("async_subject sub_2"));
 
 subject.next(3);
 subject.complete();
 
 let mut _subscription_3 = subject
-  .clone()
-  .subscribe(PrintObserver::<i32>::new("async_subject sub_3"));
+    .clone()
+    .subscribe(PrintObserver::<i32>::new("async_subject sub_3"));
 ```
 
 Output:
