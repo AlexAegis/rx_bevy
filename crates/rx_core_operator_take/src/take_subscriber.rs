@@ -1,11 +1,11 @@
-use rx_core_common::{RxObserver, Subscriber, SubscriptionLike};
+use rx_core_common::{RxObserver, Subscriber, SubscriptionClosedFlag, SubscriptionLike};
 use rx_core_macro_subscriber_derive::RxSubscriber;
 
 #[derive(RxSubscriber)]
 #[rx_in(Destination::In)]
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection]
-#[rx_delegate_subscription_like_to_destination]
+#[rx_skip_unsubscribe_on_drop_impl]
 pub struct TakeSubscriber<Destination>
 where
 	Destination: Subscriber,
@@ -13,6 +13,8 @@ where
 	#[destination]
 	destination: Destination,
 	count: usize,
+	/// Closedness is tracked in case downstream doesn't immediately reflect it.
+	closed: SubscriptionClosedFlag,
 }
 
 impl<Destination> TakeSubscriber<Destination>
@@ -23,7 +25,14 @@ where
 		if count == 0 && !destination.is_closed() {
 			destination.complete();
 		}
-		Self { destination, count }
+
+		let closed: SubscriptionClosedFlag = destination.is_closed().into();
+
+		Self {
+			destination,
+			count,
+			closed,
+		}
 	}
 }
 
@@ -45,10 +54,40 @@ where
 	#[inline]
 	fn error(&mut self, error: Self::InError) {
 		self.destination.error(error);
+		self.closed.close();
 	}
 
 	#[inline]
 	fn complete(&mut self) {
 		self.destination.complete();
+		self.closed.close();
+	}
+}
+
+impl<Destination> SubscriptionLike for TakeSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	#[inline]
+	fn is_closed(&self) -> bool {
+		*self.closed || self.destination.is_closed()
+	}
+
+	#[inline]
+	fn unsubscribe(&mut self) {
+		if !self.is_closed() {
+			self.destination.unsubscribe();
+		}
+		self.closed.close();
+	}
+}
+
+impl<Destination> Drop for TakeSubscriber<Destination>
+where
+	Destination: Subscriber,
+{
+	#[inline]
+	fn drop(&mut self) {
+		self.unsubscribe();
 	}
 }
