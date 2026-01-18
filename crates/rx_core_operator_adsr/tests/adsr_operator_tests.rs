@@ -3,135 +3,6 @@ use rx_core_common::{Never, SubscriberNotification, WorkExecutor};
 use rx_core_testing::prelude::*;
 use std::time::Duration;
 
-mod contracts {
-	use super::*;
-
-	#[test]
-	fn rx_contract_closed_after_complete() {
-		let executor = MockExecutor::default();
-		let scheduler = executor.get_scheduler_handle();
-		let mut harness =
-			TestHarness::<TestSubject<AdsrTrigger, Never>, AdsrSignal, Never>::new("adsr");
-
-		let observable = harness
-			.create_harness_observable()
-			.adsr(AdsrOperatorOptions::default(), scheduler.clone());
-		harness.subscribe_to(observable);
-
-		harness.source().next(AdsrTrigger {
-			activated: true,
-			envelope_changes: None,
-		});
-		harness.source().complete();
-
-		harness.assert_terminal_notification(SubscriberNotification::Complete);
-		assert!(executor.is_empty());
-	}
-
-	#[test]
-	fn rx_contract_closed_after_error() {
-		let executor = MockExecutor::default();
-		let scheduler = executor.get_scheduler_handle();
-		let mut harness =
-			TestHarness::<TestSubject<AdsrTrigger, MockError>, AdsrSignal, MockError>::new("adsr");
-
-		let observable = harness
-			.create_harness_observable()
-			.adsr(AdsrOperatorOptions::default(), scheduler.clone());
-		harness.subscribe_to(observable);
-
-		harness.source().next(AdsrTrigger {
-			activated: true,
-			envelope_changes: None,
-		});
-		harness.source().error(MockError);
-
-		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
-		assert!(executor.is_empty());
-	}
-
-	#[test]
-	fn rx_contract_closed_after_unsubscribe() {
-		let executor = MockExecutor::default();
-		let scheduler = executor.get_scheduler_handle();
-		let mut harness =
-			TestHarness::<TestSubject<AdsrTrigger, Never>, AdsrSignal, Never>::new("adsr");
-
-		let observable = harness
-			.create_harness_observable()
-			.adsr(AdsrOperatorOptions::default(), scheduler.clone());
-		harness.subscribe_to(observable);
-
-		harness.source().next(AdsrTrigger {
-			activated: true,
-			envelope_changes: None,
-		});
-		harness.get_subscription_mut().unsubscribe();
-
-		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
-		assert!(executor.is_empty());
-	}
-
-	#[test]
-	fn rx_contract_closed_if_downstream_closes_early() {
-		let mut executor = MockExecutor::default();
-		let scheduler = executor.get_scheduler_handle();
-
-		let destination = MockObserver::<AdsrSignal, Never>::default();
-		let notifications = destination.get_notification_collector();
-
-		let mut source = PublishSubject::<AdsrTrigger, Never>::default();
-		let mut subscription = source
-			.clone()
-			.adsr(AdsrOperatorOptions::default(), scheduler.clone())
-			.take(2)
-			.subscribe(destination);
-
-		source.next(AdsrTrigger {
-			activated: true,
-			envelope_changes: None,
-		});
-
-		executor.tick(Duration::from_millis(0));
-		executor.tick(Duration::from_millis(5));
-
-		let lock = notifications.lock();
-		lock.assert_last_notification("adsr", SubscriberNotification::Complete);
-
-		subscription.unsubscribe();
-		executor.tick(Duration::from_millis(0));
-		assert!(executor.is_empty());
-	}
-
-	#[test]
-	fn rx_contract_closed_if_downstream_closes_immediately() {
-		let mut executor = MockExecutor::default();
-		let scheduler = executor.get_scheduler_handle();
-
-		let destination = MockObserver::<AdsrSignal, Never>::default();
-		let notifications = destination.get_notification_collector();
-
-		let source = PublishSubject::<AdsrTrigger, Never>::default();
-		let mut subscription = source
-			.clone()
-			.adsr(AdsrOperatorOptions::default(), scheduler.clone())
-			.take(0)
-			.subscribe(destination);
-
-		executor.tick(Duration::from_millis(0));
-
-		notifications.lock().assert_notifications(
-			"adsr",
-			0,
-			[SubscriberNotification::Complete],
-			true,
-		);
-
-		subscription.unsubscribe();
-		assert!(executor.is_empty());
-	}
-}
-
 mod operator {
 	use super::*;
 
@@ -322,6 +193,159 @@ mod operator {
 
 		subscription.unsubscribe();
 		executor.tick(Duration::from_millis(0));
+		assert!(executor.is_empty());
+	}
+}
+
+mod compose {
+	use super::*;
+
+	#[test]
+	fn should_compose() {
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let mut harness =
+			TestHarness::<TestSubject<AdsrTrigger, Never>, AdsrSignal, Never>::new("adsr compose");
+
+		let composed = compose_operator::<AdsrTrigger, Never>()
+			.adsr(AdsrOperatorOptions::default(), scheduler.clone());
+
+		let observable = harness.create_harness_observable().pipe(composed);
+		harness.subscribe_to(observable);
+
+		harness.source().complete();
+
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+		assert!(executor.is_empty());
+	}
+}
+
+mod contracts {
+	use super::*;
+
+	#[test]
+	fn rx_contract_closed_after_complete() {
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness =
+			TestHarness::<TestSubject<AdsrTrigger, Never>, AdsrSignal, Never>::new("adsr");
+
+		let observable = harness
+			.create_harness_observable()
+			.adsr(AdsrOperatorOptions::default(), scheduler.clone());
+		harness.subscribe_to(observable);
+
+		harness.source().next(AdsrTrigger {
+			activated: true,
+			envelope_changes: None,
+		});
+		harness.source().complete();
+
+		harness.assert_terminal_notification(SubscriberNotification::Complete);
+		assert!(executor.is_empty());
+	}
+
+	#[test]
+	fn rx_contract_closed_after_error() {
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness =
+			TestHarness::<TestSubject<AdsrTrigger, MockError>, AdsrSignal, MockError>::new("adsr");
+
+		let observable = harness
+			.create_harness_observable()
+			.adsr(AdsrOperatorOptions::default(), scheduler.clone());
+		harness.subscribe_to(observable);
+
+		harness.source().next(AdsrTrigger {
+			activated: true,
+			envelope_changes: None,
+		});
+		harness.source().error(MockError);
+
+		harness.assert_terminal_notification(SubscriberNotification::Error(MockError));
+		assert!(executor.is_empty());
+	}
+
+	#[test]
+	fn rx_contract_closed_after_unsubscribe() {
+		let executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+		let mut harness =
+			TestHarness::<TestSubject<AdsrTrigger, Never>, AdsrSignal, Never>::new("adsr");
+
+		let observable = harness
+			.create_harness_observable()
+			.adsr(AdsrOperatorOptions::default(), scheduler.clone());
+		harness.subscribe_to(observable);
+
+		harness.source().next(AdsrTrigger {
+			activated: true,
+			envelope_changes: None,
+		});
+		harness.get_subscription_mut().unsubscribe();
+
+		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
+		assert!(executor.is_empty());
+	}
+
+	#[test]
+	fn rx_contract_closed_if_downstream_closes_early() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let destination = MockObserver::<AdsrSignal, Never>::default();
+		let notifications = destination.get_notification_collector();
+
+		let mut source = PublishSubject::<AdsrTrigger, Never>::default();
+		let mut subscription = source
+			.clone()
+			.adsr(AdsrOperatorOptions::default(), scheduler.clone())
+			.take(2)
+			.subscribe(destination);
+
+		source.next(AdsrTrigger {
+			activated: true,
+			envelope_changes: None,
+		});
+
+		executor.tick(Duration::from_millis(0));
+		executor.tick(Duration::from_millis(5));
+
+		let lock = notifications.lock();
+		lock.assert_last_notification("adsr", SubscriberNotification::Complete);
+
+		subscription.unsubscribe();
+		executor.tick(Duration::from_millis(0));
+		assert!(executor.is_empty());
+	}
+
+	#[test]
+	fn rx_contract_closed_if_downstream_closes_immediately() {
+		let mut executor = MockExecutor::default();
+		let scheduler = executor.get_scheduler_handle();
+
+		let destination = MockObserver::<AdsrSignal, Never>::default();
+		let notifications = destination.get_notification_collector();
+
+		let source = PublishSubject::<AdsrTrigger, Never>::default();
+		let mut subscription = source
+			.clone()
+			.adsr(AdsrOperatorOptions::default(), scheduler.clone())
+			.take(0)
+			.subscribe(destination);
+
+		executor.tick(Duration::from_millis(0));
+
+		notifications.lock().assert_notifications(
+			"adsr",
+			0,
+			[SubscriberNotification::Complete],
+			true,
+		);
+
+		subscription.unsubscribe();
 		assert!(executor.is_empty());
 	}
 }
