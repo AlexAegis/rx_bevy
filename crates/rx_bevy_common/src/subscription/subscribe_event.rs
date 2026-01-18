@@ -98,24 +98,12 @@ where
 	format!(
 		r"The {} event was not consumed! The target observable entity ({}) does not contain any observables with these output types!
 
+- Are you sure you've added the base `RxPlugin` too besides the `RxSchedulerPlugin`s?
 - Are you sure you wanted to use the {} entity as your observable?
 - Are you sure that BOTH the Out ({}) and OutError ({}) types match up with the observable you want to subscribe to?
 
-In the best case scenario, a missed subscribe event will just leave you with
-something not working, but in the worst case it WILL panic! Read the following
-to know exactly when that can happen:
-
-	This is not a big problem with simple subscriptions using an entity as their
-	destination directly, but if you're using more complex destinations, like
-	ad-hoc pipelines through the `.as_observable()` api, AND it owns some resource
-	that must unsubscribed from (Like the `finalize` operator), missing that WILL
-	result in a panic! You can tell which operators will cause a problem if they
-	call `add_teardown` or `add` just by being created.
-
-	Remember that this error is about not reaching any observables, so you don't
-	need to account for the operators that observable has, only the ones part of
-	the destination you passed into the `.subscribe` call or constructed after the
-	`.as_observable()` api.
+A missed subscribe event will leave you with something not working the way you
+wanted it to!
 
 This error was printed because a {} event was dropped, before the destination in it could'be been removed from it.",
 		ShortName::of::<Subscribe<Out, OutError>>(),
