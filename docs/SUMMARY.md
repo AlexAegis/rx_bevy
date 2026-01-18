@@ -3,7 +3,6 @@
 [Introduction](introduction.md)
 
 - [Concepts](concepts.md)
-- [Design](design.md)
 - [Usage Within Bevy](rx_in_bevy.md)
 - [Observables](observables.md)
   - [closed](observable/closed.md)
@@ -88,7 +87,5 @@
   - [publish](subject/publish.md)
   - [replay](subject/replay.md)
 - [Development](development.md)
-  - [Writing Observables](writing_observables.md)
-  - [Writing Operators](writing_operators.md)
   - [Writing Tests](writing_tests.md)
   - [Runtime Contracts & Rules](contracts.md)

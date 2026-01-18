@@ -244,6 +244,7 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 						KeyCode::Digit1 | KeyCode::Digit2 | KeyCode::Digit3 | KeyCode::Digit4
 					)
 				})
+				.start_with(KeyCode::Digit3)
 				.switch_map(
 					move |key_code| {
 						let duration = match key_code {
