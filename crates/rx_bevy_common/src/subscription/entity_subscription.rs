@@ -9,6 +9,7 @@ use crate::{RxBevyScheduler, RxBevySchedulerDespawnEntityExtension};
 
 #[derive(RxSubscription)]
 #[rx_delegate_subscription_like_to_destination]
+#[rx_skip_unsubscribe_on_drop_impl] // This is technically shared
 pub struct EntitySubscription {
 	entity: Entity,
 	#[destination]
@@ -54,5 +55,11 @@ impl TeardownCollection for EntitySubscription {
 	#[inline]
 	fn add_teardown(&mut self, teardown: Teardown) {
 		self.subscriber.add_teardown(teardown);
+	}
+}
+
+impl Drop for EntitySubscription {
+	fn drop(&mut self) {
+		// Should do nothing, the actualy subscription is shared through the entity
 	}
 }

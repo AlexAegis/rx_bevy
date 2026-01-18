@@ -45,6 +45,71 @@ fn commands_with_observable_spawns_and_despawns_subscription_entity() {
 }
 
 #[test]
+fn dropping_an_entity_subscription_should_not_unsubscribe() {
+	let mut app = App::new();
+	app.init_resource::<Time<Virtual>>();
+	app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
+
+	let scheduler_handle = {
+		let schedule = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
+			.get_mut(app.world_mut());
+		schedule.handle()
+	};
+
+	let destination = MockObserver::<usize>::default();
+	let notifications = destination.get_notification_collector();
+	let mut subject = PublishSubject::<usize>::default();
+
+	let subscription = {
+		let mut commands = app.world_mut().commands();
+		let mut observable_with_commands =
+			commands.with_observable(subject.clone(), scheduler_handle);
+
+		observable_with_commands.subscribe(destination)
+	};
+	let subscription_entity = subscription.entity();
+
+	subject.next(7);
+	app.update();
+
+	assert!(
+		app.world().get_entity(subscription_entity).is_ok(),
+		"subscription entity should exist while the observable is active",
+	);
+
+	drop(subscription);
+	app.update();
+
+	subject.next(8);
+	app.update();
+
+	notifications.lock().assert_notifications(
+		"dropping_entity_subscription_should_not_unsubscribe",
+		0,
+		[
+			SubscriberNotification::Next(7),
+			SubscriberNotification::Next(8),
+		],
+		true,
+	);
+
+	let mut commands = app.world_mut().commands();
+	commands.entity(subscription_entity).despawn();
+
+	app.update();
+	notifications.lock().assert_notifications(
+		"dropping_entity_subscription_should_not_unsubscribe - after despawn",
+		0,
+		[
+			SubscriberNotification::Next(7),
+			SubscriberNotification::Next(8),
+			SubscriberNotification::Unsubscribe,
+		],
+		true,
+	);
+}
+
+#[test]
 fn observable_with_commands_spawns_and_despawns_subscription_entity() {
 	let mut app = App::new();
 	app.init_resource::<Time<Virtual>>();
