@@ -3,7 +3,7 @@ name = "rx_core_operator_error_boundary"
 description = "error boundary operator for rx_core. ensures at the type level that no errors are coming from upstream."
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

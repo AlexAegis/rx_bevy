@@ -3,7 +3,7 @@ name = "rx_core_notification_store"
 description = "Stateful notification stores for rx_core"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

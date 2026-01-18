@@ -3,7 +3,7 @@ name = "rx_core_macro_observable_derive"
 description = "rx_core observable derive, implements associated type only traits"
 version = "0.1.0"
 readme = "readme.md"
-publish = false
+publish = true
 
 edition.workspace = true
 homepage.workspace = true

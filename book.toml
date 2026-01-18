@@ -2,7 +2,7 @@
 
 [book]
 title = "rx_bevy"
-authors = ["AlexAegis"]
+authors = ["Sandor Gyori <alexaegis@pm.me>"]
 description = "Usage and development documentation of rx_bevy."
 src = "docs"
 
