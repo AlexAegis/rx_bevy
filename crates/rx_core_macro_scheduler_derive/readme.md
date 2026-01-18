@@ -31,7 +31,7 @@ Helper macro to implement a few traits required for a scheduler.
   Derive macro for Observables.
 - [`RxObserver`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_observer_derive) -
   Derive macro for RxObservers.
-- [`RxOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_operator_derive) -
+- [`RxOperator`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_operator_derive) -
   Derive macro for Operators.
 - [`RxSubject`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_subject_derive) -
   Derive macro for Subjects.

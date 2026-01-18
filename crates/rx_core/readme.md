@@ -280,7 +280,7 @@ See the individual macros for more information:
   Derive macro for Observables.
 - [`RxObserver`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_observer_derive) -
   Derive macro for RxObservers.
-- [`RxOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_operator_derive) -
+- [`RxOperator`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_operator_derive) -
   Derive macro for Operators.
 - [`RxScheduler`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_scheduler_derive) -
   Derive macro for Schedulers.

@@ -52,7 +52,7 @@ Helper macro to implement a few traits required for a observer.
   Derive macro for Executors.
 - [`RxObservable`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_observable_derive) -
   Derive macro for Observables.
-- [`RxOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_operator_derive) -
+- [`RxOperator`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_operator_derive) -
   Derive macro for Operators.
 - [`RxScheduler`](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_macro_scheduler_derive) -
   Derive macro for Schedulers.
