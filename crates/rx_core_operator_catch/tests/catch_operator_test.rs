@@ -98,6 +98,48 @@ mod teardown {
 	}
 }
 
+mod compose {
+	use super::*;
+
+	#[test]
+	fn should_compose() {
+		let destination = MockObserver::default();
+		let notification_collector = destination.get_notification_collector();
+
+		let mut source = PublishSubject::<_, _>::default();
+
+		let composed = compose_operator::<usize, &'static str>().catch(|_error| just(99));
+
+		let subscription = source.clone().pipe(composed).subscribe(destination);
+
+		notification_collector.lock().assert_is_empty("catch");
+
+		let error = "error";
+		source.next(1);
+		source.next(2);
+		source.next(3);
+		source.error(error);
+
+		notification_collector.lock().assert_notifications(
+			"catch",
+			0,
+			[
+				SubscriberNotification::Next(1),
+				SubscriberNotification::Next(2),
+				SubscriberNotification::Next(3),
+				SubscriberNotification::Next(99),
+				SubscriberNotification::Complete,
+			],
+			true,
+		);
+
+		assert!(
+			subscription.is_closed(),
+			"subscription should be closed after completion"
+		);
+	}
+}
+
 mod contracts {
 	use super::*;
 
