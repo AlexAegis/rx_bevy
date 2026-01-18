@@ -7,7 +7,6 @@
 
 ## Requirements
 
-<!-- - [Git LFS](https://git-lfs.github.com/) -->
 - [Latest Rust Stable](https://rustup.rs/)
 
 ## Setup
@@ -128,38 +127,38 @@ The first segment represents what project the crate is part of which also
 signals what context they are supporting.
 
 - Crates that implement generic observables or operators that work any context,
-should be prefixed with `rx_core`. Indicating they are part of `rx_core`.
+  should be prefixed with `rx_core`. Indicating they are part of `rx_core`.
 - Crates that depend on the Bevy context because they implement something Bevy
-specific, should be prefixed with `rx_bevy`
+  specific, should be prefixed with `rx_bevy`
 
-> Crates outside of this repository may **not** use the **exact** same prefix as
-> crates in this repository. (Although your prefix can **start** with a prefix
-> here. I highly recommend them at least starting with `rx_`)
->
-> My reason is that there's still a lot of un-implemented generic operators
-> that should all be part of the same repository.
->
-> Examples of **good** crate names outside of this repository:
->
-> - `rx_core_foo_operator_bar` is okay if it's context agnostic! `rx_core_foo`
->   is not the same as `rx_core`.
-> - `rx_bevy_avian_observable_collision` is also okay!
-> - `rx_avian_observable_collision` sounds even better!
->   [Avian](https://github.com/avianphysics/avian) is a Bevy crate so
->   it's clear that it is using the bevy context!
-> - `rx_rapier_observable_collision` is okay only if it's not the Bevy related
->   implementation! As [Rapier](https://github.com/dimforge/rapier) is a
->   framework agnostic project.
-> - `rx_bevy_rapier_observable_collision`: Clearer!
->
-> Examples of **bad** crate names outside of this repository:
->
-> - `rx_core_operator_foo`: This reads as it is a first party implementation
->   and is part of this repository.
->   - If you really believe that it should be named like this, but you want to
->     keep it in your repository, just raise an issue to ask! If it's not
->     something generic, or a name of a known `rx` operator that's just not yet
->     implemented here, I'm okay with it. Same with `rx_bevy`.
+Crates outside of this repository may **not** use the **exact** same prefix as
+crates in this repository. (Although your prefix can **start** with a prefix
+here. I highly recommend them at least starting with `rx_`)
+
+My reason is that there's still a lot of un-implemented generic operators
+that should all be part of the same repository.
+
+Examples of **good** crate names outside of this repository:
+
+- `rx_core_foo_operator_bar` is okay if it's context agnostic! `rx_core_foo`
+  is not the same as `rx_core`.
+- `rx_bevy_avian_observable_collision` is also okay!
+- `rx_avian_observable_collision` sounds even better!
+  [Avian](https://github.com/avianphysics/avian) is a Bevy crate so
+  it's clear that it is using the bevy context!
+- `rx_rapier_observable_collision` is okay only if it's not the Bevy related
+  implementation! As [Rapier](https://github.com/dimforge/rapier) is a
+  framework agnostic project.
+- `rx_bevy_rapier_observable_collision`: Clearer!
+
+Examples of **bad** crate names outside of this repository:
+
+- `rx_core_operator_foo`: This reads as it is a first party implementation
+  and is part of this repository.
+  - If you really believe that it should be named like this, but you want to
+    keep it in your repository, just raise an issue to ask! If it's not
+    something generic, or a name of a known `rx` operator that's just not yet
+    implemented here, I'm okay with it. Same with `rx_bevy`.
 
 #### Second Segment - Category
 
@@ -211,22 +210,22 @@ Observables usually have at least 3-4 files besides `lib.rs`:
 - `lib.rs` pre-categorizes each module export for easy integration with the
   aggregator crate.
 
-   ```rs
-   // Declared modules
-   mod foo_observable;
-   mod foo_observable_options;
-   mod foo_subscription;
+  ```rs
+  // Declared modules
+  mod foo_observable;
+  mod foo_observable_options;
+  mod foo_subscription;
 
-   // Api that is public for direct consumers of this crate, but not available
-   // to the consumers of the aggregator crate as it's not directly useful.
-   pub use foo_subscription::*;
+  // Api that is public for direct consumers of this crate, but not available
+  // to the consumers of the aggregator crate as it's not directly useful.
+  pub use foo_subscription::*;
 
-   // Api that is public to the users of the aggregator crate
-   pub mod observable {
-       pub use super::foo_observable::*;
-       pub use super::foo_observable_options::*; // Options should also be here
-   }
-   ```
+  // Api that is public to the users of the aggregator crate
+  pub mod observable {
+      pub use super::foo_observable::*;
+      pub use super::foo_observable_options::*; // Options should also be here
+  }
+  ```
 
 #### Observable Integration Checklist
 
@@ -247,7 +246,6 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 > ]
 > observable_foo = ["rx_core/observable_foo"]
 > ```
->
 
 1. Add the crate to the workspace level [Cargo.toml](./Cargo.toml) file, into
    the relevant group.
@@ -281,12 +279,12 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
    ```
 
 4. Add it to the `all_observables` feature group if you want this to be enabled
-   by default.  
+   by default.
 
    ```toml
    # Observables
    all_observables = [
-     "observable_foo"  
+     "observable_foo"
    ]
    ```
 
@@ -295,13 +293,12 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 
      ```toml
      observable_fn = [
-       "rx_bevy_observable_foo?/observable_fn"  
+       "rx_bevy_observable_foo?/observable_fn"
      ]
      ```
 
 6. Open [`rx_bevy/src/lib.rs`](./crates/rx_bevy/src/lib.rs) and re-export the
    new crate within the relevant sections:
-
    1. Add the observable to the `observable` module:
 
       ```rs
@@ -328,11 +325,12 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 
    ```md
    <!-- markdownlint-disable -->
+
    {{#include ../../crates/rx_bevy_observable_foo/readme.md}}
    ```
 
 8. Include the new page in [`SUMMARY.md`](./docs/SUMMARY.md)
-  
+
    ```md
    - [Operators (Bevy)](observable_bevy.md)
      - [foo](observable_bevy/foo.md)
@@ -353,7 +351,7 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
 
     ```md
     # [observable_foo](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_bevy_observable_foo)
-    
+
     [![crates.io](https://img.shields.io/crates/v/rx_bevy_observable_foo.svg)](https://crates.io/crates/rx_bevy_observable_foo)
     [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
     [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_bevy_observable_foo)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_bevy_observable_foo)
@@ -390,38 +388,38 @@ Operators usually have at least 4-5 files besides `lib.rs`:
 - `lib.rs` pre-categorizes each module export for easy integration with the
   aggregator crate.
 
-   ```rs
-   // Declared modules
-   mod map_operator;
-   mod map_subscriber;
-  
-   // Api that is public for direct consumers of this crate, but not available
-   // to the consumers of the aggregator crate as it's not directly useful.
-   pub use map_subscriber::*;
+  ```rs
+  // Declared modules
+  mod map_operator;
+  mod map_subscriber;
 
-   // Api that is public to the users of the aggregator crate
-   pub mod operator {
-       pub use super::map_operator::*;
-   }
+  // Api that is public for direct consumers of this crate, but not available
+  // to the consumers of the aggregator crate as it's not directly useful.
+  pub use map_subscriber::*;
 
-   // Gated apis that are public to the users of the aggregator crate if the
-   // feature is enabled.
-   #[cfg(feature = "compose")]
-   mod map_extension_compose;
+  // Api that is public to the users of the aggregator crate
+  pub mod operator {
+      pub use super::map_operator::*;
+  }
 
-   #[cfg(feature = "compose")]
-   pub mod extension_compose {
-       pub use super::map_extension_compose::*;
-   }
+  // Gated apis that are public to the users of the aggregator crate if the
+  // feature is enabled.
+  #[cfg(feature = "compose")]
+  mod map_extension_compose;
 
-   #[cfg(feature = "pipe")]
-   mod map_extension_pipe;
+  #[cfg(feature = "compose")]
+  pub mod extension_compose {
+      pub use super::map_extension_compose::*;
+  }
 
-   #[cfg(feature = "pipe")]
-   pub mod extension_pipe {
-       pub use super::map_extension_pipe::*;
-   }
-   ```
+  #[cfg(feature = "pipe")]
+  mod map_extension_pipe;
+
+  #[cfg(feature = "pipe")]
+  pub mod extension_pipe {
+      pub use super::map_extension_pipe::*;
+  }
+  ```
 
 #### Operator Integration Checklist
 
@@ -466,12 +464,12 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
    ```
 
 4. Add it to the `all_operators` feature group if you want this to be enabled by
-   default.  
+   default.
 
    ```toml
    # Operators
    all_operators = [
-     "operator_foo"  
+     "operator_foo"
    ]
    ```
 
@@ -480,7 +478,7 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
 
      ```toml
      pipe = [
-       "rx_core_operator_foo?/pipe"  
+       "rx_core_operator_foo?/pipe"
      ]
      ```
 
@@ -488,13 +486,12 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
 
      ```toml
      compose = [
-       "rx_core_operator_foo?/compose"  
+       "rx_core_operator_foo?/compose"
      ]
      ```
 
 6. Open [`rx_core/src/lib.rs`](./crates/rx_core/src/lib.rs) and re-export the
    new crate within the relevant sections:
-
    1. Add the operator to the `operator` module:
 
       ```rs
@@ -529,11 +526,12 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
 
    ```md
    <!-- markdownlint-disable -->
+
    {{#include ../../crates/rx_core_operator_foo/readme.md}}
    ```
 
 8. Include the new page in [`SUMMARY.md`](./docs/SUMMARY.md)
-  
+
    ```md
    - [Operators (Core)](12_operators_core.md)
      - [foo](12_operators_core/foo.md)
@@ -554,7 +552,7 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
 
     ```md
     # [operator_foo](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_foo)
-    
+
     [![crates.io](https://img.shields.io/crates/v/rx_core_operator_foo.svg)](https://crates.io/crates/rx_core_operator_foo)
     [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
     [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_core_operator_foo)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_core_operator_foo)
