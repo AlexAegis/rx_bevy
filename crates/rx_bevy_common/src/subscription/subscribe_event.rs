@@ -83,7 +83,20 @@ where
 			&& !destination.is_closed()
 		{
 			error!(
-				r"The {} event was not consumed! The target observable entity ({}) does not contain any observables with these output types!
+				"{}",
+				unconsumed_subscribe_dropped_message::<Out, OutError>(self.observable_entity),
+			);
+		}
+	}
+}
+
+fn unconsumed_subscribe_dropped_message<Out, OutError>(observable_entity: Entity) -> String
+where
+	Out: Signal,
+	OutError: Signal,
+{
+	format!(
+		r"The {} event was not consumed! The target observable entity ({}) does not contain any observables with these output types!
 
 - Are you sure you wanted to use the {} entity as your observable?
 - Are you sure that BOTH the Out ({}) and OutError ({}) types match up with the observable you want to subscribe to?
@@ -105,13 +118,63 @@ to know exactly when that can happen:
 	`.as_observable()` api.
 
 This error was printed because a {} event was dropped, before the destination in it could'be been removed from it.",
-				ShortName::of::<Self>(),
-				self.observable_entity,
-				self.observable_entity,
-				ShortName::of::<Out>(),
-				ShortName::of::<OutError>(),
-				ShortName::of::<Self>(),
-			);
+		ShortName::of::<Subscribe<Out, OutError>>(),
+		observable_entity,
+		observable_entity,
+		ShortName::of::<Out>(),
+		ShortName::of::<OutError>(),
+		ShortName::of::<Subscribe<Out, OutError>>(),
+	)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use bevy_ecs::world::World;
+	use rx_core_common::{Never, SubscriberNotification};
+	use rx_core_testing::prelude::*;
+
+	#[test]
+	fn drop_unconsumed_subscribe_indirectly_unsubscribes_destination() {
+		let notifications = NotificationCollector::<usize, Never>::default();
+
+		{
+			let mut world = World::new();
+			let mut commands = world.commands();
+			let observable_entity = commands.spawn_empty().id();
+
+			let observer = MockObserver::<usize>::new(notifications.clone());
+			let _ = Subscribe::<usize, Never>::new(observable_entity, observer, &mut commands);
 		}
+
+		notifications.lock().assert_notifications(
+			"subscribe drop",
+			0,
+			[SubscriberNotification::Unsubscribe],
+			true,
+		);
+	}
+
+	#[test]
+	fn format_unconsumed_message_contains_entity_and_types() {
+		let observable_entity = Entity::from_raw(42);
+		let message = unconsumed_subscribe_dropped_message::<usize, Never>(observable_entity);
+
+		assert!(
+			message.contains("Subscribe"),
+			"message should mention the Subscribe event type"
+		);
+		assert!(
+			message.contains("42"),
+			"message should include the observable entity id"
+		);
+		assert!(
+			message.contains(&ShortName::of::<usize>().to_string()),
+			"message should include the Out type"
+		);
+		assert!(
+			message.contains(&ShortName::of::<Never>().to_string()),
+			"message should include the OutError type"
+		);
 	}
 }
