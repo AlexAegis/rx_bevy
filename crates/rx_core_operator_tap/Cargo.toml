@@ -34,7 +34,3 @@ rx_core_operator_composite = { version = "0.1.0", path = "../rx_core_operator_co
 rx_core_macro_operator_derive = { version = "0.1.0", path = "../rx_core_macro_operator_derive" }
 rx_core_macro_subscriber_derive = { version = "0.1.0", path = "../rx_core_macro_subscriber_derive" }
 derive-where = { workspace = true }
-
-[dev-dependencies]
-rx_core = { version = "0.1.0", path = "../rx_core" }
-rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

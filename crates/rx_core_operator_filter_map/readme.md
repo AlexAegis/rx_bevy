@@ -21,7 +21,7 @@ Map values to an `Option` and keep only the `Some` values.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_filter_map --example filter_map_operator_example
+cargo run -p rx_core --example filter_map_operator_example
 ```
 
 ```rs

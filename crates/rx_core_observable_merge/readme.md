@@ -17,7 +17,7 @@ all of them at once.
 ## Example
 
 ```sh
-cargo run -p rx_core_observable_merge --example merge_example
+cargo run -p rx_core --example merge_example
 ```
 
 ```rs

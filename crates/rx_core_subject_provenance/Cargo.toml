@@ -33,7 +33,3 @@ rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
 rx_core_macro_subject_derive = { version = "0.1.0", path = "../rx_core_macro_subject_derive" }
 rx_core_operator_map = { version = "0.1.0", path = "../rx_core_operator_map" }
 rx_core_operator_filter = { version = "0.1.0", path = "../rx_core_operator_filter" }
-
-[dev-dependencies]
-rx_core = { version = "0.1.0", path = "../rx_core" }
-rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

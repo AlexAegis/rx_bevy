@@ -25,7 +25,7 @@ Immediately emits a single value.
 ## Example
 
 ```sh
-cargo run -p rx_core_observable_just --example just_example
+cargo run -p rx_core --example just_example
 ```
 
 ```rs

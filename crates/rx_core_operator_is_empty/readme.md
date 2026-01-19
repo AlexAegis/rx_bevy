@@ -16,7 +16,7 @@ upstream emitted any items before completing:
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_is_empty --example is_empty_operator_example
+cargo run -p rx_core --example is_empty_operator_example
 ```
 
 ```rs

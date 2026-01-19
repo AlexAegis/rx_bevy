@@ -53,8 +53,3 @@ rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }
 examples_common = { workspace = true }
 bevy-inspector-egui = { workspace = true, features = ["bevy_render"] }
 bevy_egui = { workspace = true }
-
-[[example]]
-name = "proxy_observable_example"
-path = "examples/proxy_observable_example.rs"
-required-features = ["example"]

@@ -27,7 +27,7 @@ Re-type `Never` next/error channels into concrete types.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_map_never --example map_never_operator_example
+cargo run -p rx_core --example map_never_operator_example
 ```
 
 ```rs

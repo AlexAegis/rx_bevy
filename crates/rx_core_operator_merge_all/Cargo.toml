@@ -35,7 +35,3 @@ rx_core_operator_composite = { version = "0.1.0", path = "../rx_core_operator_co
 rx_core_subscriber_higher_order_concurrent = { version = "0.1.0", path = "../rx_core_subscriber_higher_order_concurrent" }
 rx_core_subscriber_higher_order_all = { version = "0.1.0", path = "../rx_core_subscriber_higher_order_all" }
 derive-where = { workspace = true }
-
-[dev-dependencies]
-rx_core = { version = "0.1.0", path = "../rx_core" }
-rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

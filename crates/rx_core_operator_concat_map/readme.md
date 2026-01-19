@@ -27,7 +27,7 @@ Map each value to an inner observable and subscribe to them one at a time in ord
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_concat_map --example concat_map_example
+cargo run -p rx_core --example concat_map_example
 ```
 
 ```rs

@@ -33,7 +33,3 @@ rx_core_macro_observable_derive = { version = "0.1.0", path = "../rx_core_macro_
 rx_core_macro_subscriber_derive = { version = "0.1.0", path = "../rx_core_macro_subscriber_derive" }
 rx_core_notification_variadics = { version = "0.1.0", path = "../rx_core_notification_variadics" }
 rx_core_notification_store = { version = "0.1.0", path = "../rx_core_notification_store" }
-
-[dev-dependencies]
-rx_core = { version = "0.1.0", path = "../rx_core" }
-rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

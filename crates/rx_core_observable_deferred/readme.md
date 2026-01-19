@@ -25,7 +25,7 @@ Subscribes to an observable returned by a function.
 ## Example
 
 ```sh
-cargo run -p rx_core_observable_deferred --example deferred_observable_example
+cargo run -p rx_core --example deferred_observable_example
 ```
 
 ```rs

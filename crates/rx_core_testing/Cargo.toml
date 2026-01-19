@@ -29,6 +29,3 @@ rx_core_macro_subscriber_derive = { version = "0.1.0", path = "../rx_core_macro_
 rx_core_macro_subject_derive = { version = "0.1.0", path = "../rx_core_macro_subject_derive" }
 rx_core_scheduler_ticking = { version = "0.1.0", path = "../rx_core_scheduler_ticking" }
 derive-where = { workspace = true }
-
-[dev-dependencies]
-rx_core = { version = "0.1.0", path = "../rx_core" }

@@ -17,7 +17,7 @@ them sequentially in order.
 ## Example
 
 ```sh
-cargo run -p rx_core_observable_concat --example concat_example
+cargo run -p rx_core --example concat_example
 ```
 
 ```rs

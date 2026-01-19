@@ -380,3 +380,7 @@ rx_core_subject_replay = { version = "0.1.0", path = "../rx_core_subject_replay"
 
 [dev-dependencies]
 rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }
+rx_core_notification_store = { version = "0.1.0", path = "../rx_core_notification_store" }
+rx_core_subscriber_higher_order_concurrent = { version = "0.1.0", path = "../rx_core_subscriber_higher_order_concurrent" }
+rx_core_subscriber_higher_order_exhaust = { version = "0.1.0", path = "../rx_core_subscriber_higher_order_exhaust" }
+rx_core_subscriber_higher_order_switch = { version = "0.1.0", path = "../rx_core_subscriber_higher_order_switch" }

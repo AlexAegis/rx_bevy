@@ -21,7 +21,7 @@ Split `Result` values into next and error signals.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_lift_result --example lift_result_operator_example
+cargo run -p rx_core --example lift_result_operator_example
 ```
 
 ```rust

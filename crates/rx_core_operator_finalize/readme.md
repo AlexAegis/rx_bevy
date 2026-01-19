@@ -21,7 +21,7 @@ Execute cleanup when the observable finishes or unsubscribes.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_finalize --example finalize_operator_completion_example
+cargo run -p rx_core --example finalize_operator_completion_example
 ```
 
 ```rs

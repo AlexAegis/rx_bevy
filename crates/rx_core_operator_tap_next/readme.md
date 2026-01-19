@@ -21,7 +21,7 @@ Run a callback for each `next` value while letting signals pass through.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_tap_next --example tap_next_operator_example
+cargo run -p rx_core --example tap_next_operator_example
 ```
 
 ```rs

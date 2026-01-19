@@ -25,7 +25,7 @@ delayed values.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_delay --example delay_operator_example
+cargo run -p rx_core --example delay_operator_example
 ```
 
 ```rs

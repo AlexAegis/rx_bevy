@@ -21,7 +21,7 @@ On error, switch to a recovery observable.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_catch --example catch_operator_example
+cargo run -p rx_core --example catch_operator_example
 ```
 
 ```rust

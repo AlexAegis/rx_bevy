@@ -36,6 +36,6 @@ vec![1, 2, 3].into_observable::<()>().subscribe(PrintObserver::new("vector"));
 ## Examples
 
 ```sh
-cargo run -p rx_core_observable_iterator --example into_observable_example
-cargo run -p rx_core_observable_iterator --example iterator_example
+cargo run -p rx_core --example into_observable_example
+cargo run -p rx_core --example iterator_example
 ```

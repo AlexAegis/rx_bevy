@@ -33,6 +33,3 @@ rx_core_macro_scheduler_derive = { version = "0.1.0", path = "../rx_core_macro_s
 rx_core_macro_work_derive = { version = "0.1.0", path = "../rx_core_macro_work_derive" }
 rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
 indexmap = { workspace = true }
-
-[dev-dependencies]
-rx_core = { version = "0.1.0", path = "../rx_core" }

@@ -21,7 +21,7 @@ Run a callback when a subscription is established.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_on_subscribe --example on_subscribe_operator_example
+cargo run -p rx_core --example on_subscribe_operator_example
 ```
 
 ```rs

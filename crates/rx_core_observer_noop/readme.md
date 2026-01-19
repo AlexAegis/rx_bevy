@@ -17,7 +17,7 @@ Ignore all signals; panics on errors in debug mode.
 ## Example
 
 ```sh
-cargo run -p rx_core_observer_noop --example noop_observer_example
+cargo run -p rx_core --example noop_observer_example
 ```
 
 ```rs

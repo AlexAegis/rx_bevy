@@ -27,7 +27,7 @@ Map each value using `Into`.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_map_into --example map_into_operator_example
+cargo run -p rx_core --example map_into_operator_example
 ```
 
 ```rs

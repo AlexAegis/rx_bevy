@@ -26,7 +26,7 @@ values.
 ## Example
 
 ```sh
-cargo run -p rx_core_observable_closed --example closed_example
+cargo run -p rx_core --example closed_example
 ```
 
 ```rs

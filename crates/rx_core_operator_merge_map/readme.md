@@ -27,7 +27,7 @@ Map each value to an inner observable and merge their emissions concurrently.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_merge_map --example merge_map_example
+cargo run -p rx_core --example merge_map_example
 ```
 
 ```rs

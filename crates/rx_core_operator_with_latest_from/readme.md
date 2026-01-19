@@ -8,7 +8,7 @@
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_with_latest_from --example with_latest_from_operator_example
+cargo run -p rx_core --example with_latest_from_operator_example
 ```
 
 ```rs

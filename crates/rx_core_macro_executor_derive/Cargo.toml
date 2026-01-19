@@ -23,6 +23,3 @@ proc-macro = true
 quote = { workspace = true }
 syn = { workspace = true }
 rx_core_macro_common = { version = "0.1.0", path = "../rx_core_macro_common" }
-
-[dev-dependencies]
-rx_core_common = { version = "0.1.0", path = "../rx_core_common" }

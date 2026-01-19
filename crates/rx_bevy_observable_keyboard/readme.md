@@ -30,7 +30,7 @@ events are sourced from the `ButtonInput<KeyCode>` resource.
 ## Example
 
 ```sh
-cargo run -p rx_bevy_observable_keyboard --features=example --example observable_keyboard_example
+cargo run -p rx_bevy --example observable_keyboard_example
 ```
 
 ```rs

@@ -21,7 +21,7 @@ Keep values that satisfy a predicate.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_filter --example filter_operator_example
+cargo run -p rx_core --example filter_operator_example
 ```
 
 ```rs

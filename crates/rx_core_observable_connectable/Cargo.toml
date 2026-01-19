@@ -33,7 +33,3 @@ rx_core_macro_subscription_derive = { version = "0.1.0", path = "../rx_core_macr
 rx_core_macro_subscriber_derive = { version = "0.1.0", path = "../rx_core_macro_subscriber_derive" }
 rx_core_subject_publish = { version = "0.1.0", path = "../rx_core_subject_publish" }
 derive-where = { workspace = true }
-
-[dev-dependencies]
-rx_core = { version = "0.1.0", path = "../rx_core" }
-rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

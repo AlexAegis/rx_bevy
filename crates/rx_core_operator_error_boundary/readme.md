@@ -21,7 +21,7 @@ Enforce `Never` as the error type to guard pipelines at compile time.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_error_boundary --example error_boundary_operator_example
+cargo run -p rx_core --example error_boundary_operator_example
 ```
 
 ```rust

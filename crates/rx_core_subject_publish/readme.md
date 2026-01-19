@@ -22,5 +22,5 @@ Forwards observed signals to all active subscribers. Does not replay values to l
 ## Example
 
 ```sh
-cargo run -p rx_core_subject_publish --example publish_subject_example
+cargo run -p rx_core --example publish_subject_example
 ```

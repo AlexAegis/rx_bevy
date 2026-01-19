@@ -10,7 +10,7 @@ Collect values into fixed-size buffers before emitting them.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_buffer_count --example buffer_count_operator_example
+cargo run -p rx_core --example buffer_count_operator_example
 ```
 
 ```rust

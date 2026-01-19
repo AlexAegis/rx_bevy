@@ -15,7 +15,7 @@ Accumulate state and emit every intermediate result.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_scan --example scan_operator_example
+cargo run -p rx_core --example scan_operator_example
 ```
 
 ```rs

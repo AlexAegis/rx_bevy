@@ -22,7 +22,7 @@ type!
 ## Example
 
 ```sh
-cargo run -p rx_bevy_observable_proxy --features=example --example proxy_observable_example
+cargo run -p rx_bevy --example proxy_observable_example
 ```
 
 ```rs

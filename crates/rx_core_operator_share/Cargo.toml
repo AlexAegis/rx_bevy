@@ -35,5 +35,4 @@ rx_core_observable_connectable = { version = "0.1.0", path = "../rx_core_observa
 derive-where = { workspace = true }
 
 [dev-dependencies]
-rx_core = { version = "0.1.0", path = "../rx_core" }
 rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

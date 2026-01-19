@@ -8,7 +8,7 @@
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_merge_all --example merge_all_example
+cargo run -p rx_core --example merge_all_example
 ```
 
 ```rs

@@ -15,7 +15,7 @@ Emit a value first when subscribing to the source.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_start_with --example start_with_operator_example
+cargo run -p rx_core --example start_with_operator_example
 ```
 
 ```rs

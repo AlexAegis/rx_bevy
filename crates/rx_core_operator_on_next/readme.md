@@ -26,7 +26,7 @@ Invoke a callback for each value that can also decide whether to forward it.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_on_next --example on_next_operator_example
+cargo run -p rx_core --example on_next_operator_example
 ```
 
 ```rs

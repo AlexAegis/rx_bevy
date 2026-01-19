@@ -15,7 +15,7 @@ Build reusable operator chains without needing a source observable.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_composite --example composite_operators_example
+cargo run -p rx_core --example composite_operators_example
 ```
 
 ```rust

@@ -27,7 +27,7 @@ Transform error values into another error value.
 ## Example
 
 ```sh
-cargo run -p rx_core_operator_map_error --example map_error_operator_example
+cargo run -p rx_core --example map_error_operator_example
 ```
 
 ```rs

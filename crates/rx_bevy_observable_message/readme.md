@@ -27,5 +27,5 @@ The `MessageObservable` lets you observe global messages written by a
 ## Example
 
 ```sh
-cargo run -p rx_bevy_observable_message --features=example --example message_observable_example
+cargo run -p rx_bevy --example message_observable_example
 ```
