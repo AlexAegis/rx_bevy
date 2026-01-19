@@ -26,6 +26,11 @@ pub fn lint_release_plz() -> Result<(), RxWorkspaceError> {
 		} else {
 			"rx_core"
 		};
+		let expected_tag = if package.name.starts_with("rx_bevy") {
+			"v{{ version }}"
+		} else {
+			"core-v{{ version }}"
+		};
 
 		match parsed_packages.iter().find(|p| package.name == p.name) {
 			None => package_problems.add_problem(ReleasePlzLintProblem::MissingEntry {
@@ -36,6 +41,13 @@ pub fn lint_release_plz() -> Result<(), RxWorkspaceError> {
 					package: package.name.to_string(),
 					expected: expected_version_group.to_string(),
 					found: entry.version_group.clone(),
+				});
+			}
+			Some(entry) if entry.git_tag_name.as_deref() != Some(expected_tag) => {
+				package_problems.add_problem(ReleasePlzLintProblem::WrongGitTagName {
+					package: package.name.to_string(),
+					expected: expected_tag.to_string(),
+					found: entry.git_tag_name.clone(),
 				});
 			}
 			_ => {}
@@ -49,6 +61,7 @@ pub fn lint_release_plz() -> Result<(), RxWorkspaceError> {
 struct ReleasePlzPackage {
 	name: String,
 	version_group: Option<String>,
+	git_tag_name: Option<String>,
 }
 
 fn parse_release_plz(contents: &str) -> Vec<ReleasePlzPackage> {
@@ -58,6 +71,7 @@ fn parse_release_plz(contents: &str) -> Vec<ReleasePlzPackage> {
 		.filter_map(|block| {
 			let mut name: Option<String> = None;
 			let mut version_group: Option<String> = None;
+			let mut git_tag_name: Option<String> = None;
 
 			for line in block.lines() {
 				let line = line.trim();
@@ -76,11 +90,18 @@ fn parse_release_plz(contents: &str) -> Vec<ReleasePlzPackage> {
 				{
 					version_group = Some(val.trim().trim_matches('"').to_string());
 				}
+
+				if line.starts_with("git_tag_name")
+					&& let Some(val) = line.split('=').nth(1)
+				{
+					git_tag_name = Some(val.trim().trim_matches('"').to_string());
+				}
 			}
 
 			name.map(|name| ReleasePlzPackage {
 				name,
 				version_group,
+				git_tag_name,
 			})
 		})
 		.collect()
@@ -92,6 +113,12 @@ pub enum ReleasePlzLintProblem {
 	MissingEntry { expected: String },
 	#[error("Wrong version_group for {package}. expected: {expected} found: {found:?}")]
 	WrongVersionGroup {
+		package: String,
+		expected: String,
+		found: Option<String>,
+	},
+	#[error("Wrong git_tag_name for {package}. expected: {expected} found: {found:?}")]
+	WrongGitTagName {
 		package: String,
 		expected: String,
 		found: Option<String>,

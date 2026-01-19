@@ -42,26 +42,32 @@ version_group = "rx_bevy"
 
 [[package]]
 name = "rx_bevy_common"
+git_tag_name = "v{{ version }}"
 version_group = "rx_bevy"
 
 [[package]]
 name = "rx_bevy_observable_event"
+git_tag_name = "v{{ version }}"
 version_group = "rx_bevy"
 
 [[package]]
 name = "rx_bevy_observable_keyboard"
+git_tag_name = "v{{ version }}"
 version_group = "rx_bevy"
 
 [[package]]
 name = "rx_bevy_observable_message"
+git_tag_name = "v{{ version }}"
 version_group = "rx_bevy"
 
 [[package]]
 name = "rx_bevy_observable_proxy"
+git_tag_name = "v{{ version }}"
 version_group = "rx_bevy"
 
 [[package]]
 name = "rx_bevy_observable_resource"
+git_tag_name = "v{{ version }}"
 version_group = "rx_bevy"
 
 [[package]]
@@ -75,380 +81,475 @@ version_group = "rx_core"
 
 [[package]]
 name = "rx_core_common"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_common"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_executor_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_observable_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_observer_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_operator_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_scheduler_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_subject_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_subscriber_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_subscription_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_macro_work_derive"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_notification_store"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_notification_variadics"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_closed"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_combine_changes"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_combine_latest"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_concat"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_connectable"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_create"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_deferred"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_empty"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_interval"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_iterator"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_iterator_on_tick"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_join"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_just"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_merge"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_never"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_throw"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_timer"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observable_zip"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observer_fn"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observer_noop"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_observer_print"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_adsr"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_buffer_count"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_catch"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_composite"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_concat_all"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_concat_map"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_delay"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_dematerialize"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_end_with"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_enumerate"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_error_boundary"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_exhaust_all"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_exhaust_map"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_fallback_when_silent"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_filter"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_filter_map"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_finalize"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_find"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_find_index"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_first"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_identity"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_into_result"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_is_empty"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_lift_option"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_lift_result"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_map"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_map_error"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_map_into"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_map_never"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_materialize"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_merge_all"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_merge_map"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_on_next"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_on_subscribe"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_pairwise"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_reduce"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_retry"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_scan"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_share"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_skip"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_start_with"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_switch_all"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_switch_map"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_take"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_tap"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_tap_next"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_operator_with_latest_from"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_scheduler_ticking"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subject_async"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subject_behavior"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subject_provenance"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subject_publish"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subject_replay"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subscriber_higher_order"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subscriber_higher_order_all"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subscriber_higher_order_concurrent"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subscriber_higher_order_exhaust"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subscriber_higher_order_map"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subscriber_higher_order_switch"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_subscription_inert"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
 name = "rx_core_testing"
+git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
