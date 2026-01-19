@@ -29,7 +29,7 @@ between individual subscriptions.
 ## Example
 
 ```sh
-cargo run -p rx_core --example create_example
+cargo run -p rx_core --example observable_create_example
 ```
 
 ```rs

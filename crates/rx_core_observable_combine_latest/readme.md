@@ -25,7 +25,7 @@ once both have emitted at least once.
 ## Example
 
 ```sh
-cargo run -p rx_core --example combine_latest_example
+cargo run -p rx_core --example observable_combine_latest_example
 ```
 
 ```rs

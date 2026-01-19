@@ -27,7 +27,7 @@ Transform each value with a mapping function.
 ## Example
 
 ```sh
-cargo run -p rx_core --example map_operator_example
+cargo run -p rx_core --example operator_map_example
 ```
 
 ```rs

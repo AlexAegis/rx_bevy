@@ -25,7 +25,7 @@ Immediately completes.
 ## Example
 
 ```sh
-cargo run -p rx_core --example empty_example
+cargo run -p rx_core --example observable_empty_example
 ```
 
 ```rs

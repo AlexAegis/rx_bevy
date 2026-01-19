@@ -17,7 +17,7 @@ Convert trigger signals into an ADSR envelope driven by the scheduler.
 ## Example
 
 ```sh
-cargo run -p rx_core --example adsr_example
+cargo run -p rx_core --example operator_adsr_example
 ```
 
 ```rust

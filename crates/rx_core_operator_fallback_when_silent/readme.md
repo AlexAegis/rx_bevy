@@ -17,7 +17,7 @@ Emit a fallback value on ticks where the source stayed silent.
 ## Example
 
 ```sh
-cargo run -p rx_core --example fallback_when_silent_operator_example
+cargo run -p rx_core --example operator_fallback_when_silent_example
 ```
 
 ```rust

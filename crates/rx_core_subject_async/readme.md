@@ -20,3 +20,51 @@ completed. Once completed, it also replays the result to late subscribers.
 - [ProvenanceSubject](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_provenance) -
   BehaviorSubject that also stores an additional filtering value to track
   provenance.
+
+## Example
+
+Run the example with:
+
+```sh
+cargo run -p rx_core --example subject_async_example
+```
+
+```rs
+use rx_core::prelude::*;
+
+fn main() {
+    let mut subject = AsyncSubject::<i32>::default();
+
+    let mut _subscription_1 = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("async_subject sub_1"));
+
+    subject.next(1);
+    subject.next(2);
+
+    let mut _subscription_2 = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("async_subject sub_2"));
+
+    subject.next(3);
+    subject.complete();
+
+    let mut _subscription_3 = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("async_subject sub_3"));
+}
+```
+
+Output:
+
+```txt
+async_subject sub_1 - next: 3
+async_subject sub_2 - next: 3
+async_subject sub_1 - completed
+async_subject sub_1 - unsubscribed
+async_subject sub_2 - completed
+async_subject sub_2 - unsubscribed
+async_subject sub_3 - next: 3
+async_subject sub_3 - completed
+async_subject sub_3 - unsubscribed
+```

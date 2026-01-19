@@ -27,7 +27,7 @@ Attach a running index to each emission.
 ## Example
 
 ```sh
-cargo run -p rx_core --example enumerate_operator_example
+cargo run -p rx_core --example operator_enumerate_example
 ```
 
 ```rs

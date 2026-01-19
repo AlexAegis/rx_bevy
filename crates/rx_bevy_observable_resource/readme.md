@@ -30,7 +30,7 @@ time it is added or mutated, emitting the result to subscribers.
 ## Example
 
 ```sh
-cargo run -p rx_bevy --example resource_observable_example
+cargo run -p rx_bevy --example observable_resource_example
 ```
 
 ```rs

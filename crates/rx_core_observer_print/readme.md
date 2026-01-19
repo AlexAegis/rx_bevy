@@ -17,7 +17,7 @@ Print all observed signals to stdout for quick debugging.
 ## Example
 
 ```sh
-cargo run -p rx_core --example print_observer_example
+cargo run -p rx_core --example observer_print_example
 ```
 
 ```rs

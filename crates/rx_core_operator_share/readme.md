@@ -21,7 +21,7 @@ Multicast a source through a connector so downstream subscribers share one upstr
 ## Example
 
 ```sh
-cargo run -p rx_core --example share_operator_example
+cargo run -p rx_core --example operator_share_example
 ```
 
 ```rust

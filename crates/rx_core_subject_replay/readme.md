@@ -20,3 +20,48 @@ Buffers the last N values and replays them to late subscribers.
 - [ProvenanceSubject](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_provenance) -
   BehaviorSubject that also stores an additional filtering value to track
   provenance.
+
+## Example
+
+```sh
+cargo run -p rx_core --example subject_replay_example
+```
+
+```rs
+use rx_core::prelude::*;
+
+fn main() {
+    let mut subject = ReplaySubject::<2, i32>::default();
+
+    let _s = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("hello"));
+
+    subject.next(1);
+    subject.next(2);
+    subject.next(3);
+
+    let _s2 = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("hi"));
+
+    subject.next(4);
+    subject.next(5);
+}
+```
+
+Output:
+
+```txt
+hello - next: 1
+hello - next: 2
+hello - next: 3
+hi - next: 2
+hi - next: 3
+hi - next: 4
+hello - next: 4
+hi - next: 5
+hello - next: 5
+hi - unsubscribed
+hello - unsubscribed
+```

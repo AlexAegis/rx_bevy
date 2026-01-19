@@ -27,7 +27,7 @@ Convert notifications back into real signals.
 ## Example
 
 ```sh
-cargo run -p rx_core --example dematerialize_operator_example
+cargo run -p rx_core --example operator_dematerialize_example
 ```
 
 ```rs

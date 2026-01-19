@@ -28,7 +28,7 @@ this observable, as it will never do so on its own!
 ## Example
 
 ```sh
-cargo run -p rx_core --example never_example
+cargo run -p rx_core --example observable_never_example
 ```
 
 ```rs

@@ -18,3 +18,66 @@ BehaviorSubject that also stores an additional filtering value to track provenan
   Always holds a value that is replayed to late subscribers.
 - [ReplaySubject](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_replay) -
   Buffers the last `N` values and replays them to late subscribers.
+
+## Example
+
+Run the example with:
+
+```sh
+cargo run -p rx_core --example subject_provenance_example
+```
+
+```rs
+use rx_core::prelude::*;
+
+#[derive(PartialEq, Clone, Debug)]
+enum ExampleProvenance {
+    Foo,
+    Bar,
+}
+
+fn main() {
+    let mut subject = ProvenanceSubject::<ExampleProvenance, usize>::new(
+        10,
+        ExampleProvenance::Foo,
+    );
+
+    let _all_subscription = subject
+        .clone()
+        .all()
+        .subscribe(PrintObserver::<usize>::new("provenance_ignored"));
+
+    let _bar_subscription = subject
+        .clone()
+        .only_by_provenance(ExampleProvenance::Bar)
+        .subscribe(PrintObserver::<usize>::new("provenance_bar"));
+
+    let _foo_subscription = subject
+        .clone()
+        .only_by_provenance(ExampleProvenance::Foo)
+        .subscribe(PrintObserver::<usize>::new("provenance_foo"));
+
+    subject.next((1, ExampleProvenance::Foo));
+    subject.next((2, ExampleProvenance::Bar));
+    subject.next((3, ExampleProvenance::Foo));
+    subject.next((4, ExampleProvenance::Bar));
+}
+```
+
+Output:
+
+```txt
+provenance_ignored - next: 10
+provenance_foo - next: 10
+provenance_ignored - next: 1
+provenance_foo - next: 1
+provenance_bar - next: 2
+provenance_ignored - next: 2
+provenance_ignored - next: 3
+provenance_foo - next: 3
+provenance_bar - next: 4
+provenance_ignored - next: 4
+provenance_foo - unsubscribed
+provenance_bar - unsubscribed
+provenance_ignored - unsubscribed
+```

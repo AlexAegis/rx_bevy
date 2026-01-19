@@ -11,3 +11,52 @@ Emits a sequence of `usize` values every time the configured duration elapses.
 
 - [TimerObservable](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_timer) -
   Emits once after the timer elapses.
+
+## Example
+
+Run the example with:
+
+```sh
+cargo run -p rx_core --example observable_interval_example
+```
+
+```rs
+let mut mock_executor = MockExecutor::new_with_logging();
+let scheduler = mock_executor.get_scheduler_handle();
+
+let mut interval_observable = IntervalObservable::new(
+    IntervalObservableOptions {
+        duration: Duration::from_secs(1),
+        max_emissions_per_tick: 3,
+        start_on_subscribe: true,
+    },
+    scheduler,
+);
+let _subscription = interval_observable.subscribe(PrintObserver::new("interval_observable"));
+
+mock_executor.tick(Duration::from_millis(600));
+mock_executor.tick(Duration::from_millis(401));
+mock_executor.tick(Duration::from_millis(16200));
+mock_executor.tick(Duration::from_millis(1200));
+mock_executor.tick(Duration::from_millis(2200));
+
+```
+
+Output:
+
+```txt
+interval_observable - next: 0
+Ticking... (600ms)
+Ticking... (401ms)
+interval_observable - next: 1
+Ticking... (16.2s)
+interval_observable - next: 2
+interval_observable - next: 3
+interval_observable - next: 4
+Ticking... (1.2s)
+interval_observable - next: 5
+Ticking... (2.2s)
+interval_observable - next: 6
+interval_observable - next: 7
+interval_observable - unsubscribed
+```

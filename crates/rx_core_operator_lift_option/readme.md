@@ -21,7 +21,7 @@ Filter out `None` and forward `Some` values.
 ## Example
 
 ```sh
-cargo run -p rx_core --example lift_option_operator_example
+cargo run -p rx_core --example operator_lift_option_example
 ```
 
 ```rs

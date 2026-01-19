@@ -17,7 +17,7 @@ Define observers from callbacks: `FnObserver` (static dispatch) and `DynFnObserv
 ## Example
 
 ```sh
-cargo run -p rx_core --example fn_observer_example
+cargo run -p rx_core --example observer_fn_example
 ```
 
 ```rs

@@ -22,7 +22,7 @@ downstream as a `Result`.
 ## Example
 
 ```sh
-cargo run -p rx_core --example into_result_operator_example
+cargo run -p rx_core --example operator_into_result_example
 ```
 
 ```rs

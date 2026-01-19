@@ -27,7 +27,7 @@ Map each value to an inner observable and ignore new ones while one is active.
 ## Example
 
 ```sh
-cargo run -p rx_core --example exhaust_map_example
+cargo run -p rx_core --example operator_exhaust_map_example
 ```
 
 ```rust

@@ -20,7 +20,7 @@ has no Observable extension methods.
 ## Example
 
 ```sh
-cargo run -p rx_core --example identity_operator_example
+cargo run -p rx_core --example operator_identity_example
 ```
 
 ```rs
@@ -39,7 +39,7 @@ identity_operator - unsubscribed
 ## Example (Composite)
 
 ```sh
-cargo run -p rx_core --example identity_operator_composite_example
+cargo run -p rx_core --example operator_identity_composite_example
 ```
 
 ```rs

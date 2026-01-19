@@ -21,3 +21,39 @@ Resubscribe on error up to the configured retry count.
   Split `Result` values into next and error signals.
 - [ErrorBoundaryOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_error_boundary) -
   Enforce `Never` as the error type to guard pipelines at compile time.
+
+## Example
+
+Run the example with:
+
+```sh
+cargo run -p rx_core --example operator_retry_example
+```
+
+```rs
+let mut retried = concat((
+    (0..=2)
+        .into_observable()
+        .map_error(Never::map_into::<&'static str>()),
+    throw("error").map(Never::map_into::<usize>()),
+))
+.retry(2);
+
+let _s1 = retried.subscribe(PrintObserver::new("retry_operator"));
+```
+
+Output:
+
+```txt
+retry_operator - next: 0
+retry_operator - next: 1
+retry_operator - next: 2
+retry_operator - next: 0
+retry_operator - next: 1
+retry_operator - next: 2
+retry_operator - next: 0
+retry_operator - next: 1
+retry_operator - next: 2
+retry_operator - error: "error"
+retry_operator - unsubscribed
+```

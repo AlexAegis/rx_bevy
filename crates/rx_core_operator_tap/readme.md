@@ -41,7 +41,7 @@ pipeline.
 ## Example
 
 ```sh
-cargo run -p rx_core --example tap_operator_example
+cargo run -p rx_core --example operator_tap_example
 ```
 
 ```rs

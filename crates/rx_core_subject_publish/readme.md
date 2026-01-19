@@ -22,5 +22,37 @@ Forwards observed signals to all active subscribers. Does not replay values to l
 ## Example
 
 ```sh
-cargo run -p rx_core --example publish_subject_example
+cargo run -p rx_core --example subject_publish_example
+```
+
+```rs
+use rx_core::prelude::*;
+
+fn main() {
+    let mut subject = PublishSubject::<i32>::default();
+    subject.next(1);
+
+    let mut subscription = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("subject_example"));
+    subject.next(2);
+    subject.next(3);
+    subscription.unsubscribe();
+    subject.next(4);
+    subject.complete();
+
+    let _subscription_2 = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("subject_example_2"));
+}
+```
+
+Output:
+
+```txt
+subject_example - next: 2
+subject_example - next: 3
+subject_example - unsubscribed
+subject_example_2 - completed
+subject_example_2 - unsubscribed
 ```

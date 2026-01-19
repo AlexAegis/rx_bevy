@@ -29,7 +29,7 @@ Immediately errors.
 ## Example
 
 ```sh
-cargo run -p rx_core --example throw_example
+cargo run -p rx_core --example observable_throw_example
 ```
 
 ```rs

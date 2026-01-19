@@ -26,7 +26,7 @@ completion signal once the entity is despawned.
 ## Example
 
 ```sh
-cargo run -p rx_bevy --example event_example
+cargo run -p rx_bevy --example observable_event_example
 ```
 
 ```rs

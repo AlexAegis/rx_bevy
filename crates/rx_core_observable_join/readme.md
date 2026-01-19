@@ -31,7 +31,7 @@ input observables were primed.
 ## Example
 
 ```sh
-cargo run -p rx_core --example join_example
+cargo run -p rx_core --example observable_join_example
 ```
 
 ```rs

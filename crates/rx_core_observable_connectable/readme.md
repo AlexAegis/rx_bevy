@@ -17,7 +17,7 @@ Maintains an internal connector subject and only subscribes the source when
 ## Example
 
 ```sh
-cargo run -p rx_core --example connectable_example
+cargo run -p rx_core --example observable_connectable_example
 ```
 
 ```rs

@@ -27,7 +27,7 @@ Map each value to an inner observable and switch to the latest, unsubscribing pr
 ## Example
 
 ```sh
-cargo run -p rx_core --example switch_map_operator_example
+cargo run -p rx_core --example operator_switch_map_operator_example
 ```
 
 ```rs

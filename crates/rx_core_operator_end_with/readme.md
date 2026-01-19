@@ -15,7 +15,7 @@ Emit a value on completion.
 ## Example
 
 ```sh
-cargo run -p rx_core --example end_with_operator_example
+cargo run -p rx_core --example operator_end_with_example
 ```
 
 ```rs

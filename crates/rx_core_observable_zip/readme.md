@@ -22,7 +22,7 @@ matching them in emission order.
 ## Example
 
 ```sh
-cargo run -p rx_core --example zip_example
+cargo run -p rx_core --example observable_zip_example
 ```
 
 ```rs

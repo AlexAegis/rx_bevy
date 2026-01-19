@@ -21,7 +21,7 @@ Emit only the first `n` values, then complete.
 ## Example
 
 ```sh
-cargo run -p rx_core --example take_operator_example
+cargo run -p rx_core --example operator_take_example
 ```
 
 ```rs

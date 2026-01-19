@@ -27,7 +27,7 @@ Turn next/error/complete into notification values.
 ## Example
 
 ```sh
-cargo run -p rx_core --example materialize_operator_example
+cargo run -p rx_core --example operator_materialize_example
 ```
 
 ```rs

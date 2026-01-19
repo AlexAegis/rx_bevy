@@ -8,5 +8,5 @@
 ## Example
 
 ```sh
-cargo run -p rx_core --example exhaust_all_example
+cargo run -p rx_core --example operator_exhaust_all_example
 ```

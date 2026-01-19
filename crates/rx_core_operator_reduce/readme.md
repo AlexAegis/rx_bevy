@@ -15,7 +15,7 @@ Fold values and emit only the final accumulator on completion.
 ## Example
 
 ```sh
-cargo run -p rx_core --example reduce_operator_example
+cargo run -p rx_core --example operator_reduce_example
 ```
 
 ```rs

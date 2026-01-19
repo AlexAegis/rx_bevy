@@ -27,7 +27,7 @@ Emit the previous and current values together.
 ## Example
 
 ```sh
-cargo run -p rx_core --example pairwise_operator_example
+cargo run -p rx_core --example operator_pairwise_example
 ```
 
 ```rs

@@ -20,3 +20,56 @@ Always holds a value that is replayed to late subscribers.
 - [ProvenanceSubject](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_subject_provenance) -
   BehaviorSubject that also stores an additional filtering value to track
   provenance.
+
+## Example
+
+Run the example with:
+
+```sh
+cargo run -p rx_core --example subject_behavior_example
+```
+
+```rs
+use rx_core::prelude::*;
+
+fn main() {
+    let mut subject = BehaviorSubject::<i32>::new(10);
+
+    let mut hello_subscription = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("hello"));
+
+    subject.next(11);
+
+    let _s1 = subject
+        .clone()
+        .map(|next| next * 2)
+        .subscribe(PrintObserver::<i32>::new("hi double"));
+
+    subject.next(12);
+    hello_subscription.unsubscribe();
+    subject.next(13);
+    subject.complete();
+
+    let mut _completed_subscription = subject
+        .clone()
+        .subscribe(PrintObserver::<i32>::new("hello_completed"));
+}
+```
+
+Output:
+
+```txt
+hello - next: 10
+hello - next: 11
+hi double - next: 22
+hi double - next: 24
+hello - next: 12
+hello - unsubscribed
+hi double - next: 26
+hi double - completed
+hi double - unsubscribed
+hello_completed - next: 13
+hello_completed - completed
+hello_completed - unsubscribed
+```

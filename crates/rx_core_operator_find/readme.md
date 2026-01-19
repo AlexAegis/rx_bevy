@@ -19,7 +19,7 @@ Emit the first value that matches a predicate.
 ## Example
 
 ```sh
-cargo run -p rx_core --example find_operator_example
+cargo run -p rx_core --example operator_find_example
 ```
 
 ```rs

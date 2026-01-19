@@ -11,3 +11,47 @@ Emits iterator items one per scheduler tick.
 
 - [IteratorObservable](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observable_iterator) -
   Emits all iterator items immediately when subscribed to.
+
+## Example
+
+Run the example with:
+
+```sh
+cargo run -p rx_core --example observable_iterator_on_tick_example
+```
+
+```rs
+let mut executor = MockExecutor::default();
+let scheduler = executor.get_scheduler_handle();
+
+let iterator_observable = IteratorOnTickObservable::new(
+    0..=7,
+    OnTickObservableOptions {
+        start_on_subscribe: true,
+        emit_at_every_nth_tick: 2,
+    },
+    scheduler,
+);
+let _subscription = iterator_observable
+    .finalize(|| println!("fin"))
+    .subscribe(PrintObserver::new("iterator_on_tick"));
+println!("subscribed!");
+
+executor.tick(Duration::from_millis(500));
+executor.tick(Duration::from_millis(16));
+executor.tick(Duration::from_millis(9001));
+executor.tick(Duration::from_millis(0));
+executor.tick(Duration::from_millis(10));
+
+```
+
+Output:
+
+```txt
+iterator_on_tick - next: 0
+subscribed!
+iterator_on_tick - next: 1
+iterator_on_tick - next: 2
+fin
+iterator_on_tick - unsubscribed
+```

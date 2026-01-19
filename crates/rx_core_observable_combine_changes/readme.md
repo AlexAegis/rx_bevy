@@ -30,7 +30,7 @@ It wraps downstream signals into the `Change<T>` enum, where a value is either:
 ## Example
 
 ```sh
-cargo run -p rx_core --example combine_changes_example
+cargo run -p rx_core --example observable_combine_changes_example
 ```
 
 ```rs
