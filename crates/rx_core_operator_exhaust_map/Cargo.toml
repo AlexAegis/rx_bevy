@@ -22,12 +22,12 @@ pipe = ["rx_core_common/pipe"]
 compose = ["dep:rx_core_operator_composite"]
 
 [dependencies]
-rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
-rx_core_macro_operator_derive = { version = "0.1.0", path = "../rx_core_macro_operator_derive" }
-rx_core_operator_composite = { version = "0.1.0", path = "../rx_core_operator_composite", optional = true }
-rx_core_subscriber_higher_order_exhaust = { version = "0.1.0", path = "../rx_core_subscriber_higher_order_exhaust" }
-rx_core_subscriber_higher_order_map = { version = "0.1.0", path = "../rx_core_subscriber_higher_order_map" }
+rx_core_common = { workspace = true }
+rx_core_macro_operator_derive = { workspace = true }
+rx_core_operator_composite = { workspace = true, optional = true }
+rx_core_subscriber_higher_order_exhaust = { workspace = true }
+rx_core_subscriber_higher_order_map = { workspace = true }
 derive-where = { workspace = true }
 
 [dev-dependencies]
-rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }
+rx_core_testing = { workspace = true }

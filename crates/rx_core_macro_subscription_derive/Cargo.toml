@@ -22,4 +22,4 @@ proc-macro = true
 [dependencies]
 quote = { workspace = true }
 syn = { workspace = true }
-rx_core_macro_common = { version = "0.1.0", path = "../rx_core_macro_common" }
+rx_core_macro_common = { workspace = true }

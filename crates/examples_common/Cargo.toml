@@ -20,6 +20,6 @@ default = []
 
 [dependencies]
 bevy = { workspace = true, features = ["dynamic_linking"] }
-rx_core_common = { version = "0.1.0", path = "../rx_core_common" }
-rx_bevy_common = { version = "0.1.0", path = "../rx_bevy_common" }
+rx_core_common = { workspace = true }
+rx_bevy_common = { workspace = true }
 disqualified = { workspace = true }
