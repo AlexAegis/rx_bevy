@@ -121,12 +121,12 @@ mod tests {
 
 	use super::*;
 	use bevy_ecs::world::World;
-	use rx_core_common::{Never, RxObserver, SubscriptionLike, TeardownCollection};
+	use rx_core_common::{Never, RxObserver, SubscriptionLike, Teardown, TeardownCollection};
 	use rx_core_macro_observer_derive::RxObserver;
 
 	#[derive(RxObserver)]
 	#[rx_in(usize)]
-	#[rx_in_error(Never)]
+	#[rx_in_error(usize)]
 	#[rx_upgrades_to(self)]
 	struct MockObserver {
 		closed: Arc<AtomicBool>,
@@ -163,10 +163,15 @@ mod tests {
 			let mut commands = world.commands();
 			let observable_entity = commands.spawn_empty().id();
 			let is_closed = Arc::new(AtomicBool::new(false));
-			let observer = MockObserver {
+			let mut observer = MockObserver {
 				closed: is_closed.clone(),
 			};
-			let _ = Subscribe::<usize, Never>::new(observable_entity, observer, &mut commands);
+			observer.add_teardown(Teardown::new(|| {}));
+			observer.next(1);
+			observer.error(1);
+			observer.complete();
+
+			let _ = Subscribe::<usize, usize>::new(observable_entity, observer, &mut commands);
 			is_closed
 		};
 
