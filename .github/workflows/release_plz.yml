@@ -25,6 +25,9 @@ jobs:
           token: ${{ secrets.RELEASE_PLZ_TOKEN }}
       - name: rust toolchain
         uses: dtolnay/rust-toolchain@stable
+      - name: authenticate with crates.io for trusted publishing
+        uses: rust-lang/crates-io-auth-action@v1
+        id: auth
       - name: pre-publish rx_core_testing
         # release-plz orders dev-dependencies wrong, so I must
         # pre-publish rx_core_testing, and then let release_plz take over
