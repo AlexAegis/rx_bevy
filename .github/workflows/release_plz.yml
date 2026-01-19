@@ -28,6 +28,8 @@ jobs:
       - name: pre-publish rx_core_testing
         # release-plz orders dev-dependencies wrong, so I must
         # pre-publish rx_core_testing, and then let release_plz take over
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
           set -eu
 
