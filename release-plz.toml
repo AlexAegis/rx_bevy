@@ -1,16 +1,3 @@
-[workspace]
-git_release_enable = false
-git_tag_enable = false
-# set the path of all the crates to the changelog to the root of the repository
-changelog_path = "./CHANGELOG.md"
-
-[[package]]
-name = "rx_bevy"
-git_tag_name = "v{{ version }}"
-git_tag_enable = true
-git_release_enable = true
-publish = true
-
 [changelog]
 commit_parsers = [
   { message = "^feat", group = "added" },
@@ -36,3 +23,432 @@ body = """
 {% endfor -%}
 {% endfor -%}
 """
+
+[workspace]
+git_release_enable = false
+git_tag_enable = false
+changelog_update = false
+# set the path of all the crates to the changelog to the root of the repository
+changelog_path = "CHANGELOG.md"
+
+[[package]]
+name = "rx_bevy"
+git_tag_name = "v{{ version }}"
+git_tag_enable = true
+git_release_enable = true
+changelog_update = true
+publish = true
+version_group = "rx_bevy"
+
+[[package]]
+name = "rx_bevy_common"
+version_group = "rx_bevy"
+
+[[package]]
+name = "rx_bevy_observable_event"
+version_group = "rx_bevy"
+
+[[package]]
+name = "rx_bevy_observable_keyboard"
+version_group = "rx_bevy"
+
+[[package]]
+name = "rx_bevy_observable_message"
+version_group = "rx_bevy"
+
+[[package]]
+name = "rx_bevy_observable_proxy"
+version_group = "rx_bevy"
+
+[[package]]
+name = "rx_bevy_observable_resource"
+version_group = "rx_bevy"
+
+[[package]]
+name = "rx_core"
+git_tag_name = "core-v{{ version }}"
+git_tag_enable = true
+git_release_enable = true
+changelog_update = true
+publish = true
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_common"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_common"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_executor_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_observable_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_observer_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_operator_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_scheduler_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_subject_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_subscriber_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_subscription_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_macro_work_derive"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_notification_store"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_notification_variadics"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_closed"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_combine_changes"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_combine_latest"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_concat"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_connectable"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_create"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_deferred"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_empty"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_interval"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_iterator"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_iterator_on_tick"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_join"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_just"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_merge"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_never"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_throw"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_timer"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observable_zip"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observer_fn"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observer_noop"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_observer_print"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_adsr"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_buffer_count"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_catch"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_composite"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_concat_all"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_concat_map"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_delay"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_dematerialize"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_end_with"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_enumerate"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_error_boundary"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_exhaust_all"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_exhaust_map"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_fallback_when_silent"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_filter"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_filter_map"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_finalize"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_find"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_find_index"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_first"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_identity"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_into_result"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_is_empty"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_lift_option"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_lift_result"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_map"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_map_error"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_map_into"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_map_never"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_materialize"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_merge_all"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_merge_map"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_on_next"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_on_subscribe"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_pairwise"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_reduce"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_retry"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_scan"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_share"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_skip"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_start_with"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_switch_all"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_switch_map"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_take"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_tap"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_tap_next"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_operator_with_latest_from"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_scheduler_ticking"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subject_async"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subject_behavior"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subject_provenance"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subject_publish"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subject_replay"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subscriber_higher_order"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subscriber_higher_order_all"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subscriber_higher_order_concurrent"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subscriber_higher_order_exhaust"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subscriber_higher_order_map"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subscriber_higher_order_switch"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_subscription_inert"
+version_group = "rx_core"
+
+[[package]]
+name = "rx_core_testing"
+version_group = "rx_core"
