@@ -4303,7 +4303,6 @@ dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
- "rx_core_testing",
 ]
 
 [[package]]
@@ -4320,7 +4319,6 @@ dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
- "rx_core_testing",
 ]
 
 [[package]]
@@ -4336,7 +4334,6 @@ dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
- "rx_core_testing",
 ]
 
 [[package]]
@@ -4352,7 +4349,6 @@ dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
  "rx_core_macro_subscription_derive",
- "rx_core_testing",
 ]
 
 [[package]]
