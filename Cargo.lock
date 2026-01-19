@@ -4477,8 +4477,6 @@ dependencies = [
  "quote",
  "rx_core_common",
  "rx_core_macro_common",
- "rx_core_macro_scheduler_derive",
- "rx_core_scheduler_ticking",
  "syn",
 ]
 
