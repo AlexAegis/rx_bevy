@@ -11,14 +11,7 @@ repository.workspace = true
 documentation.workspace = true
 authors.workspace = true
 license.workspace = true
-keywords = [
-    "rx",
-    "reactivex",
-    "rx_core",
-    "rx_core_subject",
-    "rx_bevy",
-    "rx_bevy_subject",
-]
+keywords = ["rx", "rx_core", "rx_core_subject", "rx_bevy", "rx_bevy_subject"]
 
 [lints]
 workspace = true
