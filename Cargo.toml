@@ -183,7 +183,10 @@ bevy_platform = { version = "0.16", default-features = false }
 bevy_ptr = { version = "0.16", default-features = false }
 bevy_reflect = { version = "0.16", default-features = false }
 bevy_time = { version = "0.16", default-features = false }
-bevy_window = { version = "0.16", default-features = false }
+bevy_window = { version = "0.16", default-features = false, features = [
+    "std",
+    "bevy_reflect",
+] }
 # Bevy (Third Party)
 bevy-inspector-egui = { version = "0.31.0", default-features = false, features = [
     "bevy_render",
