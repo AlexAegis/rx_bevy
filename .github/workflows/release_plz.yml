@@ -25,6 +25,49 @@ jobs:
           token: ${{ secrets.RELEASE_PLZ_TOKEN }}
       - name: rust toolchain
         uses: dtolnay/rust-toolchain@stable
+      - name: pre-publish rx_core_testing
+        # release-plz orders dev-dependencies wrong, so I must
+        # pre-publish rx_core_testing, and then let release_plz take over
+        run: |
+          set -eu
+
+          crates="
+            rx_core_macro_common
+            rx_core_macro_observer_derive
+            rx_core_macro_executor_derive
+            rx_core_macro_observable_derive
+            rx_core_macro_subscription_derive
+            rx_core_macro_subscriber_derive
+            rx_core_macro_subject_derive
+            rx_core_macro_operator_derive
+            rx_core_common
+            rx_core_macro_scheduler_derive
+            rx_core_macro_work_derive
+            rx_core_scheduler_ticking
+            rx_core_testing
+          "
+
+          failures=""
+          had_failure=0
+
+          for c in $crates; do
+            echo "==> Publishing $c"
+            out="$(cargo publish -p "$c" 2>&1)" || {
+              if echo "$out" | grep -q "already exists on crates.io"; then
+                echo "==> Skipping $c (already published)"
+              else
+                had_failure=1
+                failures="${failures}\n--- ${c} ---\n${out}"
+              fi
+              continue
+            }
+            echo "$out"
+          done
+
+          if [ "$had_failure" -ne 0 ]; then
+            printf '\n==> Publish failures detected:%s\n' "$failures"
+            exit 1
+          fi
       - name: release-plz release
         uses: release-plz/action@v0.5
         with:
