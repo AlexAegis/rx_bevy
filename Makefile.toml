@@ -309,6 +309,12 @@ workspace = false
 command = "cargo"
 args = ["run", "-p", "xtask", "--", "lint", "readme"]
 
+[tasks.xtask-lint-release-plz]
+description = "Checks that all rx_* creates are set up for release"
+workspace = false
+command = "cargo"
+args = ["run", "-p", "xtask", "--", "lint", "release-plz"]
+
 ### Linting - Lint groups
 
 [tasks.lint]
@@ -322,6 +328,7 @@ run_task = { name = [
     "xtask-lint-docs",
     "xtask-lint-aggregators",
     "xtask-lint-readme",
+    "xtask-lint-release-plz",
 ], parallel = false } # Could be true, but that'd hide the failures
 
 [tasks.lint-ad-hoc]
