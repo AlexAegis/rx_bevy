@@ -41,5 +41,3 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 bevy = { workspace = true }
-
-rx_core_testing = { version = "0.1.0", path = "../rx_core_testing" }

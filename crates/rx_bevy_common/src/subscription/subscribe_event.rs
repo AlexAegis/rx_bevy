@@ -75,9 +75,10 @@ where
 	OutError: Signal,
 {
 	fn drop(&mut self) {
-		if let Some(destination) = self.try_consume_destination()
+		if let Some(mut destination) = self.try_consume_destination()
 			&& !destination.is_closed()
 		{
+			destination.unsubscribe();
 			error!(
 				"{}",
 				unconsumed_subscribe_dropped_message::<Out, OutError>(self.observable_entity),
@@ -113,30 +114,63 @@ This error was printed because a {} event was dropped, before the destination in
 
 #[cfg(test)]
 mod tests {
+	use std::sync::{
+		Arc,
+		atomic::{AtomicBool, Ordering},
+	};
+
 	use super::*;
 	use bevy_ecs::world::World;
-	use rx_core_common::{Never, SubscriberNotification};
-	use rx_core_testing::prelude::*;
+	use rx_core_common::{Never, RxObserver, SubscriptionLike, TeardownCollection};
+	use rx_core_macro_observer_derive::RxObserver;
+
+	#[derive(RxObserver)]
+	#[rx_in(usize)]
+	#[rx_in_error(Never)]
+	#[rx_upgrades_to(self)]
+	struct MockObserver {
+		closed: Arc<AtomicBool>,
+	}
+
+	impl RxObserver for MockObserver {
+		fn next(&mut self, _next: Self::In) {}
+
+		fn error(&mut self, _error: Self::InError) {}
+
+		fn complete(&mut self) {}
+	}
+
+	impl TeardownCollection for MockObserver {
+		fn add_teardown(&mut self, teardown: rx_core_common::Teardown) {
+			teardown.execute();
+		}
+	}
+
+	impl SubscriptionLike for MockObserver {
+		fn is_closed(&self) -> bool {
+			self.closed.load(Ordering::Relaxed)
+		}
+
+		fn unsubscribe(&mut self) {
+			self.closed.store(true, Ordering::Relaxed);
+		}
+	}
 
 	#[test]
 	fn drop_unconsumed_subscribe_indirectly_unsubscribes_destination() {
-		let notifications = NotificationCollector::<usize, Never>::default();
-
-		{
+		let is_closed = {
 			let mut world = World::new();
 			let mut commands = world.commands();
 			let observable_entity = commands.spawn_empty().id();
-
-			let observer = MockObserver::<usize>::new(notifications.clone());
+			let is_closed = Arc::new(AtomicBool::new(false));
+			let observer = MockObserver {
+				closed: is_closed.clone(),
+			};
 			let _ = Subscribe::<usize, Never>::new(observable_entity, observer, &mut commands);
-		}
+			is_closed
+		};
 
-		notifications.lock().assert_notifications(
-			"subscribe drop",
-			0,
-			[SubscriberNotification::Unsubscribe],
-			true,
-		);
+		assert!(is_closed.load(Ordering::Relaxed));
 	}
 
 	#[test]

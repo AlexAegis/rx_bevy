@@ -4271,7 +4271,6 @@ dependencies = [
  "rx_core_macro_subscription_derive",
  "rx_core_macro_work_derive",
  "rx_core_scheduler_ticking",
- "rx_core_testing",
  "thiserror 2.0.18",
 ]
 
