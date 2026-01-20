@@ -34,13 +34,13 @@ cargo run -p rx_core --example operator_map_example
 let _subscription = (1..=5)
     .into_observable()
     .map(|i| i * 2)
-    .skip(1)
     .subscribe(PrintObserver::new("map_operator"));
 ```
 
 Output:
 
 ```txt
+map_operator - next: 2
 map_operator - next: 4
 map_operator - next: 6
 map_operator - next: 8
