@@ -92,6 +92,8 @@ pub mod operator {
 	pub use rx_core_operator_delay::operator::*;
 	#[cfg(feature = "operator_dematerialize")]
 	pub use rx_core_operator_dematerialize::operator::*;
+	#[cfg(feature = "operator_element_at")]
+	pub use rx_core_operator_element_at::operator::*;
 	#[cfg(feature = "operator_end_with")]
 	pub use rx_core_operator_end_with::operator::*;
 	#[cfg(feature = "operator_enumerate")]
@@ -190,6 +192,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_delay::extension_compose::*;
 	#[cfg(feature = "operator_dematerialize")]
 	pub use rx_core_operator_dematerialize::extension_compose::*;
+	#[cfg(feature = "operator_element_at")]
+	pub use rx_core_operator_element_at::extension_compose::*;
 	#[cfg(feature = "operator_end_with")]
 	pub use rx_core_operator_end_with::extension_compose::*;
 	#[cfg(feature = "operator_enumerate")]
@@ -280,6 +284,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_delay::extension_pipe::*;
 	#[cfg(feature = "operator_dematerialize")]
 	pub use rx_core_operator_dematerialize::extension_pipe::*;
+	#[cfg(feature = "operator_element_at")]
+	pub use rx_core_operator_element_at::extension_pipe::*;
 	#[cfg(feature = "operator_end_with")]
 	pub use rx_core_operator_end_with::extension_pipe::*;
 	#[cfg(feature = "operator_enumerate")]

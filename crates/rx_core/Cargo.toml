@@ -99,6 +99,7 @@ all_operators = [
     "operator_concat_map",
     "operator_delay",
     "operator_dematerialize",
+    "operator_element_at",
     "operator_end_with",
     "operator_enumerate",
     "operator_error_boundary",
@@ -147,6 +148,7 @@ operator_concat_all = ["dep:rx_core_operator_concat_all"]
 operator_concat_map = ["dep:rx_core_operator_concat_map"]
 operator_delay = ["dep:rx_core_operator_delay"]
 operator_dematerialize = ["dep:rx_core_operator_dematerialize"]
+operator_element_at = ["dep:rx_core_operator_element_at"]
 operator_end_with = ["dep:rx_core_operator_end_with"]
 operator_enumerate = ["dep:rx_core_operator_enumerate"]
 operator_error_boundary = ["dep:rx_core_operator_error_boundary"]
@@ -194,6 +196,7 @@ pipe = [
     "rx_core_operator_concat_map?/pipe",
     "rx_core_operator_delay?/pipe",
     "rx_core_operator_dematerialize?/pipe",
+    "rx_core_operator_element_at?/pipe",
     "rx_core_operator_end_with?/pipe",
     "rx_core_operator_enumerate?/pipe",
     "rx_core_operator_error_boundary?/pipe",
@@ -242,6 +245,7 @@ compose = [
     "rx_core_operator_concat_map?/compose",
     "rx_core_operator_delay?/compose",
     "rx_core_operator_dematerialize?/compose",
+    "rx_core_operator_element_at?/compose",
     "rx_core_operator_end_with?/compose",
     "rx_core_operator_enumerate?/compose",
     "rx_core_operator_error_boundary?/compose",
@@ -330,6 +334,7 @@ rx_core_operator_concat_all = { workspace = true, optional = true }
 rx_core_operator_concat_map = { workspace = true, optional = true }
 rx_core_operator_delay = { workspace = true, optional = true }
 rx_core_operator_dematerialize = { workspace = true, optional = true }
+rx_core_operator_element_at = { workspace = true, optional = true }
 rx_core_operator_end_with = { workspace = true, optional = true }
 rx_core_operator_enumerate = { workspace = true, optional = true }
 rx_core_operator_error_boundary = { workspace = true, optional = true }

@@ -170,6 +170,9 @@ component_management:
     - component_id: rx_core_operator_dematerialize
       paths:
         - crates/rx_core_operator_dematerialize/**
+    - component_id: rx_core_operator_element_at
+      paths:
+        - crates/rx_core_operator_element_at/**
     - component_id: rx_core_operator_end_with
       paths:
         - crates/rx_core_operator_end_with/**

@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn)](https://codecov.io/github/AlexAegis/rx_bevy)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AlexAegis/rx_bevy?tab=MIT-1-ov-file)
 
-[![rx_bevy](https://github.com/AlexAegis/rx_bevy/blob/master/docs/assets/rx_bevy_logo.png)](https://github.com/AlexAegis/rx_bevy)
+[![rx_bevy](https://raw.githubusercontent.com/AlexAegis/rx_bevy/refs/heads/master/docs/assets/rx_bevy_logo.png)](https://github.com/AlexAegis/rx_bevy)
 
 > Reactive Extensions for the [Bevy Game Engine][BevyWebsite]!
 

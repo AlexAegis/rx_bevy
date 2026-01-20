@@ -548,7 +548,17 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
            - crates/rx_core_operator_foo/**
    ```
 
-10. If you haven't already, update the crates `readme.md` header.
+10. Add the crate to the release-plz configuration in
+    [`release-plz.toml`](./release-plz.toml)
+
+    ```toml
+    [[package]]
+    name = "rx_core_operator_foo"
+    git_tag_name = "core-v{{ version }}"
+    version_group = "rx_core"
+    ```
+
+11. If you haven't already, update the crates `readme.md` header.
 
     ```md
     # [operator_foo](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_foo)

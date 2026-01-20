@@ -25,8 +25,7 @@ implementation necessary to integrate with `bevy_ecs`.
 
 > This does not mean that `rx_bevy` is not a Bevy first project, as it suffers
 > no downsides from keeping its core framework agnostic. In fact, many core
-> trait design decisions were made to facilitate easy integration with ECS,
-> like push based scheduling and the context based allocation/deallocation.
+> trait design decisions were made to facilitate easy integration with ECS.
 
 ## Book Contents
 

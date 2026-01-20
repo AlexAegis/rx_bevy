@@ -92,6 +92,7 @@ rx_core_operator_concat_all = { version = "0.1.0", path = "crates/rx_core_operat
 rx_core_operator_concat_map = { version = "0.1.0", path = "crates/rx_core_operator_concat_map" }
 rx_core_operator_delay = { version = "0.1.0", path = "crates/rx_core_operator_delay" }
 rx_core_operator_dematerialize = { version = "0.1.0", path = "crates/rx_core_operator_dematerialize" }
+rx_core_operator_element_at = { version = "0.1.0", path = "crates/rx_core_operator_element_at" }
 rx_core_operator_end_with = { version = "0.1.0", path = "crates/rx_core_operator_end_with" }
 rx_core_operator_enumerate = { version = "0.1.0", path = "crates/rx_core_operator_enumerate" }
 rx_core_operator_error_boundary = { version = "0.1.0", path = "crates/rx_core_operator_error_boundary" }

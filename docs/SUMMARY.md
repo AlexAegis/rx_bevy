@@ -38,6 +38,7 @@
   - [concat_map](operator/concat_map.md)
   - [delay](operator/delay.md)
   - [dematerialize](operator/dematerialize.md)
+  - [element_at](operator/element_at.md)
   - [end_with](operator/end_with.md)
   - [enumerate](operator/enumerate.md)
   - [error_boundary](operator/error_boundary.md)
