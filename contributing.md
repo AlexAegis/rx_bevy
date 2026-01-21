@@ -357,6 +357,33 @@ integrated into `rx_bevy`, into the documentation, and the coverage reports:
     [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_bevy_observable_foo)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_bevy_observable_foo)
     ```
 
+#### Verify Observable Integration
+
+There are custom lints in place to verify that the above steps were executed:
+
+```sh
+cargo make xtask-lint
+```
+
+#### Add Examples
+
+At least one example should be provided for each observable in the observable's
+respective aggregator crate.
+
+For example: `crates/rx_core/examples/observable_foo_example.rs`
+
+The example should be simple, and focus on the main purpose of the observable.
+
+#### Add Integration Tests
+
+At least one integration test file should be provided for each observable in
+the observable's respective aggregator crate.
+
+For example: `crates/rx_core/tests/observable_foo_test.rs`
+
+> Check out [Writing Tests](https://alexaegis.github.io/rx_bevy/writing_tests.html)
+> to learn how to write comprehensive integration tests.
+
 #### Observable Contract Testing
 
 Observables must adhere to some behavioral contracts laid out in
@@ -567,6 +594,33 @@ integrated into `rx_core`, into the documentation, and the coverage reports:
     [![ci](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAegis/rx_bevy/actions/workflows/ci.yml)
     [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_core_operator_foo)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_core_operator_foo)
     ```
+
+#### Verify Operator Integration
+
+There are custom lints in place to verify that the above steps were executed:
+
+```sh
+cargo make xtask-lint
+```
+
+#### Examples
+
+At least one example should be provided for each operator in the operators
+respective aggregator crate.
+
+For example: `crates/rx_core/examples/operator_foo_example.rs`
+
+The example should be simple, and focus on the main purpose of the operator.
+
+#### Integration Tests
+
+At least one integration test file should be provided for each operator in the
+operators respective aggregator crate.
+
+For example: `crates/rx_core/tests/operator_foo_test.rs`
+
+> Check out [Writing Tests](https://alexaegis.github.io/rx_bevy/writing_tests.html)
+> to learn how to write comprehensive integration tests.
 
 #### Operator Contract Testing
 

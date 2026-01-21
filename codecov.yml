@@ -245,6 +245,9 @@ component_management:
     - component_id: rx_core_operator_merge_map
       paths:
         - crates/rx_core_operator_merge_map/**
+    - component_id: rx_core_operator_observe_on
+      paths:
+        - crates/rx_core_operator_observe_on/**
     - component_id: rx_core_operator_on_next
       paths:
         - crates/rx_core_operator_on_next/**

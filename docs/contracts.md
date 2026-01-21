@@ -103,7 +103,6 @@ considered "completed", and it should be closed, teardowns executed.
     upstream of the operator should also be executed.
 - If there are input observables:
   - `rx_verify_input_observable_teardowns_executed`: Teardowns added by an
-    input observable (using `finalize`) must also be executed.n
     input observable (using `finalize`) must also be executed.
 - If Scheduled:
   - `rx_verify_scheduler_is_empty`: No work should remain in the schedulers

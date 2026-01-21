@@ -1,9 +1,6 @@
-use std::{
-	sync::{
-		Arc,
-		atomic::{AtomicBool, AtomicUsize, Ordering},
-	},
-	time::Duration,
+use std::sync::{
+	Arc,
+	atomic::{AtomicBool, AtomicUsize, Ordering},
 };
 
 use rx_core_common::{
@@ -17,14 +14,13 @@ use rx_core_macro_subscriber_derive::RxSubscriber;
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection]
 #[rx_skip_unsubscribe_on_drop_impl]
-pub struct DelaySubscriber<Destination, S>
+pub struct ObserveOnSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler,
 {
 	#[destination]
 	destination: SharedSubscriber<Destination>,
-	duration: Duration,
 	scheduler: SchedulerHandle<S>,
 	cancellation_id: WorkCancellationId,
 	upstream_completed: Arc<AtomicBool>,
@@ -32,16 +28,12 @@ where
 	scheduled_work_counter: Arc<AtomicUsize>,
 }
 
-impl<Destination, S> DelaySubscriber<Destination, S>
+impl<Destination, S> ObserveOnSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: Scheduler,
 {
-	pub fn new(
-		mut destination: Destination,
-		duration: Duration,
-		scheduler: SchedulerHandle<S>,
-	) -> Self {
+	pub fn new(mut destination: Destination, scheduler: SchedulerHandle<S>) -> Self {
 		let cancellation_id = scheduler.lock().generate_cancellation_id();
 		destination.add_teardown(Teardown::new_work_cancellation(
 			cancellation_id,
@@ -49,7 +41,6 @@ where
 		));
 		Self {
 			destination: SharedSubscriber::new(destination),
-			duration,
 			scheduler,
 			cancellation_id,
 			upstream_completed: Arc::new(AtomicBool::new(false)),
@@ -59,7 +50,7 @@ where
 	}
 }
 
-impl<Destination, S> RxObserver for DelaySubscriber<Destination, S>
+impl<Destination, S> RxObserver for ObserveOnSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler + Send + Sync,
@@ -72,7 +63,7 @@ where
 		let scheduled_work_counter = self.scheduled_work_counter.clone();
 		let upstream_completed = self.upstream_completed.clone();
 		let upstream_unsubscribed = self.upstream_unsubscribed.clone();
-		self.scheduler.lock().schedule_delayed_work(
+		self.scheduler.lock().schedule_immediate_work(
 			move |_, _| {
 				let mut destination = destination.lock();
 				if !destination.is_closed() {
@@ -99,7 +90,6 @@ where
 					destination.unsubscribe();
 				}
 			},
-			self.duration,
 			self.cancellation_id,
 		);
 	}
@@ -119,18 +109,27 @@ where
 		// if there aren't any, complete immediately
 		if self.scheduled_work_counter.load(Ordering::Relaxed) == 0 {
 			self.destination.complete();
+		} else {
+			let scheduled_work_counter = self.scheduled_work_counter.clone();
+
+			self.scheduler.lock().schedule_immediate_work(
+				move |_, _| {
+					scheduled_work_counter.fetch_sub(1, Ordering::Relaxed);
+				},
+				self.cancellation_id,
+			);
 		}
 	}
 }
 
-impl<Destination, S> SubscriptionLike for DelaySubscriber<Destination, S>
+impl<Destination, S> SubscriptionLike for ObserveOnSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler + Send + Sync,
 {
 	#[inline]
 	fn is_closed(&self) -> bool {
-		self.destination.is_closed() || self.upstream_unsubscribed.load(Ordering::Relaxed)
+		self.destination.is_closed()
 	}
 
 	fn unsubscribe(&mut self) {
@@ -146,7 +145,7 @@ where
 	}
 }
 
-impl<Destination, S> Drop for DelaySubscriber<Destination, S>
+impl<Destination, S> Drop for ObserveOnSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler + Send + Sync,

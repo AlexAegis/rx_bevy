@@ -415,6 +415,11 @@ git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"
 
 [[package]]
+name = "rx_core_operator_observe_on"
+git_tag_name = "core-v{{ version }}"
+version_group = "rx_core"
+
+[[package]]
 name = "rx_core_operator_on_next"
 git_tag_name = "core-v{{ version }}"
 version_group = "rx_core"

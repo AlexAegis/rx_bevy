@@ -124,6 +124,7 @@ all_operators = [
     "operator_materialize",
     "operator_merge_all",
     "operator_merge_map",
+    "operator_observe_on",
     "operator_on_next",
     "operator_on_subscribe",
     "operator_pairwise",
@@ -173,6 +174,7 @@ operator_map_never = ["dep:rx_core_operator_map_never"]
 operator_materialize = ["dep:rx_core_operator_materialize"]
 operator_merge_all = ["dep:rx_core_operator_merge_all"]
 operator_merge_map = ["dep:rx_core_operator_merge_map"]
+operator_observe_on = ["dep:rx_core_operator_observe_on"]
 operator_on_next = ["dep:rx_core_operator_on_next"]
 operator_on_subscribe = ["dep:rx_core_operator_on_subscribe"]
 operator_pairwise = ["dep:rx_core_operator_pairwise"]
@@ -220,6 +222,7 @@ pipe = [
     "rx_core_operator_materialize?/pipe",
     "rx_core_operator_merge_all?/pipe",
     "rx_core_operator_merge_map?/pipe",
+    "rx_core_operator_observe_on?/pipe",
     "rx_core_operator_on_next?/pipe",
     "rx_core_operator_on_subscribe?/pipe",
     "rx_core_operator_pairwise?/pipe",
@@ -269,6 +272,7 @@ compose = [
     "rx_core_operator_materialize?/compose",
     "rx_core_operator_merge_all?/compose",
     "rx_core_operator_merge_map?/compose",
+    "rx_core_operator_observe_on?/compose",
     "rx_core_operator_on_next?/compose",
     "rx_core_operator_on_subscribe?/compose",
     "rx_core_operator_pairwise?/compose",
@@ -359,6 +363,7 @@ rx_core_operator_map_never = { workspace = true, optional = true }
 rx_core_operator_materialize = { workspace = true, optional = true }
 rx_core_operator_merge_all = { workspace = true, optional = true }
 rx_core_operator_merge_map = { workspace = true, optional = true }
+rx_core_operator_observe_on = { workspace = true, optional = true }
 rx_core_operator_on_next = { workspace = true, optional = true }
 rx_core_operator_on_subscribe = { workspace = true, optional = true }
 rx_core_operator_pairwise = { workspace = true, optional = true }

@@ -1,11 +1,11 @@
 use std::time::Duration;
 
 use rx_core::prelude::*;
-use rx_core_common::Observable;
+use rx_core_common::{Observable, SharedSubscriber};
 use rx_core_testing::prelude::*;
 
 #[test]
-fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
+fn should_schedule_a_next_emission_on_tick() {
 	let mut executor = MockExecutor::default();
 	let scheduler = executor.get_scheduler_handle();
 
@@ -15,7 +15,7 @@ fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
 	let mut source = PublishSubject::<usize, &'static str>::default();
 	let mut subscription = source
 		.clone()
-		.delay(Duration::from_millis(1000), scheduler.clone())
+		.observe_on(scheduler.clone())
 		.subscribe(destination);
 
 	assert!(executor.is_empty(), "No work should've been scheduled yet");
@@ -34,20 +34,11 @@ fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
 		notification_collector.lock().is_empty(),
 		"No notifications should've been observed yet"
 	);
-	executor.tick(Duration::from_millis(999));
-	assert!(
-		!executor.is_empty(),
-		"Work is scheduled now, but insufficient time had passed"
-	);
-	assert!(
-		notification_collector.lock().is_empty(),
-		"No notifications should've been observed yet; insufficient time had passed"
-	);
 
-	executor.tick(Duration::from_millis(1));
+	executor.tick(Duration::from_millis(0));
 
 	notification_collector.lock().assert_notifications(
-		"delay",
+		"observe_on",
 		0,
 		[SubscriberNotification::Next(1)],
 		true,
@@ -58,11 +49,11 @@ fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
 	subscription.unsubscribe();
 }
 
-// This actually tests the `is_closed` function of `delay` whould should
+// This actually tests the `is_closed` function of `observe_on` which should
 // immediately give feedback to upstream that it is closed, which is used
 // for things like stopping an iterator early.
 #[test]
-fn should_not_finish_the_iterator_when_closed_early_and_downstream_is_delayed() {
+fn should_not_finish_the_iterator_when_closed_early_and_downstream_is_observed_on() {
 	let mut executor = MockExecutor::default();
 	let scheduler = executor.get_scheduler_handle();
 
@@ -73,30 +64,23 @@ fn should_not_finish_the_iterator_when_closed_early_and_downstream_is_delayed() 
 	let tracked_data = tracked_iterator.get_tracking_data_ref();
 
 	let mut upstream_teardown_tracker_subscription = SharedSubscription::default();
-	let upstream_teardown_tracker =
-		upstream_teardown_tracker_subscription.add_tracked_teardown("iterator - take(2) - delay");
+	let upstream_teardown_tracker = upstream_teardown_tracker_subscription
+		.add_tracked_teardown("iterator - take(2) - observe_on");
 	let mut source = tracked_iterator
 		.into_observable()
 		.finalize(move || upstream_teardown_tracker_subscription.unsubscribe())
 		.take(2)
-		.delay(Duration::from_millis(1000), scheduler);
+		.observe_on(scheduler);
 	let subscription = source.subscribe(mock_destination);
-	notification_collector.print();
 
 	assert!(!tracked_data.is_finished(0), "Should not reach its end!");
-	executor.tick(Duration::from_millis(500));
-	notification_collector.print();
+	assert!(notification_collector.lock().is_empty());
 
-	assert!(!tracked_data.is_finished(0));
+	executor.tick(Duration::from_millis(0));
 
-	assert!(subscription.is_closed());
-	upstream_teardown_tracker.assert_yet_to_be_torn_down();
-
-	executor.tick(Duration::from_millis(500));
 	upstream_teardown_tracker.assert_was_torn_down();
-	notification_collector.print();
 	notification_collector.lock().assert_notifications(
-		"iterator - take(2) - delay",
+		"iterator - take(2) - observe_on",
 		0,
 		[
 			SubscriberNotification::Next(1),
@@ -110,7 +94,7 @@ fn should_not_finish_the_iterator_when_closed_early_and_downstream_is_delayed() 
 }
 
 #[test]
-fn should_delay_multiple_next_emissions_by_the_specified_amount_of_time() {
+fn should_schedule_multiple_next_emissions_on_tick() {
 	let mut executor = MockExecutor::default();
 	let scheduler = executor.get_scheduler_handle();
 
@@ -120,31 +104,25 @@ fn should_delay_multiple_next_emissions_by_the_specified_amount_of_time() {
 	let mut source = PublishSubject::<usize, &'static str>::default();
 	let mut subscription = source
 		.clone()
-		.delay(Duration::from_millis(1000), scheduler.clone())
+		.observe_on(scheduler.clone())
 		.subscribe(destination);
 
 	assert!(executor.is_empty(), "No work should've been scheduled yet");
 
 	source.next(1);
-	executor.tick(Duration::from_millis(500));
 	source.next(2);
-	executor.tick(Duration::from_millis(500));
+
+	notification_collector.lock().assert_is_empty("observe_on");
+
+	executor.tick(Duration::from_millis(0));
 
 	notification_collector.lock().assert_notifications(
-		"delay",
+		"observe_on",
 		0,
-		[SubscriberNotification::Next(1)],
-		true,
-	);
-
-	assert!(!executor.is_empty(), "Work should still be scheduled!");
-
-	executor.tick(Duration::from_millis(500));
-
-	notification_collector.lock().assert_notifications(
-		"delay",
-		1,
-		[SubscriberNotification::Next(2)],
+		[
+			SubscriberNotification::Next(1),
+			SubscriberNotification::Next(2),
+		],
 		true,
 	);
 
@@ -166,7 +144,7 @@ fn should_skip_scheduled_next_when_downstream_closes_before_tick() {
 	let mut source = PublishSubject::<usize, &'static str>::default();
 	let _subscription = source
 		.clone()
-		.delay(Duration::from_millis(500), scheduler.clone())
+		.observe_on(scheduler.clone())
 		.subscribe(shared_destination.clone());
 
 	source.next(1);
@@ -179,7 +157,7 @@ fn should_skip_scheduled_next_when_downstream_closes_before_tick() {
 	let destination_lock = shared_destination.lock();
 	shared_destination_unsubscribe.unsubscribe();
 
-	executor.tick(Duration::from_millis(500));
+	executor.tick(Duration::from_millis(0));
 	assert!(executor.is_empty(), "All work should be drained by now");
 
 	drop(destination_lock);
@@ -197,7 +175,7 @@ mod error {
 	use super::*;
 
 	#[test]
-	fn should_ignore_delay_for_errors_and_error_instantly_and_cancel_existing_delayed_emissions() {
+	fn should_ignore_observe_on_for_errors_and_error_instantly_and_cancel_scheduled_emissions() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
@@ -207,36 +185,30 @@ mod error {
 		let mut source = PublishSubject::<usize, &'static str>::default();
 		let subscription = source
 			.clone()
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.observe_on(scheduler.clone())
 			.subscribe(destination);
 
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
 
 		source.next(1);
-		executor.tick(Duration::from_millis(500));
 		let error = "error";
 		source.error(error);
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[SubscriberNotification::Error(error)],
 			true,
 		);
 
-		assert!(
-			!executor.is_empty(),
-			"Work should still be scheduled to be executed!"
-		);
-
-		executor.tick(Duration::from_millis(0)); // Tick to drain the scheduler
-		assert!(executor.is_empty(), "Work should've been cancelled!");
+		executor.tick(Duration::from_millis(0)); // Tick to drain any scheduled work
+		assert!(executor.is_empty(), "All work should be drained!");
 
 		assert!(subscription.is_closed());
 	}
 
 	#[test]
-	fn should_cancel_work_when_errored_even_if_the_tick_would_execute_the_already_scheduled_work() {
+	fn should_cancel_work_when_errored_even_if_the_tick_would_execute_the_scheduled_work() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
@@ -246,33 +218,27 @@ mod error {
 		let mut source = PublishSubject::<usize, &'static str>::default();
 		let subscription = source
 			.clone()
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.observe_on(scheduler.clone())
 			.subscribe(destination);
 
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
 
 		source.next(1);
-		executor.tick(Duration::from_millis(500));
 		let error = "error";
 		source.error(error);
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[SubscriberNotification::Error(error)],
 			true,
 		);
 
-		assert!(
-			!executor.is_empty(),
-			"Work should still be scheduled to be executed!"
-		);
-
-		executor.tick(Duration::from_millis(1000)); // Tick to drain the scheduler
-		assert!(executor.is_empty(), "Work should've been cancelled!");
+		executor.tick(Duration::from_millis(0)); // Tick to drain any scheduled work
+		assert!(executor.is_empty(), "All work should be drained!");
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[SubscriberNotification::Error(error)],
 			true,
@@ -286,7 +252,7 @@ mod complete {
 	use super::*;
 
 	#[test]
-	fn should_complete_after_a_delay_when_there_are_delayed_emissions() {
+	fn should_complete_after_a_tick_when_there_are_scheduled_emissions() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
@@ -296,7 +262,7 @@ mod complete {
 		let mut source = PublishSubject::<usize, &'static str>::default();
 		let subscription = source
 			.clone()
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.observe_on(scheduler.clone())
 			.subscribe(destination);
 
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
@@ -304,13 +270,12 @@ mod complete {
 		source.next(1);
 		source.complete();
 
-		notification_collector.lock().assert_is_empty("delay");
-		executor.tick(Duration::from_millis(1));
-		notification_collector.lock().assert_is_empty("delay");
-		executor.tick(Duration::from_millis(999));
+		notification_collector.lock().assert_is_empty("observe_on");
+
+		executor.tick(Duration::from_millis(0));
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -325,7 +290,7 @@ mod complete {
 	}
 
 	#[test]
-	fn should_immediately_complete_when_there_were_no_delayed_emissions_yet() {
+	fn should_immediately_complete_when_there_were_no_scheduled_emissions_yet() {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
@@ -335,7 +300,7 @@ mod complete {
 		let mut source = PublishSubject::<usize, &'static str>::default();
 		let subscription = source
 			.clone()
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.observe_on(scheduler.clone())
 			.subscribe(destination);
 
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
@@ -343,7 +308,7 @@ mod complete {
 		source.complete();
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[SubscriberNotification::Complete],
 			true,
@@ -355,7 +320,7 @@ mod complete {
 	}
 
 	#[test]
-	fn should_immediately_complete_when_an_emission_had_passed_and_complete_was_received_later() {
+	fn should_complete_after_tick_when_emission_had_passed_and_complete_was_received_later() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
@@ -365,21 +330,20 @@ mod complete {
 		let mut source = PublishSubject::<usize, &'static str>::default();
 		let subscription = source
 			.clone()
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.observe_on(scheduler.clone())
 			.subscribe(destination);
 
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
 		source.next(1);
-		executor.tick(Duration::from_millis(500));
-		source.complete(); // This should not be delayed a full 1000ms!
+		source.complete();
 		source.next(2);
 
-		notification_collector.lock().assert_is_empty("delay");
+		notification_collector.lock().assert_is_empty("observe_on");
 
-		executor.tick(Duration::from_millis(500));
+		executor.tick(Duration::from_millis(0));
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -398,7 +362,7 @@ mod unsubscribe {
 	use super::*;
 
 	#[test]
-	fn should_unsubscribe_after_a_delay_when_there_are_delayed_emissions() {
+	fn should_unsubscribe_after_a_tick_when_there_are_scheduled_emissions() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
@@ -408,7 +372,7 @@ mod unsubscribe {
 		let mut source = PublishSubject::<usize, &'static str>::default();
 		let subscription = source
 			.clone()
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.observe_on(scheduler.clone())
 			.subscribe(destination);
 
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
@@ -416,12 +380,12 @@ mod unsubscribe {
 		source.next(1);
 		source.unsubscribe();
 
-		notification_collector.lock().assert_is_empty("delay");
+		notification_collector.lock().assert_is_empty("observe_on");
 
-		executor.tick(Duration::from_millis(1000));
+		executor.tick(Duration::from_millis(0));
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -436,7 +400,7 @@ mod unsubscribe {
 	}
 
 	#[test]
-	fn should_immediately_unsubscribe_when_there_were_no_delayed_emissions_yet() {
+	fn should_immediately_unsubscribe_when_there_were_no_scheduled_emissions_yet() {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
@@ -446,7 +410,7 @@ mod unsubscribe {
 		let mut source = PublishSubject::<usize, &'static str>::default();
 		let subscription = source
 			.clone()
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.observe_on(scheduler.clone())
 			.subscribe(destination);
 
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
@@ -454,7 +418,7 @@ mod unsubscribe {
 		source.unsubscribe();
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[SubscriberNotification::Unsubscribe],
 			true,
@@ -466,8 +430,7 @@ mod unsubscribe {
 	}
 
 	#[test]
-	fn should_immediately_unsubscribe_when_an_emission_had_passed_and_unsubscribe_was_received_later()
-	 {
+	fn should_unsubscribe_after_tick_when_emission_had_passed_and_unsubscribe_was_received_later() {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 
@@ -477,21 +440,20 @@ mod unsubscribe {
 		let mut source = PublishSubject::<usize, &'static str>::default();
 		let subscription = source
 			.clone()
-			.delay(Duration::from_millis(1000), scheduler.clone())
+			.observe_on(scheduler.clone())
 			.subscribe(destination);
 
 		assert!(executor.is_empty(), "No work should've been scheduled yet");
 		source.next(1);
-		executor.tick(Duration::from_millis(500));
-		source.unsubscribe(); // This should not be delayed a full 1000ms!
+		source.unsubscribe();
 		source.next(2);
 
-		notification_collector.lock().assert_is_empty("delay");
+		notification_collector.lock().assert_is_empty("observe_on");
 
-		executor.tick(Duration::from_millis(500));
+		executor.tick(Duration::from_millis(0));
 
 		notification_collector.lock().assert_notifications(
-			"delay",
+			"observe_on",
 			0,
 			[
 				SubscriberNotification::Next(1),
@@ -516,7 +478,7 @@ fn should_compose() {
 
 	let mut source = PublishSubject::<usize, &'static str>::default();
 
-	let composed = compose_operator().delay(Duration::from_millis(1000), scheduler.clone());
+	let composed = compose_operator().observe_on(scheduler.clone());
 
 	let mut subscription = source.clone().pipe(composed).subscribe(destination);
 
@@ -536,20 +498,11 @@ fn should_compose() {
 		notification_collector.lock().is_empty(),
 		"No notifications should've observed yet"
 	);
-	executor.tick(Duration::from_millis(999));
-	assert!(
-		!executor.is_empty(),
-		"Work is scheduled now, but insufficient time had passed"
-	);
-	assert!(
-		notification_collector.lock().is_empty(),
-		"No notifications should've observed yet, insufficient time had passed"
-	);
 
-	executor.tick(Duration::from_millis(1));
+	executor.tick(Duration::from_millis(0));
 
 	notification_collector.lock().assert_notifications(
-		"delay",
+		"observe_on",
 		0,
 		[SubscriberNotification::Next(1)],
 		true,
@@ -569,11 +522,11 @@ mod contracts {
 		let executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 		let mut harness =
-			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("delay");
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("observe_on");
 
 		let observable = harness
 			.create_harness_observable()
-			.delay(Duration::from_millis(10), scheduler.clone());
+			.observe_on(scheduler.clone());
 		harness.subscribe_to(observable);
 		harness.source().next(1);
 		harness.source().error("error");
@@ -587,15 +540,15 @@ mod contracts {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 		let mut harness =
-			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("delay");
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("observe_on");
 
 		let observable = harness
 			.create_harness_observable()
-			.delay(Duration::from_millis(10), scheduler.clone());
+			.observe_on(scheduler.clone());
 		harness.subscribe_to(observable);
 		harness.source().next(1);
 		harness.source().complete();
-		executor.tick(Duration::from_millis(20));
+		executor.tick(Duration::from_millis(0));
 		harness.assert_terminal_notification(SubscriberNotification::Complete);
 
 		assert!(executor.is_empty());
@@ -606,15 +559,15 @@ mod contracts {
 		let mut executor = MockExecutor::default();
 		let scheduler = executor.get_scheduler_handle();
 		let mut harness =
-			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("delay");
+			TestHarness::<TestSubject<usize, &'static str>, usize, &'static str>::new("observe_on");
 
 		let observable = harness
 			.create_harness_observable()
-			.delay(Duration::from_millis(10), scheduler.clone());
+			.observe_on(scheduler.clone());
 		harness.subscribe_to(observable);
 		harness.source().next(1);
 		harness.get_subscription_mut().unsubscribe();
-		executor.tick(Duration::from_millis(20));
+		executor.tick(Duration::from_millis(0));
 		harness.assert_terminal_notification(SubscriberNotification::Unsubscribe);
 
 		assert!(executor.is_empty());

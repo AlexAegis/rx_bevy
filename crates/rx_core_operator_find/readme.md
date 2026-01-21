@@ -13,6 +13,8 @@ Emit the first value that matches a predicate.
   Keep values that satisfy a predicate.
 - [FindIndexOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_find_index) -
   Emit the index of the first value that matches a predicate.
+- [ElementAtOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_element_at) -
+  Emit the value at the given index then complete.
 - [FirstOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_first) -
   Emit only the first value, then complete.
 

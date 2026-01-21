@@ -151,6 +151,7 @@ all_core_operators = [
 	"operator_materialize",
 	"operator_merge_all",
 	"operator_merge_map",
+	"operator_observe_on",
 	"operator_on_next",
 	"operator_on_subscribe",
 	"operator_pairwise",
@@ -200,6 +201,7 @@ operator_map_never = ["rx_core/operator_map_never"]
 operator_materialize = ["rx_core/operator_materialize"]
 operator_merge_all = ["rx_core/operator_merge_all"]
 operator_merge_map = ["rx_core/operator_merge_map"]
+operator_observe_on = ["rx_core/operator_observe_on"]
 operator_on_next = ["rx_core/operator_on_next"]
 operator_on_subscribe = ["rx_core/operator_on_subscribe"]
 operator_pairwise = ["rx_core/operator_pairwise"]

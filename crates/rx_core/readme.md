@@ -40,7 +40,7 @@ common types and traits used by all other crates.
 > It defines what an Observable, Observer, Subscription, Subject, Operator,
 > Subscriber, and a Scheduler is. How Operators (and ComposableOperators) are
 > piped together. And how Subscriptions and Subscribers avoid deadlocking
-> situations in single-threaded situartions by deferring notifications.
+> situations in single-threaded situations by deferring notifications.
 
 ### Observables
 
@@ -182,6 +182,8 @@ enhancing the original observable with new behavior.
     Emit the first value matching a predicate, then complete.
   - [FindIndexOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_find_index) -
     Emit the index of the first matching value, then complete.
+  - [ElementAtOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_element_at) -
+    Emit the value at the given index then complete.
   - [IsEmptyOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_is_empty) -
     Emit a single boolean indicating if the source emitted anything before it
     had completed.
@@ -257,6 +259,8 @@ enhancing the original observable with new behavior.
     Convert trigger signals into an ADSR envelope driven by the scheduler.
   - [DelayOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay) -
     Shift emissions forward in time using the scheduler.
+  - [ObserveOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_observe_on) -
+    Re-emit upstream signals with the provided scheduler.
   - [FallbackWhenSilentOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_fallback_when_silent) -
     Emit a fallback value on ticks where the source stayed silent.
 - Composite Operators:

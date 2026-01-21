@@ -18,8 +18,8 @@ args = ["lfs", "install", "--force"]
 
 [tasks.enable-git-hooks]
 condition = { platforms = [ # All hooks are shell scripts
-    "linux",
-    "mac",
+	"linux",
+	"mac",
 ], fail_message = "Git hooks are not available for Windows! Use a proper OS." }
 description = "Enable git hooks by setting the hooksPath to scripts/hooks"
 workspace = false
@@ -113,12 +113,12 @@ description = "Pre builds the tests without running them"
 workspace = false
 command = "cargo"
 args = [
-    "test",
-    "--no-run",
-    "--locked",
-    "--workspace",
-    "--all-targets",
-    "--all-features",
+	"test",
+	"--no-run",
+	"--locked",
+	"--workspace",
+	"--all-targets",
+	"--all-features",
 ]
 
 [tasks.test-cargo]
@@ -145,8 +145,8 @@ description = "Install llvm-cov"
 workspace = false
 private = true
 install_crate = { crate_name = "cargo-llvm-cov", binary = "cargo-llvm-cov", test_arg = [
-    "llvm-cov",
-    "--version",
+	"llvm-cov",
+	"--version",
 ] }
 install_crate_args = ["--locked"]
 
@@ -156,12 +156,12 @@ workspace = false
 dependencies = ["install-llvm-cov", "install-nextest"]
 command = "cargo"
 args = [
-    "llvm-cov",
-    "nextest",
-    "--workspace",
-    "--all-targets",
-    "--all-features",
-    "--no-report",
+	"llvm-cov",
+	"nextest",
+	"--workspace",
+	"--all-targets",
+	"--all-features",
+	"--no-report",
 ] # Tip: Use either "--no-clean" or "--no-report" to prevent recompilation. See https://github.com/taiki-e/cargo-llvm-cov/pull/214
 
 # llvm-cov reference: https://crates.io/crates/cargo-llvm-cov
@@ -175,11 +175,11 @@ workspace = false
 dependencies = ["install-llvm-cov", "install-nextest", "test"]
 command = "cargo"
 args = [
-    "llvm-cov",
-    "report",
-    "--ignore-filename-regex",
-    "crates/(examples_common|xtask)/.*",
-    "--html",
+	"llvm-cov",
+	"report",
+	"--ignore-filename-regex",
+	"crates/(examples_common|xtask)/.*",
+	"--html",
 ]
 
 [tasks.clean-llvm-cov]
@@ -194,11 +194,11 @@ description = "Validates the codecov yml file. Only needed if the codecov.yml fi
 workspace = false
 command = "curl"
 args = [
-    "-X",
-    "POST",
-    "--data-binary",
-    "@codecov.yml",
-    "https://codecov.io/validate",
+	"-X",
+	"POST",
+	"--data-binary",
+	"@codecov.yml",
+	"https://codecov.io/validate",
 ]
 
 
@@ -241,14 +241,14 @@ workspace = false
 dependencies = ["install-clippy"]
 command = "cargo"
 args = [
-    "clippy",
-    "--locked",
-    "--workspace",
-    "--all-targets",
-    "--all-features",
-    "--",
-    "-D",
-    "warnings",
+	"clippy",
+	"--locked",
+	"--workspace",
+	"--all-targets",
+	"--all-features",
+	"--",
+	"-D",
+	"warnings",
 ]
 
 ### Linting - Machete
@@ -317,18 +317,26 @@ args = ["run", "-p", "xtask", "--", "lint", "release-plz"]
 
 ### Linting - Lint groups
 
+
+[tasks.xtask-lint]
+description = "Run custom xtask lints"
+workspace = false
+run_task = { name = [
+	"xtask-lint-codecov",
+	"xtask-lint-docs",
+	"xtask-lint-aggregators",
+	"xtask-lint-readme",
+	"xtask-lint-release-plz",
+], parallel = true }
+
 [tasks.lint]
 description = "Run several linting steps that do not block eachother in parallel"
 workspace = false
 run_task = { name = [
-    "format",
-    "clippy",
-    "machete",
-    "xtask-lint-codecov",
-    "xtask-lint-docs",
-    "xtask-lint-aggregators",
-    "xtask-lint-readme",
-    "xtask-lint-release-plz",
+	"format",
+	"clippy",
+	"machete",
+	"xtask-lint",
 ], parallel = false } # Could be true, but that'd hide the failures
 
 [tasks.lint-ad-hoc]
@@ -398,20 +406,20 @@ args = ["clean"]
 description = "Prepares the workspace for development"
 workspace = false
 dependencies = [
-    "install-git-lfs",
-    "enable-git-hooks",
-    "install-cocogitto",
-    "install-koji",
-    "install-web-support",
-    "script-link-assets",
-    "install-nextest",
-    "install-llvm-cov",
-    "install-rustfmt",
-    "install-clippy",
-    "install-cargo-machete",
-    "install-cargo-audit",
-    "install-mdbook",
-    "install-cargo-expand",
+	"install-git-lfs",
+	"enable-git-hooks",
+	"install-cocogitto",
+	"install-koji",
+	"install-web-support",
+	"script-link-assets",
+	"install-nextest",
+	"install-llvm-cov",
+	"install-rustfmt",
+	"install-clippy",
+	"install-cargo-machete",
+	"install-cargo-audit",
+	"install-mdbook",
+	"install-cargo-expand",
 ]
 
 [tasks.all]
