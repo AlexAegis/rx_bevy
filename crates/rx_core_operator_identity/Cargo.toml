@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_operator_identity"
 description = "identity operator for rx_core; a no-op operator mainly used to define input types for composite operators"
-version = "0.1.0"
+version = "0.1.1"
 readme = "readme.md"
 publish = true
 

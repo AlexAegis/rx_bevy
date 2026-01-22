@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_common"
-version = "0.1.0"
+version = "0.1.1"
 description = "rx_core's core traits and implementations"
 readme = "readme.md"
 publish = true
