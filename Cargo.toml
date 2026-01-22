@@ -118,6 +118,7 @@ rx_core_operator_materialize = { version = "0.1.0", path = "crates/rx_core_opera
 rx_core_operator_merge_all = { version = "0.1.0", path = "crates/rx_core_operator_merge_all" }
 rx_core_operator_merge_map = { version = "0.1.0", path = "crates/rx_core_operator_merge_map" }
 rx_core_operator_observe_on = { version = "0.1.0", path = "crates/rx_core_operator_observe_on" }
+rx_core_operator_subscribe_on = { version = "0.1.0", path = "crates/rx_core_operator_subscribe_on" }
 rx_core_operator_on_next = { version = "0.1.0", path = "crates/rx_core_operator_on_next" }
 rx_core_operator_on_subscribe = { version = "0.1.0", path = "crates/rx_core_operator_on_subscribe" }
 rx_core_operator_pairwise = { version = "0.1.0", path = "crates/rx_core_operator_pairwise" }

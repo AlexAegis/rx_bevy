@@ -64,6 +64,7 @@
   - [merge_all](operator/merge_all.md)
   - [merge_map](operator/merge_map.md)
   - [observe_on](operator/observe_on.md)
+  - [subscribe_on](operator/subscribe_on.md)
   - [on_next](operator/on_next.md)
   - [on_subscribe](operator/on_subscribe.md)
   - [pairwise](operator/pairwise.md)

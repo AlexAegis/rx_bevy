@@ -17,6 +17,8 @@ skipped because downstream closes.
 
 ## See Also
 
+- [SubscribeOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_subscribe_on) -
+  Schedule upstream subscription on the provided scheduler.
 - [DelayOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay) -
   Shift emissions forward in time using the scheduler.
 

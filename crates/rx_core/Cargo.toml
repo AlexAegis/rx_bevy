@@ -134,6 +134,7 @@ all_operators = [
     "operator_share",
     "operator_skip",
     "operator_start_with",
+    "operator_subscribe_on",
     "operator_switch_all",
     "operator_switch_map",
     "operator_take",
@@ -184,6 +185,7 @@ operator_scan = ["dep:rx_core_operator_scan"]
 operator_share = ["dep:rx_core_operator_share"]
 operator_skip = ["dep:rx_core_operator_skip"]
 operator_start_with = ["dep:rx_core_operator_start_with"]
+operator_subscribe_on = ["dep:rx_core_operator_subscribe_on"]
 operator_switch_all = ["dep:rx_core_operator_switch_all"]
 operator_switch_map = ["dep:rx_core_operator_switch_map"]
 operator_take = ["dep:rx_core_operator_take"]
@@ -232,6 +234,7 @@ pipe = [
     "rx_core_operator_share?/pipe",
     "rx_core_operator_skip?/pipe",
     "rx_core_operator_start_with?/pipe",
+    "rx_core_operator_subscribe_on?/pipe",
     "rx_core_operator_switch_all?/pipe",
     "rx_core_operator_switch_map?/pipe",
     "rx_core_operator_take?/pipe",
@@ -364,6 +367,7 @@ rx_core_operator_materialize = { workspace = true, optional = true }
 rx_core_operator_merge_all = { workspace = true, optional = true }
 rx_core_operator_merge_map = { workspace = true, optional = true }
 rx_core_operator_observe_on = { workspace = true, optional = true }
+rx_core_operator_subscribe_on = { workspace = true, optional = true }
 rx_core_operator_on_next = { workspace = true, optional = true }
 rx_core_operator_on_subscribe = { workspace = true, optional = true }
 rx_core_operator_pairwise = { workspace = true, optional = true }

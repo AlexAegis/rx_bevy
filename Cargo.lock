@@ -4421,6 +4421,7 @@ dependencies = [
  "rx_core_operator_share",
  "rx_core_operator_skip",
  "rx_core_operator_start_with",
+ "rx_core_operator_subscribe_on",
  "rx_core_operator_switch_all",
  "rx_core_operator_switch_map",
  "rx_core_operator_take",
@@ -5248,6 +5249,16 @@ dependencies = [
  "rx_core_common",
  "rx_core_macro_operator_derive",
  "rx_core_operator_composite",
+]
+
+[[package]]
+name = "rx_core_operator_subscribe_on"
+version = "0.1.0"
+dependencies = [
+ "rx_core_common",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscription_derive",
 ]
 
 [[package]]

@@ -264,6 +264,8 @@ enhancing the original observable with new behavior.
     Shift emissions forward in time using the scheduler.
   - [ObserveOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_observe_on) -
     Re-emit upstream signals with the provided scheduler.
+  - [SubscribeOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_subscribe_on) -
+    Schedule upstream subscription on the provided scheduler.
   - [FallbackWhenSilentOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_fallback_when_silent) -
     Emit a fallback value on ticks where the source stayed silent.
 - Composite Operators:

@@ -275,6 +275,9 @@ component_management:
     - component_id: rx_core_operator_start_with
       paths:
         - crates/rx_core_operator_start_with/**
+    - component_id: rx_core_operator_subscribe_on
+      paths:
+        - crates/rx_core_operator_subscribe_on/**
     - component_id: rx_core_operator_switch_all
       paths:
         - crates/rx_core_operator_switch_all/**

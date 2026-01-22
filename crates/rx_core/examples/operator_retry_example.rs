@@ -2,10 +2,8 @@ use rx_core::prelude::*;
 
 fn main() {
 	let mut retried = concat((
-		(0..=2)
-			.into_observable()
-			.map_error(Never::map_into::<&'static str>()),
-		throw("error").map(Never::map_into::<usize>()),
+		(0..=2).into_observable().map_never(),
+		throw("error").map_never(),
 	))
 	.retry(2);
 

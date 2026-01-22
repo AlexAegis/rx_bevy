@@ -17,6 +17,8 @@ delayed values.
 
 ## See Also
 
+- [SubscribeOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_subscribe_on) -
+  Schedule upstream subscription on the provided scheduler.
 - [AdsrOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_adsr) -
   Convert trigger signals into an ADSR envelope driven by the scheduler.
 - [FallbackWhenSilentOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_fallback_when_silent) -

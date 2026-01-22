@@ -161,6 +161,7 @@ all_core_operators = [
 	"operator_share",
 	"operator_skip",
 	"operator_start_with",
+	"operator_subscribe_on",
 	"operator_switch_all",
 	"operator_switch_map",
 	"operator_take",
@@ -211,6 +212,7 @@ operator_scan = ["rx_core/operator_scan"]
 operator_share = ["rx_core/operator_share"]
 operator_skip = ["rx_core/operator_skip"]
 operator_start_with = ["rx_core/operator_start_with"]
+operator_subscribe_on = ["rx_core/operator_subscribe_on"]
 operator_switch_all = ["rx_core/operator_switch_all"]
 operator_switch_map = ["rx_core/operator_switch_map"]
 operator_take = ["rx_core/operator_take"]

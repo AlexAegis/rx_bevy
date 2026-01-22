@@ -162,6 +162,8 @@ pub mod operator {
 	pub use rx_core_operator_skip::operator::*;
 	#[cfg(feature = "operator_start_with")]
 	pub use rx_core_operator_start_with::operator::*;
+	#[cfg(feature = "operator_subscribe_on")]
+	pub use rx_core_operator_subscribe_on::operator::*;
 	#[cfg(feature = "operator_switch_all")]
 	pub use rx_core_operator_switch_all::operator::*;
 	#[cfg(feature = "operator_switch_map")]
@@ -356,6 +358,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_skip::extension_pipe::*;
 	#[cfg(feature = "operator_start_with")]
 	pub use rx_core_operator_start_with::extension_pipe::*;
+	#[cfg(feature = "operator_subscribe_on")]
+	pub use rx_core_operator_subscribe_on::extension_pipe::*;
 	#[cfg(feature = "operator_switch_all")]
 	pub use rx_core_operator_switch_all::extension_pipe::*;
 	#[cfg(feature = "operator_switch_map")]
