@@ -36,6 +36,7 @@
   - [composite](operator/composite.md)
   - [concat_all](operator/concat_all.md)
   - [concat_map](operator/concat_map.md)
+  - [count](operator/count.md)
   - [delay](operator/delay.md)
   - [dematerialize](operator/dematerialize.md)
   - [element_at](operator/element_at.md)

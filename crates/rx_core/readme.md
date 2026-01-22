@@ -225,6 +225,8 @@ enhancing the original observable with new behavior.
   - [ScanOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_scan) -
     Accumulate state and emit every intermediate result.
 - Accumulator (Single-Signal):
+  - [CountOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_count) -
+    Count values emitted by upstream.
   - [ReduceOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_reduce) -
     Fold values and emit only the final accumulator on completion.
 - Side-Effects:

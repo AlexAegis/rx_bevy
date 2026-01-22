@@ -97,6 +97,7 @@ all_operators = [
     "operator_composite",
     "operator_concat_all",
     "operator_concat_map",
+    "operator_count",
     "operator_delay",
     "operator_dematerialize",
     "operator_element_at",
@@ -148,6 +149,7 @@ operator_catch = ["dep:rx_core_operator_catch"]
 operator_composite = ["dep:rx_core_operator_composite"]
 operator_concat_all = ["dep:rx_core_operator_concat_all"]
 operator_concat_map = ["dep:rx_core_operator_concat_map"]
+operator_count = ["dep:rx_core_operator_count"]
 operator_delay = ["dep:rx_core_operator_delay"]
 operator_dematerialize = ["dep:rx_core_operator_dematerialize"]
 operator_element_at = ["dep:rx_core_operator_element_at"]
@@ -198,6 +200,7 @@ pipe = [
     "rx_core_operator_catch?/pipe",
     "rx_core_operator_concat_all?/pipe",
     "rx_core_operator_concat_map?/pipe",
+    "rx_core_operator_count?/pipe",
     "rx_core_operator_delay?/pipe",
     "rx_core_operator_dematerialize?/pipe",
     "rx_core_operator_element_at?/pipe",
@@ -249,6 +252,7 @@ compose = [
     "rx_core_operator_catch?/compose",
     "rx_core_operator_concat_all?/compose",
     "rx_core_operator_concat_map?/compose",
+    "rx_core_operator_count?/compose",
     "rx_core_operator_delay?/compose",
     "rx_core_operator_dematerialize?/compose",
     "rx_core_operator_element_at?/compose",
@@ -339,6 +343,7 @@ rx_core_operator_catch = { workspace = true, optional = true }
 rx_core_operator_composite = { workspace = true, optional = true }
 rx_core_operator_concat_all = { workspace = true, optional = true }
 rx_core_operator_concat_map = { workspace = true, optional = true }
+rx_core_operator_count = { workspace = true, optional = true }
 rx_core_operator_delay = { workspace = true, optional = true }
 rx_core_operator_dematerialize = { workspace = true, optional = true }
 rx_core_operator_element_at = { workspace = true, optional = true }

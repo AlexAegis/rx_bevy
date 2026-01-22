@@ -4384,6 +4384,7 @@ dependencies = [
  "rx_core_operator_composite",
  "rx_core_operator_concat_all",
  "rx_core_operator_concat_map",
+ "rx_core_operator_count",
  "rx_core_operator_delay",
  "rx_core_operator_dematerialize",
  "rx_core_operator_element_at",
@@ -4833,6 +4834,17 @@ dependencies = [
  "rx_core_operator_composite",
  "rx_core_subscriber_higher_order_concurrent",
  "rx_core_subscriber_higher_order_map",
+]
+
+[[package]]
+name = "rx_core_operator_count"
+version = "0.1.0"
+dependencies = [
+ "derive-where",
+ "rx_core_common",
+ "rx_core_macro_operator_derive",
+ "rx_core_macro_subscriber_derive",
+ "rx_core_operator_composite",
 ]
 
 [[package]]

@@ -164,6 +164,9 @@ component_management:
     - component_id: rx_core_operator_concat_map
       paths:
         - crates/rx_core_operator_concat_map/**
+    - component_id: rx_core_operator_count
+      paths:
+        - crates/rx_core_operator_count/**
     - component_id: rx_core_operator_delay
       paths:
         - crates/rx_core_operator_delay/**
