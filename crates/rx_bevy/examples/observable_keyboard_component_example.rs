@@ -8,9 +8,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
@@ -27,11 +25,7 @@ fn main() -> AppExit {
 		.run()
 }
 
-fn next_number_observer(
-	next: Trigger<RxSignal<String>>,
-	name_query: Query<&Name>,
-	time: Res<Time>,
-) {
+fn next_number_observer(next: On<RxSignal<String>>, name_query: Query<&Name>, time: Res<Time>) {
 	println!(
 		"value: {:?}\tby {:?}\tname: {:?}\telapsed: {}",
 		next.signal(),

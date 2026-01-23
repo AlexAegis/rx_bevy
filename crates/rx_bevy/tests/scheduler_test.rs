@@ -396,7 +396,7 @@ mod cleanup_on_exit {
 
 		app.update();
 
-		app.world_mut().send_event(AppExit::Success);
+		app.world_mut().write_message(AppExit::Success);
 
 		app.update();
 

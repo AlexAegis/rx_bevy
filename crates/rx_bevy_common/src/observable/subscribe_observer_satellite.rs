@@ -5,7 +5,7 @@ use bevy_ecs::{
 	entity::Entity,
 	error::BevyError,
 	name::Name,
-	observer::{Observer, Trigger},
+	observer::{Observer, On},
 	system::{Commands, Query},
 };
 use disqualified::ShortName;
@@ -50,13 +50,13 @@ where
 			erased_relationship: ErasedSubscribeObserverOf::<O::Out, O::OutError>::new(entity),
 			subscribe_event_observer: Observer::new(observable_subscribe_event_observer::<C>)
 				.with_entity(entity)
-				.with_error_handler(bevy_ecs::error::default_error_handler()),
+				.with_error_handler(bevy_ecs::error::error),
 		}
 	}
 }
 
 pub(crate) fn observable_subscribe_event_observer<O>(
-	mut on_subscribe: Trigger<Subscribe<O::Out, O::OutError>>,
+	mut on_subscribe: On<Subscribe<O::Out, O::OutError>>,
 	mut commands: Commands,
 	mut observable_query: Query<&mut O>,
 	rx_schedule_despawn: RxScheduleDespawn,

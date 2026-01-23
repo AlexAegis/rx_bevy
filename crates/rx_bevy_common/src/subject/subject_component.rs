@@ -1,7 +1,4 @@
-use bevy_ecs::{
-	component::{Component, HookContext},
-	world::DeferredWorld,
-};
+use bevy_ecs::{component::Component, lifecycle::HookContext, world::DeferredWorld};
 use rx_core_common::{
 	Observable, RxObserver, SubjectLike, Subscriber, SubscriptionLike, UpgradeableObserver,
 };

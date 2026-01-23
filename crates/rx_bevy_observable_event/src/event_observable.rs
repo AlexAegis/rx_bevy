@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{entity::Entity, event::Event};
+use bevy_ecs::{entity::Entity, event::EntityEvent};
 use rx_bevy_common::RxBevyScheduler;
 use rx_core_common::{
 	Never, Observable, PhantomInvariant, SchedulerHandle, Subscriber, UpgradeableObserver,
@@ -22,7 +22,7 @@ use crate::EntityEventSubscription;
 #[rx_out_error(Never)]
 pub struct EventObservable<E>
 where
-	E: Event + Clone,
+	E: EntityEvent + Clone,
 {
 	observed_entity: Entity,
 	scheduler: SchedulerHandle<RxBevyScheduler>,
@@ -31,7 +31,7 @@ where
 
 impl<E> EventObservable<E>
 where
-	E: Event + Clone,
+	E: EntityEvent + Clone,
 {
 	pub fn new(observed_entity: Entity, scheduler: SchedulerHandle<RxBevyScheduler>) -> Self {
 		Self {
@@ -44,7 +44,7 @@ where
 
 impl<E> Observable for EventObservable<E>
 where
-	E: Event + Clone,
+	E: EntityEvent + Clone,
 {
 	type Subscription<Destination>
 		= EntityEventSubscription<Destination>

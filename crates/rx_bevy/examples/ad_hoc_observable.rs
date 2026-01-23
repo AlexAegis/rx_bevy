@@ -11,10 +11,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			//  EguiPlugin::default(), TODO(bevy-0.17): EguiPlugin::default()
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),

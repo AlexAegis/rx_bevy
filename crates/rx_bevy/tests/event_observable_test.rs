@@ -3,8 +3,9 @@ use bevy_ecs::system::SystemState;
 use rx_bevy::prelude::*;
 use rx_core_testing::prelude::*;
 
-#[derive(Event, Clone, Debug, PartialEq)]
+#[derive(EntityEvent, Clone, Debug, PartialEq)]
 struct TestEvent {
+	pub entity: Entity,
 	pub value: usize,
 }
 
@@ -16,7 +17,6 @@ mod when_used_as_a_component_that_observes_itself {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-		app.add_event::<TestEvent>();
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -43,24 +43,36 @@ mod when_used_as_a_component_that_observes_itself {
 
 		app.update();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 0 }, event_target);
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 1 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 0,
+		});
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 1,
+		});
 
 		subscription.unsubscribe();
 
 		app.update(); // EntitySubscriptions unsubscribe by despawn
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 2 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 2,
+		});
 
 		notification_collector.lock().assert_notifications(
 			"event_observable",
 			0,
 			[
-				SubscriberNotification::Next(TestEvent { value: 0 }),
-				SubscriberNotification::Next(TestEvent { value: 1 }),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 0,
+				}),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 1,
+				}),
 				SubscriberNotification::Unsubscribe,
 			],
 			true,
@@ -75,7 +87,6 @@ mod when_used_as_a_component_that_observes_itself {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-		app.add_event::<TestEvent>();
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -102,11 +113,15 @@ mod when_used_as_a_component_that_observes_itself {
 
 		app.update();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 0 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 0,
+		});
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 1 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 1,
+		});
 
 		app.update();
 
@@ -118,8 +133,14 @@ mod when_used_as_a_component_that_observes_itself {
 			"event_observable",
 			0,
 			[
-				SubscriberNotification::Next(TestEvent { value: 0 }),
-				SubscriberNotification::Next(TestEvent { value: 1 }),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 0,
+				}),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 1,
+				}),
 				SubscriberNotification::Complete,
 			],
 			true,
@@ -138,7 +159,6 @@ mod when_used_directly {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-		app.add_event::<TestEvent>();
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -159,22 +179,34 @@ mod when_used_directly {
 
 		app.update();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 0 }, event_target);
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 1 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 0,
+		});
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 1,
+		});
 
 		subscription.unsubscribe();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 2 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 2,
+		});
 
 		notification_collector.lock().assert_notifications(
 			"event_observable",
 			0,
 			[
-				SubscriberNotification::Next(TestEvent { value: 0 }),
-				SubscriberNotification::Next(TestEvent { value: 1 }),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 0,
+				}),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 1,
+				}),
 				SubscriberNotification::Unsubscribe,
 			],
 			true,
@@ -189,7 +221,6 @@ mod when_used_directly {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-		app.add_event::<TestEvent>();
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -210,10 +241,14 @@ mod when_used_directly {
 
 		app.update();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 0 }, event_target);
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 1 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 0,
+		});
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 1,
+		});
 		app.world_mut().commands().entity(event_target).despawn();
 
 		app.update();
@@ -222,8 +257,14 @@ mod when_used_directly {
 			"event_observable",
 			0,
 			[
-				SubscriberNotification::Next(TestEvent { value: 0 }),
-				SubscriberNotification::Next(TestEvent { value: 1 }),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 0,
+				}),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 1,
+				}),
 				SubscriberNotification::Complete,
 			],
 			true,
@@ -245,7 +286,6 @@ mod contracts {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-		app.add_event::<TestEvent>();
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -266,22 +306,34 @@ mod contracts {
 
 		app.update();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 0 }, event_target);
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 1 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 0,
+		});
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 1,
+		});
 
 		subscription.unsubscribe();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 2 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 2,
+		});
 
 		notification_collector.lock().assert_notifications(
 			"event_observable",
 			0,
 			[
-				SubscriberNotification::Next(TestEvent { value: 0 }),
-				SubscriberNotification::Next(TestEvent { value: 1 }),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 0,
+				}),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 1,
+				}),
 				SubscriberNotification::Unsubscribe,
 			],
 			true,
@@ -313,7 +365,6 @@ mod contracts {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-		app.add_event::<TestEvent>();
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -334,19 +385,31 @@ mod contracts {
 
 		app.update();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 0 }, event_target);
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 1 }, event_target);
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 2 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 0,
+		});
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 1,
+		});
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 2,
+		});
 
 		notification_collector.lock().assert_notifications(
 			"event_observable",
 			0,
 			[
-				SubscriberNotification::Next(TestEvent { value: 0 }),
-				SubscriberNotification::Next(TestEvent { value: 1 }),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 0,
+				}),
+				SubscriberNotification::Next(TestEvent {
+					entity: event_target,
+					value: 1,
+				}),
 				SubscriberNotification::Complete,
 			],
 			true,
@@ -378,7 +441,6 @@ mod contracts {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
-		app.add_event::<TestEvent>();
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
@@ -399,8 +461,10 @@ mod contracts {
 
 		app.update();
 
-		app.world_mut()
-			.trigger_targets(TestEvent { value: 0 }, event_target);
+		app.world_mut().trigger(TestEvent {
+			entity: event_target,
+			value: 0,
+		});
 		notification_collector.lock().assert_notifications(
 			"event_observable",
 			0,

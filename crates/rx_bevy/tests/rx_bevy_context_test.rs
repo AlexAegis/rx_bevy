@@ -12,7 +12,7 @@ fn it_should_be_able_to_send_observer_notifications() {
 	let target_entity = app
 		.world_mut()
 		.spawn_empty()
-		.observe(move |observer_event: Trigger<RxSignal<usize>>| {
+		.observe(move |observer_event: On<RxSignal<usize>>| {
 			observed_events_clone
 				.lock()
 				.push(observer_event.signal().clone().into());
@@ -43,7 +43,7 @@ fn it_should_be_able_to_send_subscriber_notifications() {
 		.world_mut()
 		.spawn_empty()
 		.observe(
-			move |observer_event: Trigger<SubscriberNotificationEvent<usize>>| {
+			move |observer_event: On<SubscriberNotificationEvent<usize>>| {
 				observed_events_clone
 					.lock()
 					.push(observer_event.signal().clone());
@@ -75,13 +75,11 @@ fn it_should_be_able_to_send_subscription_notifications() {
 	let target_entity = app
 		.world_mut()
 		.spawn_empty()
-		.observe(
-			move |observer_event: Trigger<SubscriptionNotificationEvent>| {
-				observed_events_clone
-					.lock()
-					.push((*observer_event.signal()).into());
-			},
-		)
+		.observe(move |observer_event: On<SubscriptionNotificationEvent>| {
+			observed_events_clone
+				.lock()
+				.push((*observer_event.signal()).into());
+		})
 		.id();
 
 	app.update();

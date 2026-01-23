@@ -1,4 +1,4 @@
-use bevy_ecs::{entity::Entity, event::Event, name::Name, observer::Observer};
+use bevy_ecs::{entity::Entity, event::EntityEvent, name::Name, observer::Observer};
 use disqualified::ShortName;
 use rx_bevy_common::{
 	RxBevyScheduler, RxBevySchedulerDespawnEntityExtension, SubscriptionSatellite,
@@ -17,7 +17,7 @@ use crate::create_event_forwarder_observer_for_destination;
 pub struct EntityEventSubscription<Destination>
 where
 	Destination: 'static + Subscriber,
-	Destination::In: Event + Clone,
+	Destination::In: EntityEvent + Clone,
 {
 	#[destination]
 	shared_destination: SharedSubscriber<Destination>,
@@ -26,7 +26,7 @@ where
 impl<Destination> EntityEventSubscription<Destination>
 where
 	Destination: 'static + Subscriber,
-	Destination::In: Event + Clone,
+	Destination::In: EntityEvent + Clone,
 {
 	pub fn new(
 		observed_event_source_entity: Entity,
@@ -53,7 +53,7 @@ where
 							shared_destination_clone,
 						))
 						.with_entity(observed_event_source_entity)
-						.with_error_handler(bevy_ecs::error::default_error_handler()),
+						.with_error_handler(bevy_ecs::error::error),
 						SubscriptionSatellite::new_with_teardown(
 							observed_event_source_entity,
 							Teardown::new(move || {

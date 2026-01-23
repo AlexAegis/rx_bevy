@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::event::Event;
+use bevy_ecs::message::Message;
 use derive_where::derive_where;
 use rx_bevy_common::RxBevyScheduler;
 use rx_core_common::{
@@ -16,7 +16,7 @@ use crate::MessageSubscription;
 #[rx_out_error(Never)]
 pub struct MessageObservable<M>
 where
-	M: Event + Clone, // TODO(bevy-0.17): use the message trait
+	M: Message + Clone,
 {
 	scheduler: SchedulerHandle<RxBevyScheduler>,
 	_phantom_data: PhantomInvariant<M>,
@@ -24,7 +24,7 @@ where
 
 impl<M> MessageObservable<M>
 where
-	M: Event + Clone,
+	M: Message + Clone,
 {
 	pub fn new(scheduler: SchedulerHandle<RxBevyScheduler>) -> Self {
 		Self {
@@ -36,7 +36,7 @@ where
 
 impl<M> Observable for MessageObservable<M>
 where
-	M: Event + Clone,
+	M: Message + Clone,
 {
 	type Subscription<Destination>
 		= MessageSubscription<Destination>

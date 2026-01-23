@@ -23,8 +23,7 @@ pub fn toggle_subscription_system<
 	toggle_key_code: KeyCode,
 	observable_selector: impl Fn(&ResMut<R>) -> Entity + Send + Sync + 'static + Clone,
 	destination_selector: impl Fn(&ResMut<R>) -> Entity + Send + Sync + 'static + Clone,
-) -> ScheduleConfigs<Box<dyn System<In = (), Out = Result<(), BevyError>> + 'static>> // TODO(bevy-0.17): Out = ()
-{
+) -> ScheduleConfigs<Box<dyn System<In = (), Out = ()> + 'static>> {
 	let observable_selector_clone = observable_selector.clone();
 	let destination_selector_clone = destination_selector.clone();
 	let observable_selector_despawn = observable_selector.clone();
@@ -105,7 +104,7 @@ pub fn despawn_entity<R>(
 	key_code: KeyCode,
 	modifier_key: KeyCode,
 	entity_selector: impl Fn(&ResMut<R>) -> Entity + Send + Sync + 'static + Clone,
-) -> ScheduleConfigs<Box<dyn System<In = (), Out = Result<(), BevyError>> + 'static>>
+) -> ScheduleConfigs<Box<dyn System<In = (), Out = ()> + 'static>>
 where
 	R: SubscriptionMapResource,
 {
@@ -113,14 +112,11 @@ where
 
 	(move |mut commands: Commands,
 	       subscription_tracking_resource: ResMut<R>,
-	       key_codes: Res<ButtonInput<KeyCode>>|
-	      -> Result<(), BevyError> {
+	       key_codes: Res<ButtonInput<KeyCode>>| {
 		if key_codes.just_pressed(key_code) && key_codes.pressed(modifier_key) {
 			let entity = entity_selector(&subscription_tracking_resource);
 			commands.entity(entity).try_despawn();
 		}
-
-		Ok(())
 	})
 	.into_configs()
 }

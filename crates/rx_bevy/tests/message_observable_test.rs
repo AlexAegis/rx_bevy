@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use rx_bevy::prelude::*;
 use rx_core_testing::prelude::*;
 
-#[derive(Event, Clone, Debug, PartialEq)]
+#[derive(Message, Clone, Debug, PartialEq)]
 struct TestMessage {
 	pub value: usize,
 }
@@ -15,7 +15,7 @@ mod when_used_as_a_component {
 	fn should_observe_messages() {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
-		app.add_event::<TestMessage>();
+		app.add_message::<TestMessage>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
 
 		let scheduler_handle = {
@@ -42,7 +42,7 @@ mod when_used_as_a_component {
 		let tracked_teardown = subscription.add_tracked_teardown("message_observable");
 
 		app.update();
-		app.world_mut().send_event(TestMessage { value: 0 });
+		app.world_mut().write_message(TestMessage { value: 0 });
 
 		app.update();
 
@@ -70,7 +70,7 @@ mod when_used_directly {
 	fn should_observe_bevy_events_and_emit_them_as_signals() {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
-		app.add_event::<TestMessage>();
+		app.add_message::<TestMessage>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
 
 		let scheduler_handle = {
@@ -88,7 +88,7 @@ mod when_used_directly {
 		let mut subscription = message_observable.subscribe(destination);
 		let tracked_teardown = subscription.add_tracked_teardown("message_observable");
 
-		app.world_mut().send_event(TestMessage { value: 0 });
+		app.world_mut().write_message(TestMessage { value: 0 });
 
 		app.update();
 
@@ -119,7 +119,7 @@ mod contracts {
 	fn rx_contract_closed_after_unsubscribe() {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
-		app.add_event::<TestMessage>();
+		app.add_message::<TestMessage>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
 
 		let scheduler_handle = {
@@ -137,13 +137,13 @@ mod contracts {
 		let mut subscription = message_observable.subscribe(destination);
 		let tracked_teardown = subscription.add_tracked_teardown("message_observable");
 
-		app.world_mut().send_event(TestMessage { value: 0 });
-		app.world_mut().send_event(TestMessage { value: 1 });
+		app.world_mut().write_message(TestMessage { value: 0 });
+		app.world_mut().write_message(TestMessage { value: 1 });
 
 		app.update();
 		subscription.unsubscribe();
 
-		app.world_mut().send_event(TestMessage { value: 2 });
+		app.world_mut().write_message(TestMessage { value: 2 });
 
 		app.update();
 
@@ -183,7 +183,7 @@ mod contracts {
 	fn rx_contract_closed_if_downstream_closes_early() {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
-		app.add_event::<TestMessage>();
+		app.add_message::<TestMessage>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
 
 		let scheduler_handle = {
@@ -202,10 +202,10 @@ mod contracts {
 		let tracked_teardown = subscription.add_tracked_teardown("message_observable");
 
 		app.update();
-		app.world_mut().send_event(TestMessage { value: 0 });
-		app.world_mut().send_event(TestMessage { value: 1 });
+		app.world_mut().write_message(TestMessage { value: 0 });
+		app.world_mut().write_message(TestMessage { value: 1 });
 		app.update();
-		app.world_mut().send_event(TestMessage { value: 2 });
+		app.world_mut().write_message(TestMessage { value: 2 });
 
 		notification_collector.lock().assert_notifications(
 			"message_observable",
@@ -241,7 +241,7 @@ mod contracts {
 	fn rx_contract_closed_if_downstream_closes_immediately() {
 		let mut app = App::new();
 		app.init_resource::<Time<Virtual>>();
-		app.add_event::<TestMessage>();
+		app.add_message::<TestMessage>();
 		app.add_plugins((RxPlugin, RxSchedulerPlugin::<Update, Virtual>::default()));
 
 		let scheduler_handle = {

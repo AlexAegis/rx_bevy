@@ -87,8 +87,7 @@ where
 		let remaining_retries = self.retries_remaining;
 
 		if has_matching_subscribe_observer {
-			// TODO(bevy-0.17): world.trigger(self.event);
-			world.trigger_targets(self.event, observable_entity);
+			world.trigger(self.event);
 		} else if let (Ok(command_to_retry), Some(mut subscribes_to_retry)) =
 			(self.retry(), world.get_resource_mut::<SubscribesToRetry>())
 		{

@@ -14,10 +14,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			//  EguiPlugin::default(), TODO(bevy-0.17): EguiPlugin::default()
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
@@ -101,10 +98,7 @@ fn setup(
 	});
 }
 
-fn handle_move_signal(
-	next: Trigger<RxSignal<AdsrSignal>>,
-	mut transform_query: Query<&mut Transform>,
-) {
+fn handle_move_signal(next: On<RxSignal<AdsrSignal>>, mut transform_query: Query<&mut Transform>) {
 	if let ObserverNotification::Next(adsr_signal) = next.signal()
 		&& let Ok(mut transform) = transform_query.get_mut(next.entity())
 	{

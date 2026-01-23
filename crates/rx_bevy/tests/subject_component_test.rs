@@ -117,12 +117,12 @@ mod given_a_subject_component {
 			app.world_mut()
 				.commands()
 				.entity(subject_entity)
-				.trigger(RxSignal::<usize, Never>::new_next(1, subject_entity));
+				.trigger(|entity| RxSignal::<usize, Never>::new_next(1, entity));
 
 			app.world_mut()
 				.commands()
 				.entity(subject_entity)
-				.trigger(RxSignal::<usize, Never>::new_next(2, subject_entity));
+				.trigger(|entity| RxSignal::<usize, Never>::new_next(2, entity));
 
 			app.update();
 
@@ -131,7 +131,7 @@ mod given_a_subject_component {
 			app.world_mut()
 				.commands()
 				.entity(subject_entity)
-				.trigger(RxSignal::<usize, Never>::new_next(99, subject_entity));
+				.trigger(|entity| RxSignal::<usize, Never>::new_next(99, entity));
 
 			app.update();
 

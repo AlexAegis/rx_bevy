@@ -22,9 +22,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
@@ -61,7 +59,7 @@ fn setup_subscription(
 ) {
 	let destination_entity = commands
 		.spawn_empty()
-		.observe(|signal: Trigger<RxSignal<usize>>| println!("{:?}", signal.signal()))
+		.observe(|signal: On<RxSignal<usize>>| println!("{:?}", signal.signal()))
 		.id();
 
 	let observable_entity = commands

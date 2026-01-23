@@ -10,9 +10,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
@@ -28,16 +26,9 @@ fn main() -> AppExit {
 		.run()
 }
 
-// TODO(bevy-0.17): Use EntityEvent
-#[derive(Event, Debug, Clone)]
+#[derive(EntityEvent, Debug, Clone)]
 pub struct DummyEvent {
-	pub target: Entity,
-}
-
-impl ContainsEntity for DummyEvent {
-	fn entity(&self) -> Entity {
-		self.target
-	}
+	pub entity: Entity,
 }
 
 fn dummy_event_producer(
@@ -58,7 +49,7 @@ fn dummy_event_producer(
 
 	if timer.just_finished() {
 		let dummy_event = DummyEvent {
-			target: **dummy_event_target,
+			entity: **dummy_event_target,
 		};
 
 		println!(
@@ -66,8 +57,7 @@ fn dummy_event_producer(
 			dummy_event, **dummy_event_target
 		);
 
-		let target = dummy_event.target;
-		commands.trigger_targets(dummy_event, target);
+		commands.trigger(dummy_event);
 	}
 }
 

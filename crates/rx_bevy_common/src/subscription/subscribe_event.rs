@@ -1,4 +1,4 @@
-use bevy_ecs::{component::Component, entity::Entity, event::Event, system::Commands};
+use bevy_ecs::{component::Component, entity::Entity, event::EntityEvent, system::Commands};
 use bevy_log::error;
 use core::marker::PhantomData;
 use disqualified::ShortName;
@@ -6,15 +6,15 @@ use rx_core_common::{PhantomInvariant, Signal, Subscriber, UpgradeableObserver};
 
 /// The destination is erased so observers can listen to this event based on
 /// the observables output types only.
-/// TODO(bevy-0.17): Use EntityEvent
-#[derive(Event)]
+#[derive(EntityEvent)]
 pub(crate) struct Subscribe<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
 {
 	/// From which entity should the subscription be created from.
-	// TODO(bevy-0.17): #[event_target]
+
+	#[event_target]
 	pub(crate) observable_entity: Entity,
 	/// To where the subscriptions events should be sent to
 	/// The destination must be owned by the subscription, therefore it is
@@ -180,7 +180,7 @@ mod tests {
 
 	#[test]
 	fn format_unconsumed_message_contains_entity_and_types() {
-		let observable_entity = Entity::from_raw(42);
+		let observable_entity = Entity::from_raw_u32(42).unwrap();
 		let message = unconsumed_subscribe_dropped_message::<usize, Never>(observable_entity);
 
 		assert!(

@@ -14,9 +14,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
@@ -47,17 +45,10 @@ struct ExampleEntities {
 	subscriptions: HashMap<(Entity, Entity), Entity>,
 }
 
-// TODO(bevy-0.17): Use EntityEvent
-#[derive(Event, Debug, Clone)]
+#[derive(EntityEvent, Debug, Clone)]
 pub struct DummyEvent {
-	pub target: Entity,
+	pub entity: Entity,
 	pub count: usize,
-}
-
-impl ContainsEntity for DummyEvent {
-	fn entity(&self) -> Entity {
-		self.target
-	}
 }
 
 fn despawn_dummy_event_target(mut commands: Commands, example_entities: Res<ExampleEntities>) {
@@ -95,16 +86,14 @@ fn dummy_event_producer(
 	if timer.just_finished() {
 		let dummy_event = DummyEvent {
 			count: *count,
-			target: example_entities.watched_entity,
+			entity: example_entities.watched_entity,
 		};
 
 		println!(
 			"Producer is sending {:?} to {}!",
 			dummy_event, example_entities.watched_entity
 		);
-		// TODO(bevy-0.17): commands.trigger(dummy_event);
-		let target = dummy_event.target;
-		commands.trigger_targets(dummy_event, target);
+		commands.trigger(dummy_event);
 
 		*count += 1;
 	}

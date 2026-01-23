@@ -8,9 +8,7 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
@@ -46,7 +44,7 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 
 	let destination_entity = commands
 		.spawn((Name::new("Destination"),))
-		.observe(|next: Trigger<RxSignal<String, Never>>| {
+		.observe(|next: On<RxSignal<String, Never>>| {
 			println!("{:?}", next.signal());
 		})
 		.id();

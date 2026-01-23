@@ -1,8 +1,5 @@
 use bevy_derive::Deref;
-use bevy_ecs::{
-	entity::{ContainsEntity, Entity},
-	event::Event,
-};
+use bevy_ecs::{entity::Entity, event::EntityEvent};
 use rx_core_common::{
 	Never, ObserverNotification, Signal, SubscriberNotification,
 	SubscriberToObserverNotificationConversionError,
@@ -16,15 +13,13 @@ use rx_core_common::{
 /// > This event is actually unused! It's here for the sake of completeness as
 /// > other notification types have a corresponding event type, and third party
 /// > implementations might want to leverage it.
-// TODO(bevy-0.17): Use EntityEvent
-#[derive(Event, Clone, Deref)]
+#[derive(EntityEvent, Clone, Deref)]
 pub struct SubscriberNotificationEvent<In, InError = Never>
 where
 	In: Signal,
 	InError: Signal,
 {
-	// TODO(bevy-0.17): #[event_target]
-	target: Entity,
+	entity: Entity,
 	#[deref]
 	notification: SubscriberNotification<In, InError>,
 }
@@ -34,18 +29,12 @@ where
 	In: Signal,
 	InError: Signal,
 {
+	pub fn entity(&self) -> Entity {
+		self.entity
+	}
+
 	pub fn signal(&self) -> &SubscriberNotification<In, InError> {
 		&self.notification
-	}
-}
-
-impl<In, InError> ContainsEntity for SubscriberNotificationEvent<In, InError>
-where
-	In: Signal,
-	InError: Signal,
-{
-	fn entity(&self) -> Entity {
-		self.target
 	}
 }
 
@@ -61,7 +50,7 @@ where
 	) -> Self {
 		Self {
 			notification,
-			target,
+			entity: target,
 		}
 	}
 }
@@ -100,9 +89,9 @@ mod tests {
 	fn it_should_create_an_event_with_unsubscribe_notification() {
 		let event = SubscriberNotificationEvent::<usize, Never>::from_notification(
 			SubscriberNotification::Unsubscribe,
-			Entity::from_raw(1),
+			Entity::from_raw_u32(1).unwrap(),
 		);
-		assert_eq!(event.entity(), Entity::from_raw(1));
+		assert_eq!(event.entity(), Entity::from_raw_u32(1).unwrap());
 		assert_eq!(*event, SubscriberNotification::Unsubscribe);
 	}
 
@@ -110,7 +99,7 @@ mod tests {
 	fn it_should_try_convert_to_observer_notification() {
 		let event = SubscriberNotificationEvent::<usize, Never>::from_notification(
 			SubscriberNotification::Next(42),
-			Entity::from_raw(1),
+			Entity::from_raw_u32(1).unwrap(),
 		);
 		let observer_notification: ObserverNotification<usize, Never> = event.try_into().unwrap();
 		assert_eq!(observer_notification, ObserverNotification::Next(42));
@@ -120,7 +109,7 @@ mod tests {
 	fn it_should_fail_to_convert_unsubscribe_to_observer_notification() {
 		let event = SubscriberNotificationEvent::<usize, Never>::from_notification(
 			SubscriberNotification::Unsubscribe,
-			Entity::from_raw(1),
+			Entity::from_raw_u32(1).unwrap(),
 		);
 		let result: Result<ObserverNotification<usize, Never>, _> = event.try_into();
 		assert_eq!(
@@ -133,7 +122,7 @@ mod tests {
 	fn it_should_be_able_to_convert_a_subscriber_event() {
 		let event = SubscriberNotificationEvent::<usize, &str>::from_notification(
 			SubscriberNotification::Error("error"),
-			Entity::from_raw(2),
+			Entity::from_raw_u32(2).unwrap(),
 		);
 		let observer_notification: ObserverNotification<usize, &str> = event.try_into().unwrap();
 		assert_eq!(observer_notification, ObserverNotification::Error("error"));
@@ -141,7 +130,7 @@ mod tests {
 
 	#[test]
 	fn it_should_be_able_to_convert_from_a_subscriber_notification() {
-		let entity = Entity::from_raw(10);
+		let entity = Entity::from_raw_u32(10).unwrap();
 		let event = SubscriberNotificationEvent::<usize, Never>::from_notification(
 			SubscriberNotification::Unsubscribe,
 			entity,

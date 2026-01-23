@@ -1,9 +1,6 @@
 use bevy_derive::Deref;
 use bevy_ecs::{
-	bundle::Bundle,
-	component::{Component, HookContext},
-	entity::Entity,
-	name::Name,
+	bundle::Bundle, component::Component, entity::Entity, lifecycle::HookContext, name::Name,
 	world::DeferredWorld,
 };
 use rx_core_common::{SharedSubscription, SubscriptionLike, Teardown, TeardownCollectionExtension};

@@ -2,9 +2,9 @@ use bevy_derive::Deref;
 use bevy_ecs::{
 	bundle::Bundle,
 	component::{Component, Mutable},
-	entity::{ContainsEntity, Entity},
+	entity::Entity,
 	name::Name,
-	observer::{Observer, Trigger},
+	observer::{Observer, On},
 	system::Query,
 };
 use disqualified::ShortName;
@@ -46,13 +46,13 @@ where
 			relationship: SignalObserverOf::<O>::new(entity),
 			push_signal_observer: Observer::new(push_signal_observer::<C>)
 				.with_entity(entity)
-				.with_error_handler(bevy_ecs::error::default_error_handler()),
+				.with_error_handler(bevy_ecs::error::error),
 		}
 	}
 }
 
 fn push_signal_observer<C>(
-	on_notification: Trigger<RxSignal<C::In, C::InError>>,
+	on_notification: On<RxSignal<C::In, C::InError>>,
 	mut subject_query: Query<&mut C>,
 ) where
 	C: 'static + RxObserver + Component<Mutability = Mutable> + Send + Sync,

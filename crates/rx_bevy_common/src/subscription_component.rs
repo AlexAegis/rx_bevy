@@ -1,9 +1,6 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::{
-	component::{Component, HookContext},
-	entity::Entity,
-	name::Name,
-	world::DeferredWorld,
+	component::Component, entity::Entity, lifecycle::HookContext, name::Name, world::DeferredWorld,
 };
 use disqualified::ShortName;
 use rx_core_common::{

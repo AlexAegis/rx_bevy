@@ -2,9 +2,8 @@ use std::fmt::Debug;
 
 use bevy::{
 	ecs::{
-		entity::ContainsEntity,
 		name::Name,
-		observer::Trigger,
+		observer::On,
 		system::{Query, Res},
 	},
 	time::Time,
@@ -14,7 +13,7 @@ use rx_bevy_common::{Clock, RxSignal};
 use rx_core_common::Signal;
 
 pub fn print_notification_observer<In, InError, C>(
-	next: Trigger<RxSignal<In, InError>>,
+	next: On<RxSignal<In, InError>>,
 	name_query: Query<&Name>,
 	time: Res<Time<C>>,
 ) where

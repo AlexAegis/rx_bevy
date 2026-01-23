@@ -1,8 +1,9 @@
 use bevy_app::{App, AppExit, Last, Plugin};
 use bevy_ecs::{
 	entity::Entity,
-	query::With,
-	schedule::{IntoScheduleConfigs, common_conditions::on_event},
+	entity_disabling::Internal,
+	query::{Allow, With},
+	schedule::{IntoScheduleConfigs, common_conditions::on_message},
 	system::{Commands, Query},
 	world::World,
 };
@@ -28,7 +29,7 @@ impl Plugin for RxPlugin {
 			Last,
 			unsubscribe_all_subscriptions
 				.after(exit_on_all_closed)
-				.run_if(on_event::<AppExit>), // TODO(bevy-0.17): on_message
+				.run_if(on_message::<AppExit>),
 		);
 	}
 }
@@ -50,7 +51,8 @@ fn unsubscribe_all_subscriptions(world: &mut World) {
 	// These could contain stuff that'd panic on drop, better let them execute!
 	execute_pending_retries(world);
 
-	let mut subscription_query = world.query::<&mut SubscriptionComponent>(); // TODO(bevy-0.17): Allow<Internal>
+	let mut subscription_query =
+		world.query_filtered::<&mut SubscriptionComponent, Allow<Internal>>();
 
 	for mut subscription in subscription_query.iter_mut(world) {
 		subscription.unsubscribe();

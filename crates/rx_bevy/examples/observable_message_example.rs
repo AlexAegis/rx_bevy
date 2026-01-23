@@ -15,15 +15,13 @@ fn main() -> AppExit {
 	App::new()
 		.add_plugins((
 			DefaultPlugins,
-			EguiPlugin {
-				enable_multipass_for_primary_context: true,
-			},
+			EguiPlugin::default(),
 			WorldInspectorPlugin::new(),
 			RxPlugin,
 			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
 		.register_type::<ExampleEntities>()
-		.add_event::<DummyMessage>()
+		.add_message::<DummyMessage>()
 		.add_systems(Startup, setup)
 		.add_systems(
 			Update,
@@ -47,15 +45,14 @@ struct ExampleEntities {
 	dummy_message_destination: Entity,
 }
 
-// TODO(bevy-0.17): Use Message
-#[derive(Event, Debug, Clone)]
+#[derive(Message, Debug, Clone)]
 pub struct DummyMessage {
 	pub count: usize,
 }
 
 fn dummy_message_producer(
 	time: Res<Time>,
-	mut dummy_message_writer: EventWriter<DummyMessage>,
+	mut dummy_message_writer: MessageWriter<DummyMessage>,
 	mut timer: Local<Timer>,
 	mut setup: Local<bool>,
 	mut count: Local<usize>,

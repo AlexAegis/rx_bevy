@@ -1,7 +1,4 @@
-use bevy_ecs::{
-	entity::{ContainsEntity, Entity},
-	world::DeferredWorld,
-};
+use bevy_ecs::{entity::Entity, world::DeferredWorld};
 use rx_core_common::{
 	ObserverNotification, Signal, SubscriberNotification, SubscriptionNotification, WorkContext,
 	WorkContextProvider,
@@ -50,12 +47,7 @@ impl<'w> RxBevyContextItem<'w> {
 		InError: Signal,
 	{
 		let notification_event = RxSignal::<In, InError>::from_notification(notification, target);
-		// TODO(bevy-0.17): Use this
-		// self.deferred_world.commands().trigger(notification_event);
-		let target = notification_event.entity();
-		self.deferred_world
-			.commands()
-			.trigger_targets(notification_event, target);
+		self.deferred_world.commands().trigger(notification_event);
 	}
 
 	pub fn send_subscriber_notification<In, InError>(
@@ -68,12 +60,7 @@ impl<'w> RxBevyContextItem<'w> {
 	{
 		let notification_event =
 			SubscriberNotificationEvent::<In, InError>::from_notification(notification, target);
-		// TODO(bevy-0.17): Use this
-		// self.deferred_world.commands().trigger(notification_event);
-		let target = notification_event.entity();
-		self.deferred_world
-			.commands()
-			.trigger_targets(notification_event, target);
+		self.deferred_world.commands().trigger(notification_event);
 	}
 
 	pub fn send_subscription_notification(
@@ -83,12 +70,7 @@ impl<'w> RxBevyContextItem<'w> {
 	) {
 		let notification_event =
 			SubscriptionNotificationEvent::from_notification(notification, target);
-		// TODO(bevy-0.17): Use this
-		// self.deferred_world.commands().trigger(notification_event);
-		let target = notification_event.entity();
-		self.deferred_world
-			.commands()
-			.trigger_targets(notification_event, target);
+		self.deferred_world.commands().trigger(notification_event);
 	}
 }
 
