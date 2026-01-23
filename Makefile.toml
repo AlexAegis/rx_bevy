@@ -161,6 +161,7 @@ args = [
 	"--workspace",
 	"--all-targets",
 	"--all-features",
+	"--no-pager",
 	"--no-report",
 ] # Tip: Use either "--no-clean" or "--no-report" to prevent recompilation. See https://github.com/taiki-e/cargo-llvm-cov/pull/214
 

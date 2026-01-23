@@ -60,6 +60,10 @@ jobs:
       name: codecov-io
       url: https://app.codecov.io/github/${{ github.event.repository.full_name }}
     steps:
+      - name: increase swap
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 10
       - *checkout_depth_1
       - name: rust toolchain - with llvm-tools
         uses: dtolnay/rust-toolchain@stable
