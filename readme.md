@@ -22,6 +22,11 @@ operators and observables!
 > [external crate naming](https://github.com/AlexAegis/rx_bevy?tab=contributing-ov-file#external-crate-naming)
 > guide.
 
+## Documentation
+
+- To learn more about this crate, visit <https://alexaegis.github.io/rx_bevy/>
+- To learn more about Rx in general, visit the [ReactiveX Website](https://reactivex.io/intro.html)!
+
 ## Quick Start
 
 If you want to jump straight to using `rx_bevy` check out the numbered examples
@@ -29,10 +34,57 @@ that go though how observables can be used within Bevy:
 
 - [Bevy Examples](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_bevy/examples/)
 
-## Documentation
+Other examples on observables, operators and subjects can be found at
+`crates/rx_core/examples/`. I recommend cloning the repository to check them
+out!
 
-- To learn more about this crate, visit <https://alexaegis.github.io/rx_bevy/>
-- To learn more about Rx in general, visit the [ReactiveX Website](https://reactivex.io/intro.html)!
+### Code Example
+
+> Change the virtual time speed with keyboard input!
+
+```rs
+use bevy::prelude::*;
+use rx_bevy::prelude::*;
+
+fn main() -> AppExit {
+    App::new()
+        .add_plugins((
+            DefaultPlugins,
+            RxPlugin,
+            RxSchedulerPlugin::<Update, Virtual>::default(),
+        ))
+        .init_resource::<ExampleSubscriptions>()
+        .add_systems(Startup, setup)
+        .run()
+}
+
+#[derive(Resource, Default, Deref, DerefMut)]
+struct ExampleSubscriptions {
+    subscriptions: SharedSubscription,
+}
+
+fn setup(rx_schedule: RxSchedule<Update, Virtual>, mut example_subscriptions: ResMut<ExampleSubscriptions>) {
+    let subscription = KeyboardObservable::new(KeyboardObservableOptions::default(), rx_schedule.handle())
+        .filter(|key_code, _| matches!(key_code, KeyCode::Digit1 | KeyCode::Digit2 | KeyCode::Digit3))
+        .subscribe(ResourceDestination::new(
+            |mut virtual_time: Mut<'_, Time<Virtual>>, signal| {
+                let speed = match signal {
+                    ObserverNotification::Next(key_code) => match key_code {
+                        KeyCode::Digit1 => 0.5,
+                        KeyCode::Digit2 => 1.0,
+                        KeyCode::Digit3 => 1.5,
+                        _ => unreachable!(),
+                    },
+                    ObserverNotification::Complete | ObserverNotification::Error(_) => 1.0,
+                };
+                virtual_time.set_relative_speed(speed);
+            },
+            rx_schedule.handle(),
+        ));
+
+    example_subscriptions.add(subscription);
+}
+```
 
 ### Observables
 
@@ -111,6 +163,11 @@ Observables define a stream of emissions that is instantiated upon subscription.
 RxObservers (Not to be confused with Bevy's Observers!) are the destinations
 of subscriptions! They are the last stations of a signal.
 
+- Bevy Specific:
+  - [EntityDestination](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_bevy_common/src/observer/entity_destination.rs) -
+    Send observed signals to an entity as events!
+  - [ResourceDestination](https://github.com/AlexAegis/rx_bevy/blob/master/crates/rx_bevy_common/src/observer/resource_destination.rs) -
+    Write into a resource when observing signals!
 - [PrintObserver](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observer_print) -
   A simple observer that prints all signals to the console using `println!`.
 - [FnObserver](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_observer_fn) -
