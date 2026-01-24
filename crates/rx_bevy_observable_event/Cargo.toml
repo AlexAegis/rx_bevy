@@ -1,7 +1,7 @@
 [package]
 name = "rx_bevy_observable_event"
 description = "rx_bevy event observable, a glue between regular bevy events and observables"
-version = "0.3.0"
+version = "0.3.1"
 readme = "readme.md"
 publish = true
 

@@ -146,14 +146,14 @@ rx_core_subject_replay = { version = "0.2.0", path = "crates/rx_core_subject_rep
 # Schedulers
 rx_core_scheduler_ticking = { version = "0.2.0", path = "crates/rx_core_scheduler_ticking" }
 # Bevy
-rx_bevy = { version = "0.3.0", path = "crates/rx_bevy" }
-rx_bevy_common = { version = "0.3.0", path = "crates/rx_bevy_common" }
+rx_bevy = { version = "0.3.1", path = "crates/rx_bevy" }
+rx_bevy_common = { version = "0.3.1", path = "crates/rx_bevy_common" }
 # Bevy Observables
-rx_bevy_observable_event = { version = "0.3.0", path = "crates/rx_bevy_observable_event" }
-rx_bevy_observable_keyboard = { version = "0.3.0", path = "crates/rx_bevy_observable_keyboard" }
-rx_bevy_observable_message = { version = "0.3.0", path = "crates/rx_bevy_observable_message" }
-rx_bevy_observable_proxy = { version = "0.3.0", path = "crates/rx_bevy_observable_proxy" }
-rx_bevy_observable_resource = { version = "0.3.0", path = "crates/rx_bevy_observable_resource" }
+rx_bevy_observable_event = { version = "0.3.1", path = "crates/rx_bevy_observable_event" }
+rx_bevy_observable_keyboard = { version = "0.3.1", path = "crates/rx_bevy_observable_keyboard" }
+rx_bevy_observable_message = { version = "0.3.1", path = "crates/rx_bevy_observable_message" }
+rx_bevy_observable_proxy = { version = "0.3.1", path = "crates/rx_bevy_observable_proxy" }
+rx_bevy_observable_resource = { version = "0.3.1", path = "crates/rx_bevy_observable_resource" }
 # Misc
 examples_common = { path = "crates/examples_common" }
 xtask = { path = "crates/xtask" }
