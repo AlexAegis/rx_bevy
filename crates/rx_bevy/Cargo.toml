@@ -1,6 +1,6 @@
 [package]
 name = "rx_bevy"
-version = "0.2.0"
+version = "0.3.0"
 description = "Reactive Extensions for the Bevy game engine"
 readme = "../../readme.md"
 publish = true

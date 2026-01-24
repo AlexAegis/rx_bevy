@@ -1,7 +1,7 @@
 [package]
 name = "rx_bevy_observable_resource"
 description = "rx_bevy resource observable"
-version = "0.2.0"
+version = "0.3.0"
 readme = "readme.md"
 publish = true
 

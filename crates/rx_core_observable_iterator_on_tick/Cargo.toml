@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_observable_iterator_on_tick"
 description = "iterator observable for rx_core, emitting on discrete ticks instead of immediately"
-version = "0.1.2"
+version = "0.2.0"
 readme = "readme.md"
 publish = true
 
