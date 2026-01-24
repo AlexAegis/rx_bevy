@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## `rx_bevy` - [0.3.2](https://github.com/AlexAegis/rx_bevy/compare/v0.3.1...v0.3.2) - 2026-01-24
+
+### Other
+- release v0.3.1
+
 ## `rx_bevy` - [0.3.1](https://github.com/AlexAegis/rx_bevy/compare/v0.3.0...v0.3.1) - 2026-01-24
 
 ### Fixed
