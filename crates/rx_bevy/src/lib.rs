@@ -42,18 +42,16 @@ pub mod subject {
 	pub use rx_core::subject::*;
 }
 
-pub mod context {
-	pub use rx_bevy_common::*;
-}
-
 pub mod prelude {
-	// pub use rx_core_common::*;
+	pub use rx_bevy_common::*;
 
-	pub use super::context::*;
 	pub use super::observable::*;
 	pub use super::observer::*;
 	pub use super::operator::*;
 	pub use super::subject::*;
+
+	#[cfg(feature = "observable_fn")]
+	pub use super::observable_fn::*;
 
 	#[cfg(feature = "compose")]
 	pub use super::extension_compose::*;
