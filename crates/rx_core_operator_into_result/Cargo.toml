@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_operator_into_result"
 description = "Error handling operator. Captures upstream values and errors into a `Result`."
-version = "0.1.1"
+version = "0.1.2"
 readme = "readme.md"
 publish = true
 

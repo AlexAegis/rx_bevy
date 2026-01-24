@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_operator_is_empty"
 description = "is_empty operator for rx_core"
-version = "0.1.1"
+version = "0.1.2"
 readme = "readme.md"
 publish = true
 

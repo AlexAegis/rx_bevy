@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_operator_element_at"
 description = "element_at operator for rx_core; Emit the value at the given index then complete."
-version = "0.1.1"
+version = "0.1.2"
 readme = "readme.md"
 publish = true
 

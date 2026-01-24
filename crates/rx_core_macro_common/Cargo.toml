@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_macro_common"
 description = "Macro helper functions used in rx_core and its crates"
-version = "0.1.1"
+version = "0.1.2"
 readme = "readme.md"
 publish = true
 

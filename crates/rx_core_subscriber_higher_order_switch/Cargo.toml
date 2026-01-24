@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_subscriber_higher_order_switch"
 description = "switch subscriber for rx_core. Upon receiving an observable, subscribes to it immediately, unsubscribing the previous one."
-version = "0.1.1"
+version = "0.1.2"
 readme = "readme.md"
 publish = true
 
