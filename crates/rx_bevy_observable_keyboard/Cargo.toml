@@ -12,11 +12,11 @@ documentation.workspace = true
 authors.workspace = true
 license.workspace = true
 keywords = [
-    "rx",
-    "rx_core",
-    "rx_core_observable",
-    "rx_bevy",
-    "rx_bevy_observable",
+	"rx",
+	"rx_core",
+	"rx_core_observable",
+	"rx_bevy",
+	"rx_bevy_observable",
 ]
 
 [lints]
@@ -25,17 +25,17 @@ workspace = true
 [features]
 default = []
 example = [
-    "bevy/dynamic_linking",
-    "bevy/bevy_asset",
-    "bevy/bevy_core_pipeline",
-    "bevy/bevy_gltf",
-    "bevy/bevy_pbr",
-    "bevy/bevy_picking",
-    "bevy/bevy_render",
-    "bevy/bevy_scene",
-    "bevy/bevy_winit",
-    "bevy/tonemapping_luts",
-    "bevy/x11",
+	"bevy/dynamic_linking",
+	"bevy/bevy_asset",
+	"bevy/bevy_core_pipeline",
+	"bevy/bevy_gltf",
+	"bevy/bevy_pbr",
+	"bevy/bevy_picking",
+	"bevy/bevy_render",
+	"bevy/bevy_scene",
+	"bevy/bevy_winit",
+	"bevy/tonemapping_luts",
+	"bevy/x11",
 ]
 
 [dependencies]
@@ -43,7 +43,7 @@ rx_core_common = { workspace = true }
 rx_core_macro_observable_derive = { workspace = true }
 rx_core_macro_subscription_derive = { workspace = true }
 rx_bevy_common = { workspace = true }
-bevy_input = { workspace = true }
+bevy_input = { workspace = true, features = ["keyboard"] }
 
 [dev-dependencies]
 bevy = { workspace = true }

@@ -161,7 +161,7 @@ xtask = { path = "crates/xtask" }
 ## External Crates
 
 # Bevy (First party)
-bevy = { version = "0.17", default-features = false, features = [
+bevy = { version = "0.18", default-features = false, features = [
 	"multi_threaded",
 	"bevy_core_pipeline",
 	"bevy_asset",
@@ -172,31 +172,31 @@ bevy = { version = "0.17", default-features = false, features = [
 	"x11",
 	"bevy_gilrs",
 	"bevy_scene",
-	"animation",
+	"gltf_animation",
 	"file_watcher",
 	"bevy_gltf",
 	"bevy_log",
 	"zstd_rust",
 ] }
-bevy_app = { version = "0.17", default-features = false }
-bevy_derive = { version = "0.17", default-features = false }
-bevy_ecs = { version = "0.17", default-features = false }
-bevy_input = { version = "0.17", default-features = false }
-bevy_log = { version = "0.17", default-features = false }
-bevy_math = { version = "0.17", default-features = false }
-bevy_platform = { version = "0.17", default-features = false }
-bevy_ptr = { version = "0.17", default-features = false }
-bevy_reflect = { version = "0.17", default-features = false }
-bevy_time = { version = "0.17", default-features = false }
-bevy_window = { version = "0.17", default-features = false, features = [
+bevy_app = { version = "0.18", default-features = false }
+bevy_derive = { version = "0.18", default-features = false }
+bevy_ecs = { version = "0.18", default-features = false }
+bevy_input = { version = "0.18", default-features = false }
+bevy_log = { version = "0.18", default-features = false }
+bevy_math = { version = "0.18", default-features = false }
+bevy_platform = { version = "0.18", default-features = false }
+bevy_ptr = { version = "0.18", default-features = false }
+bevy_reflect = { version = "0.18", default-features = false }
+bevy_time = { version = "0.18", default-features = false }
+bevy_window = { version = "0.18", default-features = false, features = [
 	"std",
 	"bevy_reflect",
 ] }
 # Bevy (Third Party)
-bevy-inspector-egui = { version = "0.35.0", default-features = false, features = [
+bevy-inspector-egui = { version = "0.36.0", default-features = false, features = [
 	"bevy_render",
 ] }
-bevy_egui = { version = "0.38.0", default-features = false, features = [
+bevy_egui = { version = "0.39.0", default-features = false, features = [
 	"immutable_ctx",
 ] }
 # Data Structures

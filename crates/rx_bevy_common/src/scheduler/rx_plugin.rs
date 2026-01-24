@@ -1,8 +1,7 @@
 use bevy_app::{App, AppExit, Last, Plugin};
 use bevy_ecs::{
 	entity::Entity,
-	entity_disabling::Internal,
-	query::{Allow, With},
+	query::With,
 	schedule::{IntoScheduleConfigs, common_conditions::on_message},
 	system::{Commands, Query},
 	world::World,
@@ -51,8 +50,7 @@ fn unsubscribe_all_subscriptions(world: &mut World) {
 	// These could contain stuff that'd panic on drop, better let them execute!
 	execute_pending_retries(world);
 
-	let mut subscription_query =
-		world.query_filtered::<&mut SubscriptionComponent, Allow<Internal>>();
+	let mut subscription_query = world.query::<&mut SubscriptionComponent>();
 
 	for mut subscription in subscription_query.iter_mut(world) {
 		subscription.unsubscribe();

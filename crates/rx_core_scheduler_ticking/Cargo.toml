@@ -12,11 +12,11 @@ documentation.workspace = true
 authors.workspace = true
 license.workspace = true
 keywords = [
-    "rx",
-    "rx_core",
-    "rx_core_scheduler",
-    "rx_bevy",
-    "rx_bevy_scheduler",
+	"rx",
+	"rx_core",
+	"rx_core_scheduler",
+	"rx_bevy",
+	"rx_bevy_scheduler",
 ]
 
 [lints]
