@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - *(rx_bevy)* added missing observable_fn feature exports from prelude
 
 ### Other
+- release v0.4.0
+- revert pub api change
+- added missing entries for destinations
+- added missing bevy destinations
+
+## `rx_bevy` - [0.3.1](https://github.com/AlexAegis/rx_bevy/compare/v0.3.0...v0.3.1) - 2026-01-24
+
+### Fixed
+- *(rx_bevy)* added missing observable_fn feature exports from prelude
+
+### Other
 - revert pub api change
 - added missing entries for destinations
 - added missing bevy destinations
