@@ -13,6 +13,10 @@ create-missing = true
 [preprocessor.mermaid]
 command = "mdbook-mermaid"
 
+[preprocessor.crate-links]
+command = "mdbook-crate-links"
+after = ["links"]
+
 [output.html]
 additional-js = ["docs/assets/mermaid.min.js", "docs/mermaid-init.js"]
 git-repository-url = "https://github.com/AlexAegis/rx_bevy"

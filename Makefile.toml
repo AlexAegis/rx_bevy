@@ -179,7 +179,7 @@ args = [
 	"llvm-cov",
 	"report",
 	"--ignore-filename-regex",
-	"crates/(examples_common|xtask)/.*",
+	"crates/(examples_common|xtask|mdbook_crate_links)/.*",
 	"--html",
 ]
 
@@ -355,7 +355,7 @@ dependencies = ["validate-codecov-yml", "audit"]
 description = "Install the mdbook crate for building the documentation"
 workspace = false
 private = true
-dependencies = ["install-mdbook-mermaid"]
+dependencies = ["install-mdbook-mermaid", "install-mdbook-crate-links"]
 install_crate = { crate_name = "mdbook", binary = "mdbook", test_arg = "--version" }
 
 [tasks.install-mdbook-mermaid]
@@ -363,6 +363,13 @@ description = "Install the mdbook-mermaid crate for mermaid support"
 workspace = false
 private = true
 install_crate = { crate_name = "mdbook-mermaid", binary = "mdbook-mermaid", test_arg = "--version" }
+
+[tasks.install-mdbook-crate-links]
+description = "Install the mdbook-crate-links preprocessor from the workspace"
+workspace = false
+private = true
+command = "cargo"
+args = ["install", "--path", "crates/mdbook_crate_links"]
 
 [tasks.book-build]
 description = "Builds the book for the workspace."

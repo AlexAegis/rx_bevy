@@ -211,6 +211,7 @@ stealcell = { version = "0.2", default-features = false }
 thiserror = { version = "2.0", default-features = false }
 # Serialization
 serde = { version = "1.0", default-features = false }
+serde_json = { version = "1.0", default-features = false }
 # Math
 num-traits = { version = "0.2", default-features = false }
 rand = { version = "0.9", default-features = false, features = ["thread_rng"] }
@@ -235,6 +236,9 @@ variadics_please = { version = "1.1", default-features = false }
 cargo_metadata = { version = "0.23", default-features = false }
 # CLI
 clap = { version = "4.5", default-features = false }
+# mdbook
+mdbook-preprocessor = { version = "0.5.2", default-features = false }
+regex = { version = "1", default-features = false }
 
 [workspace.metadata.cargo-machete]
 ignored = ["rx_core_testing"]

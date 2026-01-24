@@ -8,7 +8,7 @@ use crate::{RxWorkspace, RxWorkspaceError, WorkspaceProblems};
 pub fn lint_codecov() -> Result<(), RxWorkspaceError> {
 	let rx_workspace = RxWorkspace::parse_workspace()?;
 
-	let ignored_packages = ["xtask", "examples_common"];
+	let ignored_packages = ["xtask", "examples_common", "mdbook-crate-links"];
 
 	let mut workspace_problems = WorkspaceProblems::default();
 

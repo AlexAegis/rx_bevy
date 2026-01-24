@@ -78,7 +78,7 @@ jobs:
       - name: test with nextest and llvm-cov
         run: cargo llvm-cov nextest --locked --workspace --all-targets --all-features --no-report --profile ci
       - name: generate coverage report
-        run: cargo llvm-cov report --ignore-filename-regex "crates/(examples_common|xtask)/.*" --codecov --output-path target/codecov.json
+        run: cargo llvm-cov report --ignore-filename-regex "crates/(examples_common|xtask|mdbook_crate_links)/.*" --codecov --output-path target/codecov.json
       - name: upload coverage report to codecov.io
         uses: codecov/codecov-action@v5
         with:
@@ -180,6 +180,8 @@ jobs:
         run: cargo binstall --no-confirm --force mdbook
       - name: install mdbook-mermaid
         run: cargo binstall --no-confirm --force mdbook-mermaid
+      - name: install mdbook-crate-links
+        run: cargo install --path crates/mdbook_crate_links
       - name: build book
         run: mdbook build
       - name: setup pages
