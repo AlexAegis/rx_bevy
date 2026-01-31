@@ -319,6 +319,8 @@ enhancing the original observable with new behavior.
 - Timing Operators:
   - [AdsrOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_adsr) -
     Convert trigger signals into an ADSR envelope driven by the scheduler.
+  - [DebounceTimeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_debounce_time) -
+    Emit the most recent value after a period of silence.
   - [DelayOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay) -
     Shift emissions forward in time using the scheduler.
   - [ObserveOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_observe_on) -

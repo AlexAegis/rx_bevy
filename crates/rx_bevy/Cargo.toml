@@ -125,6 +125,7 @@ all_core_operators = [
 	"operator_concat_all",
 	"operator_concat_map",
 	"operator_count",
+	"operator_debounce_time",
 	"operator_delay",
 	"operator_dematerialize",
 	"operator_element_at",
@@ -177,6 +178,7 @@ operator_composite = ["rx_core/operator_composite"]
 operator_concat_all = ["rx_core/operator_concat_all"]
 operator_concat_map = ["rx_core/operator_concat_map"]
 operator_count = ["rx_core/operator_count"]
+operator_debounce_time = ["rx_core/operator_debounce_time"]
 operator_delay = ["rx_core/operator_delay"]
 operator_dematerialize = ["rx_core/operator_dematerialize"]
 operator_element_at = ["rx_core/operator_element_at"]

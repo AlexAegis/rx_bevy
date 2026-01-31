@@ -91,6 +91,7 @@ rx_core_operator_composite = { version = "0.2.0", path = "crates/rx_core_operato
 rx_core_operator_concat_all = { version = "0.2.0", path = "crates/rx_core_operator_concat_all" }
 rx_core_operator_concat_map = { version = "0.2.0", path = "crates/rx_core_operator_concat_map" }
 rx_core_operator_count = { version = "0.2.0", path = "crates/rx_core_operator_count" }
+rx_core_operator_debounce_time = { version = "0.2.0", path = "crates/rx_core_operator_debounce_time" }
 rx_core_operator_delay = { version = "0.2.0", path = "crates/rx_core_operator_delay" }
 rx_core_operator_dematerialize = { version = "0.2.0", path = "crates/rx_core_operator_dematerialize" }
 rx_core_operator_element_at = { version = "0.2.0", path = "crates/rx_core_operator_element_at" }

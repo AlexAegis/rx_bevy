@@ -21,6 +21,8 @@ skipped because downstream closes.
   Schedule upstream subscription on the provided scheduler.
 - [DelayOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay) -
   Shift emissions forward in time using the scheduler.
+- [DebounceTimeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_debounce_time) -
+  Emit the most recent value after a period of silence.
 
 ## Example
 

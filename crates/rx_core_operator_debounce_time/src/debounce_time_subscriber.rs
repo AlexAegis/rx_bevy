@@ -17,7 +17,7 @@ use rx_core_macro_subscriber_derive::RxSubscriber;
 #[rx_in_error(Destination::InError)]
 #[rx_delegate_teardown_collection]
 #[rx_skip_unsubscribe_on_drop_impl]
-pub struct DelaySubscriber<Destination, S>
+pub struct DebounceTimeSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler,
@@ -32,7 +32,7 @@ where
 	scheduled_work_counter: Arc<AtomicUsize>,
 }
 
-impl<Destination, S> DelaySubscriber<Destination, S>
+impl<Destination, S> DebounceTimeSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: Scheduler,
@@ -59,7 +59,7 @@ where
 	}
 }
 
-impl<Destination, S> RxObserver for DelaySubscriber<Destination, S>
+impl<Destination, S> RxObserver for DebounceTimeSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler + Send + Sync,
@@ -67,12 +67,14 @@ where
 	#[inline]
 	fn next(&mut self, next: Self::In) {
 		let destination = self.destination.clone();
-
-		self.scheduled_work_counter.fetch_add(1, Ordering::Relaxed);
 		let scheduled_work_counter = self.scheduled_work_counter.clone();
 		let upstream_completed = self.upstream_completed.clone();
 		let upstream_unsubscribed = self.upstream_unsubscribed.clone();
-		self.scheduler.lock().schedule_delayed_work(
+
+		let mut scheduler = self.scheduler.lock();
+		scheduler.cancel(self.cancellation_id);
+		self.scheduled_work_counter.store(1, Ordering::Relaxed);
+		scheduler.schedule_delayed_work(
 			move |_, _| {
 				let mut destination = destination.lock();
 				if !destination.is_closed() {
@@ -80,7 +82,7 @@ where
 				}
 
 				let previous_work_counter_before_sub =
-					scheduled_work_counter.fetch_sub(1, Ordering::Relaxed);
+					scheduled_work_counter.swap(0, Ordering::Relaxed);
 
 				// try complete
 				if upstream_completed.load(Ordering::Relaxed)
@@ -125,7 +127,7 @@ where
 	}
 }
 
-impl<Destination, S> SubscriptionLike for DelaySubscriber<Destination, S>
+impl<Destination, S> SubscriptionLike for DebounceTimeSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler + Send + Sync,
@@ -148,7 +150,7 @@ where
 	}
 }
 
-impl<Destination, S> Drop for DelaySubscriber<Destination, S>
+impl<Destination, S> Drop for DebounceTimeSubscriber<Destination, S>
 where
 	Destination: 'static + Subscriber,
 	S: 'static + Scheduler + Send + Sync,
