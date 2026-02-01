@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_observable_combine_latest"
 description = "combine_latest observable for rx_core"
-version = "0.2.0"
+version = "0.2.1"
 readme = "readme.md"
 publish = true
 

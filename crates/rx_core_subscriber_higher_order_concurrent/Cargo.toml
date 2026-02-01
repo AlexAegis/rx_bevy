@@ -1,7 +1,7 @@
 [package]
 name = "rx_core_subscriber_higher_order_concurrent"
 description = "concurrent subscriber for rx_core."
-version = "0.2.0"
+version = "0.2.1"
 readme = "readme.md"
 publish = true
 
