@@ -7,11 +7,16 @@
 		"**/target/**": true
 	},
 	"rust-analyzer.inlayHints.typeHints.enable": false,
-	"rust-analyzer.cargo.targetDir": "target",
+	"rust-analyzer.cargo.targetDir": true,
 	"rust-analyzer.testExplorer": false,
 	"rust-analyzer.check.allTargets": true,
 	"rust-analyzer.check.features": "all",
 	"rust-analyzer.cargo.features": "all",
+	"rust-analyzer.runnables.extraEnv": {
+		"CARGO_TARGET_DIR": "${workspaceFolder}/target",
+		"CARGO_LLVM_COV_TARGET_DIR": "${workspaceFolder}/target/llvm-cov"
+	},
+	"rust-analyzer.showUnlinkedFileNotification": false,
 	// "rust-analyzer.runnables.test.overrideCommand": [
 	// 	"cargo",
 	// 	"nextest",
@@ -28,10 +33,11 @@
 	"rust-analyzer.runnables.test.overrideCommand": [
 		"cargo",
 		"llvm-cov",
+		"--no-clean",
 		"nextest",
 		"--html",
-		"--package",
-		"${package}",
+		"--manifest-path",
+		"${workspaceFolder}/Cargo.toml",
 		"--all-features",
 		"${target_arg}",
 		"${target}",
@@ -45,7 +51,6 @@
 	"[json]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
-	"rust-analyzer.showUnlinkedFileNotification": false,
 	"workbench.editorAssociations": {
 		"*.gltf": "modelViewer.gltfPreview",
 		"*.glb": "modelViewer.gltfPreview"

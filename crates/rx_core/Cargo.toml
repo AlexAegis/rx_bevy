@@ -98,6 +98,7 @@ all_operators = [
 	"operator_concat_all",
 	"operator_concat_map",
 	"operator_count",
+	"operator_debounce_time",
 	"operator_delay",
 	"operator_dematerialize",
 	"operator_element_at",
@@ -141,6 +142,7 @@ all_operators = [
 	"operator_take",
 	"operator_tap",
 	"operator_tap_next",
+	"operator_throttle_time",
 	"operator_with_latest_from",
 ]
 operator_adsr = ["dep:rx_core_operator_adsr"]
@@ -150,6 +152,7 @@ operator_composite = ["dep:rx_core_operator_composite"]
 operator_concat_all = ["dep:rx_core_operator_concat_all"]
 operator_concat_map = ["dep:rx_core_operator_concat_map"]
 operator_count = ["dep:rx_core_operator_count"]
+operator_debounce_time = ["dep:rx_core_operator_debounce_time"]
 operator_delay = ["dep:rx_core_operator_delay"]
 operator_dematerialize = ["dep:rx_core_operator_dematerialize"]
 operator_element_at = ["dep:rx_core_operator_element_at"]
@@ -193,6 +196,7 @@ operator_switch_map = ["dep:rx_core_operator_switch_map"]
 operator_take = ["dep:rx_core_operator_take"]
 operator_tap = ["dep:rx_core_operator_tap"]
 operator_tap_next = ["dep:rx_core_operator_tap_next"]
+operator_throttle_time = ["dep:rx_core_operator_throttle_time"]
 operator_with_latest_from = ["dep:rx_core_operator_with_latest_from"]
 pipe = [
 	"rx_core_operator_adsr?/pipe",
@@ -201,6 +205,7 @@ pipe = [
 	"rx_core_operator_concat_all?/pipe",
 	"rx_core_operator_concat_map?/pipe",
 	"rx_core_operator_count?/pipe",
+	"rx_core_operator_debounce_time?/pipe",
 	"rx_core_operator_delay?/pipe",
 	"rx_core_operator_dematerialize?/pipe",
 	"rx_core_operator_element_at?/pipe",
@@ -243,6 +248,7 @@ pipe = [
 	"rx_core_operator_take?/pipe",
 	"rx_core_operator_tap?/pipe",
 	"rx_core_operator_tap_next?/pipe",
+	"rx_core_operator_throttle_time?/pipe",
 	"rx_core_operator_with_latest_from?/pipe",
 ]
 compose = [
@@ -253,6 +259,7 @@ compose = [
 	"rx_core_operator_concat_all?/compose",
 	"rx_core_operator_concat_map?/compose",
 	"rx_core_operator_count?/compose",
+	"rx_core_operator_debounce_time?/compose",
 	"rx_core_operator_delay?/compose",
 	"rx_core_operator_dematerialize?/compose",
 	"rx_core_operator_element_at?/compose",
@@ -292,6 +299,7 @@ compose = [
 	"rx_core_operator_take?/compose",
 	"rx_core_operator_tap?/compose",
 	"rx_core_operator_tap_next?/compose",
+	"rx_core_operator_throttle_time?/compose",
 	"rx_core_operator_with_latest_from?/compose",
 ]
 # Schedulers
@@ -344,6 +352,7 @@ rx_core_operator_composite = { workspace = true, optional = true }
 rx_core_operator_concat_all = { workspace = true, optional = true }
 rx_core_operator_concat_map = { workspace = true, optional = true }
 rx_core_operator_count = { workspace = true, optional = true }
+rx_core_operator_debounce_time = { workspace = true, optional = true }
 rx_core_operator_delay = { workspace = true, optional = true }
 rx_core_operator_dematerialize = { workspace = true, optional = true }
 rx_core_operator_element_at = { workspace = true, optional = true }
@@ -387,6 +396,7 @@ rx_core_operator_switch_map = { workspace = true, optional = true }
 rx_core_operator_take = { workspace = true, optional = true }
 rx_core_operator_tap = { workspace = true, optional = true }
 rx_core_operator_tap_next = { workspace = true, optional = true }
+rx_core_operator_throttle_time = { workspace = true, optional = true }
 rx_core_operator_with_latest_from = { workspace = true, optional = true }
 # Schedulers
 rx_core_scheduler_ticking = { workspace = true, optional = true }

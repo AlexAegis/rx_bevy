@@ -264,6 +264,14 @@ fn setup(mut commands: Commands, rx_schedule_update_virtual: RxSchedule<Update, 
 					Never::map_into(),
 				)
 				.scan(|acc, _next| acc + 1, 0_usize)
+				// .throttle_time( // Try throttling!
+				// 	ThrottleTimeOptions {
+				// 		duration: Duration::from_millis(150),
+				// 		leading: true,
+				// 		trailing: true,
+				// 	},
+				// 	rx_schedule_update_virtual.handle(),
+				// )
 				.into_component(),
 		))
 		.id();

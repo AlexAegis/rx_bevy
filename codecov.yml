@@ -167,6 +167,9 @@ component_management:
     - component_id: rx_core_operator_count
       paths:
         - crates/rx_core_operator_count/**
+    - component_id: rx_core_operator_debounce_time
+      paths:
+        - crates/rx_core_operator_debounce_time/**
     - component_id: rx_core_operator_delay
       paths:
         - crates/rx_core_operator_delay/**
@@ -296,6 +299,9 @@ component_management:
     - component_id: rx_core_operator_tap_next
       paths:
         - crates/rx_core_operator_tap_next/**
+    - component_id: rx_core_operator_throttle_time
+      paths:
+        - crates/rx_core_operator_throttle_time/**
     - component_id: rx_core_operator_with_latest_from
       paths:
         - crates/rx_core_operator_with_latest_from/**
