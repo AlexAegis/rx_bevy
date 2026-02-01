@@ -14,6 +14,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - *(rx_core_operator_debounce_time)* added the debounce_time operator
 
 ### Other
+- release v0.3.2
+- release v0.3.1
+
+## `rx_core` - [0.2.1](https://github.com/AlexAegis/rx_bevy/compare/core-v0.2.0...core-v0.2.1) - 2026-02-01
+
+### Added
+- *(rx_core_operator_throttle_time)* added the throttle_time operator
+- *(rx_core_operator_debounce_time)* added the debounce_time operator
+
+### Other
+- release v0.3.2
+
+## `rx_bevy` - [0.3.2](https://github.com/AlexAegis/rx_bevy/compare/v0.3.1...v0.3.2) - 2026-02-01
+
+### Added
+- *(rx_core_operator_throttle_time)* added the throttle_time operator
+- *(rx_core_operator_debounce_time)* added the debounce_time operator
+
+### Other
 - release v0.3.1
 
 ## `rx_core` - [0.2.1](https://github.com/AlexAegis/rx_bevy/compare/core-v0.2.0...core-v0.2.1) - 2026-02-01
