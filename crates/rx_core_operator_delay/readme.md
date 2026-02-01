@@ -17,14 +17,16 @@ delayed values.
 
 ## See Also
 
-- [DebounceTimeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_debounce_time) -
-  Emit the most recent value after a period of silence.
-- [SubscribeOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_subscribe_on) -
-  Schedule upstream subscription on the provided scheduler.
 - [AdsrOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_adsr) -
   Convert trigger signals into an ADSR envelope driven by the scheduler.
+- [DebounceTimeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_debounce_time) -
+  Emit the most recent value after a period of silence.
 - [FallbackWhenSilentOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_fallback_when_silent) -
   Emit a fallback value on ticks where the source stayed silent.
+- [SubscribeOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_subscribe_on) -
+  Schedule upstream subscription on the provided scheduler.
+- [ThrottleTimeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_throttle_time) -
+  Limit the frequency of downstream emissions.
 
 ## Example
 

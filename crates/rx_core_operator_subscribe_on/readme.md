@@ -15,12 +15,14 @@ The subscription can be delayed with `subscribe_on_with_delay`.
 
 ## See Also
 
-- [ObserveOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_observe_on) -
-  Re-emit upstream signals with the provided scheduler.
-- [DelayOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay) -
-  Shift emissions forward in time using the scheduler.
 - [DebounceTimeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_debounce_time) -
   Emit the most recent value after a period of silence.
+- [DelayOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay) -
+  Shift emissions forward in time using the scheduler.
+- [ObserveOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_observe_on) -
+  Re-emit upstream signals with the provided scheduler.
+- [ThrottleTimeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_throttle_time) -
+  Limit the frequency of downstream emissions.
 - [RetryOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_retry) -
   Resubscribe on error up to the configured retry count.
 

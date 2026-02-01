@@ -178,6 +178,8 @@ pub mod operator {
 	pub use rx_core_operator_tap::operator::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::operator::*;
+	#[cfg(feature = "operator_throttle_time")]
+	pub use rx_core_operator_throttle_time::operator::*;
 	#[cfg(feature = "operator_with_latest_from")]
 	pub use rx_core_operator_with_latest_from::operator::*;
 }
@@ -278,6 +280,8 @@ pub mod extension_compose {
 	pub use rx_core_operator_tap::extension_compose::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::extension_compose::*;
+	#[cfg(feature = "operator_throttle_time")]
+	pub use rx_core_operator_throttle_time::extension_compose::*;
 	#[cfg(feature = "operator_with_latest_from")]
 	pub use rx_core_operator_with_latest_from::extension_compose::*;
 }
@@ -382,6 +386,8 @@ pub mod extension_pipe {
 	pub use rx_core_operator_tap::extension_pipe::*;
 	#[cfg(feature = "operator_tap_next")]
 	pub use rx_core_operator_tap_next::extension_pipe::*;
+	#[cfg(feature = "operator_throttle_time")]
+	pub use rx_core_operator_throttle_time::extension_pipe::*;
 	#[cfg(feature = "operator_with_latest_from")]
 	pub use rx_core_operator_with_latest_from::extension_pipe::*;
 }

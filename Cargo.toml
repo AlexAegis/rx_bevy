@@ -120,7 +120,6 @@ rx_core_operator_materialize = { version = "0.2.0", path = "crates/rx_core_opera
 rx_core_operator_merge_all = { version = "0.2.0", path = "crates/rx_core_operator_merge_all" }
 rx_core_operator_merge_map = { version = "0.2.0", path = "crates/rx_core_operator_merge_map" }
 rx_core_operator_observe_on = { version = "0.2.0", path = "crates/rx_core_operator_observe_on" }
-rx_core_operator_subscribe_on = { version = "0.2.0", path = "crates/rx_core_operator_subscribe_on" }
 rx_core_operator_on_next = { version = "0.2.0", path = "crates/rx_core_operator_on_next" }
 rx_core_operator_on_subscribe = { version = "0.2.0", path = "crates/rx_core_operator_on_subscribe" }
 rx_core_operator_pairwise = { version = "0.2.0", path = "crates/rx_core_operator_pairwise" }
@@ -130,11 +129,13 @@ rx_core_operator_scan = { version = "0.2.0", path = "crates/rx_core_operator_sca
 rx_core_operator_share = { version = "0.2.0", path = "crates/rx_core_operator_share" }
 rx_core_operator_skip = { version = "0.2.0", path = "crates/rx_core_operator_skip" }
 rx_core_operator_start_with = { version = "0.2.0", path = "crates/rx_core_operator_start_with" }
+rx_core_operator_subscribe_on = { version = "0.2.0", path = "crates/rx_core_operator_subscribe_on" }
 rx_core_operator_switch_all = { version = "0.2.0", path = "crates/rx_core_operator_switch_all" }
 rx_core_operator_switch_map = { version = "0.2.0", path = "crates/rx_core_operator_switch_map" }
 rx_core_operator_take = { version = "0.2.0", path = "crates/rx_core_operator_take" }
 rx_core_operator_tap = { version = "0.2.0", path = "crates/rx_core_operator_tap" }
 rx_core_operator_tap_next = { version = "0.2.0", path = "crates/rx_core_operator_tap_next" }
+rx_core_operator_throttle_time = { version = "0.2.0", path = "crates/rx_core_operator_throttle_time" }
 rx_core_operator_with_latest_from = { version = "0.2.0", path = "crates/rx_core_operator_with_latest_from" }
 # Subscriptions
 rx_core_subscription_inert = { version = "0.2.0", path = "crates/rx_core_subscription_inert" }

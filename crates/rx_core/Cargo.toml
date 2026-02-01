@@ -142,6 +142,7 @@ all_operators = [
 	"operator_take",
 	"operator_tap",
 	"operator_tap_next",
+	"operator_throttle_time",
 	"operator_with_latest_from",
 ]
 operator_adsr = ["dep:rx_core_operator_adsr"]
@@ -195,6 +196,7 @@ operator_switch_map = ["dep:rx_core_operator_switch_map"]
 operator_take = ["dep:rx_core_operator_take"]
 operator_tap = ["dep:rx_core_operator_tap"]
 operator_tap_next = ["dep:rx_core_operator_tap_next"]
+operator_throttle_time = ["dep:rx_core_operator_throttle_time"]
 operator_with_latest_from = ["dep:rx_core_operator_with_latest_from"]
 pipe = [
 	"rx_core_operator_adsr?/pipe",
@@ -246,6 +248,7 @@ pipe = [
 	"rx_core_operator_take?/pipe",
 	"rx_core_operator_tap?/pipe",
 	"rx_core_operator_tap_next?/pipe",
+	"rx_core_operator_throttle_time?/pipe",
 	"rx_core_operator_with_latest_from?/pipe",
 ]
 compose = [
@@ -296,6 +299,7 @@ compose = [
 	"rx_core_operator_take?/compose",
 	"rx_core_operator_tap?/compose",
 	"rx_core_operator_tap_next?/compose",
+	"rx_core_operator_throttle_time?/compose",
 	"rx_core_operator_with_latest_from?/compose",
 ]
 # Schedulers
@@ -392,6 +396,7 @@ rx_core_operator_switch_map = { workspace = true, optional = true }
 rx_core_operator_take = { workspace = true, optional = true }
 rx_core_operator_tap = { workspace = true, optional = true }
 rx_core_operator_tap_next = { workspace = true, optional = true }
+rx_core_operator_throttle_time = { workspace = true, optional = true }
 rx_core_operator_with_latest_from = { workspace = true, optional = true }
 # Schedulers
 rx_core_scheduler_ticking = { workspace = true, optional = true }

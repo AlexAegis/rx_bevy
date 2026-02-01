@@ -17,16 +17,18 @@ debounced value.
 
 ## See Also
 
+- [AdsrOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_adsr) -
+  Convert trigger signals into an ADSR envelope driven by the scheduler.
 - [DelayOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_delay) -
   Shift emissions forward in time using the scheduler.
+- [FallbackWhenSilentOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_fallback_when_silent) -
+  Emit a fallback value on ticks where the source stayed silent.
 - [ObserveOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_observe_on) -
   Re-emit upstream signals with the provided scheduler.
 - [SubscribeOnOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_subscribe_on) -
   Schedule upstream subscription on the provided scheduler.
-- [AdsrOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_adsr) -
-  Convert trigger signals into an ADSR envelope driven by the scheduler.
-- [FallbackWhenSilentOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_fallback_when_silent) -
-  Emit a fallback value on ticks where the source stayed silent.
+- [ThrottleTimeOperator](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_operator_throttle_time) -
+  Limit the frequency of downstream emissions.
 
 ## Example
 
