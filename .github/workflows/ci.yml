@@ -80,7 +80,7 @@ jobs:
       - name: generate coverage report
         run: cargo llvm-cov report --ignore-filename-regex "crates/(examples_common|xtask|mdbook_crate_links)/.*" --codecov --output-path target/codecov.json
       - name: upload coverage report to codecov.io
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: target
