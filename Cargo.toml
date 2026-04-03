@@ -195,18 +195,18 @@ bevy_window = { version = "0.18", default-features = false, features = [
 	"bevy_reflect",
 ] }
 # Bevy (Third Party)
-bevy-inspector-egui = { version = "0.36.0", default-features = false, features = [
+bevy-inspector-egui = { version = "0.36", default-features = false, features = [
 	"bevy_render",
 ] }
-bevy_egui = { version = "0.39.0", default-features = false, features = [
+bevy_egui = { version = "0.39", default-features = false, features = [
 	"immutable_ctx",
 ] }
 # Data Structures
-bitflags = { version = "2.10", default-features = false }
+bitflags = { version = "2.11", default-features = false }
 either = { version = "1.15", default-features = false }
 ringbuffer = { version = "0.16", default-features = false }
 slab = { version = "0.4", default-features = false }
-indexmap = { version = "2.12", default-features = false, features = ["std"] }
+indexmap = { version = "2.13", default-features = false, features = ["std"] }
 smallvec = { version = "1.15", default-features = false }
 stealcell = { version = "0.2", default-features = false }
 # Error Handling
@@ -216,16 +216,16 @@ serde = { version = "1.0", default-features = false }
 serde_json = { version = "1.0", default-features = false }
 # Math
 num-traits = { version = "0.2", default-features = false }
-rand = { version = "0.9", default-features = false, features = ["thread_rng"] }
+rand = { version = "0.10", default-features = false, features = ["thread_rng"] }
 # Rust Ergonomics
-derive-where = { version = "1.4", default-features = false }
+derive-where = { version = "1.6", default-features = false }
 # Logging
 disqualified = { version = "1.0", default-features = false }
 tracing = { version = "0.1", default-features = false }
 # Macro
 proc-macro2 = { version = "1.0", default-features = false }
 quote = { version = "1.0", default-features = false }
-seq-macro = { version = "0.3.6", default-features = false }
+seq-macro = { version = "0.3", default-features = false }
 syn = { version = "2.0", default-features = false, features = [
 	"clone-impls",
 	"derive",
@@ -237,9 +237,9 @@ variadics_please = { version = "1.1", default-features = false }
 # Cargo Tools
 cargo_metadata = { version = "0.23", default-features = false }
 # CLI
-clap = { version = "4.5", default-features = false }
+clap = { version = "4.6", default-features = false }
 # mdbook
-mdbook-preprocessor = { version = "0.5.2", default-features = false }
+mdbook-preprocessor = { version = "0.5", default-features = false }
 regex = { version = "1", default-features = false }
 
 [workspace.metadata.cargo-machete]

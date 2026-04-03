@@ -31,7 +31,7 @@ where
 			let mut scheduler_lock = scheduler.lock();
 			let cancellation_id = scheduler_lock.generate_cancellation_id();
 
-			let mut shared_destination_clone = shared_destination.clone();
+			let shared_destination_clone = shared_destination.clone();
 			scheduler_lock.schedule_continuous_work(
 				move |_tick, context| {
 					let button_input = context.deferred_world.resource::<ButtonInput<KeyCode>>();
@@ -47,9 +47,11 @@ where
 						}
 					};
 
+					let mut destination_lock = shared_destination_clone.lock();
+
 					for key_code in key_code_iterator {
-						if !shared_destination_clone.is_closed() {
-							shared_destination_clone.next(key_code);
+						if !destination_lock.is_closed() {
+							destination_lock.next(key_code);
 						} else {
 							return WorkResult::Done;
 						}
