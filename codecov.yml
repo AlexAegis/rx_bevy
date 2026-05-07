@@ -308,6 +308,9 @@ component_management:
     - component_id: rx_core_scheduler_ticking
       paths:
         - crates/rx_core_scheduler_ticking/**
+    - component_id: rx_core_scheduler_tokio
+      paths:
+        - crates/rx_core_scheduler_tokio/**
     - component_id: rx_core_subject_async
       paths:
         - crates/rx_core_subject_async/**

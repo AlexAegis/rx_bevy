@@ -147,6 +147,7 @@ rx_core_subject_publish = { version = "0.2.1", path = "crates/rx_core_subject_pu
 rx_core_subject_replay = { version = "0.2.1", path = "crates/rx_core_subject_replay" }
 # Schedulers
 rx_core_scheduler_ticking = { version = "0.2.1", path = "crates/rx_core_scheduler_ticking" }
+rx_core_scheduler_tokio = { version = "0.2.1", path = "crates/rx_core_scheduler_tokio" }
 # Bevy
 rx_bevy = { version = "0.3.2", path = "crates/rx_bevy" }
 rx_bevy_common = { version = "0.3.2", path = "crates/rx_bevy_common" }
@@ -238,6 +239,9 @@ variadics_please = { version = "1.1", default-features = false }
 cargo_metadata = { version = "0.23", default-features = false }
 # CLI
 clap = { version = "4.6", default-features = false }
+# Async Runtime
+tokio = { version = "1.51", default-features = false }
+tokio-util = { version = "0.7", default-features = false }
 # mdbook
 mdbook-preprocessor = { version = "0.5", default-features = false }
 regex = { version = "1", default-features = false }

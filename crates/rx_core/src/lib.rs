@@ -404,6 +404,8 @@ pub mod observer {
 pub mod scheduler {
 	#[cfg(feature = "scheduler_ticking")]
 	pub use rx_core_scheduler_ticking::scheduler::*;
+	#[cfg(feature = "scheduler_tokio")]
+	pub use rx_core_scheduler_tokio::scheduler::*;
 }
 
 pub mod subject {

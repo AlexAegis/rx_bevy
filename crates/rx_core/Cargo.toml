@@ -303,8 +303,9 @@ compose = [
 	"rx_core_operator_with_latest_from?/compose",
 ]
 # Schedulers
-all_schedulers = ["scheduler_ticking"]
+all_schedulers = ["scheduler_ticking", "scheduler_tokio"]
 scheduler_ticking = ["dep:rx_core_scheduler_ticking"]
+scheduler_tokio = ["dep:rx_core_scheduler_tokio"]
 # Subjects
 all_subjects = [
 	"subject_async",
@@ -400,6 +401,7 @@ rx_core_operator_throttle_time = { workspace = true, optional = true }
 rx_core_operator_with_latest_from = { workspace = true, optional = true }
 # Schedulers
 rx_core_scheduler_ticking = { workspace = true, optional = true }
+rx_core_scheduler_tokio = { workspace = true, optional = true }
 # Subjects
 rx_core_subject_async = { workspace = true, optional = true }
 rx_core_subject_behavior = { workspace = true, optional = true }

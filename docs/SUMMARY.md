@@ -92,6 +92,7 @@
   - [with_latest_from](operator/with_latest_from.md)
 - [Schedulers](schedulers.md)
   - [ticking](scheduler/ticking.md)
+  - [tokio](scheduler/tokio.md)
 - [Subjects](subjects.md)
   - [async](subject/async.md)
   - [behavior](subject/behavior.md)

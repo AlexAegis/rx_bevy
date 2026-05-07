@@ -1,0 +1,37 @@
+[package]
+name = "rx_core_scheduler_tokio"
+description = "rx_core tokio scheduler for standalone async applications"
+version = "0.2.1"
+readme = "readme.md"
+publish = true
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license.workspace = true
+keywords = [
+	"rx",
+	"rx_core",
+	"rx_core_scheduler",
+	"tokio",
+	"async",
+]
+
+[lints]
+workspace = true
+
+[features]
+default = []
+
+[dependencies]
+rx_core_macro_executor_derive = { workspace = true }
+rx_core_macro_observable_derive = { workspace = true }
+rx_core_macro_observer_derive = { workspace = true }
+rx_core_macro_scheduler_derive = { workspace = true }
+rx_core_macro_subscription_derive = { workspace = true }
+rx_core_common = { workspace = true }
+rx_core_scheduler_ticking = { workspace = true }
+tokio = { workspace = true, features = ["rt", "time", "sync", "macros"] }
+tokio-util = { workspace = true, features = ["rt"] }

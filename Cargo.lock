@@ -2287,6 +2287,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "futures-sink"
+version = "0.3.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c39754e157331b013978ec91992bde1ac089843443c49cbc7f46150b0fad0893"
+
+[[package]]
 name = "futures-task"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4103,6 +4109,7 @@ dependencies = [
  "rx_core_operator_throttle_time",
  "rx_core_operator_with_latest_from",
  "rx_core_scheduler_ticking",
+ "rx_core_scheduler_tokio",
  "rx_core_subject_async",
  "rx_core_subject_behavior",
  "rx_core_subject_provenance",
@@ -5050,6 +5057,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "rx_core_scheduler_tokio"
+version = "0.2.1"
+dependencies = [
+ "rx_core_common",
+ "rx_core_macro_executor_derive",
+ "rx_core_macro_observable_derive",
+ "rx_core_macro_observer_derive",
+ "rx_core_macro_scheduler_derive",
+ "rx_core_macro_subscription_derive",
+ "rx_core_scheduler_ticking",
+ "tokio",
+ "tokio-util",
+]
+
+[[package]]
 name = "rx_core_subject_async"
 version = "0.2.1"
 dependencies = [
@@ -5457,6 +5479,41 @@ name = "tinyvec_macros"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
+
+[[package]]
+name = "tokio"
+version = "1.51.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bd1c4c0fc4a7ab90fc15ef6daaa3ec3b893f004f915f2392557ed23237820cd"
+dependencies = [
+ "pin-project-lite",
+ "tokio-macros",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "385a6cb71ab9ab790c5fe8d67f1645e6c450a7ce006a33de03daa956cf70a496"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "tokio-util"
+version = "0.7.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ae9cec805b01e8fc3fd2fe289f89149a9b66dd16786abd8b19cfa7b48cb0098"
+dependencies = [
+ "bytes",
+ "futures-core",
+ "futures-sink",
+ "futures-util",
+ "pin-project-lite",
+ "tokio",
+]
 
 [[package]]
 name = "toml"
