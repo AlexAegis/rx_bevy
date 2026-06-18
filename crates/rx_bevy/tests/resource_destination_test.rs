@@ -22,7 +22,8 @@ fn signals_should_reach_the_resource_destination_and_close_on_error() {
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		scheduler.handle()
 	};
 
@@ -70,7 +71,8 @@ fn signals_should_reach_the_resource_destination_and_close_on_complete() {
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		scheduler.handle()
 	};
 
@@ -118,7 +120,8 @@ fn signals_should_reach_the_resource_destination_and_close_on_unsubscribe() {
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		scheduler.handle()
 	};
 

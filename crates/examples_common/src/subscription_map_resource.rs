@@ -1,5 +1,8 @@
 use bevy::{
-	ecs::schedule::{ScheduleConfigs, ScheduleLabel},
+	ecs::{
+		component::Mutable,
+		schedule::{ScheduleConfigs, ScheduleLabel},
+	},
 	input::common_conditions::input_pressed,
 	prelude::*,
 };
@@ -8,7 +11,7 @@ use rx_core_common::*;
 
 use crate::alternate_systems_on_press;
 
-pub trait SubscriptionMapResource: Resource {
+pub trait SubscriptionMapResource: Resource<Mutability = Mutable> {
 	fn insert(&mut self, observable_destination_key: (Entity, Entity), subscription_entity: Entity);
 	fn remove(&mut self, observable_destination_key: (Entity, Entity)) -> Option<Entity>;
 }

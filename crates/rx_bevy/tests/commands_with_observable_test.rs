@@ -12,7 +12,8 @@ fn commands_with_observable_spawns_and_despawns_subscription_entity() {
 
 	let scheduler_handle = {
 		let schedule = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		schedule.handle()
 	};
 
@@ -52,7 +53,8 @@ fn dropping_an_entity_subscription_should_not_unsubscribe() {
 
 	let scheduler_handle = {
 		let schedule = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		schedule.handle()
 	};
 
@@ -117,7 +119,8 @@ fn observable_with_commands_spawns_and_despawns_subscription_entity() {
 
 	let scheduler_handle = {
 		let schedule = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		schedule.handle()
 	};
 
@@ -169,7 +172,8 @@ fn commands_with_observable_despawns_after_manual_unsubscribe() {
 
 	let scheduler_handle = {
 		let schedule = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		schedule.handle()
 	};
 
@@ -222,7 +226,8 @@ fn commands_with_observable_executes_teardowns_on_unsubscribe() {
 
 	let scheduler_handle = {
 		let schedule = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		schedule.handle()
 	};
 

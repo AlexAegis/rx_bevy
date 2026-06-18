@@ -24,7 +24,8 @@ mod immediate_work {
 		let inner_work_has_executed_work = inner_work_has_executed.clone();
 
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		let scheduler_handle = scheduler.handle();
 		let scheduler_handle_level_1 = scheduler_handle.clone();
 		let scheduler_handle_level_2 = scheduler_handle.clone();
@@ -73,7 +74,8 @@ mod delayed_work {
 		let inner_work_has_executed_work = inner_work_has_executed.clone();
 
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		let scheduler_handle = scheduler.handle();
 		let scheduler_handle_level_1 = scheduler_handle.clone();
 		let scheduler_handle_level_2 = scheduler_handle.clone();
@@ -139,7 +141,8 @@ mod repeated_work {
 		let interval_counter_work = interval_counter.clone();
 
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		let scheduler_handle = scheduler.handle();
 		let cancellation_id = {
 			let mut scheduler = scheduler_handle.lock();
@@ -202,7 +205,8 @@ mod repeated_work {
 		let interval_counter_work = interval_counter.clone();
 
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		let scheduler_handle = scheduler.handle();
 		{
 			let mut scheduler = scheduler_handle.lock();
@@ -251,7 +255,8 @@ mod continuous_work {
 		let execution_counter_work = execution_counter.clone();
 
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		let scheduler_handle = scheduler.handle();
 		let cancellation_id = {
 			let mut scheduler = scheduler_handle.lock();
@@ -314,7 +319,8 @@ mod invoked {
 		let invoked_work_was_called = Arc::new(AtomicBool::new(false));
 
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		let scheduler_handle = scheduler.handle();
 		let invoke_id = {
 			let mut scheduler_lock = scheduler_handle.lock();
@@ -348,7 +354,8 @@ mod invoked {
 		let invoked_work_was_called = Arc::new(AtomicBool::new(false));
 
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		let scheduler_handle = scheduler.handle();
 		let invoke_id = {
 			let mut scheduler_lock = scheduler_handle.lock();

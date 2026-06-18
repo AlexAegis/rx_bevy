@@ -166,7 +166,8 @@ mod component_remove {
 
 		let scheduler = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 
@@ -257,7 +258,8 @@ mod component_remove {
 
 		let scheduler = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 
@@ -341,7 +343,8 @@ mod component_remove {
 
 		let scheduler = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 

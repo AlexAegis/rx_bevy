@@ -30,7 +30,8 @@ fn entity_commands_can_subscribe_to_another_entity_observable() {
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		scheduler.handle()
 	};
 
@@ -117,7 +118,8 @@ fn entity_commands_can_subscribe_to_immediately_completing_observable() {
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		scheduler.handle()
 	};
 
@@ -214,7 +216,8 @@ fn observable_entity_commands_can_subscribe_to_destination_entity() {
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		scheduler.handle()
 	};
 
@@ -276,7 +279,8 @@ fn observable_entity_commands_handle_immediate_completion() {
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		scheduler.handle()
 	};
 

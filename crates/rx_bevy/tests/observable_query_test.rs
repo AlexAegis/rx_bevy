@@ -12,7 +12,7 @@ fn observable_query_returns_error_when_entity_is_not_an_observable() {
 
 	let mut system_state =
 		SystemState::<ObservableQuery<'_, '_, Never, Never>>::new(app.world_mut());
-	let mut observable_query = system_state.get_mut(app.world_mut());
+	let mut observable_query = system_state.get_mut(app.world_mut()).unwrap();
 
 	let result = observable_query.try_subscribe_to(
 		target_entity,
@@ -49,7 +49,7 @@ mod using_subject_component {
 
 		let mut system_state =
 			SystemState::<ObservableQuery<'_, '_, usize, Never>>::new(app.world_mut());
-		let mut observable_query = system_state.get_mut(app.world_mut());
+		let mut observable_query = system_state.get_mut(app.world_mut()).unwrap();
 
 		let subscription_entity = observable_query
 			.try_subscribe_to(observable_entity, destination)
@@ -96,7 +96,7 @@ mod using_subject_component {
 
 		let mut system_state =
 			SystemState::<ObservableQuery<'_, '_, u32, Never>>::new(app.world_mut());
-		let mut observable_query = system_state.get_mut(app.world_mut());
+		let mut observable_query = system_state.get_mut(app.world_mut()).unwrap();
 
 		let result =
 			observable_query.try_subscribe_to(observable_entity, MockObserver::<u32>::default());
@@ -134,7 +134,7 @@ mod using_observable_component {
 
 		let mut system_state =
 			SystemState::<ObservableQuery<'_, '_, usize, Never>>::new(app.world_mut());
-		let mut observable_query = system_state.get_mut(app.world_mut());
+		let mut observable_query = system_state.get_mut(app.world_mut()).unwrap();
 
 		let subscription_entity = observable_query
 			.try_subscribe_to(observable_entity, destination)

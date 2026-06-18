@@ -72,11 +72,13 @@ impl<Out, OutError> SubscribeCommandMissed<Out, OutError> {
 	}
 }
 
-impl<Out, OutError> Command<Result<(), BevyError>> for SubscribeCommand<Out, OutError>
+impl<Out, OutError> Command for SubscribeCommand<Out, OutError>
 where
 	Out: Signal,
 	OutError: Signal,
 {
+	type Out = Result<(), BevyError>;
+
 	fn apply(self, world: &mut bevy_ecs::world::World) -> Result<(), BevyError> {
 		let observable_entity = self.event.observable_entity;
 

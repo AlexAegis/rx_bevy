@@ -11,7 +11,8 @@ fn entity_commands_can_expose_proxy_observable() {
 
 	let scheduler_handle = {
 		let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-			.get_mut(app.world_mut());
+			.get_mut(app.world_mut())
+			.unwrap();
 		scheduler.handle()
 	};
 

@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
-use bevy_ecs::{resource::Resource, world::Mut};
+use bevy_ecs::{component::Mutable, resource::Resource, world::Mut};
 use rx_core_common::{
 	ObserverNotification, PhantomInvariant, RxObserver, Scheduler, SchedulerHandle,
 	SchedulerScheduleWorkExtension, Signal, WorkCancellationId,
@@ -17,7 +17,7 @@ pub struct ResourceDestination<In, InError, R, ResourceWriter, S>
 where
 	In: Signal,
 	InError: Signal,
-	R: Resource,
+	R: Resource<Mutability = Mutable>,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
 	S: Scheduler<WorkContextProvider = RxBevyContext>,
 {
@@ -31,7 +31,7 @@ impl<In, InError, R, ResourceWriter, S> ResourceDestination<In, InError, R, Reso
 where
 	In: Signal,
 	InError: Signal,
-	R: Resource,
+	R: Resource<Mutability = Mutable>,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
 	S: Scheduler<WorkContextProvider = RxBevyContext>,
 {
@@ -51,7 +51,7 @@ impl<In, InError, R, ResourceWriter, S> RxObserver
 where
 	In: Signal,
 	InError: Signal,
-	R: Resource,
+	R: Resource<Mutability = Mutable>,
 	ResourceWriter: 'static + FnMut(Mut<'_, R>, ObserverNotification<In, InError>) + Send + Sync,
 	S: Scheduler<WorkContextProvider = RxBevyContext>,
 {

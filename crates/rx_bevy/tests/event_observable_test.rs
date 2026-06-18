@@ -20,7 +20,8 @@ mod when_used_as_a_component_that_observes_itself {
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 
@@ -90,7 +91,8 @@ mod when_used_as_a_component_that_observes_itself {
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 
@@ -162,7 +164,8 @@ mod when_used_directly {
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 
@@ -224,7 +227,8 @@ mod when_used_directly {
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 
@@ -289,7 +293,8 @@ mod contracts {
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 
@@ -368,7 +373,8 @@ mod contracts {
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 
@@ -444,7 +450,8 @@ mod contracts {
 
 		let scheduler_handle = {
 			let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-				.get_mut(app.world_mut());
+				.get_mut(app.world_mut())
+				.unwrap();
 			scheduler.handle()
 		};
 

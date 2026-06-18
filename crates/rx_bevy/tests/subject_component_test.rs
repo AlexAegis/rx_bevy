@@ -34,7 +34,8 @@ mod given_a_subject_component {
 
 			let scheduler_handle = {
 				let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-					.get_mut(app.world_mut());
+					.get_mut(app.world_mut())
+					.unwrap();
 				scheduler.handle()
 			};
 
@@ -99,7 +100,8 @@ mod given_a_subject_component {
 
 			let scheduler_handle = {
 				let scheduler = SystemState::<RxSchedule<Update, Virtual>>::new(app.world_mut())
-					.get_mut(app.world_mut());
+					.get_mut(app.world_mut())
+					.unwrap();
 				scheduler.handle()
 			};
 
