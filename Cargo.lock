@@ -4015,7 +4015,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy"
-version = "0.3.2"
+version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4036,7 +4036,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_common"
-version = "0.3.2"
+version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy_app",
@@ -4061,7 +4061,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_event"
-version = "0.3.2"
+version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4077,7 +4077,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_keyboard"
-version = "0.3.2"
+version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4092,7 +4092,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_message"
-version = "0.3.2"
+version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4108,7 +4108,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_proxy"
-version = "0.3.2"
+version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4123,7 +4123,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_resource"
-version = "0.3.2"
+version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4138,7 +4138,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_notification_store",
@@ -4230,7 +4230,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_common"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "bitflags 2.13.0",
  "derive-where",
@@ -4246,7 +4246,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_common"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4256,7 +4256,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_executor_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4265,7 +4265,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_observable_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4274,7 +4274,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_observer_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4283,7 +4283,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_operator_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4292,7 +4292,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_scheduler_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4301,7 +4301,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_subject_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4310,7 +4310,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_subscriber_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4319,7 +4319,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_subscription_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4328,7 +4328,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_macro_work_derive"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "quote",
  "rx_core_macro_common",
@@ -4337,7 +4337,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_notification_store"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4345,7 +4345,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_notification_variadics"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subscriber_derive",
@@ -4353,7 +4353,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_closed"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4362,7 +4362,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_combine_changes"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4373,7 +4373,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_combine_latest"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4384,7 +4384,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_concat"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4394,7 +4394,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_connectable"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4406,7 +4406,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_create"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4414,7 +4414,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_deferred"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4422,7 +4422,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_empty"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4431,7 +4431,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_interval"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4441,7 +4441,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_iterator"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4450,7 +4450,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_iterator_on_tick"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4460,7 +4460,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_join"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4471,7 +4471,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_just"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4480,7 +4480,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_merge"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4490,7 +4490,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_never"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4498,7 +4498,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_throw"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4507,7 +4507,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_timer"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4517,7 +4517,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observable_zip"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -4528,7 +4528,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observer_fn"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observer_derive",
@@ -4536,7 +4536,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observer_noop"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4545,7 +4545,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_observer_print"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observer_derive",
@@ -4553,7 +4553,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_adsr"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "bevy_math",
  "bevy_time",
@@ -4567,7 +4567,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_buffer_count"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4578,7 +4578,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_catch"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4590,7 +4590,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_composite"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4600,7 +4600,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_concat_all"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4613,7 +4613,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_concat_map"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4625,7 +4625,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_count"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4636,7 +4636,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_debounce_time"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_operator_derive",
@@ -4647,7 +4647,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_delay"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_operator_derive",
@@ -4658,7 +4658,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_dematerialize"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4669,7 +4669,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_element_at"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4681,7 +4681,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_end_with"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4692,7 +4692,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_enumerate"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4703,7 +4703,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_error_boundary"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4714,7 +4714,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_exhaust_all"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4727,7 +4727,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_exhaust_map"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4740,7 +4740,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_fallback_when_silent"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_operator_derive",
@@ -4751,7 +4751,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_filter"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4762,7 +4762,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_filter_map"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4774,7 +4774,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_finalize"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4784,7 +4784,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_find"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4796,7 +4796,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_find_index"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4808,7 +4808,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_first"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4820,7 +4820,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_identity"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4830,7 +4830,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_into_result"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4841,7 +4841,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_is_empty"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4852,7 +4852,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_lift_option"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4863,7 +4863,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_lift_result"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4874,7 +4874,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_map"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4885,7 +4885,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_map_error"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4896,7 +4896,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_map_into"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4907,7 +4907,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_map_never"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4918,7 +4918,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_materialize"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4929,7 +4929,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_merge_all"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4941,7 +4941,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_merge_map"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4953,7 +4953,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_observe_on"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_operator_derive",
@@ -4964,7 +4964,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_on_next"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4975,7 +4975,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_on_subscribe"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4985,7 +4985,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_pairwise"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -4996,7 +4996,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_reduce"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5007,7 +5007,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_retry"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5019,7 +5019,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_scan"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5030,7 +5030,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_share"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5042,7 +5042,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_skip"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5053,7 +5053,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_start_with"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5063,7 +5063,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_subscribe_on"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_observable_derive",
@@ -5073,7 +5073,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_switch_all"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5085,7 +5085,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_switch_map"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5097,7 +5097,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_take"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5108,7 +5108,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_tap"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5119,7 +5119,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_tap_next"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5130,7 +5130,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_throttle_time"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_operator_derive",
@@ -5141,7 +5141,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_operator_with_latest_from"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5153,7 +5153,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_scheduler_ticking"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "indexmap",
@@ -5165,7 +5165,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subject_async"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subject_derive",
@@ -5175,7 +5175,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subject_behavior"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subject_derive",
@@ -5184,7 +5184,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subject_provenance"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subject_derive",
@@ -5196,7 +5196,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subject_publish"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5207,7 +5207,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subject_replay"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "ringbuffer",
  "rx_core_common",
@@ -5217,7 +5217,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subscriber_higher_order"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subscriber_derive",
@@ -5225,7 +5225,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subscriber_higher_order_all"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subscriber_derive",
@@ -5234,7 +5234,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subscriber_higher_order_concurrent"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
@@ -5245,7 +5245,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subscriber_higher_order_exhaust"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subscriber_derive",
@@ -5254,7 +5254,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subscriber_higher_order_map"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subscriber_derive",
@@ -5263,7 +5263,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subscriber_higher_order_switch"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subscriber_derive",
@@ -5272,7 +5272,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_subscription_inert"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rx_core_common",
  "rx_core_macro_subscription_derive",
@@ -5280,7 +5280,7 @@ dependencies = [
 
 [[package]]
 name = "rx_core_testing"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "derive-where",
  "rx_core_common",
