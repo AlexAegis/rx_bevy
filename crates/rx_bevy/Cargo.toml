@@ -91,6 +91,7 @@ all_core_observables = [
 	"observable_never",
 	"observable_throw",
 	"observable_timer",
+	"observable_random_seed",
 	"observable_zip",
 ]
 observable_closed = ["rx_core/observable_closed"]
@@ -110,6 +111,7 @@ observable_merge = ["rx_core/observable_merge"]
 observable_never = ["rx_core/observable_never"]
 observable_throw = ["rx_core/observable_throw"]
 observable_timer = ["rx_core/observable_timer"]
+observable_random_seed = ["rx_core/observable_random_seed"]
 observable_zip = ["rx_core/observable_zip"]
 # Core Observers
 all_core_observers = ["observer_noop", "observer_print", "observer_fn"]
