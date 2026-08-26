@@ -204,7 +204,7 @@ bevy_egui = { version = "0.40.0", default-features = false, features = [
 	"render",
 ] }
 # Data Structures
-bitflags = { version = "2.13.0", default-features = false }
+bitflags = { version = "2.13", default-features = false }
 either = { version = "1.16", default-features = false }
 ringbuffer = { version = "0.16", default-features = false }
 slab = { version = "0.4", default-features = false }
@@ -228,7 +228,7 @@ tracing = { version = "0.1", default-features = false }
 proc-macro2 = { version = "1.0", default-features = false }
 quote = { version = "1.0", default-features = false }
 seq-macro = { version = "0.3", default-features = false }
-syn = { version = "2.0", default-features = false, features = [
+syn = { version = "3.0", default-features = false, features = [
 	"clone-impls",
 	"derive",
 	"parsing",
