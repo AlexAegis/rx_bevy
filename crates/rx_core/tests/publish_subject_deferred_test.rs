@@ -4,7 +4,7 @@ use std::sync::{
 };
 
 use rx_core::prelude::*;
-use rx_core_subject_publish::internal::MulticastSubscription;
+use rx_core_subject_publish::internal::{MULTICAST_MAX_RECURSION_DEPTH, MulticastSubscription};
 use rx_core_testing::prelude::*;
 
 #[test]
@@ -212,6 +212,36 @@ fn should_be_able_to_detect_a_simple_infinite_loop_and_panic() {
 		.subscribe(destination_1);
 
 	mute_panic(|| subject.next(0)); // Infinite loop!
+}
+
+#[test]
+fn should_deliver_every_notification_when_deferrals_reach_the_recursion_limit() {
+	let destination_1 = MockObserver::default();
+	let notification_collector = destination_1.get_notification_collector();
+
+	let mut subject = PublishSubject::<usize>::default();
+
+	let mut subject_level_1 = subject.clone();
+
+	let _subscription = subject
+		.clone()
+		.tap_next(move |next| {
+			if *next < MULTICAST_MAX_RECURSION_DEPTH {
+				subject_level_1.next(next + 1);
+			}
+		})
+		.subscribe(destination_1);
+
+	subject.next(0);
+
+	notification_collector.lock().assert_notifications(
+		"Nested deferrals at the recursion limit",
+		0,
+		std::array::from_fn::<_, { MULTICAST_MAX_RECURSION_DEPTH + 1 }, _>(
+			SubscriberNotification::Next,
+		),
+		true,
+	);
 }
 
 #[test]

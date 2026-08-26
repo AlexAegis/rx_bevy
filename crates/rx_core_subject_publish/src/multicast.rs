@@ -15,7 +15,7 @@ use crate::internal::{
 	MulticastSubscriberIdGenerator, MulticastUnsubscribeLockError,
 };
 
-pub(crate) const MULTICAST_MAX_RECURSION_DEPTH: usize = 10;
+pub const MULTICAST_MAX_RECURSION_DEPTH: usize = 10;
 
 #[derive_where(Default, Debug)]
 pub(crate) struct Subscribers<In, InError>
@@ -61,7 +61,7 @@ where
 	}
 
 	pub(crate) fn next(&mut self, next: In) {
-		for (_, destination) in self.subscribers.iter_mut() {
+		for destination in self.subscribers.values_mut() {
 			if !destination.is_closed() {
 				destination.next(next.clone());
 			}
@@ -69,7 +69,7 @@ where
 	}
 
 	pub(crate) fn error(&mut self, error: InError) {
-		for (_, destination) in self.subscribers.iter_mut() {
+		for destination in self.subscribers.values_mut() {
 			if !destination.is_closed() {
 				destination.error(error.clone());
 			}
@@ -77,7 +77,7 @@ where
 	}
 
 	pub(crate) fn complete(&mut self) {
-		for (_, destination) in self.subscribers.iter_mut() {
+		for destination in self.subscribers.values_mut() {
 			if !destination.is_closed() {
 				destination.complete();
 			}
@@ -137,21 +137,18 @@ where
 			let notifications = {
 				let mut locked_state = state.lock_ignore_poison();
 
-				// Infinite loop protection
-				if queue_depth == MULTICAST_MAX_RECURSION_DEPTH {
-					panic!(
-						"Notification queue depth have exceeded {MULTICAST_MAX_RECURSION_DEPTH}!"
-					)
-				}
-
-				if locked_state.deferred_notifications_queue.is_empty() {
+				// Don't panic on the last round if the queue is already empty.
+				if !locked_state.is_dirty() {
 					break;
 				}
 
-				// Don't drain until the above checks have happened to not drop
-				// un-applied notifications.
-				// In case that panic above is no longer a panic.
-				locked_state.drain_notification_queue()
+				if queue_depth == MULTICAST_MAX_RECURSION_DEPTH {
+					panic!(
+						"Multicast notification queue did not drain in {MULTICAST_MAX_RECURSION_DEPTH} rounds!"
+					)
+				}
+
+				locked_state.take_notification_queue()
 			};
 
 			// Each closedness check acquires a fresh lock for up-to-date
@@ -328,10 +325,8 @@ where
 		self.deferred_notifications_queue.push(notification);
 	}
 
-	pub(crate) fn drain_notification_queue(&mut self) -> Vec<MulticastNotification<In, InError>> {
-		self.deferred_notifications_queue
-			.drain(..)
-			.collect::<Vec<_>>()
+	pub(crate) fn take_notification_queue(&mut self) -> Vec<MulticastNotification<In, InError>> {
+		std::mem::take(&mut self.deferred_notifications_queue)
 	}
 
 	/// The state is considered dirty when there are unprocessed notifications

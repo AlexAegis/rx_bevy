@@ -214,7 +214,7 @@ fn lint_rx_package_operator_has_transitive_feature_in_group(
 		});
 	}
 
-	let feature = format!("{}?/{}", package.package.name, &transitive_feature.name);
+	let feature = format!("{}?/{}", package.package.name, transitive_feature.name);
 
 	if !transitive_feature_group.contains(&feature) {
 		return Err(RxAggregatorLintProblem::TransitiveFeatureMissingFromGroup(

@@ -6,6 +6,7 @@ mod multicast_subscription;
 mod publish_subject;
 
 pub mod internal {
+	pub use super::multicast::MULTICAST_MAX_RECURSION_DEPTH;
 	pub(crate) use super::multicast::*;
 	pub(crate) use super::multicast_notification::*;
 	pub(crate) use super::multicast_notification_errors::*;

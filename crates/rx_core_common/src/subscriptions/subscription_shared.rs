@@ -38,10 +38,8 @@ impl SubscriptionDeferredState {
 		self.deferred_notifications_queue.push(notification);
 	}
 
-	pub(crate) fn drain_notification_queue(&mut self) -> Vec<SubscriptionNotification> {
-		self.deferred_notifications_queue
-			.drain(..)
-			.collect::<Vec<_>>()
+	pub(crate) fn take_notification_queue(&mut self) -> Vec<SubscriptionNotification> {
+		std::mem::take(&mut self.deferred_notifications_queue)
 	}
 
 	/// The state is considered dirty when there are unprocessed notifications
@@ -126,21 +124,18 @@ impl SharedSubscription {
 			let notifications = {
 				let mut locked_state = state.lock_ignore_poison();
 
-				// Infinite loop protection
-				if queue_depth == SUBSCRIPTION_MAX_RECURSION_DEPTH {
-					panic!(
-						"Notification queue depth have exceeded {SUBSCRIPTION_MAX_RECURSION_DEPTH}!"
-					)
-				}
-
-				if locked_state.deferred_notifications_queue.is_empty() {
+				// Don't panic on the last round if the queue is already empty.
+				if !locked_state.is_dirty() {
 					break;
 				}
 
-				// Don't drain until the above checks have happened to not drop
-				// un-applied notifications.
-				// In case that panic above is no longer a panic.
-				locked_state.drain_notification_queue()
+				if queue_depth == SUBSCRIPTION_MAX_RECURSION_DEPTH {
+					panic!(
+						"Subscription notification queue did not drain in {SUBSCRIPTION_MAX_RECURSION_DEPTH} rounds!"
+					)
+				}
+
+				locked_state.take_notification_queue()
 			};
 
 			// Each closedness check acquires a fresh lock for up-to-date
