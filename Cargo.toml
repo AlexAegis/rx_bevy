@@ -27,6 +27,8 @@ opt-level = 3
 
 [profile.test]
 incremental = true
+# The dev profile sets debug = 0, which drops file and line from backtraces.
+debug = "line-tables-only"
 
 [profile.release]
 incremental = true
