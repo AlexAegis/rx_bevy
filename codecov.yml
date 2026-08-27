@@ -347,3 +347,6 @@ component_management:
     - component_id: rx_core_testing
       paths:
         - crates/rx_core_testing/**
+    - component_id: rx_core_testing_mute_panic
+      paths:
+        - crates/rx_core_testing_mute_panic/**

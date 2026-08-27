@@ -28,4 +28,5 @@ rx_core_macro_subscription_derive = { workspace = true }
 rx_core_macro_subscriber_derive = { workspace = true }
 rx_core_macro_subject_derive = { workspace = true }
 rx_core_scheduler_ticking = { workspace = true }
+rx_core_testing_mute_panic = { workspace = true }
 derive-where = { workspace = true }

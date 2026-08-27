@@ -83,6 +83,7 @@ impl RxWorkspace {
 			"rx_bevy_common",
 			"rx_core_common",
 			"rx_core_testing",
+			"rx_core_testing_mute_panic",
 			"rx_core_notification_store",
 			"rx_core_notification_variadics",
 			"rx_core_macro_common",

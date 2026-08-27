@@ -37,6 +37,7 @@ jobs:
           set -eu
 
           crates="
+            rx_core_testing_mute_panic
             rx_core_macro_common
             rx_core_macro_observer_derive
             rx_core_macro_executor_derive

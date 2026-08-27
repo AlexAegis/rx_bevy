@@ -297,14 +297,7 @@ impl SubscriberState {
 #[cfg(test)]
 mod test {
 	use crate::SubscriberState;
-
-	fn mute_panic<R>(fun: impl FnOnce() -> R) -> R {
-		let hook = std::panic::take_hook();
-		std::panic::set_hook(Box::new(|_| {}));
-		let result = fun();
-		std::panic::set_hook(hook);
-		result
-	}
+	use rx_core_testing_mute_panic::mute_panic;
 
 	#[test]
 	fn it_should_be_waiting_by_default() {

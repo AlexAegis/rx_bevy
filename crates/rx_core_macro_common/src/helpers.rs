@@ -115,18 +115,11 @@ pub(crate) fn find_field_ident_with_attribute(
 		})
 }
 
-pub fn mute_panic<R>(fun: impl FnOnce() -> R) -> R {
-	let hook = std::panic::take_hook();
-	std::panic::set_hook(Box::new(|_| {}));
-	let result = fun();
-	std::panic::set_hook(hook);
-	result
-}
-
 #[cfg(test)]
 mod test {
 	use super::*;
 	use quote::quote;
+	use rx_core_testing_mute_panic::mute_panic;
 	use syn::{DeriveInput, parse_quote};
 
 	mod read_attribute_value {

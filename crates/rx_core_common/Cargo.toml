@@ -32,5 +32,8 @@ rx_core_macro_subscription_derive = { workspace = true }
 thiserror = { workspace = true }
 variadics_please = { workspace = true }
 
+[dev-dependencies]
+rx_core_testing_mute_panic = { workspace = true }
+
 [package.metadata.cargo-machete]
 ignored = ["rx_core_macro_observer_derive"] # Used in a doctest

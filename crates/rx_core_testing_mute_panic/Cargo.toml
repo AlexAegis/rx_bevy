@@ -1,0 +1,20 @@
+[package]
+name = "rx_core_testing_mute_panic"
+description = "Silence panic messages"
+version = "0.2.2"
+readme = "readme.md"
+publish = true
+
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+authors.workspace = true
+license.workspace = true
+keywords = ["rx", "rx_core"]
+
+[lints]
+workspace = true
+
+[features]
+default = []

@@ -280,7 +280,7 @@ mod test {
 	}
 
 	mod observer_updates {
-		use crate::helpers::mute_panic;
+		use rx_core_testing_mute_panic::mute_panic;
 
 		use super::*;
 

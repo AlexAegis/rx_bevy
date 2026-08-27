@@ -42,7 +42,8 @@ mod test {
 	use quote::quote;
 	use syn::{DeriveInput, parse_quote};
 
-	use crate::{derive_executor::impl_executor, helpers::mute_panic};
+	use crate::derive_executor::impl_executor;
+	use rx_core_testing_mute_panic::mute_panic;
 
 	#[test]
 	fn should_generate_get_scheduler_handle() {

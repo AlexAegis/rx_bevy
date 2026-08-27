@@ -4214,6 +4214,7 @@ dependencies = [
  "rx_core_macro_operator_derive",
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
+ "rx_core_testing_mute_panic",
  "thiserror 2.0.20",
  "variadics_please 2.0.0",
 ]
@@ -4224,6 +4225,7 @@ version = "0.2.2"
 dependencies = [
  "proc-macro2",
  "quote",
+ "rx_core_testing_mute_panic",
  "syn 3.0.4",
  "thiserror 2.0.20",
 ]
@@ -5265,7 +5267,12 @@ dependencies = [
  "rx_core_macro_subscriber_derive",
  "rx_core_macro_subscription_derive",
  "rx_core_scheduler_ticking",
+ "rx_core_testing_mute_panic",
 ]
+
+[[package]]
+name = "rx_core_testing_mute_panic"
+version = "0.2.2"
 
 [[package]]
 name = "same-file"

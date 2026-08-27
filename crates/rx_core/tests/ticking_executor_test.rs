@@ -10,6 +10,7 @@ use rx_core::prelude::*;
 use rx_core_scheduler_ticking::{Tick, TickingScheduler, TickingSchedulerExecutor};
 
 use rx_core_scheduler_ticking::TickedInvokedWorkFactory;
+use rx_core_testing::mute_panic;
 
 struct TestContextProvider;
 
@@ -20,14 +21,6 @@ impl WorkContextProvider for TestContextProvider {
 struct TestContext;
 
 impl WorkContext<'_> for TestContext {}
-
-fn mute_panic<R>(fun: impl FnOnce() -> R) -> R {
-	let hook = std::panic::take_hook();
-	std::panic::set_hook(Box::new(|_| {}));
-	let result = fun();
-	std::panic::set_hook(hook);
-	result
-}
 
 mod ticking {
 

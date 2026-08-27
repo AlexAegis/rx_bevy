@@ -6,3 +6,8 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AlexAegis/rx_bevy?tab=MIT-1-ov-file)
 
 Testing utilities for observables and operators.
+
+## See Also
+
+- [testing_mute_panic](https://github.com/AlexAegis/rx_bevy/tree/master/crates/rx_core_testing_mute_panic) -
+  Silences the panic message while a closure runs.

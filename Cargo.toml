@@ -43,6 +43,7 @@ rx_core = { version = "0.2.2", path = "crates/rx_core" }
 rx_core_notification_store = { version = "0.2.2", path = "crates/rx_core_notification_store" }
 rx_core_notification_variadics = { version = "0.2.2", path = "crates/rx_core_notification_variadics" }
 rx_core_testing = { version = "0.2.2", path = "crates/rx_core_testing" }
+rx_core_testing_mute_panic = { version = "0.2.2", path = "crates/rx_core_testing_mute_panic" }
 rx_core_common = { version = "0.2.2", path = "crates/rx_core_common" }
 # Macros
 rx_core_macro_common = { version = "0.2.2", path = "crates/rx_core_macro_common" }

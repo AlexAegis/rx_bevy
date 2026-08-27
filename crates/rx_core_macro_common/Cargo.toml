@@ -21,3 +21,6 @@ proc-macro2 = { workspace = true }
 quote = { workspace = true }
 syn = { workspace = true }
 thiserror = { workspace = true }
+
+[dev-dependencies]
+rx_core_testing_mute_panic = { workspace = true }

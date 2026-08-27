@@ -58,9 +58,8 @@ mod test {
 
 	use syn::{DeriveInput, parse_quote};
 
-	use crate::{
-		derive_teardown_collection::impl_delegate_teardown_collection, helpers::mute_panic,
-	};
+	use crate::derive_teardown_collection::impl_delegate_teardown_collection;
+	use rx_core_testing_mute_panic::mute_panic;
 
 	#[test]
 	fn should_prioritize_the_teardown_field() {
