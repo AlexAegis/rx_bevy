@@ -1,6 +1,6 @@
 [package]
 name = "rx_core_subject_replay"
-description = "replat_subject for rx_core"
+description = "replay_subject for rx_core"
 version = "0.2.2"
 readme = "readme.md"
 publish = true

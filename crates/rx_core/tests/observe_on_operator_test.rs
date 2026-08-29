@@ -516,7 +516,7 @@ fn should_compose() {
 mod contracts {
 	use super::*;
 
-	/// Errors are instantenous and not delayed, hence the missing tick call.
+	/// Errors are instantaneous and not delayed, hence the missing tick call.
 	#[test]
 	fn rx_contract_closed_after_error() {
 		let executor = MockExecutor::default();

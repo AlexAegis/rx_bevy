@@ -49,11 +49,11 @@ where
 	}
 }
 
-pub trait SubscriptionLikePushNotificationExtention: SubscriptionLike {
+pub trait SubscriptionLikePushNotificationExtension: SubscriptionLike {
 	fn push(&mut self, notification: impl Into<SubscriptionNotification>);
 }
 
-impl<T: ?Sized> SubscriptionLikePushNotificationExtention for T
+impl<T: ?Sized> SubscriptionLikePushNotificationExtension for T
 where
 	T: SubscriptionLike,
 {

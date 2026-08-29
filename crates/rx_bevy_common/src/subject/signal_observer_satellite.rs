@@ -9,7 +9,7 @@ use bevy_ecs::{
 };
 use disqualified::ShortName;
 use rx_core_common::{
-	ObserverNotification, ObserverPushObserverNotificationExtention, PhantomInvariant, RxObserver,
+	ObserverNotification, ObserverPushObserverNotificationExtension, PhantomInvariant, RxObserver,
 };
 
 use core::marker::PhantomData;

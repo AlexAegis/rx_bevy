@@ -58,7 +58,7 @@ pub trait EntityCommandsAsObservableExtension {
 	/// and similar subscribe functions that are directly on
 	/// [`Commands`][bevy_ecs::system::Commands] or
 	/// [`EntityCommands`][bevy_ecs::system::EntityCommands].
-	/// The latters use the same `Commands` instance that you used to create
+	/// The latter use the same `Commands` instance that you used to create
 	/// the observable, granting you a clear order of queued commands. If you
 	/// inserted an observable component onto your observable
 	/// entity, and only then you issued the subscribe command, you can be

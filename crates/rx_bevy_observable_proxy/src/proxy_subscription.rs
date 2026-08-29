@@ -57,7 +57,7 @@ where
 			(cancellation_id, despawn_invoke_id)
 		};
 
-		shared_destination.add(Teardown::new_work_invokation_and_cancellation(
+		shared_destination.add(Teardown::new_work_invocation_and_cancellation(
 			despawn_invoke_id,
 			cancellation_id,
 			scheduler,

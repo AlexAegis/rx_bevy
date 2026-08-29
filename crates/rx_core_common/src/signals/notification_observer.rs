@@ -63,11 +63,11 @@ pub enum SubscriberToObserverNotificationConversionError {
 	CannotReceiveUnsubscribe,
 }
 
-pub trait ObserverPushObserverNotificationExtention: RxObserver {
+pub trait ObserverPushObserverNotificationExtension: RxObserver {
 	fn push(&mut self, notification: impl Into<ObserverNotification<Self::In, Self::InError>>);
 }
 
-impl<T> ObserverPushObserverNotificationExtention for T
+impl<T> ObserverPushObserverNotificationExtension for T
 where
 	T: RxObserver,
 {

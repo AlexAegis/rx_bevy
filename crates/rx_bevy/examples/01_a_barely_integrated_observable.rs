@@ -48,7 +48,7 @@ fn main() -> AppExit {
 /// subscriptions that you make directly on an actual Observable! Subscriptions
 /// made through `Commands` will create an entity, and the
 /// [`SubscriptionComponent`](rx_bevy::SubscriptionComponent) will store the
-/// actual subscription, so it wont drop until you despawn it!
+/// actual subscription, so it won't drop until you despawn it!
 /// You probably still want a place like a resource or another component to
 /// store the references to these entities somewhere: Not to keep the
 /// subscription alive, but to know how to cancel it! (If you need to!)

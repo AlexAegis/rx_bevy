@@ -58,7 +58,7 @@ fn should_delay_a_next_emission_by_the_specified_amount_of_time() {
 	subscription.unsubscribe();
 }
 
-// This actually tests the `is_closed` function of `delay` whould should
+// This actually tests the `is_closed` function of `delay` which should
 // immediately give feedback to upstream that it is closed, which is used
 // for things like stopping an iterator early.
 #[test]
@@ -563,7 +563,7 @@ fn should_compose() {
 mod contracts {
 	use super::*;
 
-	/// Errors are instantenous and not delayed, hence the missing tick call.
+	/// Errors are instantaneous and not delayed, hence the missing tick call.
 	#[test]
 	fn rx_contract_closed_after_error() {
 		let executor = MockExecutor::default();

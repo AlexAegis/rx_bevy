@@ -43,7 +43,7 @@ where
 		Box<dyn ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync>,
 	>,
 	cancellation_map: HashMap<WorkCancellationId, Vec<WorkId>>,
-	invokable_work: HashMap<
+	invocable_work: HashMap<
 		WorkInvokeId,
 		Box<dyn ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync>,
 	>,
@@ -63,7 +63,7 @@ where
 			active_work: IndexMap::default(),
 			work_id_generator: WorkIdGenerator::default(),
 			cancellation_map: HashMap::default(),
-			invokable_work: HashMap::new(),
+			invocable_work: HashMap::new(),
 			invoked: Vec::new(),
 			scheduler: SchedulerHandle::new(scheduler),
 			already_ticked: HashSet::new(),
@@ -103,7 +103,7 @@ where
 
 	/// Returns `true` when there is no active work in the executor.
 	pub fn is_empty(&self) -> bool {
-		self.active_work.is_empty() && self.invokable_work.is_empty()
+		self.active_work.is_empty() && self.invocable_work.is_empty()
 	}
 
 	pub fn get_current_tick(&self) -> Tick {
@@ -140,10 +140,10 @@ where
 
 	fn execute_invoked(&mut self, tick: Tick, context: &mut C::Item<'_>) {
 		for invoked_id in self.invoked.drain(..) {
-			if let Some(invoked_work) = self.invokable_work.get_mut(&invoked_id) {
+			if let Some(invoked_work) = self.invocable_work.get_mut(&invoked_id) {
 				let invoke_result = invoked_work.tick(tick, context);
 				if matches!(invoke_result, WorkResult::Done) {
-					self.invokable_work.remove(&invoked_id);
+					self.invocable_work.remove(&invoked_id);
 				}
 			}
 		}
@@ -165,13 +165,13 @@ where
 						.push(work_id);
 				}
 				ScheduledWorkAction::AddInvoked((invoke_id, work)) => {
-					self.invokable_work.insert(invoke_id, work);
+					self.invocable_work.insert(invoke_id, work);
 				}
 				ScheduledWorkAction::Invoke(invoke_id) => {
 					self.invoked.push(invoke_id);
 				}
 				ScheduledWorkAction::CancelInvoked(cancelled_invocation_id) => {
-					self.invokable_work.remove(&cancelled_invocation_id);
+					self.invocable_work.remove(&cancelled_invocation_id);
 					self.invoked
 						.retain(|invoked_id| invoked_id == &cancelled_invocation_id);
 				}

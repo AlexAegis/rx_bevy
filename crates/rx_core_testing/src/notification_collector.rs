@@ -315,7 +315,7 @@ where
 
 		assert!(
 			self.is_empty(),
-			"{assert_message_prefix} - should not've observed anything at this point!"
+			"{assert_message_prefix} - should not have observed anything at this point!"
 		)
 	}
 

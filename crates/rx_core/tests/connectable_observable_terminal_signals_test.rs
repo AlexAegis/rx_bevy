@@ -5,7 +5,7 @@ mod when_connected {
 	use super::*;
 
 	#[test]
-	fn should_not_unsubsribe_downstream_when_the_source_unsubscribes() {
+	fn should_not_unsubscribe_downstream_when_the_source_unsubscribes() {
 		let destination = MockObserver::default();
 		let notification_collector = destination.get_notification_collector();
 
@@ -116,7 +116,7 @@ mod when_disconnected {
 	use super::*;
 
 	#[test]
-	fn should_not_unsubsribe_downstream_when_the_source_unsubscribes_and_disconnected() {
+	fn should_not_unsubscribe_downstream_when_the_source_unsubscribes_and_disconnected() {
 		let destination = MockObserver::default();
 		let notification_collector = destination.get_notification_collector();
 

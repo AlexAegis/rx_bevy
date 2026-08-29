@@ -6,7 +6,7 @@ use rx_core_common::{
 };
 
 /// Since events are passed around as references and signals must be owned, we
-/// can levarage the fact that these events are sent only once, and only to
+/// can leverage the fact that these events are sent only once, and only to
 /// one destination and let the `In` and `InError` signals be taken out of the
 /// event.
 ///

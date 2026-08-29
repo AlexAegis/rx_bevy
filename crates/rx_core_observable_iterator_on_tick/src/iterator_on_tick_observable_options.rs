@@ -9,6 +9,6 @@ pub struct OnTickObservableOptions {
 	pub start_on_subscribe: bool,
 	/// When larger than 0, one iteration of the iterator will happen every nth
 	/// tick, regardless of how long or small that tick was.
-	/// When is 0, the entire iterator will be emitted immediately on subscripton
+	/// When 0, the entire iterator will be emitted immediately on subscription.
 	pub emit_at_every_nth_tick: usize,
 }

@@ -342,28 +342,28 @@ fn should_execute_all_active_inner_teardowns_when_one_errors() {
 		.subscribe(destination);
 
 	let inner_1_teardown_was_called = Arc::new(AtomicBool::new(false));
-	let inner_1_teardown_was_called_finalze = inner_1_teardown_was_called.clone();
+	let inner_1_teardown_was_called_finalize = inner_1_teardown_was_called.clone();
 	let inner_2_teardown_was_called = Arc::new(AtomicBool::new(false));
-	let inner_2_teardown_was_called_finalze = inner_2_teardown_was_called.clone();
+	let inner_2_teardown_was_called_finalize = inner_2_teardown_was_called.clone();
 	let inner_3_teardown_was_called = Arc::new(AtomicBool::new(false));
-	let inner_3_teardown_was_called_finalze = inner_3_teardown_was_called.clone();
+	let inner_3_teardown_was_called_finalize = inner_3_teardown_was_called.clone();
 
 	source.next(
 		inner_1
 			.clone()
-			.finalize(move || inner_1_teardown_was_called_finalze.store(true, Ordering::Relaxed))
+			.finalize(move || inner_1_teardown_was_called_finalize.store(true, Ordering::Relaxed))
 			.erase(),
 	);
 	source.next(
 		inner_2
 			.clone()
-			.finalize(move || inner_2_teardown_was_called_finalze.store(true, Ordering::Relaxed))
+			.finalize(move || inner_2_teardown_was_called_finalize.store(true, Ordering::Relaxed))
 			.erase(),
 	);
 	source.next(
 		inner_3
 			.clone()
-			.finalize(move || inner_3_teardown_was_called_finalze.store(true, Ordering::Relaxed))
+			.finalize(move || inner_3_teardown_was_called_finalize.store(true, Ordering::Relaxed))
 			.erase(),
 	);
 	source.complete();

@@ -20,7 +20,7 @@ fn main() {
 	subject.next(13);
 	subject.complete();
 
-	let mut _compelted_subscription = subject
+	let mut _completed_subscription = subject
 		.clone()
 		.subscribe(PrintObserver::<i32>::new("hello_completed"));
 }

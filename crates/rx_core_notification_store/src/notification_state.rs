@@ -71,7 +71,7 @@ where
 		self.value.take()
 	}
 
-	/// Emptyness only reflects that there is no actual stored value here, not
+	/// Emptiness only reflects that there is no actual stored value here, not
 	/// that it never was. If the stored value was taken using
 	/// [`take_value`][NotificationState::take_value], this will return `true`.
 	///

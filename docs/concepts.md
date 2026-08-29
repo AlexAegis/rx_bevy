@@ -535,7 +535,7 @@ hello_subscription.unsubscribe();
 subject.next(13);
 subject.complete();
 
-let mut _compelted_subscription = subject
+let mut _completed_subscription = subject
     .clone()
     .subscribe(PrintObserver::<i32>::new("hello_completed"));
 ```
@@ -736,7 +736,7 @@ time interval.
 
 #### Continuous Work
 
-Continouos Work is like repeated work but without the time interval, they
+Continuous Work is like repeated work but without the time interval, they
 simply execute as many times as often as they can.
 
 > It depends on the executor to define the actual frequency this type of work is

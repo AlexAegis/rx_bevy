@@ -57,7 +57,7 @@ where
 	#[inline]
 	fn next(&mut self, next: Self::In) {
 		// Since indexing starts from 0, the result is pre-increment, but
-		// the completetion error expects to know the already incremented number
+		// the completion error expects to know the already incremented number
 		let nexts_observed_so_far = self.nexts_observed;
 		self.nexts_observed += 1;
 		if !self.match_observed && (self.predicate)(&next) {

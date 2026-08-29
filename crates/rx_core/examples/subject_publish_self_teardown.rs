@@ -10,7 +10,7 @@ fn main() {
 	let mut subscription = subject
 		.clone()
 		.finalize(move || {
-			subject_teardown.next(2); // Will be deferred, so this subscription wont get it
+			subject_teardown.next(2); // Will be deferred, so this subscription won't get it
 			println!("teardown");
 			subject_teardown.unsubscribe();
 		}) // test with take 0 too, instantly unsubscribing!

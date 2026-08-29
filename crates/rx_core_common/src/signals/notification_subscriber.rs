@@ -86,11 +86,11 @@ where
 	}
 }
 
-pub trait SubscriberPushNotificationExtention: Subscriber {
+pub trait SubscriberPushNotificationExtension: Subscriber {
 	fn push(&mut self, notification: impl Into<SubscriberNotification<Self::In, Self::InError>>);
 }
 
-impl<T> SubscriberPushNotificationExtention for T
+impl<T> SubscriberPushNotificationExtension for T
 where
 	T: Subscriber,
 {
@@ -113,7 +113,7 @@ mod test {
 		use rx_core_macro_subscriber_derive::RxSubscriber;
 
 		use crate::{
-			RxObserver, SubscriberPushNotificationExtention, SubscriptionLike, TeardownCollection,
+			RxObserver, SubscriberPushNotificationExtension, SubscriptionLike, TeardownCollection,
 		};
 
 		use super::*;

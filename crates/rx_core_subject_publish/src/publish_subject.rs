@@ -229,8 +229,8 @@ where
 /// destination to decide if it wants to be unsubscribed together with upstream
 /// or not. (This exists to be able to use subscribers directly as destinations)
 ///
-/// This trait is autoimplemented by the `RxSubject` macro and makes subjects
-/// always be wrapped in a `DetatchedSubscriber` which only forwards signals
+/// This trait is auto-implemented by the `RxSubject` macro and makes subjects
+/// always be wrapped in a detached subscriber which only forwards signals
 /// but not `unsubscribe` calls.
 ///
 /// > Publish, Behavior, Replay and Async subjects all upgrade to a detached

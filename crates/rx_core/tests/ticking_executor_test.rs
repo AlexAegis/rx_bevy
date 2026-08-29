@@ -383,7 +383,7 @@ mod continuous_work {
 	use super::*;
 
 	#[test]
-	fn should_be_able_to_execute_continous_work_on_every_tick() {
+	fn should_be_able_to_execute_continuous_work_on_every_tick() {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,

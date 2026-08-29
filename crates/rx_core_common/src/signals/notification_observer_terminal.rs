@@ -81,11 +81,11 @@ where
 	}
 }
 
-pub trait ObserverPushObserverTerminalNotificationExtention: RxObserver {
+pub trait ObserverPushObserverTerminalNotificationExtension: RxObserver {
 	fn push(&mut self, notification: impl Into<ObserverTerminalNotification<Self::InError>>);
 }
 
-impl<T> ObserverPushObserverTerminalNotificationExtention for T
+impl<T> ObserverPushObserverTerminalNotificationExtension for T
 where
 	T: RxObserver,
 {

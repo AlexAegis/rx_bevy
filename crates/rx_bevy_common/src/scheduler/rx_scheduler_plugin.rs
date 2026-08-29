@@ -49,7 +49,7 @@ use crate::{Clock, RxBevyExecutor, SubscribeRetryPlugin};
 ///   > observable from a system running once under the `PreUpdate` schedule,
 ///   > and the interval has the option `start_on_subscribe: true`. Then, the
 ///   > first emission happens immediately in that system in `PreUpdate`, but
-///   > the following emissions, since they are all sheduled, will happen in
+///   > the following emissions, since they are all scheduled, will happen in
 ///   > the schedule of the handler you gave it. Which could be anything!
 #[derive_where(Default)]
 pub struct RxSchedulerPlugin<S, C>

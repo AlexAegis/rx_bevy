@@ -53,7 +53,7 @@ fn subscription_satellite_executes_teardown_when_despawned() {
 
 	let host_entity = app.world_mut().spawn_empty().id();
 
-	let (teardown, teardown_tracker) = Teardown::tracked("subscription_sattelite");
+	let (teardown, teardown_tracker) = Teardown::tracked("subscription_satellite");
 
 	let satellite_entity = app
 		.world_mut()

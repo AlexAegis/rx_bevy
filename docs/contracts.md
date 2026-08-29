@@ -290,7 +290,7 @@ interacts with it, and returns downstream's `is_closed` state, therefore in case
 downstream closes early, an upstream producer shouldn't even try interacting
 with it anyway.
 
-> The only exeptions are Subjects, where the Observer functions are exposed to
+> The only exceptions are Subjects, where the Observer functions are exposed to
 > the user.
 
 ```rs

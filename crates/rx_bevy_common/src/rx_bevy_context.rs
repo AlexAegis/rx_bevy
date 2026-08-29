@@ -25,7 +25,7 @@ pub enum ContextGetSubscriptionsErasedScheduleError {
 	#[error(
 		"Attempted to create a ProxySubscription with an incomplete Context! It does not contain a parent subscription entity!"
 	)]
-	ContextDoesNotHaveASubscritpionEntity,
+	ContextDoesNotHaveASubscriptionEntity,
 	#[error("Subscription Entity {0} should have an ErasedSubscriptionSchedule!")]
 	SubscriptionEntityDoesNotHaveAnErasedSubscriptionSchedule(Entity),
 }

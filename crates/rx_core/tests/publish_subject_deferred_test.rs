@@ -119,24 +119,24 @@ fn should_be_able_to_subscribe_and_next_to_the_new_subscription_from_teardown() 
 	let final_subscription = SharedSubscription::default();
 	let arc_round = Arc::new(AtomicUsize::default());
 
-	let mut clojures_subject = subject.clone();
-	let mut clojures_subscription_clone = final_subscription.clone();
-	let clojure_multi_round_notification_collector = multi_round_notification_collector.clone();
-	let clojure_round = arc_round.clone();
+	let mut closures_subject = subject.clone();
+	let mut closures_subscription_clone = final_subscription.clone();
+	let closure_multi_round_notification_collector = multi_round_notification_collector.clone();
+	let closure_round = arc_round.clone();
 
 	let subscription = subject
 		.clone()
 		.take(2)
 		.tap_next(move |next| {
-			let subscription = clojures_subject.subscribe(MockObserver::new(
-				clojure_multi_round_notification_collector
+			let subscription = closures_subject.subscribe(MockObserver::new(
+				closure_multi_round_notification_collector
 					.lock()
-					.get_round(clojure_round.load(Ordering::Relaxed)),
+					.get_round(closure_round.load(Ordering::Relaxed)),
 			));
 			// Self feeding subject, a recipe for disaster!
-			clojures_subject.next(next + 1);
-			clojure_round.fetch_add(1, Ordering::Relaxed);
-			clojures_subscription_clone.add(subscription);
+			closures_subject.next(next + 1);
+			closure_round.fetch_add(1, Ordering::Relaxed);
+			closures_subscription_clone.add(subscription);
 		})
 		.subscribe(destination_1);
 

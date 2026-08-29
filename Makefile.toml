@@ -331,7 +331,7 @@ run_task = { name = [
 ], parallel = true }
 
 [tasks.lint]
-description = "Run several linting steps that do not block eachother in parallel"
+description = "Run several linting steps that do not block each other in parallel"
 workspace = false
 run_task = { name = [
 	"format",

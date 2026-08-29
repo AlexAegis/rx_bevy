@@ -66,7 +66,7 @@ impl Teardown {
 	}
 
 	#[inline]
-	pub fn new_work_invokation<S: 'static + Scheduler>(
+	pub fn new_work_invocation<S: 'static + Scheduler>(
 		invoke_id: WorkInvokeId,
 		scheduler: SchedulerHandle<S>,
 	) -> Self {
@@ -83,7 +83,7 @@ impl Teardown {
 
 	/// Invokes one work and cancels another in a single teardown.
 	#[inline]
-	pub fn new_work_invokation_and_cancellation<S: 'static + Scheduler>(
+	pub fn new_work_invocation_and_cancellation<S: 'static + Scheduler>(
 		invoke_id: WorkInvokeId,
 		cancellation_id: WorkCancellationId,
 		scheduler: SchedulerHandle<S>,
@@ -108,7 +108,7 @@ impl Teardown {
 	}
 
 	/// Immediately consumes and calls the teardowns closure, leaving a None
-	/// behind, rendering the teardown permamently closed.
+	/// behind, rendering the teardown permanently closed.
 	#[inline]
 	pub fn execute(mut self) {
 		if let Some(teardown) = self.teardown_fn.take() {

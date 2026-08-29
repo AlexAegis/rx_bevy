@@ -60,6 +60,6 @@ impl TeardownCollection for EntitySubscription {
 
 impl Drop for EntitySubscription {
 	fn drop(&mut self) {
-		// Should do nothing, the actualy subscription is shared through the entity
+		// Should do nothing, the actual subscription is shared through the entity
 	}
 }

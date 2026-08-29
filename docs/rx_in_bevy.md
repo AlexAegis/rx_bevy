@@ -33,7 +33,7 @@ fn setup_subscription(
 ```
 
 Now you can create subscriptions that are fully integrated with Bevy's ECS,
-live as entites and react to Bevy events, component removals:
+live as entities and react to Bevy events, component removals:
 
 > Use the `RxSignal<Out, OutError>` to observe signals from `EntityDestination`
 > subscriptions!

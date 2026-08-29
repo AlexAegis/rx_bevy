@@ -4,7 +4,7 @@ use rx_core_macro_subscription_derive::RxSubscription;
 
 use crate::{
 	LockWithPoisonBehavior, SubscriptionClosedFlag, SubscriptionData, SubscriptionLike,
-	SubscriptionLikePushNotificationExtention, SubscriptionNotification, SubscriptionWithTeardown,
+	SubscriptionLikePushNotificationExtension, SubscriptionNotification, SubscriptionWithTeardown,
 	TeardownCollectionExtension,
 };
 

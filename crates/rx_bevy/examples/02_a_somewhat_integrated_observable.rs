@@ -33,7 +33,7 @@ fn main() -> AppExit {
 struct MySubscriptions(SharedSubscription);
 
 /// Now send events to a destination entity by simply observing the signals
-/// using an actualy Bevy Observer!
+/// using an actual Bevy Observer!
 fn setup_subscription(
 	mut commands: Commands,
 	rx_schedule_update_virtual: RxSchedule<Update, Virtual>,
