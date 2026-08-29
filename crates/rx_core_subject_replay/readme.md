@@ -58,10 +58,10 @@ hello - next: 2
 hello - next: 3
 hi - next: 2
 hi - next: 3
-hi - next: 4
 hello - next: 4
-hi - next: 5
+hi - next: 4
 hello - next: 5
+hi - next: 5
 hi - unsubscribed
 hello - unsubscribed
 ```

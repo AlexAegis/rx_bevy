@@ -25,7 +25,7 @@ use crate::internal::{
 ///
 /// Subjects are both observers and observables! Anything they observe is
 /// then multicast and sent to each individual subscriber subscribing to
-/// this subject.
+/// this subject, in the order they subscribed.
 ///
 /// ## Example
 ///

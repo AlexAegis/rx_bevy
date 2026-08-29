@@ -77,11 +77,11 @@ shared interval next: 3
 share_operator_1 - next: 3
 Ticking... (2s)
 shared interval next: 4
-share_operator_2 - next: 4
 share_operator_1 - next: 4
+share_operator_2 - next: 4
 shared interval next: 5
-share_operator_2 - next: 5
 share_operator_1 - next: 5
+share_operator_2 - next: 5
 share_operator_2 - unsubscribed
 share_operator_1 - unsubscribed
 shared interval: unsubscribed

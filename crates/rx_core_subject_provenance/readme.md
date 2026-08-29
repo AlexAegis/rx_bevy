@@ -71,12 +71,12 @@ provenance_ignored - next: 10
 provenance_foo - next: 10
 provenance_ignored - next: 1
 provenance_foo - next: 1
-provenance_bar - next: 2
 provenance_ignored - next: 2
+provenance_bar - next: 2
 provenance_ignored - next: 3
 provenance_foo - next: 3
-provenance_bar - next: 4
 provenance_ignored - next: 4
+provenance_bar - next: 4
 provenance_foo - unsubscribed
 provenance_bar - unsubscribed
 provenance_ignored - unsubscribed

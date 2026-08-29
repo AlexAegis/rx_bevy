@@ -63,8 +63,8 @@ Output:
 hello - next: 10
 hello - next: 11
 hi double - next: 22
-hi double - next: 24
 hello - next: 12
+hi double - next: 24
 hello - unsubscribed
 hi double - next: 26
 hi double - completed

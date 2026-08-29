@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/github/AlexAegis/rx_bevy/graph/badge.svg?token=hUtTGQaWMn&component=rx_core_subject_publish)](https://app.codecov.io/github/AlexAegis/rx_bevy?components%5B0%5D=rx_core_subject_publish)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AlexAegis/rx_bevy?tab=MIT-1-ov-file)
 
-Forwards observed signals to all active subscribers. Does not replay values to late subscribers, but always replays terminal state.
+Forwards observed signals to all active subscribers, in the order they subscribed. Does not replay values to late subscribers, but always replays terminal state.
 
 ## See Also
 

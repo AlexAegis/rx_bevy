@@ -1,5 +1,5 @@
 use std::{
-	collections::HashMap,
+	collections::BTreeMap,
 	sync::{Arc, Mutex, MutexGuard},
 };
 
@@ -25,7 +25,7 @@ where
 {
 	#[derive_where(skip)]
 	pub(crate) subscribers:
-		HashMap<MulticastSubscriberId, Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>>,
+		BTreeMap<MulticastSubscriberId, Arc<Mutex<dyn Subscriber<In = In, InError = InError>>>>,
 }
 
 impl<In, InError> Subscribers<In, InError>
@@ -85,7 +85,7 @@ where
 	}
 
 	pub(crate) fn unsubscribe(&mut self) {
-		for (_, mut destination) in self.subscribers.drain() {
+		for (_, mut destination) in std::mem::take(&mut self.subscribers) {
 			if !destination.is_closed() {
 				destination.unsubscribe();
 			}

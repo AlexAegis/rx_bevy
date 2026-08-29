@@ -390,7 +390,7 @@ This makes subjects capable to input data into subscriptions from "outside" of
 it!
 
 > Run this example:
-> `cargo run --package rx_core_subject_publish --example subject_example`
+> `cargo run -p rx_core --example subject_publish_example`
 
 ```rs
 let mut subject = PublishSubject::<i32>::default();
@@ -404,6 +404,12 @@ subject.next(2);
 subject.next(3);
 subscription.unsubscribe();
 subject.next(4);
+subject.complete();
+
+// Instantly completes
+let _subscription_2 = subject
+      .clone()
+      .subscribe(PrintObserver::<i32>::new("subject_example_2"));
 ```
 
 Output:
@@ -411,8 +417,9 @@ Output:
 ```sh
 subject_example - next: 2
 subject_example - next: 3
-finalize
 subject_example - unsubscribed
+subject_example_2 - completed
+subject_example_2 - unsubscribed
 ```
 
 We can clearly see that only those values were observed that were emitted during
@@ -423,7 +430,8 @@ when the subscription was active!
 As with any observable, a subject can be subscribed to multiple times! This
 means subjects are fundamentally **multicasting**!
 
-Whenever you put a value inside it, all of their subscribers will receive it.
+Whenever you put a value inside it, all of their subscribers will receive it,
+in the order they subscribed.
 
 Once unsubscribed, no new values can be emitted by the subject. New subscriptions
 attempted on the subject will be immediately unsubscribed.
@@ -431,7 +439,7 @@ attempted on the subject will be immediately unsubscribed.
 Example:
 
 > Run this example:
-> `cargo run --package rx_core_subject_publish --example subject_multicasting_example`
+> `cargo run -p rx_core --example subject_publish_multicasting_example`
 
 ```rs
 let mut subject = PublishSubject::<i32>::default();
@@ -513,7 +521,7 @@ They do not replay however when they errored!
 Example:
 
 > Run this example:
-> `cargo run --package rx_core_subject_behavior --example behavior_subject_example`
+> `cargo run -p rx_core --example subject_behavior_example`
 
 ```rs
 let mut subject = BehaviorSubject::<i32>::new(10);
@@ -588,7 +596,7 @@ an initial, "uninitialized" state.
 Example:
 
 > Run this example:
-> `cargo run --package rx_core_subject_replay --example replay_subject_example`
+> `cargo run -p rx_core --example subject_replay_example`
 
 ```rs
 let mut subject = ReplaySubject::<2, i32>::default();
@@ -648,7 +656,7 @@ values to be the result on completion.
 Example:
 
 > Run this example:
-> `cargo run --package rx_core_subject_async --example async_subject_example`
+> `cargo run -p rx_core --example subject_async_example`
 
 ```rs
 let mut subject = AsyncSubject::<i32>::default();
@@ -678,8 +686,8 @@ Output:
 async_subject sub_1 - next: 3
 async_subject sub_2 - next: 3
 async_subject sub_1 - completed
-async_subject sub_2 - completed
 async_subject sub_1 - unsubscribed
+async_subject sub_2 - completed
 async_subject sub_2 - unsubscribed
 async_subject sub_3 - next: 3
 async_subject sub_3 - completed

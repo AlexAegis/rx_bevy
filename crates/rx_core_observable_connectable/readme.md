@@ -56,8 +56,8 @@ connectable_observable 0 - next: 1
 disconnected...
 connectable_observable 1 - next: 1
 connect again!
-connectable_observable 1 - next: 2
 connectable_observable 0 - next: 2
+connectable_observable 1 - next: 2
 end
 connectable_observable 1 - unsubscribed
 disconnected...

@@ -435,6 +435,27 @@ fn additional_teardowns_should_immediately_execute_if_the_subscription_is_alread
 	subject.unsubscribe();
 }
 
+#[test]
+fn should_notify_subscribers_in_subscription_order() {
+	let order = Arc::new(Mutex::new(Vec::<usize>::new()));
+
+	let mut subject = PublishSubject::<usize>::default();
+
+	let _subscriptions = (0..8)
+		.map(|index| {
+			let order = order.clone();
+			subject
+				.clone()
+				.tap_next(move |_| order.lock().unwrap().push(index))
+				.subscribe(MockObserver::default())
+		})
+		.collect::<Vec<_>>();
+
+	subject.next(0);
+
+	assert_eq!(*order.lock().unwrap(), (0..8).collect::<Vec<_>>());
+}
+
 mod multicast_subscription {
 	use super::*;
 
