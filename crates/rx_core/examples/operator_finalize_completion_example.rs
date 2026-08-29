@@ -8,9 +8,10 @@ use rx_core::prelude::*;
 /// Output:
 ///
 /// ```sh
-/// finalize_example - next: 12
-/// finalize_example - completed
+/// finalize_operator - next: 12
+/// finalize_operator - completed
 /// finally!
+/// finalize_operator - unsubscribed
 /// ```
 fn main() {
 	let _s = just(12)

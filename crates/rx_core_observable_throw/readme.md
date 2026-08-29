@@ -40,4 +40,5 @@ Output:
 
 ```txt
 throw_example - error: "hello"
+throw_example - unsubscribed
 ```

@@ -45,7 +45,6 @@ let _subscription = concat((
 Output:
 
 ```txt
-map_error_operator - next: 1
 map_error_operator - next: 2
 map_error_operator - next: 3
 map_error_operator - next: 4

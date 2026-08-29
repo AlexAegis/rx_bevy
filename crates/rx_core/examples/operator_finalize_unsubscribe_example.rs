@@ -8,9 +8,10 @@ use rx_core::prelude::*;
 /// Output:
 ///
 /// ```sh
-/// finalize_example - next: 1
-/// finalize_example - next: 2
+/// finalize_operator - next: 1
+/// finalize_operator - next: 2
 /// finally!
+/// finalize_operator - unsubscribed
 /// ```
 ///
 /// > Notice how there is no completion signal, the source didn't complete, we

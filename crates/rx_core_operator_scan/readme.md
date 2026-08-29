@@ -40,4 +40,5 @@ scan_operator - next: 36
 scan_operator - next: 45
 scan_operator - next: 55
 scan_operator - completed
+scan_operator - unsubscribed
 ```

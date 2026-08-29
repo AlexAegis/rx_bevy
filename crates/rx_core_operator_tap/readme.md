@@ -61,6 +61,7 @@ tap_operator - next: 2
 tap_destination - next: 3
 tap_operator - next: 3
 tap_destination - completed
+tap_destination - unsubscribed
 tap_operator - completed
 tap_operator - unsubscribed
 ```
