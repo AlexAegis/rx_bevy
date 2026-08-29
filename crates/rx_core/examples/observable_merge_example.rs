@@ -5,5 +5,5 @@ fn main() {
 	let observable_2 = (4..=6).into_observable().take(1);
 	let observable_3 = (95..=98).into_observable();
 	let _s = merge((observable_1, observable_2, observable_3), usize::MAX)
-		.subscribe(PrintObserver::<i32>::new("merge_operator"));
+		.subscribe(PrintObserver::<i32>::new("merge_observable"));
 }

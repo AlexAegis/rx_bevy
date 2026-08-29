@@ -5,7 +5,7 @@ fn main() {
 	let mut subject_2 = PublishSubject::<i32>::default();
 
 	let mut subscription = merge((subject_1.clone(), subject_2.clone()), usize::MAX)
-		.subscribe(PrintObserver::<i32>::new("merge_operator"));
+		.subscribe(PrintObserver::<i32>::new("merge_observable"));
 
 	subject_1.next(1);
 	subject_2.next(2);
