@@ -297,6 +297,47 @@ mod repeated_work {
 	}
 
 	#[test]
+	fn should_execute_repeated_work_scheduled_with_a_zero_interval_once_per_tick() {
+		let mut ticking_executor = TickingSchedulerExecutor::<
+			TickingScheduler<TestContextProvider>,
+			TestContextProvider,
+		>::new(TickingScheduler::<TestContextProvider>::default());
+
+		let mut context = TestContext;
+
+		let interval_counter = Arc::new(AtomicUsize::default());
+		let interval_counter_work = interval_counter.clone();
+		let scheduler = ticking_executor.get_scheduler_handle();
+		let _cancellation_id = {
+			let mut scheduler = scheduler.lock();
+
+			let cancellation_id = scheduler.generate_cancellation_id();
+			scheduler.schedule_repeated_work(
+				move |_, _| {
+					interval_counter_work.fetch_add(1, Ordering::Relaxed);
+					WorkResult::Pending
+				},
+				Duration::ZERO,
+				false,
+				5,
+				cancellation_id,
+			);
+
+			cancellation_id
+		};
+
+		assert_eq!(interval_counter.load(Ordering::Relaxed), 0);
+
+		ticking_executor.tick(Duration::from_millis(1000), &mut context);
+
+		assert_eq!(interval_counter.load(Ordering::Relaxed), 1);
+
+		ticking_executor.tick(Duration::from_millis(1), &mut context);
+
+		assert_eq!(interval_counter.load(Ordering::Relaxed), 2);
+	}
+
+	#[test]
 	fn should_be_able_to_start_repeated_work_immediately() {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,

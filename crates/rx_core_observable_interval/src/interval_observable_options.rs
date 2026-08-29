@@ -4,6 +4,8 @@ use std::time::Duration;
 pub struct IntervalObservableOptions {
 	/// How much time must elapse between emissions
 	///
+	/// A zero duration emits once per tick.
+	///
 	/// Default: 1 sec
 	pub duration: Duration,
 	/// Whether or not the first emission, `0` should

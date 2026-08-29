@@ -92,6 +92,8 @@ pub trait SchedulerScheduleWorkExtension: Scheduler {
 	/// If a single tick rolls the interval over multiple times, the work will
 	/// also be ticked multiple times, up to `max_work_per_tick`, but at least
 	/// once.
+	///
+	/// A zero `interval` runs the work once per tick.
 	fn schedule_repeated_work<Work>(
 		&mut self,
 		work: Work,

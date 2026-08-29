@@ -24,6 +24,8 @@ use crate::{IntervalSubscription, observable::IntervalObservableOptions};
 /// - `options`: Configuration of behavior
 ///   - `duration`: How much time must elapse between emissions
 ///
+///     A zero duration emits once per tick.
+///
 ///     Default: 1 sec
 ///   - `start_on_subscribe`: Whether or not the first emission, `0` should
 ///     happen on subscribe or after the duration had elapsed once.

@@ -93,6 +93,9 @@ where
 				self.start_immediately = false;
 			}
 			executions += 1;
+			if self.interval.is_zero() {
+				break;
+			}
 		}
 		work_result
 	}
