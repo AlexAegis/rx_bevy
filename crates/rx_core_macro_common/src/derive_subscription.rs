@@ -144,6 +144,32 @@ mod test {
 	}
 
 	#[test]
+	fn should_unsubscribe_the_teardown_first_when_the_destination_is_declared_first() {
+		let input: DeriveInput = parse_quote! {
+			#[rx_delegate_subscription_like_to_destination]
+			struct Foo {
+				#[destination]
+				destination: Dummy,
+				#[teardown]
+				teardown: Dummy,
+			}
+		};
+		let tokens = impl_delegate_subscription_like_to_destination(&input).unwrap();
+		let s = tokens.to_string();
+		assert!(
+			s.contains(
+				&quote! {
+					fn unsubscribe(&mut self) {
+						self.teardown.unsubscribe();
+						self.destination.unsubscribe();
+					}
+				}
+				.to_string()
+			)
+		);
+	}
+
+	#[test]
 	fn should_generate_one_unsubscribe_call_when_teardown_and_destination_is_the_same_field() {
 		let input: DeriveInput = parse_quote! {
 			#[rx_delegate_subscription_like_to_destination]

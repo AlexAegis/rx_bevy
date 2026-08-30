@@ -62,7 +62,7 @@ mod test {
 	use rx_core_testing_mute_panic::mute_panic;
 
 	#[test]
-	fn should_prioritize_the_teardown_field() {
+	fn should_use_the_teardown_field_when_it_is_declared_first() {
 		let input: DeriveInput = parse_quote! {
 			#[rx_delegate_teardown_collection]
 			struct Foo {
@@ -70,6 +70,29 @@ mod test {
 				teardown: Dummy,
 				#[destination]
 				not_me: Destination,
+			}
+		};
+		let tokens = impl_delegate_teardown_collection(&input).unwrap();
+		let s = tokens.to_string();
+		assert!(
+			s.contains(
+				&quote! {
+					rx_core_common::TeardownCollection::add_teardown(&mut self.teardown, teardown);
+				}
+				.to_string()
+			)
+		);
+	}
+
+	#[test]
+	fn should_prioritize_the_teardown_field() {
+		let input: DeriveInput = parse_quote! {
+			#[rx_delegate_teardown_collection]
+			struct Foo {
+				#[destination]
+				not_me: Destination,
+				#[teardown]
+				teardown: Dummy,
 			}
 		};
 		let tokens = impl_delegate_teardown_collection(&input).unwrap();

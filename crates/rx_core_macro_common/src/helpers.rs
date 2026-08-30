@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Attribute, DeriveInput, Ident, Meta, Type, parse_quote, parse2};
+use syn::{Attribute, DeriveInput, Field, Ident, Meta, Type, parse_quote, parse2};
 use thiserror::Error;
 
 pub(crate) fn get_rx_core_common_crate(derive_input: &DeriveInput) -> TokenStream {
@@ -12,6 +12,15 @@ pub fn find_attribute<'a>(attrs: &'a [Attribute], attribute_name: &str) -> Optio
 	attrs
 		.iter()
 		.find(|attr| attr.path().is_ident(attribute_name))
+}
+
+pub(crate) fn find_field_with_attribute<'a>(
+	fields: impl IntoIterator<Item = &'a Field>,
+	attribute_name: &str,
+) -> Option<&'a Field> {
+	fields
+		.into_iter()
+		.find(|field| find_attribute(&field.attrs, attribute_name).is_some())
 }
 
 pub fn read_attribute_type(attr: &Attribute) -> Type {
@@ -97,14 +106,10 @@ pub(crate) fn find_field_ident_with_attribute(
 		.map(|fallback| format!(" or with `#[{fallback}]`"))
 		.unwrap_or_default();
 
-	fields
-		.iter()
-		.find(|field| {
-			field.attrs.iter().any(|attr| {
-				attr.path().is_ident(field_attribute_name)
-					|| fallback_field_attribute_name
-						.is_some_and(|fallback| attr.path().is_ident(fallback))
-			})
+	find_field_with_attribute(fields, field_attribute_name)
+		.or_else(|| {
+			fallback_field_attribute_name
+				.and_then(|fallback| find_field_with_attribute(fields, fallback))
 		})
 		.and_then(|field| field.ident.clone())
 		.ok_or(FindFieldError::FieldNotFound {

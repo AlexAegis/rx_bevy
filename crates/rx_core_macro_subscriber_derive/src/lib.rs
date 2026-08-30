@@ -63,15 +63,17 @@ fn primary_category_subscriber() -> Type {
 ///   - `observer_subscriber`: Upgraded version is itself wrapped in
 ///     `ObserverSubscriber`, causing it to **not** be unsubscribed when
 ///     upstream is unsubscribed when used as an observables destination.
-/// - `#[rx_delegate_teardown_collection]` (optional): Opts into
-///   the trivial implementation of `TeardownCollection` where the traits
-///   methods are just simply called on the field marked as `#[destination]`.
+/// - `#[rx_delegate_teardown_collection]` (optional): Opts into the trivial
+///   implementation of `TeardownCollection`. `add_teardown` is called on the
+///   field marked as `#[teardown]`, or on the `#[destination]` field when
+///   there is none.
 /// - `#[rx_delegate_subscription_like_to_destination]` (optional): Opts into
-///   the trivial implementation of `SubscriptionLike` where the traits methods
-///   are just simply called on the field marked as `#[destination]`.
+///   the trivial implementation of `SubscriptionLike` where the trait's
+///   methods are called on the field marked as `#[destination]`. When a
+///   separate `#[teardown]` field exists, `unsubscribe` unsubscribes it first.
 /// - `#[rx_delegate_observer_to_destination]` (optional): Opts into
-///   the trivial implementation of `Observer` where the traits methods
-///   are just simply called on the field marked as `#[destination]`.
+///   the trivial implementation of `Observer` where the trait's methods
+///   are called on the field marked as `#[destination]`.
 /// - `#[rx_skip_unsubscribe_on_drop_impl]`: Skips the default
 ///   unsubscribe-on-drop implementation. Only use when the subscription
 ///   explicitly does NOT have to unsubscribe on drop, or you want to provide
