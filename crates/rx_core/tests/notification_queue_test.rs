@@ -130,6 +130,54 @@ mod overflow_behavior_drop_oldest {
 		assert_eq!(queue.pop_next_if_in_front(), Some(4));
 		assert!(queue.is_unsubscribed());
 	}
+
+	#[test]
+	fn should_drop_the_oldest_next_and_not_the_newest_when_exceeding_limit() {
+		let mut queue = NotificationQueue::<usize, &'static str>::new(QueueOverflowOptions {
+			max_queue_length: 2,
+			overflow_behavior: QueueOverflowBehavior::DropOldest,
+		});
+
+		queue.push(SubscriberNotification::Next(1));
+		queue.push(SubscriberNotification::Next(2));
+		queue.push(SubscriberNotification::Complete);
+		queue.push(SubscriberNotification::Next(3));
+
+		assert_eq!(queue.len(), 3);
+		assert_eq!(queue.pop_next_if_in_front(), Some(2));
+		assert_eq!(queue.get_front(), Some(&SubscriberNotification::Complete));
+	}
+
+	#[test]
+	fn should_take_up_the_state_of_the_new_front_after_dropping_the_oldest_next() {
+		let mut queue = NotificationQueue::<usize, &'static str>::new(QueueOverflowOptions {
+			max_queue_length: 1,
+			overflow_behavior: QueueOverflowBehavior::DropOldest,
+		});
+
+		queue.push(SubscriberNotification::Next(1));
+		queue.push(SubscriberNotification::Complete);
+		queue.push(SubscriberNotification::Next(2));
+
+		assert_eq!(queue.get_front(), Some(&SubscriberNotification::Complete));
+		assert!(queue.is_completed());
+	}
+
+	#[test]
+	fn should_never_drop_a_complete_that_is_in_front_of_the_oldest_next() {
+		let mut queue = NotificationQueue::<usize, &'static str>::new(QueueOverflowOptions {
+			max_queue_length: 2,
+			overflow_behavior: QueueOverflowBehavior::DropOldest,
+		});
+
+		queue.push(SubscriberNotification::Complete);
+		queue.push(SubscriberNotification::Next(1));
+		queue.push(SubscriberNotification::Next(2));
+		queue.push(SubscriberNotification::Next(3));
+
+		assert_eq!(queue.len(), 3);
+		assert_eq!(queue.get_front(), Some(&SubscriberNotification::Complete));
+	}
 }
 
 mod overflow_behavior_ignore_next {

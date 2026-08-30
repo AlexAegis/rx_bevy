@@ -101,14 +101,15 @@ where
 	}
 
 	fn drop_oldest(&mut self) {
-		if let Some((oldest_next_index, _)) = self
+		if let Some(oldest_next_index) = self
 			.queue
 			.iter()
-			.rev()
-			.enumerate()
-			.find(|(_, n)| matches!(n, SubscriberNotification::Next(_)))
+			.position(|notification| matches!(notification, SubscriberNotification::Next(_)))
 		{
 			self.queue.remove(oldest_next_index);
+			if oldest_next_index == 0 && !self.state.is_closed() {
+				self.update_with_front_notification();
+			}
 		}
 	}
 
