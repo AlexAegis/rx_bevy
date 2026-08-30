@@ -173,7 +173,7 @@ where
 				ScheduledWorkAction::CancelInvoked(cancelled_invocation_id) => {
 					self.invocable_work.remove(&cancelled_invocation_id);
 					self.invoked
-						.retain(|invoked_id| invoked_id == &cancelled_invocation_id);
+						.retain(|invoked_id| invoked_id != &cancelled_invocation_id);
 				}
 				ScheduledWorkAction::Cancel(cancelled_id) => {
 					if let Some(work_ids) = self.cancellation_map.remove(&cancelled_id) {

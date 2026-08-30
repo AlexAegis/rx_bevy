@@ -526,4 +526,96 @@ mod invoked_work {
 			"Should not have been invoked because it was cancelled!"
 		);
 	}
+
+	#[test]
+	fn should_not_cancel_other_invoked_work() {
+		let mut ticking_executor = TickingSchedulerExecutor::<
+			TickingScheduler<TestContextProvider>,
+			TestContextProvider,
+		>::new(TickingScheduler::<TestContextProvider>::default());
+
+		let mut context = TestContext;
+
+		let scheduler = ticking_executor.get_scheduler_handle();
+
+		let kept_was_invoked = Arc::new(AtomicBool::new(false));
+		let kept_was_invoked_clone = kept_was_invoked.clone();
+		let kept_work = TickedInvokedWorkFactory::new(move |_, _| {
+			kept_was_invoked_clone.store(true, Ordering::Relaxed);
+			WorkResult::Done
+		});
+
+		let cancelled_was_invoked = Arc::new(AtomicBool::new(false));
+		let cancelled_was_invoked_clone = cancelled_was_invoked.clone();
+		let cancelled_work = TickedInvokedWorkFactory::new(move |_, _| {
+			cancelled_was_invoked_clone.store(true, Ordering::Relaxed);
+			WorkResult::Done
+		});
+
+		{
+			let mut scheduler = scheduler.lock();
+
+			let kept_invoke_id = scheduler.generate_invoke_id();
+			scheduler.schedule_invoked_work(kept_work, kept_invoke_id);
+
+			let cancelled_invoke_id = scheduler.generate_invoke_id();
+			scheduler.schedule_invoked_work(cancelled_work, cancelled_invoke_id);
+
+			scheduler.invoke(kept_invoke_id);
+			scheduler.invoke(cancelled_invoke_id);
+			scheduler.cancel_invoked(cancelled_invoke_id);
+		}
+
+		ticking_executor.tick(Duration::from_millis(0), &mut context);
+
+		assert!(
+			kept_was_invoked.load(Ordering::Relaxed),
+			"Cancelling one invoked work should not cancel another"
+		);
+		assert!(
+			!cancelled_was_invoked.load(Ordering::Relaxed),
+			"The cancelled work should not have been invoked"
+		);
+	}
+
+	#[test]
+	fn should_not_invoke_work_registered_again_under_a_cancelled_id() {
+		let mut ticking_executor = TickingSchedulerExecutor::<
+			TickingScheduler<TestContextProvider>,
+			TestContextProvider,
+		>::new(TickingScheduler::<TestContextProvider>::default());
+
+		let mut context = TestContext;
+
+		let scheduler = ticking_executor.get_scheduler_handle();
+
+		let replacement_was_invoked = Arc::new(AtomicBool::new(false));
+		let replacement_was_invoked_clone = replacement_was_invoked.clone();
+
+		{
+			let mut scheduler = scheduler.lock();
+
+			let invoke_id = scheduler.generate_invoke_id();
+			scheduler.schedule_invoked_work(
+				TickedInvokedWorkFactory::new(|_, _| WorkResult::Done),
+				invoke_id,
+			);
+			scheduler.invoke(invoke_id);
+			scheduler.cancel_invoked(invoke_id);
+			scheduler.schedule_invoked_work(
+				TickedInvokedWorkFactory::new(move |_, _| {
+					replacement_was_invoked_clone.store(true, Ordering::Relaxed);
+					WorkResult::Done
+				}),
+				invoke_id,
+			);
+		}
+
+		ticking_executor.tick(Duration::from_millis(0), &mut context);
+
+		assert!(
+			!replacement_was_invoked.load(Ordering::Relaxed),
+			"Should not have been invoked, the invocation was cancelled"
+		);
+	}
 }
