@@ -28,7 +28,8 @@ fn setup(rx_schedule_update_virtual: RxSchedule<Update, Virtual>, mut commands: 
 		rx_schedule_update_virtual.handle(),
 	));
 
-	// If you have `observable_fn` feature enabled
+	// Or using the `observable_fn` feature:
+	#[cfg(feature = "observable_fn")]
 	let _s = just(2).subscribe(EntityDestination::new(
 		destination_entity,
 		rx_schedule_update_virtual.handle(),
