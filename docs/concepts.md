@@ -765,8 +765,7 @@ can be "invoked" which means executing it as soon as the executor can.
 ### Scheduler Context
 
 Executors define a context, passed in as a mutable reference to the
-whenever they are executed. The main job of the context is to provide the
-current time (as a `Duration`, denoting the time passed since startup).
+whenever they are executed.
 
 > For example: Interacting with the Bevy ECS world.
 
@@ -778,9 +777,8 @@ executor.
 ### Scheduler Work Input
 
 Most generic scheduled subscribers do not need to know about anything
-besides the time coming from the context. Still, some executors
-can provide extra data relevant to the execution of the work at that
-moment.
+besides the time. Still, some executors can provide extra data relevant to
+the execution of the work at that moment.
 
 > For example: In the TickingExecutor, the `Tick` object is passed into every
 > executed work.

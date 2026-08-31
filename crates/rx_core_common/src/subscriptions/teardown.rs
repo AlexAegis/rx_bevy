@@ -11,7 +11,7 @@ use crate::{Scheduler, SchedulerHandle, SubscriptionLike, WorkCancellationId, Wo
 /// For example if this resource was a subscription, the closure looks like this:
 ///
 /// ```rs
-/// move |context| subscription.unsubscribe(context)
+/// move || subscription.unsubscribe()
 /// ```
 ///
 /// Just like subscriptions, a teardown once closed cannot be opened again.
