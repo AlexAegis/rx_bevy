@@ -273,7 +273,7 @@ For example:
 
 ```rs
 fn complete(&mut self) {
-    self.destination.complete(context);
+    self.destination.complete();
 }
 ```
 

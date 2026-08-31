@@ -1,7 +1,8 @@
 use crate::Teardown;
 
 /// A [TeardownCollection] is something that owns resources that can be
-/// released through the [SubscriptionLike] traits `unsubscribe` method.
+/// released through the [SubscriptionLike][crate::SubscriptionLike] trait's
+/// `unsubscribe` method.
 ///
 /// [Drop] is mandatory to manually implement for [TeardownCollection], but not
 /// for subscribers that do not actually own a teardown, only forward the

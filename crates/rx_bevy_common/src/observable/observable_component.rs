@@ -88,7 +88,7 @@ where
 		.try_remove::<ObservableOutputs<O::Out, O::OutError>>();
 }
 
-/// Errors that can happen during a [Subscribe] event.
+/// Errors that can happen during a `Subscribe` event.
 #[derive(Error, Debug)]
 pub enum SubscribeError {
 	#[error("Tried to subscribe to {0}. But it does not exist on entity {1}.")]

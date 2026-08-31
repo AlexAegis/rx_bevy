@@ -4,8 +4,9 @@ use rx_core_macro_operator_derive::RxOperator;
 
 use crate::MapNeverBothSubscriber;
 
-/// The [MapNeverOperator] calls `into()` to map incoming values to the expected
-/// output value, provided `From` is implemented on the downstream type.
+/// The [MapNeverBothOperator] calls `into()` to map incoming values to the
+/// expected output value, provided `From` is implemented on the downstream
+/// type.
 /// When `In` and `OutError`, as well as `In` and `OutErrorError`, are the same types,
 /// it is equivalent to the `identity` operator and is a no-op.
 #[derive_where(Debug, Clone, Default)]

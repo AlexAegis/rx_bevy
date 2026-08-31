@@ -32,7 +32,7 @@ pub trait EntityCommandSubscribeExtension {
 	/// # subscribe
 	///
 	/// Subscribes to an observable on THIS entity, with a destination entity
-	/// that will receive [RxSignal] events!
+	/// that will receive [RxSignal][crate::RxSignal] events!
 	///
 	/// The subscription will only be successful if an observable component
 	/// exists on this entity with the same output types as specified on the

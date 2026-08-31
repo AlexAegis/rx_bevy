@@ -4,10 +4,11 @@ use crate::{Never, ObserverTerminalNotification, RxObserver, Signal, SubscriberN
 
 /// # [ObserverNotification]
 ///
-///  Represents all signals a observer can observe in a materialized form
+/// Represents all signals an observer can observe in a materialized form
 ///
-/// - Can be pushed into [Observer]s and [Subscribers] to trigger a call.
-/// - Can try to be converted into a [ObserverTerminalNotification]
+/// - Can be pushed into [RxObserver]s and [Subscriber][crate::Subscriber]s to
+///   trigger a call.
+/// - Can try to be converted into an [ObserverTerminalNotification]
 ///   - Will fail for `Next`
 /// - Can be converted into [SubscriberNotification]
 /// - Can try to convert from a [SubscriberNotification]

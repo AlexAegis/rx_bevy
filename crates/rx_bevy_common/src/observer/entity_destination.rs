@@ -14,8 +14,8 @@ use crate::RxBevyScheduler;
 /// an [RxSignal][crate::RxSignal] event.
 ///
 /// It's mainly used by user-made subscriptions. Whenever you make a
-/// subscription through [Commands][bevy_ecs::Commands], the destination entity
-/// will be wrapped into this one.
+/// subscription through [Commands][bevy_ecs::system::Commands], the
+/// destination entity will be wrapped into this one.
 ///
 /// > Technically this is an Observer in Rx terms and should be called
 /// > `EntityObserver` but that would be very confusing in Bevy.

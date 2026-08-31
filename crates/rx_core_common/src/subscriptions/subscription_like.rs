@@ -3,9 +3,10 @@
 /// resources, it will also release those resources, usually by executing
 /// [Teardown][crate::Teardown]s
 ///
-/// [Drop] is mandatory to manually implement for [TeardownCollection], but not
-/// for subscribers that do not actually own a teardown, only forward the
-/// added teardowns downstream. This is why this bound is only enforced on the
+/// [Drop] is mandatory to manually implement for
+/// [TeardownCollection][crate::TeardownCollection], but not for subscribers
+/// that do not actually own a teardown, only forward the added teardowns
+/// downstream. This is why this bound is only enforced on the
 /// [Observable::Subscription][crate::Observable::Subscription].
 ///
 /// It has to be implemented to guarantee that resources are

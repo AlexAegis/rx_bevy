@@ -11,7 +11,7 @@ use crate::{OnTickIteratorSubscription, observable::OnTickObservableOptions};
 /// `n` amount of steady ticks of the scheduler used.
 ///
 /// > Warning! This is not the same thing as creating a timer, for that use
-/// > the [rx_core_observable_interval::IntervalObservable]!
+/// > the `IntervalObservable`!
 ///
 /// An example usecase is throttling a logger to every nth frame, where knowing
 /// exactly how many frames have passed is useful. Otherwise, the

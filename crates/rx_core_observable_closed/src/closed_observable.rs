@@ -9,8 +9,8 @@ use rx_core_subscription_inert::InertSubscription;
 ///
 /// ## See also:
 ///
-/// - [`empty`]: Completes immediately without emitting any values.
-/// - [`never`]: Never emits anything, never closes!
+/// - `empty`: Completes immediately without emitting any values.
+/// - `never`: Never emits anything, never closes!
 #[derive(RxObservable, Clone, Debug, Default)]
 #[rx_out(Never)]
 #[rx_out_error(Never)]

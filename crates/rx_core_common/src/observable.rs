@@ -4,8 +4,9 @@ use crate::{
 
 /// # [ObservableOutput]
 ///
-/// Defines the outputs of an [Observable]. Also used for [Operator]s to define
-/// the new outputs once the operator is applied.
+/// Defines the outputs of an [Observable]. Also used for
+/// [Operator][crate::Operator]s to define the new outputs once the operator is
+/// applied.
 pub trait ObservableOutput {
 	type Out: Signal;
 	type OutError: Signal;
@@ -34,9 +35,9 @@ pub trait ObservableOutput {
 /// [Subscription][crate::SubscriptionLike] that will contain the one (or more)
 /// [Teardown][crate::Teardown]s that can be used to release resources
 /// associated with this subscription, after which it is always safe to drop
-/// regardless of the kind of [Context][crate::SubscriptionContext] used.
+/// regardless of the kind of `Context` used.
 ///
-/// ## [Contexts][crate::SubscriptionContext]
+/// ## Contexts
 ///
 /// Since everything is stored in subscription, the unit of execution is the
 /// subscription value. But not everything can be stored here: In some
@@ -64,10 +65,9 @@ pub trait ObservableOutput {
 /// ## Dropping Subscriptions
 ///
 /// Subscriptions that were not unsubscribed when they are dropped will try to
-/// unsubscribe themselves. If you use a
-/// [DropUnsafeSubscriptionContext][crate::DropUnsafeSubscriptionContext], one that can't
-/// just be created from the subscription itself (like unit `()`), this will
-/// result in a panic. But do not worry, such contexts are only ever
+/// unsubscribe themselves. If you use a `DropUnsafeSubscriptionContext`, one
+/// that can't just be created from the subscription itself (like unit `()`),
+/// this will result in a panic. But do not worry, such contexts are only ever
 /// explicitly used, and are usually used in managed environment where you
 /// don't directly handle subscriptions, such as in an ECS where everything
 /// is wrapped into components and events.

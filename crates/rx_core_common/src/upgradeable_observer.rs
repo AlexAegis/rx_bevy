@@ -20,8 +20,8 @@ use crate::{ObserverInput, Subscriber};
 ///   and Operators, and they must be fully connected.
 ///
 /// To prevent erroneously missing calling `upgrade` in an Observable's
-/// subscribe function, [UpgradeableObserver] does NOT have [Observer] as its
-/// supertrait!
+/// subscribe function, [UpgradeableObserver] does NOT have
+/// [RxObserver][crate::RxObserver] as its supertrait!
 pub trait UpgradeableObserver: ObserverInput + Send + Sync {
 	type Upgraded: Subscriber<In = Self::In, InError = Self::InError>;
 

@@ -25,7 +25,7 @@ pub enum PrimaryCategory {
 /// [Observable][crate::Observable].
 /// It must only be used for types that **ONLY** implement
 /// [Observable][crate::Observable] but do **NOT** implement
-/// [Observer][crate::Observer] and other traits as that would make it a
+/// [RxObserver][crate::RxObserver] and other traits as that would make it a
 /// [SubjectLike][crate::SubjectLike].
 #[derive(Debug)]
 pub struct PrimaryCategoryObservable;
@@ -39,7 +39,7 @@ impl PrimaryCategoryMarker for PrimaryCategoryObservable {
 /// Marks the struct to be primarily considered a
 /// [SubjectLike][crate::SubjectLike].
 /// It must only be used for types that implement **both**
-/// [Observable][crate::Observable] and [Observer][crate::Observer]!
+/// [Observable][crate::Observable] and [RxObserver][crate::RxObserver]!
 #[derive(Debug)]
 pub struct PrimaryCategorySubject;
 
@@ -49,9 +49,10 @@ impl PrimaryCategoryMarker for PrimaryCategorySubject {
 	const CATEGORY: PrimaryCategory = PrimaryCategory::Subject;
 }
 
-/// Marks the struct to be primarily considered an [Observer][crate::Observer].
+/// Marks the struct to be primarily considered an
+/// [RxObserver][crate::RxObserver].
 /// It must only be used for types that **ONLY** implement
-/// [Observer][crate::Observer] but do **NOT** implement
+/// [RxObserver][crate::RxObserver] but do **NOT** implement
 /// [SubscriptionLike][crate::SubscriptionLike] as that would make it a
 /// [Subscriber][crate::Subscriber].
 #[derive(Debug)]
@@ -66,7 +67,8 @@ impl PrimaryCategoryMarker for PrimaryCategoryObserver {
 /// Marks the struct to be primarily considered a
 /// [Subscriber][crate::Subscriber].
 /// It must only be used for types that implement **both**
-/// [Observer][crate::Observer] and [SubscriptionLike][crate::SubscriptionLike]!
+/// [RxObserver][crate::RxObserver] and
+/// [SubscriptionLike][crate::SubscriptionLike]!
 #[derive(Debug)]
 pub struct PrimaryCategorySubscriber;
 
@@ -88,11 +90,11 @@ impl PrimaryCategoryMarker for PrimaryCategoryOperator {
 	const CATEGORY: PrimaryCategory = PrimaryCategory::Operator;
 }
 
-/// Marks the struct to be primarily considered an
+/// Marks the struct to be primarily considered a
 /// [SubscriptionLike][crate::SubscriptionLike].
 /// It must only be used for types that implement
-/// [SubscriptionLike][crate::SubscriptionLike], [Tickable][crate::Tickable],
-/// and [TeardownCollection][crate::TeardownCollection]!
+/// [SubscriptionLike][crate::SubscriptionLike] and
+/// [TeardownCollection][crate::TeardownCollection]!
 #[derive(Debug)]
 pub struct PrimaryCategorySubscription;
 

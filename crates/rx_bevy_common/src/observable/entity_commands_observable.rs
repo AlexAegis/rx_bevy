@@ -27,14 +27,14 @@ pub trait EntityCommandsAsObservableExtension {
 	/// which return an entity for the spawned subscription, that you can just
 	/// simply despawn to stop it, the `subscribe` method on an observable
 	/// returns a subscription. The subscription returned from this observable
-	/// will always be the [EntityCommandsSubscription][crate::EntityCommandsSubscription]
+	/// will always be the [EntitySubscription][crate::EntitySubscription]
 	/// which doesn't own the actual subscription that really contains the
 	/// destination and all the subscribers made from the operators you may have
 	/// used. Those are still stored in a real subscription entity.
 	///
 	/// Therefore this subscription can be turned back into an entity using
-	/// [`into_entity`][crate::EntityCommandsSubscription::into_entity] to get
-	/// the actual subscriptions entity back.
+	/// [`entity`][bevy_ecs::entity::ContainsEntity::entity] to get the actual
+	/// subscriptions entity back.
 	///
 	/// It is advised to hold onto the subscriptions entity, so you know what
 	/// to despawn when you want to stop the subscription. But it's not
@@ -47,8 +47,8 @@ pub trait EntityCommandsAsObservableExtension {
 	/// > This only concerns cases where you spawn/insert the observable, and
 	/// > subscribe to it in the very same system! It will always work, but in
 	/// > some cases the subscription will only be created in the next frame's
-	/// > [`First`][bevy_app::main_schedule::First] schedule. Read the details
-	/// > below to know exactly when that happens and why.
+	/// > [`First`][bevy_app::First] schedule. Read the details below to know
+	/// > exactly when that happens and why.
 	///
 	/// There is a subtle difference between creating a subscription through this
 	/// [`EntityCommands::as_observable`][crate::EntityCommandsAsObservableExtension::as_observable]

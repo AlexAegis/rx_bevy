@@ -2,8 +2,9 @@ use crate::{ObserverUpgradesToSelf, RxObserver, SubscriptionWithTeardown};
 
 /// # [Subscriber]
 ///
-/// A [Subscriber] is an [Observer] that is also a [SubscriptionLike], so it
-/// can clean itself up upon unsubscribe.
+/// A [Subscriber] is an [RxObserver] that is also a
+/// [SubscriptionLike][crate::SubscriptionLike], so it can clean itself up upon
+/// unsubscribe.
 ///
 /// ## For Implementations
 ///
@@ -12,7 +13,7 @@ use crate::{ObserverUpgradesToSelf, RxObserver, SubscriptionWithTeardown};
 ///
 /// ### Inlining
 ///
-/// A subscribers [Observer] functions like `next`, `error` and `complete`
+/// A subscribers [RxObserver] functions like `next`, `error` and `complete`
 /// that just simply forward the signal to its destination should always
 /// be `#[inline]`.
 pub trait Subscriber:

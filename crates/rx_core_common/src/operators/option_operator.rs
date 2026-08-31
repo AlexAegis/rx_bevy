@@ -2,7 +2,8 @@ use crate::{ComposableOperator, Signal, Subscriber};
 
 use super::OptionSubscriber;
 
-/// [Operator]s with the same outputs as its inputs can be made optional.
+/// [Operator][crate::Operator]s with the same outputs as their inputs can be
+/// made optional.
 ///
 /// If upon subscription, the operator was [Some] the subscription will be
 /// created with the operator, if it's [None], values will just pass through.

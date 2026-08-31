@@ -7,10 +7,11 @@ use crate::{Never, ObserverNotification, RxObserver, Signal, SubscriberNotificat
 /// Represents all terminal signal events an observer can observe in a
 /// materialized form.
 ///
-/// - Can be pushed into [Observer]s and [Subscribers] to trigger a call.
+/// - Can be pushed into [RxObserver]s and [Subscriber][crate::Subscriber]s to
+///   trigger a call.
 /// - Can be converted into [ObserverNotification]
 /// - Can be converted into [SubscriberNotification]
-/// - Can try to convert from a [ObserverNotification]
+/// - Can try to convert from an [ObserverNotification]
 /// - Can try to convert from a [SubscriberNotification]
 ///
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]

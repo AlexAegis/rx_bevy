@@ -252,6 +252,17 @@ args = [
 	"warnings",
 ]
 
+### Linting - Rustdoc
+
+[tasks.doc-lint]
+description = "Checks the documentation of the entire workspace"
+workspace = false
+command = "cargo"
+args = ["doc", "--locked", "--workspace", "--no-deps", "--all-features"]
+
+[tasks.doc-lint.env]
+RUSTDOCFLAGS = "-D warnings -D rustdoc::unescaped_backticks"
+
 ### Linting - Machete
 
 [tasks.install-cargo-machete]
@@ -336,6 +347,7 @@ workspace = false
 run_task = { name = [
 	"format",
 	"clippy",
+	"doc-lint",
 	"machete",
 	"xtask-lint",
 ], parallel = false } # Could be true, but that'd hide the failures

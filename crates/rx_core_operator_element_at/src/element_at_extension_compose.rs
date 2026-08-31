@@ -10,10 +10,11 @@ pub trait OperatorComposeExtensionElementAt: ComposableOperator + Sized {
 	///
 	/// If the element at the specified index does not exist, because it had
 	/// completed before reaching that index, the operator will either error
-	/// with [ElementAtOperatorError::IndexOutOfRange] or emit a default value
-	/// if one was provided.
+	/// with [IndexOutOfRange] or emit a default value if one was provided.
 	///
 	/// See `element_at_or_else` for providing a default value.
+	///
+	/// [IndexOutOfRange]: crate::operator::ElementAtOperatorError::IndexOutOfRange
 	#[inline]
 	fn element_at(
 		self,
@@ -28,8 +29,9 @@ pub trait OperatorComposeExtensionElementAt: ComposableOperator + Sized {
 	///
 	/// If the element at the specified index does not exist, because it had
 	/// completed before reaching that index, the operator will either error
-	/// with [ElementAtOperatorError::IndexOutOfRange] or emit a default value
-	/// if one was provided.
+	/// with [IndexOutOfRange] or emit a default value if one was provided.
+	///
+	/// [IndexOutOfRange]: crate::operator::ElementAtOperatorError::IndexOutOfRange
 	#[inline]
 	fn element_at_or_else<P>(
 		self,

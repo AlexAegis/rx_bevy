@@ -11,8 +11,7 @@ use crate::{
 /// despite them having an `unsubscribe` method and being closable.
 /// The reason is that subjects do not and can't own resources, that's the job
 /// of the subscriptions you make with them. This allows subjects to be safely
-/// droppable without having to call `unsubscribe` on them even in a
-/// [DropUnsafeSubscriptionContext][crate::DropUnsafeSubscriptionContext].
+/// droppable without having to call `unsubscribe` on them.
 /// The `unsubscribe` method on subjects is only there for users to mass
 /// unsubscribe every subscription made from the subjects.
 pub trait SubjectLike:

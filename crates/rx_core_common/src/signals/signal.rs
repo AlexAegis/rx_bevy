@@ -2,7 +2,7 @@
 ///
 /// A [Signal] is what can be used as the output of an
 /// [Observable][crate::Observable] or as the input of an
-/// [Observer][crate::Observer]
+/// [RxObserver][crate::RxObserver]
 ///
 /// ## Trait Bounds
 ///

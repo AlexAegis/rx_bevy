@@ -17,7 +17,7 @@ use crate::{Scheduler, SchedulerHandle, SubscriptionLike, WorkCancellationId, Wo
 /// Just like subscriptions, a teardown once closed cannot be opened again.
 ///
 /// [Teardown] intentionally does not implement [SubscriptionLike] to facilitate
-/// the [SubscriptionCollection][crate::SubscriptionCollection] trait which
+/// the [TeardownCollection][crate::TeardownCollection] trait which
 /// uses [Teardown] as the base type of operation. Allowing generic functions
 /// where you can add anything that is `Into<Teardown>` such as Subscriptions.
 #[derive(Default)]

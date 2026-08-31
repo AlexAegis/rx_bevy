@@ -7,8 +7,8 @@ use crate::observable::ClosedObservable;
 ///
 /// ## See also:
 ///
-/// - [`empty`]: Completes immediately without emitting any values.
-/// - [`never`]: Never emits anything, never closes!
+/// - `empty`: Completes immediately without emitting any values.
+/// - `never`: Never emits anything, never closes!
 pub fn closed() -> ClosedObservable {
 	ClosedObservable
 }

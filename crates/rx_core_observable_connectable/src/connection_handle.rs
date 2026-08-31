@@ -5,7 +5,7 @@ use rx_core_common::SubscriptionWithTeardown;
 use rx_core_macro_subscription_derive::RxSubscription;
 
 /// Subscription that represents an active connection for a
-/// [ConnectableObservable][crate::ConnectableObservable].
+/// [ConnectableObservable][crate::observable::ConnectableObservable].
 #[derive_where(Clone)]
 #[derive(RxSubscription)]
 #[rx_delegate_subscription_like_to_destination]

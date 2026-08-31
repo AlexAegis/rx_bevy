@@ -1,10 +1,11 @@
 use rx_core_common::{SubscriptionLike, Teardown, TeardownCollection};
 use rx_core_macro_subscription_derive::RxSubscription;
 
-/// A [InertSubscription] is a permanently closed [Subscription] that immediately
-/// runs any [Teardown] you may add into it.
-/// It is used for [Observable]s that emit all their values, complete and
-/// unsubscribe immediately on subscribe.
+/// An [InertSubscription] is a permanently closed
+/// [Subscription][rx_core_common::SubscriptionLike] that
+/// immediately runs any [Teardown] you may add into it.
+/// It is used for [Observable][rx_core_common::Observable]s that emit all
+/// their values, complete and unsubscribe immediately on subscribe.
 #[derive(RxSubscription)]
 #[rx_skip_unsubscribe_on_drop_impl]
 pub struct InertSubscription;
