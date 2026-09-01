@@ -40,7 +40,10 @@ where
 	work_id_generator: WorkIdGenerator,
 	active_work: IndexMap<
 		WorkId,
-		Box<dyn ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync>,
+		(
+			WorkCancellationId,
+			Box<dyn ScheduledWork<Tick = Tick, WorkContextProvider = C> + Send + Sync>,
+		),
 	>,
 	cancellation_map: HashMap<WorkCancellationId, Vec<WorkId>>,
 	invocable_work: HashMap<
@@ -158,7 +161,7 @@ where
 			match action {
 				ScheduledWorkAction::<Tick, C>::Activate((cancellation_id, work)) => {
 					let work_id = self.work_id_generator.get_next();
-					self.active_work.insert(work_id, work);
+					self.active_work.insert(work_id, (cancellation_id, work));
 					self.cancellation_map
 						.entry(cancellation_id)
 						.or_default()
@@ -195,7 +198,7 @@ where
 		let mut work_ticked = Vec::<WorkId>::new();
 		let mut work_finished_this_tick = Vec::<WorkId>::new();
 
-		for (work_id, work) in self
+		for (work_id, (_, work)) in self
 			.active_work
 			.iter_mut()
 			.filter(|(key, _)| !self.already_ticked.contains(key))
@@ -216,9 +219,108 @@ where
 		}
 
 		for work_id in work_finished_this_tick {
-			self.active_work.shift_remove(&work_id);
+			if let Some((cancellation_id, _)) = self.active_work.shift_remove(&work_id)
+				&& let Some(work_ids) = self.cancellation_map.get_mut(&cancellation_id)
+			{
+				work_ids.retain(|id| id != &work_id);
+			}
 		}
 
 		no_work_ticked
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use std::sync::{
+		Arc,
+		atomic::{AtomicUsize, Ordering},
+	};
+
+	use rx_core_common::{SchedulerScheduleWorkExtension, WorkContext, WorkExecutor};
+
+	use super::*;
+	use crate::TickingScheduler;
+
+	struct TestContextProvider;
+
+	impl WorkContextProvider for TestContextProvider {
+		type Item<'c> = TestContext;
+	}
+
+	struct TestContext;
+
+	impl WorkContext<'_> for TestContext {}
+
+	type TestExecutor =
+		TickingSchedulerExecutor<TickingScheduler<TestContextProvider>, TestContextProvider>;
+
+	fn tracked_work_ids(executor: &TestExecutor, cancellation_id: WorkCancellationId) -> &[WorkId] {
+		executor
+			.cancellation_map
+			.get(&cancellation_id)
+			.map_or(&[], Vec::as_slice)
+	}
+
+	#[test]
+	fn should_forget_the_finished_work_of_a_shared_cancellation_id() {
+		let mut executor = TestExecutor::new(TickingScheduler::default());
+		let mut context = TestContext;
+
+		let scheduler = executor.get_scheduler_handle();
+		let cancellation_id = scheduler.lock().generate_cancellation_id();
+
+		for _ in 0..10 {
+			scheduler
+				.lock()
+				.schedule_immediate_work(|_, _| {}, cancellation_id);
+			executor.tick(Duration::from_millis(1), &mut context);
+		}
+
+		assert!(executor.active_work.is_empty());
+		assert!(tracked_work_ids(&executor, cancellation_id).is_empty());
+	}
+
+	#[test]
+	fn should_keep_tracking_the_unfinished_work_of_a_shared_cancellation_id() {
+		let mut executor = TestExecutor::new(TickingScheduler::default());
+		let mut context = TestContext;
+
+		let scheduler = executor.get_scheduler_handle();
+		let cancellation_id = scheduler.lock().generate_cancellation_id();
+
+		scheduler
+			.lock()
+			.schedule_immediate_work(|_, _| {}, cancellation_id);
+
+		let continuous_ticks = Arc::new(AtomicUsize::new(0));
+		let counter = continuous_ticks.clone();
+		scheduler.lock().schedule_continuous_work(
+			move |_, _| {
+				counter.fetch_add(1, Ordering::Relaxed);
+				WorkResult::Pending
+			},
+			cancellation_id,
+		);
+		scheduler
+			.lock()
+			.schedule_immediate_work(|_, _| {}, cancellation_id);
+
+		executor.tick(Duration::from_millis(1), &mut context);
+		assert_eq!(
+			tracked_work_ids(&executor, cancellation_id),
+			executor.active_work.keys().copied().collect::<Vec<_>>()
+		);
+		let ticked_before_cancel = continuous_ticks.load(Ordering::Relaxed);
+		assert_eq!(ticked_before_cancel, 1);
+
+		scheduler.lock().cancel(cancellation_id);
+		executor.tick(Duration::from_millis(1), &mut context);
+
+		assert_eq!(
+			continuous_ticks.load(Ordering::Relaxed),
+			ticked_before_cancel
+		);
+		assert!(executor.active_work.is_empty());
 	}
 }
