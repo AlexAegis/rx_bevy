@@ -155,14 +155,13 @@ impl Parse for ObserverUpgrades {
 pub fn impl_observer_upgrades_to(derive_input: &DeriveInput) -> Option<TokenStream> {
 	let upgrades_to = find_attribute(&derive_input.attrs, "rx_upgrades_to");
 
-	upgrades_to.map(|upgrades_to| {
-		let target: ObserverUpgrades = upgrades_to.parse_args().unwrap();
-
-		match target {
-			ObserverUpgrades::ToObserverSubscriber => impl_upgrades_to_detached(derive_input),
-			ObserverUpgrades::ToSelf => impl_upgrades_to_self(derive_input),
-		}
-	})
+	upgrades_to.map(
+		|upgrades_to| match upgrades_to.parse_args::<ObserverUpgrades>() {
+			Ok(ObserverUpgrades::ToObserverSubscriber) => impl_upgrades_to_detached(derive_input),
+			Ok(ObserverUpgrades::ToSelf) => impl_upgrades_to_self(derive_input),
+			Err(error) => error.to_compile_error(),
+		},
+	)
 }
 
 fn impl_upgrades_to_detached(derive_input: &DeriveInput) -> TokenStream {
@@ -294,6 +293,19 @@ mod test {
 
 			let attr = find_attribute(&input.attrs, "rx_upgrades_to").unwrap();
 			mute_panic(|| attr.parse_args::<ObserverUpgrades>().unwrap());
+		}
+
+		#[test]
+		fn should_emit_a_compile_error_for_unknown_types() {
+			let input: DeriveInput = parse_quote! {
+				#[rx_upgrades_to(bogus)]
+				struct Foo;
+			};
+
+			let tokens = impl_observer_upgrades_to(&input).unwrap();
+			let s = tokens.to_string();
+			assert!(s.contains("compile_error"));
+			assert!(s.contains("expected `self` or `observer_subscriber`"));
 		}
 
 		#[test]
