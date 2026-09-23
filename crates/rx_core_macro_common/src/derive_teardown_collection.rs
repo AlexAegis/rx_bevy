@@ -26,15 +26,6 @@ fn impl_delegate_teardown_collection_inner(derive_input: &DeriveInput) -> TokenS
 		"rx_delegate_teardown_collection",
 		"TeardownCollection",
 	)
-	.or_else(|_| {
-		find_field_ident_with_attribute(
-			derive_input,
-			"destination",
-			None,
-			"rx_delegate_teardown_collection",
-			"TeardownCollection",
-		)
-	})
 	.unwrap_or_else(|e| panic!("{}", e));
 
 	let _rx_core_common_crate = get_rx_core_common_crate(derive_input);
@@ -149,6 +140,19 @@ mod test {
 		let input: DeriveInput = parse_quote! {
 			#[rx_delegate_teardown_collection]
 			struct Foo;
+		};
+
+		mute_panic(|| impl_delegate_teardown_collection(&input).unwrap());
+	}
+
+	#[test]
+	#[should_panic(expected = "must be marked with `#[teardown]` or with `#[destination]`")]
+	fn should_name_both_attributes_when_no_field_is_marked() {
+		let input: DeriveInput = parse_quote! {
+			#[rx_delegate_teardown_collection]
+			struct Foo {
+				unmarked: Dummy,
+			}
 		};
 
 		mute_panic(|| impl_delegate_teardown_collection(&input).unwrap());
