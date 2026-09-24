@@ -6,9 +6,6 @@ use crate::SubjectComponent;
 /// to subscribe events.
 pub trait SubjectAsComponentExtension:
 	SubjectLike<PrimaryCategory = PrimaryCategorySubject> + Send + Sync + Sized
-where
-	Self::In: Clone,
-	Self::InError: Clone,
 {
 	fn into_component(self) -> SubjectComponent<Self>;
 }
@@ -16,8 +13,6 @@ where
 impl<Subject> SubjectAsComponentExtension for Subject
 where
 	Subject: SubjectLike<PrimaryCategory = PrimaryCategorySubject> + Send + Sync + Sized,
-	Subject::In: Clone,
-	Subject::InError: Clone,
 {
 	fn into_component(self) -> SubjectComponent<Self> {
 		SubjectComponent::new(self)

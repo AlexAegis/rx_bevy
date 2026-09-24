@@ -16,7 +16,7 @@ use crate::{
 /// unsubscribe every subscription made from the subjects.
 pub trait SubjectLike:
 	Observable<PrimaryCategory = PrimaryCategorySubject>
-	+ RxObserver
+	+ RxObserver<In: Clone, InError: Clone>
 	+ SubscriptionLike
 	+ UpgradeableObserver
 {

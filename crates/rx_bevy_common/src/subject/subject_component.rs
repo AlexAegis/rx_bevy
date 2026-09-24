@@ -47,8 +47,6 @@ use crate::{
 pub struct SubjectComponent<Subject>
 where
 	Subject: SubjectLike + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
 {
 	#[destination]
 	subject: Subject,
@@ -57,8 +55,6 @@ where
 impl<Subject> SubjectComponent<Subject>
 where
 	Subject: SubjectLike + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
 {
 	pub fn new(subject: Subject) -> Self {
 		Self { subject }
@@ -68,8 +64,6 @@ where
 impl<Subject> Observable for SubjectComponent<Subject>
 where
 	Subject: SubjectLike + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
 {
 	type Subscription<Destination>
 		= Subject::Subscription<Destination>
@@ -91,8 +85,6 @@ where
 impl<Subject> RxObserver for SubjectComponent<Subject>
 where
 	Subject: SubjectLike + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
 {
 	#[inline]
 	fn next(&mut self, next: Self::In) {
@@ -113,8 +105,6 @@ where
 fn subject_on_insert<Subject>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	Subject: 'static + SubjectLike + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
 {
 	let mut commands = deferred_world.commands();
 	commands.spawn(SubscribeEventObserverSatelliteBundle::<Subject>::new::<
@@ -130,8 +120,6 @@ where
 fn subject_on_remove<Subject>(mut deferred_world: DeferredWorld, hook_context: HookContext)
 where
 	Subject: 'static + SubjectLike + Send + Sync,
-	Subject::In: Clone,
-	Subject::InError: Clone,
 {
 	let subscribe_observer_ref = deferred_world
 		.get::<SubscribeObserverRef<Subject>>(hook_context.entity)
