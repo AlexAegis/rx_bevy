@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::{
 	input::common_conditions::input_just_pressed, platform::collections::HashMap, prelude::*,
 };
-use bevy_egui::EguiPlugin;
+use bevy_egui::{EguiContexts, EguiPlugin, EguiPrimaryContextPass, egui};
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use examples_common::{SubscriptionMapResource, send_message, toggle_subscription_system};
@@ -20,6 +20,7 @@ fn main() -> AppExit {
 			RxSchedulerPlugin::<Update, Virtual>::default(),
 		))
 		.add_systems(Startup, setup)
+		.add_systems(EguiPrimaryContextPass, show_controls)
 		.add_systems(
 			Update,
 			(
@@ -96,6 +97,18 @@ fn setup(
 		adsr_observable,
 		adsr_destination_cube,
 	});
+}
+
+fn show_controls(mut contexts: EguiContexts) -> Result {
+	egui::Window::new("Controls")
+		.anchor(egui::Align2::RIGHT_TOP, [-8.0, 8.0])
+		.resizable(false)
+		.show(contexts.ctx_mut()?, |ui| {
+			ui.label("K: subscribe/unsubscribe");
+			ui.label("Hold Space: start envelope");
+			ui.label("Escape: quit");
+		});
+	Ok(())
 }
 
 fn handle_move_signal(next: On<RxSignal<AdsrSignal>>, mut transform_query: Query<&mut Transform>) {

@@ -2,10 +2,7 @@ use std::time::Duration;
 
 use crate::{AdsrEnvelopeChange, AdsrEnvelopePhase};
 
-use bevy_math::{
-	Curve,
-	curve::{EaseFunction, EasingCurve},
-};
+use bevy_curve::{Curve, EaseFunction, EasingCurve};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AdsrEnvelope {

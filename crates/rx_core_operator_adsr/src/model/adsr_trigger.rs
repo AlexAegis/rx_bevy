@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy_math::curve::EaseFunction;
+use bevy_curve::EaseFunction;
 
 #[derive(Debug, Copy, Clone, Default)]
 pub struct AdsrTrigger {

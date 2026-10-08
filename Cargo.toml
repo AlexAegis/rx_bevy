@@ -166,9 +166,10 @@ xtask = { path = "crates/xtask" }
 ## External Crates
 
 # Bevy (First party)
-bevy = { version = "0.19.0", default-features = false, features = [
+bevy = { version = "0.20.0-rc.2", default-features = false, features = [
 	"multi_threaded",
 	"bevy_core_pipeline",
+	"bevy_curve",
 	"bevy_asset",
 	"bevy_winit",
 	"bevy_window",
@@ -184,25 +185,27 @@ bevy = { version = "0.19.0", default-features = false, features = [
 	"bevy_log",
 	"zstd_rust",
 ] }
-bevy_app = { version = "0.19.0", default-features = false }
-bevy_derive = { version = "0.19.0", default-features = false }
-bevy_ecs = { version = "0.19.0", default-features = false }
-bevy_input = { version = "0.19.0", default-features = false }
-bevy_log = { version = "0.19.0", default-features = false }
-bevy_math = { version = "0.19.0", default-features = false }
-bevy_platform = { version = "0.19.0", default-features = false }
-bevy_ptr = { version = "0.19.0", default-features = false }
-bevy_reflect = { version = "0.19.0", default-features = false }
-bevy_time = { version = "0.19.0", default-features = false }
-bevy_window = { version = "0.19.0", default-features = false, features = [
+bevy_app = { version = "0.20.0-rc.2", default-features = false }
+bevy_curve = { version = "0.20.0-rc.2", default-features = false }
+bevy_derive = { version = "0.20.0-rc.2", default-features = false }
+bevy_ecs = { version = "0.20.0-rc.2", default-features = false }
+bevy_input = { version = "0.20.0-rc.2", default-features = false }
+bevy_log = { version = "0.20.0-rc.2", default-features = false }
+bevy_platform = { version = "0.20.0-rc.2", default-features = false }
+bevy_ptr = { version = "0.20.0-rc.2", default-features = false }
+bevy_reflect = { version = "0.20.0-rc.2", default-features = false }
+bevy_time = { version = "0.20.0-rc.2", default-features = false }
+bevy_window = { version = "0.20.0-rc.2", default-features = false, features = [
 	"std",
 	"bevy_reflect",
 ] }
 # Bevy (Third Party)
-bevy-inspector-egui = { version = "0.37.0", default-features = false, features = [
+# No release supports Bevy 0.20 yet. This is the branch of the draft PR
+# https://github.com/jakobhellermann/bevy-inspector-egui/pull/324
+bevy-inspector-egui = { git = "https://github.com/taboky-dev/bevy-inspector-egui.git", rev = "6c4689637f289647ecad5897da35c29032fcc086", default-features = false, features = [
 	"bevy_render",
 ] }
-bevy_egui = { version = "0.40.0", default-features = false, features = [
+bevy_egui = { version = "0.43.0-rc.1", default-features = false, features = [
 	"immutable_ctx",
 	"render",
 ] }
@@ -249,3 +252,7 @@ regex = { version = "1", default-features = false }
 
 [workspace.metadata.cargo-machete]
 ignored = ["rx_core_testing"]
+
+# The bevy-inspector-egui branch above depends on a bevy_egui fork.
+[patch."https://github.com/taboky-dev/bevy_egui.git"]
+bevy_egui = { version = "0.43.0-rc.1" }
