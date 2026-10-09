@@ -484,6 +484,50 @@ mod invoked_work {
 	}
 
 	#[test]
+	fn should_be_able_to_invoke_work_with_a_work_invocation_teardown() {
+		let mut ticking_executor = TickingSchedulerExecutor::<
+			TickingScheduler<TestContextProvider>,
+			TestContextProvider,
+		>::new(TickingScheduler::<TestContextProvider>::default());
+
+		let mut context = TestContext;
+
+		let scheduler = ticking_executor.get_scheduler_handle();
+
+		let was_invoked = Arc::new(AtomicBool::new(false));
+		let was_invoked_clone = was_invoked.clone();
+		let invoked_work = TickedInvokedWorkFactory::new(move |_, _| {
+			was_invoked_clone.store(true, Ordering::Relaxed);
+			WorkResult::Done
+		});
+
+		let invoke_id = {
+			let mut scheduler = scheduler.lock();
+			let invoke_id = scheduler.generate_invoke_id();
+			scheduler.schedule_invoked_work(invoked_work, invoke_id);
+			invoke_id
+		};
+
+		let teardown = Teardown::new_work_invocation(invoke_id, scheduler);
+
+		ticking_executor.tick(Duration::from_millis(0), &mut context);
+
+		assert!(
+			!was_invoked.load(Ordering::Relaxed),
+			"Should not have been invoked before executing the teardown"
+		);
+
+		teardown.execute();
+
+		ticking_executor.tick(Duration::from_millis(0), &mut context);
+
+		assert!(
+			was_invoked.load(Ordering::Relaxed),
+			"Executing the teardown should have invoked the work!"
+		);
+	}
+
+	#[test]
 	fn should_be_able_to_cancel_invoked_work() {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,

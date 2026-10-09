@@ -210,3 +210,50 @@ impl Drop for SharedSubscription {
 		self.try_apply_deferred();
 	}
 }
+
+#[cfg(test)]
+mod test {
+	use std::sync::atomic::{AtomicBool, Ordering};
+
+	use crate::Teardown;
+
+	use super::*;
+
+	#[test]
+	fn should_defer_an_unsubscribe_while_the_subscription_is_locked() {
+		let mut shared_subscription = SharedSubscription::default();
+
+		let was_torn_down = Arc::new(AtomicBool::new(false));
+		let was_torn_down_clone = was_torn_down.clone();
+		shared_subscription.add(Teardown::new(move || {
+			was_torn_down_clone.store(true, Ordering::Relaxed);
+		}));
+
+		// Asserting while the lock is held would poison it on failure.
+		let subscription = shared_subscription.subscription.clone();
+		let (was_closed_while_locked, was_torn_down_while_locked) = {
+			let _lock = subscription.lock_ignore_poison();
+			shared_subscription.clone().unsubscribe();
+			(
+				shared_subscription.is_closed(),
+				was_torn_down.load(Ordering::Relaxed),
+			)
+		};
+
+		assert!(
+			was_closed_while_locked,
+			"Should be closed once the unsubscribe is observed"
+		);
+		assert!(
+			!was_torn_down_while_locked,
+			"Should not tear down while the subscription is locked"
+		);
+
+		shared_subscription.unsubscribe();
+
+		assert!(
+			was_torn_down.load(Ordering::Relaxed),
+			"Should apply the deferred unsubscribe once the lock is released"
+		);
+	}
+}
