@@ -15,7 +15,7 @@ pub trait ObservablePipeExtensionExhaustMap<'o>: 'o + Observable + Sized + Send 
 	) -> <ExhaustMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
-	{
+{
 		ExhaustMapOperator::new(mapper, error_mapper).operate(self)
 	}
 }

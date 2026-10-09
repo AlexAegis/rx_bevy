@@ -11,7 +11,7 @@ pub trait ObservablePipeExtensionMapError<'o>: 'o + Observable + Sized + Send + 
 		self,
 		error_mapper: ErrorMapper,
 	) -> <MapErrorOperator<Self::Out, Self::OutError, ErrorMapper, NextOutError> as Operator<'o>>::OutObservable<Self>
-	{
+{
 		MapErrorOperator::new(error_mapper).operate(self)
 	}
 }

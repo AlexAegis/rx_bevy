@@ -10,7 +10,7 @@ pub trait ObservablePipeExtensionMapInto<'o>: 'o + Observable + Sized + Send + S
 	where
 		Self::Out: Into<NextOut>,
 		Self::OutError: Into<NextOutError>,
-	{
+{
 		MapIntoOperator::default().operate(self)
 	}
 }

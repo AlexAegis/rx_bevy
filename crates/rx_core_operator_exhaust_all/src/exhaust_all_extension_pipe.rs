@@ -17,7 +17,7 @@ pub trait ObservablePipeExtensionExhaustAll<'o>: 'o + Observable + Sized + Send 
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
-	{
+{
 		ExhaustAllOperator::new(error_mapper).operate(self)
 	}
 }

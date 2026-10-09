@@ -13,7 +13,7 @@ pub trait ObservablePipeExtensionWithLatestFrom<'o>: 'o + Observable + Sized + S
 	where
 		InnerObservable: 'static + Observable<OutError = Self::OutError>,
 		InnerObservable::Out: Clone,
-	{
+{
 		WithLatestFromOperator::new(inner_observable).operate(self)
 	}
 }

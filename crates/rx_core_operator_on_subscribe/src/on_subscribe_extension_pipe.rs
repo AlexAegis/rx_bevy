@@ -15,7 +15,7 @@ pub trait ObservablePipeExtensionOnSubscribe<'o>: 'o + Observable + Sized + Send
 			+ FnMut(&mut dyn Subscriber<In = Self::Out, InError = Self::OutError>)
 			+ Send
 			+ Sync,
-	{
+{
 		OnSubscribeOperator::new(on_subscribe).operate(self)
 	}
 }

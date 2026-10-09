@@ -17,7 +17,7 @@ pub trait ObservablePipeExtensionMergeMap<'o>: 'o + Observable + Sized + Send + 
 	) -> <MergeMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
-	{
+{
 		MergeMapOperator::new(mapper, error_mapper, concurrency_limit).operate(self)
 	}
 }

@@ -69,7 +69,7 @@ pub trait ObservablePipeExtensionSwitchMap<'o>: 'o + Observable + Sized + Send +
 	) -> <SwitchMapOperator<Self::Out, Self::OutError, Mapper, ErrorMapper, NextInnerObservable> as Operator<'o>>::OutObservable<Self>
 	where
 		Self::OutError: Into<NextInnerObservable::OutError>,
-	{
+{
 		SwitchMapOperator::new(mapper, error_mapper).operate(self)
 	}
 }
