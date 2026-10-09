@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## `rx_bevy` - [0.5.0](https://github.com/AlexAegis/rx_bevy/compare/v0.4.0...v0.5.0) - 2026-10-09
+
+### Fixed
+- *(rx_bevy)* build the entity destination example without all features
+- [**breaking**] typos
+
+### Other
+- [**breaking**] prepare bevy 0.20 upgrade
+
+## `rx_core` - [0.3.0](https://github.com/AlexAegis/rx_bevy/compare/core-v0.2.2...core-v0.3.0) - 2026-10-09
+
+### Added
+- *(rx_core_subject_publish)* notify subscribers in subscription order
+- *(rx_core_testing_mute_panic)* extracted and fixed mute_panic
+
+### Fixed
+- *(rx_core_notification_store)* drop oldest overflow behavior
+- invoked work cancellation
+- [**breaking**] typos
+- handle zero interval in repeated work
+- don't panic when the notification queue empties on the last round
+
+### Other
+- cover the deferred unsubscribe and the work invocation teardown
+- *(rx_core)* label the merge examples merge_observable
+- regenerate the stale example output blocks
+
 ## `rx_bevy` - [0.4.0](https://github.com/AlexAegis/rx_bevy/compare/v0.3.2...v0.4.0) - 2026-06-20
 
 ### Added
