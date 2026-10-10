@@ -4858,7 +4858,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4879,7 +4879,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_common"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "bevy",
  "bevy_app",
@@ -4904,7 +4904,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_event"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4920,7 +4920,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_keyboard"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4935,7 +4935,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_message"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4951,7 +4951,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_proxy"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -4966,7 +4966,7 @@ dependencies = [
 
 [[package]]
 name = "rx_bevy_observable_resource"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
