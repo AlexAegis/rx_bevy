@@ -1,4 +1,6 @@
-use bevy_ecs::{entity::Entity, event::EntityEvent, name::Name, observer::Observer};
+use bevy_ecs::{
+	entity::Entity, event::EntityEvent, name::Name, observer::Observer, world::EntityWorldMut,
+};
 use disqualified::ShortName;
 use rx_bevy_common::{
 	RxBevyScheduler, RxBevySchedulerDespawnEntityExtension, SubscriptionSatellite,
@@ -47,25 +49,43 @@ where
 			scheduler_lock.schedule_immediate_work(
 				move |_, context| {
 					let mut commands = context.deferred_world.commands();
-					let observer_satellite_entity = commands.spawn((
-						Name::new(format!("Event Observer of {}", ShortName::of::<Self>())),
-						Observer::new(create_event_forwarder_observer_for_destination(
-							shared_destination_clone,
-						))
-						.with_entity(observed_event_source_entity)
-						.with_error_handler(bevy_ecs::error::error),
-						SubscriptionSatellite::new_with_teardown(
-							observed_event_source_entity,
-							Teardown::new(move || {
+					let mut observer_satellite_entity = commands.spawn_empty();
+					let observer_satellite_entity_id = observer_satellite_entity.id();
+
+					// The observed entity can despawn before this command applies, and
+					// registering an `Observer` on a missing entity panics.
+					observer_satellite_entity.queue(
+						move |mut observer_satellite_entity: EntityWorldMut| {
+							if observer_satellite_entity
+								.world()
+								.get_entity(observed_event_source_entity)
+								.is_err()
+							{
 								shared_destination_despawn_clone.complete();
-							}),
-						),
-					));
+								return;
+							}
+
+							observer_satellite_entity.insert((
+								Name::new(format!("Event Observer of {}", ShortName::of::<Self>())),
+								Observer::new(create_event_forwarder_observer_for_destination(
+									shared_destination_clone,
+								))
+								.with_entity(observed_event_source_entity)
+								.with_error_handler(bevy_ecs::error::error),
+								SubscriptionSatellite::new_with_teardown(
+									observed_event_source_entity,
+									Teardown::new(move || {
+										shared_destination_despawn_clone.complete();
+									}),
+								),
+							));
+						},
+					);
 
 					scheduler_schedule_clone
 						.lock()
 						.schedule_invoked_despawn_entity(
-							observer_satellite_entity.id(),
+							observer_satellite_entity_id,
 							despawn_event_observer_invoke_id,
 						);
 				},
