@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - *(rx_bevy_observable_event)* complete when the observed entity despawns before the observer spawns
 
+### Other
+- release v0.5.1
+
+## `rx_bevy` - [0.5.1](https://github.com/AlexAegis/rx_bevy/compare/v0.5.0...v0.5.1) - 2026-10-14
+
+### Fixed
+- *(rx_bevy_observable_event)* complete when the observed entity despawns before the observer spawns
+
 ## `rx_bevy` - [0.5.0](https://github.com/AlexAegis/rx_bevy/compare/v0.4.0...v0.5.0) - 2026-10-09
 
 ### Fixed
