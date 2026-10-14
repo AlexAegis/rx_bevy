@@ -167,7 +167,7 @@ jobs:
     steps:
       - name: check if github pages is enabled
         id: check_pages
-        uses: AlexAegis/check-github-pages@v1
+        uses: AlexAegis/check-github-pages@v2
   mdbook:
     runs-on: ubuntu-latest
     needs: [check-pages]
