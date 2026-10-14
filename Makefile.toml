@@ -388,7 +388,7 @@ description = "Install the mdbook-crate-links preprocessor from the workspace"
 workspace = false
 private = true
 command = "cargo"
-args = ["install", "--path", "crates/mdbook_crate_links"]
+args = ["install", "--locked", "--path", "crates/mdbook_crate_links"]
 
 [tasks.book-build]
 description = "Builds the book for the workspace."

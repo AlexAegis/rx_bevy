@@ -183,7 +183,7 @@ jobs:
       - name: install mdbook-mermaid
         run: cargo binstall --no-confirm --force mdbook-mermaid
       - name: install mdbook-crate-links
-        run: cargo install --path crates/mdbook_crate_links
+        run: cargo install --locked --path crates/mdbook_crate_links
       - name: build book
         run: mdbook build
       - name: setup pages
