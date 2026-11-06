@@ -11,8 +11,11 @@ description = "Makes sure the git lfs hooks are enabled in the repository"
 private = false
 workspace = false
 dependencies = ["enable-git-hooks"]
+condition_script = ['''
+test -z "$(git config --local --get filter.lfs.clean)"
+''']
 command = "git"
-args = ["lfs", "install", "--force"]
+args = ["lfs", "install", "--local", "--force"]
 
 ### Git - Hooks
 
@@ -23,6 +26,9 @@ condition = { platforms = [ # All hooks are shell scripts
 ], fail_message = "Git hooks are not available for Windows! Use a proper OS." }
 description = "Enable git hooks by setting the hooksPath to scripts/hooks"
 workspace = false
+condition_script = ['''
+test "$(git config --get core.hooksPath)" != "scripts/hooks"
+''']
 command = "git"
 args = ["config", "core.hooksPath", "scripts/hooks"]
 
