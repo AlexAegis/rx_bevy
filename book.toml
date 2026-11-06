@@ -14,8 +14,9 @@ create-missing = true
 command = "mdbook-mermaid"
 
 [preprocessor.crate-links]
-command = "mdbook-crate-links"
+command = "cargo run --quiet --locked -p mdbook-crate-links --"
 after = ["links"]
+renderers = ["html"]
 
 [output.html]
 additional-js = ["docs/assets/mermaid.min.js", "docs/mermaid-init.js"]
