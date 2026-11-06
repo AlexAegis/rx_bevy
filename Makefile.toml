@@ -39,13 +39,6 @@ workspace = false
 private = true
 install_crate = { crate_name = "cocogitto", binary = "cog", test_arg = "--version" }
 
-[tasks.install-koji]
-condition = { env_not_set = ["NO_KOJI"] }
-description = "Install the koji crate to generate conventional commit messages"
-workspace = false
-private = true
-install_crate = { crate_name = "koji", binary = "koji", test_arg = "--version" }
-
 
 ## Build
 
@@ -436,7 +429,6 @@ dependencies = [
 	"install-git-lfs",
 	"enable-git-hooks",
 	"install-cocogitto",
-	"install-koji",
 	"install-web-support",
 	"script-link-assets",
 	"install-nextest",
