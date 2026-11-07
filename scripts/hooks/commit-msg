@@ -5,13 +5,13 @@ cog verify --file "$1"
 git rev-parse -q --verify HEAD >/dev/null || exit 0
 if ! out=$(cog check --from-latest-tag 2>&1); then
 	case $out in
-	'Error: unable to get any tag')
-		cog check ..HEAD
-		;;
-	*)
-		printf '%s\n' "$out" >&2
-		exit 1
-		;;
+		'Error: unable to get any tag')
+			cog check ..HEAD
+			;;
+		*)
+			printf '%s\n' "$out" >&2
+			exit 1
+			;;
 	esac
 else
 	printf '%s\n' "$out" >&2

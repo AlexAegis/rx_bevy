@@ -20,3 +20,10 @@ indent_size = 2
 [*.{py}]
 indent_style = space
 indent_size = 4
+
+[[shell]]
+indent_style = tab
+switch_case_indent = true
+
+[scripts/hooks/{post-checkout,post-commit,post-merge,pre-push}]
+ignore = true
