@@ -150,7 +150,8 @@ pub(crate) fn create_inner_subscription<InnerObservable, Destination>(
 				inner_subscriptions
 					.iter()
 					.filter(|(k, _)| *k != key)
-					.count() == concurrency_limit_minus_one
+					.count()
+					== concurrency_limit_minus_one
 			};
 
 			if no_more_subscribers_besides_this

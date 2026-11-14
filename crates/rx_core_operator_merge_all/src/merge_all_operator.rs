@@ -45,7 +45,13 @@ where
 	ErrorMapper: 'static + FnOnce(InError) -> In::OutError + Clone + Send + Sync,
 {
 	type Subscriber<Destination>
-		= HigherOrderAllSubscriber<In, InError, ConcurrentSubscriberProvider, ErrorMapper, Destination>
+		= HigherOrderAllSubscriber<
+		In,
+		InError,
+		ConcurrentSubscriberProvider,
+		ErrorMapper,
+		Destination,
+	>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError> + Send + Sync;
 

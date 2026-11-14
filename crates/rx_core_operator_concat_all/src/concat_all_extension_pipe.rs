@@ -18,7 +18,7 @@ pub trait ObservablePipeExtensionConcatAll<'o>: 'o + Observable + Sized + Send +
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
-	{
+{
 		ConcatAllOperator::new(error_mapper).operate(self)
 	}
 }

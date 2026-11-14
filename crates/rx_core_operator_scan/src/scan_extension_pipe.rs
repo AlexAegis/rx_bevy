@@ -13,7 +13,7 @@ pub trait ObservablePipeExtensionScan<'o>: 'o + Observable + Sized + Send + Sync
 		seed: NextOut,
 	) -> <ScanOperator<Self::Out, Self::OutError, Reducer, NextOut> as Operator<'o>>::OutObservable<
 		Self,
-	> {
+	>{
 		ScanOperator::new(reducer, seed).operate(self)
 	}
 }
