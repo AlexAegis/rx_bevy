@@ -90,7 +90,8 @@ where
 	ConnectorProvider::Provided: SubjectLike<In = Source::Out, InError = Source::OutError> + Clone,
 {
 	type Subscription<Destination>
-		= <ConnectableObservable<Source, ConnectorProvider> as Observable>::Subscription<Destination>
+		=
+		<ConnectableObservable<Source, ConnectorProvider> as Observable>::Subscription<Destination>
 	where
 		Destination: 'static + Subscriber<In = Self::Out, InError = Self::OutError>;
 

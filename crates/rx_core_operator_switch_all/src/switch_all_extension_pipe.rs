@@ -19,7 +19,7 @@ pub trait ObservablePipeExtensionSwitchAll<'o>: 'o + Observable + Sized + Send +
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
-	{
+{
 		SwitchAllOperator::new(error_mapper).operate(self)
 	}
 }

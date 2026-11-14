@@ -11,7 +11,8 @@ pub trait OperatorComposeExtensionFilterMap: ComposableOperator + Sized {
 	>(
 		self,
 		mapper: Mapper,
-	) -> CompositeOperator<Self, FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut>> {
+	) -> CompositeOperator<Self, FilterMapOperator<Self::Out, Self::OutError, Mapper, NextOut>>
+	{
 		self.compose_with(FilterMapOperator::new(mapper))
 	}
 }

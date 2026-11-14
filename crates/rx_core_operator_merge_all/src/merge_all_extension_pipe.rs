@@ -20,7 +20,7 @@ pub trait ObservablePipeExtensionMergeAll<'o>: 'o + Observable + Sized + Send + 
 	where
 		Self::Out: Observable,
 		Self::OutError: Into<<Self::Out as ObservableOutput>::OutError>,
-	{
+{
 		MergeAllOperator::new(concurrency_limit, error_mapper).operate(self)
 	}
 }

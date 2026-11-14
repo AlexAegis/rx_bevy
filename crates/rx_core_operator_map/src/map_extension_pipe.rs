@@ -9,7 +9,7 @@ pub trait ObservablePipeExtensionMap<'o>: 'o + Observable + Sized + Send + Sync 
 		mapper: Mapper,
 	) -> <MapOperator<Self::Out, Self::OutError, Mapper, NextOut> as Operator<'o>>::OutObservable<
 		Self,
-	> {
+	>{
 		MapOperator::new(mapper).operate(self)
 	}
 }

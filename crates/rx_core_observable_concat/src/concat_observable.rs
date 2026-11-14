@@ -53,13 +53,14 @@ where
 	{
 		let destination = observer.upgrade();
 
-		let mut concat_subscriber = HigherOrderAllSubscriber::<
-			ErasedObservable<Out, OutError>,
-			Never,
-			ConcurrentSubscriberProvider,
-			_,
-			<Destination as UpgradeableObserver>::Upgraded,
-		>::new(destination, Never::map_into(), NonZero::<usize>::MIN);
+		let mut concat_subscriber =
+			HigherOrderAllSubscriber::<
+				ErasedObservable<Out, OutError>,
+				Never,
+				ConcurrentSubscriberProvider,
+				_,
+				<Destination as UpgradeableObserver>::Upgraded,
+			>::new(destination, Never::map_into(), NonZero::<usize>::MIN);
 
 		for next_observable in self.observables.iter().cloned() {
 			concat_subscriber.next(next_observable);

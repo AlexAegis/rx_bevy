@@ -31,7 +31,9 @@ mod ticking {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 		assert_eq!(
 			ticking_executor.now(),
 			Duration::ZERO,
@@ -68,7 +70,9 @@ mod immediate_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -111,7 +115,9 @@ mod immediate_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -144,7 +150,9 @@ mod immediate_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default())
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		)
 		.with_max_single_tick_recursion_depth(2);
 
 		let mut context = TestContext;
@@ -192,7 +200,9 @@ mod delayed_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -246,7 +256,9 @@ mod repeated_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -301,7 +313,9 @@ mod repeated_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -342,7 +356,9 @@ mod repeated_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -387,7 +403,9 @@ mod continuous_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -443,7 +461,9 @@ mod invoked_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -488,7 +508,9 @@ mod invoked_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -532,7 +554,9 @@ mod invoked_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -576,7 +600,9 @@ mod invoked_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
@@ -627,7 +653,9 @@ mod invoked_work {
 		let mut ticking_executor = TickingSchedulerExecutor::<
 			TickingScheduler<TestContextProvider>,
 			TestContextProvider,
-		>::new(TickingScheduler::<TestContextProvider>::default());
+		>::new(
+			TickingScheduler::<TestContextProvider>::default()
+		);
 
 		let mut context = TestContext;
 
